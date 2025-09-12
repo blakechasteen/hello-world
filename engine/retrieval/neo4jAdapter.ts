@@ -2,6 +2,33 @@
 // Minimal Neo4j adapter for junction-first retrieval.
 // Requires neo4j-driver. Cypher enforces strict AND across required thread *types*.
 
+
+// engine/retrieval/neo4jAdapter.ts (append to class)
+
+  /**
+   * Fetch Knot titles for a batch of ids.
+   */
+  async fetchKnotTitles(ids: string[]): Promise<Record<string, string>> {
+    if (!ids?.length) return {};
+    const s = this.session();
+    try {
+      const res = await s.run(
+        `
+        MATCH (k:Knot)
+        WHERE k.id IN $ids
+        RETURN k.id AS id, k.title AS title
+        `,
+        { ids }
+      );
+      const out: Record<string, string> = {};
+      for (const r of res.records) {
+        out[r.get('id')] = r.get('title') ?? '';
+      }
+      return out;
+    } finally {
+      await s.close();
+    }
+  }
 import neo4j, { Driver, Session } from 'neo4j-driver';
 import { ThreadType, Thread, Knot } from './retrieval_intersect';
 
