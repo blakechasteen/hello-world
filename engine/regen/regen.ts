@@ -1,6 +1,26 @@
 // engine/regen/regen.ts
 // Constrained regeneration: expands PackArtifact into a grounded recall.
 
+// engine/regen/regen.ts (replace generateLLM)
+
+import OpenAI from "openai"; // npm install openai
+
+// expects OPENAI_API_KEY in your env
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+export async function generateLLM(io: RegenIO): Promise<string> {
+  const resp = await openai.chat.completions.create({
+    model: "gpt-4o-mini",  // or whichever model you prefer
+    messages: [
+      { role: "system", content: io.system },
+      { role: "user", content: JSON.stringify(io.input) }
+    ],
+    temperature: 0.6,
+    max_tokens: 800
+  });
+  return resp.choices[0]?.message?.content ?? "";
+}
+
 import { PackArtifact, KnotDetails, Anchor } from '../packing/pack_builder';
 
 export interface RegenConfig {
