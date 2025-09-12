@@ -1,0 +1,144 @@
+// engine/content/content_store.ts
+import neo4j, { Driver, Session } from 'neo4j-driver';
+import { Seeds, Anchor, KnotDetails, ContentStore } from '../packing/pack_builder';
+
+export interface ContentStoreOpts {
+  uri: string;
+  user: string;
+  password: string;
+  database?: string;
+  maxQuoteLen?: number; // chars for quote anchors
+}
+
+export class Neo4jContentStore implements ContentStore {
+  private driver: Driver;
+  private database?: string;
+  private maxQuoteLen: number;
+
+  constructor(opts: ContentStoreOpts) {
+    this.driver = neo4j.driver(opts.uri, neo4j.auth.basic(opts.user, opts.password));
+    this.database = opts.database;
+    this.maxQuoteLen = opts.maxQuoteLen ?? 140;
+  }
+
+  private session(): Session {
+    return this.driver.session({ database: this.database });
+  }
+
+  async fetchKnotDetails(
+    ids: string[],
+    opts?: { level: 'S1' | 'S2' | 'S3' | 'all' }
+  ): Promise<Record<string, KnotDetails>> {
+    if (!ids?.length) return {};
+    const s = this.session();
+    try {
+      const res = await s.run(
+        `
+        MATCH (k:Knot)
+        WHERE k.id IN $ids
+        OPTIONAL MATCH (k)-[:IN_TIME]->(tt:Thread {type:'time'})
+        OPTIONAL MATCH (k)-[:AT_PLACE]->(pl:Thread {type:'place'})
+        WITH k, tt, pl
+        RETURN k.id AS id, k.s1 AS s1, k.s2 AS s2, k.s3 AS s3,
+               k.seeds AS seeds, k.anchors AS anchors,
+               tt.key AS timeKey, pl.key AS placeKey
+        `,
+        { ids }
+      );
+
+      const out: Record<string, KnotDetails> = {};
+      for (const r of res.records) {
+        const id = r.get('id');
+        const seeds = (r.get('seeds') as any) ?? {};
+        const anchorsRaw = (r.get('anchors') as any) ?? [];
+        const timeKey = r.get('timeKey');
+        const placeKey = r.get('placeKey');
+
+        const anchors: Anchor[] = [];
+        if (timeKey) anchors.push({ kind: 'time', value: String(timeKey) });
+        if (placeKey) anchors.push({ kind: 'place', value: String(placeKey) });
+
+        // If node already stores anchors, merge them in (must match Anchor shape)
+        if (Array.isArray(anchorsRaw)) {
+          for (const a of anchorsRaw) {
+            if (a && a.kind && a.value) anchors.push(a as Anchor);
+          }
+        }
+
+        const kd: KnotDetails = {
+          id,
+          s1: r.get('s1') ?? undefined,
+          s2: r.get('s2') ?? undefined,
+          s3: r.get('s3') ?? undefined,
+          seeds: seeds as Seeds,
+          anchors
+        };
+
+        // Level filter: drop heavier fields if not requested
+        const level = opts?.level ?? 'all';
+        if (level === 'S1') {
+          kd.s2 = undefined;
+          kd.s3 = undefined;
+          kd.seeds = undefined;
+        } else if (level === 'S2') {
+          kd.s3 = undefined;
+        }
+        out[id] = kd;
+      }
+      return out;
+    } finally {
+      await s.close();
+    }
+  }
+
+  async fetchEvidence(ids: string[], maxPerKnot: number): Promise<Record<string, Anchor[]>> {
+    if (!ids?.length || maxPerKnot <= 0) return {};
+    const s = this.session();
+    try {
+      const res = await s.run(
+        `
+        MATCH (k:Knot)
+        WHERE k.id IN $ids
+
+        // shards
+        OPTIONAL MATCH (k)-[:HAS_SHARD]->(sh:Shard)
+        WITH k, collect(DISTINCT {kind:'shard', value: sh.id, refId: sh.id}) AS shardAnchors
+
+        // quotes (trim from s1/s2 quickly)
+        WITH k, shardAnchors,
+             coalesce(k.s1,'') AS s1, coalesce(k.s2,'') AS s2
+        WITH k, shardAnchors,
+             CASE WHEN s1 <> '' THEN left(s1, $maxQuoteLen) ELSE null END AS q1,
+             CASE WHEN s2 <> '' THEN left(s2, $maxQuoteLen) ELSE null END AS q2
+
+        RETURN k.id AS id,
+               shardAnchors AS shards,
+               [q IN [q1,q2] WHERE q IS NOT NULL | {kind:'quote', value:q}] AS quotes
+        `,
+        { ids, maxQuoteLen: this.maxQuoteLen }
+      );
+
+      const out: Record<string, Anchor[]> = {};
+      for (const r of res.records) {
+        const id = r.get('id');
+        const shards = (r.get('shards') as any[]) ?? [];
+        const quotes = (r.get('quotes') as any[]) ?? [];
+        const combined: Anchor[] = [];
+        for (const a of shards.slice(0, Math.max(1, Math.floor(maxPerKnot / 2)))) {
+          combined.push(a as Anchor);
+        }
+        for (const q of quotes.slice(0, maxPerKnot - combined.length)) {
+          combined.push(q as Anchor);
+        }
+        out[id] = combined;
+      }
+      return out;
+    } finally {
+      await s.close();
+    }
+  }
+
+  async close() {
+    await this.driver.close();
+  }
+}
