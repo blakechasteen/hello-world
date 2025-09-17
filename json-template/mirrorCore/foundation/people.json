@@ -1,0 +1,17 @@
+{
+  "people": [
+    {
+      "name": "Dad",
+      "email": "",
+      "role": "",
+      "notes": "",
+      "events": [],
+      "grocery_lists": [],
+      "projects": [],
+      "tasks": [],
+      "threads": [],
+      "time_entries": [],
+      "phone_number": ""
+    }
+  ]
+}
