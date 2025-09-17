@@ -1,0 +1,27 @@
+{
+  "tasks": [
+    {
+      "name": "",
+      "assignee": "",
+      "status": "",
+      "priority": "",
+      "due_date": "",
+      "estimated_hours": 0,
+      "effort": 0,
+      "difficulty": "",
+      "category": "",
+      "tags": [],
+      "location": "",
+      "area": "",
+      "resources": [],
+      "notes": "",
+      "archived": false,
+      "done": false,
+      "done_in_7_days": false,
+      "duration": 0,
+      "overdue": false,
+      "projects": [],
+      "time_entries": []
+    }
+  ]
+}
