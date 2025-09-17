@@ -1,0 +1,21 @@
+{
+  "projects": [
+    {
+      "name": "",
+      "owner": "",
+      "status": "",
+      "start_date": "",
+      "due_date": "",
+      "priority": "",
+      "tags": [],
+      "areas": [],
+      "primary_resources": [],
+      "notes": "",
+      "events": [],
+      "task_totals": 0,
+      "tasks": [],
+      "time_entries": [],
+      "archived": false
+    }
+  ]
+}
