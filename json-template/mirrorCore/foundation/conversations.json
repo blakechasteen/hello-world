@@ -1,0 +1,120 @@
+{
+  "_meta": {
+    "description": "MongoDB seed document capturing assistant/user conversation streams for MirrorCore",
+    "version": 1,
+    "lastUpdated": "2024-05-07T00:00:00.000Z"
+  },
+  "conversations": [
+    {
+      "_id": {
+        "$oid": "665000000000000000000001"
+      },
+      "session": {
+        "sessionId": "mirrorcore-seed-0001",
+        "title": "MirrorCore Loom Onboarding",
+        "startedAt": {
+          "$date": "2024-05-06T18:12:43.000Z"
+        },
+        "tags": ["onboarding", "loom", "mirrorcore"],
+        "source": "codex-one-shot"
+      },
+      "participants": {
+        "user": {
+          "id": "user-mirrorcore",
+          "displayName": "MirrorCore Architect"
+        },
+        "assistant": {
+          "id": "assistant-mirrorcore",
+          "model": "gpt-4-type-script-liaison"
+        }
+      },
+      "context": {
+        "project": "MirrorCore",
+        "layers": ["farm", "symbolic-ai", "archive"],
+        "hasPersistentMemory": false,
+        "notes": "Assistant does not retain memory across sessions; each conversation supplies context via prompt."
+      },
+      "messages": [
+        {
+          "messageId": 1,
+          "role": "system",
+          "timestamp": {
+            "$date": "2024-05-06T18:12:43.000Z"
+          },
+          "content": "System prompt establishing MirrorCore loom scaffold and repository goals.",
+          "tokenCounts": {
+            "promptTokens": 256,
+            "completionTokens": 0
+          }
+        },
+        {
+          "messageId": 2,
+          "role": "user",
+          "timestamp": {
+            "$date": "2024-05-06T18:13:21.000Z"
+          },
+          "content": "Create a layer-tagged TypeScript repo for the holographic loom.",
+          "tokenCounts": {
+            "promptTokens": 38,
+            "completionTokens": 0
+          }
+        },
+        {
+          "messageId": 3,
+          "role": "assistant",
+          "timestamp": {
+            "$date": "2024-05-06T18:14:05.000Z"
+          },
+          "content": {
+            "summary": "Generated MirrorCore TypeScript scaffold aligned to loom layers.",
+            "commits": [
+              {
+                "hash": "6a1b2c3",
+                "description": "Add domain layer modules"
+              }
+            ]
+          },
+          "tokenCounts": {
+            "promptTokens": 0,
+            "completionTokens": 112
+          }
+        },
+        {
+          "messageId": 4,
+          "role": "user",
+          "timestamp": {
+            "$date": "2024-05-07T00:02:10.000Z"
+          },
+          "content": "Create a JSON for capturing our conversation stream into a mongo db. Do you have persistent memory of the MirrorCore?",
+          "tokenCounts": {
+            "promptTokens": 36,
+            "completionTokens": 0
+          }
+        },
+        {
+          "messageId": 5,
+          "role": "assistant",
+          "timestamp": {
+            "$date": "2024-05-07T00:03:01.000Z"
+          },
+          "content": {
+            "response": "Outlined MongoDB conversation schema and clarified lack of persistent memory.",
+            "followUp": "Consider storing per-session summaries if long-term recall is desired."
+          },
+          "tokenCounts": {
+            "promptTokens": 0,
+            "completionTokens": 64
+          }
+        }
+      ],
+      "analytics": {
+        "totalTurns": 5,
+        "totalTokens": 506,
+        "durationSeconds": 342,
+        "lastUpdated": {
+          "$date": "2024-05-07T00:03:01.000Z"
+        }
+      }
+    }
+  ]
+}
