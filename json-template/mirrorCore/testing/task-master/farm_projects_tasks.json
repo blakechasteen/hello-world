@@ -1,0 +1,202 @@
+[
+  {
+    "Task Name":"Clean kitchen",
+    "Description":"Clear counters, wash\/dry dishes, reset prep space.",
+    "Project":"Daily Ops",
+    "Due Date":"",
+    "Priority":"Medium",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"Clean shed",
+    "Description":"Declutter, sweep, organize tools.",
+    "Project":"Shop\/Shed",
+    "Due Date":"",
+    "Priority":"Medium",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"Feed bees",
+    "Description":"Syrup\/feed check; note colony strength.",
+    "Project":"Bees",
+    "Due Date":"",
+    "Priority":"High",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"Treat bees",
+    "Description":"Apply mite treatment per plan (e.g., Apiguard\/oxalic).",
+    "Project":"Bees",
+    "Due Date":"",
+    "Priority":"High",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"Check bee boxes",
+    "Description":"Confirm box count & frames per box; adjust as needed.",
+    "Project":"Bees",
+    "Due Date":"",
+    "Priority":"High",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"Start fall garden",
+    "Description":"Prep beds, seed starts\/sets for fall crops.",
+    "Project":"Garden",
+    "Due Date":"",
+    "Priority":"High",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"Finish tree boxes",
+    "Description":"Complete build-out of tree planters\/boxes.",
+    "Project":"Orchard\/Perennial",
+    "Due Date":"",
+    "Priority":"Medium",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"P2M: Set up project",
+    "Description":"Create planning doc\/DB for Jerusalem artichokes to market.",
+    "Project":"Product to Market: Jerusalem Artichokes",
+    "Due Date":"",
+    "Priority":"High",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"P2M: Propagate plants",
+    "Description":"Divide tubers and pot up for plant sales.",
+    "Project":"Product to Market: Jerusalem Artichokes",
+    "Due Date":"",
+    "Priority":"High",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"P2M: Friends & family sales",
+    "Description":"Set aside inventory for direct sales.",
+    "Project":"Product to Market: Jerusalem Artichokes",
+    "Due Date":"",
+    "Priority":"Medium",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"P2M: Process products",
+    "Description":"Outline processing SKUs (e.g., sliced\/dried, inulin extract).",
+    "Project":"Product to Market: Jerusalem Artichokes",
+    "Due Date":"",
+    "Priority":"Medium",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"R&D: Inulin + xylitol mint prototype",
+    "Description":"Formulate 'breath mint' using inulin + xylitol + mint oils; run small batch test.",
+    "Project":"Product to Market: Jerusalem Artichokes",
+    "Due Date":"",
+    "Priority":"Low",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"BW: Budget parts list",
+    "Description":"Motor, barrel(s), chain, center rod, rebar frame, screen.",
+    "Project":"Black Walnuts",
+    "Due Date":"",
+    "Priority":"High",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"BW: Source motor",
+    "Description":"Find ~1.5kW motor; confirm RPM & mount.",
+    "Project":"Black Walnuts",
+    "Due Date":"",
+    "Priority":"High",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"BW: Acquire barrel(s)",
+    "Description":"1\u20132 regular 55-gal barrels; consider double-wrap for strength.",
+    "Project":"Black Walnuts",
+    "Due Date":"",
+    "Priority":"Medium",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"BW: Cut & mount screen outlet",
+    "Description":"Add bottom outlet with coarse screen for sludge; rebar ring support.",
+    "Project":"Black Walnuts",
+    "Due Date":"",
+    "Priority":"Medium",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"BW: Chain flail assembly",
+    "Description":"Cut chain into segments; attach to center rod for internal beating.",
+    "Project":"Black Walnuts",
+    "Due Date":"",
+    "Priority":"High",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"BW: Build frame",
+    "Description":"Weld\/bolt rebar\/steel frame; mount motor + barrel; safety guards.",
+    "Project":"Black Walnuts",
+    "Due Date":"",
+    "Priority":"Medium",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"BW: Test & iterate",
+    "Description":"Dry run with water\/rocks; then black walnuts; tune RPM & screen.",
+    "Project":"Black Walnuts",
+    "Due Date":"",
+    "Priority":"Medium",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  },
+  {
+    "Task Name":"Compost: Cement mixer trommel hack",
+    "Description":"Evaluate cement mixer mod for compost screening; parts & cost.",
+    "Project":"Compost",
+    "Due Date":"",
+    "Priority":"Low",
+    "Status":"To Do",
+    "Time Spent (hrs)":"",
+    "Notes \/ Created by Shuttle":"created_by_shuttle"
+  }
+]
