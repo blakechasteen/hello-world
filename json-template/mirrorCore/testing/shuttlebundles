@@ -1,0 +1,64 @@
+{
+  "date": "2025-09-18",
+  "tasks": [
+    {
+      "id": "t_clean-kitchen",
+      "title": "Clean the kitchen",
+      "tier": "must_do",
+      "status": "Active",
+      "type": "normal",
+      "areas": ["home"],
+      "created_by": "Shuttle",
+      "shuttle_status": "Proposed",
+      "shuttle_confidence": 0.95
+    },
+    {
+      "id": "t_treat-bees",
+      "title": "Treat the bees",
+      "tier": "must_do",
+      "status": "Active",
+      "type": "normal",
+      "areas": ["farm"],
+      "tags": ["beekeeping"],
+      "created_by": "Shuttle",
+      "shuttle_status": "Proposed",
+      "shuttle_confidence": 0.92
+    },
+    {
+      "id": "t_hilco-top-feeders",
+      "title": "Hilco top feeders",
+      "tier": "must_do",
+      "status": "Active",
+      "type": "to_order",
+      "qty": 2,
+      "category": "beekeeping",
+      "created_by": "Shuttle",
+      "shuttle_status": "Proposed",
+      "shuttle_confidence": 0.94
+    }
+  ],
+  "events": [
+    {
+      "id": "ev_pick-up-john-ot_2025-09-18T15:00",
+      "title": "Pick up John (OT)",
+      "start_ts": "2025-09-18T15:00:00-04:00",
+      "tentative": false,
+      "created_by": "Shuttle",
+      "shuttle_status": "Proposed",
+      "shuttle_confidence": 0.91
+    }
+  ],
+  "log": [
+    {
+      "id": "log_bee-treatment_2025-09-18",
+      "task_id": "t_treat-bees",
+      "metric": "Apiguard placement",
+      "duration_seconds": 600,
+      "notes": "First tray installed",
+      "date": "2025-09-18",
+      "created_by": "Shuttle",
+      "shuttle_status": "Proposed",
+      "shuttle_confidence": 0.87
+    }
+  ]
+}
