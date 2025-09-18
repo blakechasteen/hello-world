@@ -1,0 +1,27 @@
+{
+  "name": "mirrorcore-loom",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx scripts/dev.ts",
+    "sync:notion": "tsx scripts/sync_notion_all.ts",
+    "build:pack": "tsx scripts/build_pack_example.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.14",
+    "better-sqlite3": "^9.4.0",
+    "dotenv": "^16.4.5",
+    "neo4j-driver": "^5.19.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.6.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.5"
+  }
+}

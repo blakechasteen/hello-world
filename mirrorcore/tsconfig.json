@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "baseUrl": "./src",
+    "outDir": "dist"
+  },
+  "include": ["src", "scripts"],
+  "exclude": ["node_modules", "dist"]
+}
