@@ -1,0 +1,42 @@
+{
+  "title": "Fermented Szechuan Eggplant",
+  "author": "Blake Chasteen",
+  "date": "2025-10-09",
+  "tags": ["fermented", "szechuan", "eggplant", "low oil", "umami fusion", "roasted"],
+  "base": {
+    "ingredients": [
+      "2 medium eggplants, cut into batons",
+      "Salt",
+      "Oil (light coat for roasting)"
+    ],
+    "prep": "Prebake eggplant at 450°F for 40 minutes until tender and caramelized."
+  },
+  "sauce": {
+    "ingredients": [
+      "2 Tbsp fermented onion brine",
+      "1 Tbsp miso paste (red or mixed)",
+      "1 Tbsp sriracha",
+      "1 Tbsp hoisin sauce",
+      "1 Tbsp sake",
+      "1 tsp hot honey (to taste)",
+      "2 cloves garlic, minced",
+      "1 tsp arrowroot powder mixed with a splash of water"
+    ]
+  },
+  "assembly": [
+    "Sauté prebaked eggplant in a touch of oil over medium-high heat until lightly browned.",
+    "Add sauce, stirring to coat and thicken until glossy.",
+    "Fold in sliced fresh peppers and tomatoes; cook until just softened.",
+    "Finish with chopped garlic chives before serving."
+  ],
+  "notes": {
+    "flavor_profile": "Spicy, tangy, umami-rich with gentle fermented depth.",
+    "texture": "Tender eggplant coated in silky, glossy sauce.",
+    "chef_notes": [
+      "Fermented onion brine adds complex acidity.",
+      "Hot honey bridges chili and miso beautifully.",
+      "Arrowroot gives the sauce a perfect cling."
+    ],
+    "serve_with": "Steamed jasmine rice or sesame noodles."
+  }
+}
