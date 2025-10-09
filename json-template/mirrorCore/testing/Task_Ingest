@@ -1,0 +1,51 @@
+{
+  "date": "2025-10-09",
+  "timezone": "America/New_York",
+  "tasks": [
+    { "task": "Brew anyway", "category": "Brew & kitchen", "status": "todo", "notes": "" },
+    { "task": "Sanitize everything + swing-tops", "category": "Brew & kitchen", "status": "todo", "notes": "" },
+    { "task": "Pick up brew kettle / BIAB bag (if needed)", "category": "Brew & kitchen", "status": "todo", "notes": "" },
+    { "task": "Set blow-off tube (carboy + keg)", "category": "Brew & kitchen", "status": "todo", "notes": "" },
+
+    { "task": "Juice apples", "category": "Orchard, bees & grounds", "status": "todo", "notes": "" },
+    { "task": "Mow (if ground is dry enough)", "category": "Orchard, bees & grounds", "status": "todo", "notes": "" },
+    { "task": "Put birdseed & squirrel food out", "category": "Orchard, bees & grounds", "status": "todo", "notes": "" },
+    { "task": "Feed bees", "category": "Orchard, bees & grounds", "status": "done", "notes": "Logged in time tracker" },
+
+    { "task": "Visit Whitney Winston", "category": "Visits & calls", "status": "todo", "notes": "Bring mulching gear" },
+    { "task": "Visit Greg", "category": "Visits & calls", "status": "todo", "notes": "" },
+    { "task": "Call Jonathan", "category": "Visits & calls", "status": "todo", "notes": "" },
+    { "task": "Text Greg (cutting boards)", "category": "Visits & calls", "status": "todo", "notes": "" },
+    { "task": "Schedule Jake for Monday", "category": "Visits & calls", "status": "todo", "notes": "" },
+    { "task": "Text Keshav’s friend about delivering honey", "category": "Visits & calls", "status": "todo", "notes": "" },
+
+    { "task": "Order mushroom-log angle-grinder attachment + sawdust injector", "category": "Mushrooms & nursery", "status": "todo", "notes": "" },
+    { "task": "Go by Everything Mushrooms (reishi, shiitake, lion’s mane)", "category": "Mushrooms & nursery", "status": "todo", "notes": "" },
+    { "task": "Order hazelnut (and other) seeds from Twisted Tree", "category": "Mushrooms & nursery", "status": "todo", "notes": "" },
+
+    { "task": "Research ginseng growing", "category": "Woodland medicinals & water", "status": "todo", "notes": "" },
+    { "task": "Order ginseng seeds (through Pat)", "category": "Woodland medicinals & water", "status": "todo", "notes": "" },
+    { "task": "Harvesting ginseng", "category": "Woodland medicinals & water", "status": "todo", "notes": "" },
+    { "task": "Get water tested", "category": "Woodland medicinals & water", "status": "todo", "notes": "" },
+    { "task": "Order goldenseal", "category": "Woodland medicinals & water", "status": "todo", "notes": "" },
+
+    { "task": "New bike seat + phone mount", "category": "Errands / bike", "status": "todo", "notes": "" },
+    { "task": "Bike headlight + decide on flip-in pedals", "category": "Errands / bike", "status": "todo", "notes": "" },
+
+    { "task": "Fix fence corner post brackets (or buy hardware)", "category": "Farm builds / cleanup", "status": "todo", "notes": "" },
+    { "task": "Finish tree boxes", "category": "Farm builds / cleanup", "status": "todo", "notes": "" },
+    { "task": "Clean shed & go through the pod", "category": "Farm builds / cleanup", "status": "todo", "notes": "" },
+    { "task": "Work on wash-and-pack station", "category": "Farm builds / cleanup", "status": "todo", "notes": "" },
+    { "task": "Finish gate for Gorilla cart", "category": "Farm builds / cleanup", "status": "todo", "notes": "" },
+    { "task": "Cut small tree branches", "category": "Farm builds / cleanup", "status": "todo", "notes": "" },
+
+    { "task": "Develop frost plan", "category": "Seasonal prep", "status": "todo", "notes": "" },
+
+    { "task": "Plan sourdough / baking rotation", "category": "Backlog", "status": "todo", "notes": "" },
+    { "task": "Continue prebiotic/house soap project", "category": "Backlog", "status": "todo", "notes": "" },
+    { "task": "Order thicker scythe blade + cover crop seed", "category": "Backlog", "status": "todo", "notes": "" },
+    { "task": "Clean kitchen & porch", "category": "Backlog", "status": "todo", "notes": "" },
+    { "task": "Mushroom log prep", "category": "Backlog", "status": "todo", "notes": "" },
+    { "task": "Smoke sauerkraut", "category": "Backlog", "status": "todo", "notes": "" }
+  ]
+}
