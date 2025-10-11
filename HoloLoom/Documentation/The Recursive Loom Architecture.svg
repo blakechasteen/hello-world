@@ -1,0 +1,258 @@
+<svg viewBox="0 0 1600 1200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#2c3e50" />
+    </marker>
+    <linearGradient id="manifold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Title -->
+  <text x="800" y="40" font-size="32" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+    MirrorCore: The Recursive Loom
+  </text>
+  <text x="800" y="70" font-size="16" text-anchor="middle" fill="#7f8c8d" font-style="italic">
+    Five principles, all the way down — each layer a lens on the same continuous manifold
+  </text>
+  
+  <!-- The Five Principles (vertical spine) -->
+  <g id="five-principles">
+    <!-- Column headers -->
+    <text x="250" y="120" font-size="14" font-weight="bold" text-anchor="middle" fill="#2c3e50">Principle</text>
+    <text x="450" y="120" font-size="14" font-weight="bold" text-anchor="middle" fill="#2c3e50">Mathematics</text>
+    <text x="750" y="120" font-size="14" font-weight="bold" text-anchor="middle" fill="#2c3e50">Implementation</text>
+    <text x="1150" y="120" font-size="14" font-weight="bold" text-anchor="middle" fill="#2c3e50">Where It Lives</text>
+    
+    <!-- 1. Thompson Sampling -->
+    <g transform="translate(50, 150)">
+      <rect x="0" y="0" width="1500" height="180" fill="#e3f2fd" opacity="0.5" rx="8"/>
+      
+      <circle cx="100" cy="90" r="40" fill="#2196f3" opacity="0.8"/>
+      <text x="100" y="75" font-size="28" font-weight="bold" text-anchor="middle" fill="#fff">1</text>
+      <text x="100" y="100" font-size="13" font-weight="bold" text-anchor="middle" fill="#fff">TS</text>
+      
+      <text x="200" y="55" font-size="16" font-weight="bold" fill="#1976d2">Thompson Sampling</text>
+      <text x="200" y="80" font-size="13" fill="#424242" font-style="italic">Curiosity and Choice</text>
+      
+      <g transform="translate(400, 40)">
+        <text x="0" y="0" font-size="14" font-family="monospace" fill="#1565c0">choose a_t = argmax θ_a</text>
+        <text x="0" y="25" font-size="14" font-family="monospace" fill="#1565c0">θ_a ~ Beta(α_a, β_a)</text>
+        <text x="0" y="55" font-size="11" fill="#666">Every module samples</text>
+        <text x="0" y="70" font-size="11" fill="#666">from its own posterior</text>
+      </g>
+      
+      <g transform="translate(700, 30)">
+        <text x="0" y="0" font-size="12" fill="#424242">• Wrap each component in</text>
+        <text x="0" y="20" font-size="12" fill="#424242">  bandit wrapper</text>
+        <text x="0" y="40" font-size="12" fill="#424242">• Track success → update</text>
+        <text x="0" y="60" font-size="12" fill="#424242">  Beta(α, β)</text>
+        <text x="0" y="80" font-size="12" fill="#424242">• Exploration propagates</text>
+        <text x="0" y="100" font-size="12" fill="#424242">  down hierarchy</text>
+      </g>
+      
+      <g transform="translate(1100, 35)">
+        <text x="0" y="0" font-size="11" font-weight="bold" fill="#1976d2">PolicyStrategy</text>
+        <text x="0" y="18" font-size="10" fill="#666">↳ which strategy?</text>
+        <text x="0" y="35" font-size="11" font-weight="bold" fill="#1976d2">MotifDetector</text>
+        <text x="0" y="53" font-size="10" fill="#666">↳ which pattern?</text>
+        <text x="0" y="70" font-size="11" font-weight="bold" fill="#1976d2">ToolExecutor</text>
+        <text x="0" y="88" font-size="10" fill="#666">↳ which tool?</text>
+      </g>
+    </g>
+    
+    <!-- 2. Machine Learning -->
+    <g transform="translate(50, 350)">
+      <rect x="0" y="0" width="1500" height="180" fill="#f3e5f5" opacity="0.5" rx="8"/>
+      
+      <circle cx="100" cy="90" r="40" fill="#9c27b0" opacity="0.8"/>
+      <text x="100" y="75" font-size="28" font-weight="bold" text-anchor="middle" fill="#fff">2</text>
+      <text x="100" y="100" font-size="13" font-weight="bold" text-anchor="middle" fill="#fff">ML</text>
+      
+      <text x="200" y="55" font-size="16" font-weight="bold" fill="#7b1fa2">Machine Learning</text>
+      <text x="200" y="80" font-size="13" fill="#424242" font-style="italic">Adaptation</text>
+      
+      <g transform="translate(400, 40)">
+        <text x="0" y="0" font-size="14" font-family="monospace" fill="#6a1b9a">w ← w - η∇L(w)</text>
+        <text x="0" y="25" font-size="14" font-family="monospace" fill="#6a1b9a">θ_t+1 = θ_t + α·δ_t</text>
+        <text x="0" y="55" font-size="11" fill="#666">Each layer learns</text>
+        <text x="0" y="70" font-size="11" fill="#666">its own parameters</text>
+      </g>
+      
+      <g transform="translate(700, 20)">
+        <text x="0" y="0" font-size="12" fill="#424242">• Motif: learn regex weights</text>
+        <text x="0" y="20" font-size="12" fill="#424242">• Embedding: adjust matrices</text>
+        <text x="0" y="40" font-size="12" fill="#424242">• Memory: learn decay λ</text>
+        <text x="0" y="60" font-size="12" fill="#424242">• Policy: learn utility w</text>
+        <text x="0" y="80" font-size="12" fill="#424242">• Tools: calibration</text>
+        <text x="0" y="105" font-size="11" font-style="italic" fill="#7b1fa2">Ensemble of local learners</text>
+      </g>
+      
+      <g transform="translate(1100, 35)">
+        <text x="0" y="0" font-size="11" font-weight="bold" fill="#7b1fa2">RegexMotif</text>
+        <text x="0" y="18" font-size="10" fill="#666">↳ pattern weights</text>
+        <text x="0" y="35" font-size="11" font-weight="bold" fill="#7b1fa2">SpectralEmbedder</text>
+        <text x="0" y="53" font-size="10" fill="#666">↳ projection matrix</text>
+        <text x="0" y="70" font-size="11" font-weight="bold" fill="#7b1fa2">VectorStore</text>
+        <text x="0" y="88" font-size="10" fill="#666">↳ similarity metric</text>
+      </g>
+    </g>
+    
+    <!-- 3. Differential Equations -->
+    <g transform="translate(50, 550)">
+      <rect x="0" y="0" width="1500" height="180" fill="#e8f5e9" opacity="0.5" rx="8"/>
+      
+      <circle cx="100" cy="90" r="40" fill="#4caf50" opacity="0.8"/>
+      <text x="100" y="75" font-size="28" font-weight="bold" text-anchor="middle" fill="#fff">3</text>
+      <text x="100" y="100" font-size="13" font-weight="bold" text-anchor="middle" fill="#fff">DE</text>
+      
+      <text x="200" y="55" font-size="16" font-weight="bold" fill="#388e3c">Differential Equations</text>
+      <text x="200" y="80" font-size="13" fill="#424242" font-style="italic">Continuous Dynamics</text>
+      
+      <g transform="translate(400, 25)">
+        <text x="0" y="0" font-size="13" font-family="monospace" fill="#2e7d32">dM/dt = -λM + I(t)</text>
+        <text x="0" y="20" font-size="10" fill="#666">memory decay</text>
+        <text x="0" y="40" font-size="13" font-family="monospace" fill="#2e7d32">dα/dt = r(t) - β(α-1)</text>
+        <text x="0" y="60" font-size="10" fill="#666">confidence diffusion</text>
+        <text x="0" y="80" font-size="13" font-family="monospace" fill="#2e7d32">dψ/dt = -Lψ</text>
+        <text x="0" y="100" font-size="10" fill="#666">semantic flow</text>
+      </g>
+      
+      <g transform="translate(700, 25)">
+        <text x="0" y="0" font-size="12" fill="#424242">• Small ODE updates per</text>
+        <text x="0" y="20" font-size="12" fill="#424242">  iteration</text>
+        <text x="0" y="40" font-size="12" fill="#424242">• Smooth adaptation vs</text>
+        <text x="0" y="60" font-size="12" fill="#424242">  discrete jumps</text>
+        <text x="0" y="80" font-size="12" fill="#424242">• Belief evolves along</text>
+        <text x="0" y="100" font-size="12" fill="#424242">  continuous trajectory</text>
+      </g>
+      
+      <g transform="translate(1100, 35)">
+        <text x="0" y="0" font-size="11" font-weight="bold" fill="#388e3c">MemoryManager</text>
+        <text x="0" y="18" font-size="10" fill="#666">↳ decay dynamics</text>
+        <text x="0" y="35" font-size="11" font-weight="bold" fill="#388e3c">Policy</text>
+        <text x="0" y="53" font-size="10" fill="#666">↳ confidence flow</text>
+        <text x="0" y="70" font-size="11" font-weight="bold" fill="#388e3c">Embedder</text>
+        <text x="0" y="88" font-size="10" fill="#666">↳ spectral diffusion</text>
+      </g>
+    </g>
+    
+    <!-- 4. Geometry -->
+    <g transform="translate(50, 750)">
+      <rect x="0" y="0" width="1500" height="180" fill="#fff3e0" opacity="0.5" rx="8"/>
+      
+      <circle cx="100" cy="90" r="40" fill="#ff9800" opacity="0.8"/>
+      <text x="100" y="75" font-size="28" font-weight="bold" text-anchor="middle" fill="#fff">4</text>
+      <text x="100" y="100" font-size="13" font-weight="bold" text-anchor="middle" fill="#fff">GEO</text>
+      
+      <text x="200" y="55" font-size="16" font-weight="bold" fill="#f57c00">Geometry</text>
+      <text x="200" y="80" font-size="13" fill="#424242" font-style="italic">Structure of Thought</text>
+      
+      <g transform="translate(400, 25)">
+        <text x="0" y="0" font-size="13" font-family="monospace" fill="#e65100">M ⊂ ℝ^d</text>
+        <text x="0" y="20" font-size="10" fill="#666">semantic manifold</text>
+        <text x="0" y="40" font-size="13" font-family="monospace" fill="#e65100">x_t+1 = exp_x(-η∇f)</text>
+        <text x="0" y="60" font-size="10" fill="#666">geodesic step</text>
+        <text x="0" y="80" font-size="13" font-family="monospace" fill="#e65100">κ = curvature</text>
+        <text x="0" y="100" font-size="10" fill="#666">metaphor depth</text>
+      </g>
+      
+      <g transform="translate(700, 20)">
+        <text x="0" y="0" font-size="12" fill="#424242">• Embeddings live on</text>
+        <text x="0" y="20" font-size="12" fill="#424242">  curved manifolds</text>
+        <text x="0" y="40" font-size="12" fill="#424242">• Policy moves via</text>
+        <text x="0" y="60" font-size="12" fill="#424242">  geodesics</text>
+        <text x="0" y="80" font-size="12" fill="#424242">• Memory graph = discrete</text>
+        <text x="0" y="100" font-size="12" fill="#424242">  approximation</text>
+      </g>
+      
+      <g transform="translate(1100, 35)">
+        <text x="0" y="0" font-size="11" font-weight="bold" fill="#f57c00">ψ-Space</text>
+        <text x="0" y="18" font-size="10" fill="#666">↳ semantic coords</text>
+        <text x="0" y="35" font-size="11" font-weight="bold" fill="#f57c00">KnowledgeGraph</text>
+        <text x="0" y="53" font-size="10" fill="#666">↳ discrete manifold</text>
+        <text x="0" y="70" font-size="11" font-weight="bold" fill="#f57c00">PolicySpace</text>
+        <text x="0" y="88" font-size="10" fill="#666">↳ action manifold</text>
+      </g>
+    </g>
+    
+    <!-- 5. Meaning -->
+    <g transform="translate(50, 950)">
+      <rect x="0" y="0" width="1500" height="180" fill="#fce4ec" opacity="0.5" rx="8"/>
+      
+      <circle cx="100" cy="90" r="40" fill="#e91e63" opacity="0.8"/>
+      <text x="100" y="75" font-size="28" font-weight="bold" text-anchor="middle" fill="#fff">5</text>
+      <text x="100" y="100" font-size="13" font-weight="bold" text-anchor="middle" fill="#fff">∫</text>
+      
+      <text x="200" y="55" font-size="16" font-weight="bold" fill="#c2185b">Meaning</text>
+      <text x="200" y="80" font-size="13" fill="#424242" font-style="italic">Integration &amp; Emergence</text>
+      
+      <g transform="translate(400, 15)">
+        <text x="0" y="0" font-size="12" fill="#880e4f">motifs → symbols</text>
+        <text x="0" y="20" font-size="12" fill="#880e4f">embeddings → analogies</text>
+        <text x="0" y="40" font-size="12" fill="#880e4f">policies → intent</text>
+        <text x="0" y="60" font-size="12" fill="#880e4f">DEs → continuity</text>
+        <text x="0" y="80" font-size="12" fill="#880e4f">TS → freedom</text>
+        <text x="0" y="105" font-size="11" font-style="italic" fill="#c2185b">Resonance = meaning</text>
+      </g>
+      
+      <g transform="translate(700, 25)">
+        <text x="0" y="0" font-size="12" fill="#424242">observe → infer →</text>
+        <text x="0" y="20" font-size="12" fill="#424242">decide → act → reflect</text>
+        <text x="0" y="50" font-size="12" fill="#424242">Each loop echoes</text>
+        <text x="0" y="70" font-size="12" fill="#424242">the one below it</text>
+        <text x="0" y="95" font-size="11" font-style="italic" fill="#c2185b">"meaning gradient"</text>
+      </g>
+      
+      <g transform="translate(1100, 35)">
+        <text x="0" y="0" font-size="11" font-weight="bold" fill="#c2185b">Orchestrator</text>
+        <text x="0" y="18" font-size="10" fill="#666">↳ the full loop</text>
+        <text x="0" y="35" font-size="11" font-weight="bold" fill="#c2185b">Response</text>
+        <text x="0" y="53" font-size="10" fill="#666">↳ synthesis</text>
+        <text x="0" y="70" font-size="11" font-weight="bold" fill="#c2185b">Experience</text>
+        <text x="0" y="88" font-size="10" fill="#666">↳ persistence</text>
+      </g>
+    </g>
+  </g>
+  
+  <!-- The Recursive Spiral (right side) -->
+  <g id="recursive-spiral" transform="translate(1350, 200)">
+    <text x="0" y="-30" font-size="14" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+      Recursive
+    </text>
+    <text x="0" y="-10" font-size="14" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+      Depth
+    </text>
+    
+    <!-- Spiral showing recursion -->
+    <circle cx="0" cy="100" r="80" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.3"/>
+    <circle cx="0" cy="250" r="70" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.3"/>
+    <circle cx="0" cy="380" r="60" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.3"/>
+    <circle cx="0" cy="490" r="50" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.3"/>
+    <circle cx="0" cy="585" r="40" fill="none" stroke="#e91e63" stroke-width="2" opacity="0.3"/>
+    
+    <text x="0" y="105" font-size="11" text-anchor="middle" fill="#1976d2">Each</text>
+    <text x="0" y="255" font-size="11" text-anchor="middle" fill="#7b1fa2">module</text>
+    <text x="0" y="385" font-size="11" text-anchor="middle" fill="#388e3c">has</text>
+    <text x="0" y="495" font-size="11" text-anchor="middle" fill="#f57c00">all</text>
+    <text x="0" y="590" font-size="11" text-anchor="middle" fill="#c2185b">five</text>
+    
+    <path d="M 0 180 Q 30 215, 0 250" fill="none" stroke="#667eea" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M 0 320 Q 30 350, 0 380" fill="none" stroke="#667eea" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M 0 440 Q 30 465, 0 490" fill="none" stroke="#667eea" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M 0 540 Q 30 562, 0 585" fill="none" stroke="#667eea" stroke-width="2" marker-end="url(#arrow)"/>
+  </g>
+  
+  <!-- Bottom synthesis -->
+  <g transform="translate(50, 1150)">
+    <rect x="0" y="0" width="1300" height="60" fill="url(#manifold-gradient)" opacity="0.2" rx="10"/>
+    <text x="650" y="25" font-size="16" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+      One-Line Synthesis
+    </text>
+    <text x="650" y="48" font-size="14" text-anchor="middle" fill="#424242" font-style="italic">
+      TS is curiosity · ML is adaptation · DE is evolution · Geometry is structure · Meaning is emergence
+    </text>
+  </g>
+</svg>
