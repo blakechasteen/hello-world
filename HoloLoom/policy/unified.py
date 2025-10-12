@@ -52,8 +52,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # Import only from shared types and embedding (package-relative)
-from Documentation.types import Features, Context, ActionPlan, Decision
-from embedding.spectral import MatryoshkaEmbeddings
+from HoloLoom.Documentation.types import Features, Context, ActionPlan, Decision
+from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 
 
 # ============================================================================
@@ -1118,7 +1118,8 @@ class SimpleUnifiedPolicy(nn.Module):
         elif self.policy_type == 'categorical':
             logits = self.logit_head(h)
             probs = torch.softmax(logits, dim=-1)
-            out = {'logits': logits, 'action_probs': probs}
+            value = self.value_head(h).squeeze(-1)
+            out = {'logits': logits, 'action_probs': probs, 'value': value}
             # provide mean as raw logits-projection for hierarchical use
             out['mean'] = self.action_head(h)
 
@@ -1130,7 +1131,8 @@ class SimpleUnifiedPolicy(nn.Module):
             else:
                 log_std = self.log_std.unsqueeze(0).expand(h.size(0), -1)
                 std = torch.exp(log_std)
-            out = {'mean': mean, 'std': std, 'log_std': log_std}
+            value = self.value_head(h).squeeze(-1)
+            out = {'mean': mean, 'std': std, 'log_std': log_std, 'value': value}
 
         else:
             raise ValueError(f'Unknown policy_type: {self.policy_type}')
@@ -1166,7 +1168,8 @@ class SimpleUnifiedPolicy(nn.Module):
         else:
             raise NotImplementedError
 
-    def sample_action(self, x: torch.Tensor):
+    def sample_action(self, x: torch.Tensor, deterministic: bool = False):
+        """Sample an action from the policy. If deterministic=True, return the mode/mean."""
         out = self.forward(x)
         if self.policy_type == 'deterministic':
             info = {}
@@ -1175,7 +1178,10 @@ class SimpleUnifiedPolicy(nn.Module):
             return out['action'], info
         elif self.policy_type == 'categorical':
             probs = out['action_probs']
-            sample = torch.multinomial(probs, num_samples=1).squeeze(-1)
+            if deterministic:
+                sample = torch.argmax(probs, dim=-1)
+            else:
+                sample = torch.multinomial(probs, num_samples=1).squeeze(-1)
             info = {'probs': probs}
             if 'skill' in out:
                 info['skill'] = out['skill']
@@ -1183,8 +1189,11 @@ class SimpleUnifiedPolicy(nn.Module):
         elif self.policy_type == 'gaussian':
             mean = out['mean']
             std = out['std']
-            eps = torch.randn_like(mean)
-            sample = mean + eps * std
+            if deterministic:
+                sample = mean
+            else:
+                eps = torch.randn_like(mean)
+                sample = mean + eps * std
             info = {'mean': mean, 'std': std}
             if 'skill' in out:
                 info['skill'] = out['skill']
@@ -1199,6 +1208,11 @@ class SimpleUnifiedPolicy(nn.Module):
             return out['intrinsic_reward']
         # default zero
         return torch.zeros(state.size(0))
+
+    def get_value(self, x: torch.Tensor) -> torch.Tensor:
+        """Return state value for given input tensor x."""
+        h = self._encode(x)
+        return self.value_head(h).squeeze(-1)
 
 
 # Export the test-friendly symbol name expected by the tests
