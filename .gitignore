@@ -1,0 +1,34 @@
+.venv/
+.vscode/
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.env
+.env.*
+logs/
+logs/*
+*.log
+.DS_Store
+.idea/
+coverage/
+htmlcov/
+.ipynb_checkpoints/
+# OS files
+Thumbs.db
+desktop.ini
+
+# Mac
+*.DS_Store
+
+# Virtualenv
+pip-wheel-metadata/
+instance/
+
+# PyTorch
+torch_model.pt
+*.pt
+
+# Release artifacts
+*.zip
+
