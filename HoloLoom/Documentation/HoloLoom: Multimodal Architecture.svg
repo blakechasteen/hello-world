@@ -1,0 +1,245 @@
+<svg viewBox="0 0 1600 1100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#2c3e50" />
+    </marker>
+    <linearGradient id="psi-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Title -->
+  <text x="800" y="40" font-size="28" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+    HoloLoom: Multimodal Architecture
+  </text>
+  <text x="800" y="70" font-size="14" text-anchor="middle" fill="#7f8c8d" font-style="italic">
+    All modalities → Unified ψ-space → Semantic manifold
+  </text>
+  
+  <!-- Input Modalities (Top) -->
+  <g id="inputs">
+    <rect x="50" y="110" width="1500" height="180" fill="#ecf0f1" opacity="0.3" rx="10"/>
+    <text x="800" y="140" font-size="18" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+      📥 Input Modalities
+    </text>
+    
+    <!-- Text -->
+    <g transform="translate(150, 160)">
+      <rect x="0" y="0" width="200" height="100" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="5"/>
+      <text x="100" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">📝 Text</text>
+      <text x="100" y="55" font-size="11" text-anchor="middle" fill="#ecf0f1">"What is Thompson</text>
+      <text x="100" y="70" font-size="11" text-anchor="middle" fill="#ecf0f1">Sampling?"</text>
+      <text x="100" y="90" font-size="10" text-anchor="middle" fill="#d5f4e6">Natural language</text>
+    </g>
+    
+    <!-- Code -->
+    <g transform="translate(400, 160)">
+      <rect x="0" y="0" width="200" height="100" fill="#9b59b6" stroke="#2c3e50" stroke-width="2" rx="5"/>
+      <text x="100" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">💻 Code</text>
+      <text x="100" y="55" font-size="10" font-family="monospace" text-anchor="middle" fill="#ecf0f1">def choose_arm():</text>
+      <text x="100" y="70" font-size="10" font-family="monospace" text-anchor="middle" fill="#ecf0f1">  return max(...)</text>
+      <text x="100" y="90" font-size="10" text-anchor="middle" fill="#e8daef">Python, JS, etc.</text>
+    </g>
+    
+    <!-- Image -->
+    <g transform="translate(650, 160)">
+      <rect x="0" y="0" width="200" height="100" fill="#e67e22" stroke="#2c3e50" stroke-width="2" rx="5"/>
+      <text x="100" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">🖼️ Image</text>
+      <text x="100" y="60" font-size="11" text-anchor="middle" fill="#fdebd0">Visual content:</text>
+      <text x="100" y="75" font-size="11" text-anchor="middle" fill="#fdebd0">diagrams, photos,</text>
+      <text x="100" y="90" font-size="11" text-anchor="middle" fill="#fdebd0">visualizations</text>
+    </g>
+    
+    <!-- Audio -->
+    <g transform="translate(900, 160)">
+      <rect x="0" y="0" width="200" height="100" fill="#1abc9c" stroke="#2c3e50" stroke-width="2" rx="5"/>
+      <text x="100" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">🎵 Audio</text>
+      <text x="100" y="60" font-size="11" text-anchor="middle" fill="#d5f4e6">Speech → text</text>
+      <text x="100" y="75" font-size="11" text-anchor="middle" fill="#d5f4e6">Music → features</text>
+      <text x="100" y="90" font-size="11" text-anchor="middle" fill="#d5f4e6">Sounds → concepts</text>
+    </g>
+    
+    <!-- Video -->
+    <g transform="translate(1150, 160)">
+      <rect x="0" y="0" width="200" height="100" fill="#e74c3c" stroke="#2c3e50" stroke-width="2" rx="5"/>
+      <text x="100" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">🎬 Video</text>
+      <text x="100" y="60" font-size="11" text-anchor="middle" fill="#fadbd8">Frames + audio</text>
+      <text x="100" y="75" font-size="11" text-anchor="middle" fill="#fadbd8">Temporal dynamics</text>
+      <text x="100" y="90" font-size="11" text-anchor="middle" fill="#fadbd8">Action recognition</text>
+    </g>
+  </g>
+  
+  <!-- Encoders (arrows down) -->
+  <g id="encoder-arrows">
+    <path d="M 250 290 L 250 350" stroke="#3498db" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M 500 290 L 500 350" stroke="#9b59b6" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M 750 290 L 750 350" stroke="#e67e22" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M 1000 290 L 1000 350" stroke="#1abc9c" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M 1250 290 L 1250 350" stroke="#e74c3c" stroke-width="3" marker-end="url(#arrow)"/>
+  </g>
+  
+  <!-- Modality Encoders -->
+  <g id="encoders">
+    <rect x="50" y="320" width="1500" height="140" fill="#d5f4e6" opacity="0.3" rx="10"/>
+    <text x="800" y="345" font-size="18" font-weight="bold" text-anchor="middle" fill="#27ae60">
+      🧠 Modality Encoders (Each with TS + ML + DE + Geometry + Meaning)
+    </text>
+    
+    <g transform="translate(150, 360)">
+      <rect x="0" y="0" width="200" height="70" fill="#fff" stroke="#3498db" stroke-width="2" rx="5"/>
+      <text x="100" y="25" font-size="12" font-weight="bold" text-anchor="middle" fill="#3498db">TextEncoder</text>
+      <text x="100" y="45" font-size="10" text-anchor="middle" fill="#7f8c8d">BERT, transformers</text>
+      <text x="100" y="60" font-size="9" text-anchor="middle" fill="#3498db">→ ψ_text ∈ ℝ^d</text>
+    </g>
+    
+    <g transform="translate(400, 360)">
+      <rect x="0" y="0" width="200" height="70" fill="#fff" stroke="#9b59b6" stroke-width="2" rx="5"/>
+      <text x="100" y="25" font-size="12" font-weight="bold" text-anchor="middle" fill="#9b59b6">CodeEncoder</text>
+      <text x="100" y="45" font-size="10" text-anchor="middle" fill="#7f8c8d">AST + CodeBERT</text>
+      <text x="100" y="60" font-size="9" text-anchor="middle" fill="#9b59b6">→ ψ_code ∈ ℝ^d</text>
+    </g>
+    
+    <g transform="translate(650, 360)">
+      <rect x="0" y="0" width="200" height="70" fill="#fff" stroke="#e67e22" stroke-width="2" rx="5"/>
+      <text x="100" y="25" font-size="12" font-weight="bold" text-anchor="middle" fill="#e67e22">ImageEncoder</text>
+      <text x="100" y="45" font-size="10" text-anchor="middle" fill="#7f8c8d">CLIP, ViT</text>
+      <text x="100" y="60" font-size="9" text-anchor="middle" fill="#e67e22">→ ψ_image ∈ ℝ^d</text>
+    </g>
+    
+    <g transform="translate(900, 360)">
+      <rect x="0" y="0" width="200" height="70" fill="#fff" stroke="#1abc9c" stroke-width="2" rx="5"/>
+      <text x="100" y="25" font-size="12" font-weight="bold" text-anchor="middle" fill="#1abc9c">AudioEncoder</text>
+      <text x="100" y="45" font-size="10" text-anchor="middle" fill="#7f8c8d">Whisper + Wav2Vec</text>
+      <text x="100" y="60" font-size="9" text-anchor="middle" fill="#1abc9c">→ ψ_audio ∈ ℝ^d</text>
+    </g>
+    
+    <g transform="translate(1150, 360)">
+      <rect x="0" y="0" width="200" height="70" fill="#fff" stroke="#e74c3c" stroke-width="2" rx="5"/>
+      <text x="100" y="25" font-size="12" font-weight="bold" text-anchor="middle" fill="#e74c3c">VideoEncoder</text>
+      <text x="100" y="45" font-size="10" text-anchor="middle" fill="#7f8c8d">TimeSformer</text>
+      <text x="100" y="60" font-size="9" text-anchor="middle" fill="#e74c3c">→ ψ_video ∈ ℝ^d</text>
+    </g>
+  </g>
+  
+  <!-- Convergence to unified space -->
+  <g id="convergence">
+    <path d="M 250 460 L 650 550" stroke="#667eea" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)"/>
+    <path d="M 500 460 L 700 550" stroke="#667eea" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)"/>
+    <path d="M 750 460 L 750 550" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M 1000 460 L 800 550" stroke="#667eea" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)"/>
+    <path d="M 1250 460 L 850 550" stroke="#667eea" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)"/>
+  </g>
+  
+  <!-- Unified ψ-Space (The Manifold) -->
+  <g id="psi-space">
+    <ellipse cx="800" cy="620" rx="350" ry="150" fill="url(#psi-gradient)" opacity="0.2"/>
+    <ellipse cx="800" cy="620" rx="350" ry="150" fill="none" stroke="url(#psi-gradient)" stroke-width="3"/>
+    
+    <text x="800" y="580" font-size="20" font-weight="bold" text-anchor="middle" fill="#667eea">
+      ψ-Space: Unified Semantic Manifold
+    </text>
+    <text x="800" y="610" font-size="14" text-anchor="middle" fill="#764ba2">
+      M ⊂ ℝ^d (Hyperbolic manifold, ||ψ|| &lt; 1)
+    </text>
+    
+    <!-- Sample points in ψ-space -->
+    <circle cx="700" cy="640" r="6" fill="#3498db" opacity="0.7"/>
+    <text x="700" y="660" font-size="9" text-anchor="middle" fill="#3498db">ψ_text</text>
+    
+    <circle cx="850" cy="630" r="6" fill="#9b59b6" opacity="0.7"/>
+    <text x="850" y="650" font-size="9" text-anchor="middle" fill="#9b59b6">ψ_code</text>
+    
+    <circle cx="780" cy="680" r="6" fill="#e67e22" opacity="0.7"/>
+    <text x="780" y="700" font-size="9" text-anchor="middle" fill="#e67e22">ψ_image</text>
+    
+    <circle cx="900" cy="670" r="6" fill="#1abc9c" opacity="0.7"/>
+    <text x="900" y="690" font-size="9" text-anchor="middle" fill="#1abc9c">ψ_audio</text>
+    
+    <!-- Geodesic between points -->
+    <path d="M 700 640 Q 775 655, 850 630" fill="none" stroke="#667eea" stroke-width="2" stroke-dasharray="3,3"/>
+    <text x="775" y="645" font-size="9" fill="#667eea">geodesic</text>
+    
+    <text x="800" y="730" font-size="12" font-style="italic" text-anchor="middle" fill="#764ba2">
+      All modalities live on the same continuous manifold
+    </text>
+  </g>
+  
+  <!-- Fusion Layer -->
+  <g id="fusion">
+    <path d="M 800 770 L 800 830" stroke="#f39c12" stroke-width="4" marker-end="url(#arrow)"/>
+    
+    <rect x="550" y="830" width="500" height="120" fill="#fff9c4" stroke="#f39c12" stroke-width="3" rx="10"/>
+    <text x="800" y="860" font-size="18" font-weight="bold" text-anchor="middle" fill="#f39c12">
+      🔀 Multimodal Fusion
+    </text>
+    
+    <g transform="translate(580, 875)">
+      <text x="0" y="0" font-size="12" font-weight="bold" fill="#2c3e50">Early Fusion:</text>
+      <text x="0" y="18" font-size="11" font-family="monospace" fill="#7f8c8d">ψ_fused = Σ w_i · ψ_i</text>
+      
+      <text x="160" y="0" font-size="12" font-weight="bold" fill="#2c3e50">Late Fusion:</text>
+      <text x="160" y="18" font-size="11" font-family="monospace" fill="#7f8c8d">score_i → weighted avg</text>
+      
+      <text x="340" y="0" font-size="12" font-weight="bold" fill="#2c3e50">Hybrid:</text>
+      <text x="340" y="18" font-size="11" font-family="monospace" fill="#7f8c8d">attention(ψ_i)</text>
+    </g>
+    
+    <text x="800" y="935" font-size="11" text-anchor="middle" fill="#f57f17">
+      Learned weights (ML) + Geometric projection + Attention
+    </text>
+  </g>
+  
+  <!-- Output to Policy/Memory -->
+  <g id="output">
+    <path d="M 800 950 L 500 1020" stroke="#27ae60" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M 800 950 L 800 1020" stroke="#27ae60" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M 800 950 L 1100 1020" stroke="#27ae60" stroke-width="3" marker-end="url(#arrow)"/>
+    
+    <!-- Policy -->
+    <g transform="translate(350, 1020)">
+      <rect x="0" y="0" width="200" height="60" fill="#a5d6a7" stroke="#27ae60" stroke-width="2" rx="5"/>
+      <text x="100" y="25" font-size="14" font-weight="bold" text-anchor="middle" fill="#1b5e20">Policy</text>
+      <text x="100" y="45" font-size="10" text-anchor="middle" fill="#2e7d32">Unified decision</text>
+    </g>
+    
+    <!-- Memory -->
+    <g transform="translate(650, 1020)">
+      <rect x="0" y="0" width="200" height="60" fill="#ce93d8" stroke="#8e24aa" stroke-width="2" rx="5"/>
+      <text x="100" y="25" font-size="14" font-weight="bold" text-anchor="middle" fill="#4a148c">Memory</text>
+      <text x="100" y="45" font-size="10" text-anchor="middle" fill="#6a1b9a">Cross-modal retrieval</text>
+    </g>
+    
+    <!-- Tools -->
+    <g transform="translate(950, 1020)">
+      <rect x="0" y="0" width="200" height="60" fill="#ffcc80" stroke="#e67e22" stroke-width="2" rx="5"/>
+      <text x="100" y="25" font-size="14" font-weight="bold" text-anchor="middle" fill="#e65100">Tools</text>
+      <text x="100" y="45" font-size="10" text-anchor="middle" fill="#bf360c">Modality-aware</text>
+    </g>
+  </g>
+  
+  <!-- Key insights box -->
+  <g transform="translate(50, 490)">
+    <rect x="0" y="0" width="450" height="110" fill="#e3f2fd" stroke="#2196f3" stroke-width="2" rx="5"/>
+    <text x="225" y="25" font-size="14" font-weight="bold" text-anchor="middle" fill="#1565c0">
+      💡 Key Insights
+    </text>
+    <text x="10" y="48" font-size="11" fill="#2c3e50">• Same dimensionality d for all modalities</text>
+    <text x="10" y="65" font-size="11" fill="#2c3e50">• Distance: d(ψ_i, ψ_j) uses hyperbolic metric</text>
+    <text x="10" y="82" font-size="11" fill="#2c3e50">• Alignment: Text-image pairs map to nearby</text>
+    <text x="10" y="99" font-size="11" fill="#2c3e50">  points via contrastive learning</text>
+  </g>
+  
+  <!-- Five principles box -->
+  <g transform="translate(1100, 490)">
+    <rect x="0" y="0" width="450" height="110" fill="#f3e5f5" stroke="#8e24aa" stroke-width="2" rx="5"/>
+    <text x="225" y="25" font-size="14" font-weight="bold" text-anchor="middle" fill="#6a1b9a">
+      🌀 Five Principles
+    </text>
+    <text x="10" y="45" font-size="10" fill="#2c3e50">1. TS: Choose encoder strategy per modality</text>
+    <text x="10" y="60" font-size="10" fill="#2c3e50">2. ML: Learn fusion weights w_i online</text>
+    <text x="10" y="75" font-size="10" fill="#2c3e50">3. DE: Semantic diffusion across modalities</text>
+    <text x="10" y="90" font-size="10" fill="#2c3e50">4. Geo: Manifold projection to hyperbolic space</text>
+    <text x="10" y="105" font-size="10" fill="#2c3e50">5. Meaning: Cross-modal resonance scores</text>
+  </g>
+</svg>

@@ -1,0 +1,702 @@
+"""
+Complete Training Example - Neural Decision Engine
+
+A full training loop demonstrating:
+- Environment interaction
+- Data collection with rollouts
+- PPO training with curiosity
+- Logging and checkpointing
+- Evaluation
+- Support for various environments
+
+Requirements:
+    pip install torch numpy gymnasium matplotlib tensorboard
+"""
+
+import torch
+import numpy as np
+import gymnasium as gym
+from typing import Dict, List, Tuple, Optional
+import time
+from pathlib import Path
+import json
+from collections import deque
+import matplotlib.pyplot as plt
+
+try:
+    from torch.utils.tensorboard import SummaryWriter
+    TENSORBOARD_AVAILABLE = True
+except ImportError:
+    TENSORBOARD_AVAILABLE = False
+    print("TensorBoard not available. Install with: pip install tensorboard")
+
+from policy.unified import UnifiedPolicy, PPOAgent, PPOConfig
+
+
+# ============================================================================
+# ROLLOUT BUFFER
+# ============================================================================
+
+class RolloutBuffer:
+    """
+    Buffer for storing and managing rollout data.
+    Handles trajectory collection for PPO training.
+    """
+    
+    def __init__(self, buffer_size: int, state_dim: int, action_dim: int, 
+                 device: str = 'cpu', is_discrete: bool = False):
+        self.buffer_size = buffer_size
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.device = device
+        self.is_discrete = is_discrete
+        self.reset()
+    
+    def reset(self):
+        """Clear the buffer."""
+        self.states = torch.zeros((self.buffer_size, self.state_dim), device=self.device)
+        
+        if self.is_discrete:
+            self.actions = torch.zeros(self.buffer_size, dtype=torch.long, device=self.device)
+        else:
+            self.actions = torch.zeros((self.buffer_size, self.action_dim), device=self.device)
+        
+        self.log_probs = torch.zeros(self.buffer_size, device=self.device)
+        self.rewards = torch.zeros(self.buffer_size, device=self.device)
+        self.values = torch.zeros(self.buffer_size, device=self.device)
+        self.dones = torch.zeros(self.buffer_size, device=self.device)
+        self.next_states = torch.zeros((self.buffer_size, self.state_dim), device=self.device)
+        
+        self.ptr = 0
+        self.path_start_idx = 0
+    
+    def add(self, state: np.ndarray, action, log_prob: float, reward: float, 
+            value: float, done: bool, next_state: np.ndarray):
+        """Add a transition to the buffer."""
+        assert self.ptr < self.buffer_size, "Buffer overflow"
+        
+        self.states[self.ptr] = torch.from_numpy(state).float()
+        
+        if self.is_discrete:
+            self.actions[self.ptr] = action
+        else:
+            self.actions[self.ptr] = torch.from_numpy(action).float()
+        
+        self.log_probs[self.ptr] = log_prob
+        self.rewards[self.ptr] = reward
+        self.values[self.ptr] = value
+        self.dones[self.ptr] = done
+        self.next_states[self.ptr] = torch.from_numpy(next_state).float()
+        
+        self.ptr += 1
+    
+    def is_full(self) -> bool:
+        """Check if buffer is full."""
+        return self.ptr >= self.buffer_size
+    
+    def get(self) -> Tuple[torch.Tensor, ...]:
+        """Get all data from the buffer."""
+        assert self.is_full(), "Buffer not full"
+        return (
+            self.states,
+            self.actions,
+            self.log_probs,
+            self.rewards,
+            self.values,
+            self.dones,
+            self.next_states
+        )
+
+
+# ============================================================================
+# TRAINING LOGGER
+# ============================================================================
+
+class TrainingLogger:
+    """Handles logging to console, tensorboard, and files."""
+    
+    def __init__(self, log_dir: str, use_tensorboard: bool = True):
+        self.log_dir = Path(log_dir)
+        self.log_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.use_tensorboard = use_tensorboard and TENSORBOARD_AVAILABLE
+        if self.use_tensorboard:
+            self.writer = SummaryWriter(log_dir=str(self.log_dir / 'tensorboard'))
+        
+        # Metrics storage
+        self.episode_rewards = deque(maxlen=100)
+        self.episode_lengths = deque(maxlen=100)
+        self.metrics_history = {
+            'episode_reward': [],
+            'episode_length': [],
+            'policy_loss': [],
+            'value_loss': [],
+            'entropy': [],
+            'intrinsic_reward': []
+        }
+    
+    def log_episode(self, episode: int, reward: float, length: int, 
+                    intrinsic_reward: float = 0):
+        """Log episode statistics."""
+        self.episode_rewards.append(reward)
+        self.episode_lengths.append(length)
+        
+        self.metrics_history['episode_reward'].append(reward)
+        self.metrics_history['episode_length'].append(length)
+        self.metrics_history['intrinsic_reward'].append(intrinsic_reward)
+        
+        if self.use_tensorboard:
+            self.writer.add_scalar('Episode/Reward', reward, episode)
+            self.writer.add_scalar('Episode/Length', length, episode)
+            self.writer.add_scalar('Episode/IntrinsicReward', intrinsic_reward, episode)
+    
+    def log_training(self, update: int, metrics: Dict[str, float]):
+        """Log training metrics."""
+        for key, value in metrics.items():
+            if key in self.metrics_history:
+                self.metrics_history[key].append(value)
+            
+            if self.use_tensorboard:
+                self.writer.add_scalar(f'Training/{key}', value, update)
+    
+    def print_progress(self, episode: int, total_episodes: int, 
+                      total_timesteps: int, fps: float):
+        """Print training progress."""
+        if len(self.episode_rewards) > 0:
+            mean_reward = np.mean(self.episode_rewards)
+            mean_length = np.mean(self.episode_lengths)
+            
+            print(f"Episode: {episode:>6}/{total_episodes} | "
+                  f"Steps: {total_timesteps:>8} | "
+                  f"FPS: {fps:>6.0f} | "
+                  f"Reward: {mean_reward:>7.2f} (±{np.std(self.episode_rewards):>6.2f}) | "
+                  f"Length: {mean_length:>6.1f}")
+    
+    def save_metrics(self):
+        """Save metrics to JSON file."""
+        metrics_path = self.log_dir / 'metrics.json'
+        with open(metrics_path, 'w') as f:
+            json.dump(self.metrics_history, f, indent=2)
+    
+    def plot_training(self, save_path: Optional[str] = None):
+        """Plot training curves."""
+        fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+        
+        # Reward curve
+        if self.metrics_history['episode_reward']:
+            axes[0, 0].plot(self.metrics_history['episode_reward'], alpha=0.3)
+            # Moving average
+            window = min(100, len(self.metrics_history['episode_reward']) // 10)
+            if window > 1:
+                ma = np.convolve(self.metrics_history['episode_reward'], 
+                               np.ones(window)/window, mode='valid')
+                axes[0, 0].plot(ma, linewidth=2)
+            axes[0, 0].set_title('Episode Reward')
+            axes[0, 0].set_xlabel('Episode')
+            axes[0, 0].set_ylabel('Reward')
+            axes[0, 0].grid(True, alpha=0.3)
+        
+        # Episode length
+        if self.metrics_history['episode_length']:
+            axes[0, 1].plot(self.metrics_history['episode_length'], alpha=0.6)
+            axes[0, 1].set_title('Episode Length')
+            axes[0, 1].set_xlabel('Episode')
+            axes[0, 1].set_ylabel('Steps')
+            axes[0, 1].grid(True, alpha=0.3)
+        
+        # Policy loss
+        if self.metrics_history['policy_loss']:
+            axes[1, 0].plot(self.metrics_history['policy_loss'])
+            axes[1, 0].set_title('Policy Loss')
+            axes[1, 0].set_xlabel('Update')
+            axes[1, 0].set_ylabel('Loss')
+            axes[1, 0].grid(True, alpha=0.3)
+        
+        # Entropy
+        if self.metrics_history['entropy']:
+            axes[1, 1].plot(self.metrics_history['entropy'])
+            axes[1, 1].set_title('Policy Entropy')
+            axes[1, 1].set_xlabel('Update')
+            axes[1, 1].set_ylabel('Entropy')
+            axes[1, 1].grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path, dpi=150, bbox_inches='tight')
+            print(f"Training plot saved to {save_path}")
+        else:
+            plt.savefig(self.log_dir / 'training_curves.png', dpi=150, bbox_inches='tight')
+        
+        plt.close()
+    
+    def close(self):
+        """Close the logger."""
+        if self.use_tensorboard:
+            self.writer.close()
+
+
+# ============================================================================
+# ENVIRONMENT WRAPPER
+# ============================================================================
+
+class NormalizedEnv(gym.Wrapper):
+    """
+    Wrapper to normalize observations and rewards.
+    Helps with training stability.
+    """
+    
+    def __init__(self, env, normalize_obs: bool = True, normalize_reward: bool = True,
+                 clip_obs: float = 10.0, clip_reward: float = 10.0, gamma: float = 0.99):
+        super().__init__(env)
+        self.normalize_obs = normalize_obs
+        self.normalize_reward = normalize_reward
+        self.clip_obs = clip_obs
+        self.clip_reward = clip_reward
+        self.gamma = gamma
+        
+        # Running statistics
+        self.obs_mean = np.zeros(env.observation_space.shape)
+        self.obs_var = np.ones(env.observation_space.shape)
+        self.obs_count = 1e-4
+        
+        self.return_val = 0
+        self.reward_var = 1.0
+        self.reward_count = 1e-4
+    
+    def _update_obs_stats(self, obs):
+        """Update observation statistics."""
+        self.obs_count += 1
+        delta = obs - self.obs_mean
+        self.obs_mean += delta / self.obs_count
+        self.obs_var += delta * (obs - self.obs_mean)
+    
+    def _normalize_obs(self, obs):
+        """Normalize observation."""
+        if self.normalize_obs:
+            self._update_obs_stats(obs)
+            std = np.sqrt(self.obs_var / self.obs_count)
+            obs = (obs - self.obs_mean) / (std + 1e-8)
+            obs = np.clip(obs, -self.clip_obs, self.clip_obs)
+        return obs
+    
+    def _normalize_reward(self, reward):
+        """Normalize reward."""
+        if self.normalize_reward:
+            self.return_val = self.return_val * self.gamma + reward
+            self.reward_count += 1
+            delta = self.return_val - self.reward_var
+            self.reward_var += delta / self.reward_count
+            reward = reward / (np.sqrt(self.reward_var) + 1e-8)
+            reward = np.clip(reward, -self.clip_reward, self.clip_reward)
+        return reward
+    
+    def reset(self, **kwargs):
+        obs, info = self.env.reset(**kwargs)
+        self.return_val = 0
+        return self._normalize_obs(obs), info
+    
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+        return self._normalize_obs(obs), self._normalize_reward(reward), terminated, truncated, info
+
+
+# ============================================================================
+# TRAINER CLASS
+# ============================================================================
+
+class PPOTrainer:
+    """
+    Main trainer class for PPO with the unified policy.
+    """
+    
+    def __init__(
+        self,
+        env_name: str = "LunarLander-v2",
+        # Policy config
+        use_icm: bool = False,
+        use_rnd: bool = False,
+        use_hierarchical: bool = False,
+        use_attention: bool = False,
+        hidden_dims: List[int] = [256, 256],
+        # Training config
+        total_timesteps: int = 1_000_000,
+        steps_per_update: int = 2048,
+        batch_size: int = 64,
+        n_epochs: int = 10,
+        learning_rate: float = 3e-4,
+        # PPO config
+        ppo_config: Optional[PPOConfig] = None,
+        # Environment config
+        normalize_env: bool = True,
+        # Logging
+        log_dir: str = './logs',
+        save_freq: int = 10,
+        eval_freq: int = 10,
+        n_eval_episodes: int = 5,
+        # Device
+        device: Optional[str] = None
+    ):
+        self.env_name = env_name
+        self.total_timesteps = total_timesteps
+        self.steps_per_update = steps_per_update
+        self.batch_size = batch_size
+        self.n_epochs = n_epochs
+        self.save_freq = save_freq
+        self.eval_freq = eval_freq
+        self.n_eval_episodes = n_eval_episodes
+        
+        # Device setup
+        if device is None:
+            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        else:
+            self.device = device
+        print(f"Using device: {self.device}")
+        
+        # Create environment
+        self.env = gym.make(env_name)
+        if normalize_env:
+            self.env = NormalizedEnv(self.env)
+        
+        # Environment info
+        self.state_dim = self.env.observation_space.shape[0]
+        self.is_discrete = isinstance(self.env.action_space, gym.spaces.Discrete)
+        
+        if self.is_discrete:
+            self.action_dim = self.env.action_space.n
+            self.policy_type = 'categorical'
+        else:
+            self.action_dim = self.env.action_space.shape[0]
+            self.policy_type = 'gaussian'
+        
+        print(f"Environment: {env_name}")
+        print(f"State dim: {self.state_dim}, Action dim: {self.action_dim}")
+        print(f"Policy type: {self.policy_type}")
+        
+        # Create policy
+        self.policy = UnifiedPolicy(
+            input_dim=self.state_dim,
+            action_dim=self.action_dim,
+            hidden_dims=hidden_dims,
+            policy_type=self.policy_type,
+            use_attention=use_attention,
+            use_icm=use_icm,
+            use_rnd=use_rnd,
+            use_hierarchical=use_hierarchical
+        ).to(self.device)
+        
+        print(f"Policy features: ICM={use_icm}, RND={use_rnd}, "
+              f"Hierarchical={use_hierarchical}, Attention={use_attention}")
+        
+        # Create PPO agent
+        if ppo_config is None:
+            ppo_config = PPOConfig()
+        
+        self.agent = PPOAgent(
+            self.policy,
+            config=ppo_config,
+            lr=learning_rate,
+            device=self.device
+        )
+        
+        # Rollout buffer
+        self.buffer = RolloutBuffer(
+            steps_per_update,
+            self.state_dim,
+            self.action_dim,
+            device=self.device,
+            is_discrete=self.is_discrete
+        )
+        
+        # Logger
+        self.logger = TrainingLogger(log_dir)
+        
+        # Checkpointing
+        self.checkpoint_dir = Path(log_dir) / 'checkpoints'
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Training state
+        self.total_steps = 0
+        self.episode_count = 0
+        self.update_count = 0
+    
+    def collect_rollouts(self) -> Dict[str, float]:
+        """Collect a batch of experiences."""
+        self.buffer.reset()
+        
+        state, _ = self.env.reset()
+        episode_reward = 0
+        episode_length = 0
+        episode_intrinsic_reward = 0
+        episodes_finished = 0
+        
+        for step in range(self.steps_per_update):
+            # Convert state to tensor
+            state_tensor = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
+            
+            # Sample action
+            with torch.no_grad():
+                if self.is_discrete:
+                    outputs = self.policy(state_tensor)
+                    action_probs = outputs['action_probs']
+                    dist = torch.distributions.Categorical(action_probs)
+                    action = dist.sample()
+                    log_prob = dist.log_prob(action)
+                    action_np = action.item()
+                else:
+                    outputs = self.policy(state_tensor)
+                    mean = outputs['mean']
+                    std = outputs['std']
+                    dist = torch.distributions.Normal(mean, std)
+                    action = dist.sample()
+                    log_prob = dist.log_prob(action).sum(dim=-1)
+                    action_np = action.cpu().numpy()[0]
+                
+                value = outputs['value'].item()
+            
+            # Step environment
+            next_state, reward, terminated, truncated, info = self.env.step(action_np)
+            done = terminated or truncated
+            
+            # Compute intrinsic reward
+            intrinsic_reward = 0
+            if self.policy.use_icm or self.policy.use_rnd:
+                with torch.no_grad():
+                    next_state_tensor = torch.from_numpy(next_state).float().unsqueeze(0).to(self.device)
+                    if self.is_discrete:
+                        action_tensor = torch.zeros(1, self.action_dim, device=self.device)
+                        action_tensor[0, action.item()] = 1.0
+                    else:
+                        action_tensor = action
+                    
+                    intrinsic = self.policy.compute_intrinsic_reward(
+                        state_tensor, action_tensor, next_state_tensor
+                    )
+                    intrinsic_reward = intrinsic.item()
+            
+            total_reward = reward + 0.1 * intrinsic_reward  # Scale intrinsic reward
+            
+            # Store transition
+            self.buffer.add(
+                state, action_np, log_prob.item(), total_reward,
+                value, done, next_state
+            )
+            
+            # Update state
+            state = next_state
+            episode_reward += reward
+            episode_length += 1
+            episode_intrinsic_reward += intrinsic_reward
+            self.total_steps += 1
+            
+            # Handle episode end
+            if done:
+                self.logger.log_episode(
+                    self.episode_count,
+                    episode_reward,
+                    episode_length,
+                    episode_intrinsic_reward
+                )
+                
+                episodes_finished += 1
+                self.episode_count += 1
+                
+                state, _ = self.env.reset()
+                episode_reward = 0
+                episode_length = 0
+                episode_intrinsic_reward = 0
+        
+        return {
+            'episodes_finished': episodes_finished,
+            'total_steps': self.total_steps
+        }
+    
+    def update_policy(self) -> Dict[str, float]:
+        """Update the policy using collected rollouts."""
+        # Get data from buffer
+        states, actions, log_probs_old, rewards, values, dones, next_states = self.buffer.get()
+        
+        # Compute next value for GAE
+        with torch.no_grad():
+            last_state = next_states[-1].unsqueeze(0)
+            next_value = self.policy.get_value(last_state).squeeze()
+        
+        # Compute advantages and returns
+        advantages, returns = self.agent.compute_gae(
+            rewards, values, dones, next_value
+        )
+        
+        # PPO update
+        metrics = self.agent.update(
+            states, actions, log_probs_old, returns, advantages,
+            next_states=next_states,
+            num_epochs=self.n_epochs,
+            batch_size=self.batch_size
+        )
+        
+        self.update_count += 1
+        self.logger.log_training(self.update_count, metrics)
+        
+        return metrics
+    
+    def evaluate(self) -> Dict[str, float]:
+        """Evaluate the current policy."""
+        eval_env = gym.make(self.env_name)
+        episode_rewards = []
+        episode_lengths = []
+        
+        for _ in range(self.n_eval_episodes):
+            state, _ = eval_env.reset()
+            episode_reward = 0
+            episode_length = 0
+            done = False
+            
+            while not done:
+                state_tensor = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
+                action, _ = self.policy.sample_action(state_tensor, deterministic=True)
+                
+                if self.is_discrete:
+                    action_np = action.item()
+                else:
+                    action_np = action.cpu().numpy()[0]
+                
+                state, reward, terminated, truncated, _ = eval_env.step(action_np)
+                done = terminated or truncated
+                
+                episode_reward += reward
+                episode_length += 1
+                
+                if episode_length >= 1000:  # Max episode length
+                    break
+            
+            episode_rewards.append(episode_reward)
+            episode_lengths.append(episode_length)
+        
+        eval_env.close()
+        
+        return {
+            'eval_mean_reward': np.mean(episode_rewards),
+            'eval_std_reward': np.std(episode_rewards),
+            'eval_mean_length': np.mean(episode_lengths)
+        }
+    
+    def save_checkpoint(self, name: str = 'latest'):
+        """Save training checkpoint."""
+        checkpoint_path = self.checkpoint_dir / f'{name}.pt'
+        self.agent.save(str(checkpoint_path))
+        print(f"Checkpoint saved: {checkpoint_path}")
+    
+    def train(self):
+        """Main training loop."""
+        print("\n" + "="*70)
+        print("STARTING TRAINING")
+        print("="*70)
+        
+        start_time = time.time()
+        last_log_time = start_time
+        
+        while self.total_steps < self.total_timesteps:
+            # Collect rollouts
+            rollout_info = self.collect_rollouts()
+            
+            # Update policy
+            metrics = self.update_policy()
+            
+            # Calculate FPS
+            current_time = time.time()
+            fps = self.steps_per_update / (current_time - last_log_time)
+            last_log_time = current_time
+            
+            # Print progress
+            self.logger.print_progress(
+                self.episode_count,
+                int(self.total_timesteps / 200),  # Estimate total episodes
+                self.total_steps,
+                fps
+            )
+            
+            # Evaluate
+            if self.update_count % self.eval_freq == 0:
+                eval_metrics = self.evaluate()
+                print(f"  Evaluation - Reward: {eval_metrics['eval_mean_reward']:.2f} "
+                      f"(±{eval_metrics['eval_std_reward']:.2f})")
+                
+                if self.logger.use_tensorboard:
+                    for key, value in eval_metrics.items():
+                        self.logger.writer.add_scalar(f'Eval/{key}', value, self.update_count)
+            
+            # Save checkpoint
+            if self.update_count % self.save_freq == 0:
+                self.save_checkpoint(f'update_{self.update_count}')
+        
+        # Final checkpoint and plots
+        self.save_checkpoint('final')
+        self.logger.save_metrics()
+        self.logger.plot_training()
+        
+        # Training summary
+        total_time = time.time() - start_time
+        print("\n" + "="*70)
+        print("TRAINING COMPLETE")
+        print("="*70)
+        print(f"Total timesteps: {self.total_steps}")
+        print(f"Total episodes: {self.episode_count}")
+        print(f"Total time: {total_time/60:.1f} minutes")
+        print(f"Average FPS: {self.total_steps/total_time:.0f}")
+        
+        if len(self.logger.episode_rewards) > 0:
+            print(f"Final mean reward: {np.mean(self.logger.episode_rewards):.2f}")
+        
+        self.logger.close()
+        self.env.close()
+
+
+# ============================================================================
+# MAIN ENTRY POINT
+# ============================================================================
+
+def main():
+    """
+    Example training configurations for different scenarios.
+    """
+    
+    # Example 1: Simple PPO on LunarLander
+    print("Example 1: Standard PPO on LunarLander-v2")
+    trainer = PPOTrainer(
+        env_name="LunarLander-v2",
+        total_timesteps=500_000,
+        steps_per_update=2048,
+        log_dir='./logs/lunar_lander_simple'
+    )
+    trainer.train()
+    
+    # Example 2: PPO with ICM on CartPole
+    # Uncomment to run:
+    # print("\n\nExample 2: PPO with ICM on CartPole-v1")
+    # trainer = PPOTrainer(
+    #     env_name="CartPole-v1",
+    #     use_icm=True,
+    #     total_timesteps=200_000,
+    #     steps_per_update=1024,
+    #     log_dir='./logs/cartpole_icm'
+    # )
+    # trainer.train()
+    
+    # Example 3: Hierarchical PPO with curiosity
+    # Uncomment to run:
+    # print("\n\nExample 3: Hierarchical PPO with curiosity")
+    # trainer = PPOTrainer(
+    #     env_name="LunarLander-v2",
+    #     use_icm=True,
+    #     use_rnd=True,
+    #     use_hierarchical=True,
+    #     total_timesteps=1_000_000,
+    #     steps_per_update=2048,
+    #     hidden_dims=[256, 256],
+    #     log_dir='./logs/lunar_hierarchical'
+    # )
+    # trainer.train()
+
+
+if __name__ == "__main__":
+    main()
