@@ -27,7 +27,7 @@ import networkx as nx
 
 # Import only from shared types layer
 # Use the project's shared types module (avoid shadowing stdlib `types`)
-from HoloLoom.Documentation.types import Vector
+from holoLoom.documentation.types import Vector
 
 # Optional dependencies
 try:

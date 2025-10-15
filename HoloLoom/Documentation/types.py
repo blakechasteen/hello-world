@@ -97,6 +97,22 @@ class MemoryRecord:
     vector: Optional[Vector]                     # Embedding (None for metadata-only records)
     payload: Dict[str, Any] = field(default_factory=dict)
 
+
+@dataclass
+class MemoryShard:
+    """
+    Memory shard used by the retriever and orchestrator.
+
+    Fields are chosen to match how `Orchestrator` constructs sample shards
+    in the example usage (`id`, `text`, `episode`, `entities`, `motifs`).
+    """
+    id: str
+    text: str
+    episode: Optional[str] = None
+    entities: List[str] = field(default_factory=list)
+    motifs: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
 # ============================================================================
 # Tool Execution
 # ============================================================================

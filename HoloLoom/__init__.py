@@ -18,6 +18,14 @@ if os.path.isdir(alt) and os.path.abspath(alt) not in __path__:
 # Re-export common subpackages for simpler imports
 from . import policy
 from . import embedding
-from . import Documentation
+try:
+	# filesystem has `documentation` (lowercase); expose it as `Documentation`
+	from . import documentation as Documentation
+except Exception:
+	# Fall back to a direct import if the package is named differently
+	try:
+		from . import Documentation
+	except Exception:
+		Documentation = None
 
 __all__ = ["policy", "embedding", "Documentation"]
