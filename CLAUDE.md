@@ -35,7 +35,7 @@ python -m spacy download en_core_web_sm
 
 Run the unified policy test suite (18 tests covering neural components):
 ```bash
-PYTHONPATH=holoLoom .venv/bin/python holoLoom/test_unified_policy.py
+PYTHONPATH=. .venv/bin/python holoLoom/test_unified_policy.py
 ```
 
 This tests: MLP blocks, attention, ICM/RND curiosity modules, hierarchical policies, PPO agent, and full end-to-end pipeline.
@@ -44,7 +44,7 @@ This tests: MLP blocks, attention, ICM/RND curiosity modules, hierarchical polic
 
 Run a short CartPole training session:
 ```bash
-PYTHONPATH=holoLoom .venv/bin/python -c "from holoLoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
+PYTHONPATH=. .venv/bin/python -c "from holoLoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
 ```
 
 Training checkpoints are saved to the specified `log_dir`.
@@ -53,7 +53,7 @@ Training checkpoints are saved to the specified `log_dir`.
 
 Example usage of the full HoloLoom orchestrator:
 ```bash
-PYTHONPATH=holoLoom .venv/bin/python holoLoom/orchestrator.py
+PYTHONPATH=. .venv/bin/python holoLoom/orchestrator.py
 ```
 
 This runs a demo showing query → features → context → decision → response pipeline.
