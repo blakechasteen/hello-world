@@ -25,9 +25,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install torch numpy gymnasium matplotlib
 
-      - name: Run unified policy tests
+      - name: Run unified policy and orchestrator tests
         env:
           PYTHONWARNINGS: ignore
+          PYTHONPATH: .
         run: |
-          # Add repository root to PYTHONPATH so absolute imports (HoloLoom.*) resolve
-          PYTHONPATH=. python HoloLoom/test_unified_policy.py
+          # Run the main harness (supports both policy.unified and holoLoom.policy.unified imports)
+          python holoLoom/test_unified_policy.py
+          # Run the lightweight orchestrator unit test (exit non-zero on failure)
+          python holoLoom/tests/test_orchestrator.py
