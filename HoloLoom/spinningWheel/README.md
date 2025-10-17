@@ -27,10 +27,10 @@ Converts audio transcripts and related metadata into MemoryShards.
 **Usage:**
 
 ```python
-from HoloLoom.SpinningWheel import AudioSpinner, SpinnerConfig
-from HoloLoom.orchestrator import HoloLoomOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from holoLoom.spinningWheel import AudioSpinner, SpinnerConfig
+from holoLoom.orchestrator import HoloLoomOrchestrator
+from holoLoom.config import Config
+from holoLoom.documentation.types import Query
 
 # Configure spinner
 config = SpinnerConfig(
@@ -110,7 +110,7 @@ Response
 3. Add to factory in `__init__.py`
 
 ```python
-from HoloLoom.SpinningWheel.base import BaseSpinner, SpinnerConfig, MemoryShard
+from holoLoom.spinningWheel.base import BaseSpinner, SpinnerConfig, MemoryShard
 
 class MySpinner(BaseSpinner):
     async def spin(self, raw_data):

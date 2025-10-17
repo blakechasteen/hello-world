@@ -18,6 +18,9 @@ from typing import List, Dict, Any, Optional, Tuple
 # ============================================================================
 Vector = List[float]  # Embedding vector representation
 
+# Weaving Metaphor Aliases
+# DotPlasma will be defined after Features to avoid forward-reference errors.
+
 # ============================================================================
 # Pattern Detection
 # ============================================================================
@@ -72,6 +75,11 @@ class Context:
     kg_sub: Optional[Any] = None                              # Subgraph object (optional)
     relevance: float = 0.0                                    # Retrieval relevance score
     metadata: Dict[str, Any] = field(default_factory=dict)    # Additional context
+    # Backwards-compatible list of shard objects (may be populated by orchestrator)
+    shards: List[Any] = field(default_factory=list)
+    # Optional references to the original query and extracted features
+    query: Optional[Query] = None
+    features: Optional[Features] = None
 
 @dataclass
 class Response:
@@ -180,3 +188,6 @@ class ModeConfig:
     name: str                      # "bare" | "fast" | "fused"
     enable_ts: bool = False        # Enable Thompson sampling for exploration
     seed: Optional[int] = None
+
+# Weaving Metaphor Aliases (defined after Features)
+DotPlasma = Features  # The "feature fluid" - flowing continuous representation

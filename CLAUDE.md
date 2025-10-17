@@ -66,6 +66,90 @@ This runs a demo showing query → features → context → decision → respons
 
 **"Shuttle" Orchestrator**: The `orchestrator.py` is the only module that imports from all others. It weaves components together into the full processing pipeline.
 
+### Weaving Architecture
+
+HoloLoom implements a complete weaving metaphor as first-class abstractions:
+
+#### 1. Yarn Graph (holoLoom/memory/graph.py)
+The persistent symbolic memory - discrete thread structure stored as a NetworkX MultiDiGraph.
+- **Alias**: `YarnGraph = KG`
+- Entities and relationships form the "threads" of memory
+- Remains discrete until "tensioned" into Warp Space
+
+#### 2. Loom Command (holoLoom/loom/command.py)
+Pattern card selector that chooses execution template (BARE/FAST/FUSED).
+- **Classes**: `LoomCommand`, `PatternCard`, `PatternSpec`
+- Determines which warp threads to lift and how densely to weave
+- Configures scales, features, timeouts for entire cycle
+
+#### 3. Chrono Trigger (holoLoom/chrono/trigger.py)
+Temporal control system managing time-dependent aspects.
+- **Classes**: `ChronoTrigger`, `TemporalWindow`, `ExecutionLimits`
+- Controls when threads activate (temporal windows)
+- Manages execution timing, rhythm (heartbeat), halt conditions
+- Handles thread decay and system evolution over time
+
+#### 4. Resonance Shed (holoLoom/resonance/shed.py)
+Feature interference zone where extraction threads combine.
+- **Classes**: `ResonanceShed`, `FeatureThread`
+- Lifts feature threads (motif, embedding, spectral)
+- Creates interference patterns through multi-modal fusion
+- Produces DotPlasma (flowing feature representation)
+
+#### 5. DotPlasma (holoLoom/documentation/types.py)
+The "feature fluid" - flowing continuous representation.
+- **Alias**: `DotPlasma = Features`
+- Malleable medium between extraction and decision
+- Contains motifs (symbolic), embeddings (continuous), spectral (topological)
+
+#### 6. Warp Space (holoLoom/warp/space.py)
+Tensioned tensor field for continuous mathematics.
+- **Classes**: `WarpSpace`, `TensionedThread`
+- Temporary manifold where activated threads undergo tensor operations
+- Lifecycle: tension() → compute() → collapse()
+- Detensions back to discrete Yarn Graph after computation
+
+#### 7. Convergence Engine (holoLoom/convergence/engine.py)
+Decision collapse from continuous → discrete.
+- **Classes**: `ConvergenceEngine`, `CollapseStrategy`, `ThompsonBandit`
+- Collapses probability distributions to discrete tool selections
+- Strategies: ARGMAX, EPSILON_GREEDY, BAYESIAN_BLEND, PURE_THOMPSON
+- Thompson Sampling for exploration/exploitation balance
+
+#### 8. Spacetime (holoLoom/fabric/spacetime.py)
+Woven fabric - structured output with complete lineage.
+- **Classes**: `Spacetime`, `WeavingTrace`, `FabricCollection`
+- 4-dimensional output: 3D semantic space + 1D temporal trace
+- Full computational provenance for debugging and reflection learning
+- Serializable for persistence and analysis
+
+#### 9. Reflection Buffer (holoLoom/memory/cache.py)
+Learning loop - stores outcomes for improvement.
+- **Alias**: `ReflectionBuffer = MemoryManager`
+- Episodic buffer of recent interactions
+- Provides signals for system evolution and adaptation
+
+#### Complete Weaving Cycle
+
+```
+1. Loom Command selects Pattern Card (BARE/FAST/FUSED)
+2. Chrono Trigger fires, creates TemporalWindow
+3. Yarn Graph threads selected based on temporal window
+4. Resonance Shed lifts feature threads, creates DotPlasma
+5. Warp Space tensions threads into continuous manifold
+6. Convergence Engine collapses to discrete tool selection
+7. Tool executes, results woven into Spacetime fabric
+8. Reflection Buffer learns from outcome
+9. Chrono Trigger detensions, cycle completes
+```
+
+This architecture enables:
+- **Symbolic ↔ Continuous**: Seamless transition between discrete and continuous representations
+- **Temporal Control**: Fine-grained timing and decay mechanisms
+- **Multi-Modal Fusion**: Interference patterns from diverse feature types
+- **Provenance**: Complete computational lineage for every output
+- **Evolution**: System learns and adapts from reflection
+
 ### Key Components
 
 #### 1. Orchestrator (`holoLoom/orchestrator.py`)

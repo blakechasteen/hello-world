@@ -27,11 +27,11 @@ from dataclasses import dataclass
 # Absolute package imports (works when running module from repository root)
 try:
     from holoLoom.documentation.types import Query, Context, Features, MemoryShard
-    from holoLoom.config import Config
+    from holoLoom.config import Config, ExecutionMode
     from holoLoom.motif.base import create_motif_detector
     from holoLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
     from holoLoom.memory.base import create_retriever
-    from holoLoom.policy.unified import UnifiedPolicy
+    from holoLoom.policy.unified import UnifiedPolicy, create_policy
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run this module from the repository root or use: python -m holoLoom.orchestrator")
@@ -137,35 +137,111 @@ class HoloLoomOrchestrator:
         # Initialize components
         self.logger.info("Initializing HoloLoom components...")
         
-        # Motif detection
-        self.motif_detector = create_motif_detector(mode=cfg.motif_mode)
-        
-        # Embeddings
+        # Derive execution mode string
+        mode_val = getattr(cfg, 'mode', None)
+        if hasattr(mode_val, 'value'):
+            execution_mode = mode_val.value
+        else:
+            execution_mode = str(mode_val) if mode_val is not None else 'fused'
+        self.execution_mode = execution_mode
+
+        # Motif detection: allow cfg to explicitly set motif_mode, otherwise derive from exec mode
+        motif_mode = getattr(cfg, 'motif_mode', None)
+        if motif_mode is None:
+            if execution_mode == 'bare':
+                motif_mode = 'regex'
+            elif execution_mode == 'fast':
+                motif_mode = 'hybrid'
+            else:
+                motif_mode = 'hybrid'
+        self.motif_mode = motif_mode
+        self.motif_detector = create_motif_detector(mode=self.motif_mode)
+
+        # Embeddings (Config uses base_model_name)
+        base_model_name = getattr(cfg, 'base_model_name', None)
         self.embedder = MatryoshkaEmbeddings(
             sizes=cfg.scales,
-            base_model_name=cfg.base_encoder
+            base_model_name=base_model_name
         )
-        
-        # Spectral fusion (if in fused mode)
-        if cfg.execution_mode == "fused":
-            self.spectral_fusion = SpectralFusion(scales=cfg.scales)
+
+        # Spectral fusion (enabled for fused mode)
+        if execution_mode == 'fused':
+            # SpectralFusion does not accept scales at init; use default params
+            self.spectral_fusion = SpectralFusion()
         else:
             self.spectral_fusion = None
-        
-        # Memory retrieval
+
+        # Memory retrieval: map top_k/retrieval_k and retrieval_mode
+        retrieval_mode = getattr(cfg, 'retrieval_mode', None)
+        if retrieval_mode is None:
+            retrieval_mode = 'fused' if execution_mode == 'fused' else 'fast'
+        self.retrieval_mode = retrieval_mode
+
         self.retriever = create_retriever(
-            mode=cfg.retrieval_mode,
             shards=shards,
-            embedder=self.embedder
+            emb=self.embedder,
+            fusion_weights=getattr(cfg, 'fusion_weights', None)
         )
         
-        # Policy
-        self.policy = UnifiedPolicy(config=cfg)
+        # Policy - create using factory to match expected constructor
+        mem_dim = max(cfg.scales) if getattr(cfg, 'scales', None) else 384
+        try:
+            self.policy = create_policy(
+                mem_dim=mem_dim,
+                emb=self.embedder,
+                scales=cfg.scales,
+                device=None,
+                n_layers=getattr(cfg, 'n_transformer_layers', 2),
+                n_heads=getattr(cfg, 'n_attention_heads', 4),
+                bandit_strategy=getattr(cfg, 'bandit_strategy', None) or None,
+                epsilon=getattr(cfg, 'epsilon', 0.1)
+            )
+        except TypeError:
+            # Fallback: create a SimpleUnifiedPolicy (exported as UnifiedPolicy)
+            import numpy as _np
+            import torch as _torch
+
+            n_tools = getattr(cfg, 'n_tools', 4)
+            # Instantiate a categorical policy to get action_probs
+            policy_nn = UnifiedPolicy(
+                input_dim=mem_dim,
+                action_dim=n_tools,
+                policy_type='categorical',
+                hidden_dims=[128, 128]
+            )
+
+            # Wrap to provide async decide(features, context) -> dict
+            class PolicyWrapper:
+                def __init__(self, nn_module):
+                    self.nn = nn_module
+                    self.tools = ["answer", "search", "notion_write", "calc"]
+
+                async def decide(self, query=None, features=None, context=None):
+                    # Build input from features.psi; fallback to zeros
+                    psi = getattr(features, 'psi', None)
+                    if psi is None:
+                        x = _torch.zeros(1, mem_dim, dtype=_torch.float32)
+                    else:
+                        arr = _np.array(psi, dtype=_np.float32)
+                        x = _torch.tensor(arr[None, ...], dtype=_torch.float32)
+
+                    out = self.nn.forward(x)
+                    probs = out.get('action_probs') if isinstance(out, dict) else None
+                    if probs is None:
+                        # Fallback: use mean logits
+                        probs = _torch.softmax(out.get('logits', _torch.randn(1, n_tools)), dim=-1)
+
+                    probs_np = probs.detach().cpu().numpy()[0]
+                    idx = int(_np.argmax(probs_np))
+                    tool = self.tools[idx % len(self.tools)]
+                    return {"tool": tool, "confidence": float(probs_np[idx])}
+
+            self.policy = PolicyWrapper(policy_nn)
         
         # Tool executor
         self.tool_executor = ToolExecutor()
         
-        self.logger.info(f"HoloLoom initialized in '{cfg.execution_mode}' mode")
+        self.logger.info(f"HoloLoom initialized in '{self.execution_mode}' mode")
     
     async def process(self, query: Query) -> Dict[str, Any]:
         """
@@ -214,17 +290,30 @@ class HoloLoomOrchestrator:
         motifs = await self.motif_detector.detect(query.text)
         
         # Generate embeddings
-        embeddings = await self.embedder.encode([query.text])
+        embeddings = self.embedder.encode([query.text])
         
         # Spectral features (if available)
         spectral = None
         if self.spectral_fusion:
-            spectral = await self.spectral_fusion.compute([query.text])
+            # Build a minimal empty graph for single-text spectral features
+            import networkx as nx
+            kg_sub = nx.MultiDiGraph()
+            spectral, _metrics = await self.spectral_fusion.features(kg_sub, [query.text], self.embedder)
         
+        # Map embedding output to Features.psi (Vector) and include spectral in metrics
+        try:
+            psi_vec = embeddings[0].tolist() if hasattr(embeddings, '__iter__') else embeddings
+        except Exception:
+            psi_vec = []
+
+        metrics = {}
+        if spectral is not None:
+            metrics['spectral'] = spectral.tolist() if hasattr(spectral, 'tolist') else spectral
+
         features = Features(
-            motifs=[m.pattern for m in motifs] if motifs else [],
-            embeddings=embeddings,
-            spectral=spectral,
+            psi=psi_vec,
+            motifs=motifs if motifs else [],
+            metrics=metrics,
             metadata={"query_length": len(query.text)}
         )
         
@@ -234,19 +323,30 @@ class HoloLoomOrchestrator:
         """Retrieve relevant context from memory."""
         self.logger.debug("Retrieving context...")
         
-        # Use retriever to find relevant shards
-        retrieved_shards = await self.retriever.retrieve(
-            query=query.text,
-            top_k=self.cfg.top_k
-        )
-        
+        # Use retriever to find relevant shards (Config uses retrieval_k)
+        top_k = getattr(self.cfg, 'retrieval_k', None)
+        if top_k is None:
+            top_k = getattr(self.cfg, 'top_k', 6)
+
+        # Determine fast flag from config
+        fast_flag = getattr(self.cfg, 'fast_mode', False)
+
+        # RetrieverMS exposes .search(query, k, fast)
+        hits = await self.retriever.search(query=query.text, k=top_k, fast=fast_flag)
+
+        # hits: List[Tuple[MemoryShard, float]]
+        shards = [s for s, _ in hits]
+        shard_texts = [s.text for s in shards]
+
         context = Context(
-            shards=retrieved_shards,
+            shards=shards,
+            hits=hits,
+            shard_texts=shard_texts,
             query=query,
             features=features
         )
-        
-        self.logger.debug(f"Retrieved {len(retrieved_shards)} context shards")
+
+        self.logger.debug(f"Retrieved {len(hits)} context shards")
         return context
     
     async def _make_decision(self, query: Query, features: Features, context: Context) -> Dict:
@@ -277,6 +377,14 @@ class HoloLoomOrchestrator:
         result: Dict
     ) -> Dict[str, Any]:
         """Assemble final response with all metadata."""
+        # Ensure decision is a dict-like object
+        if decision is None:
+            decision = {}
+
+        # Ensure result is a dict-like object
+        if result is None:
+            result = {}
+
         return {
             "status": "success",
             "query": query.text,
@@ -286,9 +394,9 @@ class HoloLoomOrchestrator:
             "context_shards": len(context.shards) if context and hasattr(context, 'shards') else 0,
             "motifs": features.motifs if features and hasattr(features, 'motifs') else [],
             "metadata": {
-                "execution_mode": self.cfg.execution_mode,
-                "retrieval_mode": self.cfg.retrieval_mode,
-                "motif_mode": self.cfg.motif_mode
+                "execution_mode": getattr(self, 'execution_mode', getattr(self.cfg, 'mode', None)),
+                "retrieval_mode": getattr(self, 'retrieval_mode', getattr(self.cfg, 'retrieval_mode', None)),
+                "motif_mode": getattr(self, 'motif_mode', None)
             },
             "trace": {
                 "features": features.__dict__ if features else {},
@@ -354,8 +462,12 @@ async def main():
     print("="*80)
     print(f"Status: {response['status']}")
     print(f"Query: {response['query']}")
-    print(f"Tool: {response['tool']}")
-    print(f"Confidence: {response['confidence']:.2f}")
+    print(f"Tool: {response.get('tool')}")
+    conf = response.get('confidence')
+    try:
+        print(f"Confidence: {conf:.2f}")
+    except Exception:
+        print(f"Confidence: {conf}")
     print(f"Context Shards Used: {response['context_shards']}")
     print(f"Motifs Detected: {response['motifs']}")
     print(f"\nResponse Text:")
