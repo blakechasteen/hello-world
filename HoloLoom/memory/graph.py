@@ -25,6 +25,7 @@ from pathlib import Path
 
 import networkx as nx
 
+from HoloLoom.Utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
 
 # ============================================================================
 # Data Structures
@@ -158,6 +159,60 @@ class KG:
         for edge in edges:
             self.add_edge(edge)
     
+    def connect_entity_to_time(
+        self,
+        entity: str,
+        timestamp: TimeInput,
+        *,
+        edge_type: str = "IN_TIME",
+        weight: float = 1.0,
+    ) -> str:
+        """Attach an entity node to a coarse-grained time thread.
+
+        The Neo4j migrations stored under ``archive/`` group events by
+        day-part buckets (e.g. ``2024-01-31-evening``).  When ingesting
+        events into the in-memory graph we mirror that behaviour by creating
+        (or reusing) a dedicated node for the bucket and linking the entity
+        with an ``IN_TIME`` edge.
+
+        Args:
+            entity: Name of the entity/event node to attach.
+            timestamp: Datetime/ISO string/epoch seconds identifying the event
+                time.
+            edge_type: Relationship label to use for the connection.
+            weight: Optional weight applied to the created edge.
+
+        Returns:
+            The identifier of the time thread node that was connected.
+        """
+        dt = to_utc_datetime(timestamp)
+        bucket = time_bucket(dt)
+        thread_id = f"time::{bucket}"
+
+        if thread_id not in self.G:
+            self.G.add_node(
+                thread_id,
+                kind="time_thread",
+                bucket=bucket,
+            )
+
+        if entity not in self.G:
+            self.G.add_node(entity)
+
+        self.G.add_edge(
+            entity,
+            thread_id,
+            type=edge_type,
+            weight=weight,
+            bucket=bucket,
+            timestamp=dt.isoformat(),
+        )
+
+        self._entity_index.setdefault(entity, set()).add(thread_id)
+        self._entity_index.setdefault(thread_id, set()).add(entity)
+
+        return thread_id
+
     def get_neighbors(
         self,
         entity: str,
