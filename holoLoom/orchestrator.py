@@ -21,21 +21,147 @@ weaving them into finished "fabric" (responses).
 
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Sequence
 from dataclasses import dataclass
+
+# Track optional-import fallbacks so we can surface them once logging is configured
+_IMPORT_WARNINGS: List[str] = []
 
 # Absolute package imports (works when running module from repository root)
 try:
     from holoLoom.documentation.types import Query, Context, Features, MemoryShard
-    from holoLoom.config import Config, ExecutionMode
-    from holoLoom.motif.base import create_motif_detector
-    from holoLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
-    from holoLoom.memory.base import create_retriever
-    from holoLoom.policy.unified import UnifiedPolicy, create_policy
+    from holoLoom.config import Config
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run this module from the repository root or use: python -m holoLoom.orchestrator")
     raise
+
+
+# ---------------------------------------------------------------------------
+# Optional dependency fallbacks
+# ---------------------------------------------------------------------------
+
+def _record_warning(msg: str) -> None:
+    """Buffer fallback warnings until the logger is ready."""
+    _IMPORT_WARNINGS.append(msg)
+
+
+try:  # Motif detection
+    from holoLoom.motif.base import create_motif_detector as _create_motif_detector
+except Exception as exc:  # pragma: no cover - exercised when optional deps missing
+    _record_warning(f"Using simple motif detector fallback (failed to import holoLoom.motif.base: {exc})")
+
+    class _SimpleMotifDetector:
+        """Very small async detector that tags capitalised tokens as motifs."""
+
+        def __init__(self, mode: Optional[str] = None) -> None:
+            self.mode = mode or "simple"
+
+        async def detect(self, text: str) -> List[str]:
+            if not text:
+                return []
+            tokens = [tok.strip(".,!?") for tok in text.split()]
+            motifs = [tok.upper() for tok in tokens if tok and tok[0].isupper()]
+            # Provide deterministic ordering for tests
+            return motifs
+
+    def create_motif_detector(mode: Optional[str] = None):
+        return _SimpleMotifDetector(mode=mode)
+
+else:
+    create_motif_detector = _create_motif_detector
+
+
+try:  # Embeddings / spectral fusion
+    from holoLoom.embedding.spectral import MatryoshkaEmbeddings as _MatryoshkaEmbeddings
+    from holoLoom.embedding.spectral import SpectralFusion as _SpectralFusion
+except Exception as exc:  # pragma: no cover - exercised when optional deps missing
+    _record_warning(f"Using simple embedding fallback (failed to import holoLoom.embedding.spectral: {exc})")
+
+    class _SimpleVector(list):
+        """List-like container that also exposes ``tolist`` for compatibility."""
+
+        def tolist(self) -> List[float]:  # noqa: D401 - simple delegation helper
+            return list(self)
+
+    class MatryoshkaEmbeddings:
+        """Minimal embedding stub that encodes text length as a single feature."""
+
+        def __init__(self, sizes: Optional[Sequence[int]] = None, base_model_name: Optional[str] = None) -> None:
+            self.sizes = list(sizes or [1])
+            self.base_model_name = base_model_name or "stub"
+
+        def encode(self, texts: Sequence[str]) -> List[_SimpleVector]:
+            vectors: List[_SimpleVector] = []
+            for text in texts:
+                length = float(len(text))
+                vectors.append(_SimpleVector([length]))
+            return vectors
+
+    class SpectralFusion:
+        """Async stub returning deterministic spectral-like metrics."""
+
+        async def features(self, graph: Any, texts: Sequence[str], embedder: Any) -> Any:
+            values = [float(len(t)) % 10 for t in texts]
+            return values, {"mode": "stub"}
+
+else:
+    MatryoshkaEmbeddings = _MatryoshkaEmbeddings
+    SpectralFusion = _SpectralFusion
+
+
+try:  # Memory retrieval
+    from holoLoom.memory.base import create_retriever as _create_retriever
+except Exception as exc:  # pragma: no cover - exercised when optional deps missing
+    _record_warning(f"Using simple retriever fallback (failed to import holoLoom.memory.base: {exc})")
+
+    class _SimpleRetriever:
+        def __init__(self, shards: Sequence[MemoryShard], emb: Any, fusion_weights: Optional[Any] = None) -> None:
+            self._shards = list(shards)
+
+        async def search(self, query: str, k: int = 5, fast: bool = False):
+            scored = []
+            for idx, shard in enumerate(self._shards):
+                score = 1.0 / (idx + 1)
+                scored.append((shard, score))
+            return scored[:k]
+
+    def create_retriever(shards: Sequence[MemoryShard], emb: Any, fusion_weights: Optional[Any] = None):
+        return _SimpleRetriever(shards=shards, emb=emb, fusion_weights=fusion_weights)
+
+else:
+    create_retriever = _create_retriever
+
+
+try:  # Policy engine
+    from holoLoom.policy.unified import UnifiedPolicy as _UnifiedPolicy
+    from holoLoom.policy.unified import create_policy as _create_policy
+except Exception as exc:  # pragma: no cover - exercised when optional deps missing
+    _record_warning(f"Using simple policy fallback (failed to import holoLoom.policy.unified: {exc})")
+
+    class UnifiedPolicy:
+        """Lightweight policy stub used when torch/numpy are unavailable."""
+
+        def __init__(self, tools: Optional[Sequence[str]] = None):
+            self.tools = list(tools or ["answer", "search", "notion_write", "calc"])
+
+        async def decide(self, query: Optional[Query] = None, features: Optional[Features] = None, context: Optional[Context] = None) -> Dict[str, Any]:
+            tool_idx = 0
+            if context and getattr(context, "shards", None):
+                tool_idx = len(context.shards) % len(self.tools)
+            elif features and getattr(features, "psi", None):
+                tool_idx = len(features.psi) % len(self.tools)
+            tool = self.tools[tool_idx]
+            confidence = 0.5 + 0.1 * tool_idx
+            return {"tool": tool, "confidence": min(confidence, 0.95)}
+
+    def create_policy(**kwargs):
+        tools = kwargs.get("tools") or ["answer", "search", "notion_write", "calc"]
+        return UnifiedPolicy(tools=tools)
+
+else:
+    UnifiedPolicy = _UnifiedPolicy
+    create_policy = _create_policy
 
 logging.basicConfig(level=logging.INFO)
 
@@ -133,7 +259,12 @@ class HoloLoomOrchestrator:
         self.cfg = cfg
         self.shards = shards
         self.logger = logging.getLogger(__name__)
-        
+
+        # Emit any deferred import warnings now that logging is ready
+        for msg in _IMPORT_WARNINGS:
+            self.logger.warning(msg)
+        _IMPORT_WARNINGS.clear()
+
         # Initialize components
         self.logger.info("Initializing HoloLoom components...")
         
@@ -296,8 +427,12 @@ class HoloLoomOrchestrator:
         spectral = None
         if self.spectral_fusion:
             # Build a minimal empty graph for single-text spectral features
-            import networkx as nx
-            kg_sub = nx.MultiDiGraph()
+            try:
+                import networkx as nx  # type: ignore
+            except ImportError:
+                nx = None  # type: ignore
+
+            kg_sub = nx.MultiDiGraph() if nx else None
             spectral, _metrics = await self.spectral_fusion.features(kg_sub, [query.text], self.embedder)
         
         # Map embedding output to Features.psi (Vector) and include spectral in metrics
