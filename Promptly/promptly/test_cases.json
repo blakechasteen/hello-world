@@ -1,0 +1,23 @@
+[
+  {
+    "id": "test-1",
+    "inputs": {
+      "text": "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet."
+    },
+    "expected": "A summary about a fox jumping over a dog with all alphabet letters."
+  },
+  {
+    "id": "test-2",
+    "inputs": {
+      "text": "Machine learning is a subset of artificial intelligence that enables computers to learn from data without being explicitly programmed."
+    },
+    "expected": "A definition of machine learning and its relationship to AI."
+  },
+  {
+    "id": "test-3",
+    "inputs": {
+      "text": "Climate change refers to long-term shifts in temperatures and weather patterns. These shifts may be natural, but since the 1800s, human activities have been the main driver."
+    },
+    "expected": "An explanation of climate change and human impact."
+  }
+]
