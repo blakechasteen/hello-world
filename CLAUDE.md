@@ -205,6 +205,12 @@ Matryoshka embeddings at multiple scales (96, 192, 384 dimensions) with:
 #### 6. SpinningWheel (`holoLoom/spinningWheel/`)
 Input adapters that convert raw data → `MemoryShard` objects:
 - **AudioSpinner**: Processes transcripts, task lists, summaries
+- **YouTubeSpinner**: Extracts YouTube video transcripts with optional chunking
+  - Supports multiple URL formats (full URL, youtu.be, video ID)
+  - Language preference with automatic fallback
+  - Time-based chunking for long videos
+  - Preserves timestamps and video metadata
+  - See `HoloLoom/spinningWheel/README_YOUTUBE.md` for details
 - Optional Ollama enrichment for entity/motif extraction
 - Standardized output format feeds directly into orchestrator
 
@@ -361,6 +367,21 @@ From `documentation/CODE_REVIEW.md`:
 2. Implement `async def spin(raw_data) -> List[MemoryShard]`
 3. Add to factory in `spinningWheel/__init__.py`
 4. Parse raw data format and extract entities/motifs
+
+Example: See `HoloLoom/spinningWheel/youtube.py` for a complete implementation
+```python
+from HoloLoom.spinningWheel import transcribe_youtube
+
+# Quick usage
+shards = await transcribe_youtube('VIDEO_ID', chunk_duration=60.0)
+
+# Or use the spinner directly
+from HoloLoom.spinningWheel import YouTubeSpinner, YouTubeSpinnerConfig
+
+config = YouTubeSpinnerConfig(chunk_duration=60.0, enable_enrichment=True)
+spinner = YouTubeSpinner(config)
+shards = await spinner.spin({'url': 'VIDEO_ID', 'languages': ['en']})
+```
 
 ### Tuning Exploration Strategy
 Change bandit strategy when creating policy:
