@@ -159,20 +159,33 @@ class YouTubeTranscriptExtractor:
             # Fetch the transcript segments
             segments = api.fetch(video_id, languages=[selected_transcript.language_code])
 
+            # Convert segments to dicts if they're objects (newer API versions)
+            segment_dicts = []
+            for seg in segments:
+                if isinstance(seg, dict):
+                    segment_dicts.append(seg)
+                else:
+                    # Convert FetchedTranscriptSnippet object to dict
+                    segment_dicts.append({
+                        'text': seg.text,
+                        'start': seg.start,
+                        'duration': seg.duration
+                    })
+
             # Combine all text
-            full_text = ' '.join([segment['text'] for segment in segments])
+            full_text = ' '.join([seg['text'] for seg in segment_dicts])
 
             # Calculate total duration
             duration = 0
-            if segments:
-                last_segment = segments[-1]
+            if segment_dicts:
+                last_segment = segment_dicts[-1]
                 duration = last_segment['start'] + last_segment.get('duration', 0)
 
             return {
                 'text': full_text,
                 'language': selected_transcript.language_code,
                 'is_generated': selected_transcript.is_generated,
-                'segments': segments,
+                'segments': segment_dicts,
                 'duration': duration,
                 'video_id': video_id
             }

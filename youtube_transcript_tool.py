@@ -70,20 +70,33 @@ def get_transcript(video_id: str, languages: List[str] = None) -> Dict[str, Any]
         # Fetch segments
         segments = api.fetch(video_id, languages=[selected_transcript.language_code])
 
+        # Convert segments to dicts if they're objects (newer API versions)
+        segment_dicts = []
+        for seg in segments:
+            if isinstance(seg, dict):
+                segment_dicts.append(seg)
+            else:
+                # Convert FetchedTranscriptSnippet object to dict
+                segment_dicts.append({
+                    'text': seg.text,
+                    'start': seg.start,
+                    'duration': seg.duration
+                })
+
         # Combine text
-        full_text = ' '.join([segment['text'] for segment in segments])
+        full_text = ' '.join([seg['text'] for seg in segment_dicts])
 
         # Calculate duration
         duration = 0
-        if segments:
-            last = segments[-1]
+        if segment_dicts:
+            last = segment_dicts[-1]
             duration = last['start'] + last.get('duration', 0)
 
         return {
             'text': full_text,
             'language': selected_transcript.language_code,
             'is_generated': selected_transcript.is_generated,
-            'segments': segments,
+            'segments': segment_dicts,
             'duration': duration,
             'video_id': video_id
         }
