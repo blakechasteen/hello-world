@@ -26,6 +26,9 @@ def extract_video_id(url: str) -> Optional[str]:
             return parse_qs(parsed.query).get('v', [None])[0]
         elif parsed.path.startswith('/embed/'):
             return parsed.path.split('/')[2]
+        elif parsed.path.startswith('/shorts/'):
+            # YouTube Shorts: /shorts/VIDEO_ID
+            return parsed.path.split('/')[2]
     elif parsed.hostname in ('youtu.be',):
         return parsed.path[1:]
 

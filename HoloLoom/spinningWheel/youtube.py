@@ -83,6 +83,7 @@ class YouTubeTranscriptExtractor:
         - https://www.youtube.com/watch?v=VIDEO_ID
         - https://youtu.be/VIDEO_ID
         - https://www.youtube.com/embed/VIDEO_ID
+        - https://www.youtube.com/shorts/VIDEO_ID
         - VIDEO_ID (direct ID)
 
         Args:
@@ -102,6 +103,8 @@ class YouTubeTranscriptExtractor:
             if parsed.path == '/watch':
                 return parse_qs(parsed.query).get('v', [None])[0]
             elif parsed.path.startswith('/embed/'):
+                return parsed.path.split('/')[2]
+            elif parsed.path.startswith('/shorts/'):
                 return parsed.path.split('/')[2]
         elif parsed.hostname in ('youtu.be',):
             return parsed.path[1:]
