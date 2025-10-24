@@ -88,6 +88,34 @@ class PromptlyDB:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
+        # Skills table (versioned) and skill files
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS skills (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                description TEXT,
+                branch TEXT NOT NULL DEFAULT 'main',
+                version INTEGER NOT NULL DEFAULT 1,
+                parent_id INTEGER,
+                commit_hash TEXT UNIQUE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                metadata TEXT,
+                FOREIGN KEY (parent_id) REFERENCES skills(id)
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS skill_files (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                skill_id INTEGER NOT NULL,
+                filename TEXT NOT NULL,
+                filetype TEXT,
+                filepath TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (skill_id) REFERENCES skills(id)
+            )
+        """)
         
         # Config table
         cursor.execute("""
@@ -117,6 +145,7 @@ class Promptly:
         self.db_path = self.promptly_dir / "promptly.db"
         self.prompts_dir = self.promptly_dir / "prompts"
         self.chains_dir = self.promptly_dir / "chains"
+        self.skills_dir = self.promptly_dir / "skills"
         
     def init(self):
         """Initialize a new promptly repository"""
@@ -126,6 +155,7 @@ class Promptly:
         self.promptly_dir.mkdir(parents=True)
         self.prompts_dir.mkdir()
         self.chains_dir.mkdir()
+        self.skills_dir.mkdir()
         
         db = PromptlyDB(str(self.db_path))
         db.init_db()
@@ -277,6 +307,279 @@ class Promptly:
         db.close()
         
         return [dict(row) for row in results]
+
+    # ----- Skills API -----
+    def add_skill(self, name: str, description: str = None, metadata: Dict = None):
+        """Add a new skill (versioned)"""
+        self._check_init()
+        current_branch = self._get_current_branch()
+        timestamp = datetime.now().isoformat()
+        commit_hash = self._generate_commit_hash(name + "_skill", description or "", timestamp)
+
+        db = self._get_db()
+        conn = db.connect()
+        cursor = conn.cursor()
+
+        # Check existing
+        cursor.execute("""
+            SELECT id, version FROM skills WHERE name = ? AND branch = ? ORDER BY version DESC LIMIT 1
+        """, (name, current_branch))
+        existing = cursor.fetchone()
+        parent_id = existing[0] if existing else None
+        version = existing[1] + 1 if existing else 1
+
+        cursor.execute("""
+            INSERT INTO skills (name, description, branch, version, parent_id, commit_hash, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (name, description, current_branch, version, parent_id, commit_hash, json.dumps(metadata) if metadata else None))
+
+        conn.commit()
+
+        # Create skill folder and metadata file
+        skill_folder = self.skills_dir / f"{name}"
+        skill_folder.mkdir(exist_ok=True)
+        meta = {
+            'name': name,
+            'description': description,
+            'branch': current_branch,
+            'version': version,
+            'commit_hash': commit_hash,
+            'metadata': metadata or {}
+        }
+        with open(skill_folder / "skill.yaml", 'w') as f:
+            yaml.dump(meta, f)
+
+        db.close()
+        return f"Added skill '{name}' (v{version}) on branch '{current_branch}' [{commit_hash}]"
+
+    def get_skill(self, name: str, version: int = None, commit_hash: str = None):
+        """Retrieve a skill by name and optional version/commit"""
+        self._check_init()
+        db = self._get_db()
+        conn = db.connect()
+        cursor = conn.cursor()
+
+        if commit_hash:
+            cursor.execute("""
+                SELECT id, name, description, branch, version, commit_hash, created_at, metadata
+                FROM skills WHERE name = ? AND commit_hash = ?
+            """, (name, commit_hash))
+        elif version:
+            current_branch = self._get_current_branch()
+            cursor.execute("""
+                SELECT id, name, description, branch, version, commit_hash, created_at, metadata
+                FROM skills WHERE name = ? AND branch = ? AND version = ?
+            """, (name, current_branch, version))
+        else:
+            current_branch = self._get_current_branch()
+            cursor.execute("""
+                SELECT id, name, description, branch, version, commit_hash, created_at, metadata
+                FROM skills WHERE name = ? AND branch = ? ORDER BY version DESC LIMIT 1
+            """, (name, current_branch))
+
+        result = cursor.fetchone()
+        db.close()
+        if not result:
+            return None
+        return {
+            'id': result[0],
+            'name': result[1],
+            'description': result[2],
+            'branch': result[3],
+            'version': result[4],
+            'commit_hash': result[5],
+            'created_at': result[6],
+            'metadata': json.loads(result[7]) if result[7] else {}
+        }
+
+    def list_skills(self, branch: str = None):
+        self._check_init()
+        if branch is None:
+            branch = self._get_current_branch()
+        db = self._get_db()
+        conn = db.connect()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT name, MAX(version) as version, commit_hash, created_at
+            FROM skills
+            WHERE branch = ?
+            GROUP BY name
+            ORDER BY name
+        """, (branch,))
+        results = cursor.fetchall()
+        db.close()
+        return [dict(row) for row in results]
+
+    def add_skill_file(self, skill_name: str, filepath: str, filetype: str = None):
+        """Attach a file to a skill (copy into skills dir and record in DB)"""
+        self._check_init()
+        skill = self.get_skill(skill_name)
+        if not skill:
+            raise Exception(f"Skill '{skill_name}' not found")
+
+        # Copy file into skill folder
+        src = Path(filepath)
+        if not src.exists():
+            raise Exception(f"File '{filepath}' does not exist")
+
+        skill_folder = self.skills_dir / skill_name
+        skill_folder.mkdir(exist_ok=True)
+        dest = skill_folder / src.name
+        shutil.copy(src, dest)
+
+        db = self._get_db()
+        conn = db.connect()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO skill_files (skill_id, filename, filetype, filepath)
+            VALUES (?, ?, ?, ?)
+        """, (skill['id'], src.name, filetype or src.suffix.lstrip('.'), str(dest)))
+        conn.commit()
+        db.close()
+        return f"Attached file '{src.name}' to skill '{skill_name}'"
+
+    def get_skill_files(self, skill_name: str):
+        """List files attached to a skill"""
+        self._check_init()
+        skill = self.get_skill(skill_name)
+        if not skill:
+            return []
+        db = self._get_db()
+        conn = db.connect()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT filename, filetype, filepath, created_at FROM skill_files WHERE skill_id = ?
+        """, (skill['id'],))
+        results = cursor.fetchall()
+        db.close()
+        return [dict(row) for row in results]
+    
+    # ----- Skill Execution & Claude Helpers -----
+    def set_skill_runtime(self, skill_name: str, runtime: str = "claude"):
+        """Set or update the runtime metadata for a skill"""
+        self._check_init()
+        skill = self.get_skill(skill_name)
+        if not skill:
+            raise Exception(f"Skill '{skill_name}' not found")
+        
+        metadata = skill.get('metadata', {})
+        metadata['runtime'] = runtime
+        
+        # Update skill with new metadata (creates new version)
+        return self.add_skill(skill_name, skill.get('description'), metadata)
+    
+    def validate_skill_for_claude(self, skill_name: str) -> bool:
+        """Validate that a skill is compatible with Claude"""
+        skill = self.get_skill(skill_name)
+        if not skill:
+            return False
+        
+        metadata = skill.get('metadata', {})
+        runtime = metadata.get('runtime', '').lower()
+        
+        # Check if runtime is claude or compatible
+        return 'claude' in runtime or runtime in ['', 'any', 'universal']
+    
+    def prepare_skill_payload(self, skill_name: str, version: int = None):
+        """
+        Prepare a skill payload for execution with Claude.
+        Returns dict with skill metadata, description, and attached files.
+        """
+        self._check_init()
+        skill = self.get_skill(skill_name, version=version)
+        if not skill:
+            raise Exception(f"Skill '{skill_name}' not found")
+        
+        files = self.get_skill_files(skill_name)
+        
+        # Read file contents
+        file_contents = []
+        for f in files:
+            filepath = Path(f['filepath'])
+            if filepath.exists():
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as fh:
+                        content = fh.read()
+                    file_contents.append({
+                        'filename': f['filename'],
+                        'filetype': f['filetype'],
+                        'content': content
+                    })
+                except Exception as e:
+                    # Binary file or encoding issue - include path only
+                    file_contents.append({
+                        'filename': f['filename'],
+                        'filetype': f['filetype'],
+                        'content': f"[Binary file or read error: {e}]",
+                        'path': str(filepath)
+                    })
+        
+        return {
+            'skill_name': skill['name'],
+            'description': skill.get('description', ''),
+            'version': skill['version'],
+            'branch': skill['branch'],
+            'commit_hash': skill['commit_hash'],
+            'metadata': skill.get('metadata', {}),
+            'files': file_contents
+        }
+    
+    def execute_skill(self, skill_name: str, user_input: str = None, 
+                     model: str = "claude", executor_func=None, version: int = None):
+        """
+        Execute a skill with the specified model.
+        
+        Args:
+            skill_name: Name of the skill to execute
+            user_input: Optional user input/request to include
+            model: Model to use (default: 'claude')
+            executor_func: Optional function(prompt, model) that executes the prompt
+            version: Optional specific version of skill
+        
+        Returns:
+            Dict with execution results
+        """
+        self._check_init()
+        
+        # Validate skill
+        if not self.validate_skill_for_claude(skill_name):
+            print(f"Warning: Skill '{skill_name}' may not be optimized for Claude")
+        
+        # Prepare payload
+        payload = self.prepare_skill_payload(skill_name, version=version)
+        
+        # Build execution prompt
+        prompt_parts = []
+        
+        if payload['description']:
+            prompt_parts.append(f"# Skill: {payload['skill_name']}")
+            prompt_parts.append(f"\n{payload['description']}\n")
+        
+        # Include file contents
+        for file in payload['files']:
+            prompt_parts.append(f"\n## File: {file['filename']} ({file['filetype']})")
+            prompt_parts.append(f"```{file['filetype']}\n{file['content']}\n```\n")
+        
+        # Add user input if provided
+        if user_input:
+            prompt_parts.append(f"\n## User Request:\n{user_input}\n")
+        
+        execution_prompt = "\n".join(prompt_parts)
+        
+        # Execute if executor provided
+        result = None
+        if executor_func:
+            try:
+                result = executor_func(execution_prompt, model)
+            except Exception as e:
+                result = f"Execution error: {e}"
+        
+        return {
+            'skill': payload,
+            'prompt': execution_prompt,
+            'result': result,
+            'model': model
+        }
     
     def branch(self, branch_name: str, from_branch: str = None):
         """Create a new branch"""

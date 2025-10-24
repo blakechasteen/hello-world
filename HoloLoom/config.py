@@ -11,6 +11,17 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 
+class KGBackend(Enum):
+    """
+    Knowledge Graph backend selection.
+
+    - NETWORKX: In-memory NetworkX graph (default, no persistence)
+    - NEO4J: Neo4j graph database (persistent, scalable, production-grade)
+    """
+    NETWORKX = "networkx"
+    NEO4J = "neo4j"
+
+
 class ExecutionMode(Enum):
     """
     Execution modes for HoloLoom.
@@ -81,6 +92,13 @@ class Config:
     
     # Persistence
     memory_path: Optional[str] = "data"  # Root directory for memory storage
+
+    # Knowledge Graph backend
+    kg_backend: KGBackend = KGBackend.NETWORKX
+    neo4j_uri: str = "bolt://localhost:7687"
+    neo4j_username: str = "neo4j"
+    neo4j_password: str = "hololoom123"
+    neo4j_database: str = "neo4j"
     
     # Neural network settings
     n_transformer_layers: int = 2

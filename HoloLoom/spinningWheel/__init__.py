@@ -14,13 +14,14 @@ Philosophy:
 Available Spinners:
 - AudioSpinner: Converts audio transcripts + metadata -> MemoryShards
 - YouTubeSpinner: Extracts YouTube video transcripts -> MemoryShards
-- TextSpinner: (Future) Plain text/markdown -> MemoryShards
+- TextSpinner: Plain text/markdown -> MemoryShards
 - CodeSpinner: (Future) Code/git diffs -> MemoryShards
 """
 
 from .base import BaseSpinner, SpinnerConfig
 from .audio import AudioSpinner
 from .youtube import YouTubeSpinner, YouTubeSpinnerConfig, transcribe_youtube
+from .text import TextSpinner, TextSpinnerConfig, spin_text
 
 __all__ = [
     "BaseSpinner",
@@ -29,6 +30,9 @@ __all__ = [
     "YouTubeSpinner",
     "YouTubeSpinnerConfig",
     "transcribe_youtube",
+    "TextSpinner",
+    "TextSpinnerConfig",
+    "spin_text",
     "create_spinner"
 ]
 
@@ -56,8 +60,8 @@ def create_spinner(modality: str, config: SpinnerConfig = None):
     spinners = {
         'audio': AudioSpinner,
         'youtube': YouTubeSpinner,
+        'text': TextSpinner,
         # Future spinners:
-        # 'text': TextSpinner,
         # 'code': CodeSpinner,
         # 'video': VideoSpinner,
     }
