@@ -13,13 +13,87 @@ from typing import Dict, List, Optional
 
 class KGBackend(Enum):
     """
-    Knowledge Graph backend selection.
+    Knowledge Graph backend selection (DEPRECATED - use MemoryBackend).
 
     - NETWORKX: In-memory NetworkX graph (default, no persistence)
     - NEO4J: Neo4j graph database (persistent, scalable, production-grade)
     """
     NETWORKX = "networkx"
     NEO4J = "neo4j"
+
+
+class MemoryBackend(Enum):
+    """
+    Unified memory backend selection - supports pure and hybrid strategies.
+
+    Pure Strategies (Single Backend):
+    - NETWORKX: In-memory NetworkX graph only (fast prototyping, no persistence)
+    - NEO4J: Neo4j graph database only (persistent symbolic memory)
+    - QDRANT: Qdrant vector database only (semantic similarity search)
+
+    Hybrid Strategies (Multiple Backends):
+    - NEO4J_QDRANT: Graph + Vector hybrid (most common production setup)
+      * Neo4j: Entity relationships, graph traversal
+      * Qdrant: Semantic embeddings, similarity search
+      * Best for: Knowledge bases with semantic search
+
+    - TRIPLE: Neo4j + Qdrant + Mem0 (full hybrid with managed memory)
+      * Neo4j: Persistent graph structure
+      * Qdrant: Vector embeddings
+      * Mem0: Intelligent memory extraction and deduplication
+      * Best for: Production systems with user-specific memory
+
+    - HYPERSPACE: Gated multipass with recursive importance filtering
+      * Neo4j: Entity graph with importance weights
+      * Qdrant: Multi-scale Matryoshka embeddings
+      * Recursive crawl with importance thresholds (0.6 → 0.75 → 0.85)
+      * Best for: Research, content curation, intelligent navigation
+
+    Usage:
+        # Fast development
+        config = Config.fast()
+        config.memory_backend = MemoryBackend.NETWORKX
+
+        # Production with graph + vectors
+        config = Config.fused()
+        config.memory_backend = MemoryBackend.NEO4J_QDRANT
+
+        # Research mode with gated exploration
+        config = Config.fused()
+        config.memory_backend = MemoryBackend.HYPERSPACE
+        config.hyperspace_depth = 3
+        config.hyperspace_thresholds = [0.6, 0.75, 0.85]
+    """
+    # Pure strategies
+    NETWORKX = "networkx"
+    NEO4J = "neo4j"
+    QDRANT = "qdrant"
+    MEM0 = "mem0"
+
+    # Hybrid strategies
+    NEO4J_QDRANT = "neo4j+qdrant"
+    NEO4J_MEM0 = "neo4j+mem0"
+    QDRANT_MEM0 = "qdrant+mem0"
+    TRIPLE = "neo4j+qdrant+mem0"
+
+    # Specialized hybrids
+    HYPERSPACE = "hyperspace"  # Neo4j + Qdrant + gated multipass
+
+    def is_hybrid(self) -> bool:
+        """Check if this is a hybrid strategy."""
+        return '+' in self.value or self == MemoryBackend.HYPERSPACE
+
+    def uses_neo4j(self) -> bool:
+        """Check if this strategy uses Neo4j."""
+        return 'neo4j' in self.value or self == MemoryBackend.NEO4J or self == MemoryBackend.HYPERSPACE
+
+    def uses_qdrant(self) -> bool:
+        """Check if this strategy uses Qdrant."""
+        return 'qdrant' in self.value or self == MemoryBackend.QDRANT or self == MemoryBackend.HYPERSPACE
+
+    def uses_mem0(self) -> bool:
+        """Check if this strategy uses Mem0."""
+        return 'mem0' in self.value or self == MemoryBackend.MEM0 or self == MemoryBackend.TRIPLE
 
 
 class ExecutionMode(Enum):
@@ -93,12 +167,33 @@ class Config:
     # Persistence
     memory_path: Optional[str] = "data"  # Root directory for memory storage
 
-    # Knowledge Graph backend
-    kg_backend: KGBackend = KGBackend.NETWORKX
+    # Memory Backend Selection (Unified)
+    memory_backend: 'MemoryBackend' = None  # Set in __post_init__ to avoid forward reference
+
+    # Legacy: Knowledge Graph backend (deprecated, use memory_backend)
+    kg_backend: Optional[KGBackend] = None
+
+    # Neo4j Configuration
     neo4j_uri: str = "bolt://localhost:7687"
     neo4j_username: str = "neo4j"
     neo4j_password: str = "hololoom123"
     neo4j_database: str = "neo4j"
+
+    # Qdrant Configuration
+    qdrant_host: str = "localhost"
+    qdrant_port: int = 6333
+    qdrant_collection: str = "hololoom_memories"
+    qdrant_use_https: bool = False
+
+    # Mem0 Configuration
+    mem0_api_key: Optional[str] = None  # If using Mem0 cloud
+    mem0_org_id: Optional[str] = None
+    mem0_project_id: Optional[str] = None
+
+    # Hyperspace Configuration (for HYPERSPACE backend)
+    hyperspace_depth: int = 3  # Max recursion depth
+    hyperspace_thresholds: List[float] = field(default_factory=lambda: [0.6, 0.75, 0.85])
+    hyperspace_breadth: int = 10  # Links per level
     
     # Neural network settings
     n_transformer_layers: int = 2
@@ -129,10 +224,32 @@ class Config:
     
     def __post_init__(self):
         """Validate configuration."""
+        # Initialize memory_backend if not set
+        if self.memory_backend is None:
+            # Default based on execution mode
+            if self.mode == ExecutionMode.BARE:
+                self.memory_backend = MemoryBackend.NETWORKX
+            elif self.mode == ExecutionMode.FAST:
+                self.memory_backend = MemoryBackend.NETWORKX
+            else:  # FUSED
+                self.memory_backend = MemoryBackend.NEO4J_QDRANT
+
+        # Backward compatibility: If kg_backend is set, map to memory_backend
+        if self.kg_backend is not None:
+            import warnings
+            warnings.warn(
+                "kg_backend is deprecated. Use memory_backend instead.",
+                DeprecationWarning
+            )
+            if self.kg_backend == KGBackend.NETWORKX:
+                self.memory_backend = MemoryBackend.NETWORKX
+            elif self.kg_backend == KGBackend.NEO4J:
+                self.memory_backend = MemoryBackend.NEO4J
+
         # Ensure scales are sorted
         if sorted(self.scales) != self.scales:
             raise ValueError("scales must be in ascending order")
-        
+
         # Ensure fusion weights sum to approximately 1.0
         if self.fusion_weights:
             total_weight = sum(self.fusion_weights.values())
@@ -145,10 +262,19 @@ class Config:
                 # Normalize
                 for k in self.fusion_weights:
                     self.fusion_weights[k] /= total_weight
-        
+
         # Validate mode
         if isinstance(self.mode, str):
             self.mode = ExecutionMode(self.mode.lower())
+
+        # Validate hyperspace thresholds
+        if self.memory_backend == MemoryBackend.HYPERSPACE:
+            if len(self.hyperspace_thresholds) != self.hyperspace_depth:
+                import warnings
+                warnings.warn(
+                    f"hyperspace_thresholds length ({len(self.hyperspace_thresholds)}) "
+                    f"should match hyperspace_depth ({self.hyperspace_depth})"
+                )
     
     @classmethod
     def bare(cls) -> 'Config':
