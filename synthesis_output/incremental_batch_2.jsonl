@@ -1,0 +1,2 @@
+{"instruction": "What is Thompson Sampling?", "input": "Entities: Conversation Turn, Importance, Sampling, Thompson, Thompson Sampling, What\nTopics: policy\n", "output": "Thompson Sampling is..."}
+{"instruction": "How does it work?", "input": "Entities: Beta, Conversation Turn, How, Importance\n", "output": "It maintains Beta distributions..."}

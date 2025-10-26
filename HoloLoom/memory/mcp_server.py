@@ -927,7 +927,9 @@ async def init_memory(
     
     # Check health
     health = await memory.health_check()
-    logger.info(f"Memory system initialized: {health['status']} ({health['backend']})")
+    status = health.get('status', 'unknown')
+    backend = health.get('backend', 'unknown')
+    logger.info(f"Memory system initialized: {status} ({backend})")
 
 
 async def main():
@@ -936,11 +938,13 @@ async def main():
         print("Cannot start server: MCP not installed")
         print("Install with: pip install mcp")
         return
-    
+
     # Initialize memory system
+    # NOTE: Mem0 disabled due to OpenAI API quota exceeded
+    # Using Qdrant + Neo4j directly (fully local, free)
     await init_memory(
         user_id="blake",
-        enable_mem0=True,
+        enable_mem0=False,  # DISABLED - requires OpenAI API key with quota
         enable_neo4j=True,
         enable_qdrant=True
     )
@@ -953,8 +957,14 @@ async def main():
     logger.info("NEW: Conversational interface with auto-spin signal filtering!")
     logger.info("Resources: memory://<id>")
 
-    async with server:
-        await server.run()
+    # Run server with stdio transport
+    from mcp.server.stdio import stdio_server
+    async with stdio_server() as (read_stream, write_stream):
+        await server.run(
+            read_stream,
+            write_stream,
+            server.create_initialization_options()
+        )
 
 
 if __name__ == "__main__":

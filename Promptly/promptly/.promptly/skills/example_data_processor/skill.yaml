@@ -1,0 +1,14 @@
+branch: main
+commit_hash: 65253dde88a4
+description: Process and analyze structured data with Claude
+metadata:
+  author: Promptly Example
+  model: claude-3-5-sonnet-20241022
+  runtime: claude
+  tags:
+  - data
+  - analysis
+  - example
+  version: 1.0.0
+name: example_data_processor
+version: 1

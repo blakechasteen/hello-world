@@ -1,0 +1,24 @@
+# HoloLoom Core Requirements
+# Python 3.9+
+
+# Core dependencies
+torch>=2.0.0
+numpy>=1.24.0
+networkx>=3.0
+
+# Optional dependencies for full features
+spacy>=3.5.0
+sentence-transformers>=2.2.0
+scipy>=1.10.0
+
+# Neo4j knowledge graph backend
+neo4j>=5.14.0
+
+# Gymnasium for RL environments (training)
+gymnasium>=0.28.0
+
+# Visualization (optional)
+matplotlib>=3.7.0
+
+# Ollama for local LLM (optional)
+# ollama>=0.1.0

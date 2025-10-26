@@ -1,0 +1,484 @@
+{
+  "domain": "automotive_repair",
+  "version": "1.0.0",
+  "description": "Automotive maintenance and repair expertise covering vehicles, fluids, components, and common maintenance tasks",
+  "author": "ExpertLoom Community",
+  "license": "MIT",
+  "expertise_level": "intermediate",
+  "tags": ["automotive", "car repair", "maintenance", "diagnostics", "mechanic"],
+  "entities": [
+    {
+      "canonical_id": "vehicle-corolla-2015",
+      "canonical_name": "2015 Toyota Corolla",
+      "aliases": [
+        "corolla",
+        "the corolla",
+        "toyota",
+        "the car",
+        "my car"
+      ],
+      "entity_type": "vehicle",
+      "attributes": {
+        "make": "Toyota",
+        "model": "Corolla",
+        "year": 2015,
+        "mileage": 87000,
+        "engine": "1.8L 4-cylinder"
+      },
+      "metadata": {
+        "importance": "high",
+        "frequency": "common",
+        "notes": "Daily driver, well maintained"
+      }
+    },
+    {
+      "canonical_id": "fluid-engine-oil",
+      "canonical_name": "Engine Oil",
+      "aliases": [
+        "oil",
+        "motor oil",
+        "engine oil",
+        "5w-30",
+        "synthetic",
+        "synthetic oil"
+      ],
+      "entity_type": "fluid",
+      "attributes": {
+        "typical_capacity_quarts": 4.4,
+        "change_interval_miles": 5000,
+        "viscosity": "5W-30",
+        "type": "synthetic"
+      },
+      "metadata": {
+        "importance": "high",
+        "frequency": "common",
+        "notes": "Most critical maintenance fluid"
+      }
+    },
+    {
+      "canonical_id": "fluid-coolant",
+      "canonical_name": "Engine Coolant",
+      "aliases": [
+        "coolant",
+        "antifreeze",
+        "radiator fluid",
+        "coolant fluid"
+      ],
+      "entity_type": "fluid",
+      "attributes": {
+        "typical_capacity_quarts": 6.3,
+        "change_interval_miles": 30000,
+        "color": "pink",
+        "type": "long-life"
+      },
+      "metadata": {
+        "importance": "high",
+        "frequency": "uncommon",
+        "notes": "Prevents overheating and corrosion"
+      }
+    },
+    {
+      "canonical_id": "component-tire-front-left",
+      "canonical_name": "Front Left Tire",
+      "aliases": [
+        "front left tire",
+        "fl tire",
+        "driver front",
+        "left front tire"
+      ],
+      "entity_type": "tire",
+      "attributes": {
+        "position": "front_left",
+        "size": "205/55R16",
+        "recommended_psi": 32,
+        "tread_depth_mm": 6.0
+      },
+      "metadata": {
+        "importance": "high",
+        "frequency": "common",
+        "notes": "Check monthly"
+      }
+    },
+    {
+      "canonical_id": "component-tire-front-right",
+      "canonical_name": "Front Right Tire",
+      "aliases": [
+        "front right tire",
+        "fr tire",
+        "passenger front",
+        "right front tire"
+      ],
+      "entity_type": "tire",
+      "attributes": {
+        "position": "front_right",
+        "size": "205/55R16",
+        "recommended_psi": 32,
+        "tread_depth_mm": 6.0
+      },
+      "metadata": {
+        "importance": "high",
+        "frequency": "common",
+        "notes": "Check monthly"
+      }
+    },
+    {
+      "canonical_id": "component-tire-rear-left",
+      "canonical_name": "Rear Left Tire",
+      "aliases": [
+        "rear left tire",
+        "rl tire",
+        "left rear",
+        "back left tire"
+      ],
+      "entity_type": "tire",
+      "attributes": {
+        "position": "rear_left",
+        "size": "205/55R16",
+        "recommended_psi": 32,
+        "tread_depth_mm": 6.0
+      },
+      "metadata": {
+        "importance": "high",
+        "frequency": "common",
+        "notes": "Check monthly"
+      }
+    },
+    {
+      "canonical_id": "component-tire-rear-right",
+      "canonical_name": "Rear Right Tire",
+      "aliases": [
+        "rear right tire",
+        "rr tire",
+        "right rear",
+        "back right tire"
+      ],
+      "entity_type": "tire",
+      "attributes": {
+        "position": "rear_right",
+        "size": "205/55R16",
+        "recommended_psi": 32,
+        "tread_depth_mm": 6.0
+      },
+      "metadata": {
+        "importance": "high",
+        "frequency": "common",
+        "notes": "Check monthly"
+      }
+    },
+    {
+      "canonical_id": "component-battery",
+      "canonical_name": "Battery",
+      "aliases": [
+        "battery",
+        "car battery",
+        "12v battery"
+      ],
+      "entity_type": "component",
+      "attributes": {
+        "voltage": 12,
+        "cca": 550,
+        "typical_life_years": 4,
+        "age_years": 2.5
+      },
+      "metadata": {
+        "importance": "high",
+        "frequency": "uncommon",
+        "notes": "Replace every 3-5 years"
+      }
+    },
+    {
+      "canonical_id": "component-brake-pads-front",
+      "canonical_name": "Front Brake Pads",
+      "aliases": [
+        "front brakes",
+        "front pads",
+        "brake pads",
+        "front brake pads"
+      ],
+      "entity_type": "component",
+      "attributes": {
+        "position": "front",
+        "thickness_mm": 8.0,
+        "replacement_threshold_mm": 3.0,
+        "typical_life_miles": 40000
+      },
+      "metadata": {
+        "importance": "high",
+        "frequency": "common",
+        "notes": "Safety critical component"
+      }
+    },
+    {
+      "canonical_id": "component-air-filter",
+      "canonical_name": "Engine Air Filter",
+      "aliases": [
+        "air filter",
+        "engine filter",
+        "intake filter"
+      ],
+      "entity_type": "component",
+      "attributes": {
+        "change_interval_miles": 15000,
+        "cost_usd": 15
+      },
+      "metadata": {
+        "importance": "medium",
+        "frequency": "common",
+        "notes": "Easy DIY replacement"
+      }
+    }
+  ],
+  "entity_types": [
+    {
+      "type_name": "vehicle",
+      "description": "The vehicle being maintained or repaired",
+      "examples": ["2015 Toyota Corolla", "Honda Civic", "Ford F-150"],
+      "typical_attributes": ["make", "model", "year", "mileage", "engine"]
+    },
+    {
+      "type_name": "fluid",
+      "description": "Fluids used in vehicle operation",
+      "examples": ["engine oil", "coolant", "brake fluid", "transmission fluid"],
+      "typical_attributes": ["capacity", "change_interval", "viscosity", "type"]
+    },
+    {
+      "type_name": "tire",
+      "description": "Individual tires on the vehicle",
+      "examples": ["front left tire", "spare tire"],
+      "typical_attributes": ["position", "size", "recommended_psi", "tread_depth"]
+    },
+    {
+      "type_name": "component",
+      "description": "Vehicle parts and components",
+      "examples": ["battery", "brake pads", "air filter", "spark plugs"],
+      "typical_attributes": ["position", "age", "replacement_interval"]
+    }
+  ],
+  "measurement_patterns": {
+    "numeric": {
+      "tire_pressure_psi": {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*(?:PSI|psi|pounds?)",
+        "unit": "PSI",
+        "description": "Tire pressure in pounds per square inch"
+      },
+      "tread_depth_mm": {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*(?:mm|millimeters?)\\s*(?:tread|depth)",
+        "unit": "mm",
+        "description": "Tire tread depth in millimeters"
+      },
+      "mileage": {
+        "pattern": "(\\d+(?:,\\d{3})*)\\s*(?:miles?|mi|km)",
+        "unit": "miles",
+        "description": "Vehicle mileage"
+      },
+      "oil_quarts": {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*(?:quarts?|qts?)",
+        "unit": "quarts",
+        "description": "Oil volume in quarts"
+      },
+      "temperature_f": {
+        "pattern": "(\\d+)\\s*(?:degrees?|°)?\\s*F",
+        "unit": "degrees F",
+        "description": "Temperature in Fahrenheit"
+      },
+      "battery_voltage": {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*(?:volts?|V)",
+        "unit": "volts",
+        "description": "Battery voltage"
+      },
+      "brake_pad_thickness_mm": {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*mm\\s*(?:left|remaining|thick)",
+        "unit": "mm",
+        "description": "Brake pad thickness remaining"
+      }
+    },
+    "categorical": {
+      "oil_condition": {
+        "pattern": "\\b(clean|dirty|black|contaminated|milky|amber)\\b",
+        "values": ["clean", "dirty", "black", "contaminated", "milky", "amber"],
+        "description": "Visual assessment of oil condition"
+      },
+      "tire_wear": {
+        "pattern": "\\b(even|uneven|cupping|feathering|bald|good)\\b",
+        "values": ["even", "uneven", "cupping", "feathering", "bald", "good"],
+        "description": "Tire wear pattern assessment"
+      },
+      "sound_type": {
+        "pattern": "\\b(knocking|ticking|squealing|grinding|whining|rattling)\\b",
+        "values": ["knocking", "ticking", "squealing", "grinding", "whining", "rattling"],
+        "description": "Type of abnormal sound"
+      },
+      "fluid_level": {
+        "pattern": "\\b(full|low|empty|adequate|topped off)\\b",
+        "values": ["full", "low", "empty", "adequate", "topped off"],
+        "description": "Fluid level assessment"
+      }
+    }
+  },
+  "relationships": [
+    {
+      "from_type": "vehicle",
+      "to_type": "fluid",
+      "relationship": "REQUIRES",
+      "description": "Vehicles require fluids for operation"
+    },
+    {
+      "from_type": "vehicle",
+      "to_type": "component",
+      "relationship": "CONTAINS",
+      "description": "Vehicles contain various components"
+    },
+    {
+      "from_type": "vehicle",
+      "to_type": "tire",
+      "relationship": "USES",
+      "description": "Vehicles use tires for mobility"
+    },
+    {
+      "from_type": "fluid",
+      "to_type": "component",
+      "relationship": "LUBRICATES",
+      "description": "Fluids lubricate or cool components"
+    }
+  ],
+  "temporal_patterns": {
+    "typical_intervals": {
+      "oil_change": "5000 miles or 6 months",
+      "tire_rotation": "7500 miles",
+      "tire_pressure_check": "monthly",
+      "coolant_change": "30000 miles or 3 years",
+      "brake_inspection": "15000 miles",
+      "battery_check": "annually"
+    },
+    "decay_weights": {
+      "recent_priority": 0.8,
+      "description": "Recent maintenance records more relevant than old ones"
+    }
+  },
+  "micropolicies": [
+    {
+      "policy_id": "policy-tire-low-pressure",
+      "name": "Low Tire Pressure Alert",
+      "trigger": {
+        "condition": "tire_pressure_psi < 28",
+        "thresholds": {
+          "tire_pressure_psi": 28.0
+        }
+      },
+      "action": {
+        "type": "alert",
+        "message": "Tire pressure critically low (< 28 PSI) - check for leaks immediately and inflate to 32 PSI"
+      },
+      "priority": "high"
+    },
+    {
+      "policy_id": "policy-oil-change-due",
+      "name": "Oil Change Interval",
+      "trigger": {
+        "condition": "miles_since_oil_change > 5000 OR oil_condition = black",
+        "thresholds": {
+          "miles_since_oil_change": 5000
+        }
+      },
+      "action": {
+        "type": "suggest",
+        "message": "Oil change recommended - either due to mileage or condition. Use 5W-30 synthetic."
+      },
+      "priority": "medium"
+    },
+    {
+      "policy_id": "policy-brake-pad-worn",
+      "name": "Brake Pad Replacement Threshold",
+      "trigger": {
+        "condition": "brake_pad_thickness_mm < 3",
+        "thresholds": {
+          "brake_pad_thickness_mm": 3.0
+        }
+      },
+      "action": {
+        "type": "alert",
+        "message": "Brake pads below safe threshold (< 3mm) - schedule replacement immediately for safety"
+      },
+      "priority": "high"
+    },
+    {
+      "policy_id": "policy-battery-weak",
+      "name": "Weak Battery Voltage",
+      "trigger": {
+        "condition": "battery_voltage < 12.4",
+        "thresholds": {
+          "battery_voltage": 12.4
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Battery voltage low (< 12.4V) - test battery and charging system, may need replacement soon"
+      },
+      "priority": "medium"
+    },
+    {
+      "policy_id": "policy-coolant-dirty",
+      "name": "Coolant Condition Check",
+      "trigger": {
+        "condition": "coolant_condition = dirty OR coolant_condition = rusty",
+        "thresholds": {}
+      },
+      "action": {
+        "type": "suggest",
+        "message": "Coolant appears contaminated - flush cooling system and replace with fresh long-life coolant"
+      },
+      "priority": "medium"
+    }
+  ],
+  "reverse_queries": [
+    {
+      "query_id": "rq-engine-noise",
+      "trigger": "mentions of sound_type (knocking, ticking, squealing, grinding)",
+      "question_template": "You mentioned a {sound_type} sound - when exactly does it occur? (cold start, hot idle, acceleration, deceleration, braking)",
+      "expected_answer_type": "categorical",
+      "purpose": "Narrow down source of engine/mechanical noise based on occurrence timing"
+    },
+    {
+      "query_id": "rq-tire-pressure-loss",
+      "trigger": "tire_pressure_psi < 28 for same tire repeatedly",
+      "question_template": "{tire_name} pressure keeps dropping to {pressure} PSI - have you noticed any visible damage, punctures, or valve stem issues?",
+      "expected_answer_type": "text",
+      "purpose": "Identify cause of recurring tire pressure loss"
+    },
+    {
+      "query_id": "rq-oil-milky",
+      "trigger": "oil_condition = milky",
+      "question_template": "Oil shows milky appearance - have you noticed white smoke from exhaust, overheating, or coolant level dropping? This could indicate head gasket failure.",
+      "expected_answer_type": "boolean",
+      "purpose": "Diagnose potential head gasket failure when coolant mixes with oil"
+    },
+    {
+      "query_id": "rq-rapid-mileage",
+      "trigger": "mileage increased by > 10000 in < 3 months",
+      "question_template": "Mileage jumped from {old_mileage} to {new_mileage} in {time_period} - are you doing more highway driving? May want to adjust maintenance schedule.",
+      "expected_answer_type": "text",
+      "purpose": "Adjust maintenance intervals for high-mileage periods"
+    },
+    {
+      "query_id": "rq-uneven-tire-wear",
+      "trigger": "tire_wear = uneven OR tire_wear = cupping",
+      "question_template": "{tire_name} showing {wear_pattern} wear - when was the last alignment check? This pattern often indicates alignment or suspension issues.",
+      "expected_answer_type": "text",
+      "purpose": "Identify underlying cause of abnormal tire wear"
+    }
+  ],
+  "validation": {
+    "required_entity_types": ["vehicle", "fluid", "tire", "component"],
+    "minimum_entities": 8,
+    "required_measurements": ["tire_pressure_psi", "oil_condition"],
+    "test_phrases": [
+      "Checked the Corolla today at 87,450 miles - oil looks dirty and front left tire at 28 PSI",
+      "Changed engine oil and filter, used 4.4 quarts of 5W-30 synthetic, reset maintenance light",
+      "Front passenger tire low at 25 psi, found small nail in tread",
+      "Battery voltage reading 12.2V - may need replacement soon",
+      "Front brake pads measured at 3mm remaining, squealing during braking",
+      "Heard knocking sound from engine during cold start this morning",
+      "Topped off coolant - level was low but fluid still looks clean and pink"
+    ]
+  }
+}

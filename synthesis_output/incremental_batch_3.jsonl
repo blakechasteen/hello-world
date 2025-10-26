@@ -1,0 +1,4 @@
+{"instruction": "What is Thompson Sampling?", "input": "Entities: Conversation Turn, Importance, Sampling, Thompson, Thompson Sampling, What\nTopics: policy\n", "output": "Thompson Sampling is..."}
+{"instruction": "How does it work?", "input": "Entities: Beta, Conversation Turn, How, Importance\n", "output": "It maintains Beta distributions..."}
+{"instruction": "How to set up knowledge graph?", "input": "Entities: Conversation Turn, Graph, Here, How, Importance, Knowledge\nTopics: graph\n", "output": "Here are the steps..."}
+{"instruction": "What about spectral features?", "input": "Entities: Conversation Turn, Graph, Importance, Laplacian, Spectral, What\nTopics: graph\n", "output": "Spectral features use graph Laplacian..."}

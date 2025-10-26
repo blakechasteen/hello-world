@@ -45,16 +45,16 @@ from .website import WebsiteSpinner, WebsiteSpinnerConfig
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(order=True)
 class LinkInfo:
     """Information about an extracted link."""
-    url: str
-    anchor_text: str              # Link text
-    title: str                    # Title attribute
-    context: str                  # Surrounding text
-    depth: int                    # Crawl depth (0 = seed)
-    parent_url: str               # Where link was found
-    importance_score: float = 0.0 # How important/relevant (0-1)
+    importance_score: float = 0.0 # How important/relevant (0-1) - MUST BE FIRST for sorting
+    url: str = ""
+    anchor_text: str = ""              # Link text
+    title: str = ""                    # Title attribute
+    context: str = ""                  # Surrounding text
+    depth: int = 0                    # Crawl depth (0 = seed)
+    parent_url: str = ""               # Where link was found
 
 
 @dataclass

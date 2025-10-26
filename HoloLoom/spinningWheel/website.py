@@ -16,7 +16,7 @@ Use cases:
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 from urllib.parse import urlparse
 from dataclasses import dataclass

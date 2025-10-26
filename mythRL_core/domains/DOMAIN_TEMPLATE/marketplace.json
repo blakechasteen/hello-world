@@ -1,0 +1,158 @@
+{
+  "_comment": "Marketplace metadata for Expert tier domains - remove this field before submission",
+
+  "listing": {
+    "display_name": "Your Domain Name (Human Readable)",
+    "tagline": "One sentence describing what this domain covers",
+    "description": "Detailed description of the domain expertise (2-3 paragraphs)",
+    "keywords": ["keyword1", "keyword2", "keyword3"],
+    "category": "automotive|beekeeping|cooking|woodworking|gardening|healthcare|finance|other",
+    "difficulty_level": "beginner|intermediate|expert",
+    "icon_url": "https://example.com/icon.png",
+    "banner_url": "https://example.com/banner.png"
+  },
+
+  "expert": {
+    "verified": false,
+    "name": "Expert Name or Organization",
+    "bio": "Brief bio of the expert (who are you, why are you qualified)",
+    "credentials": [
+      {
+        "type": "certification",
+        "title": "Credential Name",
+        "issuer": "Issuing Organization",
+        "year": 2020
+      }
+    ],
+    "experience_years": 10,
+    "specializations": ["specialty 1", "specialty 2"],
+    "contact": {
+      "email": "expert@example.com",
+      "website": "https://yoursite.com",
+      "social": {
+        "linkedin": "linkedin.com/in/yourprofile",
+        "twitter": "@yourhandle"
+      }
+    }
+  },
+
+  "licensing": {
+    "tier": "community|pro|expert",
+    "pricing": {
+      "free": {
+        "enabled": true,
+        "limits": {
+          "queries_per_month": 50,
+          "features": ["basic_entity_resolution", "measurement_extraction"]
+        }
+      },
+      "pro": {
+        "enabled": false,
+        "price_usd_monthly": 9.99,
+        "features": ["unlimited_queries", "micropolicies", "reverse_queries", "priority_support"]
+      },
+      "enterprise": {
+        "enabled": false,
+        "price_model": "contact",
+        "features": ["volume_licensing", "custom_integration", "sla", "dedicated_support"]
+      }
+    },
+    "revenue_split": {
+      "expert_percentage": 70,
+      "platform_percentage": 30
+    },
+    "license_type": "MIT|Apache-2.0|CC-BY-4.0|Proprietary"
+  },
+
+  "quality": {
+    "completeness_score": 0,
+    "entity_count": 0,
+    "alias_count": 0,
+    "measurement_pattern_count": 0,
+    "micropolicy_count": 0,
+    "reverse_query_count": 0,
+    "test_coverage_percent": 0,
+    "last_validation": null,
+    "validation_passed": false
+  },
+
+  "usage_stats": {
+    "total_downloads": 0,
+    "active_users": 0,
+    "queries_this_month": 0,
+    "average_rating": 0.0,
+    "review_count": 0
+  },
+
+  "support": {
+    "documentation_url": "https://docs.example.com/your-domain",
+    "issues_url": "https://github.com/yourorg/yourrepo/issues",
+    "community_forum": "https://forum.example.com/your-domain",
+    "faq": [
+      {
+        "question": "Common question about your domain?",
+        "answer": "Clear answer with examples"
+      }
+    ]
+  },
+
+  "updates": {
+    "changelog_url": "https://github.com/yourorg/yourrepo/blob/main/CHANGELOG.md",
+    "update_frequency": "weekly|monthly|quarterly|as-needed",
+    "last_updated": "2024-01-01T00:00:00Z",
+    "version_history": [
+      {
+        "version": "1.0.0",
+        "date": "2024-01-01",
+        "changes": "Initial release"
+      }
+    ]
+  },
+
+  "compatibility": {
+    "min_expertloom_version": "0.1.0",
+    "dependencies": [],
+    "optional_integrations": [
+      "qdrant",
+      "neo4j",
+      "ollama"
+    ]
+  },
+
+  "showcases": [
+    {
+      "title": "Example Use Case 1",
+      "description": "How this domain solves a specific problem",
+      "input": "Example input text",
+      "output": "What the system extracts and provides",
+      "benefit": "Why this is valuable"
+    }
+  ],
+
+  "testimonials": [
+    {
+      "user": "User Name or Anonymous",
+      "rating": 5,
+      "text": "What they said about the domain",
+      "date": "2024-10-01",
+      "verified_purchase": true
+    }
+  ],
+
+  "metrics": {
+    "accuracy_rate": null,
+    "avg_query_time_ms": null,
+    "user_satisfaction": null,
+    "retention_rate": null
+  },
+
+  "metadata": {
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z",
+    "submission_date": null,
+    "approval_date": null,
+    "featured": false,
+    "trending": false,
+    "staff_pick": false
+  }
+}

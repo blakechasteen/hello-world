@@ -1,0 +1,108 @@
+{
+  "domain": "your_domain_name",
+  "version": "1.0.0",
+  "description": "Brief description of what this domain covers",
+  "author": "Your Name or Organization",
+  "license": "MIT",
+  "expertise_level": "beginner|intermediate|expert",
+  "tags": ["tag1", "tag2", "tag3"],
+  "entities": [
+    {
+      "canonical_id": "entity-001",
+      "canonical_name": "Canonical Entity Name",
+      "aliases": [
+        "common alias",
+        "another way to say it",
+        "abbreviation"
+      ],
+      "entity_type": "primary_entity_type",
+      "attributes": {
+        "key_attribute_1": "value",
+        "numeric_attribute": 0.0,
+        "status": "active"
+      },
+      "metadata": {
+        "importance": "high|medium|low",
+        "frequency": "common|uncommon|rare",
+        "notes": "Additional context about this entity"
+      }
+    }
+  ],
+  "entity_types": [
+    {
+      "type_name": "primary_entity_type",
+      "description": "What this type represents in your domain",
+      "examples": ["example 1", "example 2"],
+      "typical_attributes": ["attribute1", "attribute2"]
+    }
+  ],
+  "measurement_patterns": {
+    "numeric": {
+      "measurement_name": {
+        "pattern": "regex pattern here",
+        "unit": "unit name",
+        "description": "What this measurement represents"
+      }
+    },
+    "categorical": {
+      "category_name": {
+        "pattern": "regex pattern",
+        "values": ["value1", "value2", "value3"],
+        "description": "What this category represents"
+      }
+    }
+  },
+  "relationships": [
+    {
+      "from_type": "entity_type_1",
+      "to_type": "entity_type_2",
+      "relationship": "USES|CONTAINS|AFFECTS|etc",
+      "description": "How these entities relate"
+    }
+  ],
+  "temporal_patterns": {
+    "typical_intervals": {
+      "check_frequency": "daily|weekly|monthly",
+      "seasonal_factors": ["spring", "summer", "fall", "winter"]
+    },
+    "decay_weights": {
+      "recent_priority": 0.8,
+      "description": "How much to weight recent vs old data"
+    }
+  },
+  "micropolicies": [
+    {
+      "policy_id": "policy-001",
+      "name": "Policy Name",
+      "trigger": {
+        "condition": "when to activate this policy",
+        "thresholds": {
+          "metric_name": 10.0
+        }
+      },
+      "action": {
+        "type": "suggest|alert|warn",
+        "message": "What to recommend"
+      },
+      "priority": "high|medium|low"
+    }
+  ],
+  "reverse_queries": [
+    {
+      "query_id": "rq-001",
+      "trigger": "What anomaly/pattern triggers this question",
+      "question_template": "Template for question to ask user (use {entity} placeholders)",
+      "expected_answer_type": "numeric|categorical|boolean|text",
+      "purpose": "Why we're asking this question"
+    }
+  ],
+  "validation": {
+    "required_entity_types": ["type1", "type2"],
+    "minimum_entities": 5,
+    "required_measurements": ["measurement1"],
+    "test_phrases": [
+      "Example note 1 that should match entities",
+      "Example note 2 with measurements"
+    ]
+  }
+}

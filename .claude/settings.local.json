@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(python:*)",
+      "Bash(python demo_automotive_domain.py:*)",
+      "Bash(docker inspect:*)",
+      "Bash(python validate_domain.py:*)",
+      "Bash(git add:*)",
+      "Bash(curl:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd multimodal web scraping with recursive matryoshka importance gating\n\nImplements complete web ingestion system with:\n- Multimodal content extraction (text + images)\n- Browser history reading (Chrome, Edge, Firefox, Brave)\n- Recursive crawling with matryoshka importance gating\n- MCP server integration for Claude Desktop\n\nCore Features:\n- WebsiteSpinner: Scrapes text + meaningful images with context\n- ImageExtractor: Filters logos/ads, extracts captions/alt-text\n- Browser history reader: SQLite database parsing for all major browsers\n- RecursiveCrawler: Depth-based importance thresholds prevent noise\n\nMatryoshka Gating Innovation:\n- Importance threshold increases with depth (0.6 → 0.75 → 0.85)\n- Creates natural funnel: broad exploration → focused drilling\n- Prevents infinite crawling while capturing related content\n- Link scoring based on topic relevance, context, structure\n\nFiles Added:\n- HoloLoom/spinningWheel/website.py (380 lines)\n- HoloLoom/spinningWheel/image_utils.py (460 lines)\n- HoloLoom/spinningWheel/browser_history.py (370 lines)\n- HoloLoom/spinningWheel/recursive_crawler.py (580 lines)\n- Example scripts for each feature\n- Comprehensive documentation\n\nMCP Integration:\n- ingest_webpage tool: Scrape any URL from Claude Desktop\n- process_text tool: Chunk and store long documents\n- Full multimodal support with image metadata\n\nTested and verified:\n- Link importance scoring working correctly\n- Matryoshka thresholds create natural funnel\n- Successfully crawls Wharton Prompt Library (test case)\n- All core algorithms validated\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Read(//c/Users/blake/.cache/**)",
+      "Read(//c/Users/blake/**)",
+      "Bash(docker restart:*)",
+      "Bash(timeout 10 python:*)",
+      "Bash(set:*)",
+      "Bash(PYTHONPATH=. timeout 10 python:*)",
+      "Bash(git checkout:*)",
+      "Bash(export PYTHONPATH=.)",
+      "Bash(pip install mcp)",
+      "Bash(git ls-tree:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash($env:PYTHONIOENCODING=\"utf-8\")",
+      "Bash(Select-Object -First 250)",
+      "Bash(git commit:*)",
+      "Bash(mv:*)",
+      "Bash(timeout 15 python:*)",
+      "Bash(timeout 30 python:*)",
+      "Bash(timeout 45 python:*)",
+      "Bash(timeout 120 python:*)",
+      "Bash(timeout 180 python:*)",
+      "Bash(awk:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -28,4 +28,12 @@ except Exception:
 	except Exception:
 		Documentation = None
 
-__all__ = ["policy", "embedding", "Documentation"]
+# Import unified API as main export
+try:
+	from .unified_api import HoloLoom, create_hololoom
+	__all__ = ["HoloLoom", "create_hololoom", "policy", "embedding", "Documentation"]
+except ImportError as e:
+	# Fallback if unified_api not available
+	HoloLoom = None
+	create_hololoom = None
+	__all__ = ["policy", "embedding", "Documentation"]

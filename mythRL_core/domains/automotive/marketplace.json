@@ -1,0 +1,159 @@
+{
+  "listing": {
+    "display_name": "Automotive Repair & Maintenance",
+    "tagline": "Expert vehicle maintenance knowledge for everyday drivers",
+    "description": "A comprehensive domain covering automotive maintenance, diagnostics, and repair knowledge. Includes entity tracking for vehicles, fluids, tires, and components, with intelligent measurement extraction for pressure, voltage, mileage, and more. Features micropolicies for safety-critical alerts (low tire pressure, worn brakes) and reverse queries for diagnostic assistance (engine noises, fluid contamination). Perfect for DIY mechanics, fleet managers, or anyone maintaining their vehicle.",
+    "keywords": ["automotive", "car repair", "maintenance", "diagnostics", "mechanic", "vehicle", "DIY"],
+    "category": "automotive",
+    "difficulty_level": "intermediate",
+    "icon_url": null,
+    "banner_url": null
+  },
+
+  "expert": {
+    "verified": false,
+    "name": "ExpertLoom Community",
+    "bio": "Community-contributed domain demonstrating the ExpertLoom framework's extensibility. Based on real-world automotive maintenance experience.",
+    "credentials": [],
+    "experience_years": null,
+    "specializations": ["automotive maintenance", "diagnostics", "fluid management", "tire care"],
+    "contact": {
+      "email": null,
+      "website": "https://github.com/yourusername/mythRL",
+      "social": {}
+    }
+  },
+
+  "licensing": {
+    "tier": "community",
+    "pricing": {
+      "free": {
+        "enabled": true,
+        "limits": {
+          "queries_per_month": null,
+          "features": ["entity_resolution", "measurement_extraction", "micropolicies", "reverse_queries"]
+        }
+      },
+      "pro": {
+        "enabled": false
+      },
+      "enterprise": {
+        "enabled": false
+      }
+    },
+    "revenue_split": {
+      "expert_percentage": 0,
+      "platform_percentage": 0
+    },
+    "license_type": "MIT"
+  },
+
+  "quality": {
+    "completeness_score": 95,
+    "entity_count": 10,
+    "alias_count": 44,
+    "measurement_pattern_count": 11,
+    "micropolicy_count": 5,
+    "reverse_query_count": 5,
+    "test_coverage_percent": 60,
+    "last_validation": "2024-10-24",
+    "validation_passed": true
+  },
+
+  "usage_stats": {
+    "total_downloads": 0,
+    "active_users": 0,
+    "queries_this_month": 0,
+    "average_rating": 0.0,
+    "review_count": 0
+  },
+
+  "support": {
+    "documentation_url": null,
+    "issues_url": "https://github.com/yourusername/mythRL/issues",
+    "community_forum": null,
+    "faq": [
+      {
+        "question": "What vehicles does this domain support?",
+        "answer": "Currently configured for a 2015 Toyota Corolla, but easily adaptable to any vehicle. Simply add your vehicle as a new entity with its specific attributes."
+      },
+      {
+        "question": "Can I track multiple vehicles?",
+        "answer": "Yes! Add each vehicle as a separate entity in the registry. The system will automatically correlate notes to the correct vehicle."
+      },
+      {
+        "question": "What measurements are extracted?",
+        "answer": "7 numeric (tire pressure, mileage, voltage, etc.) and 4 categorical (oil condition, tire wear, sounds, fluid levels). All patterns are customizable."
+      },
+      {
+        "question": "How do micropolicies work?",
+        "answer": "Micropolicies are expert rules that trigger alerts. For example, if tire pressure drops below 28 PSI, the system alerts you to check for leaks. You can customize thresholds and add your own rules."
+      }
+    ]
+  },
+
+  "updates": {
+    "changelog_url": null,
+    "update_frequency": "as-needed",
+    "last_updated": "2024-10-24T00:00:00Z",
+    "version_history": [
+      {
+        "version": "1.0.0",
+        "date": "2024-10-24",
+        "changes": "Initial release - 10 entities, 11 measurement patterns, 5 micropolicies, 5 reverse queries"
+      }
+    ]
+  },
+
+  "compatibility": {
+    "min_expertloom_version": "0.1.0",
+    "dependencies": [],
+    "optional_integrations": [
+      "qdrant",
+      "sentence-transformers"
+    ]
+  },
+
+  "showcases": [
+    {
+      "title": "Low Tire Pressure Detection",
+      "description": "Automatically extracts tire pressure from notes and triggers alerts when below safe threshold",
+      "input": "Checked the Corolla at 87,450 miles - oil looks dirty and front left tire at 28 PSI",
+      "output": "Entities: Corolla (vehicle), oil (fluid), front left tire (tire). Measurements: mileage=87450, tire_pressure_psi=28, oil_condition='dirty'. Alert: Tire pressure critically low - check for leaks and inflate to 32 PSI.",
+      "benefit": "Prevents driving on underinflated tires, which reduces fuel efficiency and tire life"
+    },
+    {
+      "title": "Engine Noise Diagnosis",
+      "description": "Reverse query asks targeted questions to help diagnose engine problems",
+      "input": "Heard knocking sound from engine during cold start this morning",
+      "output": "Extracted sound_type='knocking'. Reverse query triggered: 'You mentioned a knocking sound - when exactly does it occur? (cold start, hot idle, acceleration, deceleration, braking)'. This helps narrow down potential causes.",
+      "benefit": "Guides user to provide diagnostic information that mechanics need, potentially avoiding expensive trial-and-error"
+    },
+    {
+      "title": "Brake Safety Alert",
+      "description": "Tracks brake pad thickness and alerts when replacement is needed",
+      "input": "Front brake pads measured at 3mm remaining, squealing during braking",
+      "output": "Entity: front brake pads. Measurements: brake_pad_thickness_mm=3.0, sound_type='squealing'. Alert: Brake pads below safe threshold (<3mm) - schedule replacement immediately for safety.",
+      "benefit": "Prevents brake failure by alerting before pads wear down to metal-on-metal contact"
+    }
+  ],
+
+  "testimonials": [],
+
+  "metrics": {
+    "accuracy_rate": null,
+    "avg_query_time_ms": null,
+    "user_satisfaction": null,
+    "retention_rate": null
+  },
+
+  "metadata": {
+    "created_at": "2024-10-24T00:00:00Z",
+    "updated_at": "2024-10-24T00:00:00Z",
+    "submission_date": null,
+    "approval_date": null,
+    "featured": false,
+    "trending": false,
+    "staff_pick": false
+  }
+}

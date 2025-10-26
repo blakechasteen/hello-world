@@ -1,0 +1,159 @@
+{
+  "domain": "beekeeping",
+  "entities": [
+    {
+      "canonical_id": "hive-001",
+      "canonical_name": "Half Door Hive",
+      "aliases": ["half door", "hive 1", "first hive"],
+      "entity_type": "hive",
+      "attributes": {
+        "typical_strength": 5.5,
+        "frame_size": "5-frame",
+        "box_count": 1,
+        "temperament": "calm"
+      },
+      "metadata": {
+        "status": "active",
+        "configuration": "single"
+      }
+    },
+    {
+      "canonical_id": "hive-002",
+      "canonical_name": "Dennis's Double Stack",
+      "aliases": ["dennis", "double stack", "dennis hive", "strong hive", "big one"],
+      "entity_type": "hive",
+      "attributes": {
+        "typical_strength": 14.5,
+        "frame_size": "10-frame",
+        "box_count": 2,
+        "temperament": "calm",
+        "genetics_quality": "high"
+      },
+      "metadata": {
+        "status": "active",
+        "configuration": "double_stack",
+        "origin_beekeeper": "Dennis",
+        "origin_reputation": "amazing"
+      }
+    },
+    {
+      "canonical_id": "hive-003",
+      "canonical_name": "Jodi's Hive",
+      "aliases": ["jodi", "jodis", "jodi hive", "hive 3"],
+      "entity_type": "hive",
+      "attributes": {
+        "typical_strength": 8.0,
+        "frame_size": "10-frame",
+        "box_count": 2,
+        "temperament": "calm"
+      },
+      "metadata": {
+        "status": "active",
+        "configuration": "single",
+        "origin_beekeeper": "Jodi",
+        "notes": "Primary hive from Jodi, used as parent for splits"
+      }
+    },
+    {
+      "canonical_id": "hive-004",
+      "canonical_name": "Jodi's Split",
+      "aliases": ["split", "jodi split", "new split", "hive 4"],
+      "entity_type": "hive",
+      "attributes": {
+        "typical_strength": 8.0,
+        "frame_size": "10-frame",
+        "box_count": 1,
+        "temperament": "calm"
+      },
+      "metadata": {
+        "status": "active",
+        "configuration": "single",
+        "parent_hive": "hive-003",
+        "split_date": "2024-spring"
+      }
+    },
+    {
+      "canonical_id": "hive-005",
+      "canonical_name": "Smallest Colony",
+      "aliases": ["smallest", "small hive", "weak one"],
+      "entity_type": "hive",
+      "attributes": {
+        "typical_strength": 2.5,
+        "frame_size": "5-frame",
+        "box_count": 1,
+        "temperament": "calm"
+      },
+      "metadata": {
+        "status": "questionable",
+        "configuration": "single",
+        "notes": "Weakest colony, may not survive winter"
+      }
+    },
+    {
+      "canonical_id": "treatment-thymol",
+      "canonical_name": "Thymol Treatment",
+      "aliases": ["thymol", "thymol card", "thymovar"],
+      "entity_type": "treatment",
+      "attributes": {
+        "treatment_type": "thymol",
+        "application_method": "card",
+        "typical_dosage": 50,
+        "dosage_unit": "grams",
+        "interval_days": 14
+      },
+      "metadata": {
+        "organic": true,
+        "target": "varroa_mites",
+        "season_preference": "fall"
+      }
+    },
+    {
+      "canonical_id": "treatment-formic",
+      "canonical_name": "Formic Acid Treatment",
+      "aliases": ["formic acid", "formic", "mite away"],
+      "entity_type": "treatment",
+      "attributes": {
+        "treatment_type": "formic_acid",
+        "application_method": "strip",
+        "typical_dosage": null,
+        "interval_days": 7
+      },
+      "metadata": {
+        "organic": true,
+        "target": "varroa_mites",
+        "fast_acting": true
+      }
+    },
+    {
+      "canonical_id": "beekeeper-dennis",
+      "canonical_name": "Dennis",
+      "aliases": ["dennis"],
+      "entity_type": "beekeeper",
+      "attributes": {
+        "reputation": "amazing",
+        "genetics_quality": "high"
+      },
+      "metadata": {}
+    },
+    {
+      "canonical_id": "beekeeper-jodi",
+      "canonical_name": "Jodi",
+      "aliases": ["jodi"],
+      "entity_type": "beekeeper",
+      "attributes": {},
+      "metadata": {}
+    },
+    {
+      "canonical_id": "forage-goldenrod",
+      "canonical_name": "Goldenrod",
+      "aliases": ["goldenrod", "golden rod"],
+      "entity_type": "forage",
+      "attributes": {
+        "bloom_season": "fall",
+        "abundance": "high",
+        "quality": "good"
+      },
+      "metadata": {}
+    }
+  ]
+}
