@@ -41,6 +41,16 @@ except ImportError:
         QueryIntent, MathOperationSelector
     )
 
+# Import contextual bandit
+try:
+    from .contextual_bandit import ContextualOperationSelector
+except ImportError:
+    try:
+        from contextual_bandit import ContextualOperationSelector
+    except ImportError:
+        # Fallback if not available
+        ContextualOperationSelector = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -738,17 +748,32 @@ class SmartMathOperationSelector(MathOperationSelector):
         selector.record_feedback(plan, success=True, quality=0.85)
     """
 
-    def __init__(self, load_state: bool = True):
+    def __init__(self, load_state: bool = True, use_contextual: bool = True):
         """
         Initialize smart selector.
 
         Args:
             load_state: Load saved learning state if available
+            use_contextual: Use contextual bandits (470-dim FGTS)
         """
         super().__init__()
 
-        # RL learning
+        # RL learning (non-contextual Thompson Sampling)
         self.learner = ThompsonSamplingLearner()
+
+        # Contextual bandit (Feel-Good Thompson Sampling with 470-dim context)
+        self.use_contextual = use_contextual and ContextualOperationSelector is not None
+        if self.use_contextual:
+            operation_names = list(self.operations.keys())
+            self.contextual_selector = ContextualOperationSelector(
+                operations=operation_names,
+                exploration_coef=0.5
+            )
+            logger.info("  Contextual Bandit: ENABLED (470-dim FGTS)")
+        else:
+            self.contextual_selector = None
+            if use_contextual and ContextualOperationSelector is None:
+                logger.warning("  Contextual Bandit: DISABLED (module not available)")
 
         # Operator composition
         self.composer = OperationComposer()
@@ -763,7 +788,7 @@ class SmartMathOperationSelector(MathOperationSelector):
             self._load_state()
 
         logger.info("SmartMathOperationSelector initialized")
-        logger.info("  RL Learning: Thompson Sampling")
+        logger.info(f"  RL Learning: Thompson Sampling ({'Contextual' if self.use_contextual else 'Non-Contextual'})")
         logger.info("  Composition: Enabled")
         logger.info("  Testing: Rigorous property verification")
 
@@ -807,14 +832,30 @@ class SmartMathOperationSelector(MathOperationSelector):
 
         # RL-based selection if enabled
         if enable_learning and len(candidates) > 1:
-            # Use Thompson Sampling to select best operations
-            for _ in range(min(5, len(candidates))):  # Select up to 5 ops
-                op = self.learner.select_operation(candidates, primary_intent)
-                if op not in selected:
-                    selected.append(op)
-                    justifications[op.name] = (
-                        f"Thompson Sampling (intent: {primary_intent.value})"
+            # Use contextual bandit if available, else Thompson Sampling
+            if self.use_contextual and self.contextual_selector:
+                # Contextual selection (FGTS with 470-dim context)
+                candidate_names = [op.name for op in candidates]
+                for _ in range(min(5, len(candidates))):
+                    op_name, metadata = self.contextual_selector.select(
+                        query_text=query_text,
+                        intent=primary_intent.value,
+                        candidates=candidate_names,
+                        budget_remaining=budget if budget else 50
                     )
+                    op = self.operations[op_name]
+                    if op not in selected:
+                        selected.append(op)
+                        justifications[op.name] = f"Contextual TS (score={metadata['scores'][op_name]:.2f})"
+            else:
+                # Non-contextual Thompson Sampling
+                for _ in range(min(5, len(candidates))):  # Select up to 5 ops
+                    op = self.learner.select_operation(candidates, primary_intent)
+                    if op not in selected:
+                        selected.append(op)
+                        justifications[op.name] = (
+                            f"Thompson Sampling (intent: {primary_intent.value})"
+                        )
         else:
             # Fall back to base selection
             plan = super().plan_operations(
@@ -949,7 +990,8 @@ class SmartMathOperationSelector(MathOperationSelector):
         plan: OperationPlan,
         success: bool,
         quality: float = 0.0,
-        execution_time: float = 0.0
+        execution_time: float = 0.0,
+        query_text: str = None
     ):
         """
         Record feedback for RL learning.
@@ -959,6 +1001,7 @@ class SmartMathOperationSelector(MathOperationSelector):
             success: Whether plan succeeded
             quality: Quality score (0-1)
             execution_time: Total execution time
+            query_text: Original query (for contextual bandit)
         """
         primary_intent = plan.metadata.get("primary_intent", "unknown")
 
@@ -966,7 +1009,7 @@ class SmartMathOperationSelector(MathOperationSelector):
             if not isinstance(op, MathOperation):
                 continue
 
-            # Record feedback for RL
+            # Record feedback for non-contextual RL
             self.learner.record_feedback(
                 operation=op.name,
                 intent=primary_intent,
@@ -974,6 +1017,16 @@ class SmartMathOperationSelector(MathOperationSelector):
                 cost=op.estimated_cost,
                 execution_time=execution_time / len(plan.operations)
             )
+
+            # Record feedback for contextual bandit if enabled
+            if self.use_contextual and self.contextual_selector and query_text:
+                self.contextual_selector.update(
+                    operation=op.name,
+                    query_text=query_text,
+                    intent=primary_intent,
+                    reward=quality,  # Use quality as reward
+                    cost=op.estimated_cost
+                )
 
         logger.info(
             f"Feedback recorded: Success={success}, Quality={quality:.2f}"

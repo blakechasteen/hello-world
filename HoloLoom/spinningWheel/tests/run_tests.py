@@ -129,18 +129,19 @@ async def test_text_single_shard():
 
 async def test_text_chunk_by_paragraph():
     """Test paragraph-based chunking."""
-    config = TextSpinnerConfig(chunk_by='paragraph', chunk_size=100)
+    config = TextSpinnerConfig(chunk_by='paragraph', chunk_size=100, min_chunk_size=20)
     spinner = TextSpinner(config)
 
     raw_data = {
-        'text': 'Paragraph one.\n\nParagraph two.\n\nParagraph three.',
+        'text': 'This is the first paragraph with enough content to pass the minimum size threshold.\n\nThis is the second paragraph, also with sufficient length to be included.\n\nAnd here is the third paragraph with meaningful content.',
         'source': 'multi.txt'
     }
 
     shards = await spinner.spin(raw_data)
 
-    assert len(shards) >= 1
-    assert all('chunk_by' in s.metadata for s in shards)
+    assert len(shards) >= 1, f"Expected at least 1 shard, got {len(shards)}"
+    assert all('chunk_by' in s.metadata for s in shards), "Missing chunk_by in metadata"
+    assert all('chunk_index' in s.metadata for s in shards), "Missing chunk_index in metadata"
 
 
 async def test_text_entity_extraction():

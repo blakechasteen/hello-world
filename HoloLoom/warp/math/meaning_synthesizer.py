@@ -316,13 +316,33 @@ class MeaningSynthesizer:
         #          The closest match is within 0.15 units..."
     """
 
-    def __init__(self):
-        """Initialize meaning synthesizer."""
+    def __init__(self, use_data_understanding: bool = True):
+        """Initialize meaning synthesizer.
+
+        Args:
+            use_data_understanding: Enable 5-stage NLG pipeline with data understanding
+        """
         self.templates = MeaningTemplates.get_templates()
         self.synthesis_history: List[MeaningResult] = []
 
+        # Data understanding layer (5-stage NLG pipeline)
+        self.use_data_understanding = use_data_understanding
+        if use_data_understanding:
+            try:
+                from data_understanding import DataInterpreter, EnhancedMathResult
+                self.data_interpreter = DataInterpreter()
+                self.EnhancedMathResult = EnhancedMathResult
+                logger.info("  Data Understanding: ENABLED (5-stage NLG)")
+            except ImportError:
+                logger.warning("  Data Understanding: DISABLED (module not available)")
+                self.data_interpreter = None
+                self.use_data_understanding = False
+        else:
+            self.data_interpreter = None
+
         logger.info("MeaningSynthesizer initialized")
         logger.info(f"  Templates: {len(self.templates)}")
+        logger.info(f"  NLG Pipeline: {'5-stage (enhanced)' if self.use_data_understanding else 'Template-based'}")
 
     def synthesize(
         self,
@@ -345,7 +365,20 @@ class MeaningSynthesizer:
         """
         logger.info(f"Synthesizing meaning for {len(results)} operations")
 
-        # Generate detail explanations
+        # STAGE 1: DATA UNDERSTANDING (if enabled)
+        enhanced_results = {}
+        if self.use_data_understanding and self.data_interpreter:
+            for op_name, result in results.items():
+                try:
+                    enhanced = self.EnhancedMathResult(op_name, result)
+                    enhanced_results[op_name] = enhanced
+                except Exception as e:
+                    logger.warning(f"Failed to enhance {op_name}: {e}")
+                    enhanced_results[op_name] = None
+        else:
+            enhanced_results = {k: None for k in results.keys()}
+
+        # Generate detail explanations (using enhanced results if available)
         details = []
         for op in plan.operations:
             op_name = op.name
@@ -354,6 +387,13 @@ class MeaningSynthesizer:
                 try:
                     formatted = template.formatter(results[op_name])
                     explanation = template.template.format(**formatted)
+
+                    # Add semantic interpretation if available
+                    if enhanced_results.get(op_name):
+                        enhanced = enhanced_results[op_name]
+                        if enhanced.interpretation.get("insights"):
+                            explanation += " " + " ".join(enhanced.interpretation["insights"][:2])
+
                     details.append(explanation)
                 except Exception as e:
                     logger.warning(f"Failed to format {op_name}: {e}")
@@ -361,8 +401,8 @@ class MeaningSynthesizer:
         # Generate summary based on intent
         summary = self._generate_summary(intent, results, plan)
 
-        # Extract key insights
-        insights = self._extract_insights(results, intent)
+        # Extract key insights (enhanced with data understanding)
+        insights = self._extract_insights_enhanced(results, intent, enhanced_results)
 
         # Generate recommendations
         recommendations = self._generate_recommendations(results, intent, plan)
@@ -482,6 +522,45 @@ class MeaningSynthesizer:
                 insights.append("Process is not converging - may need different approach")
 
         return insights
+
+    def _extract_insights_enhanced(
+        self,
+        results: Dict[str, Any],
+        intent: QueryIntent,
+        enhanced_results: Dict[str, Any]
+    ) -> List[str]:
+        """
+        Extract key insights using data understanding layer.
+
+        Combines traditional insights with semantic interpretation.
+        """
+        # Start with traditional insights
+        insights = self._extract_insights(results, intent)
+
+        # Add insights from data understanding layer
+        if self.use_data_understanding:
+            for op_name, enhanced in enhanced_results.items():
+                if enhanced and hasattr(enhanced, 'interpretation'):
+                    # Add interpreted insights
+                    interp_insights = enhanced.interpretation.get("insights", [])
+                    insights.extend(interp_insights)
+
+                    # Add pattern-based insights
+                    for arr_name, arr_interp in enhanced.interpretation.get("interpreted_arrays", {}).items():
+                        if "patterns" in arr_interp:
+                            for pattern in arr_interp["patterns"]:
+                                if pattern.strength > 0.7:
+                                    insights.append(f"{arr_name.capitalize()}: {pattern.description}")
+
+        # Deduplicate and limit
+        seen = set()
+        unique_insights = []
+        for insight in insights:
+            if insight not in seen:
+                unique_insights.append(insight)
+                seen.add(insight)
+
+        return unique_insights[:5]  # Top 5 insights
 
     def _generate_recommendations(
         self,

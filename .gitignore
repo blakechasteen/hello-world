@@ -32,10 +32,16 @@ torch_model.pt
 # Release artifacts
 *.zip
 
-# Test data directories
+# Test data directories and generated files
 memory_data/
 test_memory_data/
 synthesis_output/
+*.npy
+*.jsonl
+
+# Bootstrap and experiment results
+HoloLoom/bootstrap_results/
+**/bootstrap_results/
 
 # Qdrant storage
 qdrant_storage/

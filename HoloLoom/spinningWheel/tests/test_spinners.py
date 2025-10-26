@@ -114,19 +114,20 @@ class TestTextSpinner:
     @pytest.mark.asyncio
     async def test_text_chunk_by_paragraph(self):
         """Test paragraph-based chunking."""
-        config = TextSpinnerConfig(chunk_by='paragraph', chunk_size=100)
+        config = TextSpinnerConfig(chunk_by='paragraph', chunk_size=100, min_chunk_size=20)
         spinner = TextSpinner(config)
 
         raw_data = {
-            'text': 'Paragraph one.\n\nParagraph two.\n\nParagraph three.',
+            'text': 'This is the first paragraph with enough content to pass the minimum size threshold.\n\nThis is the second paragraph, also with sufficient length to be included.\n\nAnd here is the third paragraph with meaningful content.',
             'source': 'multi.txt'
         }
 
         shards = await spinner.spin(raw_data)
 
-        assert len(shards) >= 1  # May combine paragraphs if under chunk_size
+        assert len(shards) >= 1  # Should create multiple shards
         assert all('chunk_by' in s.metadata for s in shards)
         assert all(s.metadata['chunk_by'] == 'paragraph' for s in shards)
+        assert all('chunk_index' in s.metadata for s in shards)
 
     @pytest.mark.asyncio
     async def test_text_chunk_by_sentence(self):

@@ -29,6 +29,7 @@ from .website import WebsiteSpinner, WebsiteSpinnerConfig, spin_webpage
 from .browser_history import BrowserHistoryReader, BrowserVisit, get_recent_history
 from .recursive_crawler import RecursiveCrawler, CrawlConfig, LinkInfo, crawl_recursive
 from .image_utils import ImageExtractor, ImageInfo
+from .batch_utils import batch_ingest_urls, batch_ingest_files, batch_ingest_from_list_file, BatchConfig, BatchResult
 
 __all__ = [
     # Base
@@ -66,6 +67,12 @@ __all__ = [
     # Image Utils
     "ImageExtractor",
     "ImageInfo",
+    # Batch Utils
+    "batch_ingest_urls",
+    "batch_ingest_files",
+    "batch_ingest_from_list_file",
+    "BatchConfig",
+    "BatchResult",
     # Factory
     "create_spinner"
 ]

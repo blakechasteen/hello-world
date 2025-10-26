@@ -324,8 +324,9 @@ class HoloLoomTerminalApp(App):
 - **MCTS Simulations:** 50
 
 ## Trace
-Pattern: {spacetime.trace.pattern_name}
-Timestamp: {spacetime.trace.timestamp}
+Adapter: {spacetime.trace.policy_adapter}
+Start: {spacetime.trace.start_time.strftime("%H:%M:%S")}
+End: {spacetime.trace.end_time.strftime("%H:%M:%S")}
 
 See 'MCTS' tab for decision tree
 See 'Trace' tab for full pipeline

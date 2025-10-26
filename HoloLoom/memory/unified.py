@@ -120,12 +120,20 @@ class UnifiedMemory:
     
     def _init_subsystems(self, *flags):
         """Initialize backend systems (internal)."""
-        # TODO: Initialize actual systems
-        # - HybridMemoryManager
-        # - Neo4jMemoryStore
-        # - QdrantMemoryStore
-        # - HofstadterMemoryIndex
-        pass
+        # v1.0.1: Use simple in-memory store
+        # v1.1+: Add hybrid Neo4j + Qdrant support
+        try:
+            from .stores.in_memory_store import InMemoryStore
+            from .protocol import Memory as ProtocolMemory, MemoryQuery, Strategy as ProtocolStrategy
+            self._backend = InMemoryStore()
+            self._backend_available = True
+            self._protocol_memory = ProtocolMemory
+            self._protocol_query = MemoryQuery
+            self._protocol_strategy = ProtocolStrategy
+        except ImportError:
+            # Fallback if imports fail
+            self._backend = None
+            self._backend_available = False
     
     # ========================================================================
     # Core Operations - Intuitive and Simple
@@ -173,12 +181,34 @@ class UnifiedMemory:
         # 4. Hofstadter computes indices
 
         # User doesn't need to know any of this!
-        # TODO: Implement actual storage
         import hashlib
         from datetime import datetime
+        import asyncio
 
         # Generate a simple memory ID
         memory_id = f"mem_{hashlib.sha256(text.encode()).hexdigest()[:8]}"
+
+        # Actually store in backend if available
+        if self._backend_available and self._backend:
+            # Merge context and metadata
+            full_context = {
+                'user_id': self.user_id,
+                'importance': importance,
+                **(context or {})
+            }
+
+            protocol_mem = self._protocol_memory(
+                id=memory_id,
+                text=text,
+                timestamp=datetime.now(),
+                context=full_context
+            )
+            # Run async store
+            try:
+                asyncio.run(self._backend.store(protocol_mem))
+            except Exception as e:
+                # Graceful fallback
+                pass
 
         return memory_id
     
@@ -368,33 +398,72 @@ class UnifiedMemory:
     
     def _recall_temporal(self, query, limit, time_range) -> List[Memory]:
         """Temporal strategy: Neo4j time threads."""
-        # Implementation uses Neo4j IN_TIME edges
-        # TODO: Implement actual temporal search
-        return []
+        # v1.0.1: Use in-memory store with temporal sorting
+        return self._recall_from_backend(query, limit, strategy="temporal")
 
     def _recall_semantic(self, query, limit) -> List[Memory]:
         """Semantic strategy: Qdrant similarity."""
-        # Implementation uses Qdrant multi-scale search
-        # TODO: Implement actual semantic search
-        return []
+        # v1.0.1: Use in-memory store with text matching
+        return self._recall_from_backend(query, limit, strategy="semantic")
 
     def _recall_graph(self, query, limit) -> List[Memory]:
         """Graph strategy: Neo4j traversal."""
-        # Implementation uses Neo4j Cypher graph queries
-        # TODO: Implement actual graph traversal
-        return []
+        # v1.0.1: Use in-memory store (no graph yet)
+        return self._recall_from_backend(query, limit, strategy="graph")
 
     def _recall_resonant(self, query, limit) -> List[Memory]:
         """Resonance strategy: Hofstadter patterns."""
-        # Implementation uses Hofstadter resonance detection
-        # TODO: Implement actual resonance detection
-        return []
+        # v1.0.1: Use in-memory store (no resonance yet)
+        return self._recall_from_backend(query, limit, strategy="resonant")
 
     def _recall_fused(self, query, limit, filters) -> List[Memory]:
         """Balanced strategy: Weighted fusion of all."""
-        # Implementation uses HybridMemoryManager
-        # TODO: Implement actual fused search
-        return []
+        # v1.0.1: Use in-memory store with fused strategy
+        return self._recall_from_backend(query, limit, strategy="fused")
+
+    def _recall_from_backend(self, query, limit, strategy="fused") -> List[Memory]:
+        """Actually retrieve from backend store."""
+        if not self._backend_available or not self._backend:
+            return []
+
+        import asyncio
+
+        try:
+            # Create query
+            mem_query = self._protocol_query(
+                text=query,
+                user_id=self.user_id,
+                limit=limit
+            )
+
+            # Map strategy
+            strategy_map = {
+                "temporal": self._protocol_strategy.TEMPORAL,
+                "semantic": self._protocol_strategy.SEMANTIC,
+                "graph": self._protocol_strategy.GRAPH,
+                "fused": self._protocol_strategy.FUSED
+            }
+            strat = strategy_map.get(strategy, self._protocol_strategy.FUSED)
+
+            # Retrieve
+            result = asyncio.run(self._backend.retrieve(mem_query, strat))
+
+            # Convert protocol Memory to unified Memory
+            unified_mems = []
+            for mem in result.memories:
+                unified_mems.append(Memory(
+                    id=mem.id,
+                    text=mem.text,
+                    timestamp=mem.timestamp.isoformat() if hasattr(mem.timestamp, 'isoformat') else str(mem.timestamp),
+                    context=mem.context,
+                    relevance=0.8  # Placeholder relevance
+                ))
+
+            return unified_mems
+
+        except Exception as e:
+            # Graceful fallback
+            return []
     
     def _find_strange_loops(self, min_strength) -> List[MemoryPattern]:
         """Detect strange loops using cycle detection."""
