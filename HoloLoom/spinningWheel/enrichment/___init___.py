@@ -59,6 +59,7 @@ from .base import BaseEnricher, EnrichmentResult
 from .metadata import MetadataEnricher
 from .semantics import SemanticEnricher
 from .temporal import TemporalEnricher
+from .ollama import OllamaEnricher
 from .neo4j_enricher import Neo4jEnricher
 from .mem0_enricher import Mem0Enricher
 
@@ -68,6 +69,7 @@ __all__ = [
     "MetadataEnricher",
     "SemanticEnricher",
     "TemporalEnricher",
+    "OllamaEnricher",
     "Neo4jEnricher",
     "Mem0Enricher",
 ]

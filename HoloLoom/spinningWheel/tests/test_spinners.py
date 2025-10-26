@@ -25,8 +25,8 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from HoloLoom.spinningWheel import (
-    AudioSpinner, TextSpinner, CodeSpinner,
-    SpinnerConfig, TextSpinnerConfig, CodeSpinnerConfig
+    AudioSpinner, TextSpinner, CodeSpinner, WebsiteSpinner, RecursiveCrawler,
+    SpinnerConfig, TextSpinnerConfig, CodeSpinnerConfig, WebsiteSpinnerConfig, CrawlConfig
 )
 
 
@@ -392,6 +392,167 @@ class TestSpinnerIntegration:
 
         assert shards[0].metadata['author'] == 'test_user'
         assert shards[0].metadata['tags'] == ['important', 'test']
+
+
+# ============================================================================
+# WebsiteSpinner Tests
+# ============================================================================
+
+class TestWebsiteSpinner:
+    """Test WebsiteSpinner functionality."""
+
+    @pytest.mark.asyncio
+    async def test_website_with_provided_content(self):
+        """Test website spinner with pre-fetched content."""
+        config = WebsiteSpinnerConfig(chunk_by='paragraph', min_content_length=50)
+        spinner = WebsiteSpinner(config)
+
+        raw_data = {
+            'url': 'https://example.com/article',
+            'title': 'Test Article',
+            'content': 'This is a test article about beekeeping.\n\nIt has multiple paragraphs.\n\nEach paragraph should become a separate shard.'
+        }
+
+        shards = await spinner.spin(raw_data)
+
+        # Should have multiple shards from chunking
+        assert len(shards) >= 1
+        assert shards[0].metadata['url'] == 'https://example.com/article'
+        assert shards[0].metadata['title'] == 'Test Article'
+        assert shards[0].metadata['domain'] == 'example.com'
+        assert 'web:example.com' in shards[0].metadata.get('tags', [])
+
+    @pytest.mark.asyncio
+    async def test_website_with_tags(self):
+        """Test website spinner preserves custom tags."""
+        spinner = WebsiteSpinner()
+
+        raw_data = {
+            'url': 'https://example.com/article',
+            'content': 'Test content about bees and honey.',
+            'tags': ['research', 'beekeeping']
+        }
+
+        shards = await spinner.spin(raw_data)
+
+        assert len(shards) >= 1
+        tags = shards[0].metadata.get('tags', [])
+        assert 'research' in tags
+        assert 'beekeeping' in tags
+        assert 'web:example.com' in tags
+
+    @pytest.mark.asyncio
+    async def test_website_empty_content(self):
+        """Test handling of empty or too-short content."""
+        config = WebsiteSpinnerConfig(min_content_length=100)
+        spinner = WebsiteSpinner(config)
+
+        raw_data = {
+            'url': 'https://example.com/empty',
+            'content': 'Too short'
+        }
+
+        shards = await spinner.spin(raw_data)
+
+        # Should return empty list for content below minimum
+        assert len(shards) == 0
+
+    @pytest.mark.asyncio
+    async def test_website_metadata_enrichment(self):
+        """Test that URL metadata is properly added."""
+        spinner = WebsiteSpinner()
+
+        raw_data = {
+            'url': 'https://docs.example.com/guide/tutorial',
+            'title': 'Tutorial Guide',
+            'content': 'This is a comprehensive tutorial about advanced beekeeping techniques.'
+        }
+
+        shards = await spinner.spin(raw_data)
+
+        assert len(shards) >= 1
+        first_shard = shards[0]
+
+        # Check URL metadata
+        assert first_shard.metadata['url'] == 'https://docs.example.com/guide/tutorial'
+        assert first_shard.metadata['domain'] == 'docs.example.com'
+        assert first_shard.metadata['title'] == 'Tutorial Guide'
+        assert first_shard.metadata['content_type'] == 'webpage'
+
+
+# ============================================================================
+# RecursiveCrawler Tests
+# ============================================================================
+
+class TestRecursiveCrawler:
+    """Test RecursiveCrawler functionality."""
+
+    @pytest.mark.asyncio
+    async def test_crawler_config(self):
+        """Test crawler configuration."""
+        config = CrawlConfig(
+            max_depth=2,
+            max_pages=10,
+            importance_thresholds={0: 0.0, 1: 0.6, 2: 0.75}
+        )
+
+        crawler = RecursiveCrawler(config)
+
+        assert crawler.config.max_depth == 2
+        assert crawler.config.max_pages == 10
+        assert crawler.config.importance_thresholds[1] == 0.6
+
+    @pytest.mark.asyncio
+    async def test_crawler_seed_only(self):
+        """Test crawler with depth=0 (seed URL only)."""
+        config = CrawlConfig(max_depth=0, max_pages=1)
+        crawler = RecursiveCrawler(config)
+
+        # Mock seed URL (we won't actually crawl in tests)
+        # Just verify configuration
+        assert config.max_depth == 0
+        assert config.importance_thresholds[0] == 0.0
+
+    @pytest.mark.asyncio
+    async def test_crawler_matryoshka_thresholds(self):
+        """Test matryoshka importance gating thresholds."""
+        config = CrawlConfig()
+
+        # Default thresholds should increase with depth
+        assert config.importance_thresholds[0] == 0.0   # Seed: always crawl
+        assert config.importance_thresholds[1] == 0.6   # Depth 1: medium importance
+        assert config.importance_thresholds[2] == 0.75  # Depth 2: high importance
+        assert config.importance_thresholds[3] == 0.85  # Depth 3: very high importance
+
+        # Each level should require higher importance
+        for depth in range(3):
+            assert config.importance_thresholds[depth] < config.importance_thresholds[depth + 1]
+
+    @pytest.mark.asyncio
+    async def test_crawler_domain_filtering(self):
+        """Test crawler domain filtering config."""
+        config = CrawlConfig(
+            same_domain_only=True,
+            max_pages_per_domain=5
+        )
+
+        crawler = RecursiveCrawler(config)
+
+        assert crawler.config.same_domain_only is True
+        assert crawler.config.max_pages_per_domain == 5
+
+    @pytest.mark.asyncio
+    async def test_crawler_image_extraction_config(self):
+        """Test crawler multimodal configuration."""
+        config = CrawlConfig(
+            extract_images=True,
+            max_images_per_page=5
+        )
+
+        crawler = RecursiveCrawler(config)
+
+        assert crawler.config.extract_images is True
+        assert crawler.config.max_images_per_page == 5
 
 
 # ============================================================================

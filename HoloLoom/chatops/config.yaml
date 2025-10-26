@@ -1,0 +1,193 @@
+# HoloLoom ChatOps Configuration
+# ================================
+# Configuration for Matrix.org chatbot with HoloLoom integration
+
+# Matrix Connection
+matrix:
+  homeserver_url: "https://matrix.org"
+  user_id: "@hololoom_bot:matrix.org"
+
+  # Authentication (use EITHER access_token OR password)
+  # Recommended: Generate access token and use that
+  access_token: null  # Set via environment variable: MATRIX_ACCESS_TOKEN
+  password: null      # Set via environment variable: MATRIX_PASSWORD
+
+  # Device info
+  device_id: "HOLOLOOM_BOT_001"
+  device_name: "HoloLoom ChatOps Bot"
+
+  # Storage for encryption keys and sync tokens
+  store_path: "./matrix_store"
+
+  # Rooms to join on startup
+  # Use room IDs (!abc123:matrix.org) or aliases (#room:matrix.org)
+  rooms:
+    - "#hololoom:matrix.org"
+    - "#test-chatops:matrix.org"
+
+  # Command configuration
+  command_prefix: "!"
+  respond_to_mentions: true
+  respond_to_dm: true
+
+  # Access control
+  admin_users:
+    - "@your_admin:matrix.org"
+
+  # Whitelist (empty = allow all authenticated users)
+  allowed_users: []
+
+  # Rate limiting
+  rate_limit:
+    messages_per_window: 10
+    window_seconds: 60
+
+  # Timeouts
+  sync_timeout_ms: 30000
+  message_timeout_sec: 120
+
+# HoloLoom Configuration
+hololoom:
+  # Execution mode: bare, fast, or fused
+  mode: "fast"
+
+  # Memory configuration
+  memory:
+    store_path: "./chatops_memory"
+    enable_kg_storage: true
+    context_limit: 10
+
+  # Knowledge graph
+  knowledge_graph:
+    backend: "networkx"  # or "neo4j" if configured
+    save_on_exit: true
+    auto_backup: true
+    backup_interval_minutes: 60
+
+  # Feature extraction
+  features:
+    enable_motif_detection: true
+    enable_embeddings: true
+    enable_spectral: false  # Disable for faster responses
+
+  # Policy engine
+  policy:
+    bandit_strategy: "epsilon_greedy"
+    epsilon: 0.1
+    enable_thompson_sampling: true
+
+# Promptly Integration
+promptly:
+  enabled: true
+  skills_path: "./chatops_skills"
+
+  # Skill configuration
+  skills:
+    search:
+      enabled: true
+      default_limit: 5
+      max_limit: 20
+
+    remember:
+      enabled: true
+      require_tags: false
+      auto_extract_entities: true
+
+    summarize:
+      enabled: true
+      default_format: "bullets"
+      formats: ["bullets", "paragraph", "timeline"]
+
+    analyze:
+      enabled: true
+      types: ["sentiment", "topics", "activity"]
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  # Log files
+  file:
+    enabled: true
+    path: "./logs/chatops.log"
+    max_bytes: 10485760  # 10MB
+    backup_count: 5
+
+  # Component-specific levels
+  components:
+    matrix_bot: "INFO"
+    chatops_bridge: "INFO"
+    hololoom: "WARNING"
+    conversation_memory: "INFO"
+
+# Features
+features:
+  # Conversation threading
+  threading:
+    enabled: true
+    max_depth: 3
+
+  # Automatic summarization
+  auto_summarize:
+    enabled: false
+    interval_messages: 50
+
+  # Reaction support
+  reactions:
+    enabled: true
+    success: "✅"
+    error: "❌"
+    processing: "⏳"
+
+  # Rich formatting
+  formatting:
+    markdown: true
+    code_blocks: true
+    tables: false
+
+# Performance
+performance:
+  # Response streaming (for long responses)
+  streaming:
+    enabled: false
+    chunk_size: 500
+
+  # Caching
+  cache:
+    enabled: true
+    ttl_seconds: 3600
+    max_size: 1000
+
+  # Concurrency
+  max_concurrent_queries: 5
+  worker_threads: 4
+
+# Monitoring
+monitoring:
+  # Health checks
+  health_check:
+    enabled: true
+    interval_seconds: 60
+
+  # Metrics
+  metrics:
+    enabled: true
+    export_prometheus: false
+
+  # Statistics
+  stats:
+    track_conversations: true
+    track_users: true
+    track_commands: true
+
+# Development
+development:
+  # Debug mode
+  debug: false
+
+  # Mock mode (no actual Matrix connection)
+  mock_matrix: false
+
+  # Test conversations
+  test_mode: false

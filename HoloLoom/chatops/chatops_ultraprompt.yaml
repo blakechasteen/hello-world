@@ -1,0 +1,264 @@
+# ChatOps Ultraprompt Configuration
+# Specialized ultraprompt directives for chatops scenarios
+
+name: chatops-ultraprompt
+version: 1
+description: "Ultraprompt configuration optimized for ChatOps interactions"
+
+# Base configuration
+base:
+  model: "gpt-4"
+  temperature: 0.7
+  max_tokens: 2048
+
+# ChatOps-specific role
+role: |
+  You are an advanced ChatOps assistant integrated with HoloLoom's neural decision-making system.
+  You excel at:
+  - Collaborative incident response and troubleshooting
+  - Code review and technical discussions in chat
+  - Workflow automation and orchestration
+  - Team knowledge mining and expertise location
+  - Proactive monitoring and suggestions
+
+  Your responses should be:
+  - **Concise**: Chat-optimized, scannable formatting
+  - **Actionable**: Clear next steps and commands
+  - **Context-aware**: Leverage conversation history and knowledge graph
+  - **Collaborative**: Facilitate team discussion, not replace it
+
+# Output format for chat
+output_format:
+  # Use markdown optimized for Matrix/chat
+  markdown_style: "chat"
+
+  # Section preferences
+  sections:
+    - name: "ANSWER"
+      required: true
+      max_length: 500  # Keep chat responses concise
+
+    - name: "TL;DR"
+      required: true
+      max_length: 100  # Very brief summary
+
+    - name: "NEXT"
+      required: false
+      description: "Suggested next actions"
+
+  # Optional sections for complex queries
+  optional_sections:
+    - name: "PLAN"
+      when: "complex_query"
+
+    - name: "VERIFY"
+      when: "critical_decision"
+
+# ChatOps-specific guidelines
+guidelines:
+  tone:
+    - "Professional but conversational"
+    - "Use emojis sparingly for emphasis (incidents: 🚨, success: ✅)"
+    - "Address team members directly when relevant"
+
+  formatting:
+    - "Use bullet points for lists"
+    - "Code blocks for commands/code"
+    - "Bold for key terms"
+    - "Keep paragraphs to 2-3 sentences max"
+
+  response_patterns:
+    incident:
+      - "Severity assessment upfront"
+      - "Immediate actions first"
+      - "Investigation steps second"
+      - "Related incidents/patterns third"
+
+    code_review:
+      - "High-level summary"
+      - "Security concerns (if any)"
+      - "Best practice suggestions"
+      - "Specific file:line comments"
+
+    question:
+      - "Direct answer first"
+      - "Context/explanation second"
+      - "Examples/links third"
+
+    workflow:
+      - "Current status"
+      - "Next step"
+      - "Blockers (if any)"
+      - "ETA/completion estimate"
+
+# Context integration
+context:
+  hololoom:
+    enabled: true
+    max_context_shards: 5
+    include_spectral_features: true
+
+  thread_awareness:
+    enabled: true
+    max_depth: 10
+
+  conversation_memory:
+    lookback_messages: 20
+    extract_entities: true
+
+# Quality control
+quality:
+  judge:
+    enabled: true
+    criteria:
+      - "accuracy"
+      - "relevance"
+      - "actionability"
+      - "conciseness"
+    min_threshold: 0.75
+
+  auto_retry:
+    enabled: true
+    max_retries: 2
+    retry_on_low_quality: true
+
+# Workflow integration
+workflows:
+  enabled: true
+
+  # Built-in chatops workflows
+  templates:
+    incident_response:
+      description: "Handle incident from detection to resolution"
+      steps:
+        - "assess_severity"
+        - "gather_context"
+        - "identify_root_cause"
+        - "propose_remediation"
+        - "verify_fix"
+        - "create_postmortem"
+
+    code_review_assist:
+      description: "Assist with PR code review"
+      steps:
+        - "fetch_pr_changes"
+        - "security_scan"
+        - "best_practices_check"
+        - "generate_feedback"
+        - "suggest_improvements"
+
+    knowledge_synthesis:
+      description: "Synthesize discussion into actionable knowledge"
+      steps:
+        - "extract_key_points"
+        - "identify_decisions"
+        - "capture_action_items"
+        - "find_related_topics"
+        - "store_in_kg"
+
+# Command templates
+command_templates:
+  help:
+    template: |
+      **Available Commands:**
+
+      🔧 **Workflows**
+      • `!workflow <name>` - Execute workflow
+      • `!workflows` - List available workflows
+
+      📊 **Monitoring**
+      • `!dashboard <name>` - Show dashboard
+      • `!incident <action>` - Manage incidents
+
+      💬 **Collaboration**
+      • `!review <pr>` - Code review
+      • `!experts <topic>` - Find topic experts
+      • `!context <topic>` - Switch context
+
+      🔍 **Knowledge**
+      • `!search <query>` - Search knowledge graph
+      • `!remember <fact>` - Store information
+      • `!recall <topic>` - Retrieve information
+
+      Type `!help <command>` for details.
+
+  incident:
+    template: |
+      **Incident {{ incident_id }}**
+      Severity: {{ severity }}
+      Status: {{ status }}
+
+      **Quick Actions:**
+      - `!incident resolve {{ incident_id }}` - Mark resolved
+      - `!incident escalate {{ incident_id }}` - Escalate
+      - `!incident remediate {{ incident_id }}` - Auto-remediation
+      - `!incident postmortem {{ incident_id }}` - Generate postmortem
+
+# A/B testing configuration
+ab_testing:
+  enabled: true
+  experiments:
+    - name: "concise_vs_detailed"
+      variant_a: "ultra_concise"
+      variant_b: "detailed_explanation"
+      metric: "user_satisfaction"
+
+    - name: "emoji_usage"
+      variant_a: "with_emojis"
+      variant_b: "no_emojis"
+      metric: "engagement_rate"
+
+# Advanced features
+advanced:
+  prompt_chaining:
+    enabled: true
+    max_chain_length: 5
+
+  latent_scaffolding:
+    enabled: true
+    use_for_complex_queries: true
+
+  instruction_tagging:
+    enabled: true
+    tags:
+      - "<system>"
+      - "<user>"
+      - "<context>"
+      - "<history>"
+
+# Performance settings
+performance:
+  cache:
+    enabled: true
+    ttl_seconds: 3600
+    max_size_mb: 100
+
+  rate_limits:
+    requests_per_minute: 60
+    burst_size: 10
+
+  timeout:
+    query_timeout_seconds: 30
+    workflow_timeout_seconds: 300
+
+# Examples
+examples:
+  - query: "The API is returning 500 errors"
+    expected_sections:
+      - "ANSWER"
+      - "NEXT"
+    expected_format: "incident_response"
+    expected_length: "concise"
+
+  - query: "Review PR #123"
+    expected_sections:
+      - "ANSWER"
+      - "TL;DR"
+    expected_format: "code_review"
+    expected_length: "moderate"
+
+  - query: "Who are the experts on authentication?"
+    expected_sections:
+      - "ANSWER"
+    expected_format: "knowledge_query"
+    expected_length: "brief"

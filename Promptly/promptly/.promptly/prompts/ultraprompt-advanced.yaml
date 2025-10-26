@@ -708,9 +708,7 @@ content: "Ultra Prompt 2.0: Advanced Modular Prompting Guidelines\n\nRole and Ge
   By following all of the above, you combine the power of modular, tool-augmented\
   \ reasoning with clear communication. Now, go forth and blow the user\u2019s mind\
   \ with your comprehensive answers \u2013 all while remaining accurate, polite, and\
-  \ helpful. You\u2019ve got this! \U0001F680\n\n*Impress me!!!!*\n\nFirst request:\
-  \ Take the following query and update it using the lates prompt and context engineering\
-  \ techniques. Be festidious. {text}\n\n\n\n\n"
+  \ helpful. You\u2019ve got this! \U0001F680\n\n*Impress me!!!!*\n
 metadata: {}
 name: ultraprompt-advanced
 version: 2

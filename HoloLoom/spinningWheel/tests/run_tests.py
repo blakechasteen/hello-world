@@ -17,8 +17,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from HoloLoom.spinningWheel import (
-    AudioSpinner, TextSpinner, CodeSpinner,
-    SpinnerConfig, TextSpinnerConfig, CodeSpinnerConfig
+    AudioSpinner, TextSpinner, CodeSpinner, WebsiteSpinner, RecursiveCrawler,
+    SpinnerConfig, TextSpinnerConfig, CodeSpinnerConfig, WebsiteSpinnerConfig, CrawlConfig
 )
 
 
@@ -308,6 +308,97 @@ async def test_code_repo_structure():
 
 
 # ============================================================================
+# WebsiteSpinner Tests
+# ============================================================================
+
+async def test_website_with_provided_content():
+    """Test website spinner with pre-fetched content."""
+    config = WebsiteSpinnerConfig(chunk_by='paragraph', min_content_length=50)
+    spinner = WebsiteSpinner(config)
+
+    raw_data = {
+        'url': 'https://example.com/article',
+        'title': 'Test Article',
+        'content': 'This is a test article about beekeeping.\n\nIt has multiple paragraphs.\n\nEach paragraph should become a separate shard.'
+    }
+
+    shards = await spinner.spin(raw_data)
+
+    assert len(shards) >= 1, f"Expected at least 1 shard, got {len(shards)}"
+    assert shards[0].metadata['url'] == 'https://example.com/article'
+    assert shards[0].metadata['title'] == 'Test Article'
+    assert shards[0].metadata['domain'] == 'example.com'
+
+
+async def test_website_with_tags():
+    """Test website spinner preserves custom tags."""
+    config = WebsiteSpinnerConfig(min_content_length=50)
+    spinner = WebsiteSpinner(config)
+
+    raw_data = {
+        'url': 'https://example.com/article',
+        'content': 'Test content about bees and honey. This article discusses the importance of beekeeping for agriculture and ecosystem health. Bees play a vital role in pollination.',
+        'tags': ['research', 'beekeeping']
+    }
+
+    shards = await spinner.spin(raw_data)
+
+    assert len(shards) >= 1, f"Expected at least 1 shard, got {len(shards)}"
+    tags = shards[0].metadata.get('tags', [])
+    assert 'research' in tags, f"Expected 'research' in tags, got {tags}"
+    assert 'beekeeping' in tags, f"Expected 'beekeeping' in tags, got {tags}"
+
+
+async def test_website_empty_content():
+    """Test handling of empty or too-short content."""
+    config = WebsiteSpinnerConfig(min_content_length=100)
+    spinner = WebsiteSpinner(config)
+
+    raw_data = {
+        'url': 'https://example.com/empty',
+        'content': 'Too short'
+    }
+
+    shards = await spinner.spin(raw_data)
+
+    assert len(shards) == 0, f"Expected 0 shards for short content, got {len(shards)}"
+
+
+# ============================================================================
+# RecursiveCrawler Tests
+# ============================================================================
+
+async def test_crawler_config():
+    """Test crawler configuration."""
+    config = CrawlConfig(
+        max_depth=2,
+        max_pages=10,
+        importance_thresholds={0: 0.0, 1: 0.6, 2: 0.75}
+    )
+
+    crawler = RecursiveCrawler(config)
+
+    assert crawler.config.max_depth == 2
+    assert crawler.config.max_pages == 10
+    assert crawler.config.importance_thresholds[1] == 0.6
+
+
+async def test_crawler_matryoshka_thresholds():
+    """Test matryoshka importance gating thresholds."""
+    config = CrawlConfig()
+
+    # Default thresholds should increase with depth
+    assert config.importance_thresholds[0] == 0.0
+    assert config.importance_thresholds[1] == 0.6
+    assert config.importance_thresholds[2] == 0.75
+    assert config.importance_thresholds[3] == 0.85
+
+    # Each level should require higher importance
+    for depth in range(3):
+        assert config.importance_thresholds[depth] < config.importance_thresholds[depth + 1]
+
+
+# ============================================================================
 # Test Runner
 # ============================================================================
 
@@ -332,6 +423,15 @@ async def run_test_suite():
         ("CodeSpinner: language detection", test_code_language_detection),
         ("CodeSpinner: git diff", test_code_git_diff),
         ("CodeSpinner: repo structure", test_code_repo_structure),
+
+        # WebsiteSpinner tests
+        ("WebsiteSpinner: with provided content", test_website_with_provided_content),
+        ("WebsiteSpinner: with tags", test_website_with_tags),
+        ("WebsiteSpinner: empty content", test_website_empty_content),
+
+        # RecursiveCrawler tests
+        ("RecursiveCrawler: config", test_crawler_config),
+        ("RecursiveCrawler: matryoshka thresholds", test_crawler_matryoshka_thresholds),
     ]
 
     print("\n" + "=" * 60)

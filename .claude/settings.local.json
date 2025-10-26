@@ -33,7 +33,12 @@
       "Bash(awk:*)",
       "Bash(tree:*)",
       "Bash(git rm:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(PYTHONPATH=. python:*)",
+      "Bash(git push)",
+      "Bash(PYTHONPATH=../.. python:*)",
+      "Bash(find:*)",
+      "Bash(timeout 5 python:*)"
     ],
     "deny": [],
     "ask": []

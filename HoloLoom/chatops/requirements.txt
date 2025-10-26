@@ -1,0 +1,26 @@
+# HoloLoom ChatOps Requirements
+# ==============================
+
+# Matrix.org client
+matrix-nio>=0.20.0
+aiofiles>=23.0.0
+python-magic>=0.4.27
+
+# Configuration
+pyyaml>=6.0
+
+# HoloLoom dependencies (from parent)
+networkx>=3.0
+numpy>=1.24.0
+
+# Optional: Enhanced features
+# sentence-transformers>=2.2.0  # For semantic embeddings
+# spacy>=3.5.0                   # For NLP entity extraction
+# scipy>=1.10.0                  # For spectral features
+
+# Optional: Neo4j backend
+# neo4j>=5.0.0                   # For Neo4j knowledge graph
+
+# Development
+# pytest>=7.2.0
+# pytest-asyncio>=0.21.0

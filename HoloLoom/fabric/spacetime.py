@@ -67,6 +67,9 @@ class WeavingTrace:
     warp_operations: List[tuple] = field(default_factory=list)
     tensor_field_stats: Optional[Dict[str, Any]] = None
 
+    # Analytical metrics (mathematical guarantees)
+    analytical_metrics: Optional[Dict[str, Any]] = None
+
     # Error tracking
     errors: List[Dict[str, str]] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
