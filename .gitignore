@@ -32,3 +32,21 @@ torch_model.pt
 # Release artifacts
 *.zip
 
+# Test data directories
+memory_data/
+test_memory_data/
+synthesis_output/
+
+# Qdrant storage
+qdrant_storage/
+qdrant_storage*/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# IDE
+.vscode/settings.json
+.idea/workspace.xml

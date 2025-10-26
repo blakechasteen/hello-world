@@ -22,6 +22,7 @@ from .base import BaseSpinner, SpinnerConfig
 from .audio import AudioSpinner
 from .youtube import YouTubeSpinner, YouTubeSpinnerConfig, transcribe_youtube
 from .text import TextSpinner, TextSpinnerConfig, spin_text
+from .code import CodeSpinner, CodeSpinnerConfig, spin_code_file, spin_git_diff, spin_repository
 
 __all__ = [
     "BaseSpinner",
@@ -33,6 +34,11 @@ __all__ = [
     "TextSpinner",
     "TextSpinnerConfig",
     "spin_text",
+    "CodeSpinner",
+    "CodeSpinnerConfig",
+    "spin_code_file",
+    "spin_git_diff",
+    "spin_repository",
     "create_spinner"
 ]
 
@@ -61,8 +67,8 @@ def create_spinner(modality: str, config: SpinnerConfig = None):
         'audio': AudioSpinner,
         'youtube': YouTubeSpinner,
         'text': TextSpinner,
+        'code': CodeSpinner,
         # Future spinners:
-        # 'code': CodeSpinner,
         # 'video': VideoSpinner,
     }
     

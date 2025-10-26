@@ -30,7 +30,10 @@
       "Bash(timeout 45 python:*)",
       "Bash(timeout 120 python:*)",
       "Bash(timeout 180 python:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(tree:*)",
+      "Bash(git rm:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

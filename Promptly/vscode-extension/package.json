@@ -1,0 +1,212 @@
+{
+  "name": "promptly-vscode",
+  "displayName": "Promptly - Recursive Intelligence",
+  "description": "AI-powered prompt engineering with recursive loops and analytics",
+  "version": "0.1.0",
+  "publisher": "promptly",
+  "icon": "resources/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Snippets",
+    "Other"
+  ],
+  "keywords": [
+    "AI",
+    "prompts",
+    "LLM",
+    "ollama",
+    "claude",
+    "analytics"
+  ],
+  "activationEvents": [
+    "onView:promptlyPrompts",
+    "onView:promptlySkills",
+    "onCommand:promptly.refreshPrompts"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "promptly.refreshPrompts",
+        "title": "Refresh Prompts",
+        "category": "Promptly",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "promptly.addPrompt",
+        "title": "Add New Prompt",
+        "category": "Promptly",
+        "icon": "$(add)"
+      },
+      {
+        "command": "promptly.executePrompt",
+        "title": "Execute Prompt",
+        "category": "Promptly",
+        "icon": "$(play)"
+      },
+      {
+        "command": "promptly.createSkill",
+        "title": "Create New Skill",
+        "category": "Promptly",
+        "icon": "$(new-file)"
+      },
+      {
+        "command": "promptly.installTemplate",
+        "title": "Install Skill Template",
+        "category": "Promptly",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "promptly.showAnalytics",
+        "title": "Show Analytics Dashboard",
+        "category": "Promptly",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "promptly.composeLoops",
+        "title": "Compose Loop Pipeline",
+        "category": "Promptly",
+        "icon": "$(symbol-event)"
+      },
+      {
+        "command": "promptly.exportCharts",
+        "title": "Export Analytics Charts",
+        "category": "Promptly",
+        "icon": "$(desktop-download)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "promptly",
+          "title": "Promptly",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "promptly": [
+        {
+          "id": "promptlyPrompts",
+          "name": "Prompts"
+        },
+        {
+          "id": "promptlySkills",
+          "name": "Skills"
+        },
+        {
+          "id": "promptlyAnalytics",
+          "name": "Analytics"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "promptlyPrompts",
+        "contents": "No prompts found.\n[Add Prompt](command:promptly.addPrompt)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "promptly.refreshPrompts",
+          "when": "view == promptlyPrompts",
+          "group": "navigation"
+        },
+        {
+          "command": "promptly.addPrompt",
+          "when": "view == promptlyPrompts",
+          "group": "navigation"
+        },
+        {
+          "command": "promptly.createSkill",
+          "when": "view == promptlySkills",
+          "group": "navigation"
+        },
+        {
+          "command": "promptly.showAnalytics",
+          "when": "view == promptlyAnalytics",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "promptly.executePrompt",
+          "when": "view == promptlyPrompts",
+          "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "promptly.refreshPrompts",
+          "when": "true"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Promptly",
+      "properties": {
+        "promptly.backend": {
+          "type": "string",
+          "enum": ["ollama", "claude_api"],
+          "default": "ollama",
+          "description": "Default execution backend"
+        },
+        "promptly.ollamaUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama server URL"
+        },
+        "promptly.ollamaModel": {
+          "type": "string",
+          "default": "llama3.2:3b",
+          "description": "Default Ollama model"
+        },
+        "promptly.mcpServerPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Promptly MCP server (mcp_server.py)"
+        },
+        "promptly.showAnalyticsOnStartup": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show analytics dashboard on VS Code startup"
+        },
+        "promptly.autoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-refresh prompts and analytics"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "ts-loader": "^9.5.1"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}

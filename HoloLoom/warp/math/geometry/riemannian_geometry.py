@@ -537,8 +537,8 @@ if __name__ == "__main__":
     point = np.array([np.pi/4, np.pi/4])
     christ = Christoffel(sphere)
     Gamma = christ.symbols(point)
-    print(f"Γ at (π/4, π/4): shape {Gamma.shape}")
-    print(f"Sample Γ^0_{01} = {Gamma[0, 0, 1]:.6f}")
+    print(f"Gamma at (pi/4, pi/4): shape {Gamma.shape}")
+    print(f"Sample Gamma[0,0,1] = {Gamma[0, 0, 1]:.6f}")
 
     # Test 3: Geodesics
     print("\n[Test 3] Geodesic on sphere")

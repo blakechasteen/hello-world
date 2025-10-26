@@ -59,9 +59,8 @@ from .base import BaseEnricher, EnrichmentResult
 from .metadata import MetadataEnricher
 from .semantics import SemanticEnricher
 from .temporal import TemporalEnricher
-
-# Future enrichers
-# from .graph import GraphEnricher
+from .neo4j_enricher import Neo4jEnricher
+from .mem0_enricher import Mem0Enricher
 
 __all__ = [
     "BaseEnricher",
@@ -69,7 +68,8 @@ __all__ = [
     "MetadataEnricher",
     "SemanticEnricher",
     "TemporalEnricher",
-    # "GraphEnricher",
+    "Neo4jEnricher",
+    "Mem0Enricher",
 ]
 
 __version__ = "0.1.0"

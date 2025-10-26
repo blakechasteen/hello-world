@@ -86,8 +86,20 @@ class BaseSpinner(ABC):
             self.ollama = None
         
         # Neo4j and mem0 enrichers (optional)
-        self.neo4j = None  # TODO: Implement Neo4jEnricher
-        self.mem0 = None   # TODO: Implement Mem0Enricher
+        # Initialize if connection info provided
+        if self.config.neo4j_conn:
+            try:
+                from .enrichment import Neo4jEnricher
+                self.neo4j = Neo4jEnricher(self.config.neo4j_conn)
+            except ImportError:
+                self.neo4j = None
+
+        if self.config.mem0_client:
+            try:
+                from .enrichment import Mem0Enricher
+                self.mem0 = Mem0Enricher(self.config.mem0_client)
+            except ImportError:
+                self.mem0 = None
     
     @abstractmethod
     async def spin(self, raw_data: Dict[str, Any]) -> List[MemoryShard]:
