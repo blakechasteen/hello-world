@@ -81,53 +81,52 @@ except (ImportError, NameError) as e:
 
 class HybridMemoryStore:
     """
-    Hybrid memory store that combines multiple backends.
+    Simplified Hybrid Memory Store (Neo4j + Qdrant).
 
-    Routes operations to appropriate backend(s) based on strategy:
-    - store(): All backends
-    - recall(): Fusion of all backend results
-    - health_check(): Aggregate health status
+    **SIMPLIFIED DESIGN (Task 1.3):**
+    - Primary: Neo4j (graph) + Qdrant (vector)
+    - Fallback: NetworkX (in-memory) if backends unavailable
+    - Strategy: Always balanced (no complex routing)
 
-    This is the "woven fabric" - multiple threads working together.
+    This is the "woven fabric" - two threads working together.
     """
 
     def __init__(
         self,
         neo4j_store: Optional[Any] = None,
         qdrant_store: Optional[Any] = None,
-        mem0_store: Optional[Any] = None,
-        networkx_store: Optional[Any] = None,
-        strategy: str = "balanced"
+        networkx_store: Optional[Any] = None
     ):
         """
         Initialize hybrid memory store.
 
         Args:
-            neo4j_store: Neo4j backend (optional)
-            qdrant_store: Qdrant backend (optional)
-            mem0_store: Mem0 backend (optional)
-            networkx_store: NetworkX backend (optional)
-            strategy: Fusion strategy (balanced, semantic_heavy, graph_heavy)
+            neo4j_store: Neo4j backend (optional, falls back to NetworkX)
+            qdrant_store: Qdrant backend (optional, falls back to NetworkX)
+            networkx_store: NetworkX fallback (always available)
+
+        Note:
+            If neither Neo4j nor Qdrant is available, uses NetworkX as fallback.
         """
         self.neo4j = neo4j_store
         self.qdrant = qdrant_store
-        self.mem0 = mem0_store
         self.networkx = networkx_store
-        self.strategy = strategy
 
-        # Count active backends
+        # Build active backends list
         self.backends = []
         if self.neo4j:
             self.backends.append(('neo4j', self.neo4j))
         if self.qdrant:
             self.backends.append(('qdrant', self.qdrant))
-        if self.mem0:
-            self.backends.append(('mem0', self.mem0))
-        if self.networkx:
-            self.backends.append(('networkx', self.networkx))
 
-        if not self.backends:
+        # Always use balanced strategy (simplified)
+        self.strategy = "balanced"
+
+        # Fallback mode: If no backends available, use NetworkX
+        if not self.backends and not self.networkx:
             raise ValueError("HybridMemoryStore requires at least one backend")
+
+        self.fallback_mode = len(self.backends) == 0
 
     async def store(self, memory: 'Memory', user_id: str = "default") -> str:
         """
@@ -163,26 +162,36 @@ class HybridMemoryStore:
     async def recall(
         self,
         query: 'MemoryQuery',
-        strategy: Optional[str] = None,
         limit: int = 10
     ) -> 'RetrievalResult':
         """
-        Recall memories using hybrid fusion strategy.
+        Recall memories using simplified balanced fusion.
 
-        Queries all backends and fuses results based on strategy.
+        **SIMPLIFIED (Task 1.3):**
+        - Always uses balanced strategy (50/50 Neo4j + Qdrant)
+        - Falls back to NetworkX if backends unavailable
+        - No complex strategy selection
 
         Args:
             query: Memory query
-            strategy: Override default strategy (semantic, graph, balanced)
             limit: Max results to return
 
         Returns:
             Fused retrieval results
         """
-        strategy = strategy or self.strategy
-        results_by_backend = {}
+        # Fallback mode: Use NetworkX directly
+        if self.fallback_mode:
+            result = await self.networkx.recall(query, limit=limit)
+            return RetrievalResult(
+                memories=result.memories,
+                scores=result.scores,
+                strategy_used="networkx_fallback",
+                metadata={'backends_used': ['networkx']}
+            )
 
         # Query each backend
+        results_by_backend = {}
+
         for name, backend in self.backends:
             try:
                 result = await backend.recall(query, limit=limit * 2)  # Over-fetch for fusion
@@ -190,16 +199,19 @@ class HybridMemoryStore:
             except Exception as e:
                 warnings.warn(f"Failed to recall from {name}: {e}")
 
-        # Fuse results based on strategy
-        if strategy == "semantic_heavy":
-            # Prioritize vector similarity (Qdrant > Mem0 > others)
-            weights = {'qdrant': 0.7, 'mem0': 0.2, 'neo4j': 0.05, 'networkx': 0.05}
-        elif strategy == "graph_heavy":
-            # Prioritize graph relationships (Neo4j > NetworkX > others)
-            weights = {'neo4j': 0.7, 'networkx': 0.2, 'qdrant': 0.05, 'mem0': 0.05}
-        else:  # balanced
-            # Equal weighting
-            weights = {name: 1.0 / len(self.backends) for name, _ in self.backends}
+        # If all backends failed, fall back to NetworkX
+        if not results_by_backend and self.networkx:
+            warnings.warn("All backends failed, falling back to NetworkX")
+            result = await self.networkx.recall(query, limit=limit)
+            return RetrievalResult(
+                memories=result.memories,
+                scores=result.scores,
+                strategy_used="networkx_fallback_emergency",
+                metadata={'backends_used': ['networkx'], 'reason': 'backend_failures'}
+            )
+
+        # Balanced fusion: Equal weighting (simplified)
+        weights = {name: 1.0 / len(self.backends) for name, _ in self.backends}
 
         # Fuse results
         fused_memories = self._fuse_results(results_by_backend, weights, limit)
@@ -207,7 +219,7 @@ class HybridMemoryStore:
         return RetrievalResult(
             memories=fused_memories,
             scores=[1.0] * len(fused_memories),  # TODO: Compute actual scores
-            strategy_used=f"hybrid_{strategy}",
+            strategy_used="hybrid_balanced",
             metadata={'backends_used': list(results_by_backend.keys())}
         )
 
@@ -292,46 +304,145 @@ class HybridMemoryStore:
 
 
 # ============================================================================
+# Helper Functions
+# ============================================================================
+
+async def _create_hybrid_with_fallback(config: Config) -> MemoryStore:
+    """
+    Create hybrid backend with auto-fallback (Task 1.3).
+
+    **Strategy:**
+    1. Try Neo4j + Qdrant (production)
+    2. Fallback to NetworkX if neither available
+
+    Args:
+        config: HoloLoom configuration
+
+    Returns:
+        HybridMemoryStore with appropriate backends
+    """
+    neo4j_store = None
+    qdrant_store = None
+    networkx_fallback = None
+
+    # Try Neo4j
+    if NEO4J_AVAILABLE:
+        try:
+            from HoloLoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
+            neo4j_config = Neo4jConfig(
+                uri=config.neo4j_uri,
+                username=config.neo4j_username,
+                password=config.neo4j_password,
+                database=config.neo4j_database
+            )
+            neo4j_store = Neo4jKG(neo4j_config)
+            print(f"[OK] Neo4j backend initialized ({config.neo4j_uri})")
+        except Exception as e:
+            warnings.warn(f"Neo4j initialization failed: {e}")
+    else:
+        warnings.warn("Neo4j not available (install: pip install neo4j)")
+
+    # Try Qdrant
+    if QDRANT_AVAILABLE:
+        try:
+            from HoloLoom.memory.stores.qdrant import QdrantMemoryStore
+            qdrant_store = QdrantMemoryStore(
+                host=config.qdrant_host,
+                port=config.qdrant_port,
+                collection=config.qdrant_collection,
+                use_https=config.qdrant_use_https
+            )
+            print(f"[OK] Qdrant backend initialized ({config.qdrant_host}:{config.qdrant_port})")
+        except Exception as e:
+            warnings.warn(f"Qdrant initialization failed: {e}")
+    else:
+        warnings.warn("Qdrant not available (install: pip install qdrant-client)")
+
+    # Fallback if both failed
+    if not neo4j_store and not qdrant_store:
+        warnings.warn(
+            "⚠️  Neither Neo4j nor Qdrant available - using NetworkX fallback\n"
+            "   For production, install backends:\n"
+            "   pip install neo4j qdrant-client",
+            RuntimeWarning
+        )
+        if NETWORKX_AVAILABLE:
+            networkx_fallback = NetworkXKG()
+            print("[OK] NetworkX fallback initialized (in-memory)")
+        else:
+            raise ValueError("No backends available (NetworkX, Neo4j, Qdrant all failed)")
+
+    return HybridMemoryStore(
+        neo4j_store=neo4j_store,
+        qdrant_store=qdrant_store,
+        networkx_store=networkx_fallback
+    )
+
+
+# ============================================================================
 # Factory Function
 # ============================================================================
 
 async def create_memory_backend(config: Config, user_id: str = "default") -> MemoryStore:
     """
-    Factory function to create memory backend based on configuration.
+    Simplified Memory Backend Factory (Task 1.3).
+
+    **SIMPLIFIED (3 backends only):**
+    - INMEMORY: Fast in-memory (NetworkX) - Development/Testing
+    - HYBRID: Neo4j + Qdrant with auto-fallback - Production (DEFAULT)
+    - HYPERSPACE: Advanced research mode - Optional
 
     Args:
         config: HoloLoom configuration
         user_id: Default user ID for memory operations
 
     Returns:
-        Configured memory backend (single or hybrid)
-
-    Raises:
-        ValueError: If required backend is not available
+        Configured memory backend with auto-fallback
 
     Examples:
-        # Pure NetworkX (development)
-        config = Config.fast()
-        config.memory_backend = MemoryBackend.NETWORKX
+        # Development (fast)
+        config = Config.fast()  # Auto-uses INMEMORY
         memory = await create_memory_backend(config)
 
-        # Hybrid Neo4j + Qdrant (production)
-        config = Config.fused()
-        config.memory_backend = MemoryBackend.NEO4J_QDRANT
+        # Production (recommended, DEFAULT)
+        config = Config.fused()  # Auto-uses HYBRID
         memory = await create_memory_backend(config)
 
-        # Hyperspace (research)
-        config = Config.fused()
+        # Research
         config.memory_backend = MemoryBackend.HYPERSPACE
         memory = await create_memory_backend(config)
     """
     backend = config.memory_backend
 
     # ========================================================================
-    # Pure Strategies (Single Backend)
+    # SIMPLIFIED: 3 Core Backends (Task 1.3)
     # ========================================================================
 
-    if backend == MemoryBackend.NETWORKX:
+    if backend == MemoryBackend.INMEMORY:
+        # In-memory NetworkX (development/testing)
+        if not NETWORKX_AVAILABLE:
+            raise ValueError("NetworkX not available for INMEMORY backend")
+        return NetworkXKG()
+
+    elif backend == MemoryBackend.HYBRID:
+        # **DEFAULT PRODUCTION: Neo4j + Qdrant with auto-fallback**
+        return await _create_hybrid_with_fallback(config)
+
+    elif backend == MemoryBackend.HYPERSPACE:
+        # Research mode with gated multipass
+        try:
+            from HoloLoom.memory.hyperspace_backend import create_hyperspace_backend
+            return create_hyperspace_backend(config)
+        except ImportError:
+            warnings.warn("HYPERSPACE not available, falling back to HYBRID")
+            return await _create_hybrid_with_fallback(config)
+
+    # ========================================================================
+    # Legacy Backends (Auto-migrate with warning)
+    # ========================================================================
+
+    elif backend == MemoryBackend.NETWORKX:
+        warnings.warn("NETWORKX is deprecated, use INMEMORY instead", DeprecationWarning)
         if not NETWORKX_AVAILABLE:
             raise ValueError("NetworkX backend not available")
         return NetworkXKG()
@@ -371,91 +482,16 @@ async def create_memory_backend(config: Config, user_id: str = "default") -> Mem
         )
 
     # ========================================================================
-    # Hybrid Strategies (Multiple Backends)
+    # Legacy Hybrid Backends (Auto-migrate to HYBRID)
     # ========================================================================
 
     elif backend == MemoryBackend.NEO4J_QDRANT:
-        # Most common production setup
-        neo4j_store = None
-        qdrant_store = None
-
-        if NEO4J_AVAILABLE:
-            neo4j_config = Neo4jConfig(
-                uri=config.neo4j_uri,
-                username=config.neo4j_username,
-                password=config.neo4j_password,
-                database=config.neo4j_database
-            )
-            neo4j_store = Neo4jKG(neo4j_config)
-
-        if QDRANT_AVAILABLE:
-            qdrant_store = QdrantMemoryStore(
-                host=config.qdrant_host,
-                port=config.qdrant_port,
-                collection=config.qdrant_collection,
-                use_https=config.qdrant_use_https
-            )
-
-        if not neo4j_store and not qdrant_store:
-            raise ValueError("Neither Neo4j nor Qdrant backend available")
-
-        return HybridMemoryStore(
-            neo4j_store=neo4j_store,
-            qdrant_store=qdrant_store,
-            strategy="balanced"
-        )
+        warnings.warn("NEO4J_QDRANT is deprecated, use HYBRID instead", DeprecationWarning)
+        return await _create_hybrid_with_fallback(config)
 
     elif backend == MemoryBackend.TRIPLE:
-        # Full hybrid: Neo4j + Qdrant + Mem0
-        neo4j_store = None
-        qdrant_store = None
-        mem0_store = None
-
-        if NEO4J_AVAILABLE:
-            neo4j_config = Neo4jConfig(
-                uri=config.neo4j_uri,
-                username=config.neo4j_username,
-                password=config.neo4j_password,
-                database=config.neo4j_database
-            )
-            neo4j_store = Neo4jKG(neo4j_config)
-
-        if QDRANT_AVAILABLE:
-            qdrant_store = QdrantMemoryStore(
-                host=config.qdrant_host,
-                port=config.qdrant_port,
-                collection=config.qdrant_collection
-            )
-
-        if MEM0_AVAILABLE:
-            mem0_store = Mem0Adapter(
-                api_key=config.mem0_api_key,
-                user_id=user_id
-            )
-
-        available_backends = sum([
-            neo4j_store is not None,
-            qdrant_store is not None,
-            mem0_store is not None
-        ])
-
-        if available_backends == 0:
-            raise ValueError("No backends available for TRIPLE strategy")
-
-        return HybridMemoryStore(
-            neo4j_store=neo4j_store,
-            qdrant_store=qdrant_store,
-            mem0_store=mem0_store,
-            strategy="balanced"
-        )
-
-    elif backend == MemoryBackend.HYPERSPACE:
-        # Specialized: Gated multipass with recursive importance
-        # TODO: Implement HyperspaceMemoryStore
-        raise NotImplementedError(
-            "HYPERSPACE backend not yet implemented. "
-            "Use NEO4J_QDRANT for now."
-        )
+        warnings.warn("TRIPLE is deprecated, use HYBRID instead (Mem0 removed for simplicity)", DeprecationWarning)
+        return await _create_hybrid_with_fallback(config)
 
     else:
         raise ValueError(f"Unknown memory backend: {backend}")
