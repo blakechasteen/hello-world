@@ -349,6 +349,141 @@ From `documentation/CODE_REVIEW.md`:
    agent.load('logs/checkpoint.pt')
    ```
 
+6. **Use async context managers for lifecycle management** (recommended):
+   ```python
+   async with WeavingShuttle(cfg=config, shards=shards) as shuttle:
+       spacetime = await shuttle.weave(query)
+       # Automatic cleanup on exit
+   ```
+
+7. **Use dynamic memory backends for persistent storage**:
+   ```python
+   memory = await create_memory_backend(config)
+   async with WeavingShuttle(cfg=config, memory=memory) as shuttle:
+       spacetime = await shuttle.weave(query)
+   ```
+
+## Unified Memory Integration
+
+HoloLoom supports both static shards and dynamic memory backends for persistent storage.
+
+### Memory Sources
+
+**Static Shards** (backward compatible):
+```python
+shards = create_test_shards()
+shuttle = WeavingShuttle(cfg=config, shards=shards)
+```
+
+**Dynamic Backends** (persistent storage):
+```python
+from HoloLoom.memory.backend_factory import create_memory_backend
+
+memory = await create_memory_backend(config)
+shuttle = WeavingShuttle(cfg=config, memory=memory)
+```
+
+### Backend Options
+
+Configure via `Config.memory_backend`:
+- **NETWORKX**: In-memory graph (fast prototyping)
+- **NEO4J**: Persistent graph database
+- **QDRANT**: Vector similarity search
+- **NEO4J_QDRANT**: Hybrid graph + vector (recommended for production)
+- **TRIPLE**: Neo4j + Qdrant + Mem0 (full hybrid)
+- **HYPERSPACE**: Advanced gated multipass (research)
+
+### Docker Setup
+
+Start Neo4j + Qdrant backends:
+```bash
+docker-compose up -d
+```
+
+See `DOCKER_MEMORY_SETUP.md` for complete setup guide and `UNIFIED_MEMORY_INTEGRATION.md` for implementation details.
+
+### Production Example
+
+```python
+from HoloLoom.config import Config, MemoryBackend
+from HoloLoom.memory.backend_factory import create_memory_backend
+
+config = Config.fused()
+config.memory_backend = MemoryBackend.NEO4J_QDRANT
+
+# Create persistent backend
+memory = await create_memory_backend(config)
+
+# Use with shuttle
+async with WeavingShuttle(cfg=config, memory=memory) as shuttle:
+    spacetime = await shuttle.weave(query)
+    # Data persists across sessions
+```
+
+## Lifecycle Management
+
+HoloLoom implements proper resource management through async context managers:
+
+### Using Context Managers (Recommended)
+
+```python
+from HoloLoom.weaving_shuttle import WeavingShuttle
+from HoloLoom.config import Config
+
+config = Config.fast()
+shards = create_memory_shards()
+
+# Recommended: Automatic cleanup
+async with WeavingShuttle(cfg=config, shards=shards, enable_reflection=True) as shuttle:
+    spacetime = await shuttle.weave(query)
+    await shuttle.reflect(spacetime, feedback={"helpful": True})
+    # Resources automatically cleaned up on exit
+```
+
+### Manual Cleanup
+
+If context managers aren't suitable (e.g., long-lived services), use explicit cleanup:
+
+```python
+shuttle = WeavingShuttle(cfg=config, shards=shards)
+try:
+    spacetime = await shuttle.weave(query)
+finally:
+    await shuttle.close()  # IMPORTANT: Always close!
+```
+
+### Background Task Tracking
+
+Background tasks are automatically tracked and cancelled on shutdown:
+
+```python
+async with WeavingShuttle(cfg=config, shards=shards) as shuttle:
+    # Spawn tracked background tasks
+    task = shuttle.spawn_background_task(some_async_work())
+
+    # Do weaving
+    spacetime = await shuttle.weave(query)
+
+    # Background tasks cancelled automatically on exit
+```
+
+### What Gets Cleaned Up
+
+1. **Background tasks**: Cancelled with 5-second timeout
+2. **Reflection buffer**: Metrics flushed to disk
+3. **Database connections**: Neo4j/Qdrant clients closed (when implemented)
+4. **File handles**: Proper closing of persistent storage
+
+### ReflectionBuffer Lifecycle
+
+The reflection buffer also supports lifecycle management:
+
+```python
+async with ReflectionBuffer(capacity=1000, persist_path="./reflections") as buffer:
+    await buffer.store(spacetime, feedback=feedback)
+    # Metrics automatically flushed on exit
+```
+
 ## Common Workflows
 
 ### Adding a New Tool

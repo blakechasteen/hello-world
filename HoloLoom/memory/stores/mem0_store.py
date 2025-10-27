@@ -118,6 +118,50 @@ class Mem0MemoryStore:
         
         self.logger.info(f"Stored memory {mem0_id} for user {user_id}")
         return f"mem0_{mem0_id}"
+
+    async def store_many(self, memories: List[Memory]) -> List[str]:
+        """Store multiple memories (batch operation)."""
+        memory_ids = []
+        for memory in memories:
+            memory_id = await self.store(memory)
+            memory_ids.append(memory_id)
+        return memory_ids
+
+    async def get_by_id(self, memory_id: str) -> Optional[Memory]:
+        """Get a specific memory by ID."""
+        # Extract mem0 ID from our prefixed format
+        if memory_id.startswith('mem0_'):
+            mem0_id = memory_id[5:]
+        else:
+            mem0_id = memory_id
+        
+        try:
+            # Get memory from mem0
+            result = self.client.get(memory_id=mem0_id, user_id=self.user_id)
+            
+            if result and isinstance(result, dict):
+                # Extract memory data
+                memory_text = result.get('memory', result.get('text', ''))
+                timestamp = datetime.now()  # mem0 doesn't store original timestamp
+                
+                # Try to parse timestamp if available
+                if 'created_at' in result:
+                    try:
+                        timestamp = datetime.fromisoformat(result['created_at'].replace('Z', '+00:00'))
+                    except:
+                        pass
+                
+                return Memory(
+                    id=memory_id,
+                    text=memory_text,
+                    timestamp=timestamp,
+                    context=result.get('metadata', {}).get('context', {}),
+                    metadata=result.get('metadata', {})
+                )
+        except Exception as e:
+            self.logger.warning(f"Failed to get memory {memory_id}: {e}")
+        
+        return None
     
     async def retrieve(
         self,

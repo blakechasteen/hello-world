@@ -160,6 +160,57 @@ class QdrantMemoryStore:
         
         self.logger.info(f"Stored memory {mem_id} at {len(self.scales)} scales")
         return mem_id
+
+    async def store_many(self, memories: List[Memory]) -> List[str]:
+        """Store multiple memories (batch operation)."""
+        memory_ids = []
+        for memory in memories:
+            memory_id = await self.store(memory)
+            memory_ids.append(memory_id)
+        return memory_ids
+
+    async def get_by_id(self, memory_id: str) -> Optional[Memory]:
+        """Get a specific memory by ID."""
+        # Try to retrieve from the largest scale collection first
+        largest_scale = max(self.scales)
+        collection_name = f"{self.collection_prefix}_{largest_scale}"
+        
+        try:
+            result = self.client.retrieve(
+                collection_name=collection_name,
+                ids=[memory_id],
+                with_payload=True
+            )
+            
+            if result and len(result) > 0:
+                point = result[0]
+                payload = point.payload
+                
+                # Parse timestamp
+                timestamp = datetime.fromisoformat(payload['timestamp'])
+                
+                # Extract context (remove metadata fields)
+                context = {}
+                metadata = {}
+                for key, value in payload.items():
+                    if key in ['text', 'timestamp', 'user_id']:
+                        continue
+                    elif key in ['user_id']:
+                        metadata[key] = value
+                    else:
+                        context[key] = value
+                
+                return Memory(
+                    id=memory_id,
+                    text=payload['text'],
+                    timestamp=timestamp,
+                    context=context,
+                    metadata=metadata
+                )
+        except Exception as e:
+            self.logger.warning(f"Failed to get memory {memory_id}: {e}")
+        
+        return None
     
     async def retrieve(
         self,

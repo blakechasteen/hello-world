@@ -30,10 +30,10 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 
 try:
-    from holoLoom.documentation.types import Query, MemoryShard
-    from holoLoom.config import Config
-    from holoLoom.orchestrator import HoloLoomOrchestrator
-    from holoLoom.spinningWheel import TextSpinner, TextSpinnerConfig
+    from HoloLoom.Documentation.types import Query, MemoryShard
+    from HoloLoom.config import Config
+    from HoloLoom.orchestrator import HoloLoomOrchestrator
+    from HoloLoom.spinningWheel import TextSpinner, TextSpinnerConfig
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run from repository root with PYTHONPATH set")

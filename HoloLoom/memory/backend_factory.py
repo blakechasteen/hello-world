@@ -70,9 +70,9 @@ except ImportError:
 try:
     from HoloLoom.memory.mem0_adapter import Mem0Adapter
     MEM0_AVAILABLE = True
-except ImportError:
+except (ImportError, NameError) as e:
     MEM0_AVAILABLE = False
-    warnings.warn("Mem0 backend not available. Install with: pip install mem0ai")
+    warnings.warn(f"Mem0 backend not available: {e}")
 
 
 # ============================================================================

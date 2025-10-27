@@ -190,18 +190,19 @@ class UnifiedMemory:
 
         # Actually store in backend if available
         if self._backend_available and self._backend:
-            # Merge context and metadata
-            full_context = {
+            # Split user metadata from context
+            user_context = context or {}
+            user_metadata = {
                 'user_id': self.user_id,
-                'importance': importance,
-                **(context or {})
+                'importance': importance
             }
 
             protocol_mem = self._protocol_memory(
                 id=memory_id,
                 text=text,
                 timestamp=datetime.now(),
-                context=full_context
+                context=user_context,
+                metadata=user_metadata
             )
             # Run async store
             try:
@@ -451,11 +452,13 @@ class UnifiedMemory:
             # Convert protocol Memory to unified Memory
             unified_mems = []
             for mem in result.memories:
+                # Merge context and metadata for unified Memory
+                merged_context = {**mem.context, **mem.metadata}
                 unified_mems.append(Memory(
                     id=mem.id,
                     text=mem.text,
                     timestamp=mem.timestamp.isoformat() if hasattr(mem.timestamp, 'isoformat') else str(mem.timestamp),
-                    context=mem.context,
+                    context=merged_context,
                     relevance=0.8  # Placeholder relevance
                 ))
 

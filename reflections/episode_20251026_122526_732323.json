@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "Calculate 25 * 17",
+    "response": "Generated answer for: Calculate 25 * 17",
+    "tool_used": "answer",
+    "confidence": 0.267145574092865,
+    "trace": {
+      "start_time": 

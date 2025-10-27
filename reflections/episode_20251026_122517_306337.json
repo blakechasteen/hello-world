@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "Calculate 25 * 17",
+    "response": "Search results based on query",
+    "tool_used": "search",
+    "confidence": 0.2649357656379903,
+    "trace": {
+      "start_time": 

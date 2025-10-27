@@ -17,7 +17,7 @@ services:
       # Enable security
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*
       # Logging
-      - NEO4J_dbms_logs_query_enabled=true
+      - NEO4J_dbms_logs_query_enabled=INFO
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs

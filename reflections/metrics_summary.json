@@ -1,0 +1,34 @@
+{
+  "total_cycles": 3,
+  "successful_cycles": 2,
+  "failed_cycles": 1,
+  "tool_success_rates": {
+    "calc": 1.0,
+    "search": 0.5
+  },
+  "tool_avg_confidence": {
+    "calc": 0.2736298360338856,
+    "search": 0.29669783790563864
+  },
+  "tool_usage_counts": {
+    "calc": 1,
+    "search": 2
+  },
+  "pattern_success_rates": {
+    "Bare Threading": 0.6666666666666666
+  },
+  "pattern_avg_duration": {
+    "Bare Threading": 1177.4963333333335
+  },
+  "pattern_usage_counts": {
+    "Bare Threading": 3
+  },
+  "successful_query_lengths": [
+    26,
+    28
+  ],
+  "failed_query_lengths": [
+    26
+  ],
+  "last_updated": "2025-10-26T23:39:40.444376"
+}

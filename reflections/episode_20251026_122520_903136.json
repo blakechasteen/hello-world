@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "What is a derivative in calculus?",
+    "response": "Calculation completed",
+    "tool_used": "calc",
+    "confidence": 0.3175972449421472,
+    "trace": {
+      "start_time": 

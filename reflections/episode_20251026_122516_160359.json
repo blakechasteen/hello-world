@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "Search for beekeeping tips",
+    "response": "Successfully wrote to Notion database",
+    "tool_used": "notion_write",
+    "confidence": 0.3467122717712007,
+    "trace": {
+      "start_time": 

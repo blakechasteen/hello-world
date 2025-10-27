@@ -451,7 +451,7 @@ class KG:
     def merge(self, other: 'KG') -> None:
         """
         Merge another KG into this one.
-        
+
         Useful for combining knowledge from multiple sources.
         """
         for src, dst, key, data in other.G.edges(keys=True, data=True):
@@ -464,6 +464,158 @@ class KG:
                 metadata={k: v for k, v in data.items() if k not in ["type", "weight", "span_id"]}
             )
             self.add_edge(edge)
+
+    # ========================================================================
+    # MemoryStore Protocol Implementation
+    # ========================================================================
+
+    async def store(self, memory, user_id: str = "default") -> str:
+        """
+        Store a Memory object as a node in the knowledge graph.
+
+        Creates a memory node with full text and metadata, then connects
+        it to entity nodes mentioned in the context.
+
+        Args:
+            memory: Memory object from protocol
+            user_id: User identifier (for multi-tenant support)
+
+        Returns:
+            memory_id: The memory's unique identifier
+        """
+        from datetime import datetime
+
+        # Add memory node
+        self.G.add_node(
+            memory.id,
+            node_type="memory",
+            text=memory.text,
+            timestamp=memory.timestamp.isoformat() if isinstance(memory.timestamp, datetime) else memory.timestamp,
+            user_id=user_id,
+            context=memory.context,
+            metadata=memory.metadata
+        )
+
+        # Connect to entities
+        entities = memory.context.get('entities', [])
+        for entity in entities:
+            edge = KGEdge(
+                src=memory.id,
+                dst=entity,
+                type="MENTIONS",
+                weight=1.0,
+                span_id=memory.id
+            )
+            self.add_edge(edge)
+
+        # Connect to time thread
+        if hasattr(memory, 'timestamp') and memory.timestamp:
+            self.connect_entity_to_time(
+                entity=memory.id,
+                timestamp=memory.timestamp,
+                edge_type="OCCURRED_AT"
+            )
+
+        return memory.id
+
+    async def store_many(self, memories: List, user_id: str = "default") -> List[str]:
+        """
+        Batch store multiple memories.
+
+        Args:
+            memories: List of Memory objects
+            user_id: User identifier
+
+        Returns:
+            List of memory IDs
+        """
+        ids = []
+        for memory in memories:
+            memory_id = await self.store(memory, user_id)
+            ids.append(memory_id)
+        return ids
+
+    async def recall(
+        self,
+        query,
+        limit: int = 5
+    ):
+        """
+        Retrieve memories matching a query using graph traversal.
+
+        Strategy:
+        1. Extract entities from query text
+        2. Find memories connected to those entities
+        3. Rank by number of entity matches
+        4. Return top-k memories
+
+        Args:
+            query: MemoryQuery object with text field
+            limit: Maximum number of memories to return
+
+        Returns:
+            RetrievalResult with memories, scores, and metadata
+        """
+        from HoloLoom.memory.protocol import Memory, RetrievalResult
+        from datetime import datetime
+
+        query_text = query.text if hasattr(query, 'text') else str(query)
+
+        # Extract entities from query (simple heuristic)
+        query_entities = extract_entities_simple(query_text)
+
+        # Find all memory nodes
+        memory_nodes = [
+            node for node, data in self.G.nodes(data=True)
+            if data.get('node_type') == 'memory'
+        ]
+
+        # Score memories by entity overlap
+        scored_memories = []
+
+        for mem_id in memory_nodes:
+            mem_data = self.G.nodes[mem_id]
+
+            # Get entities this memory mentions
+            mem_entities = set()
+            for _, dst in self.G.out_edges(mem_id):
+                if dst in self.G and self.G.nodes.get(dst, {}).get('node_type') != 'memory':
+                    mem_entities.add(dst)
+
+            # Calculate overlap score
+            if query_entities:
+                overlap = len(set(query_entities) & mem_entities)
+                score = overlap / len(query_entities)
+            else:
+                # No entities extracted - use recency
+                score = 0.5
+
+            # Convert node data to Memory object
+            memory = Memory(
+                id=mem_id,
+                text=mem_data.get('text', ''),
+                timestamp=datetime.fromisoformat(mem_data['timestamp']) if 'timestamp' in mem_data else datetime.now(),
+                context=mem_data.get('context', {}),
+                metadata=mem_data.get('metadata', {})
+            )
+
+            scored_memories.append((memory, score))
+
+        # Sort by score
+        scored_memories.sort(key=lambda x: x[1], reverse=True)
+
+        # Take top-k
+        top_memories = scored_memories[:limit]
+
+        memories = [m for m, _ in top_memories]
+        scores = [s for _, s in top_memories]
+
+        return RetrievalResult(
+            memories=memories,
+            scores=scores,
+            strategy_used="graph_entity_overlap",
+            metadata={'query_entities': query_entities, 'total_memories': len(memory_nodes)}
+        )
 
 
 # ============================================================================

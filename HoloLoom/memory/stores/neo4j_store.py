@@ -109,6 +109,65 @@ class Neo4jMemoryStore:
             
             self.logger.info(f"Stored KNOT {mem_id} with threads")
             return mem_id
+
+    async def store_many(self, memories: List[Memory]) -> List[str]:
+        """Store multiple memories (batch operation)."""
+        memory_ids = []
+        for memory in memories:
+            memory_id = await self.store(memory)
+            memory_ids.append(memory_id)
+        return memory_ids
+
+    async def get_by_id(self, memory_id: str) -> Optional[Memory]:
+        """Get a specific memory by ID."""
+        with self.driver.session(database=self.database) as session:
+            result = session.run("""
+                MATCH (k:KNOT {id: $id})
+                RETURN k.id AS id, k.text AS text, k.timestamp AS timestamp, k.user_id AS user_id
+            """, {'id': memory_id})
+            
+            record = result.single()
+            if not record:
+                return None
+            
+            # Convert timestamp
+            timestamp = datetime.fromisoformat(record['timestamp'])
+            
+            # Get thread connections for context
+            thread_result = session.run("""
+                MATCH (k:KNOT {id: $id})-[r]->(t:THREAD)
+                RETURN type(r) AS rel_type, t.type AS thread_type, t.name AS thread_name
+            """, {'id': memory_id})
+            
+            context = {}
+            for thread_record in thread_result:
+                thread_type = thread_record['thread_type'].lower()
+                thread_name = thread_record['thread_name']
+                
+                if thread_type == 'time':
+                    context['time'] = thread_name
+                elif thread_type == 'place':
+                    context['place'] = thread_name
+                elif thread_type == 'actor':
+                    if 'people' not in context:
+                        context['people'] = []
+                    context['people'].append(thread_name)
+                elif thread_type == 'theme':
+                    if 'topics' not in context:
+                        context['topics'] = []
+                    context['topics'].append(thread_name)
+                elif thread_type == 'glyph':
+                    if 'symbols' not in context:
+                        context['symbols'] = []
+                    context['symbols'].append(thread_name)
+            
+            return Memory(
+                id=record['id'],
+                text=record['text'],
+                timestamp=timestamp,
+                context=context,
+                metadata={'user_id': record['user_id']}
+            )
     
     def _connect_threads(self, session, knot_id: str, context: Dict):
         """Connect KNOT to THREADs based on context."""

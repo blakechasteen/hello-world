@@ -38,7 +38,11 @@
       "Bash(git push)",
       "Bash(PYTHONPATH=../.. python:*)",
       "Bash(find:*)",
-      "Bash(timeout 5 python:*)"
+      "Bash(timeout 5 python:*)",
+      "Bash(PYTHONPATH=.. python -c:*)",
+      "Bash(rm:*)",
+      "Bash(timeout 60 python:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
