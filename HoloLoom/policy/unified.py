@@ -734,8 +734,8 @@ def create_policy(
         n_tools=4
     ).to(device)
     
-    # Create Ψ projection (6D Ψ → 8D motif space)
-    psi_proj = nn.Linear(6, 8).to(device)
+    # Create Ψ projection (mem_dim → 8D motif space)
+    psi_proj = nn.Linear(mem_dim, 8).to(device)
     
     # Map scales to adapter indices
     adapter_for_dim = {
@@ -1216,4 +1216,6 @@ class SimpleUnifiedPolicy(nn.Module):
 
 
 # Export the test-friendly symbol name expected by the tests
-UnifiedPolicy = SimpleUnifiedPolicy
+# NOTE: This alias is commented out because it shadows the real UnifiedPolicy dataclass (line 556)
+# Use SimpleUnifiedPolicy directly in tests if needed
+# UnifiedPolicy = SimpleUnifiedPolicy

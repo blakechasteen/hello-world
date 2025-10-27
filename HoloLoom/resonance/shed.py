@@ -173,7 +173,8 @@ class ResonanceShed:
         # Thread 2: Embeddings (continuous semantic)
         if self.embedder:
             try:
-                embeddings = await self.embedder.encode([text])
+                # embedder.encode() is synchronous, not async
+                embeddings = self.embedder.encode([text])
                 embedding = embeddings[0] if len(embeddings) > 0 else []
 
                 self.threads.append(FeatureThread(

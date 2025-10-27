@@ -22,9 +22,8 @@ import hashlib
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
-# IMPORTANT: avoid stdlib 'types' collision — import your shared types by package path.
-# e.g., if this file is hololoom/feature_extraction.py and shared types are hololoom/shared_types.py:
-from .shared_types import Query, Features, Vector, Motif  # <-- rename your file accordingly
+# Import shared types from the canonical location
+from HoloLoom.Documentation.types import Query, Features, Vector, Motif
 
 
 # ============================================================================

@@ -10,6 +10,13 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional
 
+# Import BanditStrategy from policy to avoid duplication
+try:
+    from HoloLoom.policy.unified import BanditStrategy as PolicyBanditStrategy
+    _POLICY_AVAILABLE = True
+except ImportError:
+    _POLICY_AVAILABLE = False
+
 
 class KGBackend(Enum):
     """
@@ -123,17 +130,22 @@ class ExecutionMode(Enum):
     FUSED = "fused"
 
 
-class BanditStrategy(Enum):
-    """
-    Bandit exploration strategies for tool selection.
-    
-    - EPSILON_GREEDY: Explore with probability epsilon (default 10%)
-    - BAYESIAN_BLEND: Blend neural predictions with bandit priors
-    - PURE_THOMPSON: Use Thompson Sampling exclusively
-    """
-    EPSILON_GREEDY = "epsilon_greedy"
-    BAYESIAN_BLEND = "bayesian_blend"
-    PURE_THOMPSON = "pure_thompson"
+# Use BanditStrategy from policy module to avoid duplication
+# If policy is not available (rare edge case), define a local version
+if _POLICY_AVAILABLE:
+    BanditStrategy = PolicyBanditStrategy
+else:
+    class BanditStrategy(Enum):
+        """
+        Bandit exploration strategies for tool selection.
+
+        - EPSILON_GREEDY: Explore with probability epsilon (default 10%)
+        - BAYESIAN_BLEND: Blend neural predictions with bandit priors
+        - PURE_THOMPSON: Use Thompson Sampling exclusively
+        """
+        EPSILON_GREEDY = "epsilon_greedy"
+        BAYESIAN_BLEND = "bayesian_blend"
+        PURE_THOMPSON = "pure_thompson"
 
 
 @dataclass
