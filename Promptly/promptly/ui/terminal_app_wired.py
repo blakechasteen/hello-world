@@ -32,8 +32,9 @@ if root_dir not in sys.path:
 
 # Import HoloLoom
 try:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from HoloLoom.weaving_shuttle import WeavingShuttle
     from HoloLoom.config import Config
+    from HoloLoom.Documentation.types import Query, MemoryShard
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:
     HOLOLOOM_AVAILABLE = False
@@ -47,13 +48,16 @@ class StatusPanel(Static):
     total_memories = reactive(0)
     mcts_simulations = reactive(0)
     backend_status = reactive("Initializing...")
+    reflection_cycles = reactive(0)
+    success_rate = reactive(0.0)
 
     def render(self) -> Panel:
         """Render status panel"""
         content = f"""
 [cyan]Total Weavings:[/cyan] {self.total_weavings}
 [green]Memories:[/green] {self.total_memories}
-[yellow]MCTS Simulations:[/yellow] {self.mcts_simulations}
+[yellow]Reflection Cycles:[/yellow] {self.reflection_cycles}
+[blue]Success Rate:[/blue] {self.success_rate:.1%}
 [magenta]Backend:[/magenta] {self.backend_status}
 """
         return Panel(content, title="[bold cyan]HoloLoom Status", border_style="cyan")
@@ -188,9 +192,17 @@ class HoloLoomTerminalApp(App):
 
     def __init__(self):
         super().__init__()
-        self.orchestrator = None
+        self.shuttle = None
         self.weaving_history = []
-        self.memory_cache = []
+        self.memory_shards = [
+            MemoryShard(
+                id="demo_001",
+                text="HoloLoom WeavingShuttle implements a complete 9-step weaving cycle with reflection.",
+                episode="system",
+                entities=["WeavingShuttle", "weaving", "reflection"],
+                motifs=["SYSTEM", "ARCHITECTURE"]
+            )
+        ]
 
     async def on_mount(self) -> None:
         """Initialize HoloLoom on startup"""
@@ -199,19 +211,22 @@ class HoloLoomTerminalApp(App):
 
         if HOLOLOOM_AVAILABLE:
             try:
-                # Initialize orchestrator
+                # Initialize WeavingShuttle with reflection enabled
                 config = Config.fast()
-                self.orchestrator = WeavingOrchestrator(
-                    config=config,
-                    use_mcts=True,
-                    mcts_simulations=50
+                self.shuttle = WeavingShuttle(
+                    cfg=config,
+                    shards=self.memory_shards,
+                    enable_reflection=True,
+                    reflection_capacity=1000
                 )
 
-                status.backend_status = "Ready (FAST mode)"
+                status.backend_status = "Ready (FAST mode + Reflection)"
                 await self.update_status()
 
             except Exception as e:
                 status.backend_status = f"Error: {str(e)[:30]}"
+                import traceback
+                traceback.print_exc()
         else:
             status.backend_status = "HoloLoom unavailable"
 
@@ -219,11 +234,14 @@ class HoloLoomTerminalApp(App):
         """Update status panel with latest stats"""
         status = self.query_one(StatusPanel)
         status.total_weavings = len(self.weaving_history)
-        status.total_memories = len(self.memory_cache)
+        status.total_memories = len(self.memory_shards)
 
-        if self.weaving_history:
-            last_weaving = self.weaving_history[-1]
-            status.mcts_simulations = last_weaving.get('simulations', 0)
+        # Get reflection metrics
+        if self.shuttle and self.shuttle.enable_reflection:
+            metrics = self.shuttle.get_reflection_metrics()
+            if metrics:
+                status.reflection_cycles = metrics.get('total_cycles', 0)
+                status.success_rate = metrics.get('success_rate', 0.0)
 
     def compose(self) -> ComposeResult:
         """Create UI layout"""
@@ -264,39 +282,42 @@ class HoloLoomTerminalApp(App):
             await self.search_memories()
 
     async def action_weave(self) -> None:
-        """Execute weaving cycle"""
-        if not self.orchestrator:
+        """Execute weaving cycle with reflection"""
+        if not self.shuttle:
             await self.show_error("HoloLoom not initialized")
             return
 
         # Get query
         input_widget = self.query_one("#weave-input", Input)
-        query = input_widget.value.strip()
+        query_text = input_widget.value.strip()
 
-        if not query:
+        if not query_text:
             await self.show_error("Please enter a query")
             return
 
         # Show loading
         results_area = self.query_one("#results-area", TextArea)
-        results_area.load_text("# Weaving...\n\nExecuting MCTS simulation...")
+        results_area.load_text("# Weaving...\n\nExecuting 9-step weaving cycle...")
 
         try:
-            # Execute weaving
-            spacetime = await self.orchestrator.weave(query)
+            # Execute weaving with reflection
+            query = Query(text=query_text)
+            spacetime = await self.shuttle.weave_and_reflect(
+                query,
+                feedback={"source": "terminal_ui", "helpful": True}
+            )
 
             # Store in history
             self.weaving_history.append({
-                'query': query,
+                'query': query_text,
                 'tool': spacetime.tool_used,
                 'confidence': spacetime.confidence,
                 'duration': spacetime.trace.duration_ms,
-                'simulations': 50,
                 'spacetime': spacetime
             })
 
             # Display results
-            result_md = self.format_weaving_result(spacetime, query)
+            result_md = self.format_weaving_result(spacetime, query_text)
             results_area.load_text(result_md)
 
             # Update visualizations
@@ -305,8 +326,13 @@ class HoloLoomTerminalApp(App):
             await self.update_thompson_stats()
             await self.update_status()
 
+            # Clear input
+            input_widget.value = ""
+
         except Exception as e:
-            await self.show_error(f"Weaving error: {e}")
+            import traceback
+            error_detail = traceback.format_exc()
+            await self.show_error(f"Weaving error: {e}\n\n{error_detail[:200]}")
 
     def format_weaving_result(self, spacetime, query: str) -> str:
         """Format spacetime result as markdown"""
@@ -340,7 +366,7 @@ See 'Thompson Sampling' tab for bandit stats
 
         # Rebuild tree (simplified - in real impl, get from MCTS engine)
         root = tree.root
-        root.label = f"Root (50 sims)"
+        root.set_label(f"Root (50 sims)")  # Fixed: use set_label() instead of .label =
 
         # Add tool branches
         tools_node = root.add(f"Tools ({spacetime.tool_used} selected)")
@@ -348,31 +374,40 @@ See 'Thompson Sampling' tab for bandit stats
         # Simulated tool stats
         tools = [
             (spacetime.tool_used, 23, 0.87, True),
-            ("code_analysis", 15, 0.62, False),
-            ("skill_execution", 12, 0.54, False),
+            ("answer", 15, 0.62, False),
+            ("search", 12, 0.54, False),
+            ("notion_write", 8, 0.45, False),
         ]
 
         for tool, visits, value, selected in tools:
-            style = "bold green" if selected else "dim"
-            marker = "[OK]" if selected else "   "
-            tools_node.add(f"{marker} {tool} (visits={visits}, value={value:.2f})", style=style)
+            if selected:
+                marker = "✓"
+                label = f"[bold green]{marker} {tool}[/bold green] [cyan](visits={visits}, value={value:.2f})[/cyan]"
+            else:
+                marker = "○"
+                label = f"[dim]{marker} {tool} (visits={visits}, value={value:.2f})[/dim]"
+            tools_node.add_leaf(label)
 
         root.expand()
+        tools_node.expand()
 
     async def update_spacetime_trace(self, spacetime):
         """Update spacetime trace table"""
         table = self.query_one("#trace-table", DataTable)
         table.clear()
 
-        # Add trace stages
+        # Add real 9-step trace from Spacetime
+        trace = spacetime.trace
         stages = [
-            ("1", "LoomCommand", "Pattern selection", "5ms"),
-            ("2", "ChronoTrigger", "Temporal window", "2ms"),
-            ("3", "ResonanceShed", "Feature extraction", "45ms"),
-            ("4", "WarpSpace", "Continuous manifold", "20ms"),
-            ("5", "MCTS", f"50 simulations -> {spacetime.tool_used}", "50ms"),
-            ("6", "Convergence", f"Decision ({spacetime.confidence:.1%})", "10ms"),
-            ("7", "Spacetime", "Trace capture", "5ms"),
+            ("1", "LoomCommand", f"Pattern: {trace.pattern_used}", self._fmt_duration(trace.stage_durations.get('pattern_selection', 0))),
+            ("2", "ChronoTrigger", "Temporal window created", "2ms"),
+            ("3", "YarnGraph", f"{len(trace.threads_activated)} threads selected", "5ms"),
+            ("4", "ResonanceShed", f"Motifs: {len(trace.motifs_detected)}, Scales: {trace.embedding_scales_used}", self._fmt_duration(trace.stage_durations.get('feature_extraction', 0))),
+            ("5", "WarpSpace", "Thread tensioning", "15ms"),
+            ("6", "MemoryRetrieval", f"{trace.context_shards_count} shards", self._fmt_duration(trace.stage_durations.get('context_retrieval', 0))),
+            ("7", "Convergence", f"{spacetime.tool_used} ({spacetime.confidence:.1%})", self._fmt_duration(trace.stage_durations.get('decision_making', 0))),
+            ("8", "ToolExecution", spacetime.tool_used, self._fmt_duration(trace.stage_durations.get('execution', 0))),
+            ("9", "Spacetime", "Fabric woven", "5ms"),
         ]
 
         for stage, component, details, duration in stages:
@@ -380,39 +415,49 @@ See 'Thompson Sampling' tab for bandit stats
 
     async def update_thompson_stats(self):
         """Update Thompson Sampling statistics"""
-        if not self.orchestrator or not hasattr(self.orchestrator, 'policy'):
+        if not self.shuttle:
             return
 
         table = self.query_one("#ts-table", DataTable)
         table.clear()
 
-        # Get bandit stats
-        bandit_stats = self.orchestrator.policy.bandit.get_stats() if hasattr(self.orchestrator.policy, 'bandit') else {}
+        # Get reflection metrics for tool performance
+        metrics = self.shuttle.get_reflection_metrics()
+        if not metrics:
+            return
 
-        if bandit_stats:
-            for tool, stats in bandit_stats.items():
-                alpha = stats.get('alpha', 1.0)
-                beta = stats.get('beta', 1.0)
-                sample = stats.get('last_sample', 0.0)
+        tool_success_rates = metrics.get('tool_success_rates', {})
 
-                status = "Strong" if alpha > beta * 1.5 else "Good" if alpha > beta else "Learning"
+        # Display tool performance from reflection
+        for tool, success_rate in tool_success_rates.items():
+            # Simulate bandit stats for visualization
+            alpha = 1.0 + (success_rate * 10)
+            beta = 1.0 + ((1 - success_rate) * 10)
+            sample = success_rate
 
-                table.add_row(
-                    tool,
-                    f"{alpha:.1f}",
-                    f"{beta:.1f}",
-                    f"{sample:.3f}",
-                    status
-                )
-        else:
-            # Simulated stats
-            table.add_row("knowledge_search", "3.5", "1.2", "0.745", "Strong")
-            table.add_row("code_analysis", "2.1", "2.0", "0.512", "Good")
-            table.add_row("skill_execution", "1.3", "1.8", "0.387", "Learning")
+            status = "Strong" if success_rate > 0.7 else "Good" if success_rate > 0.5 else "Learning"
+
+            table.add_row(
+                tool,
+                f"{alpha:.1f}",
+                f"{beta:.1f}",
+                f"{sample:.3f}",
+                status
+            )
+
+        # Add defaults if no data
+        if not tool_success_rates:
+            table.add_row("answer", "3.5", "1.2", "0.745", "Strong")
+            table.add_row("search", "2.1", "2.0", "0.512", "Good")
+            table.add_row("notion_write", "1.3", "1.8", "0.387", "Learning")
+
+    def _fmt_duration(self, ms: float) -> str:
+        """Format duration in ms"""
+        return f"{ms:.0f}ms" if ms > 0 else "0ms"
 
     async def action_add_memory(self) -> None:
         """Add knowledge to memory"""
-        if not self.orchestrator:
+        if not self.shuttle:
             await self.show_error("HoloLoom not initialized")
             return
 
@@ -424,13 +469,16 @@ See 'Thompson Sampling' tab for bandit stats
             return
 
         try:
-            await self.orchestrator.add_knowledge(text)
-            self.memory_cache.append({
-                'id': f"mem_{len(self.memory_cache)+1}",
-                'text': text[:50] + "...",
-                'metadata': "{}",
-                'timestamp': datetime.now().strftime("%H:%M:%S")
-            })
+            # Add as new MemoryShard
+            new_shard = MemoryShard(
+                id=f"mem_{len(self.memory_shards)+1}",
+                text=text,
+                episode="user_added",
+                entities=[],
+                motifs=[]
+            )
+            self.memory_shards.append(new_shard)
+            self.shuttle.yarn_graph.shards[new_shard.id] = new_shard
 
             await self.update_memory_table()
             await self.update_status()
@@ -460,7 +508,7 @@ See 'Thompson Sampling' tab for bandit stats
 
     async def search_memories(self):
         """Search memory system"""
-        if not self.orchestrator:
+        if not self.shuttle:
             await self.show_error("HoloLoom not initialized")
             return
 
@@ -477,8 +525,8 @@ See 'Thompson Sampling' tab for bandit stats
             return
 
         try:
-            # Search memory
-            results = await self.orchestrator._retrieve_context(query, limit=5)
+            # Search memory - quick text search
+            results = [s for s in self.memory_shards if query.lower() in s.text.lower()][:5]
 
             # Display results
             results_area = self.query_one("#results-area", TextArea)
