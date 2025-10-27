@@ -16,13 +16,13 @@ sys.path.insert(0, str(root))
 from promptly.ui.terminal_app_wired import HoloLoomTerminalApp
 
 if __name__ == "__main__":
-    print("\n🚀 Launching HoloLoom Terminal UI...")
+    print("\n>>> Launching HoloLoom Terminal UI...")
     print("   Controls:")
     print("   - Ctrl+W: Weave query")
     print("   - Ctrl+M: Add memory")
     print("   - Ctrl+S: Search")
     print("   - Ctrl+Q: Quit")
-    print("\n")
+    print("")
 
     app = HoloLoomTerminalApp()
     app.run()

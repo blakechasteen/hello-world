@@ -4,7 +4,17 @@ Promptly UI Module
 Interactive terminal and web interfaces for Promptly.
 """
 
-from .terminal_app import PromptlyApp
-from .components import *
+# Graceful imports
+__all__ = []
 
-__all__ = ['PromptlyApp']
+try:
+    from .terminal_app import PromptlyApp
+    __all__.append('PromptlyApp')
+except ImportError:
+    pass
+
+try:
+    from .terminal_app_wired import HoloLoomTerminalApp
+    __all__.append('HoloLoomTerminalApp')
+except ImportError:
+    pass
