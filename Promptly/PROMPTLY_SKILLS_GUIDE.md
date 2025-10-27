@@ -1,14 +1,15 @@
 # Promptly Skills for Claude Code
 
-**Version**: v1.1
+**Version**: v1.1.5
 **Status**: Ready for use!
 **Integration**: MCP (Model Context Protocol)
+**New in v1.1.5**: Week 2 Smart Features (auto-scoring, suggestions, tagging, duplicates, health check)
 
 ---
 
 ## What is Promptly Skills?
 
-Promptly Skills integrates Promptly's **30+ prompt management tools** directly into Claude Desktop via the MCP protocol. Manage prompts, execute recursive loops, run A/B tests, and more - all from within your Claude conversations.
+Promptly Skills integrates Promptly's **35+ prompt management tools** directly into Claude Desktop via the MCP protocol. Manage prompts, execute recursive loops, run A/B tests, auto-score quality, detect duplicates, and more - all from within your Claude conversations.
 
 ---
 
@@ -297,10 +298,12 @@ promptly_cost_summary(prompt_name="SQL Optimizer")
 
 ---
 
-### NEW: Week 2 Smart Features 🎉
+### Week 2 Smart Features 🎉 (v1.1.5)
 
-#### `promptly_auto_score` *(Coming Soon)*
-Automatically score prompt quality
+#### `promptly_auto_score`
+Automatically evaluate prompt quality
+
+Analyzes prompts on 3 dimensions: clarity, completeness, effectiveness
 
 ```
 promptly_auto_score(
@@ -309,34 +312,88 @@ promptly_auto_score(
 )
 ```
 
-**Returns**: Clarity, Completeness, Effectiveness scores + feedback
+**Returns**:
+```
+# Quality Score for 'SQL Optimizer'
 
-#### `promptly_suggest_related` *(Coming Soon)*
-Find related prompts using HoloLoom
+**Overall Score**: 0.87
+
+## Breakdown
+- **Clarity**: 0.90
+- **Completeness**: 0.85
+- **Effectiveness**: 0.85
+
+## Feedback
+- Excellent structure and specificity
+- Good use of examples
+- Consider adding more context about query types
+```
+
+#### `promptly_suggest_related`
+Find related prompts using semantic search
+
+Uses HoloLoom unified memory for intelligent suggestions
 
 ```
 promptly_suggest_related(
   prompt_name="SQL Optimizer",
-  limit=5
+  limit=5,
+  min_relevance=0.5
 )
 ```
 
-**Returns**: Similar prompts with relevance scores
+**Returns**:
+```
+# Related Prompts for 'SQL Optimizer'
 
-#### `promptly_auto_tag` *(Coming Soon)*
-Extract tags from prompt content
+Found 3 related prompt(s):
+
+1. **Query Performance Analyzer**
+   - Relevance: 0.87
+   - Reason: Similar topic (database optimization)
+   - Tags: sql, performance, database
+
+2. **Database Index Helper**
+   - Relevance: 0.72
+   - Reason: Related domain (database)
+```
+
+#### `promptly_auto_tag`
+Automatically extract tags from prompt content
+
+Analyzes content for domains, technical terms, and action verbs
 
 ```
 promptly_auto_tag(
   prompt_name="SQL Optimizer",
-  max_tags=10
+  max_tags=10,
+  min_confidence=0.5
 )
 ```
 
-**Returns**: Suggested tags with confidence scores
+**Returns**:
+```
+# Tag Suggestions for 'SQL Optimizer'
 
-#### `promptly_detect_duplicates` *(Coming Soon)*
-Find duplicate/similar prompts
+Found 5 tag(s):
+
+- **sql**
+  Confidence: ██████████ 1.00
+  Reason: Explicitly mentioned in prompt
+
+- **database**
+  Confidence: ████████   0.80
+  Reason: Found 3 related keyword(s)
+
+- **optimization**
+  Confidence: ███████    0.70
+  Reason: Found 2 related keyword(s)
+```
+
+#### `promptly_detect_duplicates`
+Find duplicate or similar prompts
+
+Detects exact matches and fuzzy duplicates with merge recommendations
 
 ```
 promptly_detect_duplicates(
@@ -344,16 +401,54 @@ promptly_detect_duplicates(
 )
 ```
 
-**Returns**: Duplicate pairs with merge suggestions
+**Returns**:
+```
+# Duplicate Detection Results
 
-#### `promptly_health_check` *(Coming Soon)*
-Check system health
+**Threshold**: 90% similarity
+**Found**: 2 duplicate pair(s)
+
+## 'SQL Optimizer v1' has duplicates:
+
+- **SQL Optimizer v2**
+  Similarity: 1.00 (exact)
+  Strategy: keep_one
+  Recommendation: These are nearly identical. Keep the most recent or higher quality version.
+```
+
+#### `promptly_health_check`
+Check health of all system components
+
+Monitors Database, HoloLoom, Neo4j, Qdrant, Redis
 
 ```
 promptly_health_check()
 ```
 
-**Returns**: Status of Database, HoloLoom, Neo4j, Qdrant, Redis
+**Returns**:
+```
+# Promptly System Health Check
+
+**Overall Status**: DEGRADED
+**Timestamp**: 2025-10-26T23:45:12
+
+## Component Status
+
+✅ **Database**: healthy
+   Connected (340 executions)
+   Response time: 15.2ms
+
+⚠️  **Hololoom**: degraded
+   Not available (not critical)
+
+⚠️  **Neo4j**: degraded
+   Not available (optional backend)
+
+## Summary
+- Healthy: 1/5
+- Degraded: 4/5
+- Unhealthy: 0/5
+```
 
 ---
 

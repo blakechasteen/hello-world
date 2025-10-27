@@ -145,6 +145,42 @@ except ImportError:
     ANALYTICS_AVAILABLE = False
     analytics = None
 
+# Import Week 2 smart features
+try:
+    from tools.auto_scoring import PromptAutoScorer, ScoringMethod, QualityScore
+    AUTO_SCORING_AVAILABLE = True
+except ImportError:
+    print("WARNING: Auto-scoring not available", file=sys.stderr)
+    AUTO_SCORING_AVAILABLE = False
+
+try:
+    from tools.suggestions import SuggestionEngine
+    SUGGESTIONS_AVAILABLE = True
+except ImportError:
+    print("WARNING: Suggestions not available", file=sys.stderr)
+    SUGGESTIONS_AVAILABLE = False
+
+try:
+    from tools.auto_tagging import AutoTagger
+    AUTO_TAGGING_AVAILABLE = True
+except ImportError:
+    print("WARNING: Auto-tagging not available", file=sys.stderr)
+    AUTO_TAGGING_AVAILABLE = False
+
+try:
+    from tools.duplicate_detection import DuplicateDetector
+    DUPLICATE_DETECTION_AVAILABLE = True
+except ImportError:
+    print("WARNING: Duplicate detection not available", file=sys.stderr)
+    DUPLICATE_DETECTION_AVAILABLE = False
+
+try:
+    from tools.health_check import HealthChecker
+    HEALTH_CHECK_AVAILABLE = True
+except ImportError:
+    print("WARNING: Health check not available", file=sys.stderr)
+    HEALTH_CHECK_AVAILABLE = False
+
 
 # ============================================================================
 # MCP Server Setup
@@ -817,6 +853,90 @@ async def list_tools() -> list[Tool]:
                         "description": "Number of prompts to return (default: 5)"
                     }
                 }
+            }
+        ),
+        Tool(
+            name="promptly_auto_score",
+            description="Automatically evaluate prompt quality (clarity, completeness, effectiveness)",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "prompt_name": {
+                        "type": "string",
+                        "description": "Name of the prompt to score"
+                    },
+                    "method": {
+                        "type": "string",
+                        "enum": ["heuristic", "llm", "hybrid"],
+                        "description": "Scoring method (default: heuristic)"
+                    }
+                },
+                "required": ["prompt_name"]
+            }
+        ),
+        Tool(
+            name="promptly_suggest_related",
+            description="Find related prompts using semantic search",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "prompt_name": {
+                        "type": "string",
+                        "description": "Name of the prompt to find related prompts for"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of suggestions (default: 5)"
+                    },
+                    "min_relevance": {
+                        "type": "number",
+                        "description": "Minimum relevance score 0.0-1.0 (default: 0.5)"
+                    }
+                },
+                "required": ["prompt_name"]
+            }
+        ),
+        Tool(
+            name="promptly_auto_tag",
+            description="Automatically extract and suggest tags from prompt content",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "prompt_name": {
+                        "type": "string",
+                        "description": "Name of the prompt to tag"
+                    },
+                    "max_tags": {
+                        "type": "integer",
+                        "description": "Maximum tags to return (default: 10)"
+                    },
+                    "min_confidence": {
+                        "type": "number",
+                        "description": "Minimum confidence 0.0-1.0 (default: 0.5)"
+                    }
+                },
+                "required": ["prompt_name"]
+            }
+        ),
+        Tool(
+            name="promptly_detect_duplicates",
+            description="Find duplicate or similar prompts with merge recommendations",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "min_similarity": {
+                        "type": "number",
+                        "description": "Minimum similarity threshold 0.0-1.0 (default: 0.90)"
+                    }
+                }
+            }
+        ),
+        Tool(
+            name="promptly_health_check",
+            description="Check health status of all Promptly system components",
+            inputSchema={
+                "type": "object",
+                "properties": {}
             }
         ),
     ]
@@ -1649,6 +1769,237 @@ Format your response as [format type].
                 return [TextContent(type="text", text=report)]
             except Exception as e:
                 return [TextContent(type="text", text=f"Error getting top prompts: {e}")]
+
+        elif name == "promptly_auto_score":
+            if not AUTO_SCORING_AVAILABLE:
+                return [TextContent(type="text", text="Auto-scoring not available")]
+
+            prompt_name = arguments["prompt_name"]
+            method_str = arguments.get("method", "heuristic")
+
+            try:
+                # Get prompt content
+                prompt_data = p.get(prompt_name)
+                content = prompt_data['content']
+
+                # Map method string to enum
+                method_map = {
+                    "heuristic": ScoringMethod.HEURISTIC,
+                    "llm": ScoringMethod.LLM,
+                    "hybrid": ScoringMethod.HYBRID
+                }
+                method = method_map.get(method_str, ScoringMethod.HEURISTIC)
+
+                # Score the prompt
+                scorer = PromptAutoScorer(method=method)
+                score = scorer.score_prompt(content)
+
+                # Format report
+                report = f"""# Quality Score for '{prompt_name}'
+
+**Overall Score**: {score.overall:.2f}
+
+## Breakdown
+- **Clarity**: {score.clarity:.2f}
+- **Completeness**: {score.completeness:.2f}
+- **Effectiveness**: {score.effectiveness:.2f}
+
+**Method**: {score.method}
+
+## Feedback
+
+"""
+                for feedback_item in score.feedback:
+                    report += f"- {feedback_item}\n"
+
+                return [TextContent(type="text", text=report)]
+            except Exception as e:
+                return [TextContent(type="text", text=f"Error scoring prompt: {e}")]
+
+        elif name == "promptly_suggest_related":
+            if not SUGGESTIONS_AVAILABLE:
+                return [TextContent(type="text", text="Suggestions not available (requires HoloLoom)")]
+
+            prompt_name = arguments["prompt_name"]
+            limit = arguments.get("limit", 5)
+            min_relevance = arguments.get("min_relevance", 0.5)
+
+            try:
+                # Get prompt content
+                prompt_data = p.get(prompt_name)
+                content = prompt_data['content']
+
+                # Get suggestions
+                engine = SuggestionEngine()
+                suggestions = engine.get_related_prompts(
+                    content,
+                    limit=limit,
+                    min_relevance=min_relevance
+                )
+
+                if not suggestions:
+                    return [TextContent(type="text", text=f"No related prompts found for '{prompt_name}'")]
+
+                # Format report
+                report = f"""# Related Prompts for '{prompt_name}'
+
+Found {len(suggestions)} related prompt(s):
+
+"""
+                for i, sug in enumerate(suggestions, 1):
+                    report += f"{i}. **{sug.name}**\n"
+                    report += f"   - Relevance: {sug.relevance:.2f}\n"
+                    report += f"   - Reason: {sug.reason}\n"
+                    if sug.tags:
+                        report += f"   - Tags: {', '.join(sug.tags)}\n"
+                    report += "\n"
+
+                return [TextContent(type="text", text=report)]
+            except Exception as e:
+                return [TextContent(type="text", text=f"Error finding related prompts: {e}")]
+
+        elif name == "promptly_auto_tag":
+            if not AUTO_TAGGING_AVAILABLE:
+                return [TextContent(type="text", text="Auto-tagging not available")]
+
+            prompt_name = arguments["prompt_name"]
+            max_tags = arguments.get("max_tags", 10)
+            min_confidence = arguments.get("min_confidence", 0.5)
+
+            try:
+                # Get prompt content
+                prompt_data = p.get(prompt_name)
+                content = prompt_data['content']
+
+                # Extract tags
+                tagger = AutoTagger()
+                suggestions = tagger.extract_tags(
+                    content,
+                    max_tags=max_tags,
+                    min_confidence=min_confidence
+                )
+
+                if not suggestions:
+                    return [TextContent(type="text", text=f"No tags suggested for '{prompt_name}'")]
+
+                # Format report
+                report = f"""# Tag Suggestions for '{prompt_name}'
+
+Found {len(suggestions)} tag(s):
+
+"""
+                for sug in suggestions:
+                    confidence_bar = "█" * int(sug.confidence * 10)
+                    report += f"- **{sug.tag}**\n"
+                    report += f"  Confidence: {confidence_bar:10} {sug.confidence:.2f}\n"
+                    report += f"  Reason: {sug.reason}\n\n"
+
+                return [TextContent(type="text", text=report)]
+            except Exception as e:
+                return [TextContent(type="text", text=f"Error extracting tags: {e}")]
+
+        elif name == "promptly_detect_duplicates":
+            if not DUPLICATE_DETECTION_AVAILABLE:
+                return [TextContent(type="text", text="Duplicate detection not available")]
+
+            min_similarity = arguments.get("min_similarity", 0.90)
+
+            try:
+                # Get all prompts
+                prompts = p.list()
+
+                # Format for detector
+                prompt_dicts = []
+                for prompt in prompts:
+                    prompt_data = p.get(prompt['name'])
+                    prompt_dicts.append({
+                        'id': prompt_data['name'],
+                        'name': prompt_data['name'],
+                        'content': prompt_data['content']
+                    })
+
+                # Detect duplicates
+                detector = DuplicateDetector()
+                duplicates = detector.find_duplicates(prompt_dicts, min_similarity=min_similarity)
+
+                if not duplicates:
+                    return [TextContent(type="text", text=f"No duplicates found (similarity >= {min_similarity:.0%})")]
+
+                # Format report
+                report = f"# Duplicate Detection Results\n\n"
+                report += f"**Threshold**: {min_similarity:.0%} similarity\n"
+                report += f"**Found**: {sum(len(matches) for matches in duplicates.values())} duplicate pair(s)\n\n"
+
+                for prompt_id, matches in duplicates.items():
+                    report += f"## '{prompt_id}' has duplicates:\n\n"
+                    for match in matches:
+                        report += f"- **{match.name}**\n"
+                        report += f"  Similarity: {match.similarity:.2f} ({match.match_type})\n"
+
+                        # Get merge suggestion
+                        prompt1 = next(p for p in prompt_dicts if p['id'] == prompt_id)
+                        prompt2 = next(p for p in prompt_dicts if p['id'] == match.prompt_id)
+                        suggestion = detector.generate_merge_suggestions(prompt1, prompt2)
+
+                        report += f"  Strategy: {suggestion['strategy']}\n"
+                        report += f"  Recommendation: {suggestion['recommendation']}\n\n"
+
+                return [TextContent(type="text", text=report)]
+            except Exception as e:
+                return [TextContent(type="text", text=f"Error detecting duplicates: {e}")]
+
+        elif name == "promptly_health_check":
+            if not HEALTH_CHECK_AVAILABLE:
+                return [TextContent(type="text", text="Health check not available")]
+
+            try:
+                checker = HealthChecker()
+                health = checker.check_all()
+
+                # Format report
+                report = f"""# Promptly System Health Check
+
+**Overall Status**: {health['overall_status'].upper()}
+**Timestamp**: {health['timestamp']}
+
+## Component Status
+
+"""
+                for component, data in health['components'].items():
+                    status = data['status']
+
+                    # Status symbol
+                    if status == 'healthy':
+                        symbol = "✅"
+                    elif status == 'degraded':
+                        symbol = "⚠️ "
+                    elif status == 'unhealthy':
+                        symbol = "❌"
+                    else:
+                        symbol = "❓"
+
+                    report += f"{symbol} **{component.title()}**: {status}\n"
+                    report += f"   {data['message']}\n"
+
+                    if data.get('response_time_ms'):
+                        report += f"   Response time: {data['response_time_ms']:.2f}ms\n"
+
+                    if data.get('details'):
+                        for key, value in data['details'].items():
+                            report += f"   {key}: {value}\n"
+
+                    report += "\n"
+
+                # Summary
+                summary = health['summary']
+                report += f"## Summary\n\n"
+                report += f"- Healthy: {summary['healthy']}/{summary['total']}\n"
+                report += f"- Degraded: {summary['degraded']}/{summary['total']}\n"
+                report += f"- Unhealthy: {summary['unhealthy']}/{summary['total']}\n"
+
+                return [TextContent(type="text", text=report)]
+            except Exception as e:
+                return [TextContent(type="text", text=f"Error checking health: {e}")]
 
         else:
             return [TextContent(
