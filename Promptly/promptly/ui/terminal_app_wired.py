@@ -30,15 +30,32 @@ root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.pa
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-# Import HoloLoom
+# Import HoloLoom - handle running from different directories
+HOLOLOOM_AVAILABLE = False
+Query = None
+MemoryShard = None
+WeavingShuttle = None
+Config = None
+
 try:
     from HoloLoom.weaving_shuttle import WeavingShuttle
     from HoloLoom.config import Config
     from HoloLoom.Documentation.types import Query, MemoryShard
     HOLOLOOM_AVAILABLE = True
-except ImportError as e:
-    HOLOLOOM_AVAILABLE = False
-    print(f"HoloLoom import error: {e}")
+except ImportError as e1:
+    # Add root to path and try again
+    try:
+        # Go up to mythRL root
+        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        if root_dir not in sys.path:
+            sys.path.insert(0, root_dir)
+
+        from HoloLoom.weaving_shuttle import WeavingShuttle
+        from HoloLoom.config import Config
+        from HoloLoom.Documentation.types import Query, MemoryShard
+        HOLOLOOM_AVAILABLE = True
+    except ImportError as e2:
+        print(f"HoloLoom import failed: {e2}")
 
 
 class StatusPanel(Static):
@@ -194,15 +211,20 @@ class HoloLoomTerminalApp(App):
         super().__init__()
         self.shuttle = None
         self.weaving_history = []
-        self.memory_shards = [
-            MemoryShard(
-                id="demo_001",
-                text="HoloLoom WeavingShuttle implements a complete 9-step weaving cycle with reflection.",
-                episode="system",
-                entities=["WeavingShuttle", "weaving", "reflection"],
-                motifs=["SYSTEM", "ARCHITECTURE"]
-            )
-        ]
+
+        # Only create MemoryShards if HoloLoom imported
+        if HOLOLOOM_AVAILABLE and MemoryShard:
+            self.memory_shards = [
+                MemoryShard(
+                    id="demo_001",
+                    text="HoloLoom WeavingShuttle implements a complete 9-step weaving cycle with reflection.",
+                    episode="system",
+                    entities=["WeavingShuttle", "weaving", "reflection"],
+                    motifs=["SYSTEM", "ARCHITECTURE"]
+                )
+            ]
+        else:
+            self.memory_shards = []
 
     async def on_mount(self) -> None:
         """Initialize HoloLoom on startup"""
