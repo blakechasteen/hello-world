@@ -310,6 +310,10 @@ def create_composer(executor: Callable[[str], str]) -> LoopComposer:
     return LoopComposer(executor)
 
 
+# Alias for consistency with documentation
+Pipeline = LoopComposer
+
+
 # ============================================================================
 # Example Usage
 # ============================================================================

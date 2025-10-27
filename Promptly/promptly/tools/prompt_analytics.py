@@ -304,6 +304,7 @@ class PromptAnalytics:
             "success_rate": total_success / total_exec if total_exec > 0 else 0,
             "avg_execution_time": avg_time or 0,
             "avg_quality_score": avg_quality,
+            "avg_quality": avg_quality,  # Alias for consistency
             "total_cost": total_cost or 0,
             "total_tokens": int(total_tokens or 0)
         }
