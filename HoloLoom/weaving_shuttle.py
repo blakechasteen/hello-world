@@ -208,7 +208,8 @@ class WeavingShuttle:
     def __init__(
         self,
         cfg: Config,
-        shards: List[MemoryShard],
+        shards: Optional[List[MemoryShard]] = None,
+        memory=None,  # Unified memory backend
         pattern_preference: Optional[PatternCard] = None,
         enable_reflection: bool = True,
         reflection_capacity: int = 1000
@@ -218,13 +219,25 @@ class WeavingShuttle:
 
         Args:
             cfg: Configuration object
-            shards: List of memory shards
+            shards: List of memory shards (optional if memory is provided)
+            memory: Unified memory backend (optional, overrides shards)
             pattern_preference: Optional pattern card preference (overrides config)
             enable_reflection: Enable reflection loop for learning
             reflection_capacity: Maximum episodes to store in reflection buffer
+
+        Note:
+            Either shards OR memory must be provided. If memory is provided,
+            it will be used for dynamic queries instead of static shards.
         """
         self.cfg = cfg
         self.logger = logging.getLogger(__name__)
+
+        # Validate memory configuration
+        if memory is None and shards is None:
+            raise ValueError("Either 'shards' or 'memory' must be provided")
+
+        self.memory = memory  # Backend memory store
+        self.shards = shards or []  # Static shards (backward compatibility)
 
         # Determine pattern card from config or preference
         if pattern_preference:
@@ -243,7 +256,7 @@ class WeavingShuttle:
         self._closed = False
 
         # Initialize weaving components
-        self._initialize_components(shards)
+        self._initialize_components()
 
         # Initialize reflection loop
         self.enable_reflection = enable_reflection
@@ -260,7 +273,7 @@ class WeavingShuttle:
 
         self.logger.info("WeavingShuttle initialization complete")
 
-    def _initialize_components(self, shards: List[MemoryShard]):
+    def _initialize_components(self):
         """Initialize all weaving architecture components."""
 
         # 1. Loom Command - Pattern selection
@@ -269,8 +282,20 @@ class WeavingShuttle:
             auto_select=True
         )
 
-        # 2. Yarn Graph - Thread storage
-        self.yarn_graph = YarnGraph(shards)
+        # 2. Yarn Graph / Memory Backend - Thread storage
+        if self.memory:
+            # Use persistent memory backend (UnifiedMemory, etc.)
+            from HoloLoom.memory.weaving_adapter import WeavingMemoryAdapter
+            if isinstance(self.memory, WeavingMemoryAdapter):
+                self.yarn_graph = self.memory
+            else:
+                # Wrap raw memory in adapter
+                self.yarn_graph = WeavingMemoryAdapter(backend=self.memory, backend_type="unified")
+            self.logger.info("Using persistent memory backend")
+        else:
+            # Use in-memory YarnGraph with shards
+            self.yarn_graph = YarnGraph(self.shards)
+            self.logger.info(f"Using in-memory YarnGraph with {len(self.shards)} shards")
 
         # 3. Component factories (will be instantiated per-query with pattern spec)
         self.embedder = MatryoshkaEmbeddings(
@@ -282,11 +307,16 @@ class WeavingShuttle:
         self.tool_executor = ToolExecutor()
 
         # 5. Retriever (for context)
-        self.retriever = create_retriever(
-            shards=list(self.yarn_graph.shards.values()),
-            emb=self.embedder,
-            fusion_weights=self.cfg.fusion_weights
-        )
+        # Only create traditional retriever if using shards
+        if self.shards:
+            self.retriever = create_retriever(
+                shards=list(self.yarn_graph.shards.values()),
+                emb=self.embedder,
+                fusion_weights=self.cfg.fusion_weights
+            )
+        else:
+            # Using dynamic memory backend - retriever not needed
+            self.retriever = None
 
         self.logger.debug("All weaving components initialized")
 
@@ -420,15 +450,33 @@ class WeavingShuttle:
             # ================================================================
             step_start = time.time()
 
-            # Retrieve context shards
-            hits = await self.retriever.search(
-                query=query.text,
-                k=pattern_spec.retrieval_k,
-                fast=(pattern_spec.retrieval_mode == "fast")
-            )
+            # Retrieve context shards - either from static retriever or dynamic backend
+            if self.retriever:
+                # Traditional static shard retrieval
+                hits = await self.retriever.search(
+                    query=query.text,
+                    k=pattern_spec.retrieval_k,
+                    fast=(pattern_spec.retrieval_mode == "fast")
+                )
+                shards = [shard for shard, _ in hits]
+                shard_texts = [shard.text for shard in shards]
 
-            shards = [shard for shard, _ in hits]
-            shard_texts = [shard.text for shard in shards]
+            elif self.memory:
+                # Dynamic backend query
+                shards = await self._query_memory_backend(
+                    query_text=query.text,
+                    limit=pattern_spec.retrieval_k
+                )
+                shard_texts = [shard.text for shard in shards]
+                # Create hits format for compatibility
+                hits = [(shard, 1.0) for shard in shards]
+
+            else:
+                # No memory source available
+                self.logger.warning("No memory source available (no shards or memory backend)")
+                shards = []
+                shard_texts = []
+                hits = []
 
             context = Context(
                 shards=shards,
@@ -734,6 +782,62 @@ class WeavingShuttle:
         return spacetime
 
     # ========================================================================
+    # Memory Backend Helpers
+    # ========================================================================
+
+    async def _query_memory_backend(
+        self,
+        query_text: str,
+        limit: int = 5
+    ) -> List[MemoryShard]:
+        """
+        Query the unified memory backend and convert results to MemoryShards.
+
+        Args:
+            query_text: Query string
+            limit: Maximum number of results
+
+        Returns:
+            List of MemoryShard objects
+        """
+        if not self.memory:
+            return []
+
+        try:
+            # Import protocol types
+            from HoloLoom.memory.protocol import MemoryQuery
+
+            # Create query
+            mem_query = MemoryQuery(
+                text=query_text,
+                user_id=getattr(self.cfg, 'user_id', 'default'),
+                limit=limit
+            )
+
+            # Query backend
+            result = await self.memory.recall(mem_query)
+
+            # Convert backend Memory objects to MemoryShards
+            shards = []
+            for mem in result.memories:
+                shard = MemoryShard(
+                    id=mem.id,
+                    text=mem.text,
+                    episode=mem.context.get('episode', 'default'),
+                    entities=mem.context.get('entities', []),
+                    motifs=mem.metadata.get('motifs', []),
+                    metadata=mem.metadata
+                )
+                shards.append(shard)
+
+            self.logger.debug(f"Retrieved {len(shards)} shards from memory backend")
+            return shards
+
+        except Exception as e:
+            self.logger.error(f"Failed to query memory backend: {e}")
+            return []
+
+    # ========================================================================
     # Lifecycle Management
     # ========================================================================
 
@@ -810,11 +914,32 @@ class WeavingShuttle:
             await self.reflection_buffer.flush()
             await self.reflection_buffer.close()
 
-        # Future: Close database connections
-        # if hasattr(self, 'neo4j_client'):
-        #     await self.neo4j_client.close()
-        # if hasattr(self, 'qdrant_client'):
-        #     await self.qdrant_client.close()
+        # Close memory backend connections
+        if self.memory:
+            self.logger.info("Closing memory backend connections...")
+            try:
+                # Check if backend has close method
+                if hasattr(self.memory, 'close'):
+                    if asyncio.iscoroutinefunction(self.memory.close):
+                        await self.memory.close()
+                    else:
+                        self.memory.close()
+
+                # Close individual backend connections (hybrid stores)
+                if hasattr(self.memory, 'neo4j') and self.memory.neo4j:
+                    if hasattr(self.memory.neo4j, 'close'):
+                        self.logger.debug("Closing Neo4j connection...")
+                        self.memory.neo4j.close()
+
+                if hasattr(self.memory, 'qdrant') and self.memory.qdrant:
+                    if hasattr(self.memory.qdrant, 'close'):
+                        self.logger.debug("Closing Qdrant connection...")
+                        self.memory.qdrant.close()
+
+                self.logger.info("Memory backend connections closed")
+
+            except Exception as e:
+                self.logger.warning(f"Error closing memory backend: {e}")
 
         self._closed = True
         self.logger.info("WeavingShuttle closed successfully")
