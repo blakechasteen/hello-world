@@ -1,788 +1,1064 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Weaving Orchestrator - Complete Weaving Cycle
-==============================================
-The unified orchestrator that wires all 6 weaving modules together.
+HoloLoom Weaving Orchestrator - Full 9-Step Weaving Cycle
+===========================================================
+The canonical orchestrator implementing complete weaving architecture.
 
-This is the REALIZATION of the weaving metaphor described in CLAUDE.md.
-All independent "warp thread" modules are woven together into a complete cycle.
+MIGRATION NOTE (2025-10-27):
+This file was promoted from weaving_shuttle.py to weaving_orchestrator.py
+as part of Phase 1 consolidation. The old weaving_orchestrator.py (6-step)
+is archived at archive/legacy/weaving_orchestrator_v1.py.
 
-Complete Weaving Cycle:
-1. LoomCommand → Selects Pattern Card (BARE/FAST/FUSED)
-2. ChronoTrigger → Fires temporal window
-3. ResonanceShed → Lifts feature threads, creates DotPlasma
-4. WarpSpace → Tensions threads into continuous manifold
-5. ConvergenceEngine → Collapses to discrete decision
-6. Spacetime → Woven fabric with complete trace
+9-Step Weaving Cycle:
+1. Loom Command → Pattern Card selection (BARE/FAST/FUSED)
+2. Chrono Trigger → Temporal window creation
+3. Yarn Graph → Thread selection from memory
+4. Resonance Shed → Feature extraction, DotPlasma
+5. Warp Space → Continuous manifold tensioning
+6. Convergence Engine → Discrete decision collapse
+7. Tool Execution → Action with results
+8. Reflection Buffer → Learning from outcome
+9. Chrono Detension → Cycle completion
 
 Philosophy:
-The WeavingOrchestrator is the "shuttle" that moves across all warp threads,
-weaving them into finished "fabric" (responses with full computational provenance).
+The true embodiment of the weaving metaphor - coordinates all architectural
+components into an elegant dance of symbolic ↔ continuous transformations.
 
-Usage:
-    weaver = WeavingOrchestrator(config=Config.fused())
-    result = await weaver.weave(query="What is HoloLoom?")
-    trace = result.spacetime.weaving_trace
+Author: HoloLoom Team (Blake + Claude)
+Date: 2025-10-27 (promoted from shuttle)
 """
-
-import sys
-import os
-# Add repository root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import asyncio
 import logging
-import numpy as np
-from datetime import datetime
+import time
 from typing import Dict, List, Any, Optional
+from datetime import datetime, timedelta
 
-# Import all 6 weaving modules
-try:
-    from HoloLoom.loom.command import LoomCommand, PatternCard
-    from HoloLoom.chrono.trigger import ChronoTrigger
-    from HoloLoom.resonance.shed import ResonanceShed
-    from HoloLoom.warp.space import WarpSpace
-    from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy
-    from HoloLoom.convergence.mcts_engine import MCTSConvergenceEngine  # MCTS FLUX CAPACITOR
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+# Shared types
+from HoloLoom.Documentation.types import Query, Context, Features, MemoryShard
 
-    # Supporting modules
-    from HoloLoom.config import Config
-    from HoloLoom.Documentation.types import Query
-    from HoloLoom.motif.base import create_motif_detector
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
-    from HoloLoom.memory.cache import MemoryManager
-    from HoloLoom.synthesis_bridge import SynthesisBridge
+# Weaving architecture components
+from HoloLoom.loom.command import LoomCommand, PatternCard, PatternSpec
+from HoloLoom.chrono.trigger import ChronoTrigger, TemporalWindow, ExecutionLimits
+from HoloLoom.resonance.shed import ResonanceShed
+from HoloLoom.warp.space import WarpSpace
+from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy, CollapseResult
+from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+from HoloLoom.reflection.buffer import ReflectionBuffer, LearningSignal
 
-except ImportError as e:
-    print(f"Import error: {e}")
-    print("\nMake sure you run from repository root with PYTHONPATH set")
-    raise
+# Core modules
+from HoloLoom.config import Config, ExecutionMode
+from HoloLoom.motif.base import create_motif_detector
+from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
+from HoloLoom.memory.base import create_retriever
+from HoloLoom.policy.unified import create_policy
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 # ============================================================================
-# Weaving Orchestrator
+# Tool Execution
+# ============================================================================
+
+class ToolExecutor:
+    """
+    Executes tools based on convergence engine decisions.
+
+    In production, this would call actual APIs, databases, etc.
+    """
+
+    def __init__(self):
+        self.tools = ["answer", "search", "notion_write", "calc"]
+        self.logger = logging.getLogger(__name__)
+
+    async def execute(self, tool: str, query: Query, context: Context) -> Dict:
+        """
+        Execute a tool based on the convergence decision.
+
+        Args:
+            tool: Tool name from CollapseResult
+            query: Original query
+            context: Retrieved context
+
+        Returns:
+            Dict with execution results
+        """
+        self.logger.info(f"Executing tool: {tool}")
+
+        # Tool implementations (stubs - replace with real implementations)
+        tool_handlers = {
+            "answer": self._handle_answer,
+            "search": self._handle_search,
+            "notion_write": self._handle_notion_write,
+            "calc": self._handle_calc
+        }
+
+        handler = tool_handlers.get(tool, self._handle_unknown)
+        return await handler(query, context)
+
+    async def _handle_answer(self, query: Query, context: Context) -> Dict:
+        """Generate an answer based on context."""
+        return {
+            "tool": "answer",
+            "result": f"Generated answer for: {query.text}",
+            "confidence": 0.85,
+            "sources": len(context.shards) if context and hasattr(context, 'shards') else 0
+        }
+
+    async def _handle_search(self, query: Query, context: Context) -> Dict:
+        """Perform a search."""
+        return {
+            "tool": "search",
+            "result": "Search results based on query",
+            "sources": ["source1", "source2", "source3"],
+            "count": 3
+        }
+
+    async def _handle_notion_write(self, query: Query, context: Context) -> Dict:
+        """Write to Notion database."""
+        return {
+            "tool": "notion_write",
+            "result": "Successfully wrote to Notion database",
+            "status": "success",
+            "page_id": "mock_page_123"
+        }
+
+    async def _handle_calc(self, query: Query, context: Context) -> Dict:
+        """Perform calculation."""
+        return {
+            "tool": "calc",
+            "result": "Calculation completed",
+            "value": 42,
+            "expression": "mock_calculation"
+        }
+
+    async def _handle_unknown(self, query: Query, context: Context) -> Dict:
+        """Handle unknown tool."""
+        return {
+            "tool": "unknown",
+            "result": "Unknown tool",
+            "error": "Tool not implemented",
+            "status": "error"
+        }
+
+
+# ============================================================================
+# Yarn Graph (Simple Implementation)
+# ============================================================================
+
+class YarnGraph:
+    """
+    Simple in-memory Yarn Graph for thread storage.
+
+    In production, this would be backed by Neo4j or NetworkX.
+    For now, we use a simple dict-based implementation.
+    """
+
+    def __init__(self, shards: List[MemoryShard]):
+        """Initialize with memory shards."""
+        self.shards = {shard.id: shard for shard in shards}
+        self.logger = logging.getLogger(__name__)
+        self.logger.info(f"YarnGraph initialized with {len(shards)} threads")
+
+    def select_threads(self, temporal_window: TemporalWindow, query: Query) -> List[MemoryShard]:
+        """
+        Select threads based on temporal window.
+
+        For now, returns all shards. In production, would filter by:
+        - Temporal window bounds
+        - Recency weighting
+        - Episode filter
+        - Query relevance
+
+        Args:
+            temporal_window: Time bounds for selection
+            query: Query for relevance filtering
+
+        Returns:
+            List of relevant memory shards
+        """
+        # Simple implementation: return all threads
+        threads = list(self.shards.values())
+        self.logger.debug(f"Selected {len(threads)} threads from YarnGraph")
+        return threads
+
+
+# ============================================================================
+# Weaving Orchestrator - Full 9-Step Cycle
 # ============================================================================
 
 class WeavingOrchestrator:
     """
-    Complete weaving orchestrator that coordinates all 6 modules.
+    The canonical HoloLoom orchestrator implementing the full 9-step weaving cycle.
 
-    This class brings together the entire weaving architecture into a
-    unified processing pipeline with full computational provenance.
+    Coordinates all architectural components:
+    - Loom Command (pattern selection)
+    - Chrono Trigger (temporal control)
+    - Yarn Graph (thread storage)
+    - Resonance Shed (feature interference)
+    - Warp Space (tensor tensioning)
+    - Convergence Engine (continuous → discrete)
+    - Tool Execution (action)
+    - Spacetime Fabric (provenance)
+    - Reflection (learning)
 
-    The weaving cycle:
-    1. LoomCommand selects pattern based on query
-    2. ChronoTrigger fires, creates temporal window
-    3. ResonanceShed lifts feature threads (motif, embedding, spectral)
-    4. WarpSpace tensions threads into continuous manifold
-    5. ConvergenceEngine collapses to discrete tool decision
-    6. Spacetime captures complete trace
-
-    Attributes:
-        loom: LoomCommand for pattern selection
-        chrono: ChronoTrigger for temporal control
-        shed: ResonanceShed for feature extraction
-        warp: WarpSpace for tensioned computation
-        convergence: ConvergenceEngine for decision collapse
+    Usage:
+        config = Config.fused()
+        weaver = WeavingOrchestrator(cfg=config, shards=memory_shards)
+        spacetime = await weaver.weave(Query(text="What is Thompson Sampling?"))
     """
 
     def __init__(
         self,
-        config: Optional[Config] = None,
-        default_pattern: str = "fast",
-        collapse_strategy: CollapseStrategy = CollapseStrategy.EPSILON_GREEDY,
-        use_mcts: bool = True,
-        mcts_simulations: int = 100
+        cfg: Optional[Config] = None,
+        shards: Optional[List[MemoryShard]] = None,
+        memory=None,  # Unified memory backend
+        pattern_preference: Optional[PatternCard] = None,
+        enable_reflection: bool = True,
+        reflection_capacity: int = 1000,
+        # Backward compatibility
+        config: Optional[Config] = None
     ):
         """
-        Initialize Weaving Orchestrator.
+        Initialize the Weaving Orchestrator.
 
         Args:
-            config: HoloLoom config (defaults to Config.fast())
-            default_pattern: Default pattern card ("bare", "fast", "fused")
-            collapse_strategy: Strategy for decision collapse (if not using MCTS)
-            use_mcts: Use MCTS Flux Capacitor for decisions (TS all the way down!)
-            mcts_simulations: Number of MCTS simulations per decision
+            cfg: Configuration object (preferred)
+            shards: List of memory shards (optional if memory is provided)
+            memory: Unified memory backend (optional, overrides shards)
+            pattern_preference: Optional pattern card preference (overrides config)
+            enable_reflection: Enable reflection loop for learning
+            reflection_capacity: Maximum episodes to store in reflection buffer
+            config: Backward compatibility alias for cfg
+
+        Note:
+            Either shards OR memory must be provided. If memory is provided,
+            it will be used for dynamic queries instead of static shards.
         """
-        self.config = config or Config.fast()
-        self.use_mcts = use_mcts
+        # Backward compatibility: accept both cfg and config
+        if cfg is None and config is not None:
+            cfg = config
+        if cfg is None:
+            cfg = Config.fast()  # Default
+            
+        self.cfg = cfg
+        self.logger = logging.getLogger(__name__)
 
-        # Initialize embeddings and spectral fusion
-        self.embedder = MatryoshkaEmbeddings()
-        self.spectral_fusion = SpectralFusion()
+        # Validate memory configuration
+        if memory is None and shards is None:
+            raise ValueError("Either 'shards' or 'memory' must be provided")
 
-        # Initialize motif detector
-        self.motif_detector = create_motif_detector(mode="hybrid")
+        self.memory = memory  # Backend memory store
+        self.shards = shards or []  # Static shards (backward compatibility)
 
-        # Initialize memory - ACTUAL WORKING MEMORY!
-        self._init_memory()
+        # Determine pattern card from config or preference
+        if pattern_preference:
+            self.default_pattern = pattern_preference
+        elif cfg.mode == ExecutionMode.BARE:
+            self.default_pattern = PatternCard.BARE
+        elif cfg.mode == ExecutionMode.FAST:
+            self.default_pattern = PatternCard.FAST
+        else:
+            self.default_pattern = PatternCard.FUSED
 
-        # ====================================================================
-        # Initialize all 6 weaving modules
-        # ====================================================================
+        self.logger.info(f"Initializing WeavingOrchestrator with pattern: {self.default_pattern.value}")
+
+        # Lifecycle management
+        self._background_tasks: List[asyncio.Task] = []
+        self._closed = False
+
+        # Initialize weaving components
+        self._initialize_components()
+
+        # Initialize reflection loop
+        self.enable_reflection = enable_reflection
+        if enable_reflection:
+            self.reflection_buffer = ReflectionBuffer(
+                capacity=reflection_capacity,
+                persist_path="./reflections",
+                learning_window=100
+            )
+            self.logger.info("Reflection loop enabled")
+        else:
+            self.reflection_buffer = None
+            self.logger.info("Reflection loop disabled")
+
+        self.logger.info("WeavingOrchestrator initialization complete")
+
+    def _initialize_components(self):
+        """Initialize all weaving architecture components."""
 
         # 1. Loom Command - Pattern selection
-        self.loom = LoomCommand(
-            default_pattern=PatternCard(default_pattern),
+        self.loom_command = LoomCommand(
+            default_pattern=self.default_pattern,
             auto_select=True
         )
 
-        # 2. Chrono Trigger - Temporal control
-        self.chrono = ChronoTrigger(
-            config=self.config,
-            enable_heartbeat=False  # Disable for now
+        # 2. Yarn Graph / Memory Backend - Thread storage
+        if self.memory:
+            # Use persistent memory backend (UnifiedMemory, etc.)
+            from HoloLoom.memory.weaving_adapter import WeavingMemoryAdapter
+            if isinstance(self.memory, WeavingMemoryAdapter):
+                self.yarn_graph = self.memory
+            else:
+                # Wrap raw memory in adapter (use "factory" type for protocol backends)
+                self.yarn_graph = WeavingMemoryAdapter(backend=self.memory, backend_type="factory")
+            self.logger.info("Using persistent memory backend")
+        else:
+            # Use in-memory YarnGraph with shards
+            self.yarn_graph = YarnGraph(self.shards)
+            self.logger.info(f"Using in-memory YarnGraph with {len(self.shards)} shards")
+
+        # 3. Component factories (will be instantiated per-query with pattern spec)
+        self.embedder = MatryoshkaEmbeddings(
+            sizes=self.cfg.scales,
+            base_model_name=self.cfg.base_model_name
         )
 
-        # 3. Resonance Shed - Feature extraction
-        self.shed = ResonanceShed(
-            motif_detector=self.motif_detector,
-            embedder=self.embedder,
-            spectral_fusion=self.spectral_fusion,
-            interference_mode="weighted_sum"
-        )
+        # 4. Tool Executor
+        self.tool_executor = ToolExecutor()
 
-        # 4. Warp Space - Tensioned manifold
-        self.warp = WarpSpace(
-            embedder=self.embedder,
-            scales=self.config.scales,
-            spectral_fusion=self.spectral_fusion
-        )
-
-        # 5. Convergence Engine - Decision collapse with MCTS FLUX CAPACITOR!
-        if use_mcts:
-            logger.info("Using MCTS FLUX CAPACITOR for decision-making!")
-            self.convergence = MCTSConvergenceEngine(
-                tools=self._get_available_tools(),
-                n_simulations=mcts_simulations,
-                exploration_constant=1.414  # sqrt(2) for balanced exploration
+        # 5. Retriever (for context)
+        # Only create traditional retriever if using shards
+        if self.shards:
+            self.retriever = create_retriever(
+                shards=list(self.yarn_graph.shards.values()),
+                emb=self.embedder,
+                fusion_weights=self.cfg.fusion_weights
             )
         else:
-            self.convergence = ConvergenceEngine(
-                tools=self._get_available_tools(),
-                default_strategy=collapse_strategy,
-                epsilon=0.1
-            )
+            # Using dynamic memory backend - retriever not needed
+            self.retriever = None
 
-        # 6. Synthesis Bridge - Pattern extraction and enrichment
-        self.synthesis = SynthesisBridge(
-            enable_enrichment=True,
-            enable_pattern_extraction=True,
-            min_pattern_confidence=0.4
-        )
+        self.logger.debug("All weaving components initialized")
 
-        # Weaving statistics
-        self.weaving_count = 0
-        self.pattern_usage = {"bare": 0, "fast": 0, "fused": 0}
-
-        logger.info("WeavingOrchestrator initialized")
-        logger.info(f"  Pattern: {default_pattern}")
-        logger.info(f"  Collapse: {collapse_strategy.value}")
-        logger.info(f"  Scales: {self.config.scales}")
-
-    def _init_memory(self, backend: str = "hybrid", data_dir: str = "./memory_data"):
+    async def weave(
+        self,
+        query: Query,
+        pattern_override: Optional[PatternCard] = None
+    ) -> Spacetime:
         """
-        Initialize memory with hybrid store + fallback.
+        Execute the complete 9-step weaving cycle.
+
+        This is the main API - takes a query and returns a Spacetime artifact
+        with complete computational lineage.
 
         Args:
-            backend: "hybrid" (Qdrant+Neo4j+file), "file" (file only)
-            data_dir: Directory for file persistence
+            query: User query
+            pattern_override: Optional pattern card override
+
+        Returns:
+            Spacetime fabric with response and full trace
         """
-        self.memory_backend = backend
-        self.memory_store = None
+        start_time = datetime.now()
+        stage_timings = {}
+        errors = []
+        warnings = []
 
-        if backend == "hybrid":
-            # Try hybrid store (Qdrant + Neo4j + Mem0)
-            try:
-                from HoloLoom.memory.stores.hybrid_store import HybridMemoryStore, BackendConfig
-                from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
-                from HoloLoom.memory.stores.neo4j_store import Neo4jMemoryStore
-                from HoloLoom.memory.stores.file_store import FileMemoryStore
+        self.logger.info(f"[WEAVING] Beginning weaving cycle for query: '{query.text}'")
 
-                logger.info("Attempting to initialize hybrid memory store...")
+        try:
+            # ================================================================
+            # STEP 1: Loom Command selects Pattern Card
+            # ================================================================
+            step_start = time.time()
 
-                # Create backends (all with file fallback)
-                backends = []
-
-                # Try Qdrant
-                try:
-                    qdrant = QdrantMemoryStore(embedder=self.embedder)
-                    backends.append(BackendConfig(qdrant, weight=0.4, name="qdrant"))
-                    logger.info("  ✓ Qdrant backend available")
-                except Exception as e:
-                    logger.warning(f"  ✗ Qdrant unavailable: {e}")
-
-                # Try Neo4j
-                try:
-                    neo4j = Neo4jMemoryStore()
-                    backends.append(BackendConfig(neo4j, weight=0.3, name="neo4j"))
-                    logger.info("  ✓ Neo4j backend available")
-                except Exception as e:
-                    logger.warning(f"  ✗ Neo4j unavailable: {e}")
-
-                # Always include file backend (guaranteed to work)
-                file_store = FileMemoryStore(data_dir=data_dir, embedder=self.embedder)
-                backends.append(BackendConfig(file_store, weight=0.3, name="file"))
-                logger.info("  ✓ File backend available")
-
-                if len(backends) > 1:
-                    # Use hybrid fusion
-                    self.memory_store = HybridMemoryStore(
-                        backends=backends,
-                        fusion_method="weighted"
-                    )
-                    logger.info(f"Hybrid memory initialized with {len(backends)} backends")
-                else:
-                    # Only file backend available
-                    self.memory_store = file_store
-                    logger.info("Using file-only memory (other backends unavailable)")
-
-            except ImportError as e:
-                logger.warning(f"Hybrid store unavailable: {e}, falling back to file")
-                backend = "file"
-
-        if backend == "file" or self.memory_store is None:
-            # File-only fallback
-            try:
-                from HoloLoom.memory.stores.file_store import FileMemoryStore
-                self.memory_store = FileMemoryStore(data_dir=data_dir, embedder=self.embedder)
-                logger.info(f"File memory initialized: {data_dir}")
-            except Exception as e:
-                logger.error(f"Failed to initialize file store: {e}")
-                # Ultimate fallback: in-memory list
-                self.memory_store = []
-                logger.warning("Using in-memory fallback (no persistence)")
-
-    async def add_knowledge(self, text: str, metadata: Optional[Dict] = None):
-        """Add knowledge to memory (async)."""
-        from HoloLoom.memory.protocol import Memory
-
-        # Create Memory object
-        memory = Memory(
-            id=f"mem_{datetime.now().timestamp()}",
-            text=text,
-            timestamp=datetime.now(),
-            context={},
-            metadata=metadata or {}
-        )
-
-        # Store based on backend type
-        if isinstance(self.memory_store, list):
-            # In-memory fallback (legacy)
-            from HoloLoom.Documentation.types import MemoryShard
-            shard = MemoryShard(
-                id=memory.id,
-                text=text,
-                episode=metadata.get("episode", "default") if metadata else "default",
-                entities=metadata.get("entities", []) if metadata else [],
-                motifs=metadata.get("motifs", []) if metadata else [],
-                metadata=metadata or {}
+            pattern_spec = self.loom_command.select_pattern(
+                query.text,
+                user_preference=pattern_override.value if pattern_override else None
             )
-            self.memory_store.append(shard)
-            logger.info(f"Added knowledge (in-memory): {text[:50]}...")
-        else:
-            # Protocol-based store (async)
-            await self.memory_store.store(memory)
-            logger.info(f"Added knowledge ({self.memory_backend}): {text[:50]}...")
 
-    async def _retrieve_context(self, query: str, limit: int = 5) -> List:
-        """Retrieve relevant context from memory (async)."""
-        if isinstance(self.memory_store, list):
-            # Legacy in-memory retrieval
-            if not self.memory_store:
-                return []
+            self.logger.info(f"  [1] Pattern selected: {pattern_spec.name}")
+            stage_timings['pattern_selection'] = (time.time() - step_start) * 1000
 
-            # Encode query and all memories
-            query_embed = self.embedder.encode([query])[0]
-            memory_texts = [shard.text for shard in self.memory_store]
-            memory_embeds = self.embedder.encode(memory_texts)
+            # ================================================================
+            # STEP 2: Chrono Trigger fires, creates TemporalWindow
+            # ================================================================
+            step_start = time.time()
 
-            # Compute similarities
-            query_norm = query_embed / (np.linalg.norm(query_embed) + 1e-8)
-            mem_norm = memory_embeds / (np.linalg.norm(memory_embeds, axis=1, keepdims=True) + 1e-8)
-            similarities = mem_norm @ query_norm
+            # Create a minimal config-like object for Chrono
+            class ChronoConfig:
+                def __init__(self, timeout):
+                    self.pipeline_timeout = timeout
 
-            # Get top-K
-            top_k = min(limit, len(self.memory_store))
-            top_indices = np.argsort(similarities)[-top_k:][::-1]
+            chrono = ChronoTrigger(
+                config=ChronoConfig(pattern_spec.pipeline_timeout),
+                enable_heartbeat=False
+            )
 
-            results = [self.memory_store[i] for i in top_indices]
-            logger.info(f"Retrieved {len(results)} context shards (scores: {[f'{similarities[i]:.2f}' for i in top_indices]})")
+            temporal_window = TemporalWindow(
+                start=datetime.now() - timedelta(days=365),  # Look back 1 year
+                end=datetime.now(),
+                max_age=timedelta(days=365),
+                recency_bias=0.5
+            )
 
-            return results
-        else:
-            # Protocol-based store (async)
-            from HoloLoom.memory.protocol import MemoryQuery, Strategy
-            from HoloLoom.Documentation.types import MemoryShard
+            self.logger.info(f"  [2] Chrono Trigger fired")
+            stage_timings['temporal_setup'] = (time.time() - step_start) * 1000
 
-            query_obj = MemoryQuery(text=query, limit=limit)
-            result = await self.memory_store.retrieve(query_obj, strategy=Strategy.FUSED)
+            # ================================================================
+            # STEP 3: Yarn Graph threads selected
+            # ================================================================
+            step_start = time.time()
 
-            # Convert Memory objects back to MemoryShards for compatibility
+            threads = self.yarn_graph.select_threads(temporal_window, query)
+            thread_ids = [s.id for s in threads]
+
+            self.logger.info(f"  [3] Selected {len(threads)} threads from Yarn Graph")
+            stage_timings['thread_selection'] = (time.time() - step_start) * 1000
+
+            # ================================================================
+            # STEP 4: Resonance Shed lifts feature threads, creates DotPlasma
+            # ================================================================
+            step_start = time.time()
+
+            # Create components based on pattern spec
+            motif_detector = create_motif_detector(mode=pattern_spec.motif_mode)
+            spectral_fusion = SpectralFusion() if pattern_spec.enable_spectral else None
+
+            # Create embedder with pattern-specific scales
+            pattern_embedder = MatryoshkaEmbeddings(
+                sizes=pattern_spec.scales,
+                base_model_name=self.cfg.base_model_name
+            )
+
+            resonance_shed = ResonanceShed(
+                motif_detector=motif_detector,
+                embedder=pattern_embedder,
+                spectral_fusion=spectral_fusion,
+                interference_mode="weighted_sum"
+            )
+
+            # Extract features through Resonance Shed
+            dot_plasma = await resonance_shed.weave(
+                text=query.text,
+                context_graph=None  # Could add KG here
+            )
+
+            thread_count = len(dot_plasma.get('threads', []))
+            self.logger.info(f"  [4] DotPlasma created with {thread_count} feature threads")
+            stage_timings['feature_extraction'] = (time.time() - step_start) * 1000
+
+            # ================================================================
+            # STEP 5: Warp Space tensions threads into continuous manifold
+            # ================================================================
+            step_start = time.time()
+
+            warp_space = WarpSpace(
+                embedder=self.embedder,
+                scales=pattern_spec.scales,
+                spectral_fusion=spectral_fusion
+            )
+
+            # Tension threads from Yarn Graph
+            await warp_space.tension(thread_ids, self.yarn_graph.shards)
+            warp_operations = [(datetime.now().isoformat(), "tension", len(thread_ids))]
+
+            self.logger.info(f"  [5] Warp Space tensioned with {len(thread_ids)} threads")
+            stage_timings['warp_tensioning'] = (time.time() - step_start) * 1000
+
+            # ================================================================
+            # STEP 6: Retrieve context (still needed for policy)
+            # ================================================================
+            step_start = time.time()
+
+            # Retrieve context shards - either from static retriever or dynamic backend
+            if self.retriever:
+                # Traditional static shard retrieval
+                hits = await self.retriever.search(
+                    query=query.text,
+                    k=pattern_spec.retrieval_k,
+                    fast=(pattern_spec.retrieval_mode == "fast")
+                )
+                shards = [shard for shard, _ in hits]
+                shard_texts = [shard.text for shard in shards]
+
+            elif self.memory:
+                # Dynamic backend query
+                shards = await self._query_memory_backend(
+                    query_text=query.text,
+                    limit=pattern_spec.retrieval_k
+                )
+                shard_texts = [shard.text for shard in shards]
+                # Create hits format for compatibility
+                hits = [(shard, 1.0) for shard in shards]
+
+            else:
+                # No memory source available
+                self.logger.warning("No memory source available (no shards or memory backend)")
+                shards = []
+                shard_texts = []
+                hits = []
+
+            context = Context(
+                shards=shards,
+                hits=hits,
+                shard_texts=shard_texts,
+                query=query,
+                features=None  # Will be set from dot_plasma
+            )
+
+            self.logger.info(f"  [6] Retrieved {len(hits)} context shards")
+            stage_timings['retrieval'] = (time.time() - step_start) * 1000
+
+            # ================================================================
+            # STEP 7: Convergence Engine collapses to discrete tool selection
+            # ================================================================
+            step_start = time.time()
+
+            # Create policy for neural predictions (use pattern_embedder)
+            policy = create_policy(
+                mem_dim=max(pattern_spec.scales),
+                emb=pattern_embedder,
+                scales=pattern_spec.scales,
+                device=None,
+                n_layers=pattern_spec.n_transformer_layers,
+                n_heads=pattern_spec.n_attention_heads,
+                bandit_strategy=self.cfg.bandit_strategy,
+                epsilon=self.cfg.epsilon
+            )
+
+            # Convert dot_plasma to Features object for policy
+            # Note: plasma uses 'psi' for embeddings and 'motifs' (plural)
+            psi_array = dot_plasma.get('psi', [])
+            psi_list = psi_array.tolist() if hasattr(psi_array, 'tolist') else list(psi_array)
+
+            features = Features(
+                psi=psi_list,
+                motifs=dot_plasma.get('motifs', []),
+                metrics={'spectral': dot_plasma.get('spectral')},
+                metadata=dot_plasma.get('metadata', {})
+            )
+            context.features = features
+
+            # Get neural predictions
+            action_plan = await policy.decide(features=features, context=context)
+
+            # Get tool probabilities (mock for now - would come from policy)
+            import numpy as np
+            neural_probs = np.array([
+                action_plan.tool_probs.get(tool, 0.0)
+                for tool in self.tool_executor.tools
+            ])
+
+            # Convergence Engine collapse
+            convergence = ConvergenceEngine(
+                tools=self.tool_executor.tools,
+                default_strategy=self._map_bandit_to_collapse(self.cfg.bandit_strategy),
+                epsilon=self.cfg.epsilon
+            )
+
+            collapse_result = convergence.collapse(neural_probs)
+
+            self.logger.info(f"  [7] Convergence collapsed to tool: {collapse_result.tool} (confidence={collapse_result.confidence:.2f})")
+            stage_timings['convergence'] = (time.time() - step_start) * 1000
+
+            # ================================================================
+            # STEP 8: Tool executes
+            # ================================================================
+            step_start = time.time()
+
+            # Execute the selected tool
+            tool_result = await self.tool_executor.execute(
+                collapse_result.tool,
+                query,
+                context
+            )
+
+            self.logger.info(f"  [8] Tool executed: {collapse_result.tool}")
+            stage_timings['tool_execution'] = (time.time() - step_start) * 1000
+
+            # ================================================================
+            # STEP 9: Results woven into Spacetime fabric
+            # ================================================================
+            step_start = time.time()
+
+            # Detension Warp Space
+            warp_updates = warp_space.collapse()
+            warp_operations.append((datetime.now().isoformat(), "detension", len(warp_updates)))
+
+            # Create WeavingTrace
+            end_time = datetime.now()
+            duration_ms = (end_time - start_time).total_seconds() * 1000
+
+            trace = WeavingTrace(
+                start_time=start_time,
+                end_time=end_time,
+                duration_ms=duration_ms,
+                stage_durations=stage_timings,
+                motifs_detected=[m.pattern if hasattr(m, 'pattern') else str(m) for m in features.motifs],
+                embedding_scales_used=pattern_spec.scales,
+                spectral_features=features.metrics.get('spectral'),
+                threads_activated=thread_ids,
+                context_shards_count=len(context.shards),
+                retrieval_mode=pattern_spec.retrieval_mode,
+                policy_adapter=action_plan.adapter,
+                tool_selected=collapse_result.tool,
+                tool_confidence=collapse_result.confidence,
+                bandit_statistics=collapse_result.bandit_stats,
+                warp_operations=warp_operations,
+                tensor_field_stats={"threads_tensioned": len(thread_ids)},
+                errors=errors,
+                warnings=warnings
+            )
+
+            # Create Spacetime artifact
+            spacetime = Spacetime(
+                query_text=query.text,
+                response=tool_result.get('result', 'No response'),
+                tool_used=collapse_result.tool,
+                confidence=collapse_result.confidence,
+                trace=trace,
+                metadata={
+                    'pattern_card': pattern_spec.name,
+                    'execution_mode': pattern_spec.card.value,
+                    'loom_command': 'auto',
+                    'chrono_timeout': pattern_spec.pipeline_timeout
+                },
+                context_summary=f"{len(context.shards)} shards",
+                sources_used=[s.id for s in context.shards[:3]]
+            )
+
+            self.logger.info(f"  [9] Spacetime fabric woven!")
+            stage_timings['spacetime_assembly'] = (time.time() - step_start) * 1000
+
+            self.logger.info(f"[SUCCESS] Weaving cycle complete! Total duration: {duration_ms:.1f}ms")
+
+            return spacetime
+
+        except Exception as e:
+            self.logger.error(f"[ERROR] Weaving cycle failed: {e}", exc_info=True)
+            errors.append({
+                'stage': 'unknown',
+                'error': str(e),
+                'type': type(e).__name__
+            })
+
+            # Return error Spacetime
+            end_time = datetime.now()
+            duration_ms = (end_time - start_time).total_seconds() * 1000
+
+            trace = WeavingTrace(
+                start_time=start_time,
+                end_time=end_time,
+                duration_ms=duration_ms,
+                stage_durations=stage_timings,
+                errors=errors,
+                warnings=warnings
+            )
+
+            return Spacetime(
+                query_text=query.text,
+                response=f"Error: {str(e)}",
+                tool_used="error",
+                confidence=0.0,
+                trace=trace,
+                metadata={'status': 'error', 'error_type': type(e).__name__}
+            )
+
+    def _map_bandit_to_collapse(self, bandit_strategy) -> CollapseStrategy:
+        """Map Config BanditStrategy to Convergence CollapseStrategy."""
+        from HoloLoom.config import BanditStrategy
+
+        mapping = {
+            BanditStrategy.EPSILON_GREEDY: CollapseStrategy.EPSILON_GREEDY,
+            BanditStrategy.BAYESIAN_BLEND: CollapseStrategy.BAYESIAN_BLEND,
+            BanditStrategy.PURE_THOMPSON: CollapseStrategy.PURE_THOMPSON
+        }
+
+        return mapping.get(bandit_strategy, CollapseStrategy.EPSILON_GREEDY)
+
+    async def reflect(
+        self,
+        spacetime: Spacetime,
+        feedback: Optional[Dict[str, Any]] = None,
+        reward: Optional[float] = None
+    ) -> None:
+        """
+        Store Spacetime in reflection buffer for learning.
+
+        Call this after each weaving cycle to enable continuous improvement.
+
+        Args:
+            spacetime: Spacetime artifact from weaving
+            feedback: Optional user feedback dict
+            reward: Optional explicit reward (0-1)
+        """
+        if not self.enable_reflection:
+            return
+
+        await self.reflection_buffer.store(spacetime, feedback=feedback, reward=reward)
+        self.logger.debug(f"Reflected on {spacetime.tool_used} (confidence={spacetime.confidence:.2f})")
+
+    async def learn(self, force: bool = False) -> List[LearningSignal]:
+        """
+        Analyze reflection buffer and generate learning signals.
+
+        Performs periodic analysis to identify improvement opportunities.
+
+        Args:
+            force: Force analysis even if not enough time has passed
+
+        Returns:
+            List of learning signals
+        """
+        if not self.enable_reflection:
+            return []
+
+        signals = await self.reflection_buffer.analyze_and_learn(force=force)
+
+        if signals:
+            self.logger.info(f"Generated {len(signals)} learning signals")
+
+        return signals
+
+    async def apply_learning_signals(self, signals: List[LearningSignal]) -> None:
+        """
+        Apply learning signals to adapt the system.
+
+        Args:
+            signals: Learning signals from reflection analysis
+        """
+        if not signals:
+            return
+
+        applied_count = 0
+
+        for signal in signals:
+            try:
+                if signal.signal_type == "bandit_update":
+                    # Update bandit statistics (future: integrate with policy)
+                    self.logger.info(f"Bandit update for {signal.tool}: reward={signal.reward:.2f}")
+                    applied_count += 1
+
+                elif signal.signal_type == "pattern_preference":
+                    # Adjust pattern card preference (future: dynamic adaptation)
+                    self.logger.info(f"Pattern preference: {signal.pattern}")
+                    applied_count += 1
+
+                elif signal.signal_type == "threshold_adjustment":
+                    # Adjust confidence thresholds (future: dynamic thresholds)
+                    self.logger.info(f"Threshold adjustment recommended: {signal.recommendation}")
+                    applied_count += 1
+
+            except Exception as e:
+                self.logger.warning(f"Failed to apply learning signal: {e}")
+
+        self.logger.info(f"Applied {applied_count}/{len(signals)} learning signals")
+
+    def get_reflection_metrics(self) -> Optional[Dict[str, Any]]:
+        """Get reflection metrics if reflection is enabled."""
+        if not self.enable_reflection:
+            return None
+
+        metrics = self.reflection_buffer.get_metrics()
+        return {
+            'total_cycles': metrics.total_cycles,
+            'success_rate': self.reflection_buffer.get_success_rate(),
+            'tool_success_rates': metrics.tool_success_rates,
+            'tool_recommendations': self.reflection_buffer.get_tool_recommendations(),
+            'pattern_success_rates': metrics.pattern_success_rates
+        }
+
+    async def weave_and_reflect(
+        self,
+        query: Query,
+        feedback: Optional[Dict[str, Any]] = None,
+        pattern_override: Optional[PatternCard] = None
+    ) -> Spacetime:
+        """
+        Weave and automatically reflect on the outcome.
+
+        Convenience method that combines weaving and reflection.
+
+        Args:
+            query: User query
+            feedback: Optional feedback to store
+            pattern_override: Optional pattern card override
+
+        Returns:
+            Spacetime artifact
+        """
+        # Weave
+        spacetime = await self.weave(query, pattern_override=pattern_override)
+
+        # Reflect
+        await self.reflect(spacetime, feedback=feedback)
+
+        # Periodically learn
+        if len(self.reflection_buffer) % 10 == 0:  # Every 10 cycles
+            signals = await self.learn(force=False)
+            if signals:
+                await self.apply_learning_signals(signals)
+
+        return spacetime
+
+    # ========================================================================
+    # Memory Backend Helpers
+    # ========================================================================
+
+    async def _query_memory_backend(
+        self,
+        query_text: str,
+        limit: int = 5
+    ) -> List[MemoryShard]:
+        """
+        Query the unified memory backend and convert results to MemoryShards.
+
+        Args:
+            query_text: Query string
+            limit: Maximum number of results
+
+        Returns:
+            List of MemoryShard objects
+        """
+        if not self.memory:
+            return []
+
+        try:
+            # Import protocol types
+            from HoloLoom.memory.protocol import MemoryQuery
+
+            # Create query
+            mem_query = MemoryQuery(
+                text=query_text,
+                user_id=getattr(self.cfg, 'user_id', 'default'),
+                limit=limit
+            )
+
+            # Query backend
+            result = await self.memory.recall(mem_query)
+
+            # Convert backend Memory objects to MemoryShards
             shards = []
             for mem in result.memories:
                 shard = MemoryShard(
                     id=mem.id,
                     text=mem.text,
-                    episode=mem.context.get("episode", "default"),
-                    entities=mem.context.get("entities", []),
-                    motifs=mem.context.get("motifs", []),
+                    episode=mem.context.get('episode', 'default'),
+                    entities=mem.context.get('entities', []),
+                    motifs=mem.metadata.get('motifs', []),
                     metadata=mem.metadata
                 )
                 shards.append(shard)
 
-            logger.info(
-                f"Retrieved {len(shards)} context shards "
-                f"(backend: {result.metadata.get('backend', self.memory_backend)}, "
-                f"scores: {[f'{s:.2f}' for s in result.scores[:3]]})"
-            )
-
+            self.logger.debug(f"Retrieved {len(shards)} shards from memory backend")
             return shards
 
-    def _get_available_tools(self) -> List[str]:
-        """Get list of available tools."""
-        return [
-            "search",
-            "summarize",
-            "extract",
-            "respond",
-            "clarify"
-        ]
-
-    async def weave(
-        self,
-        query: str,
-        user_pattern: Optional[str] = None,
-        context: Optional[Dict] = None
-    ) -> Spacetime:
-        """
-        Execute complete weaving cycle.
-
-        This is the main API that coordinates all 6 modules into a
-        complete processing pipeline with full trace.
-
-        Args:
-            query: User query text
-            user_pattern: Optional explicit pattern ("bare", "fast", "fused")
-            context: Optional additional context
-
-        Returns:
-            Spacetime fabric with result and complete trace
-        """
-        self.weaving_count += 1
-        cycle_start = datetime.now()
-
-        logger.info("="*80)
-        logger.info(f"WEAVING CYCLE #{self.weaving_count}")
-        logger.info("="*80)
-
-        # Initialize trace
-        trace = WeavingTrace(
-            start_time=cycle_start,
-            end_time=cycle_start,  # Updated at end
-            duration_ms=0.0
-        )
-
-        try:
-            # ================================================================
-            # STAGE 1: Loom Command - Select Pattern Card
-            # ================================================================
-            logger.info("\n[STAGE 1] Loom Command - Pattern Selection")
-            pattern_spec = self.loom.select_pattern(
-                query_text=query,
-                user_preference=user_pattern
-            )
-
-            pattern_name = pattern_spec.card.value
-            self.pattern_usage[pattern_name] += 1
-
-            trace.pattern_card = pattern_name
-            trace.pattern_spec = {
-                "scales": pattern_spec.scales,
-                "quality_target": pattern_spec.quality_target,
-                "speed_priority": pattern_spec.speed_priority,
-                "timeout": pattern_spec.pipeline_timeout
-            }
-
-            logger.info(f"  Selected: {pattern_name.upper()}")
-            logger.info(f"  Quality: {pattern_spec.quality_target:.1%}")
-            logger.info(f"  Speed: {pattern_spec.speed_priority:.1%}")
-
-            # ================================================================
-            # STAGE 2: Chrono Trigger - Fire Temporal Window
-            # ================================================================
-            logger.info("\n[STAGE 2] Chrono Trigger - Temporal Activation")
-            stage_start = datetime.now()
-
-            window = await self.chrono.fire(
-                query_time=datetime.now(),
-                pattern_card_mode=pattern_name
-            )
-
-            trace.temporal_window = {
-                "start": str(window.start),
-                "end": str(window.end),
-                "max_age": str(window.max_age),
-                "recency_bias": window.recency_bias
-            }
-
-            logger.info(f"  Window: {window.start} → {window.end}")
-            logger.info(f"  Recency bias: {window.recency_bias:.1%}")
-
-            # ================================================================
-            # STAGE 3: Resonance Shed - Feature Extraction
-            # ================================================================
-            logger.info("\n[STAGE 3] Resonance Shed - Feature Interference")
-            stage_start = datetime.now()
-
-            # Lift threads and create DotPlasma
-            dot_plasma = await self.chrono.monitor(
-                operation=lambda: self.shed.weave(
-                    text=query,
-                    thread_weights={
-                        "motif": 1.0,
-                        "embedding": 1.0,
-                        "spectral": 0.5 if pattern_spec.enable_spectral else 0.0
-                    }
-                ),
-                timeout=pattern_spec.stage_timeouts.get("features", 2.0),
-                stage="features"
-            )
-
-            # Record in trace
-            if isinstance(dot_plasma, dict) and "motifs" in dot_plasma:
-                trace.motifs_detected = dot_plasma.get("motifs", [])
-                trace.embedding_scales_used = pattern_spec.scales
-                trace.dot_plasma_metadata = dot_plasma.get("metadata", {})
-
-                logger.info(f"  Motifs: {len(trace.motifs_detected)}")
-                logger.info(f"  Embedding scales: {trace.embedding_scales_used}")
-                logger.info(f"  Threads: {dot_plasma.get('metadata', {}).get('thread_count', 0)}")
-
-            # ================================================================
-            # STAGE 3.5: Synthesis - Pattern Extraction & Enrichment
-            # ================================================================
-            logger.info("\n[STAGE 3.5] Synthesis - Pattern Extraction")
-            stage_start = datetime.now()
-
-            # Retrieve actual context from memory!
-            context_shards = await self._retrieve_context(query, limit=5)
-
-            # Run synthesis
-            synthesis_result = await self.synthesis.synthesize(
-                query_text=query,
-                dot_plasma=dot_plasma if isinstance(dot_plasma, dict) else {},
-                context_shards=context_shards,
-                pattern_spec=pattern_spec
-            )
-
-            # Record in trace
-            trace.synthesis_result = synthesis_result.to_trace_dict()
-
-            logger.info(f"  Entities: {len(synthesis_result.key_entities)}")
-            logger.info(f"  Patterns: {len(synthesis_result.patterns)}")
-            logger.info(f"  Reasoning: {synthesis_result.reasoning_type}")
-            logger.info(f"  Confidence: {synthesis_result.confidence:.2f}")
-
-            # ================================================================
-            # STAGE 4: Warp Space - Tension Threads
-            # ================================================================
-            logger.info("\n[STAGE 4] Warp Space - Thread Tensioning")
-            stage_start = datetime.now()
-
-            # context_shards already retrieved in Stage 3.5
-            trace.context_shards_count = len(context_shards)
-            trace.threads_activated = [s.text[:50] for s in context_shards[:5]]
-
-            # Tension context into Warp Space
-            if context_shards:
-                context_texts = [shard.text for shard in context_shards]
-                await self.warp.tension(
-                    thread_texts=context_texts[:10],  # Limit for performance
-                    tension_weights=[1.0] * min(10, len(context_texts))
-                )
-
-                logger.info(f"  Tensioned: {len(self.warp.threads)} threads")
-                logger.info(f"  Context shards: {len(context_shards)}")
-            else:
-                logger.warning("  No context shards retrieved")
-
-            # ================================================================
-            # STAGE 5: Convergence Engine - Decision Collapse
-            # ================================================================
-            logger.info("\n[STAGE 5] Convergence Engine - Decision Collapse")
-            stage_start = datetime.now()
-
-            # Create features dict for policy
-            features_dict = {
-                "motifs": trace.motifs_detected,
-                "psi": dot_plasma.get("psi", []) if isinstance(dot_plasma, dict) else [],
-                "spectral": dot_plasma.get("spectral") if isinstance(dot_plasma, dict) else None
-            }
-
-            # Generate mock neural probabilities (TODO: replace with actual policy network)
-            import numpy as np
-            n_tools = len(self._get_available_tools())
-            neural_probs = np.random.dirichlet(np.ones(n_tools))  # Random but valid distribution
-
-            # Collapse to decision
-            decision = self.convergence.collapse(neural_probs=neural_probs)
-
-            trace.tool_selected = decision.tool
-            trace.tool_confidence = decision.confidence
-            trace.policy_adapter = decision.strategy_used
-
-            logger.info(f"  Tool: {decision.tool}")
-            logger.info(f"  Confidence: {decision.confidence:.1%}")
-            logger.info(f"  Strategy: {decision.strategy_used}")
-
-            # ================================================================
-            # STAGE 6: Tool Execution
-            # ================================================================
-            logger.info("\n[STAGE 6] Tool Execution")
-            stage_start = datetime.now()
-
-            # Execute selected tool
-            result = await self._execute_tool(
-                tool=decision.tool,
-                query=query,
-                context=context_shards,
-                features=features_dict
-            )
-
-            trace.execution_result = {
-                "tool": decision.tool,
-                "success": result.get("success", False),
-                "output_length": len(str(result.get("output", "")))
-            }
-
-            logger.info(f"  Result: {result.get('success', False)}")
-            logger.info(f"  Output: {len(str(result.get('output', '')))} chars")
-
-            # ================================================================
-            # Finalize Trace
-            # ================================================================
-            cycle_end = datetime.now()
-            duration_ms = (cycle_end - cycle_start).total_seconds() * 1000
-
-            trace.end_time = cycle_end
-            trace.duration_ms = duration_ms
-
-            # Chrono metrics
-            chrono_metrics = self.chrono.record_completion()
-            trace.chrono_metrics = chrono_metrics
-
-            # ================================================================
-            # Create Spacetime Fabric
-            # ================================================================
-            spacetime = Spacetime(
-                query_text=query,
-                response=result.get("output", ""),
-                tool_used=decision.tool,
-                confidence=decision.confidence,
-                trace=trace
-            )
-
-            logger.info("\n" + "="*80)
-            logger.info(f"WEAVING COMPLETE: {duration_ms:.0f}ms")
-            logger.info(f"  Pattern: {pattern_name}")
-            logger.info(f"  Tool: {decision.tool}")
-            logger.info(f"  Confidence: {decision.confidence:.1%}")
-            logger.info("="*80)
-
-            return spacetime
-
         except Exception as e:
-            logger.error(f"Weaving failed: {e}")
-            import traceback
-            traceback.print_exc()
+            self.logger.error(f"Failed to query memory backend: {e}")
+            return []
 
-            # Create error spacetime
-            trace.end_time = datetime.now()
-            trace.duration_ms = (trace.end_time - cycle_start).total_seconds() * 1000
-            trace.errors.append({"error": str(e), "stage": "weaving"})
+    # ========================================================================
+    # Lifecycle Management
+    # ========================================================================
 
-            return Spacetime(
-                query_text=query,
-                response=f"Error: {e}",
-                tool_used="error",
-                confidence=0.0,
-                trace=trace
-            )
-
-    async def _execute_tool(
-        self,
-        tool: str,
-        query: str,
-        context: List,
-        features: Dict
-    ) -> Dict[str, Any]:
+    async def __aenter__(self):
         """
-        Execute selected tool.
+        Async context manager entry.
+
+        Usage:
+            async with WeavingOrchestrator(cfg, shards) as shuttle:
+                spacetime = await shuttle.weave(query)
+                # Automatic cleanup on exit
+        """
+        self.logger.debug("WeavingOrchestrator context manager entered")
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """
+        Async context manager exit with cleanup.
+
+        Performs graceful shutdown:
+        - Cancels background tasks
+        - Flushes reflection buffer
+        - Closes connections
+        - Cleans up resources
 
         Args:
-            tool: Tool name
-            query: User query
-            context: Context shards
-            features: Extracted features
+            exc_type: Exception type (if any)
+            exc_val: Exception value (if any)
+            exc_tb: Exception traceback (if any)
+        """
+        self.logger.debug("WeavingOrchestrator context manager exiting")
+
+        # Cleanup
+        await self.close()
+
+        # Don't suppress exceptions
+        return False
+
+    async def close(self) -> None:
+        """
+        Clean up all resources.
+
+        Can be called manually or automatically via context manager.
+        Safe to call multiple times (idempotent).
+        """
+        if self._closed:
+            return
+
+        self.logger.info("Closing WeavingOrchestrator...")
+
+        # Cancel background tasks
+        if self._background_tasks:
+            self.logger.info(f"Cancelling {len(self._background_tasks)} background tasks")
+            for task in self._background_tasks:
+                if not task.done():
+                    task.cancel()
+
+            # Wait for cancellation with timeout
+            if self._background_tasks:
+                try:
+                    await asyncio.wait(
+                        self._background_tasks,
+                        timeout=5.0,
+                        return_when=asyncio.ALL_COMPLETED
+                    )
+                except asyncio.TimeoutError:
+                    self.logger.warning("Some background tasks did not complete within timeout")
+
+            self._background_tasks.clear()
+
+        # Close reflection buffer
+        if self.enable_reflection and self.reflection_buffer:
+            self.logger.info("Closing reflection buffer...")
+            await self.reflection_buffer.flush()
+            await self.reflection_buffer.close()
+
+        # Close memory backend connections
+        if self.memory:
+            self.logger.info("Closing memory backend connections...")
+            try:
+                # Check if backend has close method
+                if hasattr(self.memory, 'close'):
+                    if asyncio.iscoroutinefunction(self.memory.close):
+                        await self.memory.close()
+                    else:
+                        self.memory.close()
+
+                # Close individual backend connections (hybrid stores)
+                if hasattr(self.memory, 'neo4j') and self.memory.neo4j:
+                    if hasattr(self.memory.neo4j, 'close'):
+                        self.logger.debug("Closing Neo4j connection...")
+                        self.memory.neo4j.close()
+
+                if hasattr(self.memory, 'qdrant') and self.memory.qdrant:
+                    if hasattr(self.memory.qdrant, 'close'):
+                        self.logger.debug("Closing Qdrant connection...")
+                        self.memory.qdrant.close()
+
+                self.logger.info("Memory backend connections closed")
+
+            except Exception as e:
+                self.logger.warning(f"Error closing memory backend: {e}")
+
+        self._closed = True
+        self.logger.info("WeavingOrchestrator closed successfully")
+
+    def spawn_background_task(self, coro) -> asyncio.Task:
+        """
+        Spawn a background task and track it for cleanup.
+
+        Args:
+            coro: Coroutine to run in background
 
         Returns:
-            Execution result dict
+            asyncio.Task object
+
+        Usage:
+            task = shuttle.spawn_background_task(some_async_function())
         """
-        # Simple tool execution (expand as needed)
-        if tool == "search":
-            output = f"Search results for: {query}"
-            if context:
-                output += f"\n\nFound {len(context)} relevant results"
+        task = asyncio.create_task(coro)
+        self._background_tasks.append(task)
 
-        elif tool == "summarize":
-            output = f"Summary: {query}\n\nBased on {len(context)} context shards"
+        # Clean up completed tasks
+        task.add_done_callback(lambda t: self._background_tasks.remove(t) if t in self._background_tasks else None)
 
-        elif tool == "extract":
-            motifs = features.get("motifs", [])
-            output = f"Extracted {len(motifs)} key patterns: {motifs}"
+        return task
 
-        elif tool == "respond":
-            output = f"Response to: {query}\n\nContext: {len(context)} shards"
 
-        elif tool == "clarify":
-            output = f"Could you clarify: {query}?"
+# ============================================================================
+# Main Entry Point (for testing)
+# ============================================================================
 
+async def main():
+    """Example usage of WeavingOrchestrator."""
+    print("\n" + "="*80)
+    print("HoloLoom Weaving Shuttle - Full Architecture Demo")
+    print("="*80 + "\n")
+
+    # Create sample memory shards
+    shards = [
+        MemoryShard(
+            id="shard_001",
+            text="Thompson Sampling is a Bayesian approach to the multi-armed bandit problem.",
+            episode="docs",
+            entities=["Thompson Sampling", "Bayesian", "multi-armed bandit"],
+            motifs=["ALGORITHM", "OPTIMIZATION"]
+        ),
+        MemoryShard(
+            id="shard_002",
+            text="The algorithm balances exploration and exploitation by sampling from posterior distributions.",
+            episode="docs",
+            entities=["exploration", "exploitation", "posterior"],
+            motifs=["ALGORITHM", "PROBABILITY"]
+        ),
+        MemoryShard(
+            id="shard_003",
+            text="Hive Jodi has 8 frames of brood and is very active with goldenrod flow.",
+            episode="inspection_2025_10_13",
+            entities=["Hive Jodi", "brood", "goldenrod"],
+            motifs=["HIVE_INSPECTION", "SEASONAL"]
+        )
+    ]
+
+    # Test all three patterns
+    for mode in [ExecutionMode.BARE, ExecutionMode.FAST, ExecutionMode.FUSED]:
+        print(f"\n{'='*80}")
+        print(f"Testing {mode.value.upper()} Mode")
+        print(f"{'='*80}\n")
+
+        # Create config
+        if mode == ExecutionMode.BARE:
+            config = Config.bare()
+        elif mode == ExecutionMode.FAST:
+            config = Config.fast()
         else:
-            output = f"Tool '{tool}' executed for: {query}"
+            config = Config.fused()
 
-        return {
-            "success": True,
-            "tool": tool,
-            "output": output,
-            "query": query
-        }
+        # Create shuttle
+        print("Initializing WeavingOrchestrator...")
+        shuttle = WeavingOrchestrator(cfg=config, shards=shards)
+        print("Shuttle ready!\n")
 
-    def get_statistics(self) -> Dict[str, Any]:
-        """
-        Get weaving statistics.
+        # Process a query
+        query = Query(text="What is Thompson Sampling?")
+        print(f"Processing query: '{query.text}'")
+        print("-" * 80)
 
-        Returns:
-            Dict with statistics from all modules
-        """
-        stats = {
-            "total_weavings": self.weaving_count,
-            "pattern_usage": self.pattern_usage,
-            "loom_stats": self.loom.get_statistics(),
-            "chrono_stats": self.chrono.get_evolution_stats(),
-        }
+        spacetime = await shuttle.weave(query)
 
-        # Add convergence stats (different for MCTS vs regular)
-        if self.use_mcts:
-            stats["mcts_stats"] = self.convergence.get_statistics()
-        else:
-            stats["bandit_stats"] = self.convergence.bandit.get_statistics()
+        # Print spacetime
+        print("\n" + "="*80)
+        print("SPACETIME FABRIC")
+        print("="*80)
+        print(f"Query: {spacetime.query_text}")
+        print(f"Tool Used: {spacetime.tool_used}")
+        print(f"Confidence: {spacetime.confidence:.2f}")
+        print(f"Response: {spacetime.response}")
+        print(f"\nTrace:")
+        print(f"  Duration: {spacetime.trace.duration_ms:.1f}ms")
+        print(f"  Motifs: {len(spacetime.trace.motifs_detected)}")
+        print(f"  Scales: {spacetime.trace.embedding_scales_used}")
+        print(f"  Threads: {len(spacetime.trace.threads_activated)}")
+        print(f"  Context Shards: {spacetime.trace.context_shards_count}")
+        print(f"\nStage Timings:")
+        for stage, duration in spacetime.trace.stage_durations.items():
+            print(f"  {stage:25s}: {duration:6.1f}ms")
+        print("="*80)
 
-        return stats
-
-    def stop(self):
-        """Stop all background processes."""
-        self.chrono.stop()
-        logger.info("WeavingOrchestrator stopped")
-
-
-# ============================================================================
-# Factory Functions
-# ============================================================================
-
-def create_weaving_orchestrator(
-    pattern: str = "fast",
-    strategy: str = "epsilon_greedy"
-) -> WeavingOrchestrator:
-    """
-    Create WeavingOrchestrator with defaults.
-
-    Args:
-        pattern: Default pattern ("bare", "fast", "fused")
-        strategy: Collapse strategy
-
-    Returns:
-        Configured WeavingOrchestrator
-    """
-    strategy_enum = CollapseStrategy(strategy)
-    return WeavingOrchestrator(
-        default_pattern=pattern,
-        collapse_strategy=strategy_enum
-    )
-
-
-# ============================================================================
-# Example Usage
-# ============================================================================
 
 if __name__ == "__main__":
-    async def demo():
-        print("="*80)
-        print("WEAVING ORCHESTRATOR WITH MCTS FLUX CAPACITOR")
-        print("="*80)
-        print("\nInitializing complete weaving architecture...")
-        print("Thompson Sampling ALL THE WAY DOWN with MCTS search!")
-        print()
-
-        # Create orchestrator with MCTS FLUX CAPACITOR
-        weaver = WeavingOrchestrator(
-            config=Config.fast(),
-            default_pattern="fast",
-            use_mcts=True,
-            mcts_simulations=50  # 50 simulations per decision
-        )
-
-        # Test queries
-        queries = [
-            "What is HoloLoom?",
-            "Explain the weaving metaphor",
-            "How does Thompson Sampling work?"
-        ]
-
-        for idx, query in enumerate(queries, 1):
-            print(f"\n{'='*80}")
-            print(f"QUERY {idx}: {query}")
-            print('='*80)
-
-            # Execute weaving cycle
-            spacetime = await weaver.weave(query)
-
-            # Show result
-            print(f"\nResult:")
-            print(f"  Tool: {spacetime.tool_used}")
-            print(f"  Output: {spacetime.response[:200]}...")
-
-            # Show trace
-            print(f"\nWeaving Trace:")
-            print(f"  Duration: {spacetime.trace.duration_ms:.0f}ms")
-            print(f"  Pattern: {spacetime.trace.pattern_card}")
-            print(f"  Motifs: {len(spacetime.trace.motifs_detected)}")
-            print(f"  Context shards: {spacetime.trace.context_shards_count}")
-            print(f"  Confidence: {spacetime.trace.tool_confidence:.1%}")
-
-        # Show statistics
-        print(f"\n{'='*80}")
-        print("STATISTICS")
-        print('='*80)
-        stats = weaver.get_statistics()
-        print(f"  Total weavings: {stats['total_weavings']}")
-        print(f"  Pattern usage: {stats['pattern_usage']}")
-
-        if 'mcts_stats' in stats:
-            print(f"\n  MCTS FLUX CAPACITOR:")
-            mcts = stats['mcts_stats']
-            print(f"    Total simulations: {mcts['flux_stats']['total_simulations']}")
-            print(f"    Decisions made: {mcts['decision_count']}")
-            print(f"    Tool distribution: {mcts['flux_stats']['tool_distribution']}")
-            print(f"    Thompson priors: {[f'{p:.3f}' for p in mcts['flux_stats']['thompson_priors']]}")
-
-        # Stop
-        weaver.stop()
-
-        print("\nFlux Capacitor operational! Thompson Sampling ALL THE WAY DOWN!")
-
-    asyncio.run(demo())
+    asyncio.run(main())

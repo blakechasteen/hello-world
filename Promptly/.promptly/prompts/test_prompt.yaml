@@ -1,0 +1,9 @@
+branch: main
+commit_hash: 88abfe87a255
+content: You are a helpful assistant.
+metadata:
+  tags:
+  - test
+  - assistant
+name: test_prompt
+version: 1

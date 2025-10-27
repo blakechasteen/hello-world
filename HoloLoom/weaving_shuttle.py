@@ -50,6 +50,9 @@ from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
 from HoloLoom.memory.base import create_retriever
 from HoloLoom.policy.unified import create_policy
 
+# Performance optimizations
+from HoloLoom.performance.cache import QueryCache
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -271,6 +274,10 @@ class WeavingShuttle:
             self.reflection_buffer = None
             self.logger.info("Reflection loop disabled")
 
+        # Initialize performance cache
+        self.query_cache = QueryCache(max_size=50, ttl_seconds=300)
+        self.logger.info("Query cache enabled (max_size=50, ttl=300s)")
+
         self.logger.info("WeavingShuttle initialization complete")
 
     def _initialize_components(self):
@@ -289,8 +296,8 @@ class WeavingShuttle:
             if isinstance(self.memory, WeavingMemoryAdapter):
                 self.yarn_graph = self.memory
             else:
-                # Wrap raw memory in adapter
-                self.yarn_graph = WeavingMemoryAdapter(backend=self.memory, backend_type="unified")
+                # Wrap raw memory in adapter (use "factory" type for protocol backends)
+                self.yarn_graph = WeavingMemoryAdapter(backend=self.memory, backend_type="factory")
             self.logger.info("Using persistent memory backend")
         else:
             # Use in-memory YarnGraph with shards

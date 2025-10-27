@@ -262,6 +262,204 @@ Recursive gated multipass memory crawling with importance filtering.
 
 ---
 
+### Phase 9: AutoGPT-Inspired Autonomy
+**Status:** PLANNED for future sprint
+**Priority:** HIGH (autonomous reasoning & robustness)
+
+**Inspiration:**
+Drawing from AutoGPT's design patterns to enhance HoloLoom's autonomous decision-making capabilities.
+
+**Features:**
+
+1. **Explicit Goal Decomposition**
+   - Autonomous task breakdown (complex goal → subtasks)
+   - Goal hierarchy tracked in Spacetime
+   - Recursive weaving cycles (parent spawns child cycles)
+   - Tree of thought exploration in knowledge graph
+   - Progress tracking across decomposed goals
+
+   **Implementation Points:**
+   - Add `GoalHierarchy` to Spacetime structure
+   - Extend `WeavingShuttle.weave()` to support recursive cycles
+   - Track parent-child relationships in YarnGraph
+   - Add goal completion detection
+
+2. **Episodic ↔ Semantic Memory Split**
+   - Explicit separation: episodic (recent traces) vs semantic (learned patterns)
+   - Bidirectional consolidation flow
+   - Episodic: Recent action traces (what just happened)
+   - Semantic: Learned facts and patterns (what is generally true)
+   - Consolidation: Successful episodes → permanent knowledge
+
+   **Implementation Points:**
+   - Enhance `ReflectionBuffer` as explicit episodic store
+   - Mark `YarnGraph` as semantic store
+   - Add `consolidate_episode()` method
+   - Extract patterns from reflection buffer
+   - Commit validated patterns to yarn graph
+   - Temporal decay for episodic memories
+
+3. **Self-Critique Loop**
+   - Pre-execution validation before tool selection
+   - Confidence scoring for decisions
+   - "Constructive self-criticism" on plans
+   - Rollback mechanism for low-confidence choices
+   - Alternative plan generation
+
+   **Implementation Points:**
+   - Add `validate_plan()` to `ConvergenceEngine`
+   - Compute confidence intervals on tool selection
+   - Threshold-based rollback (confidence < 0.6 → replan)
+   - Track validation metrics in Spacetime
+   - Self-critique as part of reflection
+
+4. **Explicit Context Budgeting**
+   - Active token budget management
+   - Priority ranking for features under memory pressure
+   - Smart pruning strategies when budget exceeded
+   - Context window optimization
+   - Graceful degradation under constraints
+
+   **Implementation Points:**
+   - Add `ContextBudget` class to Chrono Trigger
+   - Track token usage across weaving cycle
+   - Priority-based feature selection
+   - Implement pruning strategies (recency, importance, diversity)
+   - Dynamic mode switching (FUSED → FAST → BARE under pressure)
+
+5. **Enhanced Reasoning Trace**
+   - Full reasoning chains as first-class artifacts
+   - "Thought" nodes in Spacetime
+   - Track alternative paths considered but rejected
+   - Confidence intervals on all decisions
+   - Branching factor analysis
+
+   **Implementation Points:**
+   - Extend `WeavingTrace` with thought nodes
+   - Add `AlternativePath` tracking
+   - Store confidence distributions (not just argmax)
+   - Visualize decision tree in trace
+   - Enable replay/analysis of reasoning chains
+
+6. **Tool Failure Recovery**
+   - Retry with different tools if one fails
+   - Top-K fallback strategies
+   - Adaptive re-ranking after failures
+   - Failure pattern learning
+   - Graceful degradation chains
+
+   **Implementation Points:**
+   - Add `CollapseStrategy.TOP_K_FALLBACK` to Convergence Engine
+   - Try top-3 tools in sequence until success
+   - Add `CollapseStrategy.ADAPTIVE_RERANK`
+   - Update tool scores based on failure patterns
+   - Store failure reasons in reflection buffer
+   - Learn which tools fail together
+
+**Integration Architecture:**
+
+```python
+# Goal decomposition in Spacetime
+class GoalHierarchy:
+    parent_goal: Optional[str]
+    subtasks: List[str]
+    completion_status: Dict[str, bool]
+    decomposition_strategy: str
+
+# Memory consolidation
+async def consolidate_episode(
+    reflection_buffer: ReflectionBuffer,
+    yarn_graph: YarnGraph,
+    min_confidence: float = 0.8
+) -> int:
+    """Convert successful episodes into semantic knowledge"""
+    patterns = extract_patterns(reflection_buffer.recent_episodes())
+    committed = 0
+    for pattern in patterns:
+        if pattern.confidence >= min_confidence:
+            yarn_graph.add_pattern(pattern)
+            committed += 1
+    return committed
+
+# Self-critique validation
+class PreExecutionValidator:
+    def validate_plan(self, action_plan: ActionPlan) -> ValidationResult:
+        confidence = self._compute_confidence(action_plan)
+        critique = self._generate_critique(action_plan)
+        return ValidationResult(
+            should_proceed=confidence > 0.6,
+            confidence=confidence,
+            critique=critique,
+            alternatives=self._generate_alternatives() if confidence < 0.6 else []
+        )
+
+# Context budgeting
+class ContextBudget:
+    max_tokens: int
+    priority_ranking: List[str]  # ["embeddings", "motifs", "spectral"]
+    pruning_strategy: Callable[[Features, int], Features]
+
+    def enforce_budget(self, features: Features) -> Features:
+        if self.token_count(features) > self.max_tokens:
+            return self.pruning_strategy(features, self.max_tokens)
+        return features
+
+# Failure recovery
+class ConvergenceEngine:
+    async def collapse_with_fallback(
+        self,
+        probabilities: torch.Tensor,
+        top_k: int = 3
+    ) -> ActionPlan:
+        """Try top-k tools until one succeeds"""
+        top_tools = torch.topk(probabilities, k=top_k)
+
+        for tool_idx in top_tools.indices:
+            try:
+                result = await self.execute_tool(tool_idx)
+                if result.success:
+                    return result
+            except Exception as e:
+                await self.record_failure(tool_idx, e)
+                continue
+
+        # All failed - fallback to safe default
+        return await self.safe_fallback()
+```
+
+**Use Cases:**
+- Complex multi-step tasks requiring autonomous planning
+- Robust handling of tool failures
+- Long-running sessions with memory consolidation
+- High-stakes decisions requiring validation
+- Resource-constrained environments (token limits)
+
+**Benefits:**
+- **Autonomy**: Can break down complex goals without human intervention
+- **Robustness**: Graceful handling of failures with fallback strategies
+- **Learning**: Explicit episodic→semantic flow improves over time
+- **Transparency**: Full reasoning traces show decision process
+- **Efficiency**: Smart context management under resource pressure
+- **Reliability**: Pre-execution validation prevents costly mistakes
+
+**Integration Points:**
+- `WeavingShuttle`: Add recursive cycle support
+- `Spacetime`: Extend with goal hierarchy and thought nodes
+- `ConvergenceEngine`: Add validation and fallback strategies
+- `ReflectionBuffer`: Enhance as episodic store with consolidation
+- `ChronoTrigger`: Add context budget enforcement
+- `YarnGraph`: Mark as semantic store, add pattern APIs
+
+**Estimated Effort:** 1-2 weeks
+**Impact:** HIGH - Major autonomy & robustness upgrade
+
+**Implementation Priority:**
+1. **Week 1**: Goal decomposition + memory consolidation (foundation)
+2. **Week 2**: Self-critique + failure recovery (robustness)
+3. **Week 3**: Context budgeting + enhanced tracing (polish)
+
+---
+
 ## Future Considerations (Backlog)
 
 ### Meta-Learning & Bootstrap

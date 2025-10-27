@@ -108,6 +108,7 @@ class MemoryQuery:
     user_id: str = "default"
     limit: int = 5
     filters: Optional[Dict[str, Any]] = None
+    strategy: Optional['Strategy'] = None  # Optional retrieval strategy hint
 
 
 @dataclass
@@ -126,6 +127,7 @@ class Strategy(Enum):
     GRAPH = "graph"  # Relationship traversal
     PATTERN = "pattern"  # Mathematical patterns
     FUSED = "fused"  # Weighted fusion
+    BALANCED = "balanced"  # Balanced retrieval (default)
 
 
 # ============================================================================

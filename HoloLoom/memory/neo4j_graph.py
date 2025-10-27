@@ -683,6 +683,252 @@ class Neo4jKG:
 
         self.add_edges(edges)
 
+    # ========================================================================
+    # MemoryStore Protocol Implementation
+    # ========================================================================
+
+    async def store(self, memory, user_id: str = "default") -> str:
+        """
+        Store a Memory object as a node in the Neo4j graph.
+
+        Creates a Memory node with MENTIONS edges to entities.
+
+        Args:
+            memory: Memory object to store
+            user_id: User identifier for multi-tenant support
+
+        Returns:
+            The memory ID
+        """
+        from datetime import datetime
+
+        # Convert timestamp to ISO format
+        timestamp_iso = (
+            memory.timestamp.isoformat()
+            if isinstance(memory.timestamp, datetime)
+            else str(memory.timestamp)
+        )
+
+        # Extract entities from context
+        entities = memory.context.get('entities', [])
+
+        # Store memory node
+        query = """
+        CREATE (m:Memory {
+            id: $memory_id,
+            text: $text,
+            timestamp: $timestamp,
+            user_id: $user_id
+        })
+        SET m.context = $context
+        SET m.metadata = $metadata
+        RETURN m.id AS memory_id
+        """
+
+        with self.driver.session(database=self.config.database) as session:
+            # Create memory node
+            session.run(
+                query,
+                memory_id=memory.id,
+                text=memory.text,
+                timestamp=timestamp_iso,
+                user_id=user_id,
+                context=json.dumps(memory.context),
+                metadata=json.dumps(memory.metadata)
+            )
+
+            # Create MENTIONS edges to entities
+            if entities:
+                entity_query = """
+                MATCH (m:Memory {id: $memory_id})
+                UNWIND $entities AS entity_name
+                MERGE (e:Entity {name: entity_name})
+                CREATE (m)-[r:MENTIONS {weight: 1.0}]->(e)
+                """
+                session.run(entity_query, memory_id=memory.id, entities=entities)
+
+            # Connect to time thread if timestamp exists
+            if memory.timestamp:
+                dt = to_utc_datetime(memory.timestamp)
+                bucket = time_bucket(dt)
+                thread_id = f"time::{bucket}"
+
+                time_query = """
+                MATCH (m:Memory {id: $memory_id})
+                MERGE (t:TimeThread {name: $thread_id, bucket: $bucket})
+                CREATE (m)-[r:OCCURRED_AT {
+                    weight: 1.0,
+                    bucket: $bucket,
+                    timestamp: $timestamp
+                }]->(t)
+                """
+                session.run(
+                    time_query,
+                    memory_id=memory.id,
+                    thread_id=thread_id,
+                    bucket=bucket,
+                    timestamp=timestamp_iso
+                )
+
+        return memory.id
+
+    async def store_many(self, memories: List, user_id: str = "default") -> List[str]:
+        """
+        Batch store multiple memories.
+
+        More efficient than individual stores due to batched transactions.
+
+        Args:
+            memories: List of Memory objects
+            user_id: User identifier
+
+        Returns:
+            List of memory IDs
+        """
+        ids = []
+        batch_size = 100
+
+        # Process in batches for better performance
+        for i in range(0, len(memories), batch_size):
+            batch = memories[i:i + batch_size]
+
+            for memory in batch:
+                memory_id = await self.store(memory, user_id)
+                ids.append(memory_id)
+
+        return ids
+
+    async def recall(self, query, limit: int = 5):
+        """
+        Retrieve memories matching a query using Cypher graph traversal.
+
+        Uses entity overlap scoring strategy:
+        1. Extract entities from query
+        2. Find memories that mention overlapping entities
+        3. Score by entity overlap ratio
+        4. Return top-k scored memories
+
+        Args:
+            query: MemoryQuery or string query
+            limit: Maximum number of memories to return
+
+        Returns:
+            RetrievalResult with memories, scores, and metadata
+        """
+        from HoloLoom.memory.protocol import Memory, RetrievalResult
+        from datetime import datetime
+
+        # Extract query text
+        query_text = query.text if hasattr(query, 'text') else str(query)
+
+        # Simple entity extraction (could be enhanced with NLP)
+        def extract_entities_simple(text: str) -> List[str]:
+            """Extract potential entities from text using basic heuristics."""
+            words = text.lower().split()
+            # Filter out common stop words and short words
+            stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'should', 'could', 'may', 'might', 'must', 'can', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'then', 'once'}
+            return [w for w in words if len(w) > 2 and w not in stop_words]
+
+        query_entities = extract_entities_simple(query_text)
+
+        # Build Cypher query for entity-based recall
+        cypher_query = """
+        // Find all Memory nodes
+        MATCH (m:Memory)
+
+        // Get entities this memory mentions
+        OPTIONAL MATCH (m)-[:MENTIONS]->(e:Entity)
+
+        // Group by memory and collect entities
+        WITH m, collect(e.name) AS memory_entities
+
+        // Calculate overlap with query entities
+        WITH m, memory_entities,
+             size([entity IN $query_entities WHERE entity IN memory_entities]) AS overlap,
+             size($query_entities) AS query_size
+
+        // Calculate score (handle division by zero)
+        WITH m, memory_entities,
+             CASE
+                 WHEN query_size > 0 THEN toFloat(overlap) / query_size
+                 ELSE 0.5
+             END AS score
+
+        // Sort by score and limit
+        ORDER BY score DESC
+        LIMIT $limit
+
+        // Return memory data
+        RETURN
+            m.id AS id,
+            m.text AS text,
+            m.timestamp AS timestamp,
+            m.context AS context,
+            m.metadata AS metadata,
+            score
+        """
+
+        scored_memories = []
+
+        with self.driver.session(database=self.config.database) as session:
+            result = session.run(
+                cypher_query,
+                query_entities=query_entities,
+                limit=limit
+            )
+
+            for record in result:
+                # Parse JSON context and metadata
+                try:
+                    context = json.loads(record["context"]) if record.get("context") else {}
+                except (json.JSONDecodeError, TypeError):
+                    context = {}
+
+                try:
+                    metadata = json.loads(record["metadata"]) if record.get("metadata") else {}
+                except (json.JSONDecodeError, TypeError):
+                    metadata = {}
+
+                # Parse timestamp
+                timestamp_str = record.get("timestamp")
+                try:
+                    timestamp = datetime.fromisoformat(timestamp_str) if timestamp_str else datetime.now()
+                except (ValueError, TypeError):
+                    timestamp = datetime.now()
+
+                # Create Memory object
+                memory = Memory(
+                    id=record["id"],
+                    text=record["text"],
+                    timestamp=timestamp,
+                    context=context,
+                    metadata=metadata
+                )
+
+                score = record["score"] or 0.0
+                scored_memories.append((memory, score))
+
+        # Extract memories and scores
+        memories = [m for m, _ in scored_memories]
+        scores = [s for _, s in scored_memories]
+
+        # Count total memories for metadata
+        count_query = "MATCH (m:Memory) RETURN count(m) AS total"
+        with self.driver.session(database=self.config.database) as session:
+            count_result = session.run(count_query)
+            total_memories = count_result.single()["total"]
+
+        return RetrievalResult(
+            memories=memories,
+            scores=scores,
+            strategy_used="neo4j_entity_overlap",
+            metadata={
+                'query_entities': query_entities,
+                'total_memories': total_memories,
+                'backend': 'neo4j'
+            }
+        )
+
 
 # ============================================================================
 # Example Usage

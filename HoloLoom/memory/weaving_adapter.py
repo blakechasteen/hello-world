@@ -99,7 +99,6 @@ def protocol_memory_to_memoryshard(memory: 'Memory') -> MemoryShard:
         episode=memory.context.get('episode', 'unknown'),
         entities=memory.context.get('entities', []),
         motifs=memory.context.get('motifs', []),
-        embedding=getattr(memory, 'embedding', []),
         metadata=memory.metadata
     )
 
@@ -325,8 +324,16 @@ class WeavingMemoryAdapter:
                 limit=10
             )
 
-            # Async recall
-            result = asyncio.run(self.backend.recall(query_obj))
+            # Async recall - handle both running and non-running event loops
+            try:
+                loop = asyncio.get_running_loop()
+                # Already in an event loop - use asyncio gather with timeout
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as pool:
+                    result = pool.submit(asyncio.run, self.backend.recall(query_obj)).result(timeout=30)
+            except RuntimeError:
+                # No running loop - use asyncio.run()
+                result = asyncio.run(self.backend.recall(query_obj))
 
             # Convert to MemoryShards
             shards = [protocol_memory_to_memoryshard(mem) for mem in result.memories]

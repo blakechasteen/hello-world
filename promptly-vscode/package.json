@@ -1,0 +1,69 @@
+{
+  "name": "promptly",
+  "displayName": "Promptly",
+  "description": "Prompt management for VS Code",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "promptly",
+          "title": "Promptly",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "promptly": [
+        {
+          "id": "promptLibrary",
+          "name": "Prompt Library"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "promptly.refresh",
+        "title": "Refresh Prompt Library",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "promptly.viewPrompt",
+        "title": "View Prompt"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "promptly.refresh",
+          "when": "view == promptLibrary",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}

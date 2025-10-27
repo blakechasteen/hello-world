@@ -14,10 +14,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import numpy as np
 import matplotlib.pyplot as plt
-from HoloLoom.semantic_flow_calculus import (
+from HoloLoom.semantic_calculus import (
     SemanticFlowCalculus,
     SemanticFlowVisualizer,
-    analyze_text_flow
+    print_trajectory_summary,
+    visualize_semantic_flow
 )
 from HoloLoom.embedding.spectral import create_embedder
 
@@ -35,7 +36,8 @@ def demo_basic_flow():
     embed_model = create_embedder(sizes=[384])
 
     def embed_fn(word):
-        return embed_model.embed_query(word)
+        # encode() expects a list, returns array of embeddings
+        return embed_model.encode([word])[0]
 
     # Analyze a philosophical sentence
     text = "I think therefore I am a conscious being"
@@ -49,9 +51,9 @@ def demo_basic_flow():
     trajectory = calculus.compute_trajectory(words)
 
     print(f"\n[3/4] Computing semantic derivatives...")
-    print(f"        ✓ Positions: {trajectory.positions.shape}")
-    print(f"        ✓ Velocities: {trajectory.velocities.shape}")
-    print(f"        ✓ Accelerations: {trajectory.accelerations.shape}")
+    print(f"        OK Positions: {trajectory.positions.shape}")
+    print(f"        OK Velocities: {trajectory.velocities.shape}")
+    print(f"        OK Accelerations: {trajectory.accelerations.shape}")
 
     # Display metrics for each word
     print(f"\n[4/4] Flow metrics by word:")
@@ -76,12 +78,12 @@ def demo_basic_flow():
         show_acceleration=False
     )
     plt.savefig('demos/output/semantic_flow_3d.png', dpi=150, bbox_inches='tight')
-    print(f"        ✓ Saved: demos/output/semantic_flow_3d.png")
+    print(f"        OK Saved: demos/output/semantic_flow_3d.png")
 
     # Flow metrics
     fig2, axes2 = visualizer.plot_flow_metrics(trajectory)
     plt.savefig('demos/output/semantic_flow_metrics.png', dpi=150, bbox_inches='tight')
-    print(f"        ✓ Saved: demos/output/semantic_flow_metrics.png")
+    print(f"        OK Saved: demos/output/semantic_flow_metrics.png")
 
     return trajectory, calculus
 
@@ -97,7 +99,7 @@ def demo_conversation_flow():
     embed_model = create_embedder(sizes=[384])
 
     def embed_fn(word):
-        return embed_model.embed_query(word)
+        return embed_model.encode([word])[0]
 
     # Conversation with clear topic shifts
     conversation = [
@@ -130,7 +132,7 @@ def demo_conversation_flow():
     for idx in high_curvature_indices:
         word = trajectory.words[idx]
         curv = curvatures[idx]
-        print(f"        Position {idx}: '{word}' (κ = {curv:.4f})")
+        print(f"        Position {idx}: '{word}' (kappa = {curv:.4f})")
 
     # Visualize
     visualizer = SemanticFlowVisualizer(dim_reduction='pca')
@@ -140,7 +142,7 @@ def demo_conversation_flow():
         show_acceleration=True
     )
     plt.savefig('demos/output/conversation_flow_3d.png', dpi=150, bbox_inches='tight')
-    print(f"\n        ✓ Saved: demos/output/conversation_flow_3d.png")
+    print(f"\n        OK Saved: demos/output/conversation_flow_3d.png")
 
     return trajectory
 
@@ -156,7 +158,7 @@ def demo_attractor_finding():
     embed_model = create_embedder(sizes=[384])
 
     def embed_fn(word):
-        return embed_model.embed_query(word)
+        return embed_model.encode([word])[0]
 
     # Multiple sentences about related topics
     texts = [
@@ -198,7 +200,7 @@ def demo_attractor_finding():
             attractors=attractors
         )
         plt.savefig('demos/output/attractors_3d.png', dpi=150, bbox_inches='tight')
-        print(f"\n        ✓ Saved: demos/output/attractors_3d.png")
+        print(f"\n        OK Saved: demos/output/attractors_3d.png")
 
     return attractors, trajectories
 
@@ -214,7 +216,7 @@ def demo_energy_conservation():
     embed_model = create_embedder(sizes=[384])
 
     def embed_fn(word):
-        return embed_model.embed_query(word)
+        return embed_model.encode([word])[0]
 
     # Coherent narrative (should have relatively conserved energy)
     narrative = "once upon a time in a faraway kingdom there lived a brave knight who protected the realm"
@@ -253,7 +255,7 @@ def demo_energy_conservation():
 
     plt.tight_layout()
     plt.savefig('demos/output/energy_conservation.png', dpi=150, bbox_inches='tight')
-    print(f"\n        ✓ Saved: demos/output/energy_conservation.png")
+    print(f"\n        OK Saved: demos/output/energy_conservation.png")
 
     return trajectory
 
@@ -283,11 +285,11 @@ def main():
         print("ALL DEMOS COMPLETE")
         print("=" * 70)
         print("\nKey Findings:")
-        print("  ✓ Semantic derivatives (velocity, acceleration) computed successfully")
-        print("  ✓ Trajectories visualized in 3D reduced space")
-        print("  ✓ Topic shifts detected via curvature analysis")
-        print(f"  ✓ {len(attractors)} semantic attractors discovered")
-        print("  ✓ Energy conservation demonstrated")
+        print("  OK Semantic derivatives (velocity, acceleration) computed successfully")
+        print("  OK Trajectories visualized in 3D reduced space")
+        print("  OK Topic shifts detected via curvature analysis")
+        print(f"  OK {len(attractors)} semantic attractors discovered")
+        print("  OK Energy conservation demonstrated")
         print("\nNext Steps:")
         print("  → Phase 2: Multi-scale harmonic analysis")
         print("  → Phase 3: Full potential field reconstruction")
