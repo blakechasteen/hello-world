@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-HoloLoom Weaving Orchestrator - Canonical Implementation with mythRL Protocols
-=================================================================================
-The canonical HoloLoom orchestrator with full Shuttle architecture integration.
+HoloLoom Weaving Orchestrator - Full 9-Step Weaving Cycle
+===========================================================
+The canonical orchestrator implementing complete weaving architecture.
 
-This orchestrator implements the full 9-step weaving cycle:
-1. Loom Command selects Pattern Card (BARE/FAST/FUSED)
-2. Chrono Trigger fires, creates TemporalWindow
-3. Yarn Graph threads selected based on temporal window
-4. Resonance Shed lifts feature threads, creates DotPlasma
-5. Warp Space tensions threads into continuous manifold
-6. Convergence Engine collapses to discrete tool selection
-7. Tool executes, results woven into Spacetime fabric
-8. Reflection Buffer learns from outcome
-9. Chrono Trigger detensions, cycle completes
+MIGRATION NOTE (2025-10-27):
+This file was promoted from weaving_shuttle.py to weaving_orchestrator.py
+as part of Phase 1 consolidation. The old weaving_orchestrator.py (6-step)
+is archived at archive/legacy/weaving_orchestrator_v1.py.
+
+9-Step Weaving Cycle:
+1. Loom Command → Pattern Card selection (BARE/FAST/FUSED)
+2. Chrono Trigger → Temporal window creation
+3. Yarn Graph → Thread selection from memory
+4. Resonance Shed → Feature extraction, DotPlasma
+5. Warp Space → Continuous manifold tensioning
+6. Convergence Engine → Discrete decision collapse
+7. Tool Execution → Action with results
+8. Reflection Buffer → Learning from outcome
+9. Chrono Detension → Cycle completion
 
 Philosophy:
-This is the canonical orchestrator implementation, enhanced with the complete
-Shuttle architecture and mythRL protocol-based system.
+The true embodiment of the weaving metaphor - coordinates all architectural
+components into an elegant dance of symbolic ↔ continuous transformations.
 
-Author: Claude Code (with HoloLoom architecture by Blake)
-Date: 2025-10-27 (Task 1.2: Shuttle Integration Complete)
+Author: HoloLoom Team (Blake + Claude)
+Date: 2025-10-27 (promoted from shuttle)
 """
 
 import asyncio
@@ -32,17 +37,6 @@ from datetime import datetime, timedelta
 
 # Shared types
 from HoloLoom.Documentation.types import Query, Context, Features, MemoryShard
-
-# mythRL Protocol-based architecture types
-from HoloLoom.protocols import (
-    ComplexityLevel,
-    ProvenceTrace,
-    MythRLResult,
-    PatternSelectionProtocol,
-    FeatureExtractionProtocol,
-    WarpSpaceProtocol,
-    DecisionEngineProtocol,
-)
 
 # Weaving architecture components
 from HoloLoom.loom.command import LoomCommand, PatternCard, PatternSpec
@@ -59,9 +53,6 @@ from HoloLoom.motif.base import create_motif_detector
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
 from HoloLoom.memory.base import create_retriever
 from HoloLoom.policy.unified import create_policy
-
-# Performance optimizations
-from HoloLoom.performance.cache import QueryCache
 
 logging.basicConfig(level=logging.INFO)
 
@@ -194,17 +185,14 @@ class YarnGraph:
 
 
 # ============================================================================
-# Weaving Shuttle - Full Architecture Integration
+# Weaving Orchestrator - Full 9-Step Cycle
 # ============================================================================
 
 class WeavingOrchestrator:
     """
-    The Weaving Shuttle - Enhanced with mythRL Protocol-Based Architecture
-    =======================================================================
-    
-    Implements the complete 9-step weaving cycle with 3-5-7-9 progressive complexity.
-    
-    **Traditional HoloLoom (9 steps):**
+    The canonical HoloLoom orchestrator implementing the full 9-step weaving cycle.
+
+    Coordinates all architectural components:
     - Loom Command (pattern selection)
     - Chrono Trigger (temporal control)
     - Yarn Graph (thread storage)
@@ -214,61 +202,76 @@ class WeavingOrchestrator:
     - Tool Execution (action)
     - Spacetime Fabric (provenance)
     - Reflection (learning)
-    
-    **mythRL Progressive Complexity (3-5-7-9):**
-    - LITE (3 steps): Extract → Route → Execute (<50ms)
-    - FAST (5 steps): + Pattern Selection + Temporal Windows (<150ms)
-    - FULL (7 steps): + Decision Engine + Synthesis Bridge (<300ms)
-    - RESEARCH (9 steps): + Advanced WarpSpace + Full Tracing (no limit)
-    
-    **Protocol-Based Design:**
-    - PatternSelectionProtocol: Processing pattern selection
-    - FeatureExtractionProtocol: Multi-scale Matryoshka extraction
-    - WarpSpaceProtocol: Mathematical manifold operations
-    - DecisionEngineProtocol: Strategic multi-criteria optimization
-    
+
     Usage:
         config = Config.fused()
-        shuttle = WeavingOrchestrator(cfg=config, shards=memory_shards)
-        
-        # Traditional mode
-        spacetime = await shuttle.weave(Query(text="What is Thompson Sampling?"))
-        
-        # With complexity control
-        spacetime = await shuttle.weave(
-            Query(text="Analyze bee colony optimization"),
-            complexity=ComplexityLevel.RESEARCH
-        )
+        weaver = WeavingOrchestrator(cfg=config, shards=memory_shards)
+        spacetime = await weaver.weave(Query(text="What is Thompson Sampling?"))
     """
 
     def __init__(
         self,
-        cfg: Config,
+        cfg: Optional[Config] = None,
         shards: Optional[List[MemoryShard]] = None,
         memory=None,  # Unified memory backend
         pattern_preference: Optional[PatternCard] = None,
         enable_reflection: bool = True,
         reflection_capacity: int = 1000,
-        enable_complexity_auto_detect: bool = True
+        # Orchestrator modes (consolidated from smart/analytical variants)
+        orchestrator_mode: str = "standard",  # standard|smart|analytical|simple
+        enable_math_pipeline: bool = False,
+        enable_analytical_verification: bool = False,
+        # Backward compatibility
+        config: Optional[Config] = None
     ):
         """
-        Initialize the Weaving Shuttle with mythRL protocol enhancements.
+        Initialize the Weaving Orchestrator.
 
         Args:
-            cfg: Configuration object
+            cfg: Configuration object (preferred)
             shards: List of memory shards (optional if memory is provided)
             memory: Unified memory backend (optional, overrides shards)
             pattern_preference: Optional pattern card preference (overrides config)
             enable_reflection: Enable reflection loop for learning
             reflection_capacity: Maximum episodes to store in reflection buffer
-            enable_complexity_auto_detect: Auto-detect query complexity (3-5-7-9)
+            orchestrator_mode: Mode of operation:
+                - "standard": Normal 9-step weaving (default)
+                - "smart": Adds smart math selection and synthesis
+                - "analytical": Adds mathematical verification and analysis
+                - "simple": Compatibility mode for legacy demos
+            enable_math_pipeline: Enable math->meaning pipeline (smart mode)
+            enable_analytical_verification: Enable analytical verification (analytical mode)
+            config: Backward compatibility alias for cfg
 
         Note:
             Either shards OR memory must be provided. If memory is provided,
             it will be used for dynamic queries instead of static shards.
         """
+        # Backward compatibility: accept both cfg and config
+        if cfg is None and config is not None:
+            cfg = config
+        if cfg is None:
+            cfg = Config.fast()  # Default
+            
         self.cfg = cfg
         self.logger = logging.getLogger(__name__)
+
+        # Orchestrator mode configuration
+        self.orchestrator_mode = orchestrator_mode
+        self.enable_math_pipeline = enable_math_pipeline
+        self.enable_analytical_verification = enable_analytical_verification
+        
+        # Auto-configure based on mode
+        if orchestrator_mode == "smart":
+            self.enable_math_pipeline = True
+            self.logger.info("Smart mode enabled: math pipeline active")
+        elif orchestrator_mode == "analytical":
+            self.enable_analytical_verification = True
+            self.logger.info("Analytical mode enabled: verification active")
+        elif orchestrator_mode == "simple":
+            # Simple mode: minimal features for compatibility
+            enable_reflection = False
+            self.logger.info("Simple mode enabled: compatibility mode")
 
         # Validate memory configuration
         if memory is None and shards is None:
@@ -276,17 +279,6 @@ class WeavingOrchestrator:
 
         self.memory = memory  # Backend memory store
         self.shards = shards or []  # Static shards (backward compatibility)
-        
-        # mythRL Protocol-based architecture
-        self.enable_complexity_auto_detect = enable_complexity_auto_detect
-        self._protocols: Dict[str, Any] = {}  # Registered protocol implementations
-        self._complexity_thresholds = {
-            'lite_max_words': 5,      # Up to 5 words = LITE (greetings, simple queries)
-            'fast_max_words': 20,     # 6-20 words = FAST (standard questions)
-            'full_max_words': 50,     # 21-50 words = FULL (detailed queries)
-            'research_keywords': ['analyze', 'research', 'deep', 'comprehensive', 'detailed', 'compare', 'evaluate', 'investigate']
-        }
-        self.logger.info(f"mythRL protocol system enabled (auto_detect={enable_complexity_auto_detect})")
 
         # Determine pattern card from config or preference
         if pattern_preference:
@@ -298,7 +290,7 @@ class WeavingOrchestrator:
         else:
             self.default_pattern = PatternCard.FUSED
 
-        self.logger.info(f"Initializing WeavingOrchestrator with pattern: {self.default_pattern.value}")
+        self.logger.info(f"Initializing WeavingOrchestrator (mode: {orchestrator_mode}) with pattern: {self.default_pattern.value}")
 
         # Lifecycle management
         self._background_tasks: List[asyncio.Task] = []
@@ -319,10 +311,6 @@ class WeavingOrchestrator:
         else:
             self.reflection_buffer = None
             self.logger.info("Reflection loop disabled")
-
-        # Initialize performance cache
-        self.query_cache = QueryCache(max_size=50, ttl_seconds=300)
-        self.logger.info("Query cache enabled (max_size=50, ttl=300s)")
 
         self.logger.info("WeavingOrchestrator initialization complete")
 
@@ -373,122 +361,20 @@ class WeavingOrchestrator:
 
         self.logger.debug("All weaving components initialized")
 
-    # ========================================================================
-    # mythRL Protocol-Based Architecture Methods
-    # ========================================================================
-
-    def register_protocol(self, protocol_name: str, implementation: Any):
-        """
-        Register a protocol implementation for mythRL architecture.
-        
-        Allows swappable implementations of:
-        - PatternSelectionProtocol
-        - FeatureExtractionProtocol
-        - WarpSpaceProtocol
-        - DecisionEngineProtocol
-        
-        Args:
-            protocol_name: Name of protocol ('pattern_selection', 'feature_extraction', etc.)
-            implementation: Protocol implementation instance
-        
-        Example:
-            shuttle.register_protocol('pattern_selection', CustomPatternSelector())
-        """
-        self._protocols[protocol_name] = implementation
-        self.logger.info(f"Registered protocol: {protocol_name}")
-
-    def _assess_complexity_level(self, query: Query, trace: Optional[ProvenceTrace] = None) -> ComplexityLevel:
-        """
-        Assess required complexity level for query (3-5-7-9 system).
-        
-        - LITE (3): Simple queries, greetings (<10 words)
-        - FAST (5): Standard queries, searches (10-30 words)
-        - FULL (7): Complex analysis (30-100 words, analysis keywords)
-        - RESEARCH (9): Deep research ('analyze', 'compare', 'research' keywords)
-        
-        Args:
-            query: User query
-            trace: Optional provenance trace to record decision
-        
-        Returns:
-            ComplexityLevel (LITE/FAST/FULL/RESEARCH)
-        """
-        if not self.enable_complexity_auto_detect:
-            # Map pattern card to complexity level
-            if self.default_pattern == PatternCard.BARE:
-                return ComplexityLevel.LITE
-            elif self.default_pattern == PatternCard.FAST:
-                return ComplexityLevel.FAST
-            else:  # FUSED
-                return ComplexityLevel.FULL
-        
-        text = query.text.lower()
-        word_count = len(text.split())
-        
-        # Check for research keywords
-        research_keywords = self._complexity_thresholds['research_keywords']
-        has_research_keyword = any(keyword in text for keyword in research_keywords)
-        
-        # Determine complexity
-        if has_research_keyword or word_count > self._complexity_thresholds['full_max_words']:
-            level = ComplexityLevel.RESEARCH
-        elif word_count > self._complexity_thresholds['fast_max_words']:
-            level = ComplexityLevel.FULL
-        elif word_count > self._complexity_thresholds['lite_max_words']:
-            level = ComplexityLevel.FAST
-        else:
-            level = ComplexityLevel.LITE
-        
-        if trace:
-            trace.add_shuttle_event(
-                "complexity_assessment",
-                f"Assessed complexity: {level.name}",
-                {
-                    'word_count': word_count,
-                    'has_research_keyword': has_research_keyword,
-                    'complexity_level': level.name
-                }
-            )
-        
-        return level
-
-    def _create_provenance_trace(self, query: Query, complexity: ComplexityLevel) -> ProvenceTrace:
-        """Create a new provenance trace for this operation."""
-        operation_id = f"weave_{int(time.time() * 1000)}"
-        trace = ProvenceTrace(
-            operation_id=operation_id,
-            complexity_level=complexity,
-            start_time=time.perf_counter()
-        )
-        trace.add_shuttle_event("weave_start", f"Beginning weave for query: {query.text[:50]}...")
-        return trace
-
-    # ========================================================================
-    # Main Weaving Cycle
-    # ========================================================================
-
     async def weave(
         self,
         query: Query,
-        pattern_override: Optional[PatternCard] = None,
-        complexity: Optional[ComplexityLevel] = None
+        pattern_override: Optional[PatternCard] = None
     ) -> Spacetime:
         """
-        Execute the complete 9-step weaving cycle with mythRL progressive complexity.
-        
-        **Progressive Complexity (3-5-7-9):**
-        - LITE (3): Extract → Route → Execute (<50ms)
-        - FAST (5): + Pattern Selection + Temporal Windows (<150ms)  
-        - FULL (7): + Decision Engine + Synthesis Bridge (<300ms)
-        - RESEARCH (9): + Advanced WarpSpace + Full Tracing (no limit)
+        Execute the complete 9-step weaving cycle.
 
         This is the main API - takes a query and returns a Spacetime artifact
         with complete computational lineage.
 
         Args:
             query: User query
-            pattern_override: Optional pattern card override (BARE/FAST/FUSED)
-            complexity: Optional complexity level override (LITE/FAST/FULL/RESEARCH)
+            pattern_override: Optional pattern card override
 
         Returns:
             Spacetime fabric with response and full trace
@@ -499,22 +385,6 @@ class WeavingOrchestrator:
         warnings = []
 
         self.logger.info(f"[WEAVING] Beginning weaving cycle for query: '{query.text}'")
-
-        # mythRL: Assess complexity level (3-5-7-9 system)
-        if complexity is None:
-            complexity = self._assess_complexity_level(query)
-        
-        # mythRL: Create provenance trace
-        provenance = self._create_provenance_trace(query, complexity)
-        
-        self.logger.info(f"[mythRL] Complexity: {complexity.name} ({complexity.value} steps)")
-
-        # Check cache first
-        cached_result = self.query_cache.get(query.text)
-        if cached_result is not None:
-            self.logger.info(f"[CACHE HIT] Returning cached result for query")
-            provenance.add_shuttle_event("cache_hit", "Returned cached result")
-            return cached_result
 
         try:
             # ================================================================
@@ -581,32 +451,10 @@ class WeavingOrchestrator:
                 base_model_name=self.cfg.base_model_name
             )
 
-            # Create semantic analyzer if enabled by pattern (using organized structure)
-            semantic_calculus = None
-            if pattern_spec.enable_semantic_flow:
-                # Clean imports from organized structure
-                from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-                from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
-
-                # Create config from pattern spec
-                sem_config = SemanticCalculusConfig.from_pattern_spec(pattern_spec)
-
-                # Create embedder function
-                embed_fn = lambda words: pattern_embedder.encode(words)
-
-                # Create analyzer with clean interface
-                semantic_calculus = create_semantic_analyzer(embed_fn, config=sem_config)
-
-                self.logger.info(
-                    f"  [4a] Semantic analyzer enabled ({sem_config.dimensions}D, "
-                    f"cache={sem_config.enable_cache}, ethics={sem_config.compute_ethics})"
-                )
-
             resonance_shed = ResonanceShed(
                 motif_detector=motif_detector,
                 embedder=pattern_embedder,
                 spectral_fusion=spectral_fusion,
-                semantic_calculus=semantic_calculus,
                 interference_mode="weighted_sum"
             )
 
@@ -804,10 +652,6 @@ class WeavingOrchestrator:
             stage_timings['spacetime_assembly'] = (time.time() - step_start) * 1000
 
             self.logger.info(f"[SUCCESS] Weaving cycle complete! Total duration: {duration_ms:.1f}ms")
-
-            # Cache the result
-            self.query_cache.put(query.text, spacetime)
-            self.logger.debug(f"[CACHE] Cached result for query")
 
             return spacetime
 
@@ -1073,15 +917,6 @@ class WeavingOrchestrator:
         # Don't suppress exceptions
         return False
 
-    def cache_stats(self) -> Dict:
-        """
-        Get cache statistics.
-
-        Returns:
-            Dictionary with cache performance metrics
-        """
-        return self.query_cache.stats()
-
     async def close(self) -> None:
         """
         Clean up all resources.
@@ -1251,6 +1086,60 @@ async def main():
         for stage, duration in spacetime.trace.stage_durations.items():
             print(f"  {stage:25s}: {duration:6.1f}ms")
         print("="*80)
+
+
+# ============================================================================
+# Mode-based Orchestrator Aliases (Backward Compatibility)
+# ============================================================================
+
+class SmartWeavingOrchestrator(WeavingOrchestrator):
+    """
+    Backward compatibility alias for smart mode orchestrator.
+    
+    Usage:
+        orchestrator = SmartWeavingOrchestrator(
+            config=config,
+            enable_math_pipeline=True
+        )
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs['orchestrator_mode'] = 'smart'
+        kwargs.setdefault('enable_math_pipeline', True)
+        super().__init__(*args, **kwargs)
+
+
+class AnalyticalWeavingOrchestrator(WeavingOrchestrator):
+    """
+    Backward compatibility alias for analytical mode orchestrator.
+    
+    Usage:
+        orchestrator = AnalyticalWeavingOrchestrator(
+            config=config,
+            enable_analytical_verification=True
+        )
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs['orchestrator_mode'] = 'analytical'
+        kwargs.setdefault('enable_analytical_verification', True)
+        super().__init__(*args, **kwargs)
+
+
+class SimpleOrchestrator(WeavingOrchestrator):
+    """
+    Backward compatibility alias for simple mode orchestrator.
+    
+    Usage:
+        orchestrator = SimpleOrchestrator(config=config)
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs['orchestrator_mode'] = 'simple'
+        kwargs.setdefault('enable_reflection', False)
+        super().__init__(*args, **kwargs)
+
+
+# ============================================================================
+# Demonstration
+# ============================================================================
 
 
 if __name__ == "__main__":

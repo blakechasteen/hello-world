@@ -152,13 +152,52 @@ This architecture enables:
 
 ### Key Components
 
-#### 1. Orchestrator (`holoLoom/orchestrator.py`)
-Central coordinator that implements the query processing pipeline:
-1. Feature extraction (motifs + embeddings + spectral features)
-2. Memory retrieval (context shards from knowledge graph)
-3. Policy decision (tool selection via neural network + Thompson Sampling)
-4. Tool execution
-5. Response assembly
+#### 1. Weaving Orchestrator (`HoloLoom/weaving_orchestrator.py`)
+
+**UPDATED (Task 1.2 - Oct 27, 2025):** The Shuttle architecture has been integrated into the canonical `WeavingOrchestrator`.
+
+The WeavingOrchestrator implements the full 9-step weaving cycle with mythRL protocol-based architecture:
+
+1. **Loom Command** → Pattern Card selection (BARE/FAST/FUSED)
+2. **Chrono Trigger** → Temporal window creation
+3. **Yarn Graph** → Thread selection from memory
+4. **Resonance Shed** → Feature extraction, DotPlasma creation
+5. **Warp Space** → Continuous manifold tensioning
+6. **Convergence Engine** → Discrete decision collapse
+7. **Tool Execution** → Action with results
+8. **Spacetime Fabric** → Provenance and trace
+9. **Reflection Buffer** → Learning from outcome
+
+**mythRL Progressive Complexity (3-5-7-9 System):**
+- **LITE (3 steps)**: Extract → Route → Execute (<50ms) - simple queries
+- **FAST (5 steps)**: + Pattern Selection + Temporal Windows (<150ms) - standard queries
+- **FULL (7 steps)**: + Decision Engine + Synthesis Bridge (<300ms) - complex queries
+- **RESEARCH (9 steps)**: + Advanced WarpSpace + Full Tracing (no limit) - research mode
+
+**Protocol-Based Design:**
+- `PatternSelectionProtocol`: Processing pattern selection
+- `FeatureExtractionProtocol`: Multi-scale Matryoshka extraction
+- `WarpSpaceProtocol`: Mathematical manifold operations
+- `DecisionEngineProtocol`: Strategic multi-criteria optimization
+
+**Key Features:**
+- Auto-complexity detection based on query characteristics
+- Performance caching (QueryCache) for repeated queries
+- Reflection loop for continuous improvement
+- Lifecycle management with async context managers
+- Backward compatibility: `WeavingShuttle` is an alias to `WeavingOrchestrator`
+
+Usage:
+```python
+from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from HoloLoom.config import Config
+from HoloLoom.Documentation.types import Query
+
+config = Config.fused()
+async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
+    spacetime = await orchestrator.weave(Query(text="What is Thompson Sampling?"))
+    # Automatic cleanup on exit
+```
 
 #### 2. Policy Engine (`holoLoom/policy/unified.py`)
 Neural decision-making with three bandit exploration strategies:
