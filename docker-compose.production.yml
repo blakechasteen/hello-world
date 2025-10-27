@@ -1,0 +1,137 @@
+# HoloLoom Production Docker Compose
+# ===================================
+# Complete production deployment stack with monitoring
+
+version: '3.8'
+
+services:
+  # Neo4j Graph Database
+  neo4j:
+    image: neo4j:5.13
+    container_name: hololoom-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/hololoom_password_change_me
+      - NEO4J_dbms_memory_pagecache_size=512M
+      - NEO4J_dbms_memory_heap_max__size=1G
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    networks:
+      - hololoom
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "hololoom_password_change_me", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: hololoom-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"  # HTTP
+      - "6334:6334"  # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - hololoom
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # HoloLoom Application
+  hololoom:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: hololoom-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # API
+      - "8001:8001"  # Metrics
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=hololoom_password_change_me
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - EXECUTION_MODE=fast
+      - LOG_LEVEL=INFO
+      - ENABLE_PROFILING=true
+      - ENABLE_METRICS=true
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+    networks:
+      - hololoom
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "from HoloLoom import config; print('healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus Monitoring (Optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hololoom-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - hololoom
+    profiles:
+      - monitoring
+
+  # Grafana Dashboards (Optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hololoom-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - hololoom
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+
+networks:
+  hololoom:
+    driver: bridge
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  qdrant_data:
+  prometheus_data:
+  grafana_data:

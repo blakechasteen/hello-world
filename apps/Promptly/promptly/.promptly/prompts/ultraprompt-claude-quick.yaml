@@ -1,0 +1,27 @@
+branch: main
+commit_hash: claude_quick_v1
+content: |
+  Optimize this request for Claude AI: "{request}"
+  
+  Transform it into a clear, effective prompt by:
+  
+  1. **Defining the Role**: What expert perspective should Claude take?
+  2. **Clarifying the Task**: What exactly needs to be done? Break it down if complex.
+  3. **Specifying Output**: What format, length, and style? (markdown, code, analysis, etc.)
+  4. **Adding Context**: What background information is essential?
+  5. **Setting Quality Bar**: What makes a good response? Include verification steps.
+  
+  Apply these Claude-specific enhancements:
+  - For reasoning tasks: "Think step-by-step" or "Show your reasoning"
+  - For code: "Create as an artifact with tests and documentation"
+  - For research: "Search for current information and cite sources"
+  - For analysis: "Consider multiple perspectives and trade-offs"
+  
+  Refined Prompt:
+  [Write the optimized version here - clear, specific, actionable]
+metadata:
+  optimized_for: claude-sonnet-4
+  version: quick_v1
+  focus: fast, practical optimization
+name: ultraprompt-claude-quick
+version: 1

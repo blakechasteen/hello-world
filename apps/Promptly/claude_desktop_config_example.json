@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "promptly": {
+      "command": "python",
+      "args": [
+        "C:/Users/YOUR_USERNAME/Documents/mythRL/Promptly/promptly/integrations/mcp_server.py"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}

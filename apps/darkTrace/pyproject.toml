@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "darktrace-llm"
+version = "0.1.0"
+description = "Semantic reverse engineering of large language models"
+readme = "README.md"
+authors = [
+    {name = "Blake", email = "blake@hololoom.ai"}
+]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["llm", "semantic-analysis", "security-research", "reverse-engineering", "ai-safety"]
+
+dependencies = [
+    # Core dependency - HoloLoom provides reusable primitives
+    "hololoom>=1.0.0",
+
+    # Scientific computing
+    "numpy>=1.24",
+    "scipy>=1.11",
+    "scikit-learn>=1.3",
+
+    # Data handling
+    "pandas>=2.0",
+
+    # Visualization (optional for CLI)
+    "matplotlib>=3.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.1",
+    "black>=23.7",
+    "mypy>=1.5",
+    "ruff>=0.0.285",
+]
+
+cli = [
+    "click>=8.1",
+    "rich>=13.5",
+    "typer>=0.9",
+]
+
+full = [
+    "darktrace-llm[dev,cli]",
+]
+
+[project.scripts]
+darktrace = "darkTrace.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/mythRL"
+Documentation = "https://github.com/yourusername/mythRL/tree/main/apps/darkTrace/docs"
+Repository = "https://github.com/yourusername/mythRL"
+Issues = "https://github.com/yourusername/mythRL/issues"
+
+[tool.setuptools]
+packages = ["darkTrace"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["darkTrace*"]
+exclude = ["tests*", "examples*", "docs*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,174 @@
+branch: main
+commit_hash: claude_optimized_v1
+content: |
+  # Claude Ultra Prompt: Advanced Prompt Engineering for Claude AI
+  
+  Transform the following request into an optimized prompt for Claude that leverages its specific strengths and capabilities.
+  
+  ## Core Principles
+  
+  **Request to Transform:** {request}
+  
+  ## Claude-Optimized Prompt Structure
+  
+  Your refined prompt should incorporate these elements strategically:
+  
+  ### 1. Role & Context Definition
+  - Define Claude's role clearly and specifically
+  - Provide relevant domain context upfront
+  - Set expertise level and perspective
+  - Example: "You are an expert {domain} with {specific skills}..."
+  
+  ### 2. Task Clarity & Scope
+  - Break complex requests into clear, actionable components
+  - Specify desired output format (markdown, code, analysis, artifact, etc.)
+  - Define success criteria explicitly
+  - Set boundaries: what to include/exclude
+  
+  ### 3. Reasoning & Methodology
+  - Encourage step-by-step thinking for complex tasks
+  - Request explicit reasoning chains when appropriate
+  - Ask Claude to show its work for verification
+  - Use phrases like "Think through this systematically" or "Let's approach this step-by-step"
+  
+  ### 4. Output Specifications
+  - **Format**: Specify structure (sections, lists, tables, code blocks)
+  - **Length**: Indicate desired depth (brief summary vs comprehensive analysis)
+  - **Style**: Set tone (technical, casual, formal, creative)
+  - **Artifacts**: Request when appropriate for substantial code, documents, or interactive content
+  
+  ### 5. Quality Enhancements
+  - Request verification steps: "After providing your answer, verify it addresses all components"
+  - Ask for examples when explaining concepts
+  - Request alternative approaches for complex problems
+  - Include: "Consider edge cases and limitations"
+  
+  ### 6. Tool Integration (when applicable)
+  - Specify if web search is needed: "Search for recent information on..."
+  - Request code execution: "Write and test the code to verify it works"
+  - File operations: "Create a {filetype} file with..."
+  - Memory reference: "Based on what you know about my {context}..."
+  
+  ## Prompting Techniques to Apply
+  
+  ### Chain-of-Thought
+  For complex reasoning: "Let's work through this step by step: 1) First... 2) Then... 3) Finally..."
+  
+  ### Few-Shot Examples
+  When patterns matter: "Here are examples of the format I want: [Example 1] [Example 2]. Now apply this to: {task}"
+  
+  ### Constraint Specification
+  Be explicit about boundaries: "Do X, but avoid Y" or "Include A and B, but not C"
+  
+  ### Verification Loops
+  Request self-checking: "After completing this, review your work for: [accuracy criteria]"
+  
+  ### Structured Output
+  Use XML-like tags for complex structured responses:
+  ```
+  Provide your analysis in this format:
+  <analysis>
+    <strengths>...</strengths>
+    <weaknesses>...</weaknesses>
+    <recommendation>...</recommendation>
+  </analysis>
+  ```
+  
+  ## Claude-Specific Optimizations
+  
+  ### Leverage Claude's Strengths
+  - **Analysis & Reasoning**: Ask for deep analytical thinking
+  - **Code Quality**: Request well-documented, tested code with error handling
+  - **Structured Thinking**: Use frameworks and methodologies
+  - **Nuanced Understanding**: Claude excels at context and subtlety
+  - **Artifacts**: For substantial deliverables (code, docs, React components)
+  
+  ### Avoid Common Pitfalls
+  - Don't be vague: "help me with X" → "Analyze X considering Y and Z, then provide..."
+  - Don't assume knowledge: Provide necessary context
+  - Don't skip output specs: Always specify desired format
+  - Don't forget verification: Include quality checks
+  
+  ## Template Patterns for Common Tasks
+  
+  ### For Analysis Tasks
+  ```
+  Analyze {subject} with focus on {aspects}.
+  
+  Structure your response:
+  1. Executive Summary
+  2. Key Findings
+  3. Detailed Analysis
+  4. Recommendations
+  5. Limitations & Caveats
+  
+  Use data and examples to support conclusions.
+  ```
+  
+  ### For Code Generation
+  ```
+  Create a {language} {component} that {functionality}.
+  
+  Requirements:
+  - {specific requirement 1}
+  - {specific requirement 2}
+  
+  Include:
+  - Clear documentation
+  - Error handling
+  - Example usage
+  - Test cases
+  
+  Implement this in an artifact and explain your design decisions.
+  ```
+  
+  ### For Research & Writing
+  ```
+  Research {topic} and write a {format} covering {aspects}.
+  
+  Approach:
+  1. Search for current information
+  2. Synthesize findings
+  3. Structure clearly with {sections}
+  4. Cite sources appropriately
+  5. Provide actionable insights
+  
+  Target audience: {audience}
+  Tone: {tone}
+  Length: {length specification}
+  ```
+  
+  ### For Problem-Solving
+  ```
+  Help me solve {problem} in the context of {domain}.
+  
+  Process:
+  1. Clarify the problem and constraints
+  2. Explore multiple solution approaches
+  3. Evaluate trade-offs
+  4. Recommend optimal solution with rationale
+  5. Provide implementation guidance
+  
+  Consider: {specific factors to weigh}
+  ```
+  
+  ## Final Prompt Construction
+  
+  Now, transform the original request into an optimized Claude prompt that:
+  
+  1. **Is Clear & Specific**: No ambiguity about what's needed
+  2. **Provides Context**: All necessary background information
+  3. **Structures Thinking**: Guides Claude's reasoning process
+  4. **Specifies Output**: Format, style, depth clearly defined
+  5. **Enables Verification**: Includes quality checkpoints
+  6. **Leverages Tools**: Appropriately uses Claude's capabilities
+  
+  ## Your Refined Prompt:
+  
+  [Construct the optimized prompt here, incorporating the above principles as relevant to the specific request]
+metadata:
+  optimized_for: claude-sonnet-4
+  version: claude_v1
+  focus: concise, practical, claude-specific
+name: ultraprompt-claude
+version: 1

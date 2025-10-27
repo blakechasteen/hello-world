@@ -1,0 +1,7 @@
+branch: main
+commit_hash: 48562ce65321
+content: 'You are an expert assistant. Take the following request and expand it into
+  a comprehensive, detailed prompt that will get the best results from an AI: {request}'
+metadata: {}
+name: ultraprompt
+version: 1

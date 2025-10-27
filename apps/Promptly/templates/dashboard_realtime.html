@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promptly Analytics - Real-time</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container { max-width: 1800px; margin: 0 auto; }
+
+        header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { color: #667eea; font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 1.1em; }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: #d4edda;
+            border-radius: 6px;
+            border: 2px solid #28a745;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .stat-card.pulse {
+            animation: cardPulse 0.5s ease;
+        }
+
+        @keyframes cardPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .stat-unit { color: #888; font-size: 0.8em; }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .panel-title {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .live-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .prompt-list { max-height: 400px; overflow-y: auto; }
+
+        .prompt-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .prompt-item:hover { background: #f8f9ff; }
+        .prompt-item.new { animation: slideIn 0.5s ease; }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .prompt-name { font-weight: bold; color: #333; margin-bottom: 5px; }
+        .prompt-stats { display: flex; gap: 15px; font-size: 0.9em; color: #666; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+
+        canvas { max-height: 300px; }
+    </style>
+</head>
+<body>
+    <div id="notification" class="notification">
+        <strong>New Execution!</strong>
+        <span id="notificationText"></span>
+    </div>
+
+    <div class="container">
+        <header>
+            <div>
+                <h1>Promptly Real-time Analytics</h1>
+                <p class="subtitle">Live updates via WebSocket - No refresh needed!</p>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="statusText">Connected</span>
+            </div>
+        </header>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-label">Loading...</div>
+                <div class="stat-value">-</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-panel">
+                <h2 class="panel-title">
+                    Execution Timeline
+                    <span class="live-badge">LIVE</span>
+                </h2>
+                <canvas id="timelineChart"></canvas>
+            </div>
+
+            <div class="chart-panel">
+                <h2 class="panel-title">
+                    Quality Trend
+                    <span class="live-badge">LIVE</span>
+                </h2>
+                <canvas id="qualityChart"></canvas>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+            <div class="chart-panel">
+                <h2 class="panel-title">
+                    All Prompts
+                    <span class="live-badge">LIVE</span>
+                </h2>
+                <div id="promptList" class="prompt-list">
+                    <div style="text-align: center; padding: 40px; color: #888;">
+                        Loading prompts...
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-panel">
+                <h2 class="panel-title">Activity Log</h2>
+                <div id="activityLog" style="font-size: 0.9em; color: #666; max-height: 400px; overflow-y: auto;">
+                    <div style="padding: 10px; background: #f8f9ff; border-radius: 4px; margin-bottom: 5px;">
+                        <strong>Connected to real-time updates</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let charts = {};
+        let socket;
+
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto';
+        Chart.defaults.color = '#666';
+
+        // Initialize WebSocket connection
+        function initSocket() {
+            socket = io();
+
+            socket.on('connect', () => {
+                console.log('Connected to WebSocket');
+                document.getElementById('statusText').textContent = 'Connected';
+                addActivityLog('Connected to real-time updates', 'success');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected from WebSocket');
+                document.getElementById('statusText').textContent = 'Disconnected';
+                addActivityLog('Disconnected from server', 'error');
+            });
+
+            socket.on('status', (data) => {
+                console.log('Status:', data.message);
+                addActivityLog(data.message, 'info');
+            });
+
+            socket.on('summary_update', (data) => {
+                console.log('Summary update received:', data);
+                updateSummary(data);
+            });
+
+            socket.on('new_execution', (data) => {
+                console.log('New execution:', data);
+                showNotification(`${data.count} new execution(s)! Total: ${data.total}`);
+                addActivityLog(`New execution detected (total: ${data.total})`, 'success');
+
+                // Reload charts
+                loadTimeline();
+            });
+
+            socket.on('prompts_update', (data) => {
+                console.log('Prompts update received:', data);
+                updatePrompts(data);
+            });
+        }
+
+        function updateSummary(data) {
+            const statsHtml = `
+                <div class="stat-card pulse">
+                    <div class="stat-label">Total Executions</div>
+                    <div class="stat-value">${data.total_executions}</div>
+                </div>
+                <div class="stat-card pulse">
+                    <div class="stat-label">Unique Prompts</div>
+                    <div class="stat-value">${data.unique_prompts}</div>
+                </div>
+                <div class="stat-card pulse">
+                    <div class="stat-label">Success Rate</div>
+                    <div class="stat-value">${data.success_rate.toFixed(1)}<span class="stat-unit">%</span></div>
+                </div>
+                <div class="stat-card pulse">
+                    <div class="stat-label">Avg Time</div>
+                    <div class="stat-value">${data.avg_execution_time.toFixed(1)}<span class="stat-unit">s</span></div>
+                </div>
+                ${data.avg_quality_score ? `
+                <div class="stat-card pulse">
+                    <div class="stat-label">Avg Quality</div>
+                    <div class="stat-value">${data.avg_quality_score.toFixed(2)}</div>
+                </div>
+                ` : ''}
+            `;
+
+            document.getElementById('statsGrid').innerHTML = statsHtml;
+
+            // Remove pulse animation after 500ms
+            setTimeout(() => {
+                document.querySelectorAll('.stat-card').forEach(card => {
+                    card.classList.remove('pulse');
+                });
+            }, 500);
+        }
+
+        function updatePrompts(prompts) {
+            if (prompts.length === 0) {
+                document.getElementById('promptList').innerHTML = '<p style="text-align: center; padding: 20px; color: #888;">No prompts executed yet</p>';
+                return;
+            }
+
+            const promptsHtml = prompts.map(p => `
+                <div class="prompt-item new">
+                    <div class="prompt-name">${p.name}</div>
+                    <div class="prompt-stats">
+                        <span><strong>${p.executions}</strong> runs</span>
+                        <span class="badge badge-success">${p.success_rate}% success</span>
+                        <span>${p.avg_time}s avg</span>
+                        ${p.avg_quality ? `<span class="badge badge-info">Q: ${p.avg_quality}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('promptList').innerHTML = promptsHtml;
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notificationText');
+
+            text.textContent = message;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function addActivityLog(message, type = 'info') {
+            const log = document.getElementById('activityLog');
+            const timestamp = new Date().toLocaleTimeString();
+
+            let bgColor = '#f8f9ff';
+            if (type === 'success') bgColor = '#d4edda';
+            if (type === 'error') bgColor = '#f8d7da';
+
+            const entry = document.createElement('div');
+            entry.style.cssText = `padding: 10px; background: ${bgColor}; border-radius: 4px; margin-bottom: 5px; animation: slideIn 0.3s ease;`;
+            entry.innerHTML = `<small>${timestamp}</small><br><strong>${message}</strong>`;
+
+            log.insertBefore(entry, log.firstChild);
+
+            // Keep only last 20 entries
+            while (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        async function loadTimeline() {
+            try {
+                const response = await fetch('/api/timeline');
+                const timeline = await response.json();
+
+                if (timeline.length === 0) return;
+
+                const dates = timeline.reverse().map(t => t.date);
+                const counts = timeline.map(t => t.count);
+                const avgQualities = timeline.map(t => t.avg_quality || 0);
+
+                // Timeline Chart
+                const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+                if (charts.timeline) charts.timeline.destroy();
+                charts.timeline = new Chart(timelineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Executions',
+                            data: counts,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        animation: { duration: 750 },
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        }
+                    }
+                });
+
+                // Quality Chart
+                const qualityCtx = document.getElementById('qualityChart').getContext('2d');
+                if (charts.quality) charts.quality.destroy();
+                charts.quality = new Chart(qualityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Quality Score',
+                            data: avgQualities,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        animation: { duration: 750 },
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { min: 0, max: 1, ticks: { stepSize: 0.2 } }
+                        }
+                    }
+                });
+
+                addActivityLog('Charts updated', 'info');
+
+            } catch (error) {
+                console.error('Error loading timeline:', error);
+                addActivityLog('Error loading charts', 'error');
+            }
+        }
+
+        async function loadPrompts() {
+            try {
+                const response = await fetch('/api/prompts');
+                const prompts = await response.json();
+                updatePrompts(prompts);
+            } catch (error) {
+                console.error('Error loading prompts:', error);
+            }
+        }
+
+        // Initialize
+        initSocket();
+        loadTimeline();
+        loadPrompts();
+
+        // Manual refresh button (if needed)
+        window.requestUpdate = function() {
+            socket.emit('request_update');
+            addActivityLog('Manual update requested', 'info');
+        };
+    </script>
+</body>
+</html>

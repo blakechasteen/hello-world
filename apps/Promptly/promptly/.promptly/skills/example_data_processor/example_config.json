@@ -1,0 +1,8 @@
+{
+  "processing_rules": {
+    "uppercase": true,
+    "calculate_length": true,
+    "remove_duplicates": false
+  },
+  "output_format": "json"
+}
