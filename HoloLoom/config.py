@@ -186,10 +186,8 @@ class Config:
         """Validate configuration."""
         # Set defaults
         if self.memory_backend is None:
-            self.memory_backend = (
-                MemoryBackend.INMEMORY if self.mode in (ExecutionMode.BARE, ExecutionMode.FAST)
-                else MemoryBackend.HYBRID
-            )
+            # Default to HYBRID for all modes (production-ready with auto-fallback)
+            self.memory_backend = MemoryBackend.HYBRID
 
         # Ensure scales are sorted
         if sorted(self.scales) != self.scales:

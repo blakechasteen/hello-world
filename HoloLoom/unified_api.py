@@ -61,11 +61,11 @@ logger = logging.getLogger(__name__)
 
 # Narrative depth intelligence (optional app)
 try:
-    from hololoom_narrative.cache import CachedMatryoshkaDepth, NarrativeCache
+    from mythy.cache import CachedMatryoshkaDepth, NarrativeCache
     NARRATIVE_DEPTH_AVAILABLE = True
 except ImportError:
     NARRATIVE_DEPTH_AVAILABLE = False
-    logger.info("hololoom-narrative app not installed (optional)")
+    logger.info("mythy app not installed (optional)")
 
 
 class HoloLoom:

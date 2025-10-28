@@ -130,7 +130,7 @@ class MatryoshkaEmbeddings:
         if _HAVE_SENTENCE_TRANSFORMERS:
             model_name = (
                 self.base_model_name or
-                os.environ.get("HOLOLOOM_BASE_ENCODER", "all-MiniLM-L6-v2")
+                os.environ.get("HOLOLOOM_BASE_ENCODER", "all-MiniLM-L12-v2")  # Upgraded from L6 (2021) → L12 (2022) for better quality
             )
             try:
                 self._model = SentenceTransformer(model_name)

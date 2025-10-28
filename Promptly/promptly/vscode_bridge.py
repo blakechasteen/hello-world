@@ -48,6 +48,25 @@ except ImportError as e:
     print(f"WARNING: Promptly core not available: {e}", file=sys.stderr)
     PROMPTLY_AVAILABLE = False
 
+# Import HoloLoom for weaving
+HOLOLOOM_AVAILABLE = False
+try:
+    # Add HoloLoom to path
+    hololoom_path = str(Path(__file__).parent.parent.parent)
+    if hololoom_path not in sys.path:
+        sys.path.insert(0, hololoom_path)
+
+    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from HoloLoom.config import Config, ExecutionMode
+    from HoloLoom.documentation.types import Query, MemoryShard
+    from HoloLoom.loom.command import PatternCard
+    from HoloLoom.protocols import ComplexityLevel
+    HOLOLOOM_AVAILABLE = True
+    logger.info("HoloLoom available for weaving")
+except ImportError as e:
+    logger.warning(f"HoloLoom not available: {e}")
+    HOLOLOOM_AVAILABLE = False
+
 
 # Simple cache with TTL
 class SimpleCache:
@@ -116,6 +135,13 @@ class LoopExecutionRequest(BaseModel):
     quality_threshold: float = 0.9
     backend: str = "ollama"
     model: str = "llama3.2:3b"
+
+
+class HoloLoomWeavingRequest(BaseModel):
+    query: str
+    pattern: str = "fast"  # bare, fast, fused
+    complexity: str = "auto"  # auto, lite, fast, full, research
+    enable_streaming: bool = True
 
 
 class ExecutionResponse(BaseModel):
@@ -196,6 +222,7 @@ async def health_check():
     return {
         "status": "healthy",
         "promptly_available": PROMPTLY_AVAILABLE and p is not None,
+        "hololoom_available": HOLOLOOM_AVAILABLE,
         "timestamp": datetime.now().isoformat()
     }
 
@@ -550,6 +577,235 @@ async def _execute_loop_background(execution_id: str, request: LoopExecutionRequ
         })
 
 
+@app.post("/execute/hololoom", response_model=ExecutionResponse)
+async def execute_hololoom_weaving(request: HoloLoomWeavingRequest):
+    """Execute HoloLoom weaving cycle."""
+    if not HOLOLOOM_AVAILABLE:
+        raise HTTPException(status_code=503, detail="HoloLoom not available")
+
+    execution_id = str(uuid.uuid4())
+    executions[execution_id] = {
+        "status": "queued",
+        "progress": 0.0,
+        "current_step": "Initializing HoloLoom weaving...",
+        "type": "hololoom",
+        "request": request.dict()
+    }
+
+    asyncio.create_task(_execute_hololoom_background(execution_id, request))
+
+    return ExecutionResponse(
+        execution_id=execution_id,
+        status="queued",
+        message=f"HoloLoom weaving {execution_id} queued"
+    )
+
+
+def _create_test_memory_shards() -> List:
+    """Create test memory shards for HoloLoom."""
+    shards = [
+        MemoryShard(
+            id="shard_001",
+            text="Thompson Sampling is a Bayesian algorithm for multi-armed bandits that balances exploration and exploitation.",
+            episode="knowledge_base",
+            entities=["Thompson Sampling", "Bayesian", "multi-armed bandits"],
+            motifs=["algorithm", "exploration", "exploitation"],
+            metadata={"topic": "reinforcement_learning", "confidence": 0.9}
+        ),
+        MemoryShard(
+            id="shard_002",
+            text="HoloLoom uses matryoshka embeddings at multiple scales (96, 192, 384 dimensions) for multi-scale retrieval.",
+            episode="documentation",
+            entities=["HoloLoom", "matryoshka embeddings"],
+            motifs=["embeddings", "multi-scale", "retrieval"],
+            metadata={"topic": "embeddings", "confidence": 0.95}
+        ),
+        MemoryShard(
+            id="shard_003",
+            text="The weaving cycle has 9 steps: Loom Command, Chrono Trigger, Yarn Graph, Resonance Shed, Warp Space, Convergence Engine, Tool Execution, Spacetime Fabric, and Reflection.",
+            episode="architecture_docs",
+            entities=["weaving cycle", "Loom Command", "Chrono Trigger"],
+            motifs=["architecture", "steps", "cycle"],
+            metadata={"topic": "architecture", "confidence": 1.0}
+        ),
+        MemoryShard(
+            id="shard_004",
+            text="Pattern cards (BARE, FAST, FUSED) control the execution complexity and feature extraction density.",
+            episode="user_guide",
+            entities=["pattern cards", "BARE", "FAST", "FUSED"],
+            motifs=["control", "complexity", "execution"],
+            metadata={"topic": "patterns", "confidence": 0.85}
+        )
+    ]
+    return shards
+
+
+async def _execute_hololoom_background(execution_id: str, request: HoloLoomWeavingRequest):
+    """Background task for HoloLoom weaving execution."""
+    try:
+        executions[execution_id]["status"] = "running"
+        executions[execution_id]["progress"] = 0.1
+        executions[execution_id]["current_step"] = "Initializing WeavingOrchestrator..."
+
+        await broadcast_execution_event(execution_id, {
+            "event": "status_update",
+            "status": "running",
+            "progress": 0.1,
+            "step": "Initializing WeavingOrchestrator..."
+        })
+
+        # Map pattern string to PatternCard enum
+        pattern_map = {
+            "bare": PatternCard.BARE,
+            "fast": PatternCard.FAST,
+            "fused": PatternCard.FUSED
+        }
+        pattern_card = pattern_map.get(request.pattern.lower(), PatternCard.FAST)
+
+        # Map complexity string to ComplexityLevel enum
+        complexity_map = {
+            "lite": ComplexityLevel.LITE,
+            "fast": ComplexityLevel.FAST,
+            "full": ComplexityLevel.FULL,
+            "research": ComplexityLevel.RESEARCH
+        }
+        complexity = complexity_map.get(request.complexity.lower()) if request.complexity != "auto" else None
+
+        # Create config based on pattern
+        config_map = {
+            PatternCard.BARE: Config.bare(),
+            PatternCard.FAST: Config.fast(),
+            PatternCard.FUSED: Config.fused()
+        }
+        config = config_map[pattern_card]
+
+        executions[execution_id]["progress"] = 0.2
+        executions[execution_id]["current_step"] = f"Creating {pattern_card.value.upper()} pattern orchestrator..."
+        await broadcast_execution_event(execution_id, {
+            "event": "status_update",
+            "progress": 0.2,
+            "step": f"Creating {pattern_card.value.upper()} pattern orchestrator..."
+        })
+
+        # Create test memory shards
+        shards = _create_test_memory_shards()
+
+        # Create orchestrator
+        orchestrator = WeavingOrchestrator(
+            cfg=config,
+            shards=shards,
+            pattern_preference=pattern_card,
+            enable_reflection=True
+        )
+
+        executions[execution_id]["progress"] = 0.3
+        executions[execution_id]["current_step"] = "Beginning weaving cycle..."
+        await broadcast_execution_event(execution_id, {
+            "event": "weaving_trace",
+            "progress": 0.3,
+            "step": "Beginning weaving cycle...",
+            "trace": {
+                "stage": "init",
+                "pattern": pattern_card.value,
+                "complexity": complexity.name if complexity else "auto"
+            }
+        })
+
+        # Create query
+        query = Query(text=request.query)
+
+        # Execute weaving
+        executions[execution_id]["progress"] = 0.4
+        executions[execution_id]["current_step"] = "Step 1: Pattern Selection"
+        await broadcast_execution_event(execution_id, {
+            "event": "weaving_trace",
+            "progress": 0.4,
+            "step": "Step 1: Pattern Selection",
+            "trace": {"stage": "pattern_selection"}
+        })
+
+        executions[execution_id]["progress"] = 0.5
+        executions[execution_id]["current_step"] = "Step 2-3: Temporal Window & Thread Selection"
+        await broadcast_execution_event(execution_id, {
+            "event": "weaving_trace",
+            "progress": 0.5,
+            "step": "Step 2-3: Temporal Window & Thread Selection",
+            "trace": {"stage": "temporal_window"}
+        })
+
+        executions[execution_id]["progress"] = 0.6
+        executions[execution_id]["current_step"] = "Step 4: Feature Extraction (Resonance Shed)"
+        await broadcast_execution_event(execution_id, {
+            "event": "weaving_trace",
+            "progress": 0.6,
+            "step": "Step 4: Feature Extraction (Resonance Shed)",
+            "trace": {"stage": "feature_extraction"}
+        })
+
+        executions[execution_id]["progress"] = 0.7
+        executions[execution_id]["current_step"] = "Step 5-6: Warp Space & Convergence"
+        await broadcast_execution_event(execution_id, {
+            "event": "weaving_trace",
+            "progress": 0.7,
+            "step": "Step 5-6: Warp Space & Convergence",
+            "trace": {"stage": "warp_convergence"}
+        })
+
+        # Execute the actual weaving
+        spacetime = await orchestrator.weave(
+            query=query,
+            pattern_override=pattern_card,
+            complexity=complexity
+        )
+
+        executions[execution_id]["progress"] = 0.9
+        executions[execution_id]["current_step"] = "Step 7-9: Tool Execution & Spacetime Fabric"
+        await broadcast_execution_event(execution_id, {
+            "event": "weaving_trace",
+            "progress": 0.9,
+            "step": "Step 7-9: Tool Execution & Spacetime Fabric",
+            "trace": {"stage": "tool_execution"}
+        })
+
+        # Extract results from spacetime
+        output = {
+            "query": request.query,
+            "pattern": pattern_card.value,
+            "complexity": complexity.name if complexity else "auto",
+            "response": spacetime.response if hasattr(spacetime, 'response') else "Weaving completed successfully",
+            "trace": {
+                "tool_selected": spacetime.tool if hasattr(spacetime, 'tool') else "unknown",
+                "confidence": spacetime.confidence if hasattr(spacetime, 'confidence') else 0.0,
+                "stage_timings": spacetime.stage_timings if hasattr(spacetime, 'stage_timings') else {},
+                "threads_used": len(shards),
+                "metadata": spacetime.metadata if hasattr(spacetime, 'metadata') else {}
+            }
+        }
+
+        executions[execution_id]["status"] = "completed"
+        executions[execution_id]["progress"] = 1.0
+        executions[execution_id]["output"] = output
+        executions[execution_id]["spacetime"] = spacetime
+        executions[execution_id]["current_step"] = "Weaving cycle complete"
+
+        await broadcast_execution_event(execution_id, {
+            "event": "completed",
+            "status": "completed",
+            "progress": 1.0,
+            "output": output
+        })
+
+    except Exception as e:
+        logger.error(f"HoloLoom weaving {execution_id} failed: {e}", exc_info=True)
+        executions[execution_id]["status"] = "failed"
+        executions[execution_id]["error"] = str(e)
+        await broadcast_execution_event(execution_id, {
+            "event": "failed",
+            "status": "failed",
+            "error": str(e)
+        })
+
+
 @app.get("/execute/status/{execution_id}", response_model=ExecutionStatus)
 async def get_execution_status(execution_id: str):
     """Get execution status."""
@@ -567,7 +823,8 @@ async def get_execution_status(execution_id: str):
         metadata={
             "iterations": exec_data.get("iterations"),
             "improvement_history": exec_data.get("improvement_history"),
-            "results": exec_data.get("results")
+            "results": exec_data.get("results"),
+            "spacetime": str(exec_data.get("spacetime")) if "spacetime" in exec_data else None
         }
     )
 

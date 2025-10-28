@@ -92,12 +92,12 @@ async def demo_basic_logging():
         # Log it
         result = await kitchen.log_plate(breakfast)
 
-        print(result["message"])
+        print(result.message)
         print("\nSpectral Analysis:")
-        print(result["spectrum"].visualize())
+        print(result.spectrum.visualize())
 
         print(f"\nRemaining today:")
-        for nutrient, amount in result["remaining_today"].items():
+        for nutrient, amount in result.remaining_today.items():
             print(f"  {nutrient}: {amount:.0f}")
 
 

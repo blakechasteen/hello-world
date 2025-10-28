@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Reliable Systems: Safety First
+
+**"Reliable Systems: Safety First"** is our guiding development philosophy. Before optimizing for performance, features, or elegance, we prioritize:
+
+- **Graceful degradation**: Systems should never crash due to missing optional dependencies
+- **Automatic fallbacks**: When production backends fail, fall back to working alternatives (e.g., HYBRID → INMEMORY)
+- **Proper lifecycle management**: All resources get explicit cleanup through async context managers
+- **Comprehensive testing**: Unit, integration, and end-to-end tests organized by speed for fast feedback
+- **Clear error messages**: When things fail, developers should immediately understand why and how to fix it
+- **Type safety**: Protocol-based design with clear interfaces prevents integration errors
+- **Data persistence safety**: Never lose user data - archive instead of delete, checkpoint frequently
+
+This principle permeates every architectural decision in HoloLoom. We'd rather ship a slower but reliable system than a fast but fragile one.
+
 ## Repository Overview
 
 **HoloLoom** is a Python-based neural decision-making system that combines:
@@ -480,15 +494,17 @@ memory = await create_memory_backend(config)
 shuttle = WeavingShuttle(cfg=config, memory=memory)
 ```
 
-### Backend Options
+### Backend Options (Simplified - Oct 2025)
+
+**Task 1.3 Simplification:** Reduced from 10+ backends to 3 core options.
 
 Configure via `Config.memory_backend`:
-- **NETWORKX**: In-memory graph (fast prototyping)
-- **NEO4J**: Persistent graph database
-- **QDRANT**: Vector similarity search
-- **NEO4J_QDRANT**: Hybrid graph + vector (recommended for production)
-- **TRIPLE**: Neo4j + Qdrant + Mem0 (full hybrid)
-- **HYPERSPACE**: Advanced gated multipass (research)
+- **INMEMORY**: NetworkX in-memory graph (development, always works)
+- **HYBRID**: Neo4j + Qdrant with auto-fallback (production, recommended)
+- **HYPERSPACE**: Advanced gated multipass (research only)
+
+**Auto-Fallback:** HYBRID automatically falls back to INMEMORY if Docker services unavailable.
+**Migration:** All legacy backend enums removed. See `MEMORY_SIMPLIFICATION_REVIEW.md` for details.
 
 ### Docker Setup
 
@@ -506,15 +522,15 @@ from HoloLoom.config import Config, MemoryBackend
 from HoloLoom.memory.backend_factory import create_memory_backend
 
 config = Config.fused()
-config.memory_backend = MemoryBackend.NEO4J_QDRANT
+config.memory_backend = MemoryBackend.HYBRID
 
-# Create persistent backend
+# Create persistent backend (auto-falls back to INMEMORY if no Docker)
 memory = await create_memory_backend(config)
 
 # Use with shuttle
 async with WeavingShuttle(cfg=config, memory=memory) as shuttle:
     spacetime = await shuttle.weave(query)
-    # Data persists across sessions
+    # Data persists across sessions (if Neo4j/Qdrant available)
 ```
 
 ## Lifecycle Management

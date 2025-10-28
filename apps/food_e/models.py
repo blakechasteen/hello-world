@@ -17,15 +17,12 @@ from enum import Enum
 import uuid
 import numpy as np
 
-# Import HoloLoom types
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
+# Import HoloLoom types (graceful degradation)
 try:
     from HoloLoom.Documentation.types import MemoryShard
     from HoloLoom.fabric.spacetime import Spacetime
 except ImportError:
+    # Fallback types if HoloLoom not available
     @dataclass
     class MemoryShard:
         id: str

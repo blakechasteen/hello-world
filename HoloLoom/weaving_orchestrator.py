@@ -289,8 +289,8 @@ class WeavingOrchestrator:
         self._protocols: Dict[str, Any] = {}  # Registered protocol implementations
         self._complexity_thresholds = {
             # Word count thresholds
-            'lite_max_words': 3,      # Up to 3 words = LITE (greetings, simple commands)
-            'fast_max_words': 20,     # 4-20 words = FAST (standard questions)
+            'lite_max_words': 2,      # Up to 2 words = LITE (greetings, simple commands)
+            'fast_max_words': 20,     # 3-20 words = FAST (standard questions)
             'full_max_words': 50,     # 21-50 words = FULL (detailed queries)
             
             # Intent patterns for sophisticated detection
@@ -470,14 +470,14 @@ class WeavingOrchestrator:
             reason = f"analysis_verb={has_analysis_verb}, research_keyword={has_research_keyword}, long_query={word_count > thresholds['full_max_words']}"
         
         # FULL: Detailed questions (21-50 words) or complex knowledge requests
-        elif word_count > thresholds['fast_max_words']:
+        elif word_count >= thresholds['fast_max_words']:  # Changed > to >= (includes 20-word boundary)
             level = ComplexityLevel.FULL
-            reason = f"word_count={word_count} > {thresholds['fast_max_words']}"
+            reason = f"word_count={word_count} >= {thresholds['fast_max_words']}"
         
         # FAST: Questions, knowledge verbs, or 4-20 words
         elif has_question_word or has_question_mark or has_knowledge_verb or word_count > thresholds['lite_max_words']:
-            # Exception: Pure greetings stay LITE even if >3 words
-            if is_greeting and word_count <= 5:
+            # Exception: Pure greetings stay LITE even if >3 words (but not if they have question words)
+            if is_greeting and word_count <= 5 and not (has_question_word or has_question_mark):
                 level = ComplexityLevel.LITE
                 reason = f"greeting_pattern (word_count={word_count})"
             else:
@@ -569,7 +569,14 @@ class WeavingOrchestrator:
         if cached_result is not None:
             self.logger.info(f"[CACHE HIT] Returning cached result for query")
             provenance.add_shuttle_event("cache_hit", "Returned cached result")
+            # Track cache hit
+            if METRICS_ENABLED:
+                metrics.track_cache_hit()
             return cached_result
+        else:
+            # Track cache miss
+            if METRICS_ENABLED:
+                metrics.track_cache_miss()
 
         try:
             # ================================================================

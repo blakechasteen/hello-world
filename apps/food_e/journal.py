@@ -34,7 +34,7 @@ class Journal:
 
     # === CORE CRUD ===
 
-    async def record(self, plate: Plate) -> Plate:
+    def record(self, plate: Plate) -> Plate:
         """
         Record a plate to the journal.
 
@@ -51,7 +51,7 @@ class Journal:
         self.plates.sort(key=lambda p: p.timestamp)
 
         # Persist
-        await self._persist_to_disk()
+        self._persist_to_disk()
 
         return plate
 
@@ -235,7 +235,7 @@ class Journal:
             print(f"Warning: Could not load journal: {e}")
             self.plates = []
 
-    async def _persist_to_disk(self):
+    def _persist_to_disk(self):
         """Save journal to disk"""
         # TODO: Implement JSON serialization
         # For Phase 1, skip persistence

@@ -1,0 +1,166 @@
+Import error: cannot import name 'create_unified_memory' from 'HoloLoom.memory.protocol' (C:\Users\blake\Documents\mythRL\holoLoom\memory\protocol.py)
+
+Make sure you run from repository root with PYTHONPATH set
+
+
+======================================================================
+                    FARM MANAGEMENT SUITE
+                Powered by HoloLoom Neural Memory
+======================================================================
+======================================================================
+BEEKEEPING DEMO - Voice Note Inspection Processing
+======================================================================
+
+--- RAW VOICE NOTE TRANSCRIPT ---
+
+    Inspecting hive Alpha today, October 27th.
+    Weather is sunny, about 68 degrees.
+    Saw the queen on frame 3, she's laying well.
+    Eggs visible in a nice solid pattern.
+    Population looks strong, I'd say about 8 frames of bees.
+    No signs of varroa mites or disease.
+    Temperament is calm, very gentle hive.
+    Honey stores look good, they have about 3 frames capped.
+    Added a second super since they're building comb fast.
+    Pollen coming in nicely.
+    Will check again in two weeks.
+    
+
+--- PROCESSING WITH SPINNER ---
+OK Generated 1 memory shard(s)
+
+--- STRUCTURED DATA EXTRACTION ---
+Shard ID: inspection_Alpha_20251028_002124_transcript
+Episode: inspection_Alpha_20251028_002124
+
+Entities: hive_Alpha, Backyard Apiary, Blake, mites, varroa, disease
+Motifs: bee_inspection, beekeeping, queen_present_laying, population_strong, health_concern, actions_taken
+
+Extracted Inspection Data:
+  Hive ID: Alpha
+  Queen Status: present_laying
+  Population: strong
+  Temperament: calm
+  Health Issues: ['mites', 'varroa', 'disease']
+  Actions Taken: ['added']
+  Honey Stores: None
+
+--- FORMATTED SUMMARY ---
+=== Hive Inspection: Alpha ===
+Date: 2025-10-28T00:21:24.606709
+Inspector: Blake
+Location: Backyard Apiary
+
+## Status
+Queen: present_laying
+Population: strong
+Temperament: calm
+
+## Health Issues
+  - mites
+  - varroa
+  - disease
+
+## Actions Taken
+  - added
+
+## Original Notes
+
+    Inspecting hive Alpha today, October 27th.
+    Weather is sunny, about 68 degrees.
+    Saw the queen on frame 3, she's laying well.
+    Eggs visible in a nice solid pattern.
+    Population looks strong, I'd say about 8 frames of bees.
+    No signs of varroa mites or disease.
+    Temperament is calm, very gentle hive.
+    Honey stores look good, they have about 3 frames capped.
+    Added a second super since they're building comb fast.
+    Pollen coming in nicely.
+    Will check again in two weeks.
+    
+
+
+======================================================================
+FARM CORE MODELS DEMO - Assets & Logs
+======================================================================
+
+--- CREATING HIVE ASSET ---
+Created: Hive Alpha
+  ID: hive_hive_alpha
+  Type: animal
+  Location: Backyard Apiary
+  Queen: present_laying
+  Population: strong
+  Equipment: langstroth
+
+--- CONVERTING TO MEMORY SHARD ---
+Shard ID: asset_hive_hive_alpha
+Entities: hive_hive_alpha, Hive Alpha, Backyard Apiary
+Motifs: asset, animal, status_active
+
+Shard Text:
+Asset: Hive Alpha (animal)
+ID: hive_hive_alpha
+Status: active
+Location: Backyard Apiary
+
+--- CREATING INSPECTION LOG ---
+Created: Weekly inspection
+  Log ID: inspection_hive_hive_alpha_20251028_002124
+  Type: observation
+  Timestamp: 2025-10-28 00:21:24.606709
+  Hive: ['hive_hive_alpha']
+  User: Blake
+  Queen: present_laying
+  Population: strong
+
+Log Shard ID: log_inspection_hive_hive_alpha_20251028_002124
+Episode: log_20251028_002124
+
+Log Text:
+Observation: Weekly inspection
+Date: 2025-10-28 00:21
+Assets: hive_hive_alpha
+User: Blake
+
+Regular inspection showing strong colony
+
+--- EXPORTING TO JSON ---
+Hive JSON (first 500 chars):
+{
+  "asset_id": "hive_hive_alpha",
+  "asset_type": "animal",
+  "name": "Hive Alpha",
+  "status": "active",
+  "location": "Backyard Apiary",
+  "created_date": "2025-10-28T00:21:24.606709",
+  "archived_date": null,
+  "parent_ids": [],
+  "group_ids": [],
+  "tags": [],
+  "notes": "",
+  "metadata": {}
+}...
+
+
+======================================================================
+Traceback (most recent call last):
+  File "C:\Users\blake\Documents\mythRL\apps\demo_farm_simple.py", line 290, in <module>
+    asyncio.run(main())
+  File "C:\Users\blake\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\blake\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\blake\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\blake\Documents\mythRL\apps\demo_farm_simple.py", line 242, in main
+    await demo_integration()
+  File "C:\Users\blake\Documents\mythRL\apps\demo_farm_simple.py", line 175, in demo_integration
+    print("HOLOLOOM INTEGRATION - Spinners \u2192 Memory \u2192 Query")
+  File "C:\Users\blake\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 32: character maps to <undefined>

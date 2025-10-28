@@ -14,6 +14,7 @@ from datetime import datetime
 from .journal import Journal
 from .nutrition import NutritionalSpectrum
 from .models import NutritionalProfile, Plate
+from .types import ServingResult
 
 
 @dataclass
@@ -67,14 +68,14 @@ class Kitchen:
 
     # === Phase 1 Methods ===
 
-    async def log_plate(self, plate: Plate) -> Dict:
+    async def log_plate(self, plate: Plate) -> ServingResult:
         """
         Log a plate to the journal.
 
         Returns analysis with spectral resonance.
         """
         # Record in journal
-        await self.journal.record(plate)
+        self.journal.record(plate)
 
         # Analyze
         spectrum = NutritionalSpectrum(plate.nutrition)
@@ -89,16 +90,17 @@ class Kitchen:
             "fat_g": self.config.target_fat_g - today_total.fat_g,
         }
 
-        return {
-            "plate_id": plate.plate_id,
-            "nutrition": plate.nutrition,
-            "spectrum": spectrum,
-            "resonance": resonance,
-            "remaining_today": remaining,
-            "message": self._format_logged_message(plate, remaining, resonance)
-        }
+        return ServingResult(
+            success=True,
+            message=self._format_logged_message(plate, remaining, resonance),
+            plate=plate,
+            nutrition=plate.nutrition,
+            spectrum=spectrum,
+            resonance=resonance,
+            remaining_today=remaining
+        )
 
-    async def analyze_period(self, days: int = 7) -> Dict:
+    async def analyze_period(self, days: int = 7) -> ServingResult:
         """
         Analyze nutrition over a period.
 
@@ -107,10 +109,11 @@ class Kitchen:
         plates = self.journal.last_n_days(days)
 
         if not plates:
-            return {
-                "message": "No meals logged yet",
-                "total_meals": 0
-            }
+            return ServingResult(
+                success=False,
+                message="No meals logged yet",
+                total_meals=0
+            )
 
         # Aggregate nutrition
         total = self.journal._aggregate_nutrition(plates)
@@ -125,17 +128,19 @@ class Kitchen:
         protein_trajectory = self.journal.nutritional_trajectory(days, "protein_g")
         calorie_trajectory = self.journal.nutritional_trajectory(days, "calories")
 
-        return {
-            "period_days": days,
-            "total_meals": len(plates),
-            "daily_average": daily_avg,
-            "spectrum": avg_spectrum,
-            "resonance": resonance,
-            "gaps": gaps,
-            "protein_trajectory": protein_trajectory,
-            "calorie_trajectory": calorie_trajectory,
-            "message": self._format_analysis_message(days, daily_avg, resonance, len(plates))
-        }
+        return ServingResult(
+            success=True,
+            message=self._format_analysis_message(days, daily_avg, resonance, len(plates)),
+            total_meals=len(plates),
+            daily_average=daily_avg,
+            spectrum=avg_spectrum,
+            resonance=resonance,
+            gaps=gaps,
+            trajectories={
+                "protein_g": protein_trajectory,
+                "calories": calorie_trajectory
+            }
+        )
 
     def _format_logged_message(
         self,

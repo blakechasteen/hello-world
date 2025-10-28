@@ -4,7 +4,7 @@
 Farm Management Simple Demo
 ============================
 Demonstrates farm management spinners and models WITHOUT full HoloLoom integration.
-Shows data processing pipeline: raw data → spinners → structured shards.
+Shows data processing pipeline: raw data -> spinners -> structured shards.
 """
 
 import asyncio
@@ -172,36 +172,36 @@ async def demo_models():
 async def demo_integration():
     """Demonstrate how spinners integrate with HoloLoom."""
     print("\n\n" + "=" * 70)
-    print("HOLOLOOM INTEGRATION - Spinners → Memory → Query")
+    print("HOLOLOOM INTEGRATION - Spinners -> Memory -> Query")
     print("=" * 70)
 
     print("""
 Workflow:
 ---------
 1. RAW DATA (voice notes, receipts, photos)
-   ↓
+     |
 2. DOMAIN SPINNER (BeeInspectionAudioSpinner, GroceryReceiptSpinner)
    - Parses domain-specific structure
    - Extracts entities and motifs
    - Optional Ollama enrichment
-   ↓
+     |
 3. MEMORY SHARDS (standardized format)
    - id, text, entities, motifs, metadata
-   ↓
+     |
 4. HOLOLOOM STORAGE
    - Neo4j: Asset/log nodes + relationships (YarnGraph)
    - Qdrant: Text embeddings for semantic search
-   ↓
+     |
 5. QUERY INTERFACE (natural language via WeavingOrchestrator)
    - "Which hives need inspection?"
    - "What did I buy last week?"
    - "Show health issues across all hives"
-   ↓
+     |
 6. WEAVING CYCLE
    - Matryoshka embeddings (multi-scale)
    - Spectral graph features
    - Thompson Sampling decision engine
-   ↓
+     |
 7. SPACETIME OUTPUT
    - Natural language answer
    - Structured data
@@ -256,8 +256,8 @@ OK apps/food-e/spinners/          - GroceryReceiptSpinner for receipt OCR
 
 Data Flow:
 ----------
-Voice Note → BeeInspectionAudioSpinner → MemoryShard → HoloLoom (Neo4j + Qdrant)
-          ↑                              ↑
+Voice Note -> BeeInspectionAudioSpinner -> MemoryShard -> HoloLoom (Neo4j + Qdrant)
+            ^                                ^
   Automatic extraction:         Standardized format:
   - Hive ID                     - ID, text, entities
   - Queen status               - Motifs, metadata
@@ -282,7 +282,7 @@ shards = await process_bee_inspection(
     hive_id="A",
     inspector="Blake"
 )
-# → Returns structured MemoryShards ready for HoloLoom storage
+# -> Returns structured MemoryShards ready for HoloLoom storage
     """)
 
 

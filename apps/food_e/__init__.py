@@ -25,6 +25,7 @@ from .models import (
 from .nutrition import NutritionalSpectrum
 from .journal import Journal
 from .kitchen import Kitchen, KitchenConfig
+from .types import ServingResult, TemporalFlavor, Palate
 
 __all__ = [
     'NutritionalProfile',
@@ -34,5 +35,8 @@ __all__ = [
     'NutritionalSpectrum',
     'Journal',
     'Kitchen',
-    'KitchenConfig'
+    'KitchenConfig',
+    'ServingResult',
+    'TemporalFlavor',
+    'Palate'
 ]

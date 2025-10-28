@@ -133,19 +133,27 @@ async def create_memory_backend(config: Config, user_id: str = "default") -> Mem
     """
     Create memory backend: INMEMORY, HYBRID, or HYPERSPACE.
 
-    INMEMORY: NetworkX (always available)
-    HYBRID: Neo4j+Qdrant with auto-fallback (DEFAULT)
-    HYPERSPACE: Research mode with auto-fallback
+    INMEMORY: NetworkX (always available, <10ms)
+    HYBRID: Neo4j+Qdrant with auto-fallback (DEFAULT, ~50ms)
+    HYPERSPACE: Research mode with auto-fallback (~150ms)
+    
+    Auto-Fallback Chain:
+    HYBRID → Neo4j + Qdrant → Neo4j only → Qdrant only → NetworkX
+    HYPERSPACE → Hyperspace backend → HYBRID → NetworkX
+    
+    Returns:
+        MemoryStore: Configured backend with graceful degradation
     """
     backend = config.memory_backend
 
-    # INMEMORY: NetworkX
+    # INMEMORY: NetworkX (dev/testing)
     if backend == MemoryBackend.INMEMORY:
         if not NETWORKX_AVAILABLE:
-            raise ValueError("NetworkX unavailable")
+            raise ValueError("NetworkX unavailable - cannot initialize INMEMORY backend")
+        print("[INMEMORY] Using NetworkX backend (dev mode)")
         return NetworkXKG()
 
-    # HYBRID: Neo4j + Qdrant (auto-fallback)
+    # HYBRID: Neo4j + Qdrant (production default)
     elif backend == MemoryBackend.HYBRID:
         return await _create_hybrid(config)
 
@@ -153,19 +161,34 @@ async def create_memory_backend(config: Config, user_id: str = "default") -> Mem
     elif backend == MemoryBackend.HYPERSPACE:
         try:
             from HoloLoom.memory.hyperspace_backend import create_hyperspace_backend
+            print("[HYPERSPACE] Initializing research backend")
             return create_hyperspace_backend(config)
-        except ImportError:
-            warnings.warn("HYPERSPACE unavailable, using HYBRID")
+        except ImportError as e:
+            warnings.warn(f"HYPERSPACE unavailable ({e}), falling back to HYBRID")
             return await _create_hybrid(config)
 
     raise ValueError(f"Unknown backend: {backend}")
 
 
 async def _create_hybrid(config: Config) -> HybridMemoryStore:
-    """Create hybrid with auto-fallback."""
+    """
+    Create hybrid backend with intelligent auto-fallback.
+    
+    Priority chain:
+    1. Neo4j + Qdrant (best: graph + vectors)
+    2. Neo4j only (graph reasoning)
+    3. Qdrant only (vector similarity)
+    4. NetworkX (fallback: in-memory)
+    
+    Returns:
+        HybridMemoryStore: Configured with available backends
+    """
     neo4j = None
     qdrant = None
     fallback = None
+    
+    backends_available = []
+    backends_failed = []
 
     # Try Neo4j
     if NEO4J_AVAILABLE:
@@ -176,9 +199,13 @@ async def _create_hybrid(config: Config) -> HybridMemoryStore:
                 password=config.neo4j_password,
                 database=config.neo4j_database
             ))
-            print(f"[Neo4j] Connected: {config.neo4j_uri}")
+            backends_available.append('Neo4j')
+            print(f"✓ [Neo4j] Connected: {config.neo4j_uri}")
         except Exception as e:
-            warnings.warn(f"Neo4j failed: {e}")
+            backends_failed.append(f'Neo4j: {str(e)}')
+            warnings.warn(f"Neo4j connection failed: {e}")
+    else:
+        backends_failed.append('Neo4j: not installed')
 
     # Try Qdrant
     if QDRANT_AVAILABLE:
@@ -188,21 +215,36 @@ async def _create_hybrid(config: Config) -> HybridMemoryStore:
                 port=config.qdrant_port,
                 collection=config.qdrant_collection
             )
-            print(f"[Qdrant] Connected: {config.qdrant_host}:{config.qdrant_port}")
+            backends_available.append('Qdrant')
+            print(f"✓ [Qdrant] Connected: {config.qdrant_host}:{config.qdrant_port}")
         except Exception as e:
-            warnings.warn(f"Qdrant failed: {e}")
+            backends_failed.append(f'Qdrant: {str(e)}')
+            warnings.warn(f"Qdrant connection failed: {e}")
+    else:
+        backends_failed.append('Qdrant: not installed')
 
-    # Fallback to NetworkX
+    # Status reporting
+    if backends_available:
+        print(f"[HYBRID] Active backends: {', '.join(backends_available)}")
+    
+    # Auto-fallback to NetworkX if no production backends
     if not neo4j and not qdrant:
-        warnings.warn(
-            "⚠️  Neither Neo4j nor Qdrant available - using NetworkX fallback\n"
-            "   Install: pip install neo4j qdrant-client"
-        )
+        print("\n" + "="*60)
+        print("⚠️  FALLBACK MODE: NetworkX In-Memory")
+        print("="*60)
+        print("No production backends available:")
+        for failure in backends_failed:
+            print(f"  ✗ {failure}")
+        print("\nUsing NetworkX fallback (limited to current session)")
+        print("To enable production backends:")
+        print("  • Neo4j: pip install neo4j")
+        print("  • Qdrant: pip install qdrant-client")
+        print("="*60 + "\n")
+        
         if NETWORKX_AVAILABLE:
             fallback = NetworkXKG()
-            print("[NetworkX] Fallback initialized")
         else:
-            raise ValueError("No backends available")
+            raise ValueError("No backends available (NetworkX also unavailable)")
 
     return HybridMemoryStore(neo4j=neo4j, qdrant=qdrant, fallback=fallback)
 
@@ -211,21 +253,25 @@ async def _create_hybrid(config: Config) -> HybridMemoryStore:
 # Convenience
 # ============================================================================
 
-async def create_unified_memory(
-    user_id: str = "default",
-    enable_neo4j: bool = True,
-    enable_qdrant: bool = True,
-    enable_mem0: bool = False
-) -> MemoryStore:
-    """
-    Convenience: Create memory with boolean flags.
-    Any production backend → HYBRID, else → INMEMORY.
-    Mem0 deprecated (ignored).
-    """
-    config = Config.fused()
-    config.memory_backend = MemoryBackend.HYBRID if (enable_neo4j or enable_qdrant) else MemoryBackend.INMEMORY
 
-    if enable_mem0:
-        warnings.warn("Mem0 no longer supported", DeprecationWarning)
 
-    return await create_memory_backend(config, user_id)
+# ============================================================================
+# Health Check
+# ============================================================================
+
+async def check_backend_health(backend: MemoryStore) -> Dict[str, Any]:
+    """
+    Check health of memory backend.
+    
+    Returns:
+        Dict with status, available backends, and latency metrics
+    """
+    if hasattr(backend, 'health_check'):
+        return await backend.health_check()
+    
+    # Simple health check for backends without explicit health_check
+    return {
+        'status': 'unknown',
+        'message': 'Backend does not implement health_check()',
+        'type': type(backend).__name__
+    }

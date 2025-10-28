@@ -4,16 +4,16 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="hololoom-narrative",
+    name="mythy",
     version="0.1.0",
-    description="Comprehensive narrative intelligence system built on HoloLoom framework",
+    description="Narrative intelligence system built on HoloLoom - Joseph Campbell, depth analysis, cross-domain adaptation",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="Your Name",
-    author_email="you@example.com",
-    url="https://github.com/you/hololoom-narrative",
+    author="mythRL Team",
+    author_email="contact@mythr.ai",
+    url="https://github.com/blakechasteen/mythRL",
 
-    packages=find_packages(include=["hololoom_narrative", "hololoom_narrative.*"]),
+    packages=find_packages(),
 
     install_requires=[
         # Framework dependency (required)
@@ -44,11 +44,10 @@ setup(
         "Programming Language :: Python :: 3.12",
     ],
 
-    keywords="narrative analysis joseph-campbell heros-journey mythology storytelling nlp ai framework",
+    keywords="narrative analysis joseph-campbell heros-journey mythology storytelling nlp ai framework mythr",
 
     project_urls={
-        "Bug Reports": "https://github.com/you/hololoom-narrative/issues",
-        "Source": "https://github.com/you/hololoom-narrative",
-        "Documentation": "https://github.com/you/hololoom-narrative/tree/main/docs",
+        "Bug Reports": "https://github.com/blakechasteen/mythRL/issues",
+        "Source": "https://github.com/blakechasteen/mythRL",
     },
 )

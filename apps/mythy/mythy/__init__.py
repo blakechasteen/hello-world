@@ -28,11 +28,8 @@ Usage:
 
 __version__ = "0.1.0"
 
-# Re-export from hololoom_narrative framework
-# apps/mythy is now a thin wrapper for backward compatibility
-
 # Core Intelligence
-from hololoom_narrative.intelligence import (
+from .intelligence import (
     NarrativeIntelligence,
     NarrativeIntelligenceResult,
     CampbellStage,
@@ -41,7 +38,7 @@ from hololoom_narrative.intelligence import (
 )
 
 # Depth Analysis
-from hololoom_narrative.matryoshka_depth import (
+from .matryoshka_depth import (
     MatryoshkaNarrativeDepth,
     MatryoshkaDepthResult,
     DepthLevel,
@@ -49,27 +46,27 @@ from hololoom_narrative.matryoshka_depth import (
 )
 
 # Streaming Analysis
-from hololoom_narrative.streaming_depth import (
+from .streaming_depth import (
     StreamingNarrativeAnalyzer,
     StreamEvent,
 )
 
 # Cross-Domain Adaptation
-from hololoom_narrative.cross_domain_adapter import (
+from .cross_domain_adapter import (
     CrossDomainAdapter,
     NarrativeDomain,
     DomainMapping,
 )
 
 # Loop Engine
-from hololoom_narrative.loop_engine import (
+from .loop_engine import (
     NarrativeLoopEngine,
     LoopMode,
     Priority,
 )
 
 # Caching
-from hololoom_narrative.cache import (
+from .cache import (
     NarrativeCache,
     CachedMatryoshkaDepth,
 )
