@@ -102,23 +102,29 @@ class WarpSpace:
         self,
         thread_texts: List[str],
         thread_ids: Optional[List[str]] = None,
-        tension_weights: Optional[List[float]] = None
+        tension_weights: Optional[List[float]] = None,
+        sparsity: float = 0.0
     ) -> None:
         """
-        Pull threads taut into Warp Space.
+        Pull threads taut into Warp Space with optional sparsity.
 
         Converts discrete thread data into continuous tensor representations.
+        With sparsity > 0, only top (1-sparsity) fraction of threads are tensioned,
+        allowing the system to "breathe" by leaving some threads relaxed.
 
         Args:
             thread_texts: Text content of threads to tension
             thread_ids: Optional IDs for threads
             tension_weights: Optional activation strengths (0-1)
+            sparsity: Fraction of threads to leave untensioned (0-1)
+                     0.0 = all threads active (dense)
+                     0.7 = only top 30% active (sparse)
         """
         if not thread_texts:
             logger.warning("No threads to tension")
             return
 
-        logger.info(f"Tensioning {len(thread_texts)} threads into Warp Space")
+        logger.info(f"Tensioning {len(thread_texts)} threads into Warp Space (sparsity={sparsity:.2f})")
 
         # Generate IDs if not provided
         if thread_ids is None:
@@ -127,6 +133,22 @@ class WarpSpace:
         # Default uniform tension
         if tension_weights is None:
             tension_weights = [1.0] * len(thread_texts)
+
+        # Apply sparsity: select top (1-sparsity) threads
+        if sparsity > 0:
+            n_active = max(1, int(len(thread_texts) * (1.0 - sparsity)))
+
+            # Sort by tension weights and select top threads
+            indexed_weights = list(enumerate(tension_weights))
+            indexed_weights.sort(key=lambda x: x[1], reverse=True)
+            active_indices = set(idx for idx, _ in indexed_weights[:n_active])
+
+            # Filter to only active threads
+            thread_texts = [t for i, t in enumerate(thread_texts) if i in active_indices]
+            thread_ids = [tid for i, tid in enumerate(thread_ids) if i in active_indices]
+            tension_weights = [w for i, w in enumerate(tension_weights) if i in active_indices]
+
+            logger.info(f"Sparsity enforcement: {len(thread_texts)}/{len(indexed_weights)} threads active")
 
         # Encode threads at all scales
         embeddings_dict = self.embedder.encode_scales(thread_texts)

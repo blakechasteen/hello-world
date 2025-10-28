@@ -29,7 +29,7 @@ from typing import List, Dict, Tuple, Optional, Protocol
 import numpy as np
 
 # Import only from shared types and embedding
-from HoloLoom.Documentation.types import Query, Context, Features, Vector
+from HoloLoom.documentation.types import Query, Context, Features, Vector
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Optional BM25 dependency

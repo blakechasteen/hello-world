@@ -11,6 +11,12 @@ This module implements the core mathematical machinery for:
 Based on the insight that word embeddings + temporal derivatives reveal
 the underlying "flow field" of meaning in language.
 
+PERFORMANCE OPTIMIZATIONS:
+- Batch embedding with LRU cache
+- Vectorized derivative computations
+- Lazy evaluation for expensive operations
+- JIT compilation where available
+
 Author: BearL Labs
 License: MIT
 """
@@ -22,6 +28,14 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
+# Import performance utilities
+from .performance import (
+    EmbeddingCache,
+    LazyArray,
+    compute_finite_difference_vectorized,
+    compute_curvature_vectorized,
+)
 
 
 @dataclass
@@ -121,15 +135,34 @@ class SemanticFlowCalculus:
 
     Computes derivatives, energies, and flow properties from
     sequences of embeddings.
+
+    PERFORMANCE FEATURES:
+    - Automatic embedding caching (10K word LRU cache)
+    - Batch embedding for efficiency
+    - Vectorized derivative computations
+    - Lazy evaluation of expensive properties
     """
 
-    def __init__(self, embedding_fn: Callable, dt: float = 1.0):
+    def __init__(self, embedding_fn: Callable, dt: float = 1.0,
+                 enable_cache: bool = True, cache_size: int = 10000):
         """
         Args:
-            embedding_fn: Function that maps word -> embedding vector
+            embedding_fn: Function that maps word(s) -> embedding vector(s)
+                         Should accept both single words and lists
             dt: Time step between words (default 1.0)
+            enable_cache: Enable embedding cache (default True)
+            cache_size: Maximum cached embeddings (default 10000)
         """
-        self.embed = embedding_fn
+        # Setup embedding with optional caching
+        if enable_cache:
+            self._cache = EmbeddingCache(embedding_fn, max_size=cache_size)
+            self.embed = self._cache.get
+            self.embed_batch = self._cache.get_batch
+        else:
+            self._cache = None
+            self.embed = lambda w: embedding_fn([w])[0]
+            self.embed_batch = lambda words: embedding_fn(words)
+
         self.dt = dt
 
         # Hamiltonian parameters
@@ -141,21 +174,29 @@ class SemanticFlowCalculus:
         """
         Convert word sequence to complete semantic trajectory
 
+        OPTIMIZATIONS:
+        - Uses batch embedding (single call instead of N calls)
+        - Vectorized kinetic energy computation
+        - All derivatives computed in one pass
+
         Args:
             words: List of words
 
         Returns:
             SemanticTrajectory with all derivatives computed
         """
-        # Embed all words
-        positions = np.array([self.embed(word) for word in words])
+        # OPTIMIZATION: Batch embed all words at once
+        positions = self.embed_batch(words)
 
-        # Compute derivatives using finite differences
+        # OPTIMIZATION: Compute all derivatives using vectorized operations
         velocities = self._compute_velocity(positions)
         accelerations = self._compute_acceleration(velocities)
         jerks = self._compute_jerk(accelerations)
 
-        # Build states
+        # OPTIMIZATION: Vectorized kinetic energy computation
+        kinetic_energies = 0.5 * self.mass * np.sum(velocities**2, axis=1)
+
+        # Build states (still sequential but with pre-computed arrays)
         states = []
         for i in range(len(words)):
             state = SemanticState(
@@ -163,12 +204,23 @@ class SemanticFlowCalculus:
                 velocity=velocities[i],
                 acceleration=accelerations[i],
                 jerk=jerks[i] if i < len(jerks) else None,
-                kinetic=0.5 * self.mass * np.linalg.norm(velocities[i])**2,
+                kinetic=kinetic_energies[i],
                 word=words[i]
             )
             states.append(state)
 
         return SemanticTrajectory(states=states, words=words, dt=self.dt)
+
+    def get_cache_stats(self) -> Optional[Dict]:
+        """Get embedding cache statistics"""
+        if self._cache is not None:
+            return self._cache.get_stats()
+        return None
+
+    def clear_cache(self):
+        """Clear embedding cache"""
+        if self._cache is not None:
+            self._cache.clear()
 
     def _compute_velocity(self, positions: np.ndarray) -> np.ndarray:
         """First derivative: dq/dt"""

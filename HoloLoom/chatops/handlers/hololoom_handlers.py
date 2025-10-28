@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from HoloLoom.weaving_shuttle import WeavingShuttle
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.documentation.types import Query, MemoryShard
 from HoloLoom.loom.command import PatternCard
 
 logger = logging.getLogger(__name__)

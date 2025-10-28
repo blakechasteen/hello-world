@@ -43,7 +43,7 @@ def metric(name, value):
 
 async def demo_text_spinner():
     """Demo: TextSpinner - Process plain text documents."""
-    from HoloLoom.spinningWheel.text import TextSpinner, TextSpinnerConfig
+    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     section("1. TextSpinner - Plain Text Processing")
 
@@ -68,7 +68,7 @@ async def demo_text_spinner():
 
 async def demo_website_spinner():
     """Demo: WebsiteSpinner - Scrape web content."""
-    from HoloLoom.spinningWheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+    from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
 
     section("2. WebsiteSpinner - Web Content Extraction")
 
@@ -105,7 +105,7 @@ async def demo_website_spinner():
 
 async def demo_youtube_spinner():
     """Demo: YouTubeSpinner - Extract video transcripts."""
-    from HoloLoom.spinningWheel.youtube import YouTubeSpinner, YouTubeSpinnerConfig
+    from HoloLoom.spinning_wheel.youtube import YouTubeSpinner, YouTubeSpinnerConfig
 
     section("3. YouTubeSpinner - Video Transcript Extraction")
 
@@ -134,7 +134,7 @@ async def demo_youtube_spinner():
 
 async def demo_batch_processing():
     """Demo: Batch processing simulation."""
-    from HoloLoom.spinningWheel.text import TextSpinner, TextSpinnerConfig
+    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     section("4. Batch Processing - Multiple Documents")
 
@@ -164,7 +164,7 @@ async def demo_batch_processing():
 
 async def demo_performance_benchmark():
     """Demo: Performance benchmarking."""
-    from HoloLoom.spinningWheel.text import TextSpinner, TextSpinnerConfig
+    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     section("5. Performance Benchmark")
 
@@ -186,7 +186,7 @@ async def demo_performance_benchmark():
 
 async def demo_memory_integration():
     """Demo: Integration with memory system."""
-    from HoloLoom.spinningWheel.text import TextSpinner, TextSpinnerConfig
+    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     section("6. Memory Integration")
 

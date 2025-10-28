@@ -1,0 +1,133 @@
+# ============================================================
+# ETHICAL Pattern Card
+# ============================================================
+# Ethics-focused analysis with maximum ethical evaluation
+# Use for: Content moderation, ethical analysis, conversation quality
+
+name: "ethical"
+display_name: "⚖️ Ethical Analysis"
+description: "Ethics-focused analysis with detailed ethical evaluation"
+version: "1.0"
+extends: "fast"  # Build on fast card
+
+# ============================================================
+# MATH CAPABILITIES (Overrides)
+# ============================================================
+math:
+  # Semantic calculus - EMPHASIS on ethics
+  semantic_calculus:
+    enabled: true
+    config:
+      dimensions: 24  # More dimensions for nuance
+      dt: 1.0
+      mass: 1.0
+      ethical_framework: "therapeutic"  # Therapeutic framework
+      compute_trajectory: true
+      compute_ethics: true  # CRITICAL
+      cache:
+        enabled: true
+        size: 15000
+
+  # Spectral embedding - standard
+  spectral_embedding:
+    enabled: true
+    scales: [96, 192]
+    fusion_mode: "adaptive"
+
+  # Motif detection - focus on emotional patterns
+  motif_detection:
+    enabled: true
+    mode: "hybrid"
+    patterns:
+      - "question"
+      - "causality"
+      - "comparison"
+      - "definition"
+      - "emotional"  # Added
+      - "urgency"    # Added for manipulation detection
+
+  # Policy engine - ethical emphasis
+  policy_engine:
+    enabled: true
+    type: "neural_bandit"
+    strategy: "epsilon_greedy"
+    epsilon: 0.1
+
+# ============================================================
+# MEMORY CONFIGURATION
+# ============================================================
+memory:
+  backend: "networkx"
+
+  caching:
+    vector_cache: true
+    cache_size: 5000
+
+  retrieval:
+    max_shards: 10
+    similarity_threshold: 0.7
+
+  graph:
+    max_depth: 2
+
+# ============================================================
+# TOOLS (Emphasis on ethical analysis)
+# ============================================================
+tools:
+  enabled:
+    - "summarize"
+    - "search"
+    - "analyze"
+    - "evaluate_ethics"  # Primary tool
+    - "detect_manipulation"
+
+  disabled:
+    - "deep_research"
+    - "extract"
+
+  configs:
+    analyze:
+      include_semantic: true
+      include_ethics: true  # Always include
+      include_trajectory: true
+    evaluate_ethics:
+      framework: "therapeutic"
+      detailed_analysis: true
+    detect_manipulation:
+      sensitivity: "high"
+      patterns: ["urgency", "charm", "false_authority"]
+
+# ============================================================
+# PERFORMANCE PROFILE
+# ============================================================
+performance:
+  target_latency_ms: 300  # Accept slightly slower for ethics
+  max_latency_ms: 600
+  timeout_ms: 2000
+
+  optimization:
+    jit_compile: true
+    parallel_threads: 4
+    batch_size: 32
+
+# ============================================================
+# EXTENSIONS
+# ============================================================
+extensions:
+  narrative_depth:
+    enabled: false
+
+  semantic_monitoring:
+    enabled: true
+    track_velocity: true
+    track_ethics: true  # CRITICAL
+    track_manipulation: true
+
+  manipulation_detection:
+    enabled: true
+    sensitivity: "high"
+    alert_threshold: 0.3
+
+  custom_hooks:
+    pre_query: null
+    post_query: "log_ethical_metrics"  # Custom hook

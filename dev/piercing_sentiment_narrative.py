@@ -200,7 +200,6 @@ class PiercingSentimentNarrative:
     
     async def _surface_sentiment(self, text: str, narrative: Dict) -> PiercingSentimentResult:
         """Basic sentiment analysis"""
-        # Simple positive/negative analysis
         positive_words = ["good", "great", "wonderful", "joy", "love", "hope", "glory", "wisdom", "home"]
         negative_words = ["bad", "terrible", "pain", "sorrow", "fear", "danger", "loss", "death", "suffering"]
         
@@ -210,9 +209,9 @@ class PiercingSentimentNarrative:
         
         total = pos_count + neg_count
         if total == 0:
-            sentiment = {"positive": 0.5, "negative": 0.5}
+            sentiment = 0.5
         else:
-            sentiment = {"positive": pos_count / total, "negative": neg_count / total}
+            sentiment = pos_count / total
         
         emotional_sig = EmotionalSignature(
             primary_emotion="neutral",
@@ -221,18 +220,20 @@ class PiercingSentimentNarrative:
             narrative_function="exposition",
             temporal_direction="stable",
             cosmic_theme="mundane",
-            confidence=0.4
+            confidence=0.4,
+            narrative_enhancement=0.0
         )
         
         return PiercingSentimentResult(
             text=text,
-            surface_sentiment=sentiment,
+            surface_sentiment={"positive": sentiment, "negative": 1 - sentiment},
             emotional_signature=emotional_sig,
             narrative_alignment=0.3,
             archetypal_patterns={},
-            temporal_sentiment_evolution=[(0.0, sentiment["positive"])],
+            temporal_sentiment_evolution=[(0.0, sentiment)],
             contextual_sentiment_shift=0.0,
-            recommendation="Surface-level sentiment detected",
+            narrative_insights=["Surface-level analysis only"],
+            recommendation="Basic sentiment detected - consider deeper analysis",
             piercing_depth=SentimentDepth.SURFACE,
             bayesian_confidence=0.4
         )
@@ -240,35 +241,32 @@ class PiercingSentimentNarrative:
     async def _cosmic_sentiment(self, text: str, narrative: Dict) -> PiercingSentimentResult:
         """Ultimate piercing sentiment analysis with full narrative intelligence"""
         
-        # Extract all narrative intelligence features
-        characters = narrative.get('characters', [])
-        themes = narrative.get('themes', [])
-        predicted_arc = narrative.get('predicted_arc')
-        complexity = narrative.get('complexity_level')
-        sophistication = narrative.get('narrative_sophistication', 0.5)
-        
-        # Analyze emotional layers
-        emotional_analysis = await self._analyze_emotional_layers(text, narrative)
+        # Deep emotional analysis
+        emotional_analysis = await self._analyze_emotional_layers(text)
         
         # Archetypal pattern matching
-        archetypal_patterns = await self._match_archetypal_patterns(text, predicted_arc, characters)
+        archetypal_patterns = await self._match_archetypal_patterns(text, narrative)
         
         # Narrative function analysis
-        narrative_function = await self._determine_narrative_function(text, sophistication)
+        narrative_function = await self._determine_narrative_function(text, narrative["sophistication"])
         
         # Temporal sentiment evolution
-        temporal_evolution = await self._analyze_temporal_sentiment(text, predicted_arc)
+        temporal_evolution = await self._analyze_temporal_sentiment(text)
         
         # Cosmic theme resonance
-        cosmic_theme, cosmic_resonance = await self._identify_cosmic_theme(text, themes, characters)
+        cosmic_theme, cosmic_resonance = await self._identify_cosmic_theme(text, narrative["themes"])
         
-        # Calculate contextual sentiment shift based on narrative intelligence
+        # Calculate narrative enhancement factor
         base_sentiment = emotional_analysis["base_sentiment"]
-        narrative_enhanced_sentiment = await self._apply_narrative_enhancement(
-            base_sentiment, archetypal_patterns, narrative_function, cosmic_resonance
+        narrative_enhancement = await self._calculate_narrative_enhancement(
+            base_sentiment, archetypal_patterns, narrative_function, 
+            cosmic_resonance, narrative["sophistication"]
         )
         
-        contextual_shift = narrative_enhanced_sentiment - base_sentiment
+        enhanced_sentiment = base_sentiment + narrative_enhancement
+        enhanced_sentiment = max(0.0, min(1.0, enhanced_sentiment))  # Clamp to [0, 1]
+        
+        contextual_shift = enhanced_sentiment - base_sentiment
         
         # Create comprehensive emotional signature
         emotional_signature = EmotionalSignature(
@@ -278,25 +276,30 @@ class PiercingSentimentNarrative:
             narrative_function=narrative_function,
             temporal_direction=emotional_analysis["temporal_direction"],
             cosmic_theme=cosmic_theme,
-            confidence=sophistication
+            confidence=narrative["sophistication"],
+            narrative_enhancement=narrative_enhancement
         )
+        
+        # Generate narrative insights
+        insights = await self._generate_narrative_insights(text, narrative, emotional_signature)
         
         # Generate sophisticated recommendation
         recommendation = await self._generate_piercing_recommendation(
-            emotional_signature, contextual_shift, narrative, complexity
+            emotional_signature, contextual_shift, narrative, insights
         )
         
         return PiercingSentimentResult(
             text=text,
-            surface_sentiment={"positive": base_sentiment, "negative": 1 - base_sentiment},
+            surface_sentiment={"positive": enhanced_sentiment, "negative": 1 - enhanced_sentiment},
             emotional_signature=emotional_signature,
-            narrative_alignment=sophistication,
+            narrative_alignment=narrative["sophistication"],
             archetypal_patterns=archetypal_patterns,
             temporal_sentiment_evolution=temporal_evolution,
             contextual_sentiment_shift=contextual_shift,
+            narrative_insights=insights,
             recommendation=recommendation,
             piercing_depth=SentimentDepth.COSMIC,
-            bayesian_confidence=narrative.get('belief_confidence', 0.6)
+            bayesian_confidence=0.85 + narrative["sophistication"] * 0.15
         )
     
     async def _analyze_emotional_layers(self, text: str, narrative: Dict) -> Dict:

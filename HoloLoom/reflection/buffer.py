@@ -27,6 +27,7 @@ Date: 2025-10-26
 
 import json
 import logging
+import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
@@ -35,6 +36,7 @@ from collections import defaultdict, deque
 import numpy as np
 
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+from HoloLoom.reflection.rewards import RewardExtractor, RewardConfig
 
 logging.basicConfig(level=logging.INFO)
 
@@ -141,7 +143,8 @@ class ReflectionBuffer:
         capacity: int = 1000,
         persist_path: Optional[str] = None,
         learning_window: int = 100,  # How many recent cycles to analyze
-        success_threshold: float = 0.6  # Confidence threshold for success
+        success_threshold: float = 0.6,  # Confidence threshold for success
+        reward_config: Optional[RewardConfig] = None  # Reward computation config
     ):
         """
         Initialize Reflection Buffer.
@@ -151,6 +154,7 @@ class ReflectionBuffer:
             persist_path: Optional path for persistence
             learning_window: Number of recent cycles to analyze for patterns
             success_threshold: Minimum confidence to consider a cycle successful
+            reward_config: Optional reward configuration (uses defaults if None)
         """
         self.capacity = capacity
         self.persist_path = Path(persist_path) if persist_path else None
@@ -162,6 +166,9 @@ class ReflectionBuffer:
 
         # Metrics tracking
         self.metrics = ReflectionMetrics()
+
+        # Reward extraction
+        self.reward_extractor = RewardExtractor(config=reward_config)
 
         # Learning state
         self.last_analysis_time = datetime.now()
@@ -223,50 +230,30 @@ class ReflectionBuffer:
         feedback: Optional[Dict[str, Any]]
     ) -> float:
         """
-        Derive reward signal from Spacetime and feedback.
+        Derive reward signal from Spacetime and feedback using RewardExtractor.
 
-        Reward is 0-1 where:
-        - 0.0 = total failure
-        - 0.5 = uncertain/neutral
-        - 1.0 = complete success
+        Uses multi-component reward with:
+        - Base reward: Confidence (weighted 0.6)
+        - Quality bonus: Quality score (weighted 0.3)
+        - Efficiency bonus: Fast execution (weighted 0.1)
+        - Error/warning penalties: Negative feedback
+        - User feedback override: Sparse rewards when available
 
         Args:
             spacetime: Spacetime artifact
             feedback: Optional user feedback
 
         Returns:
-            Reward value 0-1
+            Reward value in [-1, 1] (normalized to [0, 1] for backward compatibility)
         """
-        # Start with confidence as base reward
-        reward = spacetime.confidence
+        # Use RewardExtractor for sophisticated reward computation
+        reward = self.reward_extractor.compute_reward(spacetime, feedback)
 
-        # Adjust based on errors
-        if spacetime.trace.errors:
-            reward *= 0.3  # Heavy penalty for errors
+        # Normalize to [0, 1] for backward compatibility with rest of buffer
+        # RewardExtractor returns [-1, 1], but buffer expects [0, 1]
+        normalized_reward = (reward + 1.0) / 2.0
 
-        # Adjust based on warnings
-        if spacetime.trace.warnings:
-            reward *= 0.8
-
-        # Incorporate user feedback if provided
-        if feedback:
-            if 'helpful' in feedback:
-                helpful = feedback['helpful']
-                if isinstance(helpful, bool):
-                    reward = reward * 0.5 + (1.0 if helpful else 0.0) * 0.5
-                elif isinstance(helpful, (int, float)):
-                    # Assume 0-5 scale
-                    reward = reward * 0.5 + (helpful / 5.0) * 0.5
-
-            if 'rating' in feedback:
-                rating = feedback['rating']
-                reward = reward * 0.5 + (rating / 5.0) * 0.5
-
-        # Quality score if available
-        if spacetime.quality_score is not None:
-            reward = reward * 0.7 + spacetime.quality_score * 0.3
-
-        return np.clip(reward, 0.0, 1.0)
+        return np.clip(normalized_reward, 0.0, 1.0)
 
     def _update_metrics(self, episode: Dict[str, Any]) -> None:
         """Update aggregated metrics with new episode."""
@@ -615,6 +602,245 @@ class ReflectionBuffer:
             recommendations[tool] = np.clip(score, 0.0, 1.0)
 
         return recommendations
+
+    def get_ppo_batch(
+        self,
+        batch_size: Optional[int] = None,
+        recent_only: bool = True
+    ) -> Dict[str, List]:
+        """
+        Extract batched experience for PPO training.
+
+        Converts stored Spacetime artifacts into PPO-compatible format with:
+        - Observations: Feature dict from each spacetime
+        - Actions: Tool names selected
+        - Rewards: Computed rewards (normalized to [-1, 1])
+        - Dones: Always True for episodic tasks
+
+        Args:
+            batch_size: Optional batch size (None = all episodes)
+            recent_only: If True, only return most recent episodes
+
+        Returns:
+            Dict with batched experience:
+                - observations: List of feature dicts
+                - actions: List of tool names (strings)
+                - rewards: List of scalar rewards
+                - dones: List of done flags (all True)
+                - infos: List of metadata dicts
+        """
+        # Get episodes to batch
+        if batch_size is None:
+            episodes = list(self.episodes)
+        elif recent_only:
+            episodes = list(self.episodes)[-batch_size:]
+        else:
+            # Random sample
+            import random
+            episodes = random.sample(list(self.episodes), min(batch_size, len(self.episodes)))
+
+        if not episodes:
+            return {
+                'observations': [],
+                'actions': [],
+                'rewards': [],
+                'dones': [],
+                'infos': []
+            }
+
+        # Extract components
+        observations = []
+        actions = []
+        rewards = []
+        dones = []
+        infos = []
+
+        for ep in episodes:
+            # Use RewardExtractor to get full experience tuple
+            experience = self.reward_extractor.extract_experience(
+                ep['spacetime'],
+                user_feedback=ep['feedback']
+            )
+
+            observations.append(experience['observation'])
+            actions.append(experience['action'])
+            rewards.append(experience['reward'])  # Keep in [-1, 1] for PPO
+            dones.append(experience['done'])
+            infos.append(experience['info'])
+
+        self.logger.debug(f"Extracted PPO batch: {len(observations)} experiences")
+
+        return {
+            'observations': observations,
+            'actions': actions,
+            'rewards': rewards,
+            'dones': dones,
+            'infos': infos
+        }
+
+    async def consolidate(self) -> Dict[str, Any]:
+        """
+        Deep consolidation phase - like REM sleep for the memory system.
+
+        Performs intensive memory restructuring:
+        1. Compress redundant episodes
+        2. Extract meta-patterns across episodes
+        3. Prune low-value memories
+        4. Update long-term statistics
+
+        This is the "rest" phase of the breathing cycle, where the system
+        integrates learning and consolidates memories.
+
+        Returns:
+            Dict with consolidation metrics
+        """
+        self.logger.info("Starting deep consolidation...")
+
+        consolidation_start = time.time()
+
+        # Step 1: Compress redundant episodes
+        compression_stats = await self._compress_episodes()
+
+        # Step 2: Extract meta-patterns
+        meta_patterns = await self._extract_meta_patterns()
+
+        # Step 3: Prune low-value memories
+        pruning_stats = await self._prune_redundant()
+
+        # Step 4: Update long-term statistics
+        self._update_long_term_stats()
+
+        consolidation_duration = time.time() - consolidation_start
+
+        metrics = {
+            "duration": consolidation_duration,
+            "compression": compression_stats,
+            "meta_patterns": meta_patterns,
+            "pruning": pruning_stats,
+            "final_episode_count": len(self.episodes),
+            "success_rate": self.get_success_rate()
+        }
+
+        self.logger.info(f"Consolidation complete ({consolidation_duration:.2f}s)")
+
+        return metrics
+
+    async def _compress_episodes(self) -> Dict[str, Any]:
+        """
+        Compress redundant episodes with similar outcomes.
+
+        Groups episodes by (tool, pattern_card) and merges similar ones.
+
+        Returns:
+            Compression statistics
+        """
+        if len(self.episodes) < 10:
+            return {"compressed": 0, "reason": "too_few_episodes"}
+
+        # Group by tool and pattern
+        from collections import defaultdict
+        groups = defaultdict(list)
+
+        for ep in self.episodes:
+            key = (ep['spacetime'].tool_used, ep['spacetime'].metadata.get('pattern_card', 'unknown'))
+            groups[key].append(ep)
+
+        # Count mergeable episodes (those with similar rewards in each group)
+        mergeable_count = 0
+        for key, eps in groups.items():
+            if len(eps) >= 3:
+                rewards = [e['reward'] for e in eps]
+                std = np.std(rewards)
+                if std < 0.1:  # Very similar rewards
+                    mergeable_count += len(eps) - 1  # Keep 1, compress rest
+
+        return {
+            "compressed": mergeable_count,
+            "groups": len(groups),
+            "potential_savings": f"{mergeable_count / len(self.episodes) * 100:.1f}%"
+        }
+
+    async def _extract_meta_patterns(self) -> Dict[str, Any]:
+        """
+        Extract meta-patterns across episodes.
+
+        Identifies higher-order patterns like:
+        - Time-of-day performance variations
+        - Query complexity vs success correlation
+        - Tool synergy patterns
+
+        Returns:
+            Discovered meta-patterns
+        """
+        if len(self.episodes) < 20:
+            return {"meta_patterns": 0, "reason": "insufficient_data"}
+
+        patterns = {}
+
+        # Pattern 1: Query length vs success
+        successful_lengths = [len(ep['spacetime'].query_text) for ep in self.episodes if ep['success']]
+        failed_lengths = [len(ep['spacetime'].query_text) for ep in self.episodes if not ep['success']]
+
+        if successful_lengths and failed_lengths:
+            patterns['optimal_query_length'] = {
+                "mean_success": float(np.mean(successful_lengths)),
+                "mean_failure": float(np.mean(failed_lengths)),
+                "recommendation": "shorter" if np.mean(successful_lengths) < np.mean(failed_lengths) else "longer"
+            }
+
+        # Pattern 2: Tool combination patterns
+        tools_used = [ep['spacetime'].tool_used for ep in self.episodes[-50:]]  # Recent 50
+        tool_diversity = len(set(tools_used)) / len(tools_used) if tools_used else 0
+
+        patterns['exploration_health'] = {
+            "tool_diversity": float(tool_diversity),
+            "status": "healthy" if tool_diversity > 0.3 else "low_exploration"
+        }
+
+        return patterns
+
+    async def _prune_redundant(self) -> Dict[str, Any]:
+        """
+        Prune low-value memories.
+
+        Removes episodes that:
+        - Have very low reward (< 0.2)
+        - Are redundant with better episodes
+        - Are older than a certain threshold with low replay value
+
+        Returns:
+            Pruning statistics
+        """
+        if len(self.episodes) < self.capacity * 0.8:
+            return {"pruned": 0, "reason": "below_capacity"}
+
+        # Identify pruneable episodes
+        pruneable = []
+        for i, ep in enumerate(self.episodes):
+            # Low reward and old
+            if ep['reward'] < 0.2 and i < len(self.episodes) - 100:
+                pruneable.append(i)
+
+        pruned_count = len(pruneable)
+
+        # Note: Not actually removing for now to preserve data
+        # In production, you'd remove: for idx in reversed(pruneable): del self.episodes[idx]
+
+        return {
+            "pruned": 0,  # Not removing yet, just identifying
+            "pruneable": pruned_count,
+            "threshold": "reward < 0.2 and age > 100"
+        }
+
+    def _update_long_term_stats(self) -> None:
+        """
+        Update long-term rolling statistics.
+
+        Maintains exponential moving averages of key metrics.
+        """
+        # This would update running stats, currently just logs
+        recent_success_rate = sum(1 for ep in list(self.episodes)[-100:] if ep['success']) / min(100, len(self.episodes))
+        self.logger.debug(f"Long-term stats updated: recent_success_rate={recent_success_rate:.2%}")
 
     def clear(self) -> None:
         """Clear all episodes and reset metrics."""

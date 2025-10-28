@@ -41,7 +41,7 @@ shards_to_memories = protocol.shards_to_memories
 
 # Import text spinner directly
 text_spinner = import_module_by_path(
-    "HoloLoom.spinningWheel.text",
+    "HoloLoom.spinning_wheel.text",
     Path(__file__).parent / "HoloLoom" / "spinningWheel" / "text.py"
 )
 spin_text = text_spinner.spin_text

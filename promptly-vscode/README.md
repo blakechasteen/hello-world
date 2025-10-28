@@ -1,6 +1,45 @@
-# Promptly VS Code Extension - Prototype
+# Promptly VS Code Extension
 
-Quick prototype (v0.1.0) validating the technical approach for VS Code integration.
+**Version 0.2.0** - Now with Execution Engine! 🚀
+
+Execute skills, chain workflows, and run recursive loops directly from VS Code.
+
+## Features
+
+### ✅ Prompt Library (v0.1.0)
+- Browse prompts by branch
+- View prompt content
+- Refresh library
+
+### 🆕 Execution Engine (v0.2.0)
+- **⚡ Skill Execution**: Run individual prompts with user input
+- **🔗 Chain Execution**: Sequential workflows with data flow
+- **🔄 Loop Execution**: Recursive reasoning with 6 loop types
+  - Refine, Critique, Decompose, Verify, Explore, Hofstadter
+- **📊 Real-time Streaming**: WebSocket progress updates
+- **📈 Quality Tracking**: Iteration-by-iteration improvement metrics
+
+## Quick Start
+
+### 1. Start Python Bridge
+```bash
+cd Promptly
+python promptly/vscode_bridge.py
+```
+
+### 2. Open Execution Panel
+- Click Promptly icon in activity bar
+- Click **Play** (▶) button
+- Start executing!
+
+### 3. Try Your First Execution
+See [EXECUTION_QUICKSTART.md](EXECUTION_QUICKSTART.md) for a 5-minute tutorial.
+
+## Documentation
+
+- **[Execution Quick Start](EXECUTION_QUICKSTART.md)** - Get running in 5 minutes
+- **[Execution Guide](EXECUTION_GUIDE.md)** - Comprehensive documentation
+- **[Architecture](PROTOTYPE_COMPLETE.md)** - Technical details
 
 ## What Works
 
@@ -62,6 +101,27 @@ python promptly/vscode_bridge.py
 ✅ **Process management** - Extension spawns/kills Python server
 ✅ **Data flow** - Prompts flow from SQLite → FastAPI → TypeScript → VS Code UI
 ✅ **UI rendering** - Tree view with branches and prompts displays correctly
+
+## Performance Optimizations
+
+### Python Bridge
+- **In-memory caching** with TTL (30s for lists, 60s for individual prompts)
+- **Structured logging** with DEBUG/INFO/ERROR levels
+- **Error tracking** with full stack traces
+- **Cache hit rate** logging for performance monitoring
+
+### TypeScript Client
+- **Health monitoring** with 30-second interval checks
+- **Graceful degradation** when bridge is unhealthy
+- **Request/response interceptors** for logging and error handling
+- **Connection pooling** via axios (keepalive, max redirects)
+- **Process lifecycle management** with proper cleanup
+
+### Error Handling
+- **503 Service Unavailable** when Promptly core not initialized
+- **404 Not Found** with friendly warnings for missing prompts
+- **Automatic retries** during server startup (20 attempts over 10 seconds)
+- **Health status** exposed via `getHealthStatus()` method
 
 ## Next Steps (Full v1.2)
 

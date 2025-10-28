@@ -23,30 +23,59 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 # Import shared types from the canonical location
-from HoloLoom.Documentation.types import Query, Features, Vector, Motif
+from HoloLoom.documentation.types import Query, Features, Vector, Motif
+
+# Import canonical protocols
+from HoloLoom.protocols import MotifDetector as CanonicalMotifDetector
+from HoloLoom.protocols import Embedder as CanonicalEmbedder
 
 
 # ============================================================================
-# Protocols - Abstract contracts (no imports from concrete modules!)
+# Protocols - DEPRECATED (Import from HoloLoom.protocols instead)
 # ============================================================================
 
 @runtime_checkable
-class MotifDetector(Protocol):
-    """Protocol for motif detection implementations."""
+class _DeprecatedMotifDetector(Protocol):
+    """
+    DEPRECATED: This local protocol definition is deprecated.
+    Use 'from HoloLoom.protocols import MotifDetector' instead.
+    
+    Protocol for motif detection implementations.
+    """
     def detect(self, text: str) -> List[Motif]: ...
     # Optional async variant; implement if you like, otherwise the extractor will wrap in threadpool.
     async def detect_async(self, text: str) -> List[Motif]: ...  # type: ignore[override]
 
 
 @runtime_checkable
-class Embedder(Protocol):
-    """Protocol for embedding implementations."""
+class _DeprecatedEmbedder(Protocol):
+    """
+    DEPRECATED: This local protocol definition is deprecated.
+    Use 'from HoloLoom.protocols import Embedder' instead.
+    
+    Protocol for embedding implementations.
+    """
     def embed(self, text: str) -> Vector: ...
     # Optional: expose dimension for better fallback behavior
     @property
     def dim(self) -> int: ...  # type: ignore[override]
     # Optional async variant
     async def embed_async(self, text: str) -> Vector: ...  # type: ignore[override]
+
+
+# Backward compatibility aliases
+MotifDetector = CanonicalMotifDetector
+Embedder = CanonicalEmbedder
+
+# Emit deprecation warning on import
+import warnings
+warnings.warn(
+    "Local protocol definitions in Features.py are deprecated. "
+    "Import from HoloLoom.protocols instead: "
+    "from HoloLoom.protocols import MotifDetector, Embedder",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 
 # ============================================================================

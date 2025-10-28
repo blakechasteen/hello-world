@@ -57,8 +57,7 @@ from .flow_calculus import (
     SemanticTrajectory,
     SemanticFlowCalculus,
     SemanticFlowVisualizer,
-    visualize_semantic_flow,
-    print_trajectory_summary,
+    analyze_text_flow,
 )
 
 # === Semantic Dimensions (The Key Projection!) ===
@@ -66,6 +65,7 @@ from .dimensions import (
     SemanticDimension,
     SemanticSpectrum,
     STANDARD_DIMENSIONS,
+    EXTENDED_244_DIMENSIONS,
     visualize_semantic_spectrum,
     print_spectrum_summary,
 )
@@ -77,6 +77,7 @@ from .integrator import (
     visualize_geometric_flow,
     compute_semantic_force_field,
 )
+# Note: integrator.SemanticState is not exported (internal, conflicts with flow_calculus.SemanticState)
 
 # === Ethical Policy ===
 from .ethics import (
@@ -90,26 +91,55 @@ from .ethics import (
 
 # === Integral Geometry ===
 from .integral_geometry import (
-    IntegralGeometry,
     RadonTransform,
-    visualize_sinogram,
-    visualize_reconstruction,
+    InverseRadonTransform,
+    CroftonFormula,
+    SemanticTomography,
+    visualize_tomographic_reconstruction,
 )
 
 # === Hyperbolic Semantics ===
 from .hyperbolic import (
+    HyperbolicPoint,
+    PoincareGeometry,
     HyperbolicSemanticSpace,
-    PoincareEmbedding,
-    visualize_poincare_embedding,
-    visualize_hyperbolic_flow,
+    ComplexSemanticFlow,
+    SemanticSymmetryGroup,
+    visualize_hyperbolic_hierarchy,
 )
 
 # === System Identification ===
 from .system_id import (
-    SemanticSystemIdentifier,
     LearnedSemanticSystem,
-    visualize_learned_system,
+    SemanticSystemIdentification,
+    visualize_system_identification,
+    demonstrate_system_identification,
 )
+
+# === Performance Utilities ===
+from .performance import (
+    EmbeddingCache,
+    ProjectionCache,
+    timer,
+    HAS_NUMBA,
+)
+
+# === Integration Layer (Clean Interface) ===
+# Now organized into focused modules
+from .config import SemanticCalculusConfig
+from .analyzer import SemanticAnalyzer, create_semantic_analyzer, get_cache_stats
+from .adapter import create_semantic_thread, quick_analysis, format_semantic_summary, extract_trajectory_metrics
+
+# Backward compatibility: Keep old integration.py imports working
+try:
+    from .integration import (
+        SemanticCalculusConfig as _LegacyConfig,
+        SemanticAnalyzer as _LegacyAnalyzer,
+        create_semantic_analyzer as _legacy_create,
+    )
+except ImportError:
+    # integration.py may not exist anymore, which is fine
+    pass
 
 # === Public API ===
 __all__ = [
@@ -118,12 +148,12 @@ __all__ = [
     "SemanticTrajectory",
     "SemanticFlowCalculus",
     "SemanticFlowVisualizer",
-    "visualize_semantic_flow",
-    "print_trajectory_summary",
+    "analyze_text_flow",
     # Dimensions
     "SemanticDimension",
     "SemanticSpectrum",
     "STANDARD_DIMENSIONS",
+    "EXTENDED_244_DIMENSIONS",
     "visualize_semantic_spectrum",
     "print_spectrum_summary",
     # Integration
@@ -139,20 +169,51 @@ __all__ = [
     "THERAPEUTIC_DIALOGUE",
     "visualize_ethical_landscape",
     # Integral geometry
-    "IntegralGeometry",
     "RadonTransform",
-    "visualize_sinogram",
-    "visualize_reconstruction",
+    "InverseRadonTransform",
+    "CroftonFormula",
+    "SemanticTomography",
+    "visualize_tomographic_reconstruction",
     # Hyperbolic
+    "HyperbolicPoint",
+    "PoincareGeometry",
     "HyperbolicSemanticSpace",
-    "PoincareEmbedding",
-    "visualize_poincare_embedding",
-    "visualize_hyperbolic_flow",
+    "ComplexSemanticFlow",
+    "SemanticSymmetryGroup",
+    "visualize_hyperbolic_hierarchy",
     # System ID
-    "SemanticSystemIdentifier",
     "LearnedSemanticSystem",
-    "visualize_learned_system",
+    "SemanticSystemIdentification",
+    "visualize_system_identification",
+    "demonstrate_system_identification",
+    # Performance
+    "EmbeddingCache",
+    "ProjectionCache",
+    "timer",
+    "HAS_NUMBA",
+    # Integration Layer
+    "SemanticCalculusConfig",
+    "SemanticAnalyzer",
+    "create_semantic_analyzer",
+    "create_semantic_thread",
+    "quick_analysis",
+    "get_cache_stats",
+    "format_semantic_summary",
+    "extract_trajectory_metrics",
 ]
+
+
+# === Clean Imports (Recommended) ===
+# For new code, use the organized structure:
+#
+#   from HoloLoom.semantic_calculus import create_semantic_analyzer
+#   from HoloLoom.semantic_calculus.math import SemanticFlow, SemanticSpectrum
+#   from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+#
+# Legacy imports still work for backward compatibility:
+#
+#   from HoloLoom.semantic_calculus import SemanticFlowCalculus  # Still works!
+#
 
 
 # === Convenience Functions ===

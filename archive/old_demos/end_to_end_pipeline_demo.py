@@ -40,7 +40,7 @@ def load_module(name, path):
 
 # Load BaseSpinner first (for text spinner dependency)
 base_spinner_module = load_module("base_spinner", "HoloLoom/spinningWheel/base.py")
-sys.modules['HoloLoom.spinningWheel.base'] = base_spinner_module
+sys.modules['HoloLoom.spinning_wheel.base'] = base_spinner_module
 
 # Load TextSpinner
 text_spinner_module = load_module("text_spinner", "HoloLoom/spinningWheel/text.py")

@@ -31,76 +31,15 @@ class KGBackend(Enum):
 
 class MemoryBackend(Enum):
     """
-    Unified memory backend selection - supports pure and hybrid strategies.
+    Memory backend: INMEMORY (dev), HYBRID (prod), HYPERSPACE (research).
 
-    Pure Strategies (Single Backend):
-    - NETWORKX: In-memory NetworkX graph only (fast prototyping, no persistence)
-    - NEO4J: Neo4j graph database only (persistent symbolic memory)
-    - QDRANT: Qdrant vector database only (semantic similarity search)
-
-    Hybrid Strategies (Multiple Backends):
-    - NEO4J_QDRANT: Graph + Vector hybrid (most common production setup)
-      * Neo4j: Entity relationships, graph traversal
-      * Qdrant: Semantic embeddings, similarity search
-      * Best for: Knowledge bases with semantic search
-
-    - TRIPLE: Neo4j + Qdrant + Mem0 (full hybrid with managed memory)
-      * Neo4j: Persistent graph structure
-      * Qdrant: Vector embeddings
-      * Mem0: Intelligent memory extraction and deduplication
-      * Best for: Production systems with user-specific memory
-
-    - HYPERSPACE: Gated multipass with recursive importance filtering
-      * Neo4j: Entity graph with importance weights
-      * Qdrant: Multi-scale Matryoshka embeddings
-      * Recursive crawl with importance thresholds (0.6 → 0.75 → 0.85)
-      * Best for: Research, content curation, intelligent navigation
-
-    Usage:
-        # Fast development
-        config = Config.fast()
-        config.memory_backend = MemoryBackend.NETWORKX
-
-        # Production with graph + vectors
-        config = Config.fused()
-        config.memory_backend = MemoryBackend.NEO4J_QDRANT
-
-        # Research mode with gated exploration
-        config = Config.fused()
-        config.memory_backend = MemoryBackend.HYPERSPACE
-        config.hyperspace_depth = 3
-        config.hyperspace_thresholds = [0.6, 0.75, 0.85]
+    - INMEMORY: NetworkX in-memory, no deps, <10ms
+    - HYBRID: Neo4j+Qdrant, auto-fallback to INMEMORY, ~50ms (DEFAULT)
+    - HYPERSPACE: Gated multipass, optional, ~150ms
     """
-    # Pure strategies
-    NETWORKX = "networkx"
-    NEO4J = "neo4j"
-    QDRANT = "qdrant"
-    MEM0 = "mem0"
-
-    # Hybrid strategies
-    NEO4J_QDRANT = "neo4j+qdrant"
-    NEO4J_MEM0 = "neo4j+mem0"
-    QDRANT_MEM0 = "qdrant+mem0"
-    TRIPLE = "neo4j+qdrant+mem0"
-
-    # Specialized hybrids
-    HYPERSPACE = "hyperspace"  # Neo4j + Qdrant + gated multipass
-
-    def is_hybrid(self) -> bool:
-        """Check if this is a hybrid strategy."""
-        return '+' in self.value or self == MemoryBackend.HYPERSPACE
-
-    def uses_neo4j(self) -> bool:
-        """Check if this strategy uses Neo4j."""
-        return 'neo4j' in self.value or self == MemoryBackend.NEO4J or self == MemoryBackend.HYPERSPACE
-
-    def uses_qdrant(self) -> bool:
-        """Check if this strategy uses Qdrant."""
-        return 'qdrant' in self.value or self == MemoryBackend.QDRANT or self == MemoryBackend.HYPERSPACE
-
-    def uses_mem0(self) -> bool:
-        """Check if this strategy uses Mem0."""
-        return 'mem0' in self.value or self == MemoryBackend.MEM0 or self == MemoryBackend.TRIPLE
+    INMEMORY = "inmemory"
+    HYBRID = "hybrid"
+    HYPERSPACE = "hyperspace"
 
 
 class ExecutionMode(Enum):
@@ -225,7 +164,16 @@ class Config:
     # Feature extraction
     spectral_k_eigen: int = 4  # Number of Laplacian eigenvalues
     svd_components: int = 2  # Number of SVD topic components
-    
+
+    # Semantic Calculus (optional)
+    enable_semantic_calculus: bool = False  # Enable semantic flow analysis
+    semantic_dimensions: int = 16  # Number of semantic dimension pairs
+    semantic_cache_size: int = 10000  # Embedding cache size
+    semantic_dt: float = 1.0  # Time step for calculus
+    semantic_framework: str = "compassionate"  # Ethical framework: compassionate, scientific, therapeutic
+    semantic_trajectory: bool = True  # Compute velocity/acceleration/curvature
+    semantic_ethics: bool = True  # Run ethical analysis
+
     # Memory management
     working_memory_size: int = 100  # Cache size for recent queries
     episodic_buffer_size: int = 100  # Size of recent interaction buffer
@@ -236,27 +184,12 @@ class Config:
     
     def __post_init__(self):
         """Validate configuration."""
-        # Initialize memory_backend if not set
+        # Set defaults
         if self.memory_backend is None:
-            # Default based on execution mode
-            if self.mode == ExecutionMode.BARE:
-                self.memory_backend = MemoryBackend.NETWORKX
-            elif self.mode == ExecutionMode.FAST:
-                self.memory_backend = MemoryBackend.NETWORKX
-            else:  # FUSED
-                self.memory_backend = MemoryBackend.NEO4J_QDRANT
-
-        # Backward compatibility: If kg_backend is set, map to memory_backend
-        if self.kg_backend is not None:
-            import warnings
-            warnings.warn(
-                "kg_backend is deprecated. Use memory_backend instead.",
-                DeprecationWarning
+            self.memory_backend = (
+                MemoryBackend.INMEMORY if self.mode in (ExecutionMode.BARE, ExecutionMode.FAST)
+                else MemoryBackend.HYBRID
             )
-            if self.kg_backend == KGBackend.NETWORKX:
-                self.memory_backend = MemoryBackend.NETWORKX
-            elif self.kg_backend == KGBackend.NEO4J:
-                self.memory_backend = MemoryBackend.NEO4J
 
         # Ensure scales are sorted
         if sorted(self.scales) != self.scales:
@@ -297,7 +230,8 @@ class Config:
             mode=ExecutionMode.BARE,
             fast_mode=True,
             n_transformer_layers=1,
-            n_attention_heads=2
+            n_attention_heads=2,
+            enable_semantic_calculus=False  # Disabled for speed
         )
     
     @classmethod
@@ -309,9 +243,12 @@ class Config:
             mode=ExecutionMode.FAST,
             fast_mode=True,
             n_transformer_layers=2,
-            n_attention_heads=4
+            n_attention_heads=4,
+            enable_semantic_calculus=False,  # Disabled by default (user can enable)
+            semantic_dimensions=8,  # Fewer dimensions if enabled
+            semantic_ethics=False  # Skip ethics for speed
         )
-    
+
     @classmethod
     def fused(cls) -> 'Config':
         """Create a fused-mode configuration (highest quality)."""
@@ -321,7 +258,10 @@ class Config:
             mode=ExecutionMode.FUSED,
             fast_mode=False,
             n_transformer_layers=2,
-            n_attention_heads=4
+            n_attention_heads=4,
+            enable_semantic_calculus=False,  # Disabled by default (user can enable)
+            semantic_dimensions=16,  # Full dimensions if enabled
+            semantic_ethics=True  # Full ethics if enabled
         )
     
     def to_dict(self) -> Dict:

@@ -39,9 +39,10 @@ class PatternCard(Enum):
 
     Each card specifies a complete configuration for the weaving process.
     """
-    BARE = "bare"      # Minimal processing
-    FAST = "fast"      # Balanced processing
-    FUSED = "fused"    # Full processing
+    BARE = "bare"              # Minimal processing
+    FAST = "fast"              # Balanced processing
+    FUSED = "fused"            # Full processing
+    SEMANTIC_FLOW = "semantic_flow"  # Semantic calculus analysis
 
 
 @dataclass
@@ -83,6 +84,12 @@ class PatternSpec:
     # Quality vs speed
     quality_target: float = 0.7  # 0-1 scale
     speed_priority: float = 0.5  # 0-1 scale (higher = faster)
+
+    # Semantic calculus (SEMANTIC_FLOW pattern)
+    enable_semantic_flow: bool = False
+    semantic_dimensions: int = 16  # Number of interpretable dimensions
+    semantic_trajectory: bool = False  # Compute velocity/acceleration/curvature
+    semantic_ethics: bool = False  # Multi-objective ethical analysis
 
     def __post_init__(self):
         """Set default stage timeouts if not provided."""
@@ -164,6 +171,33 @@ FUSED_PATTERN = PatternSpec(
     speed_priority=0.2
 )
 
+# SEMANTIC_FLOW Pattern Card - Semantic calculus analysis
+SEMANTIC_FLOW_PATTERN = PatternSpec(
+    name="Semantic Flow Threading",
+    card=PatternCard.SEMANTIC_FLOW,
+    scales=[96, 192, 384],  # All scales for multi-scale harmonic analysis
+    fusion_weights={96: 0.3, 192: 0.35, 384: 0.35},
+    enable_motifs=True,
+    motif_mode="hybrid",
+    enable_spectral=True,
+    spectral_k_eigen=4,
+    retrieval_mode="fast",  # Fast retrieval (semantic calculus is the focus)
+    retrieval_k=6,
+    enable_bm25=True,
+    bm25_weight=0.1,
+    n_transformer_layers=2,
+    n_attention_heads=4,
+    policy_complexity="full",
+    pipeline_timeout=5.0,  # Moderate timeout (semantic calculus is fast with caching)
+    quality_target=0.85,
+    speed_priority=0.4,
+    # Semantic calculus features
+    enable_semantic_flow=True,
+    semantic_dimensions=16,  # 16 interpretable conjugate pairs
+    semantic_trajectory=True,  # Compute velocity, acceleration, curvature
+    semantic_ethics=True,  # Multi-objective ethical analysis
+)
+
 
 # ============================================================================
 # Loom Command
@@ -205,7 +239,8 @@ class LoomCommand:
         self.patterns = {
             PatternCard.BARE: BARE_PATTERN,
             PatternCard.FAST: FAST_PATTERN,
-            PatternCard.FUSED: FUSED_PATTERN
+            PatternCard.FUSED: FUSED_PATTERN,
+            PatternCard.SEMANTIC_FLOW: SEMANTIC_FLOW_PATTERN
         }
 
         # Current pattern

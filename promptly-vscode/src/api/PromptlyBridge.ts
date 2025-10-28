@@ -53,9 +53,13 @@ export class PromptlyBridge {
     async start(): Promise<void> {
         // Check if server is already running
         try {
-            await this.client.get('/health');
-            console.log('Promptly bridge server already running');
-            return;
+            const response = await this.client.get('/health');
+            if (response.data.promptly_available) {
+                console.log('Promptly bridge server already running');
+                this.isHealthy = true;
+                this.startHealthCheck();
+                return;
+            }
         } catch (error) {
             // Server not running, start it
             console.log('Starting Promptly bridge server...');
@@ -79,50 +83,119 @@ export class PromptlyBridge {
 
         if (this.serverProcess.stderr) {
             this.serverProcess.stderr.on('data', (data) => {
-                console.error(`Bridge error: ${data}`);
+                console.error(`Bridge: ${data}`);
             });
         }
 
+        this.serverProcess.on('exit', (code) => {
+            console.log(`Bridge process exited with code ${code}`);
+            this.isHealthy = false;
+        });
+
         // Wait for server to be ready
         await this.waitForServer();
+        this.startHealthCheck();
     }
 
     async stop(): Promise<void> {
+        // Stop health check
+        if (this.healthCheckInterval) {
+            clearInterval(this.healthCheckInterval);
+            this.healthCheckInterval = null;
+        }
+
+        // Kill server process
         if (this.serverProcess) {
+            console.log('Stopping Promptly bridge server...');
             this.serverProcess.kill();
             this.serverProcess = null;
         }
+
+        this.isHealthy = false;
     }
 
-    private async waitForServer(maxAttempts: number = 10): Promise<void> {
+    private startHealthCheck(): void {
+        // Check server health every 30 seconds
+        this.healthCheckInterval = setInterval(async () => {
+            try {
+                const response = await this.client.get('/health');
+                this.isHealthy = response.data.promptly_available;
+                if (!this.isHealthy) {
+                    console.warn('Promptly bridge is unhealthy');
+                }
+            } catch (error) {
+                console.error('Health check failed:', error);
+                this.isHealthy = false;
+            }
+        }, 30000);
+    }
+
+    getHealthStatus(): boolean {
+        return this.isHealthy;
+    }
+
+    private async waitForServer(maxAttempts: number = 20): Promise<void> {
         for (let i = 0; i < maxAttempts; i++) {
             try {
-                await this.client.get('/health');
-                console.log('Promptly bridge server ready');
-                return;
+                const response = await this.client.get('/health');
+                if (response.data.promptly_available) {
+                    console.log('Promptly bridge server ready');
+                    this.isHealthy = true;
+                    return;
+                }
             } catch (error) {
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Server not ready yet
             }
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
-        throw new Error('Failed to start Promptly bridge server');
+        throw new Error('Failed to start Promptly bridge server after 10 seconds');
     }
 
     async listPrompts(): Promise<PromptMetadata[]> {
+        if (!this.isHealthy) {
+            console.warn('Bridge is not healthy, returning empty list');
+            return [];
+        }
+
         try {
             const response = await this.client.get('/prompts');
-            return response.data.prompts || [];
-        } catch (error) {
-            console.error('Failed to list prompts:', error);
+            if (response.status === 200 && response.data.prompts) {
+                return response.data.prompts;
+            }
+            return [];
+        } catch (error: any) {
+            if (error.response?.status === 503) {
+                console.error('Promptly core not available');
+            } else {
+                console.error('Failed to list prompts:', error.message);
+            }
             return [];
         }
     }
 
     async getPrompt(name: string): Promise<PromptData | null> {
+        if (!this.isHealthy) {
+            console.warn('Bridge is not healthy, cannot get prompt');
+            return null;
+        }
+
         try {
             const response = await this.client.get(`/prompts/${encodeURIComponent(name)}`);
-            return response.data;
-        } catch (error) {
-            console.error(`Failed to get prompt ${name}:`, error);
+            if (response.status === 200) {
+                return response.data;
+            }
+            if (response.status === 404) {
+                console.warn(`Prompt not found: ${name}`);
+            }
+            return null;
+        } catch (error: any) {
+            if (error.response?.status === 404) {
+                console.warn(`Prompt not found: ${name}`);
+            } else if (error.response?.status === 503) {
+                console.error('Promptly core not available');
+            } else {
+                console.error(`Failed to get prompt ${name}:`, error.message);
+            }
             return null;
         }
     }

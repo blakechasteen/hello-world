@@ -11,8 +11,8 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.spinningWheel.website import WebsiteSpinner, WebsiteSpinnerConfig
-from HoloLoom.spinningWheel.recursive_crawler import crawl_recursive, CrawlConfig
+from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+from HoloLoom.spinning_wheel.recursive_crawler import crawl_recursive, CrawlConfig
 
 logging.basicConfig(
     level=logging.INFO,
@@ -106,7 +106,7 @@ async def test_recursive_crawl():
         logger.info(f"  Max pages: {config.max_pages}")
         logger.info(f"  Importance thresholds: {config.importance_thresholds}")
 
-        from HoloLoom.spinningWheel.recursive_crawler import RecursiveCrawler
+        from HoloLoom.spinning_wheel.recursive_crawler import RecursiveCrawler
         crawler = RecursiveCrawler(config)
         pages = await crawler.crawl(seed_url, seed_topic)
 

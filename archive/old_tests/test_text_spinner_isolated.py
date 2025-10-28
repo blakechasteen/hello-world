@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 # Import just the text spinner module
-from HoloLoom.spinningWheel.text import TextSpinner, TextSpinnerConfig, spin_text
+from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig, spin_text
 
 
 async def test_basic_functionality():

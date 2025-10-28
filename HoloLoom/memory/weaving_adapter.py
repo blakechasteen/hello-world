@@ -25,7 +25,7 @@ from datetime import datetime, timedelta
 import hashlib
 
 # Shared types
-from HoloLoom.Documentation.types import MemoryShard, Query
+from HoloLoom.documentation.types import MemoryShard, Query
 
 # Try importing various memory backends
 try:

@@ -31,7 +31,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 
 # Shared types
-from HoloLoom.Documentation.types import Query, Context, Features, MemoryShard
+from HoloLoom.documentation.types import Query, Context, Features, MemoryShard
 
 # mythRL Protocol-based architecture types
 from HoloLoom.protocols import (
@@ -62,6 +62,13 @@ from HoloLoom.policy.unified import create_policy
 
 # Performance optimizations
 from HoloLoom.performance.cache import QueryCache
+
+# Prometheus metrics
+try:
+    from HoloLoom.performance.prometheus_metrics import metrics
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
 
 logging.basicConfig(level=logging.INFO)
 
@@ -281,10 +288,18 @@ class WeavingOrchestrator:
         self.enable_complexity_auto_detect = enable_complexity_auto_detect
         self._protocols: Dict[str, Any] = {}  # Registered protocol implementations
         self._complexity_thresholds = {
-            'lite_max_words': 5,      # Up to 5 words = LITE (greetings, simple queries)
-            'fast_max_words': 20,     # 6-20 words = FAST (standard questions)
+            # Word count thresholds
+            'lite_max_words': 3,      # Up to 3 words = LITE (greetings, simple commands)
+            'fast_max_words': 20,     # 4-20 words = FAST (standard questions)
             'full_max_words': 50,     # 21-50 words = FULL (detailed queries)
-            'research_keywords': ['analyze', 'research', 'deep', 'comprehensive', 'detailed', 'compare', 'evaluate', 'investigate']
+            
+            # Intent patterns for sophisticated detection
+            'greeting_patterns': ['hi', 'hello', 'hey', 'thanks', 'thank you', 'bye', 'goodbye'],
+            'simple_commands': ['show', 'list', 'get', 'find', 'open'],
+            'question_words': ['what', 'why', 'how', 'when', 'where', 'who', 'which', 'whose', 'whom'],
+            'knowledge_verbs': ['explain', 'describe', 'tell', 'define', 'clarify', 'elaborate'],
+            'analysis_verbs': ['analyze', 'compare', 'evaluate', 'assess', 'investigate', 'examine'],
+            'research_keywords': ['research', 'deep', 'comprehensive', 'detailed', 'thorough', 'in-depth', 'extensive']
         }
         self.logger.info(f"mythRL protocol system enabled (auto_detect={enable_complexity_auto_detect})")
 
@@ -399,12 +414,20 @@ class WeavingOrchestrator:
 
     def _assess_complexity_level(self, query: Query, trace: Optional[ProvenceTrace] = None) -> ComplexityLevel:
         """
-        Assess required complexity level for query (3-5-7-9 system).
+        Assess query complexity using hybrid word count + intent detection.
         
-        - LITE (3): Simple queries, greetings (<10 words)
-        - FAST (5): Standard queries, searches (10-30 words)
-        - FULL (7): Complex analysis (30-100 words, analysis keywords)
-        - RESEARCH (9): Deep research ('analyze', 'compare', 'research' keywords)
+        **Progressive Complexity (3-5-7-9):**
+        - LITE (3): Greetings, simple commands (1-3 words, no questions)
+        - FAST (5): Questions, knowledge queries (4-20 words OR question indicators)
+        - FULL (7): Detailed analysis (21-50 words, complex questions)
+        - RESEARCH (9): Deep research (analysis verbs, research keywords, 50+ words)
+        
+        **Intent Detection:**
+        - Greetings: "hi", "hello", "thanks" → LITE
+        - Questions: "what", "how", "why" → FAST (minimum)
+        - Knowledge: "explain", "describe" → FAST (minimum)
+        - Analysis: "analyze", "compare" → RESEARCH
+        - Research: "comprehensive", "detailed" → RESEARCH
         
         Args:
             query: User query
@@ -423,21 +446,48 @@ class WeavingOrchestrator:
                 return ComplexityLevel.FULL
         
         text = query.text.lower()
-        word_count = len(text.split())
+        words = text.split()
+        word_count = len(words)
         
-        # Check for research keywords
-        research_keywords = self._complexity_thresholds['research_keywords']
-        has_research_keyword = any(keyword in text for keyword in research_keywords)
+        # Extract intent patterns
+        thresholds = self._complexity_thresholds
         
-        # Determine complexity
-        if has_research_keyword or word_count > self._complexity_thresholds['full_max_words']:
+        # Check for specific intent patterns
+        is_greeting = any(pattern in text for pattern in thresholds['greeting_patterns'])
+        is_simple_command = any(cmd in words for cmd in thresholds['simple_commands'])
+        has_question_word = any(q in words for q in thresholds['question_words'])
+        has_question_mark = '?' in text
+        has_knowledge_verb = any(verb in words for verb in thresholds['knowledge_verbs'])
+        has_analysis_verb = any(verb in words for verb in thresholds['analysis_verbs'])
+        has_research_keyword = any(keyword in text for keyword in thresholds['research_keywords'])
+        
+        # Determine complexity with sophisticated intent detection
+        # Priority: Research > Full > Fast > Lite
+        
+        # RESEARCH: Analysis verbs, research keywords, or very long queries
+        if has_analysis_verb or has_research_keyword or word_count > thresholds['full_max_words']:
             level = ComplexityLevel.RESEARCH
-        elif word_count > self._complexity_thresholds['fast_max_words']:
+            reason = f"analysis_verb={has_analysis_verb}, research_keyword={has_research_keyword}, long_query={word_count > thresholds['full_max_words']}"
+        
+        # FULL: Detailed questions (21-50 words) or complex knowledge requests
+        elif word_count > thresholds['fast_max_words']:
             level = ComplexityLevel.FULL
-        elif word_count > self._complexity_thresholds['lite_max_words']:
-            level = ComplexityLevel.FAST
+            reason = f"word_count={word_count} > {thresholds['fast_max_words']}"
+        
+        # FAST: Questions, knowledge verbs, or 4-20 words
+        elif has_question_word or has_question_mark or has_knowledge_verb or word_count > thresholds['lite_max_words']:
+            # Exception: Pure greetings stay LITE even if >3 words
+            if is_greeting and word_count <= 5:
+                level = ComplexityLevel.LITE
+                reason = f"greeting_pattern (word_count={word_count})"
+            else:
+                level = ComplexityLevel.FAST
+                reason = f"question={has_question_word or has_question_mark}, knowledge_verb={has_knowledge_verb}, word_count={word_count}"
+        
+        # LITE: Simple greetings, short commands (1-3 words, no questions)
         else:
             level = ComplexityLevel.LITE
+            reason = f"simple_query (word_count={word_count})"
         
         if trace:
             trace.add_shuttle_event(
@@ -445,8 +495,13 @@ class WeavingOrchestrator:
                 f"Assessed complexity: {level.name}",
                 {
                     'word_count': word_count,
+                    'is_greeting': is_greeting,
+                    'has_question': has_question_word or has_question_mark,
+                    'has_knowledge_verb': has_knowledge_verb,
+                    'has_analysis_verb': has_analysis_verb,
                     'has_research_keyword': has_research_keyword,
-                    'complexity_level': level.name
+                    'complexity_level': level.name,
+                    'reason': reason
                 }
             )
         
@@ -799,11 +854,39 @@ class WeavingOrchestrator:
                 context_summary=f"{len(context.shards)} shards",
                 sources_used=[s.id for s in context.shards[:3]]
             )
+            
+            # Attach mythRL enhancements if protocol system is enabled
+            if hasattr(self, 'enable_complexity_auto_detect') and self.enable_complexity_auto_detect:
+                spacetime.complexity = complexity
+                spacetime.provenance = self._create_provenance_trace(query, complexity)
+                # Add all stage timings as protocol calls
+                for stage, timing_ms in stage_timings.items():
+                    spacetime.provenance.add_protocol_call(
+                        protocol='weaving_orchestrator',
+                        method=stage,
+                        duration_ms=timing_ms,
+                        result_summary=f"Stage completed in {timing_ms:.1f}ms"
+                    )
+                # Add final shuttle event
+                spacetime.provenance.add_shuttle_event("weaving_complete", {
+                    'tool': collapse_result.tool,
+                    'confidence': collapse_result.confidence,
+                    'duration_ms': duration_ms
+                })
 
             self.logger.info(f"  [9] Spacetime fabric woven!")
             stage_timings['spacetime_assembly'] = (time.time() - step_start) * 1000
 
             self.logger.info(f"[SUCCESS] Weaving cycle complete! Total duration: {duration_ms:.1f}ms")
+
+            # Track metrics
+            if METRICS_ENABLED:
+                metrics.track_query(
+                    pattern=pattern_spec.name,
+                    complexity=complexity.name if complexity else 'unknown',
+                    duration=duration_ms / 1000.0  # Convert to seconds
+                )
+                metrics.track_pattern(pattern_spec.name)
 
             # Cache the result
             self.query_cache.put(query.text, spacetime)
@@ -818,6 +901,10 @@ class WeavingOrchestrator:
                 'error': str(e),
                 'type': type(e).__name__
             })
+
+            # Track error metrics
+            if METRICS_ENABLED:
+                metrics.track_error(error_type=type(e).__name__, stage='weaving')
 
             # Return error Spacetime
             end_time = datetime.now()

@@ -6,7 +6,7 @@ Usage: python transcribe_video.py [VIDEO_URL]
 
 import asyncio
 import sys
-from HoloLoom.spinningWheel import transcribe_youtube
+from HoloLoom.spinning_wheel import transcribe_youtube
 
 
 async def main():

@@ -9,7 +9,7 @@ import sys
 
 # Direct import to avoid loading full HoloLoom dependencies
 sys.path.insert(0, '/home/user/hello-world')
-from HoloLoom.spinningWheel.youtube import transcribe_youtube
+from HoloLoom.spinning_wheel.youtube import transcribe_youtube
 
 
 async def main():

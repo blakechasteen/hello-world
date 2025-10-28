@@ -48,7 +48,7 @@ async def main():
         sys.path.insert(0, str(Path(__file__).parent))
 
         # Direct imports from specific modules
-        from HoloLoom.spinningWheel.text import spin_text
+        from HoloLoom.spinning_wheel.text import spin_text
         from HoloLoom.memory.protocol import shards_to_memories, Memory
         from HoloLoom.memory.stores.in_memory_store import InMemoryStore
         from HoloLoom.memory.protocol import UnifiedMemoryInterface

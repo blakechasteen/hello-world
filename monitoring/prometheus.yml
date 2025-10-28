@@ -1,0 +1,61 @@
+# Prometheus Configuration for HoloLoom
+# ======================================
+# Monitors all production services
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'hololoom-production'
+    environment: 'production'
+
+# Alertmanager configuration (optional)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # HoloLoom Application Metrics
+  - job_name: 'hololoom'
+    static_configs:
+      - targets: ['hololoom:8001']
+        labels:
+          service: 'hololoom-app'
+          type: 'application'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Neo4j Metrics
+  - job_name: 'neo4j'
+    static_configs:
+      - targets: ['neo4j:7474']
+        labels:
+          service: 'neo4j'
+          type: 'database'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Qdrant Metrics
+  - job_name: 'qdrant'
+    static_configs:
+      - targets: ['qdrant:6333']
+        labels:
+          service: 'qdrant'
+          type: 'database'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          type: 'monitoring'

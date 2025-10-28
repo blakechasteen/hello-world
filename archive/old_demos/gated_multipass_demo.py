@@ -35,8 +35,8 @@ def load_module(name, path):
 
 # Load dependencies
 repo_root = Path(__file__).parent
-load_module("HoloLoom.spinningWheel.base", repo_root / "HoloLoom" / "spinningWheel" / "base.py")
-text_module = load_module("HoloLoom.spinningWheel.text", repo_root / "HoloLoom" / "spinningWheel" / "text.py")
+load_module("HoloLoom.spinning_wheel.base", repo_root / "HoloLoom" / "spinningWheel" / "base.py")
+text_module = load_module("HoloLoom.spinning_wheel.text", repo_root / "HoloLoom" / "spinningWheel" / "text.py")
 
 TextSpinner = text_module.TextSpinner
 TextSpinnerConfig = text_module.TextSpinnerConfig

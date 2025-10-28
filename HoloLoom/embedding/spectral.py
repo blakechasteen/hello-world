@@ -27,7 +27,7 @@ import networkx as nx
 
 # Import only from shared types layer
 # Use the project's shared types module (avoid shadowing stdlib `types`)
-from HoloLoom.Documentation.types import Vector
+from HoloLoom.documentation.types import Vector
 
 # Optional dependencies
 try:
@@ -106,14 +106,30 @@ class MatryoshkaEmbeddings:
     
     def __post_init__(self):
         assert sorted(self.sizes) == self.sizes, "Sizes must be in ascending order"
-        
+
         self.external_heads = self.external_heads or {}
         self._last_hash = None
-        
-        # Load sentence transformer model
+
+        # Lazy loading: Don't load model until first encode
+        self._model = None
+        self._model_loaded = False
+        self.base_dim = max(self.sizes)  # Placeholder until model loads
+
+        # Embedding cache (text -> embedding)
+        from HoloLoom.performance.cache import QueryCache
+        self._embedding_cache = QueryCache(max_size=500, ttl_seconds=3600)
+
+        # Initialize projection matrices
+        self._build_projection(seed=12345)
+
+    def _ensure_model_loaded(self):
+        """Lazy load the sentence transformer model."""
+        if self._model_loaded:
+            return
+
         if _HAVE_SENTENCE_TRANSFORMERS:
             model_name = (
-                self.base_model_name or 
+                self.base_model_name or
                 os.environ.get("HOLOLOOM_BASE_ENCODER", "all-MiniLM-L6-v2")
             )
             try:
@@ -121,6 +137,8 @@ class MatryoshkaEmbeddings:
                 # Probe to get base dimension
                 probe = self._model.encode(["test"], normalize_embeddings=True)[0]
                 self.base_dim = len(probe)
+                # Rebuild projections with correct base_dim
+                self._build_projection(seed=12345)
             except Exception as e:
                 warnings.warn(f"Failed to load {model_name}: {e}")
                 self._model = None
@@ -128,9 +146,8 @@ class MatryoshkaEmbeddings:
         else:
             self._model = None
             self.base_dim = max(self.sizes)
-        
-        # Initialize projection matrices
-        self._build_projection(seed=12345)
+
+        self._model_loaded = True
     
     def _build_projection(self, seed: int = 12345):
         """
@@ -167,30 +184,57 @@ class MatryoshkaEmbeddings:
     
     def encode_base(self, texts: List[str]) -> np.ndarray:
         """
-        Generate base (full-dimensional) embeddings.
-        
+        Generate base (full-dimensional) embeddings with caching.
+
         Args:
             texts: List of text strings
-            
+
         Returns:
             Matrix of base embeddings (n_texts × base_dim)
         """
         if not texts:
             return np.zeros((0, self.base_dim))
-        
-        if self._model is not None:
-            # Use sentence-transformers
-            return self._model.encode(texts, normalize_embeddings=True)
-        else:
-            # Fallback: deterministic random embeddings (for testing)
-            vecs = []
-            for text in texts:
-                seed = abs(hash(text)) % (2**32)
-                rng = np.random.default_rng(seed)
-                vec = rng.normal(0, 1, self.base_dim)
-                vec = vec / (np.linalg.norm(vec) + 1e-9)
-                vecs.append(vec)
-            return np.vstack(vecs)
+
+        # Ensure model is loaded (lazy loading)
+        self._ensure_model_loaded()
+
+        # Check cache for each text
+        vecs = []
+        texts_to_encode = []
+        indices_to_encode = []
+
+        for i, text in enumerate(texts):
+            cached = self._embedding_cache.get(text)
+            if cached is not None:
+                vecs.append((i, cached))
+            else:
+                texts_to_encode.append(text)
+                indices_to_encode.append(i)
+
+        # Encode uncached texts
+        if texts_to_encode:
+            if self._model is not None:
+                # Use sentence-transformers
+                new_vecs = self._model.encode(texts_to_encode, normalize_embeddings=True)
+            else:
+                # Fallback: deterministic random embeddings (for testing)
+                new_vecs = []
+                for text in texts_to_encode:
+                    seed = abs(hash(text)) % (2**32)
+                    rng = np.random.default_rng(seed)
+                    vec = rng.normal(0, 1, self.base_dim)
+                    vec = vec / (np.linalg.norm(vec) + 1e-9)
+                    new_vecs.append(vec)
+                new_vecs = np.vstack(new_vecs) if new_vecs else np.array([])
+
+            # Cache new embeddings
+            for idx, (text, vec) in enumerate(zip(texts_to_encode, new_vecs)):
+                self._embedding_cache.put(text, vec)
+                vecs.append((indices_to_encode[idx], vec))
+
+        # Sort by original index and extract vectors
+        vecs.sort(key=lambda x: x[0])
+        return np.vstack([v for _, v in vecs])
     
     def encode_scales(
         self, 

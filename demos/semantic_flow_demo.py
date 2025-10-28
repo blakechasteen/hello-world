@@ -16,9 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from HoloLoom.semantic_calculus import (
     SemanticFlowCalculus,
-    SemanticFlowVisualizer,
-    print_trajectory_summary,
-    visualize_semantic_flow
+    SemanticFlowVisualizer
 )
 from HoloLoom.embedding.spectral import create_embedder
 

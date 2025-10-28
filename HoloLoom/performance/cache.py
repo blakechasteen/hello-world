@@ -7,6 +7,13 @@ from typing import Any, Optional, Dict
 from collections import OrderedDict
 from dataclasses import dataclass
 
+# Prometheus metrics
+try:
+    from HoloLoom.performance.prometheus_metrics import metrics
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
+
 
 @dataclass
 class CacheEntry:
@@ -37,6 +44,8 @@ class QueryCache:
         """Get cached value, None if expired or missing."""
         if key not in self.cache:
             self.misses += 1
+            if METRICS_ENABLED:
+                metrics.track_cache_miss()
             return None
 
         entry = self.cache[key]
@@ -45,12 +54,16 @@ class QueryCache:
         if time.time() - entry.timestamp > self.ttl_seconds:
             del self.cache[key]
             self.misses += 1
+            if METRICS_ENABLED:
+                metrics.track_cache_miss()
             return None
 
         # Move to end (most recently used)
         self.cache.move_to_end(key)
         entry.hits += 1
         self.hits += 1
+        if METRICS_ENABLED:
+            metrics.track_cache_hit()
         return entry.value
 
     def put(self, key: str, value: Any) -> None:

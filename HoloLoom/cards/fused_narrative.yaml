@@ -1,0 +1,140 @@
+# ============================================================
+# FUSED NARRATIVE Pattern Card
+# ============================================================
+# Optimized for narrative and literary analysis
+# Use for: Stories, novels, myths, epics, fiction
+
+name: "fused_narrative"
+display_name: "📖 Fused Narrative Mode"
+description: "Optimized for narrative and literary analysis. Smart 36D selection emphasizing story dimensions."
+version: "1.0"
+extends: "fast"  # Inherit from fast, override specific settings
+
+# ============================================================
+# MATH CAPABILITIES (Overrides)
+# ============================================================
+math:
+  # Semantic calculus - NARRATIVE optimized 36D selection
+  semantic_calculus:
+    enabled: true
+    config:
+      dimensions: 36  # Smart NARRATIVE selection from 244D
+      selection_strategy: "narrative"  # Emphasize story/archetype/plot
+      domain: "narrative"
+      dt: 1.0
+      mass: 1.0
+      ethical_framework: "compassionate"
+      compute_trajectory: true
+      compute_ethics: true
+      cache:
+        enabled: true
+        size: 20000
+
+  # Spectral embedding - all three scales
+  spectral_embedding:
+    enabled: true
+    scales: [96, 192, 384]  # All scales
+    fusion_mode: "weighted"
+
+  # Motif detection - full NLP
+  motif_detection:
+    enabled: true
+    mode: "nlp"  # Full NLP processing
+    patterns:
+      - "question"
+      - "causality"
+      - "comparison"
+      - "definition"
+      - "temporal"
+      - "spatial"
+      - "conditional"
+
+  # Policy engine - full features
+  policy_engine:
+    enabled: true
+    type: "neural_bandit"
+    strategy: "bayesian_blend"  # More sophisticated
+    epsilon: 0.15
+    thompson_sampling: true
+
+# ============================================================
+# MEMORY CONFIGURATION (Overrides)
+# ============================================================
+memory:
+  backend: "neo4j_qdrant"  # Upgrade to hybrid backend
+
+  caching:
+    vector_cache: true
+    cache_size: 10000  # Larger cache
+
+  retrieval:
+    max_shards: 20  # More context
+    similarity_threshold: 0.65  # Lower threshold for more results
+
+  graph:
+    max_depth: 3  # Deeper traversal
+
+# ============================================================
+# TOOLS (Overrides)
+# ============================================================
+tools:
+  enabled:
+    - "summarize"
+    - "search"
+    - "analyze"
+    - "extract"
+    - "deep_research"  # Enable deep research
+    - "synthesis"
+
+  disabled: []  # All tools enabled
+
+  configs:
+    summarize:
+      max_length: 1000  # Longer summaries
+    search:
+      max_results: 10  # More results
+    analyze:
+      include_semantic: true
+      include_ethics: true
+      include_trajectory: true
+      include_dimensions: true
+    deep_research:
+      max_depth: 3
+      include_citations: true
+
+# ============================================================
+# PERFORMANCE PROFILE (Overrides)
+# ============================================================
+performance:
+  target_latency_ms: 1000  # Accept slower for quality
+  max_latency_ms: 2000
+  timeout_ms: 5000  # Longer timeout
+
+  optimization:
+    jit_compile: true
+    parallel_threads: 8  # More parallelism
+    batch_size: 64
+
+# ============================================================
+# EXTENSIONS (Overrides)
+# ============================================================
+extensions:
+  narrative_depth:
+    enabled: true  # Enable by default for narrative analysis
+    max_depth: 7
+    include_full_analysis: true
+
+  semantic_monitoring:
+    enabled: true
+    track_velocity: true
+    track_acceleration: true
+    track_curvature: true
+    track_ethics: true
+    track_dimensions: true
+
+  citation_tracking:
+    enabled: false  # Custom extension
+
+  custom_hooks:
+    pre_query: null
+    post_query: null

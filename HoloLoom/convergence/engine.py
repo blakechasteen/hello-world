@@ -181,7 +181,8 @@ class ConvergenceEngine:
         self,
         tools: List[str],
         default_strategy: CollapseStrategy = CollapseStrategy.EPSILON_GREEDY,
-        epsilon: float = 0.1
+        epsilon: float = 0.1,
+        entropy_temperature: float = 0.1
     ):
         """
         Initialize Convergence Engine.
@@ -190,11 +191,17 @@ class ConvergenceEngine:
             tools: List of tool names
             default_strategy: Default collapse strategy
             epsilon: Exploration rate for epsilon-greedy
+            entropy_temperature: Temperature for entropy injection (0-1)
+                                0.0 = no noise (deterministic)
+                                0.1 = light noise (default)
+                                0.5 = moderate noise
+                                1.0 = high noise (maximum exploration)
         """
         self.tools = tools
         self.n_tools = len(tools)
         self.default_strategy = default_strategy
         self.epsilon = epsilon
+        self.entropy_temperature = entropy_temperature
 
         # Initialize Thompson bandit
         self.bandit = ThompsonBandit(self.n_tools)
@@ -202,13 +209,47 @@ class ConvergenceEngine:
         # Track collapses
         self.collapse_history: List[CollapseResult] = []
 
-        logger.info(f"ConvergenceEngine initialized: {self.n_tools} tools, strategy={default_strategy.value}")
+        logger.info(f"ConvergenceEngine initialized: {self.n_tools} tools, strategy={default_strategy.value}, entropy_temp={entropy_temperature}")
+
+    def inject_entropy(self, probs: np.ndarray, temperature: Optional[float] = None) -> np.ndarray:
+        """
+        Inject entropy (controlled noise) into probabilities.
+
+        Adds Gumbel noise for "fresh air" - prevents deterministic stagnation
+        while maintaining roughly the same probability distribution.
+
+        Args:
+            probs: Probability distribution [n_tools]
+            temperature: Override default temperature (higher = more noise)
+
+        Returns:
+            Noisy probabilities (still normalized)
+        """
+        temperature = temperature or self.entropy_temperature
+
+        if temperature == 0:
+            return probs  # No noise
+
+        # Add Gumbel noise: -log(-log(uniform))
+        # This is the "Gumbel-Max trick" for sampling
+        gumbel_noise = -np.log(-np.log(np.random.uniform(0.0001, 0.9999, size=len(probs))))
+
+        # Scale by temperature and add to log-probs
+        log_probs = np.log(probs + 1e-10)
+        noisy_log_probs = log_probs + temperature * gumbel_noise
+
+        # Convert back to probabilities
+        noisy_probs = np.exp(noisy_log_probs - np.max(noisy_log_probs))
+        noisy_probs = noisy_probs / np.sum(noisy_probs)
+
+        return noisy_probs
 
     def collapse(
         self,
         neural_probs: np.ndarray,
         strategy: Optional[CollapseStrategy] = None,
-        epsilon: Optional[float] = None
+        epsilon: Optional[float] = None,
+        inject_entropy: bool = True
     ) -> CollapseResult:
         """
         Perform collapse: continuous probabilities → discrete tool selection.
@@ -217,6 +258,7 @@ class ConvergenceEngine:
             neural_probs: Probability distribution from neural network [n_tools]
             strategy: Override default collapse strategy
             epsilon: Override default epsilon (for epsilon-greedy)
+            inject_entropy: Whether to inject entropy for exploration
 
         Returns:
             CollapseResult with selected tool and metadata
@@ -228,6 +270,11 @@ class ConvergenceEngine:
 
         # Normalize probabilities
         neural_probs = neural_probs / np.sum(neural_probs)
+
+        # Inject entropy if enabled (adds "fresh air")
+        if inject_entropy and self.entropy_temperature > 0:
+            neural_probs = self.inject_entropy(neural_probs)
+            logger.debug(f"Entropy injected (temperature={self.entropy_temperature})")
 
         # Select tool based on strategy
         if strategy == CollapseStrategy.ARGMAX:

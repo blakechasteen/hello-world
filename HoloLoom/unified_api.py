@@ -46,8 +46,8 @@ from datetime import datetime
 try:
     from HoloLoom.config import Config
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.spinningWheel.website import WebsiteSpinnerConfig, WebsiteSpinner
-    from HoloLoom.spinningWheel.youtube import YouTubeSpinnerConfig, YouTubeSpinner
+    from HoloLoom.spinning_wheel.website import WebsiteSpinnerConfig, WebsiteSpinner
+    from HoloLoom.spinning_wheel.youtube import YouTubeSpinnerConfig, YouTubeSpinner
     from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
     from HoloLoom.fabric.spacetime import Spacetime
     from HoloLoom.convergence.engine import CollapseStrategy
@@ -58,6 +58,14 @@ except ImportError as e:
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Narrative depth intelligence (optional app)
+try:
+    from hololoom_narrative.cache import CachedMatryoshkaDepth, NarrativeCache
+    NARRATIVE_DEPTH_AVAILABLE = True
+except ImportError:
+    NARRATIVE_DEPTH_AVAILABLE = False
+    logger.info("hololoom-narrative app not installed (optional)")
 
 
 class HoloLoom:
@@ -87,7 +95,8 @@ class HoloLoom:
         weaver: WeavingOrchestrator,
         memory: Optional[Any] = None,
         config: Optional[Config] = None,
-        enable_synthesis: bool = True
+        enable_synthesis: bool = True,
+        enable_narrative_depth: bool = False
     ):
         """
         Initialize HoloLoom (use create() factory instead).
@@ -97,11 +106,22 @@ class HoloLoom:
             memory: Optional unified memory instance
             config: Optional Config instance
             enable_synthesis: Enable synthesis pipeline
+            enable_narrative_depth: Enable narrative depth intelligence
         """
         self.weaver = weaver
         self.memory = memory
         self.config = config or Config.fast()
         self.enable_synthesis = enable_synthesis
+
+        # Narrative depth intelligence (optional)
+        self.enable_narrative_depth = enable_narrative_depth and NARRATIVE_DEPTH_AVAILABLE
+        if self.enable_narrative_depth:
+            self.narrative_cache = NarrativeCache(max_size=500, ttl_seconds=3600)
+            self.depth_analyzer = CachedMatryoshkaDepth(self.narrative_cache)
+            logger.info("Narrative depth intelligence enabled")
+        else:
+            self.narrative_cache = None
+            self.depth_analyzer = None
 
         # Conversation history (for chat mode)
         self.conversation_history: List[Dict] = []
@@ -111,10 +131,12 @@ class HoloLoom:
         self.query_count = 0
         self.chat_count = 0
         self.ingest_count = 0
+        self.narrative_depth_count = 0
 
         logger.info("HoloLoom initialized")
         logger.info(f"  Mode: {self.config.mode.value}")
         logger.info(f"  Synthesis: {enable_synthesis}")
+        logger.info(f"  Narrative Depth: {self.enable_narrative_depth}")
 
     @classmethod
     async def create(
@@ -122,6 +144,7 @@ class HoloLoom:
         pattern: str = "fast",
         memory_backend: str = "simple",
         enable_synthesis: bool = True,
+        enable_narrative_depth: bool = False,
         collapse_strategy: str = "epsilon_greedy"
     ) -> "HoloLoom":
         """
@@ -131,13 +154,18 @@ class HoloLoom:
             pattern: Pattern card ("bare", "fast", "fused")
             memory_backend: Memory backend ("simple", "neo4j", "qdrant", "neo4j+qdrant")
             enable_synthesis: Enable synthesis pipeline
+            enable_narrative_depth: Enable narrative depth intelligence (NEW!)
             collapse_strategy: Decision strategy ("argmax", "epsilon_greedy", "bayesian_blend", "pure_thompson")
 
         Returns:
             Configured HoloLoom instance
 
         Example:
-            loom = await HoloLoom.create(pattern="fused", memory_backend="neo4j")
+            loom = await HoloLoom.create(
+                pattern="fused", 
+                memory_backend="neo4j",
+                enable_narrative_depth=True  # Enable deep meaning extraction
+            )
         """
         logger.info(f"Creating HoloLoom (pattern={pattern}, memory={memory_backend})")
 
@@ -167,9 +195,9 @@ class HoloLoom:
             strategy = CollapseStrategy.EPSILON_GREEDY
 
         weaver = WeavingOrchestrator(
-            config=config,
-            default_pattern=pattern,
-            collapse_strategy=strategy
+            cfg=config,
+            memory=memory,
+            enable_reflection=True
         )
 
         # Create HoloLoom instance
@@ -177,7 +205,8 @@ class HoloLoom:
             weaver=weaver,
             memory=memory,
             config=config,
-            enable_synthesis=enable_synthesis
+            enable_synthesis=enable_synthesis,
+            enable_narrative_depth=enable_narrative_depth
         )
 
     async def query(
@@ -306,7 +335,7 @@ class HoloLoom:
 
         try:
             # Use TextSpinner to create shards
-            from HoloLoom.spinningWheel import TextSpinnerConfig, TextSpinner
+            from HoloLoom.spinning_wheel import TextSpinnerConfig, TextSpinner
 
             config = TextSpinnerConfig(chunk_size=500, chunk_by='paragraph')
             spinner = TextSpinner(config)
@@ -447,6 +476,93 @@ class HoloLoom:
 
         return await self.ingest_text(text, metadata={'source_file': str(path)})
 
+    async def analyze_narrative_depth(
+        self,
+        text: str,
+        include_full_result: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Analyze narrative depth of text using Matryoshka progressive gating.
+        
+        This is a NEW feature that provides deep narrative intelligence:
+        - Progressive depth levels (Surface → Symbolic → Archetypal → Mythic → Cosmic)
+        - Joseph Campbell Hero's Journey stage detection
+        - Universal character recognition
+        - Archetypal pattern identification
+        - Mythic truth extraction
+        
+        Args:
+            text: Text to analyze
+            include_full_result: Include complete depth analysis result
+            
+        Returns:
+            Dict with depth analysis summary
+            
+        Example:
+            depth = await loom.analyze_narrative_depth(
+                "Odysseus met Athena at the crossroads..."
+            )
+            print(f"Max depth: {depth['max_depth']}")
+            print(f"Cosmic truth: {depth['cosmic_truth']}")
+        """
+        if not self.enable_narrative_depth:
+            return {
+                'error': 'Narrative depth not enabled',
+                'hint': 'Create HoloLoom with enable_narrative_depth=True'
+            }
+        
+        try:
+            # Analyze depth (with caching)
+            result = await self.depth_analyzer.analyze_depth(text)
+            
+            self.narrative_depth_count += 1
+            
+            # Build summary
+            summary = {
+                'max_depth': result.max_depth_achieved.name,
+                'complexity': result.total_complexity,
+                'confidence': result.bayesian_confidence,
+                'gates_unlocked': len([g for g in result.gates_unlocked if g]),
+                'deepest_meaning': result.deepest_meaning
+            }
+            
+            # Add symbolic elements
+            if result.symbolic_layer and result.symbolic_layer.symbolic_elements:
+                summary['symbolic_elements'] = result.symbolic_layer.symbolic_elements
+            
+            # Add archetypal resonance
+            if result.archetypal_layer and result.archetypal_layer.archetypal_resonance:
+                top_archetypes = sorted(
+                    result.archetypal_layer.archetypal_resonance.items(),
+                    key=lambda x: x[1],
+                    reverse=True
+                )[:5]
+                summary['top_archetypes'] = dict(top_archetypes)
+            
+            # Add mythic truths
+            if result.mythic_layer and result.mythic_layer.universal_truths:
+                summary['mythic_truths'] = result.mythic_layer.universal_truths
+            
+            # Add cosmic truth
+            if result.cosmic_truth:
+                summary['cosmic_truth'] = result.cosmic_truth
+            
+            # Add transformation journey
+            summary['transformation_journey'] = result.transformation_journey
+            
+            # Include full result if requested
+            if include_full_result:
+                summary['full_result'] = result
+            
+            logger.info(f"Narrative depth analyzed: {summary['max_depth']} "
+                       f"(complexity: {summary['complexity']:.3f})")
+            
+            return summary
+            
+        except Exception as e:
+            logger.error(f"Narrative depth analysis failed: {e}")
+            return {'error': str(e)}
+
     def get_stats(self) -> Dict[str, Any]:
         """
         Get HoloLoom usage statistics.
@@ -462,11 +578,32 @@ class HoloLoom:
             'query_count': self.query_count,
             'chat_count': self.chat_count,
             'ingest_count': self.ingest_count,
+            'narrative_depth_count': self.narrative_depth_count,
             'conversation_turns': len(self.conversation_history),
             'conversation_mode': self.conversation_mode,
             'pattern': self.config.mode.value,
-            'synthesis_enabled': self.enable_synthesis
+            'synthesis_enabled': self.enable_synthesis,
+            'narrative_depth_enabled': self.enable_narrative_depth
         }
+
+        # Add narrative cache stats if available
+        if self.enable_narrative_depth and self.narrative_cache:
+            try:
+                # Try to get cache stats if running in async context
+                import asyncio
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # Cannot await in sync context, create task
+                    task = asyncio.create_task(self.narrative_cache.get_stats())
+                    # Don't wait for it in sync context, skip
+                    pass
+                else:
+                    # Can run_until_complete
+                    cache_stats = loop.run_until_complete(self.narrative_cache.get_stats())
+                    stats['narrative_cache'] = cache_stats
+            except Exception as e:
+                logger.debug(f"Could not get cache stats: {e}")
+                pass
 
         # Add weaver stats
         if hasattr(self.weaver, 'get_statistics'):

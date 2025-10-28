@@ -43,7 +43,7 @@ except ImportError:
 
 import networkx as nx
 
-from HoloLoom.Utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
+from HoloLoom.utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
 
 # Import KGEdge from the base graph module
 try:

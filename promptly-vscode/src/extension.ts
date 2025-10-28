@@ -1,8 +1,11 @@
 import * as vscode from 'vscode';
 import { PromptTreeProvider } from './promptLibrary/PromptTreeProvider';
 import { PromptlyBridge } from './api/PromptlyBridge';
+import { ExecutionClient } from './api/ExecutionClient';
+import { ExecutionPanel } from './webviews/ExecutionPanel';
 
 let bridge: PromptlyBridge;
+let executionClient: ExecutionClient;
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('Promptly extension activating...');
@@ -10,6 +13,9 @@ export async function activate(context: vscode.ExtensionContext) {
     // Initialize Python bridge
     bridge = new PromptlyBridge();
     await bridge.start();
+
+    // Initialize execution client
+    executionClient = new ExecutionClient();
 
     // Create tree data provider
     const promptTreeProvider = new PromptTreeProvider(bridge);
@@ -40,7 +46,12 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(treeView, refreshCommand, viewPromptCommand);
+    // Register execution panel command
+    const openExecutionCommand = vscode.commands.registerCommand('promptly.openExecution', () => {
+        ExecutionPanel.createOrShow(context.extensionUri, executionClient);
+    });
+
+    context.subscriptions.push(treeView, refreshCommand, viewPromptCommand, openExecutionCommand);
 
     vscode.window.showInformationMessage('Promptly is ready!');
     console.log('Promptly extension activated');

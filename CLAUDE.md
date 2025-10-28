@@ -33,12 +33,33 @@ python -m spacy download en_core_web_sm
 
 ### Testing
 
-Run the unified policy test suite (18 tests covering neural components):
+**Test Organization** (Phase 1+2 Cleanup - Oct 2025):
+Tests are organized into three tiers for fast feedback loops:
+
 ```bash
-PYTHONPATH=. .venv/bin/python holoLoom/test_unified_policy.py
+# Unit Tests (Fast - <5s) - Isolated component testing
+pytest HoloLoom/tests/unit/ -v
+
+# Integration Tests (Medium - <30s) - Multi-component testing
+pytest HoloLoom/tests/integration/ -v
+
+# End-to-End Tests (Slow - <2min) - Full pipeline testing
+pytest HoloLoom/tests/e2e/ -v
+
+# Run all tests
+pytest HoloLoom/tests/ -v
 ```
 
-This tests: MLP blocks, attention, ICM/RND curiosity modules, hierarchical policies, PPO agent, and full end-to-end pipeline.
+**Key Tests:**
+- `tests/unit/test_unified_policy.py` - Neural components (MLP, attention, ICM/RND, PPO)
+- `tests/integration/test_backends.py` - Memory backend integration
+- `tests/e2e/test_full_pipeline.py` - Complete weaving cycle (BARE/FAST/FUSED modes)
+
+**Memory Backend Validation:**
+```bash
+python test_memory_backend_simplification.py
+```
+Validates 3-backend architecture (INMEMORY/HYBRID/HYPERSPACE) and auto-fallback.
 
 ### Training Example
 
@@ -260,48 +281,85 @@ PPO trainer for RL environments with:
 - Checkpoint saving/loading
 - Configurable network architectures
 
-### Module Structure
+### Module Structure (Phase 1+2 Cleanup - Oct 2025)
 
+**Clean Root Directory** (6 core files only):
 ```
-holoLoom/
-├── __init__.py              # Package entry point
-├── config.py                # Execution modes, system config
-├── orchestrator.py          # Central coordinator (imports all modules)
-├── train_agent              # PPO training script
-├── test_unified_policy.py   # Comprehensive test suite
-│
-├── policy/                  # Decision making
-│   ├── __init__.py
-│   └── unified.py          # Neural core + Thompson Sampling
-│
-├── embedding/               # Multi-scale embeddings
-│   ├── __init__.py
-│   └── spectral.py         # Matryoshka + spectral features
-│
-├── memory/                  # Knowledge storage
-│   ├── __init__.py
-│   ├── cache.py            # Vector/BM25 retrieval
-│   └── graph.py            # Knowledge graph (NetworkX)
-│
-├── motif/                   # Pattern detection
-│   ├── __init__.py
-│   ├── base.py             # Regex + optional NLP
-│   └── types.py
-│
-├── spinningWheel/           # Input adapters
-│   ├── __init__.py
-│   ├── base.py
-│   ├── audio.py
-│   └── utils/
-│
-├── documentation/           # Shared types
-│   ├── types.py            # Query, Context, Features, etc.
-│   └── CODE_REVIEW.md
-│
-└── modules/                 # Additional components
-    ├── Features.py
-    └── Types.py
+HoloLoom/
+├── __init__.py                # Package entry point
+├── config.py                  # Configuration (BARE/FAST/FUSED modes)
+├── unified_api.py             # Programmatic API
+├── weaving_shuttle.py         # Main entry point (async context manager)
+├── weaving_orchestrator.py    # Full 9-step weaving cycle
+└── protocols.py               # DEPRECATED (use protocols/ directory)
 ```
+
+**Organized Subdirectories:**
+```
+HoloLoom/
+├── tests/                     # All tests (Phase 2)
+│   ├── unit/                  # Fast isolated tests (<5s)
+│   ├── integration/           # Multi-component tests (<30s)
+│   └── e2e/                   # Full pipeline tests (<2min)
+│
+├── tools/                     # Developer utilities (Phase 1)
+│   ├── bootstrap_system.py
+│   ├── validate_pipeline.py
+│   ├── visualize_bootstrap.py
+│   └── archive/               # Archived dead code (safety net)
+│
+├── memory/                    # Storage backends (13 files, was 17)
+│   ├── backend_factory.py    # Create backends (231 lines, was 550)
+│   ├── graph.py              # NetworkX (default, always works)
+│   ├── neo4j_graph.py        # Production backend
+│   ├── hyperspace_backend.py # Research backend
+│   ├── protocol.py           # Memory protocols (120 lines, was 787)
+│   └── unified.py            # Unified interface
+│
+├── policy/                    # Decision making
+│   ├── unified.py            # Neural core + Thompson Sampling
+│   └── semantic_nudging.py   # Semantic goal guidance
+│
+├── protocols/                 # Protocol definitions (Phase 2)
+│   ├── __init__.py           # Public exports
+│   ├── core.py               # Core protocol definitions
+│   └── types.py              # Shared data types
+│
+├── semantic_calculus/         # 244D semantic space
+│   ├── dimensions.py         # EXTENDED_244_DIMENSIONS
+│   ├── integrator.py         # SemanticSpectrum
+│   └── dimension_selector.py
+│
+├── reflection/                # Learning & improvement
+│   ├── buffer.py             # ReflectionBuffer
+│   ├── ppo_trainer.py        # PPO training
+│   └── semantic_learning.py  # Multi-task learner (6 signals)
+│
+├── embedding/                 # Multi-scale embeddings
+│   ├── spectral.py           # Matryoshka + spectral features
+│   └── matryoshka_interpreter.py  # (moved from root)
+│
+├── spinningWheel/             # Input adapters
+│   ├── audio.py              # Audio/transcript processing
+│   ├── youtube.py            # YouTube transcription
+│   └── autospin.py           # (moved from root)
+│
+├── chatops/                   # Conversational features
+│   ├── core/chatops_bridge.py
+│   ├── conversational.py     # (moved from root)
+│   └── ROADMAP.md            # ChatOps + Semantic Learning plan
+│
+└── [other feature dirs...]    # loom/, warp/, resonance/, etc.
+```
+
+**Key Changes:**
+- ✅ Root: 17 → 6 files (-65%)
+- ✅ Memory: 17 → 13 files (-24%)
+- ✅ Tests: Organized into unit/integration/e2e
+- ✅ Backend factory: 550 → 231 lines (-58%)
+- ✅ Protocols: 787 → 120 lines (-84%)
+- ✅ Dead code: Archived to tools/archive/
+- ✅ All tests passing
 
 ## Important Patterns
 

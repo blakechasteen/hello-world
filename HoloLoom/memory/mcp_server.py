@@ -711,7 +711,7 @@ Importance: {importance:.2f}"""
 
                 try:
                     # Import text spinner and protocol helpers
-                    from HoloLoom.spinningWheel.text import spin_text
+                    from HoloLoom.spinning_wheel.text import spin_text
                     from .protocol import shards_to_memories
 
                     # Spin text into shards
@@ -788,7 +788,7 @@ Importance: {importance:.2f}"""
                     return [TextContent(
                         type="text",
                         text=f"Error: Text spinner not available. {e}\n"
-                             f"Make sure HoloLoom.spinningWheel.text is installed."
+                             f"Make sure HoloLoom.spinning_wheel.text is installed."
                     )]
                 except Exception as e:
                     logger.error(f"Error processing text: {e}")
@@ -805,7 +805,7 @@ Importance: {importance:.2f}"""
 
                 try:
                     # Import website spinner and protocol helpers
-                    from HoloLoom.spinningWheel.website import spin_webpage
+                    from HoloLoom.spinning_wheel.website import spin_webpage
                     from .protocol import shards_to_memories
 
                     # Spin webpage into shards (will scrape content)

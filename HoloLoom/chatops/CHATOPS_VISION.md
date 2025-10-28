@@ -286,7 +286,45 @@ Bot: Consulting research-bot and code-bot...
 
 **Impact:** Specialized expertise on demand
 
-#### 4.3 Explainability & Trust
+#### 4.3 Semantic Learning Integration
+```
+!weave --learn "Analyze this architecture"
+Bot:  [Analyzes with semantic learning enabled]
+      Semantic dimensions activated: 12/36
+      Learning signal: +0.34 improvement
+      Adapting policy for future architectural queries
+
+!semantic status
+Bot:  Semantic Learning Status:
+      • Active: Yes
+      • Queries processed: 147
+      • Avg improvement: +42%
+      • Top performing dimensions: temporal_flow, structural_coherence
+      • Recent adaptations: 5 policy updates in last hour
+```
+
+**Implementation:**
+- Integrate PPO semantic learning pipeline
+- Wire HoloLoom/reflection/semantic_learning.py
+- Add semantic dimension analysis to queries
+- Enable policy adaptation from chat interactions
+- Real-time semantic trajectory visualization
+- Automatic dimension selection based on query type
+
+**Features:**
+- Per-conversation semantic profiles
+- Cross-team learning patterns
+- Dimension importance tracking
+- Semantic nudging for better queries
+- Reward signals from chat reactions (👍/👎)
+
+**Impact:**
+- Continuous improvement from every conversation
+- Personalized responses based on semantic patterns
+- Team-wide intelligence amplification
+- Transparent learning through semantic dimensions
+
+#### 4.4 Explainability & Trust
 ```
 !weave Why did we choose microservices?
 Bot:  [Answer with decision trace]

@@ -40,12 +40,22 @@
       {
         "command": "promptly.viewPrompt",
         "title": "View Prompt"
+      },
+      {
+        "command": "promptly.openExecution",
+        "title": "Promptly: Open Execution Panel",
+        "icon": "$(play)"
       }
     ],
     "menus": {
       "view/title": [
         {
           "command": "promptly.refresh",
+          "when": "view == promptLibrary",
+          "group": "navigation"
+        },
+        {
+          "command": "promptly.openExecution",
           "when": "view == promptLibrary",
           "group": "navigation"
         }

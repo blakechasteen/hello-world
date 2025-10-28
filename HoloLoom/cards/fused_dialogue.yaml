@@ -1,0 +1,133 @@
+# ============================================================
+# FUSED DIALOGUE Pattern Card
+# ============================================================
+# Optimized for dialogue and conversation analysis
+# Use for: Chats, conversations, debates, interviews
+
+name: "fused_dialogue"
+display_name: "💬 Fused Dialogue Mode"
+description: "Optimized for dialogue and conversation analysis. Smart 36D selection emphasizing emotional and relational dimensions."
+version: "1.0"
+extends: "fast"  # Inherit from fast, override specific settings
+
+# ============================================================
+# MATH CAPABILITIES (Overrides)
+# ============================================================
+math:
+  # Semantic calculus - DIALOGUE optimized 36D selection
+  semantic_calculus:
+    enabled: true
+    config:
+      dimensions: 36  # Smart DIALOGUE selection from 244D
+      selection_strategy: "dialogue"  # Emphasize core/emotional/relational
+      domain: "dialogue"
+      dt: 1.0
+      mass: 1.0
+      ethical_framework: "compassionate"
+      compute_trajectory: true
+      compute_ethics: true
+      cache:
+        enabled: true
+        size: 20000
+
+  # Spectral embedding - all three scales
+  spectral_embedding:
+    enabled: true
+    scales: [96, 192, 384]  # All scales
+    fusion_mode: "weighted"
+
+  # Motif detection - conversation-focused
+  motif_detection:
+    enabled: true
+    mode: "nlp"  # Full NLP processing
+    patterns:
+      - "question"
+      - "comparison"
+      - "definition"
+      - "temporal"
+      - "conditional"
+
+  # Policy engine - responsive
+  policy_engine:
+    enabled: true
+    type: "neural_bandit"
+    strategy: "epsilon_greedy"  # Faster for real-time conversation
+    epsilon: 0.10
+    thompson_sampling: true
+
+# ============================================================
+# MEMORY CONFIGURATION (Overrides)
+# ============================================================
+memory:
+  backend: "neo4j_qdrant"  # Upgrade to hybrid backend
+
+  caching:
+    vector_cache: true
+    cache_size: 10000
+
+  retrieval:
+    max_shards: 15  # Moderate context for conversations
+    similarity_threshold: 0.70  # Higher threshold for relevance
+
+  graph:
+    max_depth: 2  # Shallower for conversational context
+
+# ============================================================
+# TOOLS (Overrides)
+# ============================================================
+tools:
+  enabled:
+    - "summarize"
+    - "search"
+    - "analyze"
+    - "extract"
+    - "synthesis"
+
+  disabled:
+    - "deep_research"  # Skip heavy research for dialogue
+
+  configs:
+    summarize:
+      max_length: 500  # Shorter for conversation
+    search:
+      max_results: 8
+    analyze:
+      include_semantic: true
+      include_ethics: true
+      include_trajectory: true
+      include_dimensions: true
+
+# ============================================================
+# PERFORMANCE PROFILE (Overrides)
+# ============================================================
+performance:
+  target_latency_ms: 800  # Faster for real-time conversation
+  max_latency_ms: 1500
+  timeout_ms: 3000
+
+  optimization:
+    jit_compile: true
+    parallel_threads: 6
+    batch_size: 48
+
+# ============================================================
+# EXTENSIONS (Overrides)
+# ============================================================
+extensions:
+  narrative_depth:
+    enabled: false  # Disable for dialogue
+
+  semantic_monitoring:
+    enabled: true
+    track_velocity: true
+    track_acceleration: true
+    track_curvature: true
+    track_ethics: true
+    track_dimensions: true
+
+  citation_tracking:
+    enabled: false
+
+  custom_hooks:
+    pre_query: null
+    post_query: null

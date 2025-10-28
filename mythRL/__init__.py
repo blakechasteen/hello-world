@@ -44,7 +44,7 @@ import logging
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.config import Config, ExecutionMode, MemoryBackend
 from HoloLoom.Documentation.types import Query, MemoryShard
-from HoloLoom.spinningWheel import TextSpinner, TextSpinnerConfig
+from HoloLoom.spinning_wheel import TextSpinner, TextSpinnerConfig
 from HoloLoom.loom.command import PatternCard
 
 logging.basicConfig(level=logging.INFO)
@@ -103,7 +103,8 @@ class Weaver:
         self,
         orchestrator: WeavingOrchestrator,
         mode: str,
-        shards: List[MemoryShard]
+        shards: List[MemoryShard],
+        intelligent_routing: bool = False
     ):
         """
         Internal constructor. Use Weaver.create() instead.
@@ -111,8 +112,42 @@ class Weaver:
         self._orchestrator = orchestrator
         self._mode = mode
         self._shards = shards
+        self._intelligent_routing = intelligent_routing
         self._conversation_history: List[Dict[str, str]] = []
         self.logger = logging.getLogger(__name__)
+    
+    def _assess_query_complexity(self, question: str) -> str:
+        """
+        Assess query complexity for intelligent routing.
+        
+        Returns mode: 'lite', 'fast', 'full', or 'research'
+        
+        Heuristics:
+        - Length: Short queries → lite, long → full
+        - Keywords: "analyze", "compare", "explain" → full
+        - Questions: Simple "what is" → lite, complex "how/why" → full
+        - Technical: Code, math, logic → full
+        """
+        q = question.lower()
+        length = len(question)
+        
+        # Research mode triggers
+        research_keywords = ['research', 'comprehensive', 'deep dive', 'thorough analysis', 'compare and contrast']
+        if any(kw in q for kw in research_keywords) or length > 500:
+            return 'research'
+        
+        # Full mode triggers
+        full_keywords = ['analyze', 'explain', 'compare', 'evaluate', 'assess', 'why', 'how does', 'what are the implications']
+        if any(kw in q for kw in full_keywords) or length > 200:
+            return 'full'
+        
+        # Lite mode triggers (simple, short)
+        lite_keywords = ['what is', 'who is', 'when', 'where', 'define']
+        if any(kw in q for kw in lite_keywords) and length < 50:
+            return 'lite'
+        
+        # Default to fast
+        return 'fast'
     
     @classmethod
     async def create(
@@ -121,16 +156,18 @@ class Weaver:
         knowledge: Optional[Union[str, Path, List[str]]] = None,
         memory_backend: str = 'in_memory',
         enable_reflection: bool = True,
+        intelligent_routing: bool = False,
         **kwargs
     ) -> 'Weaver':
         """
         Create a Weaver instance.
         
         Args:
-            mode: Execution mode ('lite', 'fast', 'full', 'research')
+            mode: Execution mode ('lite', 'fast', 'full', 'research', 'auto')
             knowledge: Optional knowledge to load (text, file path, or list of texts)
-            memory_backend: Memory backend ('in_memory', 'neo4j', 'qdrant', 'neo4j_qdrant')
+            memory_backend: Memory backend ('in_memory', 'neo4j_qdrant', 'hyperspace')
             enable_reflection: Enable learning from interactions
+            intelligent_routing: Enable auto mode selection per query (overrides mode)
             **kwargs: Additional config options
         
         Returns:
@@ -152,9 +189,19 @@ class Weaver:
                 memory_backend='neo4j_qdrant',
                 enable_reflection=True
             )
+            
+            # Intelligent routing (auto mode selection)
+            weaver = await Weaver.create(
+                mode='auto',  # Will select lite/fast/full per query
+                intelligent_routing=True
+            )
         """
         # Map mode to config
-        if mode == 'lite':
+        if mode == 'auto' or intelligent_routing:
+            # Start with fast as default, will route per query
+            config = Config.fast()
+            intelligent_routing = True
+        elif mode == 'lite':
             config = Config.bare()
         elif mode == 'fast':
             config = Config.fast()
@@ -166,7 +213,7 @@ class Weaver:
             config.n_transformer_layers = 6  # More layers
             config.n_attention_heads = 12    # More heads
         else:
-            raise ValueError(f"Unknown mode: {mode}. Use 'lite', 'fast', 'full', or 'research'")
+            raise ValueError(f"Unknown mode: {mode}. Use 'lite', 'fast', 'full', 'research', or 'auto'")
         
         # Configure memory backend
         if memory_backend == 'neo4j':
@@ -185,10 +232,17 @@ class Weaver:
         if knowledge is not None:
             shards = await cls._process_knowledge(knowledge, config)
         
+        # Initialize memory backend if no shards provided
+        memory_backend_instance = None
+        if not shards:
+            from HoloLoom.memory.backend_factory import create_memory_backend
+            memory_backend_instance = await create_memory_backend(config)
+        
         # Create orchestrator
         orchestrator = WeavingOrchestrator(
             cfg=config,
             shards=shards if shards else None,
+            memory=memory_backend_instance,
             enable_reflection=enable_reflection
         )
         
@@ -243,8 +297,33 @@ class Weaver:
             print(result.response)
             print(f"Confidence: {result.confidence}")
         """
-        query_obj = Query(text=question)
-        spacetime = await self._orchestrator.weave(query_obj)
+        # Intelligent routing: assess complexity and adjust pattern if enabled
+        if self._intelligent_routing and self._pattern == 'auto':
+            assessed_mode = self._assess_query_complexity(question)
+            
+            # Map assessed mode to PatternCard
+            pattern_map = {
+                'lite': PatternCard.BARE,
+                'fast': PatternCard.FAST,
+                'full': PatternCard.FUSED,
+                'research': PatternCard.FUSED
+            }
+            target_pattern = pattern_map.get(assessed_mode, PatternCard.FAST)
+            
+            # Temporarily update orchestrator's default pattern for this query
+            original_pattern = self._orchestrator.default_pattern
+            self._orchestrator.default_pattern = target_pattern
+            self._orchestrator.loom_command.default_pattern = target_pattern
+            
+            query_obj = Query(text=question)
+            spacetime = await self._orchestrator.weave(query_obj)
+            
+            # Restore original pattern
+            self._orchestrator.default_pattern = original_pattern
+            self._orchestrator.loom_command.default_pattern = original_pattern
+        else:
+            query_obj = Query(text=question)
+            spacetime = await self._orchestrator.weave(query_obj)
         
         return WeaverResult(
             response=spacetime.response,

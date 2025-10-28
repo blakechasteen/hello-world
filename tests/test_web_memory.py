@@ -13,7 +13,7 @@ if sys.platform == 'win32':
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.spinningWheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
 from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
 
 

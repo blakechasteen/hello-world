@@ -1,0 +1,120 @@
+# ============================================================
+# FAST Pattern Card
+# ============================================================
+# Balanced speed and capability - recommended for production
+# Use for: Most queries, production applications, balanced performance
+
+name: "fast"
+display_name: "🚀 Fast Mode"
+description: "Balanced speed and capability for production queries. Recommended default."
+version: "1.0"
+
+# ============================================================
+# MATH CAPABILITIES
+# ============================================================
+math:
+  # Semantic calculus - ENABLED with balanced config
+  semantic_calculus:
+    enabled: true
+    config:
+      dimensions: 16
+      dt: 1.0
+      mass: 1.0
+      ethical_framework: "compassionate"
+      compute_trajectory: true
+      compute_ethics: true
+      cache:
+        enabled: true
+        size: 10000
+
+  # Spectral embedding - dual scale
+  spectral_embedding:
+    enabled: true
+    scales: [96, 192]  # Two scales for balance
+    fusion_mode: "adaptive"
+
+  # Motif detection - hybrid (regex + NLP)
+  motif_detection:
+    enabled: true
+    mode: "hybrid"  # Best of both
+    patterns:
+      - "question"
+      - "causality"
+      - "comparison"
+      - "definition"
+
+  # Policy engine - neural with bandit
+  policy_engine:
+    enabled: true
+    type: "neural_bandit"
+    strategy: "epsilon_greedy"
+    epsilon: 0.1
+    thompson_sampling: true
+
+# ============================================================
+# MEMORY CONFIGURATION
+# ============================================================
+memory:
+  backend: "networkx"
+
+  caching:
+    vector_cache: true
+    cache_size: 5000
+
+  retrieval:
+    max_shards: 10
+    similarity_threshold: 0.7
+
+  graph:
+    max_depth: 2
+
+# ============================================================
+# TOOLS
+# ============================================================
+tools:
+  enabled:
+    - "summarize"
+    - "search"
+    - "analyze"
+    - "extract"
+
+  disabled:
+    - "deep_research"
+
+  configs:
+    summarize:
+      max_length: 500
+    search:
+      max_results: 5
+    analyze:
+      include_semantic: true
+      include_ethics: true
+
+# ============================================================
+# PERFORMANCE PROFILE
+# ============================================================
+performance:
+  target_latency_ms: 200
+  max_latency_ms: 500
+  timeout_ms: 2000
+
+  optimization:
+    jit_compile: true
+    parallel_threads: 4
+    batch_size: 32
+
+# ============================================================
+# EXTENSIONS
+# ============================================================
+extensions:
+  narrative_depth:
+    enabled: false  # Can be enabled per-query
+
+  semantic_monitoring:
+    enabled: true
+    track_velocity: true
+    track_ethics: true
+
+  custom_hooks:
+    pre_query: null
+    post_query: null

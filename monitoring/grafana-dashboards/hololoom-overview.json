@@ -1,0 +1,147 @@
+{
+  "dashboard": {
+    "title": "HoloLoom Production Overview",
+    "tags": ["hololoom", "production"],
+    "timezone": "browser",
+    "refresh": "10s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Query Latency (p95)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(hololoom_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "p95 latency"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(hololoom_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "p50 latency"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Latency"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Queries Per Second",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(hololoom_queries_total[1m])",
+            "legendFormat": "QPS"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "reqps",
+            "label": "Requests/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Backend Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"neo4j\"}",
+            "legendFormat": "Neo4j"
+          },
+          {
+            "expr": "up{job=\"qdrant\"}",
+            "legendFormat": "Qdrant"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "process_resident_memory_bytes{job=\"hololoom\"}",
+            "legendFormat": "HoloLoom Memory"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "bytes",
+            "label": "Memory"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Breathing Cycles",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(hololoom_breathing_cycles_total[5m])",
+            "legendFormat": "Breaths/min"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "Pattern Card Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (pattern) (increase(hololoom_pattern_selections_total[1h]))",
+            "legendFormat": "{{pattern}}"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(hololoom_errors_total[5m])",
+            "legendFormat": "Errors/sec"
+          }
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [0.01], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"type": "avg"}
+            }
+          ],
+          "name": "High Error Rate Alert"
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12}
+      },
+      {
+        "id": 8,
+        "title": "Cache Hit Rate",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "rate(hololoom_cache_hits_total[5m]) / (rate(hololoom_cache_hits_total[5m]) + rate(hololoom_cache_misses_total[5m]))",
+            "legendFormat": "Hit Rate"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12}
+      }
+    ]
+  }
+}

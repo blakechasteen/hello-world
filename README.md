@@ -62,12 +62,16 @@ HoloLoom treats computation as **literal weaving** through 7 stages:
 
 ## Repository Structure
 
+**Clean Root (Phase 1+2 Cleanup - Oct 2025):**
+
 ```
 mythRL/
 ├── HoloLoom/               # Core system modules
 │   ├── weaving_orchestrator.py   # Main weaving cycle coordinator
-│   ├── synthesis_bridge.py       # Pattern extraction integration
-│   ├── unified_api.py             # Single entry point (HoloLoom class)
+│   ├── weaving_shuttle.py        # Async context manager entry point
+│   ├── unified_api.py             # Unified API (HoloLoom class)
+│   ├── config.py                  # Configuration (BARE/FAST/FUSED)
+│   ├── protocols/                 # Protocol definitions (canonical)
 │   ├── policy/                    # Neural decision-making
 │   ├── embedding/                 # Multi-scale embeddings
 │   ├── memory/                    # Knowledge graph & vector storage
@@ -79,7 +83,15 @@ mythRL/
 │   ├── resonance/                 # Feature interference
 │   ├── warp/                      # Tensor operations
 │   ├── convergence/               # Decision collapse
-│   └── fabric/                    # Spacetime trace generation
+│   ├── fabric/                    # Spacetime trace generation
+│   ├── tests/                     # 3-tier test structure
+│   │   ├── unit/                  # Fast isolated tests (<5s)
+│   │   ├── integration/           # Multi-component tests (<30s)
+│   │   └── e2e/                   # Full pipeline tests (<2min)
+│   └── tools/                     # Developer utilities
+│       ├── bootstrap_system.py
+│       ├── validate_pipeline.py
+│       └── archive/               # Archived code (safety net)
 │
 ├── demos/                  # Usage examples
 │   ├── 01_quickstart.py
@@ -87,7 +99,6 @@ mythRL/
 │   ├── 03_conversational.py
 │   └── 04_mcp_integration.py
 │
-├── tests/                  # Test files
 ├── config/                 # Configuration files
 ├── docs/                   # Documentation
 │   ├── sessions/           # Development session logs
@@ -230,9 +241,20 @@ result = await loom.query("Simple lookup", pattern="bare")
 
 ## Testing
 
+**3-Tier Test Structure** (Phase 1+2 Cleanup - Oct 2025):
+
 ```bash
-# Run unified policy tests (18 tests)
-PYTHONPATH=. python HoloLoom/test_unified_policy.py
+# Unit Tests (Fast - <5s) - Isolated component testing
+pytest HoloLoom/tests/unit/ -v
+
+# Integration Tests (Medium - <30s) - Multi-component testing
+pytest HoloLoom/tests/integration/ -v
+
+# End-to-End Tests (Slow - <2min) - Full pipeline testing
+pytest HoloLoom/tests/e2e/ -v
+
+# Run all tests
+pytest HoloLoom/tests/ -v
 
 # Run demo
 PYTHONPATH=. python HoloLoom/unified_api.py

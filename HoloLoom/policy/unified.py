@@ -52,8 +52,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # Import only from shared types and embedding (package-relative)
-from HoloLoom.Documentation.types import Features, Context, ActionPlan, Decision
+from HoloLoom.documentation.types import Features, Context, ActionPlan, Decision
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+
+# Import canonical protocol from Phase 2 consolidation
+from HoloLoom.protocols import PolicyEngine as CanonicalPolicyEngine
 
 
 # ============================================================================
@@ -69,8 +72,14 @@ def maybe_device():
 # Protocol
 # ============================================================================
 
-class PolicyEngine(Protocol):
-    """Protocol for policy implementations."""
+# DEPRECATED: Import from HoloLoom.protocols instead
+class _DeprecatedPolicyEngine(Protocol):
+    """
+    DEPRECATED: This local protocol definition is deprecated.
+    Use 'from HoloLoom.protocols import PolicyEngine' instead.
+    
+    This alias will be removed in a future version.
+    """
     
     async def decide(self, features: Features, context: Context) -> ActionPlan:
         """
@@ -84,6 +93,18 @@ class PolicyEngine(Protocol):
             ActionPlan with chosen tool and adapter
         """
         ...
+
+# Backward compatibility alias - use canonical protocol instead
+PolicyEngine = CanonicalPolicyEngine
+
+# Emit deprecation warning when this module's protocol is referenced
+warnings.warn(
+    "Importing PolicyEngine from HoloLoom.policy.unified is deprecated. "
+    "Use 'from HoloLoom.protocols import PolicyEngine' instead. "
+    "This local definition will be removed in a future version.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 
 # ============================================================================

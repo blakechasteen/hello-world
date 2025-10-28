@@ -1,0 +1,136 @@
+# ============================================================
+# FUSED TECHNICAL Pattern Card
+# ============================================================
+# Optimized for technical and documentation analysis
+# Use for: Code docs, API specs, technical papers, manuals
+
+name: "fused_technical"
+display_name: "🔧 Fused Technical Mode"
+description: "Optimized for technical and documentation analysis. Smart 36D selection emphasizing cognitive and structural dimensions."
+version: "1.0"
+extends: "fast"  # Inherit from fast, override specific settings
+
+# ============================================================
+# MATH CAPABILITIES (Overrides)
+# ============================================================
+math:
+  # Semantic calculus - TECHNICAL optimized 36D selection
+  semantic_calculus:
+    enabled: true
+    config:
+      dimensions: 36  # Smart BALANCED selection for technical domain
+      selection_strategy: "balanced"  # Even distribution across categories
+      domain: "technical"
+      dt: 1.0
+      mass: 1.0
+      ethical_framework: "scientific"  # Scientific discourse for technical content
+      compute_trajectory: true
+      compute_ethics: false  # Skip ethics for technical analysis
+      cache:
+        enabled: true
+        size: 20000
+
+  # Spectral embedding - all three scales
+  spectral_embedding:
+    enabled: true
+    scales: [96, 192, 384]  # All scales
+    fusion_mode: "weighted"
+
+  # Motif detection - structured patterns
+  motif_detection:
+    enabled: true
+    mode: "nlp"  # Full NLP processing
+    patterns:
+      - "definition"
+      - "causality"
+      - "comparison"
+      - "conditional"
+      - "temporal"
+
+  # Policy engine - deterministic for technical
+  policy_engine:
+    enabled: true
+    type: "neural_bandit"
+    strategy: "bayesian_blend"
+    epsilon: 0.10  # Less exploration for technical content
+    thompson_sampling: true
+
+# ============================================================
+# MEMORY CONFIGURATION (Overrides)
+# ============================================================
+memory:
+  backend: "neo4j_qdrant"  # Upgrade to hybrid backend
+
+  caching:
+    vector_cache: true
+    cache_size: 15000  # Larger cache for technical docs
+
+  retrieval:
+    max_shards: 25  # More context for technical details
+    similarity_threshold: 0.75  # Higher precision for technical accuracy
+
+  graph:
+    max_depth: 3  # Deeper for technical relationships
+
+# ============================================================
+# TOOLS (Overrides)
+# ============================================================
+tools:
+  enabled:
+    - "summarize"
+    - "search"
+    - "analyze"
+    - "extract"
+    - "deep_research"
+    - "synthesis"
+
+  disabled: []
+
+  configs:
+    summarize:
+      max_length: 800
+    search:
+      max_results: 12  # More results for technical precision
+    analyze:
+      include_semantic: true
+      include_ethics: false  # Skip ethics for technical
+      include_trajectory: true
+      include_dimensions: true
+    deep_research:
+      max_depth: 4  # Deeper for technical detail
+      include_citations: true
+
+# ============================================================
+# PERFORMANCE PROFILE (Overrides)
+# ============================================================
+performance:
+  target_latency_ms: 1200  # Allow time for precision
+  max_latency_ms: 2500
+  timeout_ms: 6000
+
+  optimization:
+    jit_compile: true
+    parallel_threads: 8
+    batch_size: 64
+
+# ============================================================
+# EXTENSIONS (Overrides)
+# ============================================================
+extensions:
+  narrative_depth:
+    enabled: false  # Not relevant for technical content
+
+  semantic_monitoring:
+    enabled: true
+    track_velocity: true
+    track_acceleration: true
+    track_curvature: true
+    track_ethics: false  # Skip for technical
+    track_dimensions: true
+
+  citation_tracking:
+    enabled: true  # Important for technical docs
+
+  custom_hooks:
+    pre_query: null
+    post_query: null

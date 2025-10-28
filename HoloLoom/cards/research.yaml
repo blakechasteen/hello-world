@@ -1,0 +1,100 @@
+name: research
+display_name: "\U0001F52C Deep Research"
+description: Maximum detail for research queries
+version: '1.0'
+extends: fast
+math:
+  semantic_calculus:
+    enabled: true
+    config:
+      dimensions: 244  # Full 244D semantic space for deep narrative research
+      dt: 1.0
+      mass: 1.0
+      ethical_framework: compassionate
+      compute_trajectory: true
+      compute_ethics: true
+      cache:
+        enabled: true
+        size: 50000
+  spectral_embedding:
+    enabled: true
+    scales:
+    - 96
+    - 192
+    - 384
+    fusion_mode: weighted
+  motif_detection:
+    enabled: true
+    mode: nlp
+    patterns:
+    - question
+    - causality
+    - comparison
+    - definition
+    - temporal
+    - spatial
+    - conditional
+  policy_engine:
+    enabled: true
+    type: neural_bandit
+    strategy: bayesian_blend
+    epsilon: 0.15
+    thompson_sampling: true
+memory:
+  backend: neo4j_qdrant
+  caching:
+    vector_cache: true
+    cache_size: 10000
+  retrieval:
+    max_shards: 20
+    similarity_threshold: 0.65
+  graph:
+    max_depth: 3
+tools:
+  enabled:
+  - summarize
+  - search
+  - analyze
+  - extract
+  - deep_research
+  - synthesis
+  disabled: []
+  configs:
+    summarize:
+      max_length: 1000
+    search:
+      max_results: 10
+    analyze:
+      include_semantic: true
+      include_ethics: true
+      include_trajectory: true
+      include_dimensions: true
+    deep_research:
+      max_depth: 3
+      include_citations: true
+performance:
+  target_latency_ms: 5000
+  max_latency_ms: 2000
+  timeout_ms: 10000
+  optimization:
+    jit_compile: true
+    parallel_threads: 8
+    batch_size: 64
+extensions:
+  narrative_depth:
+    enabled: true
+    max_depth: 7
+    include_full_analysis: true
+  semantic_monitoring:
+    enabled: true
+    track_velocity: true
+    track_ethics: true
+    track_acceleration: true
+    track_curvature: true
+    track_dimensions: true
+  custom_hooks:
+    pre_query: null
+    post_query: null
+  citation_tracking:
+    enabled: true
+    format: academic

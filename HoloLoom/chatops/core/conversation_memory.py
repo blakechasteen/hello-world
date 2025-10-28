@@ -30,13 +30,13 @@ from datetime import datetime, timedelta
 import hashlib
 
 try:
-    from holoLoom.memory.graph import KG, KGEdge
-    from holoLoom.documentation.types import MemoryShard
+    from HoloLoom.memory.graph import KG, KGEdge
+    from HoloLoom.documentation.types import MemoryShard
     import networkx as nx
     HOLOLOOM_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     HOLOLOOM_AVAILABLE = False
-    print("Warning: HoloLoom not available")
+    print(f"Warning: HoloLoom not available: {e}")
 
 
 logger = logging.getLogger(__name__)

@@ -6,7 +6,7 @@ Tests all chunking modes, entity extraction, and enrichment.
 """
 
 import asyncio
-from HoloLoom.spinningWheel.text import TextSpinner, TextSpinnerConfig, spin_text
+from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig, spin_text
 
 
 async def test_single_shard():

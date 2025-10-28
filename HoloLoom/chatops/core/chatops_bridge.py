@@ -32,19 +32,22 @@ from pathlib import Path
 
 # HoloLoom imports
 try:
-    from holoLoom.documentation.types import Query, Context, Features, MemoryShard
-    from holoLoom.fabric.spacetime import Spacetime, WeavingTrace
-    from holoLoom.memory.graph import KG
-    from holoLoom.orchestrator import Orchestrator
-    from holoLoom.config import Config
+    from HoloLoom.documentation.types import Query, Context, Features, MemoryShard
+    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+    from HoloLoom.memory.graph import KG
+    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from HoloLoom.config import Config
     HOLOLOOM_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     HOLOLOOM_AVAILABLE = False
-    print("Warning: HoloLoom not available. Some features will be limited.")
+    print(f"Warning: HoloLoom not available. Some features will be limited. Error: {e}")
 
-# Matrix bot imports
+# Matrix bot imports (use TYPE_CHECKING to avoid circular imports)
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from HoloLoom.chatops.core.matrix_bot import MatrixBot
+
 try:
-    from holoLoom.chatops.matrix_bot import MatrixBot, MatrixBotConfig
     from nio import MatrixRoom, RoomMessageText
     MATRIX_AVAILABLE = True
 except ImportError:
@@ -189,7 +192,7 @@ class ChatOpsOrchestrator:
     # Bot Connection
     # ========================================================================
 
-    def connect_bot(self, bot: MatrixBot) -> None:
+    def connect_bot(self, bot: "MatrixBot") -> None:
         """
         Connect to Matrix bot.
 
@@ -288,7 +291,7 @@ class ChatOpsOrchestrator:
 
         # Lazy init orchestrator
         if self.orchestrator is None:
-            self.orchestrator = Orchestrator(self.config)
+            self.orchestrator = WeavingOrchestrator(self.config)
 
         # Process through HoloLoom
         try:
@@ -562,7 +565,7 @@ To enable full functionality:
         # Initialize orchestrator if available
         if HOLOLOOM_AVAILABLE and self.orchestrator is None:
             try:
-                self.orchestrator = Orchestrator(self.config)
+                self.orchestrator = WeavingOrchestrator(self.config)
                 logger.info("HoloLoom orchestrator initialized")
             except Exception as e:
                 logger.error(f"Failed to initialize HoloLoom: {e}")

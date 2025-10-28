@@ -17,7 +17,7 @@ if sys.platform == 'win32':
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.spinningWheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
 
 
 async def view_shards_from_url(url: str, show_full_text: bool = False):

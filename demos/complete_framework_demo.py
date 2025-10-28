@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 from HoloLoom.semantic_calculus import (
     SemanticFlowCalculus,
     SemanticSpectrum,
-    SemanticSystemIdentifier,
+    SemanticSystemIdentification,
     EthicalSemanticPolicy,
     COMPASSIONATE_COMMUNICATION
 )
@@ -118,7 +118,7 @@ def demo_complete_pipeline():
     print()
 
     # Use system identification to learn dynamics
-    identifier = SemanticSystemIdentifier(
+    identifier = SemanticSystemIdentification(
         n_semantic_dims=len(spectrum.dimensions),
         polynomial_degree=2
     )

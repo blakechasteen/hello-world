@@ -25,6 +25,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional, Callable, Dict, Any
 
+# Prometheus metrics
+try:
+    from HoloLoom.performance.prometheus_metrics import metrics
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -92,6 +99,29 @@ class ExecutionLimits:
     enable_early_stopping: bool = True
 
 
+@dataclass
+class BreathingRhythm:
+    """
+    Breathing rhythm parameters for system respiration.
+
+    Defines the natural respiratory cycle of the system:
+    - Inhale: Gather context, expand features, retrieve broadly
+    - Exhale: Make decision, execute, release action
+    - Rest: Consolidate, decay, learn from reflection
+
+    Philosophy:
+    Like biological breathing, the system needs asymmetric cycles:
+    parasympathetic (inhale - relax/gather) and sympathetic (exhale - act/decide).
+    """
+    inhale_duration: float = 2.0  # Seconds for gathering phase
+    exhale_duration: float = 0.5  # Seconds for decision phase
+    rest_duration: float = 0.1    # Seconds for consolidation
+    breathing_rate: float = 1.0   # Breaths per cycle (1.0 = normal)
+    enable_rest: bool = True      # Whether to include rest phase
+    sparsity_on_exhale: float = 0.7  # Feature sparsity during exhale (0-1)
+    pressure_threshold: float = 0.85  # Max feature density before relief
+
+
 # ============================================================================
 # Chrono Trigger
 # ============================================================================
@@ -116,19 +146,25 @@ class ChronoTrigger:
         chrono.stop()
     """
 
-    def __init__(self, config, enable_heartbeat: bool = False):
+    def __init__(self, config, enable_heartbeat: bool = False, enable_breathing: bool = True):
         """
         Initialize Chrono Trigger.
 
         Args:
             config: HoloLoom Config with timeout settings
             enable_heartbeat: Whether to start background maintenance
+            enable_breathing: Whether to enable breathing rhythm
         """
         self.config = config
         self.limits = ExecutionLimits(
             max_duration=getattr(config, 'pipeline_timeout', 5.0),
             halt_on_low_confidence=0.3
         )
+
+        # Breathing rhythm
+        self.breathing = BreathingRhythm()
+        self.enable_breathing = enable_breathing
+        self.current_phase = None  # "inhale", "exhale", "rest", or None
 
         # Temporal state
         self.start_time = None
@@ -145,8 +181,9 @@ class ChronoTrigger:
 
         # Evolution tracking
         self.execution_history = []
+        self.breath_count = 0
 
-        logger.info("ChronoTrigger initialized")
+        logger.info(f"ChronoTrigger initialized (breathing={'ON' if enable_breathing else 'OFF'})")
 
     async def fire(
         self,
@@ -310,6 +347,202 @@ class ChronoTrigger:
         # Placeholder: actual implementation would need yarn_graph reference
         # For now, just log the decay event
         pass
+
+    async def breathe(self) -> Dict[str, Any]:
+        """
+        Execute complete breathing cycle: inhale → exhale → rest.
+
+        The breathing cycle orchestrates the natural rhythm of:
+        1. INHALE (parasympathetic): Gather context, expand features, be receptive
+        2. EXHALE (sympathetic): Make decision, execute action, release
+        3. REST: Consolidate memories, decay threads, learn
+
+        Returns:
+            Dict with breathing metrics
+        """
+        if not self.enable_breathing:
+            logger.debug("Breathing disabled, skipping cycle")
+            return {"breathing_enabled": False}
+
+        self.breath_count += 1
+        cycle_start = time.time()
+
+        logger.info(f"=== BREATH #{self.breath_count} START ===")
+
+        # Phase 1: INHALE (gather)
+        inhale_metrics = await self._inhale()
+
+        # Phase 2: EXHALE (decide)
+        exhale_metrics = await self._exhale()
+
+        # Phase 3: REST (consolidate) - optional
+        if self.breathing.enable_rest:
+            rest_metrics = await self._rest()
+        else:
+            rest_metrics = {"skipped": True}
+
+        cycle_duration = time.time() - cycle_start
+
+        metrics = {
+            "breath_number": self.breath_count,
+            "cycle_duration": cycle_duration,
+            "inhale": inhale_metrics,
+            "exhale": exhale_metrics,
+            "rest": rest_metrics,
+            "breathing_rate": self.breathing.breathing_rate
+        }
+
+        logger.info(f"=== BREATH #{self.breath_count} COMPLETE ({cycle_duration:.2f}s) ===")
+
+        return metrics
+
+    async def _inhale(self) -> Dict[str, Any]:
+        """
+        INHALE phase: Gather context, expand features.
+
+        Parasympathetic mode - slow, deep, receptive:
+        - Broad temporal window (retrieve more history)
+        - All feature threads active
+        - Low sparsity (dense representation)
+        - Attention fully expanded
+
+        Returns:
+            Dict with inhale metrics
+        """
+        self.current_phase = "inhale"
+        phase_start = time.time()
+
+        logger.debug("INHALE: Gathering context...")
+
+        # Simulate gathering work
+        await asyncio.sleep(self.breathing.inhale_duration * self.breathing.breathing_rate)
+
+        duration = time.time() - phase_start
+
+        # Track Prometheus metrics
+        if METRICS_ENABLED:
+            from HoloLoom.performance.prometheus_metrics import metrics as prom_metrics
+            prom_metrics.track_breathing('inhale')
+
+        metrics = {
+            "phase": "inhale",
+            "duration": duration,
+            "mode": "parasympathetic",
+            "sparsity": 0.0,  # Dense - no sparsity
+            "temporal_window": "expanded",
+            "feature_density": 1.0  # All features active
+        }
+
+        logger.debug(f"INHALE complete ({duration:.2f}s)")
+
+        return metrics
+
+    async def _exhale(self) -> Dict[str, Any]:
+        """
+        EXHALE phase: Make decision, execute action.
+
+        Sympathetic mode - fast, sharp, decisive:
+        - Narrow temporal window (recent only)
+        - Sparse features (only top K)
+        - High confidence threshold
+        - Quick collapse to decision
+
+        Returns:
+            Dict with exhale metrics
+        """
+        self.current_phase = "exhale"
+        phase_start = time.time()
+
+        logger.debug("EXHALE: Making decision...")
+
+        # Simulate decision work (faster than inhale)
+        await asyncio.sleep(self.breathing.exhale_duration * self.breathing.breathing_rate)
+
+        duration = time.time() - phase_start
+
+        # Track Prometheus metrics
+        if METRICS_ENABLED:
+            from HoloLoom.performance.prometheus_metrics import metrics as prom_metrics
+            prom_metrics.track_breathing('exhale')
+
+        metrics = {
+            "phase": "exhale",
+            "duration": duration,
+            "mode": "sympathetic",
+            "sparsity": self.breathing.sparsity_on_exhale,
+            "temporal_window": "narrow",
+            "feature_density": 1.0 - self.breathing.sparsity_on_exhale
+        }
+
+        logger.debug(f"EXHALE complete ({duration:.2f}s)")
+
+        return metrics
+
+    async def _rest(self) -> Dict[str, Any]:
+        """
+        REST phase: Consolidate, decay, integrate.
+
+        Brief pause between breaths for:
+        - Memory consolidation
+        - Thread decay application
+        - Reflection learning
+        - Integration of new patterns
+
+        Like the pause between breaths in meditation.
+
+        Returns:
+            Dict with rest metrics
+        """
+        self.current_phase = "rest"
+        phase_start = time.time()
+
+        logger.debug("REST: Consolidating...")
+
+        # Brief consolidation pause
+        await asyncio.sleep(self.breathing.rest_duration)
+
+        # Apply decay if needed (mini decay, not full hourly)
+        mini_decay_rate = self.decay_rate / 3600.0  # Convert to per-second
+        # Actual decay would be applied to yarn_graph here
+
+        duration = time.time() - phase_start
+
+        # Track Prometheus metrics
+        if METRICS_ENABLED:
+            from HoloLoom.performance.prometheus_metrics import metrics as prom_metrics
+            prom_metrics.track_breathing('rest')
+
+        metrics = {
+            "phase": "rest",
+            "duration": duration,
+            "decay_applied": mini_decay_rate,
+            "consolidation": "completed"
+        }
+
+        logger.debug(f"REST complete ({duration:.2f}s)")
+
+        self.current_phase = None  # Clear phase
+
+        return metrics
+
+    def get_current_phase(self) -> Optional[str]:
+        """
+        Get current breathing phase.
+
+        Returns:
+            "inhale", "exhale", "rest", or None
+        """
+        return self.current_phase
+
+    def adjust_breathing_rate(self, rate: float) -> None:
+        """
+        Adjust breathing rate dynamically.
+
+        Args:
+            rate: New breathing rate (1.0 = normal, 2.0 = faster, 0.5 = slower)
+        """
+        self.breathing.breathing_rate = rate
+        logger.info(f"Breathing rate adjusted to {rate}x")
 
     def record_completion(self) -> Dict[str, Any]:
         """

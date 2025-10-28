@@ -1,0 +1,13 @@
+{
+  "t_statistic": -0.6119068861265168,
+  "p_value": 0.7278782830917676,
+  "cohens_d": -0.1985288093342865,
+  "convergence_speedup": 19.0,
+  "efficiency_gain": 15.030620617743997,
+  "win_rate": 52.0,
+  "vanilla_mean": -26.543658986380713,
+  "vanilla_std": 26.302903846228855,
+  "semantic_mean": -34.06853412113973,
+  "semantic_std": 46.706111361854255,
+  "improvement_pct": 28.349049912899925
+}
