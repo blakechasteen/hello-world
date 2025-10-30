@@ -101,11 +101,9 @@ class Config:
     """
     
     # Embedding configuration
-    scales: List[int] = field(default_factory=lambda: [96, 192, 384])
+    scales: List[int] = field(default_factory=lambda: [768])
     fusion_weights: Dict[int, float] = field(default_factory=lambda: {
-        96: 0.25,   # Smallest scale: 25% weight
-        192: 0.35,  # Medium scale: 35% weight
-        384: 0.40   # Largest scale: 40% weight
+        768: 1.0   # Single scale: 100% weight (simplified from multi-scale)
     })
     
     # Model selection
@@ -243,21 +241,21 @@ class Config:
     def bare(cls) -> 'Config':
         """Create a bare-mode configuration (fastest)."""
         return cls(
-            scales=[96],
-            fusion_weights={96: 1.0},
+            scales=[768],
+            fusion_weights={768: 1.0},
             mode=ExecutionMode.BARE,
             fast_mode=True,
             n_transformer_layers=1,
             n_attention_heads=2,
             enable_semantic_calculus=False  # Disabled for speed
         )
-    
+
     @classmethod
     def fast(cls) -> 'Config':
         """Create a fast-mode configuration (balanced)."""
         return cls(
-            scales=[96, 192],
-            fusion_weights={96: 0.4, 192: 0.6},
+            scales=[768],
+            fusion_weights={768: 1.0},
             mode=ExecutionMode.FAST,
             fast_mode=True,
             n_transformer_layers=2,
@@ -271,8 +269,8 @@ class Config:
     def fused(cls) -> 'Config':
         """Create a fused-mode configuration (highest quality)."""
         return cls(
-            scales=[96, 192, 384],
-            fusion_weights={96: 0.25, 192: 0.35, 384: 0.40},
+            scales=[768],
+            fusion_weights={768: 1.0},
             mode=ExecutionMode.FUSED,
             fast_mode=False,
             n_transformer_layers=2,

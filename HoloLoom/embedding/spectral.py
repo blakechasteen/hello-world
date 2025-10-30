@@ -100,7 +100,7 @@ class MatryoshkaEmbeddings:
     - Maintain semantic quality at each scale
     """
     
-    sizes: List[int] = field(default_factory=lambda: [96, 192, 384])
+    sizes: List[int] = field(default_factory=lambda: [768])
     base_model_name: Optional[str] = None
     external_heads: Optional[Dict[int, Callable[[np.ndarray], np.ndarray]]] = None
     
@@ -130,7 +130,7 @@ class MatryoshkaEmbeddings:
         if _HAVE_SENTENCE_TRANSFORMERS:
             model_name = (
                 self.base_model_name or
-                os.environ.get("HOLOLOOM_BASE_ENCODER", "all-MiniLM-L12-v2")  # Upgraded from L6 (2021) → L12 (2022) for better quality
+                os.environ.get("HOLOLOOM_BASE_ENCODER", "nomic-ai/nomic-embed-text-v1.5")  # Modern 768d model (2024)
             )
             try:
                 self._model = SentenceTransformer(model_name)
@@ -476,7 +476,7 @@ class SpectralFusion:
 
 def create_embedder(
     mode: str = "matryoshka",
-    sizes: List[int] = [96, 192, 384],
+    sizes: List[int] = [768],
     base_model_name: Optional[str] = None
 ) -> Embedder:
     """

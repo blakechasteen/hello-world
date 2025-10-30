@@ -25,6 +25,15 @@ from .resources import (
     ResourceViolation, ViolationType, ResourceTracker,
     ResourceAwarePlanner, ResourceAllocator
 )
+from .replanning import (
+    ExecutionStatus, ReplanTrigger, ReplanStrategy,
+    ExecutionResult, ExecutionTrace, ExecutionMonitor,
+    ReplanningEngine, AdaptivePlanner
+)
+from .pomdp import (
+    BeliefState, ObservationAction, ContingentPlan,
+    ObservationModel, BeliefUpdater, POMDPPlanner
+)
 
 __all__ = [
     # Core planning
@@ -57,4 +66,22 @@ __all__ = [
     'ResourceTracker',
     'ResourceAwarePlanner',
     'ResourceAllocator',
+
+    # Replanning
+    'ExecutionStatus',
+    'ReplanTrigger',
+    'ReplanStrategy',
+    'ExecutionResult',
+    'ExecutionTrace',
+    'ExecutionMonitor',
+    'ReplanningEngine',
+    'AdaptivePlanner',
+
+    # POMDP
+    'BeliefState',
+    'ObservationAction',
+    'ContingentPlan',
+    'ObservationModel',
+    'BeliefUpdater',
+    'POMDPPlanner',
 ]
