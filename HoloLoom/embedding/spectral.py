@@ -133,7 +133,7 @@ class MatryoshkaEmbeddings:
                 os.environ.get("HOLOLOOM_BASE_ENCODER", "nomic-ai/nomic-embed-text-v1.5")  # Modern 768d model (2024)
             )
             try:
-                self._model = SentenceTransformer(model_name)
+                self._model = SentenceTransformer(model_name, trust_remote_code=True)
                 # Probe to get base dimension
                 probe = self._model.encode(["test"], normalize_embeddings=True)[0]
                 self.base_dim = len(probe)

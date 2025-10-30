@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "timestamp": "2025-10-30T02:18:31.363072",
+  "timestamp": "2025-10-30T02:37:52.089395",
   "total_benchmarks": 26,
   "test_queries": [
     "What is Thompson Sampling?",
@@ -22,236 +22,236 @@
       "scales": [
         384
       ],
-      "confidence": 0.0,
+      "confidence": 0.29962820858605815,
       "relevance_score": 0.85,
-      "response_length": 1053,
-      "latency_ms": 3687.969799968414,
-      "embedding_time_ms": 1954.7495000297204,
-      "retrieval_time_ms": 1106.3909399905242,
-      "decision_time_ms": 737.5939599936828,
-      "memory_mb": 114.796875,
-      "token_count": 267,
-      "timestamp": "2025-10-30T02:17:12.931064"
-    },
-    {
-      "experiment_name": "Nomic v1.5 (768d)",
-      "query": "What is Thompson Sampling?",
-      "model": "nomic-ai/nomic-embed-text-v1.5",
-      "scales": [
-        768
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1040,
-      "latency_ms": 3217.1916000079364,
-      "embedding_time_ms": 1411.117000039667,
-      "retrieval_time_ms": 965.1574800023809,
-      "decision_time_ms": 643.4383200015873,
-      "memory_mb": 6.66796875,
-      "token_count": 264,
-      "timestamp": "2025-10-30T02:17:16.282523"
-    },
-    {
-      "experiment_name": "Old Model (384d)",
-      "query": "How does reinforcement learning work?",
-      "model": "sentence-transformers/all-MiniLM-L12-v2",
-      "scales": [
-        384
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1050,
-      "latency_ms": 3085.427699959837,
-      "embedding_time_ms": 2052.655200008303,
-      "retrieval_time_ms": 925.6283099879511,
-      "decision_time_ms": 617.0855399919674,
-      "memory_mb": 92.08203125,
-      "token_count": 267,
-      "timestamp": "2025-10-30T02:17:19.401318"
-    },
-    {
-      "experiment_name": "Nomic v1.5 (768d)",
-      "query": "How does reinforcement learning work?",
-      "model": "nomic-ai/nomic-embed-text-v1.5",
-      "scales": [
-        768
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1049,
-      "latency_ms": 2952.675599954091,
-      "embedding_time_ms": 1408.4345999872312,
-      "retrieval_time_ms": 885.8026799862273,
-      "decision_time_ms": 590.5351199908182,
-      "memory_mb": 4.546875,
-      "token_count": 267,
-      "timestamp": "2025-10-30T02:17:22.476051"
-    },
-    {
-      "experiment_name": "Old Model (384d)",
-      "query": "Explain the difference between supervised and unsupervised learning",
-      "model": "sentence-transformers/all-MiniLM-L12-v2",
-      "scales": [
-        384
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1083,
-      "latency_ms": 3089.876100071706,
-      "embedding_time_ms": 2111.893199966289,
-      "retrieval_time_ms": 926.9628300215118,
-      "decision_time_ms": 617.9752200143412,
-      "memory_mb": -83.50390625,
-      "token_count": 278,
-      "timestamp": "2025-10-30T02:17:25.596930"
-    },
-    {
-      "experiment_name": "Nomic v1.5 (768d)",
-      "query": "Explain the difference between supervised and unsupervised learning",
-      "model": "nomic-ai/nomic-embed-text-v1.5",
-      "scales": [
-        768
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1103,
-      "latency_ms": 3089.8954999865964,
-      "embedding_time_ms": 1524.6689999476075,
-      "retrieval_time_ms": 926.9686499959789,
-      "decision_time_ms": 617.9790999973193,
-      "memory_mb": 4.515625,
-      "token_count": 283,
-      "timestamp": "2025-10-30T02:17:28.806269"
-    },
-    {
-      "experiment_name": "Old Model (384d)",
-      "query": "What are the benefits of multi-scale embeddings?",
-      "model": "sentence-transformers/all-MiniLM-L12-v2",
-      "scales": [
-        384
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1062,
-      "latency_ms": 2883.0037000589073,
-      "embedding_time_ms": 1860.050999908708,
-      "retrieval_time_ms": 864.9011100176722,
-      "decision_time_ms": 576.6007400117815,
-      "memory_mb": 88.1953125,
-      "token_count": 272,
-      "timestamp": "2025-10-30T02:17:31.721412"
-    },
-    {
-      "experiment_name": "Nomic v1.5 (768d)",
-      "query": "What are the benefits of multi-scale embeddings?",
-      "model": "nomic-ai/nomic-embed-text-v1.5",
-      "scales": [
-        768
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1077,
-      "latency_ms": 2956.726699951105,
-      "embedding_time_ms": 1441.1398000083864,
-      "retrieval_time_ms": 887.0180099853314,
-      "decision_time_ms": 591.345339990221,
-      "memory_mb": 4.4921875,
-      "token_count": 276,
-      "timestamp": "2025-10-30T02:17:34.806281"
-    },
-    {
-      "experiment_name": "Old Model (384d)",
-      "query": "How do knowledge graphs improve retrieval?",
-      "model": "sentence-transformers/all-MiniLM-L12-v2",
-      "scales": [
-        384
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1076,
-      "latency_ms": 2772.48290006537,
-      "embedding_time_ms": 1819.0451000118628,
-      "retrieval_time_ms": 831.744870019611,
-      "decision_time_ms": 554.496580013074,
-      "memory_mb": 88.0234375,
-      "token_count": 275,
-      "timestamp": "2025-10-30T02:17:37.646397"
-    },
-    {
-      "experiment_name": "Nomic v1.5 (768d)",
-      "query": "How do knowledge graphs improve retrieval?",
-      "model": "nomic-ai/nomic-embed-text-v1.5",
-      "scales": [
-        768
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1091,
-      "latency_ms": 3071.9282999634743,
-      "embedding_time_ms": 1360.1390999974683,
-      "retrieval_time_ms": 921.5784899890423,
-      "decision_time_ms": 614.3856599926949,
-      "memory_mb": -81.55859375,
-      "token_count": 278,
-      "timestamp": "2025-10-30T02:17:40.844329"
-    },
-    {
-      "experiment_name": "Multi-scale [96,192,384]",
-      "query": "What is the role of attention in transformers?",
-      "model": "sentence-transformers/all-MiniLM-L12-v2",
-      "scales": [
-        96,
-        192,
-        384
-      ],
-      "confidence": 0.296010016240941,
-      "relevance_score": 0.85,
-      "response_length": 1934,
-      "latency_ms": 2852.817100007087,
-      "embedding_time_ms": 1860.6415999820456,
-      "retrieval_time_ms": 855.8451300021261,
-      "decision_time_ms": 570.5634200014174,
-      "memory_mb": 90.16796875,
-      "token_count": 491,
-      "timestamp": "2025-10-30T02:17:43.729303"
-    },
-    {
-      "experiment_name": "Single-scale [768]",
-      "query": "What is the role of attention in transformers?",
-      "model": "nomic-ai/nomic-embed-text-v1.5",
-      "scales": [
-        768
-      ],
-      "confidence": 0.0,
-      "relevance_score": 0.85,
-      "response_length": 1056,
-      "latency_ms": 3157.265100046061,
-      "embedding_time_ms": 1424.509200034663,
-      "retrieval_time_ms": 947.1795300138183,
-      "decision_time_ms": 631.4530200092122,
-      "memory_mb": 4.51171875,
-      "token_count": 272,
-      "timestamp": "2025-10-30T02:17:47.005678"
-    },
-    {
-      "experiment_name": "Multi-scale [96,192,384]",
-      "query": "Explain Bayesian exploration vs exploitation",
-      "model": "sentence-transformers/all-MiniLM-L12-v2",
-      "scales": [
-        96,
-        192,
-        384
-      ],
-      "confidence": 0.3450519356771434,
-      "relevance_score": 0.85,
-      "response_length": 1909,
-      "latency_ms": 2860.314700054005,
-      "embedding_time_ms": 1878.2692999811843,
-      "retrieval_time_ms": 858.0944100162014,
-      "decision_time_ms": 572.062940010801,
-      "memory_mb": 2.90625,
+      "response_length": 1915,
+      "latency_ms": 4577.623500023037,
+      "embedding_time_ms": 2543.683800031431,
+      "retrieval_time_ms": 1373.2870500069112,
+      "decision_time_ms": 915.5247000046074,
+      "memory_mb": 128.04296875,
       "token_count": 482,
-      "timestamp": "2025-10-30T02:17:49.896513"
+      "timestamp": "2025-10-30T02:36:08.947074"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "What is Thompson Sampling?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.3199500942260629,
+      "relevance_score": 0.85,
+      "response_length": 1927,
+      "latency_ms": 4491.565299918875,
+      "embedding_time_ms": 2374.0750999422744,
+      "retrieval_time_ms": 1347.4695899756625,
+      "decision_time_ms": 898.313059983775,
+      "memory_mb": 43.08203125,
+      "token_count": 485,
+      "timestamp": "2025-10-30T02:36:13.557783"
+    },
+    {
+      "experiment_name": "Old Model (384d)",
+      "query": "How does reinforcement learning work?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        384
+      ],
+      "confidence": 0.29427669225404796,
+      "relevance_score": 0.85,
+      "response_length": 1917,
+      "latency_ms": 3893.2377999881282,
+      "embedding_time_ms": 2563.579799956642,
+      "retrieval_time_ms": 1167.9713399964385,
+      "decision_time_ms": 778.6475599976256,
+      "memory_mb": 87.69921875,
+      "token_count": 484,
+      "timestamp": "2025-10-30T02:36:17.491423"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "How does reinforcement learning work?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.29241612247072296,
+      "relevance_score": 0.85,
+      "response_length": 1892,
+      "latency_ms": 4414.122799993493,
+      "embedding_time_ms": 2519.33519996237,
+      "retrieval_time_ms": 1324.2368399980478,
+      "decision_time_ms": 882.8245599986985,
+      "memory_mb": 5.24609375,
+      "token_count": 478,
+      "timestamp": "2025-10-30T02:36:22.029503"
+    },
+    {
+      "experiment_name": "Old Model (384d)",
+      "query": "Explain the difference between supervised and unsupervised learning",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        384
+      ],
+      "confidence": 0.26775771192870107,
+      "relevance_score": 0.85,
+      "response_length": 1914,
+      "latency_ms": 3769.2773999879137,
+      "embedding_time_ms": 2388.898400007747,
+      "retrieval_time_ms": 1130.783219996374,
+      "decision_time_ms": 753.8554799975827,
+      "memory_mb": 86.94140625,
+      "token_count": 486,
+      "timestamp": "2025-10-30T02:36:25.848007"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "Explain the difference between supervised and unsupervised learning",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.30373092818128883,
+      "relevance_score": 0.85,
+      "response_length": 1950,
+      "latency_ms": 4360.399099998176,
+      "embedding_time_ms": 2411.620300030336,
+      "retrieval_time_ms": 1308.1197299994528,
+      "decision_time_ms": 872.0798199996352,
+      "memory_mb": -41.7265625,
+      "token_count": 495,
+      "timestamp": "2025-10-30T02:36:30.325838"
+    },
+    {
+      "experiment_name": "Old Model (384d)",
+      "query": "What are the benefits of multi-scale embeddings?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        384
+      ],
+      "confidence": 0.25813760640641914,
+      "relevance_score": 0.85,
+      "response_length": 1900,
+      "latency_ms": 3744.756400003098,
+      "embedding_time_ms": 2372.357700020075,
+      "retrieval_time_ms": 1123.4269200009294,
+      "decision_time_ms": 748.9512800006196,
+      "memory_mb": 88.15625,
+      "token_count": 482,
+      "timestamp": "2025-10-30T02:36:34.108756"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "What are the benefits of multi-scale embeddings?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.324738824574335,
+      "relevance_score": 0.85,
+      "response_length": 1917,
+      "latency_ms": 3891.80830004625,
+      "embedding_time_ms": 2096.698399982415,
+      "retrieval_time_ms": 1167.542490013875,
+      "decision_time_ms": 778.36166000925,
+      "memory_mb": 5.46875,
+      "token_count": 486,
+      "timestamp": "2025-10-30T02:36:38.118764"
+    },
+    {
+      "experiment_name": "Old Model (384d)",
+      "query": "How do knowledge graphs improve retrieval?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        384
+      ],
+      "confidence": 0.3396220540764123,
+      "relevance_score": 0.85,
+      "response_length": 1876,
+      "latency_ms": 3570.0608999468386,
+      "embedding_time_ms": 2228.2194999279454,
+      "retrieval_time_ms": 1071.0182699840516,
+      "decision_time_ms": 714.0121799893677,
+      "memory_mb": 87.58984375,
+      "token_count": 475,
+      "timestamp": "2025-10-30T02:36:41.729760"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "How do knowledge graphs improve retrieval?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.30244307245269175,
+      "relevance_score": 0.85,
+      "response_length": 1890,
+      "latency_ms": 4519.14239989128,
+      "embedding_time_ms": 2234.9239999894053,
+      "retrieval_time_ms": 1355.742719967384,
+      "decision_time_ms": 903.8284799782559,
+      "memory_mb": 2.3671875,
+      "token_count": 478,
+      "timestamp": "2025-10-30T02:36:46.367987"
+    },
+    {
+      "experiment_name": "Multi-scale [96,192,384]",
+      "query": "What is the role of attention in transformers?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        96,
+        192,
+        384
+      ],
+      "confidence": 0.30988264707385765,
+      "relevance_score": 0.85,
+      "response_length": 1892,
+      "latency_ms": 3998.3387000393122,
+      "embedding_time_ms": 2592.0002000639215,
+      "retrieval_time_ms": 1199.5016100117937,
+      "decision_time_ms": 799.6677400078624,
+      "memory_mb": 87.96484375,
+      "token_count": 481,
+      "timestamp": "2025-10-30T02:36:50.403755"
+    },
+    {
+      "experiment_name": "Single-scale [768]",
+      "query": "What is the role of attention in transformers?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.3400284765915091,
+      "relevance_score": 0.85,
+      "response_length": 1964,
+      "latency_ms": 4049.4869999820367,
+      "embedding_time_ms": 2254.863299895078,
+      "retrieval_time_ms": 1214.846099994611,
+      "decision_time_ms": 809.8973999964073,
+      "memory_mb": -78.2421875,
+      "token_count": 499,
+      "timestamp": "2025-10-30T02:36:54.576279"
+    },
+    {
+      "experiment_name": "Multi-scale [96,192,384]",
+      "query": "Explain Bayesian exploration vs exploitation",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        96,
+        192,
+        384
+      ],
+      "confidence": 0.271286107923936,
+      "relevance_score": 0.85,
+      "response_length": 1951,
+      "latency_ms": 3712.895800010301,
+      "embedding_time_ms": 2306.980299996212,
+      "retrieval_time_ms": 1113.8687400030904,
+      "decision_time_ms": 742.5791600020602,
+      "memory_mb": 73.796875,
+      "token_count": 492,
+      "timestamp": "2025-10-30T02:36:58.324285"
     },
     {
       "experiment_name": "Single-scale [768]",
@@ -260,16 +260,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.3185907256781042,
       "relevance_score": 0.85,
-      "response_length": 1093,
-      "latency_ms": 2864.6681000245735,
-      "embedding_time_ms": 1362.0441999519244,
-      "retrieval_time_ms": 859.400430007372,
-      "decision_time_ms": 572.9336200049147,
-      "memory_mb": 4.5078125,
-      "token_count": 278,
-      "timestamp": "2025-10-30T02:17:52.882187"
+      "response_length": 1857,
+      "latency_ms": 4220.280099892989,
+      "embedding_time_ms": 2222.586899995804,
+      "retrieval_time_ms": 1266.0840299678966,
+      "decision_time_ms": 844.0560199785978,
+      "memory_mb": 20.84375,
+      "token_count": 469,
+      "timestamp": "2025-10-30T02:37:02.663579"
     },
     {
       "experiment_name": "Multi-scale [96,192,384]",
@@ -280,16 +280,16 @@
         192,
         384
       ],
-      "confidence": 0.32412094331938557,
+      "confidence": 0.3026237415620576,
       "relevance_score": 0.85,
-      "response_length": 1858,
-      "latency_ms": 3027.088399976492,
-      "embedding_time_ms": 1841.4440000196919,
-      "retrieval_time_ms": 908.1265199929476,
-      "decision_time_ms": 605.4176799952984,
-      "memory_mb": 87.16015625,
-      "token_count": 468,
-      "timestamp": "2025-10-30T02:17:55.942799"
+      "response_length": 1829,
+      "latency_ms": 3539.3275999231264,
+      "embedding_time_ms": 2218.9086999278516,
+      "retrieval_time_ms": 1061.798279976938,
+      "decision_time_ms": 707.8655199846253,
+      "memory_mb": 76.05859375,
+      "token_count": 461,
+      "timestamp": "2025-10-30T02:37:06.243244"
     },
     {
       "experiment_name": "Single-scale [768]",
@@ -298,16 +298,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.3179099205848514,
       "relevance_score": 0.85,
-      "response_length": 1060,
-      "latency_ms": 3031.6447000950575,
-      "embedding_time_ms": 1344.9821999529377,
-      "retrieval_time_ms": 909.4934100285172,
-      "decision_time_ms": 606.3289400190115,
-      "memory_mb": 4.4921875,
-      "token_count": 269,
-      "timestamp": "2025-10-30T02:17:59.094403"
+      "response_length": 1874,
+      "latency_ms": 4024.240200058557,
+      "embedding_time_ms": 2198.8492000382394,
+      "retrieval_time_ms": 1207.2720600175671,
+      "decision_time_ms": 804.8480400117114,
+      "memory_mb": 16.8984375,
+      "token_count": 472,
+      "timestamp": "2025-10-30T02:37:10.372464"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -316,16 +316,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.28046581113156255,
       "relevance_score": 0.85,
-      "response_length": 1057,
-      "latency_ms": 3047.2641000524163,
-      "embedding_time_ms": 1383.803299977444,
-      "retrieval_time_ms": 914.1792300157249,
-      "decision_time_ms": 609.4528200104833,
-      "memory_mb": 4.44140625,
-      "token_count": 268,
-      "timestamp": "2025-10-30T02:18:02.243188"
+      "response_length": 1894,
+      "latency_ms": 4077.190399984829,
+      "embedding_time_ms": 2141.2587999366224,
+      "retrieval_time_ms": 1223.1571199954487,
+      "decision_time_ms": 815.4380799969658,
+      "memory_mb": 4.78125,
+      "token_count": 477,
+      "timestamp": "2025-10-30T02:37:14.555395"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -334,16 +334,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.3170939082681705,
       "relevance_score": 0.85,
-      "response_length": 1047,
-      "latency_ms": 3273.7385999644175,
-      "embedding_time_ms": 1554.5791999902576,
-      "retrieval_time_ms": 982.1215799893253,
-      "decision_time_ms": 654.7477199928835,
-      "memory_mb": 4.50390625,
-      "token_count": 266,
-      "timestamp": "2025-10-30T02:18:05.613775"
+      "response_length": 1880,
+      "latency_ms": 4072.8287999518216,
+      "embedding_time_ms": 2155.6459999410436,
+      "retrieval_time_ms": 1221.8486399855465,
+      "decision_time_ms": 814.5657599903643,
+      "memory_mb": 6.0625,
+      "token_count": 475,
+      "timestamp": "2025-10-30T02:37:18.754564"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -352,16 +352,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.29703849515406133,
       "relevance_score": 0.85,
-      "response_length": 1100,
-      "latency_ms": 2944.781900034286,
-      "embedding_time_ms": 1432.613999932073,
-      "retrieval_time_ms": 883.4345700102858,
-      "decision_time_ms": 588.9563800068572,
-      "memory_mb": 4.5078125,
-      "token_count": 283,
-      "timestamp": "2025-10-30T02:18:08.652647"
+      "response_length": 1900,
+      "latency_ms": 4081.001300015487,
+      "embedding_time_ms": 2289.250500034541,
+      "retrieval_time_ms": 1224.300390004646,
+      "decision_time_ms": 816.2002600030974,
+      "memory_mb": -511.40234375,
+      "token_count": 483,
+      "timestamp": "2025-10-30T02:37:22.957536"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -370,16 +370,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.3568659836237878,
       "relevance_score": 0.85,
-      "response_length": 1082,
-      "latency_ms": 2989.942399901338,
-      "embedding_time_ms": 1371.2331999558955,
-      "retrieval_time_ms": 896.9827199704014,
-      "decision_time_ms": 597.9884799802676,
-      "memory_mb": 4.50390625,
-      "token_count": 277,
-      "timestamp": "2025-10-30T02:18:11.738300"
+      "response_length": 1877,
+      "latency_ms": 3977.840300067328,
+      "embedding_time_ms": 2123.9359999308363,
+      "retrieval_time_ms": 1193.3520900201984,
+      "decision_time_ms": 795.5680600134656,
+      "memory_mb": 4.69140625,
+      "token_count": 476,
+      "timestamp": "2025-10-30T02:37:27.067840"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -388,16 +388,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.3036964303355674,
       "relevance_score": 0.85,
-      "response_length": 1056,
-      "latency_ms": 3051.72460002359,
-      "embedding_time_ms": 1437.0588000165299,
-      "retrieval_time_ms": 915.517380007077,
-      "decision_time_ms": 610.344920004718,
-      "memory_mb": 4.50390625,
-      "token_count": 270,
-      "timestamp": "2025-10-30T02:18:14.898268"
+      "response_length": 1889,
+      "latency_ms": 3967.2140000620857,
+      "embedding_time_ms": 2156.6270999610424,
+      "retrieval_time_ms": 1190.1642000186257,
+      "decision_time_ms": 793.4428000124171,
+      "memory_mb": 5.00390625,
+      "token_count": 478,
+      "timestamp": "2025-10-30T02:37:31.169875"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -406,16 +406,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.35702422349321516,
       "relevance_score": 0.85,
-      "response_length": 1060,
-      "latency_ms": 3204.6105000190437,
-      "embedding_time_ms": 1614.9816999677569,
-      "retrieval_time_ms": 961.3831500057131,
-      "decision_time_ms": 640.9221000038087,
-      "memory_mb": 4.5078125,
-      "token_count": 273,
-      "timestamp": "2025-10-30T02:18:18.206578"
+      "response_length": 1893,
+      "latency_ms": 3843.7787999864668,
+      "embedding_time_ms": 2106.5580000868067,
+      "retrieval_time_ms": 1153.13363999594,
+      "decision_time_ms": 768.7557599972934,
+      "memory_mb": 4.51953125,
+      "token_count": 481,
+      "timestamp": "2025-10-30T02:37:35.149739"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -424,16 +424,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.32840796051594306,
       "relevance_score": 0.85,
-      "response_length": 1058,
-      "latency_ms": 3363.7602999806404,
-      "embedding_time_ms": 1468.6982000712305,
-      "retrieval_time_ms": 1009.1280899941921,
-      "decision_time_ms": 672.7520599961281,
-      "memory_mb": 8.171875,
-      "token_count": 269,
-      "timestamp": "2025-10-30T02:18:21.677945"
+      "response_length": 1874,
+      "latency_ms": 4019.4112000754103,
+      "embedding_time_ms": 2199.3345000082627,
+      "retrieval_time_ms": 1205.823360022623,
+      "decision_time_ms": 803.8822400150821,
+      "memory_mb": 4.50390625,
+      "token_count": 473,
+      "timestamp": "2025-10-30T02:37:39.294161"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -442,16 +442,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.2923260444720325,
       "relevance_score": 0.85,
-      "response_length": 1042,
-      "latency_ms": 3220.4746999777853,
-      "embedding_time_ms": 1516.2749999435619,
-      "retrieval_time_ms": 966.1424099933356,
-      "decision_time_ms": 644.0949399955571,
+      "response_length": 1862,
+      "latency_ms": 3905.2052999613807,
+      "embedding_time_ms": 2126.1263000778854,
+      "retrieval_time_ms": 1171.5615899884142,
+      "decision_time_ms": 781.0410599922761,
       "memory_mb": 4.50390625,
-      "token_count": 264,
-      "timestamp": "2025-10-30T02:18:24.998734"
+      "token_count": 469,
+      "timestamp": "2025-10-30T02:37:43.332100"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -460,16 +460,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.2809160024702227,
       "relevance_score": 0.85,
-      "response_length": 1081,
-      "latency_ms": 3146.7679999768734,
-      "embedding_time_ms": 1489.815799985081,
-      "retrieval_time_ms": 944.030399993062,
-      "decision_time_ms": 629.3535999953747,
+      "response_length": 1910,
+      "latency_ms": 4162.565500009805,
+      "embedding_time_ms": 2114.795600064099,
+      "retrieval_time_ms": 1248.7696500029415,
+      "decision_time_ms": 832.513100001961,
       "memory_mb": 4.50390625,
-      "token_count": 277,
-      "timestamp": "2025-10-30T02:18:28.241110"
+      "token_count": 484,
+      "timestamp": "2025-10-30T02:37:47.616708"
     },
     {
       "experiment_name": "v1.0 (Nomic, 768d)",
@@ -478,16 +478,16 @@
       "scales": [
         768
       ],
-      "confidence": 0.0,
+      "confidence": 0.29270391769034143,
       "relevance_score": 0.85,
-      "response_length": 1096,
-      "latency_ms": 3024.7776999603957,
-      "embedding_time_ms": 1438.0246000364423,
-      "retrieval_time_ms": 907.4333099881187,
-      "decision_time_ms": 604.9555399920791,
+      "response_length": 1932,
+      "latency_ms": 4343.182499986142,
+      "embedding_time_ms": 2322.817699983716,
+      "retrieval_time_ms": 1302.9547499958426,
+      "decision_time_ms": 868.6364999972284,
       "memory_mb": 4.50390625,
-      "token_count": 283,
-      "timestamp": "2025-10-30T02:18:31.362071"
+      "token_count": 492,
+      "timestamp": "2025-10-30T02:37:52.087397"
     }
   ]
 }

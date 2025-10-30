@@ -26,6 +26,7 @@ from HoloLoom.config import Config
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 from HoloLoom.documentation.types import Query, MemoryShard
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from HoloLoom.loom import command as loom_cmd
 
 
 @dataclass
@@ -207,10 +208,13 @@ class V1Validator:
 
         print(f"  🧪 {experiment_name}: {query[:50]}...")
 
-        # Configure
+        # Configure - CRITICAL: Sync config.scales with embedder.sizes
         config = Config.fused()
         config.scales = scales
         config.fusion_weights = {s: 1.0/len(scales) for s in scales}
+
+        # Disable auto-pattern selection to prevent scale mismatches
+        config.loom_pattern = "bare"  # Force simple pattern with no scale changes
 
         # Create embedder with specific model
         embedder = MatryoshkaEmbeddings(
@@ -229,6 +233,12 @@ class V1Validator:
         async with WeavingOrchestrator(cfg=config, shards=self.shards) as orchestrator:
             # Replace embedder
             orchestrator.embedder = embedder
+
+            # CRITICAL: Override pattern scales to match embedder
+            # Otherwise WarpSpace will fail with KeyError
+            for pattern_spec in [loom_cmd.BARE_PATTERN, loom_cmd.FAST_PATTERN, loom_cmd.FUSED_PATTERN]:
+                pattern_spec.scales = scales
+                pattern_spec.fusion_weights = {s: 1.0/len(scales) for s in scales}
 
             # Weave query
             embed_start = time.perf_counter()
