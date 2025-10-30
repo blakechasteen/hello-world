@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Math Pipeline - Ultra Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+
+    <style>
+        /* ===== CSS VARIABLES (Design System) ===== */
+        :root {
+            /* Colors - Cyberpunk Neon */
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #13131a;
+            --bg-tertiary: #1a1a24;
+
+            --neon-cyan: #00f5ff;
+            --neon-magenta: #ff00ff;
+            --neon-purple: #a855f7;
+            --neon-blue: #3b82f6;
+            --neon-green: #10b981;
+            --neon-yellow: #fbbf24;
+
+            --text-primary: #f5f5f7;
+            --text-secondary: #a0a0b0;
+            --text-tertiary: #707080;
+
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 1.5rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 30px;
+
+            /* Shadows */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.3);
+            --shadow-neon: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
+
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===== GLOBAL STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(0, 245, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 0, 255, 0.08) 0%, transparent 50%);
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* ===== PARTICLES BACKGROUND ===== */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            animation: float linear infinite;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: var(--space-xl) var(--space-md);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+            padding: var(--space-xl) 0;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-magenta) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-sm);
+            letter-spacing: -0.02em;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(255, 0, 255, 0.8));
+            }
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 0.05em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: var(--space-xs) var(--space-md);
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            border-radius: var(--radius-xl);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            margin-top: var(--space-sm);
+            backdrop-filter: blur(10px);
+        }
+
+        /* ===== GRID LAYOUT ===== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* ===== GLASS CARD (Enhanced) ===== */
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                var(--shadow-md),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-base);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent,
+                var(--neon-cyan),
+                transparent);
+            opacity: 0;
+            transition: opacity var(--transition-base);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 245, 255, 0.3);
+            box-shadow:
+                var(--shadow-lg),
+                0 0 30px rgba(0, 245, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* ===== CARD HEADER ===== */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 245, 255, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        /* ===== METRICS ===== */
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md);
+            margin: var(--space-sm) 0;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md);
+            border-left: 3px solid var(--neon-cyan);
+            transition: all var(--transition-fast);
+        }
+
+        .metric:hover {
+            background: rgba(0, 245, 255, 0.05);
+            border-left-width: 4px;
+            padding-left: calc(var(--space-md) + 4px);
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===== CHARTS ===== */
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin: var(--space-md) 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        /* ===== FLOW DIAGRAM ===== */
+        .flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm);
+            padding: var(--space-lg);
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-cyan) transparent;
+        }
+
+        .flow-step {
+            flex-shrink: 0;
+            min-width: 140px;
+            padding: var(--space-md) var(--space-lg);
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(0, 245, 255, 0.3);
+            border-radius: var(--radius-md);
+            text-align: center;
+            position: relative;
+            transition: all var(--transition-base);
+        }
+
+        .flow-step:hover {
+            background: rgba(0, 245, 255, 0.08);
+            border-color: var(--neon-cyan);
+            transform: scale(1.05);
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neon-cyan);
+            font-size: 1.5rem;
+            font-weight: bold;
+            animation: arrowPulse 2s ease-in-out infinite;
+        }
+
+        .flow-step:last-child::after {
+            content: '';
+        }
+
+        @keyframes arrowPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .flow-icon {
+            font-size: 2rem;
+            margin-bottom: var(--space-xs);
+            display: block;
+        }
+
+        .flow-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* ===== LEADERBOARD ===== */
+        .leaderboard {
+            list-style: none;
+        }
+
+        .leaderboard-item {
+            display: grid;
+            grid-template-columns: 60px 1fr auto auto;
+            gap: var(--space-md);
+            align-items: center;
+            padding: var(--space-md);
+            margin: var(--space-sm) 0;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-base);
+            cursor: pointer;
+        }
+
+        .leaderboard-item:hover {
+            background: rgba(0, 245, 255, 0.08);
+            transform: translateX(8px);
+        }
+
+        .rank {
+            font-size: 2rem;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .rank.gold { filter: drop-shadow(0 0 10px #ffd700); }
+        .rank.silver { filter: drop-shadow(0 0 10px #c0c0c0); }
+        .rank.bronze { filter: drop-shadow(0 0 10px #cd7f32); }
+
+        .op-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .intent-tag {
+            padding: 4px 12px;
+            border-radius: var(--radius-xl);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(0, 245, 255, 0.15);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .success-rate {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        /* ===== SPARKLINES ===== */
+        .sparkline {
+            height: 60px;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            padding: var(--space-sm);
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-sm);
+        }
+
+        .sparkline-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--neon-cyan), var(--neon-purple));
+            border-radius: 2px 2px 0 0;
+            transition: all var(--transition-base);
+            min-width: 4px;
+        }
+
+        .sparkline-bar:hover {
+            background: linear-gradient(to top, var(--neon-green), var(--neon-cyan));
+            transform: scaleY(1.1);
+        }
+
+        .sparkline-label {
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+            margin-top: var(--space-xs);
+            font-weight: 500;
+        }
+
+        /* ===== LOADING STATE ===== */
+        .skeleton {
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.03) 0%,
+                rgba(255, 255, 255, 0.08) 50%,
+                rgba(255, 255, 255, 0.03) 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: var(--radius-md);
+            height: 20px;
+            margin: var(--space-sm) 0;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-cyan);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-magenta);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-md) var(--space-sm);
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .flow {
+                justify-content: flex-start;
+            }
+
+            .leaderboard-item {
+                grid-template-columns: 50px 1fr auto;
+            }
+
+            .intent-tag {
+                display: none;
+            }
+        }
+
+        /* ===== FADE IN ANIMATION ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>HoloLoom Math Pipeline</h1>
+            <p class="subtitle">Real-Time Intelligence Analysis Dashboard</p>
+            <span class="badge">Ultra Edition</span>
+        </header>
+
+        <!-- Key Metrics Grid -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <h2 class="card-title">Statistics</h2>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Analyses</span>
+                    <span class="metric-value" id="total-analyses">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Operations</span>
+                    <span class="metric-value" id="avg-operations">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Confidence</span>
+                    <span class="metric-value" id="avg-confidence">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Time</span>
+                    <span class="metric-value" id="avg-time">-</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚡</div>
+                    <h2 class="card-title">Performance</h2>
+                </div>
+                <div class="sparkline" id="time-sparkline"></div>
+                <div class="sparkline-label">Execution Time Trend</div>
+                <div class="sparkline" id="confidence-sparkline" style="margin-top: var(--space-md);"></div>
+                <div class="sparkline-label">Confidence Trend</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎯</div>
+                    <h2 class="card-title">Intent Distribution</h2>
+                </div>
+                <div id="intent-chart" style="height: 250px;"></div>
+            </div>
+        </div>
+
+        <!-- Pipeline Flow -->
+        <div class="card full-width">
+            <div class="card-header">
+                <div class="card-icon">🔄</div>
+                <h2 class="card-title">Pipeline Architecture</h2>
+            </div>
+            <div class="flow">
+                <div class="flow-step">
+                    <span class="flow-icon">🔍</span>
+                    <span class="flow-label">Query</span>
+                </div>
+                <div class="flow-step">
+                    <span class="flow-icon">🎯</span>
+                    <span class="flow-label">Intent</span>
+                </div>
+                <div class="flow-step">
+                    <span class="flow-icon">🧠</span>
+                    <span class="flow-label">Selection</span>
+                </div>
+                <div class="flow-step">
+                    <span class="flow-icon">🔢</span>
+                    <span class="flow-label">Execution</span>
+                </div>
+                <div class="flow-step">
+                    <span class="flow-icon">💬</span>
+                    <span class="flow-label">Synthesis</span>
+                </div>
+                <div class="flow-step">
+                    <span class="flow-icon">✨</span>
+                    <span class="flow-label">Result</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-2">
+            <div class="card full-width">
+                <div class="card-header">
+                    <div class="card-icon">📈</div>
+                    <h2 class="card-title">Execution Time Analysis</h2>
+                </div>
+                <div id="time-chart" class="chart-container"></div>
+            </div>
+
+            <div class="card full-width">
+                <div class="card-header">
+                    <div class="card-icon">🔧</div>
+                    <h2 class="card-title">Operation Usage</h2>
+                </div>
+                <div id="operation-chart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- RL Leaderboard -->
+        <div class="card full-width">
+            <div class="card-header">
+                <div class="card-icon">🏆</div>
+                <h2 class="card-title">RL Operation Leaderboard</h2>
+            </div>
+            <ul class="leaderboard" id="leaderboard">
+                <li class="skeleton"></li>
+                <li class="skeleton"></li>
+                <li class="skeleton"></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Generate particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (10 + Math.random() * 20) + 's';
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Data
+        const stats = {
+  "total_analyses": 7,
+  "total_operations": 22,
+  "total_cost": 121,
+  "avg_confidence": 0.9928571428571429,
+  "operations_by_intent": {
+    "similarity": {
+      "count": 3,
+      "operations": {
+        "hyperbolic_distance": 3,
+        "inner_product": 3,
+        "metric_distance": 2,
+        "kl_divergence": 3
+      }
+    },
+    "optimization": {
+      "count": 1,
+      "operations": {
+        "gram_schmidt": 1,
+        "thompson_sampling": 1
+      }
+    },
+    "analysis": {
+      "count": 1,
+      "operations": {
+        "gradient": 1,
+        "fourier_transform": 1,
+        "inner_product": 1,
+        "geodesic": 1
+      }
+    },
+    "verification": {
+      "count": 1,
+      "operations": {
+        "continuity_check": 1,
+        "metric_verification": 1,
+        "convergence_analysis": 1
+      }
+    },
+    "transformation": {
+      "count": 1,
+      "operations": {
+        "fourier_transform": 1,
+        "laplacian": 1
+      }
+    }
+  },
+  "execution_times_ms": [
+    1.027822494506836,
+    1.0037422180175781,
+    1.016378402709961,
+    0.90789794921875,
+    1.027822494506836,
+    0.0,
+    1.0004043579101562
+  ],
+  "avg_operations_per_analysis": 3.142857142857143,
+  "avg_cost_per_analysis": 17.285714285714285,
+  "avg_execution_time_ms": 0.8548668452671596,
+  "p50_execution_time_ms": 1.0037422180175781,
+  "p95_execution_time_ms": 1.027822494506836,
+  "selector_stats": {
+    "total_plans": 0
+  },
+  "rl_stats": {
+    "total_plans": 0,
+    "rl_learning": {
+      "total_feedback": 22,
+      "leaderboard": [
+        {
+          "operation_name": "inner_product",
+          "intent": "similarity",
+          "successes": 3,
+          "failures": 0,
+          "total_cost_spent": 3,
+          "avg_execution_time": 0.0
+        },
+        {
+          "operation_name": "metric_distance",
+          "intent": "similarity",
+          "successes": 2,
+          "failures": 0,
+          "total_cost_spent": 2,
+          "avg_execution_time": 0.0
+        },
+        {
+          "operation_name": "hyperbolic_distance",
+          "intent": "similarity",
+          "successes": 3,
+          "failures": 0,
+          "total_cost_spent": 15,
+          "avg_execution_time": 0.0
+        },
+        {
+          "operation_name": "kl_divergence",
+          "intent": "similarity",
+          "successes": 3,
+          "failures": 0,
+          "total_cost_spent": 9,
+          "avg_execution_time": 0.0
+        },
+        {
+          "operation_name": "gram_schmidt",
+          "intent": "optimization",
+          "successes": 1,
+          "failures": 0,
+          "total_cost_spent": 8,
+          "avg_execution_time": 0.0
+        },
+        {
+          "operation_name": "thompson_sampling",
+          "intent": "optimization",
+          "successes": 1,
+          "failures": 0,
+          "total_cost_spent": 3,
+          "avg_execution_time": 0.0
+        },
+        {
+          "operation_name": "inner_product",
+          "intent": "analysis",
+          "successes": 1,
+          "failures": 0,
+          "total_cost_spent": 1,
+          "avg_execution_time": 0.0
+        },
+        {
+          "operation_name": "gradient",
+          "intent": "analysis",
+          "successes": 1,
+          "failures": 0,
+          "total_cost_spent": 5,
+          "avg_execution_time": 0.0
+        },
+        {
+          "operation_name": "fourier_transform",
+          "intent": "analysis",
+          "successes": 1,
+          "failures": 0,
+          "total_cost_spent": 10,
+          "avg_execution_time": 0.0
+        },
+        {
+          "operation_name": "geodesic",
+          "intent": "analysis",
+          "successes": 1,
+          "failures": 0,
+          "total_cost_spent": 20,
+          "avg_execution_time": 0.0
+        }
+      ]
+    },
+    "testing": {
+      "total_tests": 0
+    }
+  }
+};
+        const history = [
+  {
+    "execution_time_ms": 1.027822494506836,
+    "confidence": 1.0,
+    "total_cost": 10,
+    "operations_used": [
+      "hyperbolic_distance",
+      "inner_product",
+      "metric_distance",
+      "kl_divergence"
+    ]
+  },
+  {
+    "execution_time_ms": 1.0037422180175781,
+    "confidence": 0.95,
+    "total_cost": 9,
+    "operations_used": [
+      "inner_product",
+      "kl_divergence",
+      "hyperbolic_distance"
+    ]
+  },
+  {
+    "execution_time_ms": 1.016378402709961,
+    "confidence": 1.0,
+    "total_cost": 10,
+    "operations_used": [
+      "metric_distance",
+      "inner_product",
+      "hyperbolic_distance",
+      "kl_divergence"
+    ]
+  },
+  {
+    "execution_time_ms": 0.90789794921875,
+    "confidence": 1.0,
+    "total_cost": 11,
+    "operations_used": [
+      "gram_schmidt",
+      "thompson_sampling"
+    ]
+  },
+  {
+    "execution_time_ms": 1.027822494506836,
+    "confidence": 1.0,
+    "total_cost": 36,
+    "operations_used": [
+      "gradient",
+      "fourier_transform",
+      "inner_product",
+      "geodesic"
+    ]
+  },
+  {
+    "execution_time_ms": 0.0,
+    "confidence": 1.0,
+    "total_cost": 23,
+    "operations_used": [
+      "continuity_check",
+      "metric_verification",
+      "convergence_analysis"
+    ]
+  },
+  {
+    "execution_time_ms": 1.0004043579101562,
+    "confidence": 1.0,
+    "total_cost": 22,
+    "operations_used": [
+      "fourier_transform",
+      "laplacian"
+    ]
+  }
+];
+        const leaderboard = [
+  {
+    "operation_name": "inner_product",
+    "intent": "similarity",
+    "successes": 3,
+    "failures": 0,
+    "total_cost_spent": 3,
+    "avg_execution_time": 0.0
+  },
+  {
+    "operation_name": "metric_distance",
+    "intent": "similarity",
+    "successes": 2,
+    "failures": 0,
+    "total_cost_spent": 2,
+    "avg_execution_time": 0.0
+  },
+  {
+    "operation_name": "hyperbolic_distance",
+    "intent": "similarity",
+    "successes": 3,
+    "failures": 0,
+    "total_cost_spent": 15,
+    "avg_execution_time": 0.0
+  },
+  {
+    "operation_name": "kl_divergence",
+    "intent": "similarity",
+    "successes": 3,
+    "failures": 0,
+    "total_cost_spent": 9,
+    "avg_execution_time": 0.0
+  },
+  {
+    "operation_name": "gram_schmidt",
+    "intent": "optimization",
+    "successes": 1,
+    "failures": 0,
+    "total_cost_spent": 8,
+    "avg_execution_time": 0.0
+  },
+  {
+    "operation_name": "thompson_sampling",
+    "intent": "optimization",
+    "successes": 1,
+    "failures": 0,
+    "total_cost_spent": 3,
+    "avg_execution_time": 0.0
+  },
+  {
+    "operation_name": "inner_product",
+    "intent": "analysis",
+    "successes": 1,
+    "failures": 0,
+    "total_cost_spent": 1,
+    "avg_execution_time": 0.0
+  },
+  {
+    "operation_name": "gradient",
+    "intent": "analysis",
+    "successes": 1,
+    "failures": 0,
+    "total_cost_spent": 5,
+    "avg_execution_time": 0.0
+  },
+  {
+    "operation_name": "fourier_transform",
+    "intent": "analysis",
+    "successes": 1,
+    "failures": 0,
+    "total_cost_spent": 10,
+    "avg_execution_time": 0.0
+  },
+  {
+    "operation_name": "geodesic",
+    "intent": "analysis",
+    "successes": 1,
+    "failures": 0,
+    "total_cost_spent": 20,
+    "avg_execution_time": 0.0
+  }
+];
+
+        // Update metrics
+        document.getElementById('total-analyses').textContent = stats.total_analyses || 0;
+        document.getElementById('avg-operations').textContent =
+            (stats.avg_operations_per_analysis || 0).toFixed(1);
+        document.getElementById('avg-confidence').textContent =
+            ((stats.avg_confidence || 0) * 100).toFixed(0) + '%';
+        document.getElementById('avg-time').textContent =
+            (stats.avg_execution_time_ms || 0).toFixed(1) + 'ms';
+
+        // Sparklines
+        function renderSparkline(containerId, values) {
+            const container = document.getElementById(containerId);
+            if (!values || values.length === 0) return;
+
+            const max = Math.max(...values);
+            const min = Math.min(...values);
+            const range = max - min || 1;
+
+            container.innerHTML = '';
+            values.forEach(val => {
+                const bar = document.createElement('div');
+                bar.className = 'sparkline-bar';
+                const height = ((val - min) / range) * 100;
+                bar.style.height = height + '%';
+                container.appendChild(bar);
+            });
+        }
+
+        if (history && history.length > 0) {
+            const times = history.map(h => h.execution_time_ms || 0);
+            const confidences = history.map(h => (h.confidence || 0) * 100);
+            renderSparkline('time-sparkline', times);
+            renderSparkline('confidence-sparkline', confidences);
+        }
+
+        // Plotly theme
+        const plotlyTheme = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: {
+                family: 'Inter, sans-serif',
+                color: '#f5f5f7'
+            },
+            xaxis: {
+                gridcolor: 'rgba(255,255,255,0.05)',
+                zerolinecolor: 'rgba(255,255,255,0.1)'
+            },
+            yaxis: {
+                gridcolor: 'rgba(255,255,255,0.05)',
+                zerolinecolor: 'rgba(255,255,255,0.1)'
+            },
+            margin: { t: 20, l: 50, r: 20, b: 50 }
+        };
+
+        // Intent distribution
+        if (stats.operations_by_intent) {
+            const intents = Object.keys(stats.operations_by_intent);
+            const counts = intents.map(intent => stats.operations_by_intent[intent].count);
+
+            const data = [{
+                x: intents,
+                y: counts,
+                type: 'bar',
+                marker: {
+                    color: intents.map((_, i) =>
+                        `rgba(0, 245, 255, ${0.4 + (i / intents.length) * 0.6})`
+                    ),
+                    line: { color: '#00f5ff', width: 2 }
+                }
+            }];
+
+            Plotly.newPlot('intent-chart', data, {
+                ...plotlyTheme,
+                height: 250,
+                margin: { t: 10, l: 40, r: 10, b: 40 }
+            }, {responsive: true, displayModeBar: false});
+        }
+
+        // Time chart
+        if (history && history.length > 0) {
+            const data = [{
+                x: history.map((_, i) => i + 1),
+                y: history.map(h => h.execution_time_ms || 0),
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {
+                    color: '#00f5ff',
+                    width: 3,
+                    shape: 'spline'
+                },
+                marker: {
+                    color: '#10b981',
+                    size: 10,
+                    line: { color: '#00f5ff', width: 2 }
+                },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(0, 245, 255, 0.1)'
+            }];
+
+            Plotly.newPlot('time-chart', data, {
+                ...plotlyTheme,
+                xaxis: { ...plotlyTheme.xaxis, title: 'Query Number' },
+                yaxis: { ...plotlyTheme.yaxis, title: 'Time (ms)' }
+            }, {responsive: true});
+        }
+
+        // Operation usage
+        if (stats.selector_stats && stats.selector_stats.most_common_operations) {
+            const ops = Object.keys(stats.selector_stats.most_common_operations);
+            const counts = Object.values(stats.selector_stats.most_common_operations);
+
+            const data = [{
+                x: counts,
+                y: ops,
+                type: 'bar',
+                orientation: 'h',
+                marker: {
+                    color: counts.map((c, i) =>
+                        `rgba(0, 245, 255, ${0.3 + (c / Math.max(...counts)) * 0.7})`
+                    ),
+                    line: { color: '#00f5ff', width: 2 }
+                }
+            }];
+
+            Plotly.newPlot('operation-chart', data, {
+                ...plotlyTheme,
+                xaxis: { ...plotlyTheme.xaxis, title: 'Usage Count' },
+                margin: { t: 20, l: 180, r: 20, b: 50 }
+            }, {responsive: true});
+        }
+
+        // Leaderboard
+        if (leaderboard && leaderboard.length > 0) {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+
+            leaderboard.forEach((op, i) => {
+                const total = op.successes + op.failures;
+                const rate = total > 0 ? (op.successes / total * 100).toFixed(0) : 0;
+
+                const medals = ['🥇', '🥈', '🥉'];
+                const rank = i < 3 ? medals[i] : (i + 1) + '.';
+                const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+
+                const li = document.createElement('li');
+                li.className = 'leaderboard-item';
+                li.innerHTML = `
+                    <span class="rank ${rankClass}">${rank}</span>
+                    <span class="op-name">${op.operation_name}</span>
+                    <span class="intent-tag">${op.intent}</span>
+                    <span class="success-rate">${rate}%</span>
+                `;
+                container.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>

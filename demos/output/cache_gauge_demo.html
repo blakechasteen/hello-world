@@ -1,0 +1,553 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Cache Effectiveness Gauge Demo</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                margin: 40px;
+                background: #f9fafb;
+            }
+            h1 {
+                color: #111827;
+                font-size: 24px;
+                font-weight: 600;
+                margin-bottom: 8px;
+            }
+            .subtitle {
+                color: #6b7280;
+                font-size: 14px;
+                margin-bottom: 32px;
+            }
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 24px;
+                margin-bottom: 24px;
+            }
+            .gauge-container {
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 0;
+                overflow: hidden;
+            }
+            .tufte-quote {
+                border-left: 4px solid #3b82f6;
+                padding-left: 16px;
+                margin: 24px 0;
+                font-style: italic;
+                color: #6b7280;
+                background: white;
+                padding: 16px;
+                border-radius: 4px;
+            }
+            .use-cases {
+                background: #f0fdf4;
+                border-left: 4px solid #10b981;
+                padding: 16px;
+                margin: 16px 0;
+                border-radius: 4px;
+            }
+            .use-cases h3 {
+                margin-top: 0;
+                color: #065f46;
+                font-size: 14px;
+            }
+            .use-cases ul {
+                margin: 8px 0;
+                padding-left: 20px;
+                color: #374151;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+            .api-example {
+                background: #f3f4f6;
+                padding: 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-family: monospace;
+                overflow-x: auto;
+                margin: 12px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Cache Effectiveness Gauge Visualization</h1>
+        <div class="subtitle">
+            Radial gauge showing cache performance metrics - Tufte-style
+        </div>
+
+        <div class="tufte-quote">
+            "Above all else show the data. Minimize chartjunk. Maximize data-ink ratio."
+            <br><strong>— Edward Tufte</strong>
+        </div>
+
+        <div class="use-cases">
+            <h3>Use Cases for Cache Gauges</h3>
+            <ul>
+                <li><strong>Real-time Monitoring:</strong> Track cache effectiveness in production dashboards</li>
+                <li><strong>Performance Optimization:</strong> Identify when cache needs tuning</li>
+                <li><strong>Capacity Planning:</strong> Understand cache hit rates for resource allocation</li>
+                <li><strong>A/B Testing:</strong> Compare cache strategies across configurations</li>
+                <li><strong>Alert Triggers:</strong> Set thresholds for automated alerts</li>
+                <li><strong>Historical Tracking:</strong> Monitor cache degradation over time</li>
+            </ul>
+        </div>
+
+        <div class="grid">
+            <div class="gauge-container">
+        <div class="cache-gauge" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                        background: #ffffff; padding: 16px; border-radius: 4px;">
+            
+        <div class="gauge-header" style="margin-bottom: 16px; text-align: center;">
+            <div style="font-size: 14px; font-weight: 600; color: #374151;">Excellent Cache Performance</div>
+            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Production system - last 24 hours</div>
+            <div style="margin-top: 8px;">
+                <span style="display: inline-block; padding: 4px 12px; background: #d1fae5;
+                             color: #065f46; border-radius: 12px; font-size: 11px;
+                             font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Excellent
+                </span>
+            </div>
+        </div>
+        
+            
+        <div style="display: flex; justify-content: center; margin: 16px 0;">
+            <svg width="200" height="200">
+                <!-- Background arc -->
+                <path d="M 50.5 149.5 A 70 70 0 1 1 149.5 149.5" stroke="#e5e7eb" stroke-width="16"
+                      fill="none" stroke-linecap="round"/>
+
+                <!-- Hit rate arc -->
+                <path d="M 50.5 149.5 A 70 70 0 1 1 164.2 127.8" stroke="#065f46" stroke-width="16"
+                      fill="none" stroke-linecap="round"/>
+
+                <!-- Center text -->
+                <text x="100.0" y="90.0" text-anchor="middle"
+                      font-size="32" font-weight="700" fill="#374151">
+                    92.0%
+                </text>
+                <text x="100.0" y="115.0" text-anchor="middle"
+                      font-size="12" fill="#9ca3af">
+                    Hit Rate
+                </text>
+            </svg>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; font-size: 12px;">
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Total Queries</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        1000
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Cache Hits</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #10b981; font-family: monospace;">
+                        920
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Cached Latency</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        12.0ms
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Uncached Latency</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        150.0ms
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Time Saved</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #3b82f6; font-family: monospace;">
+                        127.0s
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Speedup</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #3b82f6; font-family: monospace;">
+                        12.5x
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+            <div style="font-size: 12px; font-weight: 500; color: #374151; margin-bottom: 8px;">
+                Recommendations
+            </div>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="color: #374151; font-size: 12px; line-height: 1.6;">Cache performing well - no immediate actions needed</li>
+            </ul>
+        </div>
+        
+        </div>
+        </div>
+            <div class="gauge-container">
+        <div class="cache-gauge" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                        background: #ffffff; padding: 16px; border-radius: 4px;">
+            
+        <div class="gauge-header" style="margin-bottom: 16px; text-align: center;">
+            <div style="font-size: 14px; font-weight: 600; color: #374151;">Good Cache Performance</div>
+            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Development system - last hour</div>
+            <div style="margin-top: 8px;">
+                <span style="display: inline-block; padding: 4px 12px; background: #d1fae5;
+                             color: #047857; border-radius: 12px; font-size: 11px;
+                             font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Good
+                </span>
+            </div>
+        </div>
+        
+            
+        <div style="display: flex; justify-content: center; margin: 16px 0;">
+            <svg width="200" height="200">
+                <!-- Background arc -->
+                <path d="M 50.5 149.5 A 70 70 0 1 1 149.5 149.5" stroke="#e5e7eb" stroke-width="16"
+                      fill="none" stroke-linecap="round"/>
+
+                <!-- Hit rate arc -->
+                <path d="M 50.5 149.5 A 70 70 0 1 1 152.5 53.7" stroke="#047857" stroke-width="16"
+                      fill="none" stroke-linecap="round"/>
+
+                <!-- Center text -->
+                <text x="100.0" y="90.0" text-anchor="middle"
+                      font-size="32" font-weight="700" fill="#374151">
+                    68.0%
+                </text>
+                <text x="100.0" y="115.0" text-anchor="middle"
+                      font-size="12" fill="#9ca3af">
+                    Hit Rate
+                </text>
+            </svg>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; font-size: 12px;">
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Total Queries</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        500
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Cache Hits</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #10b981; font-family: monospace;">
+                        340
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Cached Latency</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        18.0ms
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Uncached Latency</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        120.0ms
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Time Saved</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #3b82f6; font-family: monospace;">
+                        34.7s
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Speedup</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #3b82f6; font-family: monospace;">
+                        6.7x
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+            <div style="font-size: 12px; font-weight: 500; color: #374151; margin-bottom: 8px;">
+                Recommendations
+            </div>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="color: #374151; font-size: 12px; line-height: 1.6;">Cache performing well - no immediate actions needed</li>
+            </ul>
+        </div>
+        
+        </div>
+        </div>
+            <div class="gauge-container">
+        <div class="cache-gauge" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                        background: #ffffff; padding: 16px; border-radius: 4px;">
+            
+        <div class="gauge-header" style="margin-bottom: 16px; text-align: center;">
+            <div style="font-size: 14px; font-weight: 600; color: #374151;">Poor Cache Performance</div>
+            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Needs optimization</div>
+            <div style="margin-top: 8px;">
+                <span style="display: inline-block; padding: 4px 12px; background: #fef3c7;
+                             color: #d97706; border-radius: 12px; font-size: 11px;
+                             font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Fair
+                </span>
+            </div>
+        </div>
+        
+            
+        <div style="display: flex; justify-content: center; margin: 16px 0;">
+            <svg width="200" height="200">
+                <!-- Background arc -->
+                <path d="M 50.5 149.5 A 70 70 0 1 1 149.5 149.5" stroke="#e5e7eb" stroke-width="16"
+                      fill="none" stroke-linecap="round"/>
+
+                <!-- Hit rate arc -->
+                <path d="M 50.5 149.5 A 70 70 0 0 1 35.3 73.2" stroke="#d97706" stroke-width="16"
+                      fill="none" stroke-linecap="round"/>
+
+                <!-- Center text -->
+                <text x="100.0" y="90.0" text-anchor="middle"
+                      font-size="32" font-weight="700" fill="#374151">
+                    25.0%
+                </text>
+                <text x="100.0" y="115.0" text-anchor="middle"
+                      font-size="12" fill="#9ca3af">
+                    Hit Rate
+                </text>
+            </svg>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; font-size: 12px;">
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Total Queries</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        200
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Cache Hits</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #10b981; font-family: monospace;">
+                        50
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Cached Latency</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        20.0ms
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Uncached Latency</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        100.0ms
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Time Saved</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #3b82f6; font-family: monospace;">
+                        4.0s
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Speedup</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #3b82f6; font-family: monospace;">
+                        5.0x
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+            <div style="font-size: 12px; font-weight: 500; color: #374151; margin-bottom: 8px;">
+                Recommendations
+            </div>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="color: #374151; font-size: 12px; line-height: 1.6;">Low hit rate - consider increasing cache size or TTL</li>
+<li style="color: #374151; font-size: 12px; line-height: 1.6;">More misses than hits - improve query pattern matching</li>
+            </ul>
+        </div>
+        
+        </div>
+        </div>
+            <div class="gauge-container">
+        <div class="cache-gauge" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                        background: #ffffff; padding: 16px; border-radius: 4px;">
+            
+        <div class="gauge-header" style="margin-bottom: 16px; text-align: center;">
+            <div style="font-size: 14px; font-weight: 600; color: #374151;">Critical Cache Performance</div>
+            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Immediate action required</div>
+            <div style="margin-top: 8px;">
+                <span style="display: inline-block; padding: 4px 12px; background: #fef3c7;
+                             color: #d97706; border-radius: 12px; font-size: 11px;
+                             font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Fair
+                </span>
+            </div>
+        </div>
+        
+            
+        <div style="display: flex; justify-content: center; margin: 16px 0;">
+            <svg width="200" height="200">
+                <!-- Background arc -->
+                <path d="M 50.5 149.5 A 70 70 0 1 1 149.5 149.5" stroke="#e5e7eb" stroke-width="16"
+                      fill="none" stroke-linecap="round"/>
+
+                <!-- Hit rate arc -->
+                <path d="M 50.5 149.5 A 70 70 0 0 1 35.8 127.8" stroke="#d97706" stroke-width="16"
+                      fill="none" stroke-linecap="round"/>
+
+                <!-- Center text -->
+                <text x="100.0" y="90.0" text-anchor="middle"
+                      font-size="32" font-weight="700" fill="#374151">
+                    8.0%
+                </text>
+                <text x="100.0" y="115.0" text-anchor="middle"
+                      font-size="12" fill="#9ca3af">
+                    Hit Rate
+                </text>
+            </svg>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; font-size: 12px;">
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Total Queries</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        100
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Cache Hits</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #10b981; font-family: monospace;">
+                        8
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Cached Latency</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        25.0ms
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Uncached Latency</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: monospace;">
+                        110.0ms
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Time Saved</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #3b82f6; font-family: monospace;">
+                        680ms
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #9ca3af; margin-bottom: 4px;">Speedup</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #3b82f6; font-family: monospace;">
+                        4.4x
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+            <div style="font-size: 12px; font-weight: 500; color: #374151; margin-bottom: 8px;">
+                Recommendations
+            </div>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="color: #374151; font-size: 12px; line-height: 1.6;">Low hit rate - consider increasing cache size or TTL</li>
+<li style="color: #374151; font-size: 12px; line-height: 1.6;">More misses than hits - improve query pattern matching</li>
+            </ul>
+        </div>
+        
+        </div>
+        </div>
+        </div>
+
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-top: 24px;">
+            <h2 style="font-size: 16px; font-weight: 600; color: #374151; margin-top: 0;">Programmatic API Usage</h2>
+            <p style="color: #6b7280; font-size: 13px; margin-bottom: 12px;">
+                Simple API for automated tool calling and dashboard integration:
+            </p>
+            <div class="api-example">
+from HoloLoom.visualization.cache_gauge import render_cache_gauge
+
+# Simple usage
+html = render_cache_gauge(
+    hit_rate=0.75,
+    total_queries=100,
+    cache_hits=75
+)
+
+# Complete usage with all parameters
+html = render_cache_gauge(
+    hit_rate=0.75,
+    total_queries=100,
+    cache_hits=75,
+    avg_cached_latency_ms=15.0,
+    avg_uncached_latency_ms=120.0,
+    title='Production Cache Performance',
+    subtitle='Last 24 hours',
+    show_details=True,
+    show_recommendations=True
+)
+
+# Integration with HoloLoom
+total = 0
+hits = 0
+
+for query in queries:
+    spacetime = await orchestrator.weave(query)
+    total += 1
+    if spacetime.metadata.get('cache_hit'):
+        hits += 1
+
+html = render_cache_gauge(
+    hit_rate=hits / total,
+    total_queries=total,
+    cache_hits=hits
+)
+            </div>
+        </div>
+
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-top: 24px;">
+            <h2 style="font-size: 16px; font-weight: 600; color: #374151; margin-top: 0;">Effectiveness Ratings</h2>
+            <ul style="color: #374151; font-size: 13px; line-height: 1.8;">
+                <li><strong>Excellent (Green):</strong> Hit rate >80%, speedup >4x - cache highly effective</li>
+                <li><strong>Good (Light Green):</strong> Hit rate 60-80%, speedup >2x - cache performing well</li>
+                <li><strong>Fair (Amber):</strong> Hit rate 40-60% or speedup >2x - moderate effectiveness</li>
+                <li><strong>Poor (Red):</strong> Hit rate 20-40%, low speedup - needs optimization</li>
+                <li><strong>Critical (Dark Red):</strong> Hit rate <20% - cache ineffective</li>
+            </ul>
+        </div>
+
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-top: 24px;">
+            <h2 style="font-size: 16px; font-weight: 600; color: #374151; margin-top: 0;">Design Principles Applied</h2>
+            <ul style="color: #374151; font-size: 13px; line-height: 1.8;">
+                <li><strong>Meaning First:</strong> Effectiveness rating immediately visible with color coding</li>
+                <li><strong>Maximize data-ink ratio:</strong> Radial gauge with minimal decoration</li>
+                <li><strong>Data density:</strong> Hit rate, latencies, time saved, speedup in compact space</li>
+                <li><strong>Direct labeling:</strong> Percentage in center, stats below gauge</li>
+                <li><strong>Actionable insights:</strong> Recommendations based on performance</li>
+                <li><strong>Zero dependencies:</strong> Pure HTML/CSS/SVG</li>
+                <li><strong>Performance:</strong> ~1-2ms rendering time</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb;
+                    text-align: center; color: #9ca3af; font-size: 12px;">
+            Generated with HoloLoom Visualizer | Cache Effectiveness Gauge
+        </div>
+    </body>
+    </html>
+    

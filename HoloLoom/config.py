@@ -160,6 +160,16 @@ class Config:
     # Retrieval settings
     retrieval_k: int = 6  # Number of shards to retrieve
     bm25_weight: float = 0.15  # Weight of BM25 in fused retrieval
+
+    # Spring Activation Retrieval (optional, modular)
+    use_spring_activation: bool = False  # Enable physics-based spreading activation
+    spring_stiffness: float = 0.15  # k: Spring stiffness (0.05-0.5 typical)
+    spring_damping: float = 0.85  # c: Damping coefficient (0.5-0.95 typical)
+    spring_decay: float = 0.98  # Activation decay per step (0.90-0.99)
+    spring_iterations: int = 200  # Max propagation steps
+    spring_convergence_epsilon: float = 1e-4  # Energy change threshold
+    spring_activation_threshold: float = 0.1  # Min activation to retrieve
+    spring_seed_count: int = 3  # Number of seed nodes from embedding
     
     # Feature extraction
     spectral_k_eigen: int = 4  # Number of Laplacian eigenvalues
@@ -173,6 +183,16 @@ class Config:
     semantic_framework: str = "compassionate"  # Ethical framework: compassionate, scientific, therapeutic
     semantic_trajectory: bool = True  # Compute velocity/acceleration/curvature
     semantic_ethics: bool = True  # Run ethical analysis
+
+    # Phase 5: Universal Grammar + Compositional Cache (optional)
+    enable_linguistic_gate: bool = False  # Enable Phase 5 linguistic matryoshka gate
+    linguistic_mode: str = "disabled"  # Linguistic filter mode: disabled, prefilter, embedding, both
+    use_compositional_cache: bool = True  # 3-tier compositional cache (when linguistic_gate enabled)
+    parse_cache_size: int = 10000  # X-bar structure cache size
+    merge_cache_size: int = 50000  # Compositional embedding cache size
+    linguistic_weight: float = 0.3  # Weight for linguistic features (0-1)
+    prefilter_similarity_threshold: float = 0.3  # Min syntactic similarity for pre-filter
+    prefilter_keep_ratio: float = 0.7  # Keep top 70% of candidates after linguistic filter
 
     # Memory management
     working_memory_size: int = 100  # Cache size for recent queries

@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Animations Showcase - All Techniques</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0f;
+            color: #f5f5f7;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(26, 26, 36, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            width: 320px;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 245, 255, 0.2);
+        }
+
+        .control-panel h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #00f5ff;
+            text-align: center;
+        }
+
+        .demo-section {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .demo-section:last-child {
+            border-bottom: none;
+        }
+
+        .demo-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #a0a0b0;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #00f5ff, #00c8ff);
+            border: none;
+            border-radius: 8px;
+            color: #0a0a0f;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 245, 255, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f5f5f7;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        /* Title */
+        .title {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 900;
+        }
+
+        .title h1 {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00f5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .title p {
+            font-size: 14px;
+            color: #a0a0b0;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 26, 36, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 24px;
+            padding: 12px 24px;
+            z-index: 1000;
+            font-size: 13px;
+            color: #00f5ff;
+            font-weight: 600;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Nodes & Links */
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            filter: brightness(1.5);
+        }
+
+        .node-circle {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .node-label {
+            font-size: 11px;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: #f5f5f7;
+            font-weight: 600;
+        }
+
+        .link {
+            stroke: #00f5ff;
+            stroke-opacity: 0.6;
+            fill: none;
+            transition: all 0.3s ease;
+        }
+
+        .link:hover {
+            stroke-opacity: 1;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.8));
+        }
+
+        /* Bar Chart */
+        .bar {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bar:hover {
+            filter: brightness(1.3);
+        }
+
+        /* Axes */
+        .axis {
+            font-size: 11px;
+            color: #a0a0b0;
+        }
+
+        .axis path,
+        .axis line {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .axis text {
+            fill: #a0a0b0;
+        }
+
+        /* Zoom Controls */
+        .zoom-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(26, 26, 36, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 8px;
+            color: #00f5ff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .zoom-btn:hover {
+            background: rgba(0, 245, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: rgba(26, 26, 36, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            pointer-events: none;
+            z-index: 2000;
+            font-size: 12px;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .tooltip-title {
+            font-weight: 700;
+            color: #00f5ff;
+            margin-bottom: 4px;
+        }
+
+        .tooltip-value {
+            color: #d0d0d5;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        <h1>Advanced Animations</h1>
+        <p>Chart Morphing • Semantic Zoom • Force Layout • Edge Bundling</p>
+    </div>
+
+    <div class="control-panel">
+        <h2>🎨 Showcase Demos</h2>
+
+        <div class="demo-section">
+            <h3>1. Chart Morphing</h3>
+            <button class="btn" onclick="showBarChart()">Bar Chart</button>
+            <button class="btn btn-secondary" onclick="morphBarToLine()">→ Line Chart</button>
+            <button class="btn btn-secondary" onclick="morphLineToScatter()">→ Scatter Plot</button>
+        </div>
+
+        <div class="demo-section">
+            <h3>2. Force-Directed Graph</h3>
+            <button class="btn" onclick="showForceLayout()">Show Force Layout</button>
+            <button class="btn btn-secondary btn-small" onclick="addNode()">+ Add Node</button>
+            <button class="btn btn-secondary btn-small" onclick="toggleBundling()">Toggle Bundling</button>
+        </div>
+
+        <div class="demo-section">
+            <h3>3. Semantic Zoom</h3>
+            <button class="btn" onclick="showSemanticZoom()">Load Zoomable Chart</button>
+            <p style="font-size: 11px; color: #a0a0b0; margin-top: 8px;">
+                Use scroll wheel to zoom. Watch details appear/disappear.
+            </p>
+        </div>
+
+        <div class="demo-section">
+            <h3>4. Combined Demo</h3>
+            <button class="btn" style="background: linear-gradient(135deg, #ff00ff, #00f5ff);" onclick="runFullShowcase()">
+                ✨ Full Showcase
+            </button>
+        </div>
+    </div>
+
+    <div class="status-bar" id="status">
+        Ready - Choose a demo above
+    </div>
+
+    <div class="zoom-controls" id="zoomControls" style="display: none;">
+        <button class="zoom-btn" onclick="zoomIn()">+</button>
+        <button class="zoom-btn" onclick="zoomOut()">−</button>
+        <button class="zoom-btn" onclick="resetZoom()">⊙</button>
+    </div>
+
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-title" id="tooltipTitle"></div>
+        <div class="tooltip-value" id="tooltipValue"></div>
+    </div>
+
+    <svg id="canvas"></svg>
+
+    <script>
+        // ===== GLOBAL STATE =====
+        const svg = d3.select('#canvas');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        svg.attr('width', width).attr('height', height);
+
+        let currentMode = null;
+        let forceSimulation = null;
+        let currentZoom = null;
+        let bundlingEnabled = false;
+
+        const g = svg.append('g').attr('class', 'main-group');
+
+        // ===== SAMPLE DATA =====
+        const barData = [
+            { name: 'Storage', value: 85 },
+            { name: 'Search', value: 72 },
+            { name: 'Embedding', value: 95 },
+            { name: 'Memory', value: 68 },
+            { name: 'Policy', value: 90 }
+        ];
+
+        const graphData = {
+            nodes: [
+                { id: 'input', label: 'Input', group: 1 },
+                { id: 'motif', label: 'Motif', group: 1 },
+                { id: 'embedding', label: 'Embed', group: 1 },
+                { id: 'resonance', label: 'Resonance', group: 2 },
+                { id: 'warp', label: 'Warp', group: 2 },
+                { id: 'policy', label: 'Policy', group: 3 },
+                { id: 'output', label: 'Output', group: 3 }
+            ],
+            links: [
+                { source: 'input', target: 'motif', value: 1 },
+                { source: 'input', target: 'embedding', value: 1 },
+                { source: 'motif', target: 'resonance', value: 1 },
+                { source: 'embedding', target: 'resonance', value: 1 },
+                { source: 'resonance', target: 'warp', value: 1 },
+                { source: 'warp', target: 'policy', value: 1 },
+                { source: 'policy', target: 'output', value: 1 }
+            ]
+        };
+
+        // ===== 1. CHART MORPHING =====
+        function showBarChart() {
+            clear();
+            updateStatus('Bar Chart - Click "→ Line Chart" to morph');
+            currentMode = 'bar';
+
+            const margin = { top: 100, right: 50, bottom: 60, left: 60 };
+            const chartWidth = 600;
+            const chartHeight = 400;
+
+            const x = d3.scaleBand()
+                .domain(barData.map(d => d.name))
+                .range([0, chartWidth])
+                .padding(0.2);
+
+            const y = d3.scaleLinear()
+                .domain([0, 100])
+                .range([chartHeight, 0]);
+
+            const chart = g.append('g')
+                .attr('transform', `translate(${width/2 - chartWidth/2}, ${height/2 - chartHeight/2})`);
+
+            // Bars
+            chart.selectAll('.bar')
+                .data(barData)
+                .join('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.name))
+                .attr('width', x.bandwidth())
+                .attr('y', chartHeight)
+                .attr('height', 0)
+                .attr('fill', '#00f5ff')
+                .attr('opacity', 0.8)
+                .transition()
+                .duration(800)
+                .ease(d3.easeCubicOut)
+                .attr('y', d => y(d.value))
+                .attr('height', d => chartHeight - y(d.value));
+
+            // Axes
+            chart.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0, ${chartHeight})`)
+                .call(d3.axisBottom(x));
+
+            chart.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y));
+        }
+
+        function morphBarToLine() {
+            if (currentMode !== 'bar') return;
+            updateStatus('Morphing Bar → Line Chart...');
+            currentMode = 'line';
+
+            const margin = { top: 100, right: 50, bottom: 60, left: 60 };
+            const chartWidth = 600;
+            const chartHeight = 400;
+
+            const x = d3.scalePoint()
+                .domain(barData.map(d => d.name))
+                .range([0, chartWidth]);
+
+            const y = d3.scaleLinear()
+                .domain([0, 100])
+                .range([chartHeight, 0]);
+
+            const chart = g.select('g');
+
+            // 1. Shrink bars to thin lines
+            chart.selectAll('.bar')
+                .transition()
+                .duration(600)
+                .attr('width', 3)
+                .attr('x', d => x(d.name) - 1.5)
+                .attr('opacity', 0.5);
+
+            // 2. Draw line connecting tops
+            setTimeout(() => {
+                const line = d3.line()
+                    .x(d => x(d.name))
+                    .y(d => y(d.value))
+                    .curve(d3.curveMonotoneX);
+
+                chart.append('path')
+                    .datum(barData)
+                    .attr('d', line)
+                    .attr('stroke', '#00f5ff')
+                    .attr('stroke-width', 3)
+                    .attr('fill', 'none')
+                    .attr('opacity', 0)
+                    .transition()
+                    .duration(600)
+                    .attr('opacity', 1);
+
+                // 3. Add dots
+                chart.selectAll('.dot')
+                    .data(barData)
+                    .join('circle')
+                    .attr('class', 'dot')
+                    .attr('cx', d => x(d.name))
+                    .attr('cy', d => y(d.value))
+                    .attr('r', 0)
+                    .attr('fill', '#ff00ff')
+                    .transition()
+                    .duration(400)
+                    .attr('r', 6);
+            }, 400);
+
+            // 4. Remove bars
+            setTimeout(() => {
+                chart.selectAll('.bar')
+                    .transition()
+                    .duration(300)
+                    .attr('opacity', 0)
+                    .remove();
+
+                updateStatus('Line Chart - Click "→ Scatter Plot" to continue');
+            }, 1200);
+        }
+
+        function morphLineToScatter() {
+            if (currentMode !== 'line') return;
+            updateStatus('Morphing Line → Scatter Plot...');
+            currentMode = 'scatter';
+
+            // Add random jitter and more points
+            const chart = g.select('g');
+
+            // Fade out line
+            chart.select('path')
+                .transition()
+                .duration(600)
+                .attr('opacity', 0)
+                .remove();
+
+            // Scatter dots
+            chart.selectAll('.dot')
+                .transition()
+                .duration(800)
+                .attr('cx', () => Math.random() * 600)
+                .attr('cy', () => Math.random() * 400)
+                .attr('r', 4);
+
+            // Add more random dots
+            const extraDots = Array.from({ length: 30 }, () => ({
+                x: Math.random() * 600,
+                y: Math.random() * 400
+            }));
+
+            chart.selectAll('.extra-dot')
+                .data(extraDots)
+                .join('circle')
+                .attr('class', 'extra-dot')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', 0)
+                .attr('fill', '#00f5ff')
+                .attr('opacity', 0.6)
+                .transition()
+                .delay((d, i) => i * 20)
+                .duration(400)
+                .attr('r', 4);
+
+            setTimeout(() => {
+                updateStatus('Scatter Plot - Try another demo!');
+            }, 1000);
+        }
+
+        // ===== 2. FORCE-DIRECTED LAYOUT =====
+        function showForceLayout() {
+            clear();
+            updateStatus('Force-Directed Graph - Nodes organize automatically');
+            currentMode = 'force';
+
+            const nodes = graphData.nodes.map(d => ({ ...d }));
+            const links = graphData.links.map(d => ({ ...d }));
+
+            forceSimulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(40));
+
+            const linkGroup = g.append('g').attr('class', 'links');
+            const nodeGroup = g.append('g').attr('class', 'nodes');
+
+            // Links
+            const link = linkGroup.selectAll('.link')
+                .data(links)
+                .join('path')
+                .attr('class', 'link')
+                .attr('stroke-width', 2);
+
+            // Nodes
+            const node = nodeGroup.selectAll('.node')
+                .data(nodes)
+                .join('g')
+                .attr('class', 'node')
+                .call(d3.drag()
+                    .on('start', dragStarted)
+                    .on('drag', dragged)
+                    .on('end', dragEnded));
+
+            node.append('circle')
+                .attr('class', 'node-circle')
+                .attr('r', 0)
+                .attr('fill', d => d3.schemeCategory10[d.group])
+                .attr('opacity', 0.8)
+                .transition()
+                .duration(600)
+                .attr('r', 20);
+
+            node.append('text')
+                .attr('class', 'node-label')
+                .attr('dy', 4)
+                .text(d => d.label)
+                .attr('opacity', 0)
+                .transition()
+                .delay(300)
+                .duration(400)
+                .attr('opacity', 1);
+
+            forceSimulation.on('tick', () => {
+                if (bundlingEnabled) {
+                    // Hierarchical edge bundling
+                    link.attr('d', d => {
+                        const dx = d.target.x - d.source.x;
+                        const dy = d.target.y - d.source.y;
+                        const dr = Math.sqrt(dx * dx + dy * dy) * 2;
+                        return `M ${d.source.x} ${d.source.y} A ${dr} ${dr} 0 0 1 ${d.target.x} ${d.target.y}`;
+                    });
+                } else {
+                    // Straight lines
+                    link.attr('d', d => `M ${d.source.x} ${d.source.y} L ${d.target.x} ${d.target.y}`);
+                }
+
+                node.attr('transform', d => `translate(${d.x}, ${d.y})`);
+            });
+
+            // Drag functions
+            function dragStarted(event, d) {
+                if (!event.active) forceSimulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragEnded(event, d) {
+                if (!event.active) forceSimulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+
+        function toggleBundling() {
+            if (currentMode !== 'force') return;
+            bundlingEnabled = !bundlingEnabled;
+            updateStatus(bundlingEnabled ? 'Hierarchical Edge Bundling: ON' : 'Hierarchical Edge Bundling: OFF');
+        }
+
+        function addNode() {
+            if (!forceSimulation) return;
+            const newId = `node${Date.now()}`;
+            const newNode = {
+                id: newId,
+                label: `N${graphData.nodes.length + 1}`,
+                group: Math.floor(Math.random() * 3) + 1
+            };
+
+            graphData.nodes.push(newNode);
+
+            // Add random link
+            const randomTarget = graphData.nodes[Math.floor(Math.random() * graphData.nodes.length)].id;
+            graphData.links.push({
+                source: newId,
+                target: randomTarget,
+                value: 1
+            });
+
+            // Re-render
+            showForceLayout();
+        }
+
+        // ===== 3. SEMANTIC ZOOM =====
+        function showSemanticZoom() {
+            clear();
+            updateStatus('Semantic Zoom - Scroll to zoom, watch details change');
+            currentMode = 'zoom';
+            document.getElementById('zoomControls').style.display = 'flex';
+
+            // Create zoomable scatter plot
+            const data = Array.from({ length: 100 }, (_, i) => ({
+                id: i,
+                x: Math.random() * 800,
+                y: Math.random() * 600,
+                value: Math.random() * 100,
+                detail: `Item ${i}: ${(Math.random() * 100).toFixed(1)}%`
+            }));
+
+            const zoomGroup = g.append('g');
+
+            // Points
+            const points = zoomGroup.selectAll('.point')
+                .data(data)
+                .join('g')
+                .attr('class', 'point')
+                .attr('transform', d => `translate(${d.x + width/2 - 400}, ${d.y + height/2 - 300})`);
+
+            points.append('circle')
+                .attr('r', 4)
+                .attr('fill', '#00f5ff')
+                .attr('opacity', 0.6);
+
+            points.append('text')
+                .attr('class', 'point-label')
+                .attr('dy', -8)
+                .attr('text-anchor', 'middle')
+                .style('font-size', '10px')
+                .style('opacity', 0)
+                .text(d => d.id);
+
+            points.append('text')
+                .attr('class', 'point-detail')
+                .attr('dy', 20)
+                .attr('text-anchor', 'middle')
+                .style('font-size', '9px')
+                .style('opacity', 0)
+                .style('fill', '#a0a0b0')
+                .text(d => d.detail);
+
+            // Zoom behavior
+            currentZoom = d3.zoom()
+                .scaleExtent([0.5, 5])
+                .on('zoom', (event) => {
+                    const { transform } = event;
+                    zoomGroup.attr('transform', transform);
+
+                    const scale = transform.k;
+
+                    // Level of Detail changes
+                    if (scale < 1) {
+                        // Overview: Large dots, no labels
+                        points.selectAll('circle')
+                            .attr('r', 6 / scale);
+                        points.selectAll('.point-label')
+                            .style('opacity', 0);
+                        points.selectAll('.point-detail')
+                            .style('opacity', 0);
+                    } else if (scale < 2) {
+                        // Medium: Normal dots, IDs visible
+                        points.selectAll('circle')
+                            .attr('r', 4 / scale);
+                        points.selectAll('.point-label')
+                            .style('opacity', 1)
+                            .style('font-size', `${10 / scale}px`);
+                        points.selectAll('.point-detail')
+                            .style('opacity', 0);
+                    } else {
+                        // Detailed: Small dots, all text visible
+                        points.selectAll('circle')
+                            .attr('r', 3 / scale);
+                        points.selectAll('.point-label')
+                            .style('opacity', 1)
+                            .style('font-size', `${10 / scale}px`);
+                        points.selectAll('.point-detail')
+                            .style('opacity', 1)
+                            .style('font-size', `${9 / scale}px`);
+                    }
+
+                    updateStatus(`Zoom: ${scale.toFixed(2)}× | Level: ${scale < 1 ? 'Overview' : scale < 2 ? 'Medium' : 'Detailed'}`);
+                });
+
+            svg.call(currentZoom);
+        }
+
+        function zoomIn() {
+            if (currentZoom) {
+                svg.transition().duration(300).call(currentZoom.scaleBy, 1.5);
+            }
+        }
+
+        function zoomOut() {
+            if (currentZoom) {
+                svg.transition().duration(300).call(currentZoom.scaleBy, 0.67);
+            }
+        }
+
+        function resetZoom() {
+            if (currentZoom) {
+                svg.transition().duration(500).call(currentZoom.transform, d3.zoomIdentity);
+            }
+        }
+
+        // ===== 4. FULL SHOWCASE =====
+        async function runFullShowcase() {
+            updateStatus('✨ Full Showcase - Watch all techniques!');
+
+            // 1. Bar Chart
+            showBarChart();
+            await sleep(2000);
+
+            // 2. Morph to Line
+            morphBarToLine();
+            await sleep(3000);
+
+            // 3. Morph to Scatter
+            morphLineToScatter();
+            await sleep(2000);
+
+            // 4. Force Layout
+            showForceLayout();
+            await sleep(3000);
+
+            // 5. Toggle bundling
+            toggleBundling();
+            await sleep(2000);
+            toggleBundling();
+            await sleep(1000);
+
+            // 6. Semantic Zoom
+            showSemanticZoom();
+            await sleep(2000);
+
+            // Auto zoom in
+            zoomIn();
+            await sleep(1500);
+            zoomIn();
+            await sleep(1500);
+
+            // Zoom out
+            resetZoom();
+
+            updateStatus('✨ Showcase Complete! Try individual demos.');
+        }
+
+        // ===== UTILITIES =====
+        function clear() {
+            g.selectAll('*').remove();
+            if (forceSimulation) {
+                forceSimulation.stop();
+                forceSimulation = null;
+            }
+            if (currentZoom) {
+                svg.on('.zoom', null);
+                currentZoom = null;
+            }
+            document.getElementById('zoomControls').style.display = 'none';
+        }
+
+        function updateStatus(text) {
+            document.getElementById('status').textContent = text;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        console.log('✨ Advanced Animations Showcase loaded');
+        console.log('Try the demos in the control panel →');
+    </script>
+</body>
+</html>

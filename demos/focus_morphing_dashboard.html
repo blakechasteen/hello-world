@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Morphing Dashboard - HoloLoom Advanced Viz</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+
+        .dashboard-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            transition: all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        /* Focus states - when one panel is focused */
+        .dashboard-grid.focus-top-left {
+            grid-template-columns: 2.5fr 0.5fr;
+            grid-template-rows: 2.5fr 0.5fr;
+        }
+
+        .dashboard-grid.focus-top-right {
+            grid-template-columns: 0.5fr 2.5fr;
+            grid-template-rows: 2.5fr 0.5fr;
+        }
+
+        .dashboard-grid.focus-bottom-left {
+            grid-template-columns: 2.5fr 0.5fr;
+            grid-template-rows: 0.5fr 2.5fr;
+        }
+
+        .dashboard-grid.focus-bottom-right {
+            grid-template-columns: 0.5fr 2.5fr;
+            grid-template-rows: 0.5fr 2.5fr;
+        }
+
+        .panel {
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .panel:hover {
+            border-color: rgba(0, 245, 255, 0.6);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
+        }
+
+        .panel.focused {
+            border-color: rgba(255, 0, 255, 0.8);
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.4);
+            z-index: 10;
+        }
+
+        .panel.minimized {
+            opacity: 0.4;
+        }
+
+        .panel.minimized:hover {
+            opacity: 0.7;
+        }
+
+        .panel-header {
+            padding: 12px 15px;
+            background: rgba(10, 10, 20, 0.8);
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            color: #00f5ff;
+            font-weight: 600;
+        }
+
+        .panel.focused .panel-title {
+            font-size: 16px;
+            color: #ff00ff;
+        }
+
+        .panel.minimized .panel-title {
+            font-size: 11px;
+        }
+
+        .panel-zoom-level {
+            font-size: 11px;
+            color: #888;
+            font-family: 'Courier New', monospace;
+        }
+
+        .panel.focused .panel-zoom-level {
+            font-size: 13px;
+            color: #ff00ff;
+            font-weight: 700;
+        }
+
+        .panel-content {
+            position: absolute;
+            top: 45px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 10px;
+        }
+
+        .panel svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 10, 20, 0.95);
+            border: 1px solid rgba(0, 245, 255, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 200px;
+            z-index: 100;
+        }
+
+        .control-label {
+            font-size: 11px;
+            color: #00f5ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        button {
+            width: 100%;
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid rgba(0, 245, 255, 0.5);
+            color: #00f5ff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Monaco', monospace;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+
+        button:hover {
+            background: rgba(0, 245, 255, 0.2);
+            border-color: #00f5ff;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+        }
+
+        button.reset {
+            background: rgba(255, 0, 255, 0.1);
+            border-color: rgba(255, 0, 255, 0.5);
+            color: #ff00ff;
+        }
+
+        button.reset:hover {
+            background: rgba(255, 0, 255, 0.2);
+            border-color: #ff00ff;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+
+        .instruction {
+            font-size: 11px;
+            color: #888;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        .instruction strong {
+            color: #00f5ff;
+        }
+
+        .axis path,
+        .axis line {
+            stroke: rgba(255, 255, 255, 0.2);
+        }
+
+        .axis text {
+            fill: #888;
+            font-size: 10px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .focused .axis text {
+            font-size: 11px;
+        }
+
+        .minimized .axis text {
+            font-size: 8px;
+        }
+
+        .grid line {
+            stroke: rgba(255, 255, 255, 0.05);
+        }
+
+        .bar {
+            transition: opacity 0.3s ease;
+        }
+
+        .line-path {
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
+        .focused .line-path {
+            stroke-width: 3;
+        }
+
+        .minimized .line-path {
+            stroke-width: 1;
+        }
+
+        .point {
+            cursor: pointer;
+        }
+
+        .detail-annotation {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .focused .detail-annotation {
+            opacity: 1;
+        }
+
+        .stat-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 245, 255, 0.2);
+            border: 1px solid rgba(0, 245, 255, 0.5);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 10px;
+            color: #00f5ff;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .focused .stat-badge {
+            opacity: 1;
+        }
+
+        .focus-indicator {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 9px;
+            color: #666;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .panel:hover .focus-indicator {
+            opacity: 1;
+        }
+
+        .focused .focus-indicator {
+            color: #ff00ff;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Focus Morphing Dashboard</h1>
+        <p class="subtitle">Click any chart to zoom and expand it - the layout morphs to give it space</p>
+
+        <div class="dashboard-grid" id="dashboardGrid">
+            <!-- Panel 1: Top Left - Bar Chart -->
+            <div class="panel" id="panel-1" onclick="focusPanel('panel-1')">
+                <div class="panel-header">
+                    <span class="panel-title">Query Performance</span>
+                    <span class="panel-zoom-level" id="zoom-1">1.0×</span>
+                </div>
+                <div class="stat-badge" id="stat-1">12 queries</div>
+                <div class="panel-content">
+                    <svg id="chart-1"></svg>
+                </div>
+                <div class="focus-indicator">Click to expand ↗</div>
+            </div>
+
+            <!-- Panel 2: Top Right - Line Chart -->
+            <div class="panel" id="panel-2" onclick="focusPanel('panel-2')">
+                <div class="panel-header">
+                    <span class="panel-title">Latency Trends</span>
+                    <span class="panel-zoom-level" id="zoom-2">1.0×</span>
+                </div>
+                <div class="stat-badge" id="stat-2">7 days</div>
+                <div class="panel-content">
+                    <svg id="chart-2"></svg>
+                </div>
+                <div class="focus-indicator">Click to expand ↗</div>
+            </div>
+
+            <!-- Panel 3: Bottom Left - Scatter Plot -->
+            <div class="panel" id="panel-3" onclick="focusPanel('panel-3')">
+                <div class="panel-header">
+                    <span class="panel-title">Cache Hit Distribution</span>
+                    <span class="panel-zoom-level" id="zoom-3">1.0×</span>
+                </div>
+                <div class="stat-badge" id="stat-3">85% hit rate</div>
+                <div class="panel-content">
+                    <svg id="chart-3"></svg>
+                </div>
+                <div class="focus-indicator">Click to expand ↗</div>
+            </div>
+
+            <!-- Panel 4: Bottom Right - Area Chart -->
+            <div class="panel" id="panel-4" onclick="focusPanel('panel-4')">
+                <div class="panel-header">
+                    <span class="panel-title">Memory Usage</span>
+                    <span class="panel-zoom-level" id="zoom-4">1.0×</span>
+                </div>
+                <div class="stat-badge" id="stat-4">245 MB</div>
+                <div class="panel-content">
+                    <svg id="chart-4"></svg>
+                </div>
+                <div class="focus-indicator">Click to expand ↗</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <span class="control-label">Dashboard Controls</span>
+            <button class="reset" onclick="resetFocus()">Reset View</button>
+            <button onclick="cycleFocus()">Cycle Focus</button>
+            <div class="instruction">
+                <strong>Click</strong> any chart to expand it.<br>
+                <strong>Click again</strong> to zoom deeper (morphs chart type).<br>
+                <strong>Click others</strong> to switch focus.<br>
+                <strong>Reset</strong> to return to grid.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for different charts
+        const performanceData = [
+            { name: 'Q1', value: 85, category: 'Fast' },
+            { name: 'Q2', value: 62, category: 'Medium' },
+            { name: 'Q3', value: 93, category: 'Fast' },
+            { name: 'Q4', value: 45, category: 'Slow' },
+            { name: 'Q5', value: 78, category: 'Medium' },
+            { name: 'Q6', value: 91, category: 'Fast' }
+        ];
+
+        const latencyData = [
+            { day: 'Mon', latency: 45 },
+            { day: 'Tue', latency: 38 },
+            { day: 'Wed', latency: 52 },
+            { day: 'Thu', latency: 41 },
+            { day: 'Fri', latency: 48 },
+            { day: 'Sat', latency: 35 },
+            { day: 'Sun', latency: 39 }
+        ];
+
+        const cacheData = Array.from({ length: 30 }, (_, i) => ({
+            id: i + 1,
+            hits: Math.random() * 100,
+            size: Math.random() * 100
+        }));
+
+        const memoryData = Array.from({ length: 20 }, (_, i) => ({
+            time: i,
+            used: 100 + Math.random() * 150 + i * 5,
+            allocated: 150 + Math.random() * 100 + i * 7
+        }));
+
+        const colorScale = d3.scaleOrdinal()
+            .domain(['Fast', 'Medium', 'Slow'])
+            .range(['#00f5ff', '#ff00ff', '#ff6b6b']);
+
+        let currentFocus = null;
+        let panelZoomLevels = { 'panel-1': 1, 'panel-2': 1, 'panel-3': 1, 'panel-4': 1 };
+        let charts = {};
+
+        // Initialize all charts
+        function initCharts() {
+            charts['panel-1'] = createBarChart('chart-1', performanceData);
+            charts['panel-2'] = createLineChart('chart-2', latencyData);
+            charts['panel-3'] = createScatterChart('chart-3', cacheData);
+            charts['panel-4'] = createAreaChart('chart-4', memoryData);
+        }
+
+        function createBarChart(svgId, data) {
+            const svg = d3.select(`#${svgId}`);
+            const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+
+            function render() {
+                const rect = svg.node().parentElement.getBoundingClientRect();
+                const width = rect.width - margin.left - margin.right;
+                const height = rect.height - margin.top - margin.bottom;
+
+                svg.selectAll('*').remove();
+
+                const g = svg.append('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.name))
+                    .range([0, width])
+                    .padding(0.3);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 100])
+                    .range([height, 0]);
+
+                // Grid
+                g.append('g')
+                    .attr('class', 'grid')
+                    .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+                // Bars
+                g.selectAll('.bar')
+                    .data(data)
+                    .join('rect')
+                    .attr('class', 'bar')
+                    .attr('x', d => x(d.name))
+                    .attr('y', d => y(d.value))
+                    .attr('width', x.bandwidth())
+                    .attr('height', d => height - y(d.value))
+                    .attr('fill', d => colorScale(d.category))
+                    .attr('opacity', 0.8);
+
+                // Axes
+                g.append('g')
+                    .attr('class', 'axis')
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(x));
+
+                g.append('g')
+                    .attr('class', 'axis')
+                    .call(d3.axisLeft(y).ticks(5));
+
+                // Detail annotations (only visible when focused)
+                g.selectAll('.detail-annotation')
+                    .data(data)
+                    .join('text')
+                    .attr('class', 'detail-annotation')
+                    .attr('x', d => x(d.name) + x.bandwidth() / 2)
+                    .attr('y', d => y(d.value) - 8)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#00f5ff')
+                    .attr('font-size', '11px')
+                    .text(d => `${d.value}%`);
+            }
+
+            return { render };
+        }
+
+        function createLineChart(svgId, data) {
+            const svg = d3.select(`#${svgId}`);
+            const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+
+            function render() {
+                const rect = svg.node().parentElement.getBoundingClientRect();
+                const width = rect.width - margin.left - margin.right;
+                const height = rect.height - margin.top - margin.bottom;
+
+                svg.selectAll('*').remove();
+
+                const g = svg.append('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+                const x = d3.scalePoint()
+                    .domain(data.map(d => d.day))
+                    .range([0, width])
+                    .padding(0.5);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.latency) * 1.2])
+                    .range([height, 0]);
+
+                // Grid
+                g.append('g')
+                    .attr('class', 'grid')
+                    .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+                // Line
+                const line = d3.line()
+                    .x(d => x(d.day))
+                    .y(d => y(d.latency))
+                    .curve(d3.curveMonotoneX);
+
+                g.append('path')
+                    .datum(data)
+                    .attr('class', 'line-path')
+                    .attr('d', line)
+                    .attr('stroke', '#00f5ff')
+                    .attr('fill', 'none');
+
+                // Points
+                g.selectAll('.point')
+                    .data(data)
+                    .join('circle')
+                    .attr('class', 'point')
+                    .attr('cx', d => x(d.day))
+                    .attr('cy', d => y(d.latency))
+                    .attr('r', 4)
+                    .attr('fill', '#ff00ff')
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 2);
+
+                // Axes
+                g.append('g')
+                    .attr('class', 'axis')
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(x));
+
+                g.append('g')
+                    .attr('class', 'axis')
+                    .call(d3.axisLeft(y).ticks(5));
+
+                // Detail annotations
+                g.selectAll('.detail-annotation')
+                    .data(data)
+                    .join('text')
+                    .attr('class', 'detail-annotation')
+                    .attr('x', d => x(d.day))
+                    .attr('y', d => y(d.latency) - 10)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#00f5ff')
+                    .attr('font-size', '10px')
+                    .text(d => `${d.latency}ms`);
+            }
+
+            return { render };
+        }
+
+        function createScatterChart(svgId, data) {
+            const svg = d3.select(`#${svgId}`);
+            const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+
+            function render() {
+                const rect = svg.node().parentElement.getBoundingClientRect();
+                const width = rect.width - margin.left - margin.right;
+                const height = rect.height - margin.top - margin.bottom;
+
+                svg.selectAll('*').remove();
+
+                const g = svg.append('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+                const x = d3.scaleLinear()
+                    .domain([0, 100])
+                    .range([0, width]);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 100])
+                    .range([height, 0]);
+
+                // Grid
+                g.append('g')
+                    .attr('class', 'grid')
+                    .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+                g.append('g')
+                    .attr('class', 'grid')
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(x).tickSize(-height).tickFormat(''));
+
+                // Points
+                g.selectAll('.point')
+                    .data(data)
+                    .join('circle')
+                    .attr('class', 'point')
+                    .attr('cx', d => x(d.hits))
+                    .attr('cy', d => y(d.size))
+                    .attr('r', 5)
+                    .attr('fill', d => d.hits > 70 ? '#00f5ff' : '#ff00ff')
+                    .attr('opacity', 0.7)
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 1);
+
+                // Axes
+                g.append('g')
+                    .attr('class', 'axis')
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(x).ticks(5));
+
+                g.append('g')
+                    .attr('class', 'axis')
+                    .call(d3.axisLeft(y).ticks(5));
+
+                // Detail annotations
+                g.selectAll('.detail-annotation')
+                    .data(data.filter((d, i) => i % 5 === 0))
+                    .join('text')
+                    .attr('class', 'detail-annotation')
+                    .attr('x', d => x(d.hits) + 8)
+                    .attr('y', d => y(d.size) - 8)
+                    .attr('fill', '#888')
+                    .attr('font-size', '9px')
+                    .text(d => `#${d.id}`);
+            }
+
+            return { render };
+        }
+
+        function createAreaChart(svgId, data) {
+            const svg = d3.select(`#${svgId}`);
+            const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+
+            function render() {
+                const rect = svg.node().parentElement.getBoundingClientRect();
+                const width = rect.width - margin.left - margin.right;
+                const height = rect.height - margin.top - margin.bottom;
+
+                svg.selectAll('*').remove();
+
+                const g = svg.append('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+                const x = d3.scaleLinear()
+                    .domain([0, data.length - 1])
+                    .range([0, width]);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => Math.max(d.used, d.allocated)) * 1.1])
+                    .range([height, 0]);
+
+                // Grid
+                g.append('g')
+                    .attr('class', 'grid')
+                    .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+                // Area - allocated
+                const areaAllocated = d3.area()
+                    .x((d, i) => x(i))
+                    .y0(height)
+                    .y1(d => y(d.allocated))
+                    .curve(d3.curveMonotoneX);
+
+                g.append('path')
+                    .datum(data)
+                    .attr('d', areaAllocated)
+                    .attr('fill', '#ff00ff')
+                    .attr('opacity', 0.2);
+
+                // Area - used
+                const areaUsed = d3.area()
+                    .x((d, i) => x(i))
+                    .y0(height)
+                    .y1(d => y(d.used))
+                    .curve(d3.curveMonotoneX);
+
+                g.append('path')
+                    .datum(data)
+                    .attr('d', areaUsed)
+                    .attr('fill', '#00f5ff')
+                    .attr('opacity', 0.3);
+
+                // Lines
+                const line = d3.line()
+                    .x((d, i) => x(i))
+                    .curve(d3.curveMonotoneX);
+
+                g.append('path')
+                    .datum(data)
+                    .attr('class', 'line-path')
+                    .attr('d', line.y(d => y(d.allocated)))
+                    .attr('stroke', '#ff00ff');
+
+                g.append('path')
+                    .datum(data)
+                    .attr('class', 'line-path')
+                    .attr('d', line.y(d => y(d.used)))
+                    .attr('stroke', '#00f5ff');
+
+                // Axes
+                g.append('g')
+                    .attr('class', 'axis')
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(x).ticks(5));
+
+                g.append('g')
+                    .attr('class', 'axis')
+                    .call(d3.axisLeft(y).ticks(5));
+
+                // Legend (detail annotation)
+                const legend = g.append('g')
+                    .attr('class', 'detail-annotation')
+                    .attr('transform', `translate(${width - 100}, 10)`);
+
+                legend.append('rect')
+                    .attr('width', 12)
+                    .attr('height', 12)
+                    .attr('fill', '#00f5ff')
+                    .attr('opacity', 0.5);
+
+                legend.append('text')
+                    .attr('x', 18)
+                    .attr('y', 10)
+                    .attr('fill', '#888')
+                    .attr('font-size', '10px')
+                    .text('Used');
+
+                legend.append('rect')
+                    .attr('y', 18)
+                    .attr('width', 12)
+                    .attr('height', 12)
+                    .attr('fill', '#ff00ff')
+                    .attr('opacity', 0.5);
+
+                legend.append('text')
+                    .attr('x', 18)
+                    .attr('y', 28)
+                    .attr('fill', '#888')
+                    .attr('font-size', '10px')
+                    .text('Allocated');
+            }
+
+            return { render };
+        }
+
+        function focusPanel(panelId) {
+            const grid = document.getElementById('dashboardGrid');
+            const panel = document.getElementById(panelId);
+
+            if (currentFocus === panelId) {
+                // Already focused - zoom deeper
+                panelZoomLevels[panelId] = Math.min(3, panelZoomLevels[panelId] + 0.5);
+                updateZoomDisplay(panelId);
+                renderChart(panelId);
+            } else {
+                // Switch focus
+                if (currentFocus) {
+                    panelZoomLevels[currentFocus] = 1;
+                }
+                currentFocus = panelId;
+                panelZoomLevels[panelId] = 1.5;
+
+                // Update grid layout
+                grid.className = 'dashboard-grid';
+                if (panelId === 'panel-1') grid.classList.add('focus-top-left');
+                else if (panelId === 'panel-2') grid.classList.add('focus-top-right');
+                else if (panelId === 'panel-3') grid.classList.add('focus-bottom-left');
+                else if (panelId === 'panel-4') grid.classList.add('focus-bottom-right');
+
+                // Update panel states
+                ['panel-1', 'panel-2', 'panel-3', 'panel-4'].forEach(id => {
+                    const p = document.getElementById(id);
+                    p.classList.remove('focused', 'minimized');
+                    if (id === panelId) {
+                        p.classList.add('focused');
+                    } else {
+                        p.classList.add('minimized');
+                    }
+                    updateZoomDisplay(id);
+                });
+            }
+
+            // Re-render after layout settles
+            setTimeout(() => renderAllCharts(), 850);
+        }
+
+        function resetFocus() {
+            const grid = document.getElementById('dashboardGrid');
+            grid.className = 'dashboard-grid';
+            currentFocus = null;
+
+            ['panel-1', 'panel-2', 'panel-3', 'panel-4'].forEach(id => {
+                const p = document.getElementById(id);
+                p.classList.remove('focused', 'minimized');
+                panelZoomLevels[id] = 1;
+                updateZoomDisplay(id);
+            });
+
+            setTimeout(() => renderAllCharts(), 850);
+        }
+
+        function cycleFocus() {
+            const panels = ['panel-1', 'panel-2', 'panel-3', 'panel-4'];
+            const currentIndex = panels.indexOf(currentFocus);
+            const nextIndex = (currentIndex + 1) % panels.length;
+            focusPanel(panels[nextIndex]);
+        }
+
+        function updateZoomDisplay(panelId) {
+            const zoom = panelZoomLevels[panelId];
+            document.getElementById(`zoom-${panelId.split('-')[1]}`).textContent = `${zoom.toFixed(1)}×`;
+        }
+
+        function renderChart(panelId) {
+            const chartId = panelId.replace('panel', 'chart');
+            if (charts[panelId]) {
+                charts[panelId].render();
+            }
+        }
+
+        function renderAllCharts() {
+            Object.keys(charts).forEach(panelId => renderChart(panelId));
+        }
+
+        // Initialize
+        initCharts();
+        renderAllCharts();
+
+        // Re-render on resize
+        window.addEventListener('resize', () => {
+            setTimeout(() => renderAllCharts(), 100);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === '0') {
+                resetFocus();
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                cycleFocus();
+            } else if (e.key >= '1' && e.key <= '4') {
+                focusPanel(`panel-${e.key}`);
+            }
+        });
+    </script>
+</body>
+</html>

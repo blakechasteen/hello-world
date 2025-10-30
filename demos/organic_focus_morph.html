@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organic Focus Morphing - HoloLoom</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .viewport {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .panel-container {
+            position: absolute;
+            will-change: transform, opacity;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .panel {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(20, 20, 40, 0.95) 0%, rgba(10, 10, 30, 0.95) 100%);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            position: relative;
+            cursor: grab;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .panel:hover {
+            border-color: rgba(0, 245, 255, 0.5);
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.2);
+        }
+
+        .panel-header {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            color: #00f5ff;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .panel-meta {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .zoom-badge {
+            background: rgba(255, 0, 255, 0.2);
+            border: 1px solid rgba(255, 0, 255, 0.4);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #ff00ff;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .detail-level {
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+
+        .chart-canvas {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+        }
+
+        .chart-canvas svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .axis path,
+        .axis line {
+            stroke: rgba(255, 255, 255, 0.15);
+            shape-rendering: crispEdges;
+        }
+
+        .axis text {
+            fill: #888;
+            font-size: 10px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .grid line {
+            stroke: rgba(255, 255, 255, 0.05);
+        }
+
+        .data-element {
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .detail-label {
+            opacity: 0;
+            font-size: 10px;
+            fill: #00f5ff;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .detail-annotation {
+            opacity: 0;
+            font-size: 9px;
+            fill: #888;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 30px;
+            padding: 12px 24px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .control-item {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .control-item strong {
+            color: #00f5ff;
+            font-weight: 600;
+        }
+
+        .control-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        button {
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid rgba(0, 245, 255, 0.4);
+            color: #00f5ff;
+            padding: 6px 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Monaco', monospace;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: rgba(0, 245, 255, 0.2);
+            border-color: #00f5ff;
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+        }
+
+        .hint {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            font-size: 12px;
+            color: #666;
+            max-width: 300px;
+            line-height: 1.6;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .hint strong {
+            color: #00f5ff;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .morphing-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            opacity: 0;
+            pointer-events: none;
+            animation: pulse 0.8s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport" id="viewport">
+        <!-- Panels will be dynamically positioned here -->
+    </div>
+
+    <div class="hint" id="hint">
+        <strong>Scroll over any panel</strong> to zoom it - watch the layout organically morph to give it space. <strong>Deeper zoom</strong> reveals more detail and can morph chart types.
+    </div>
+
+    <div class="controls">
+        <div class="control-item"><strong>Scroll</strong> to zoom panel</div>
+        <div class="control-divider"></div>
+        <div class="control-item"><strong>Drag</strong> to pan</div>
+        <div class="control-divider"></div>
+        <button onclick="resetAll()">Reset All</button>
+    </div>
+
+    <script>
+        // Panel configuration
+        const panels = [
+            { id: 'p1', title: 'Query Performance', type: 'bar', x: 0.05, y: 0.05, w: 0.43, h: 0.43, color: '#00f5ff' },
+            { id: 'p2', title: 'Latency Trends', type: 'line', x: 0.52, y: 0.05, w: 0.43, h: 0.43, color: '#ff00ff' },
+            { id: 'p3', title: 'Cache Distribution', type: 'scatter', x: 0.05, y: 0.52, w: 0.43, h: 0.43, color: '#00ffaa' },
+            { id: 'p4', title: 'Memory Usage', type: 'area', x: 0.52, y: 0.52, w: 0.43, h: 0.43, color: '#ffaa00' }
+        ];
+
+        const viewport = document.getElementById('viewport');
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        let panelStates = {};
+        let isAnimating = false;
+
+        // Initialize panel states
+        panels.forEach(p => {
+            panelStates[p.id] = {
+                zoom: 1.0,
+                detail: 'overview',
+                morphedType: p.type,
+                originalType: p.type
+            };
+        });
+
+        // Sample data
+        const datasets = {
+            bar: Array.from({ length: 8 }, (_, i) => ({ x: i, y: 30 + Math.random() * 60 })),
+            line: Array.from({ length: 12 }, (_, i) => ({ x: i, y: 40 + Math.sin(i * 0.5) * 20 + Math.random() * 15 })),
+            scatter: Array.from({ length: 40 }, () => ({ x: Math.random() * 100, y: Math.random() * 100 })),
+            area: Array.from({ length: 20 }, (_, i) => ({ x: i, y: 30 + i * 2 + Math.random() * 20 }))
+        };
+
+        // Render panels
+        function renderPanels() {
+            viewport.innerHTML = '';
+
+            panels.forEach(panel => {
+                const state = panelStates[panel.id];
+                const layout = calculateLayout(panel.id);
+
+                const container = document.createElement('div');
+                container.className = 'panel-container';
+                container.style.left = `${layout.x}px`;
+                container.style.top = `${layout.y}px`;
+                container.style.width = `${layout.w}px`;
+                container.style.height = `${layout.h}px`;
+                container.style.zIndex = Math.round(state.zoom * 10);
+
+                container.innerHTML = `
+                    <div class="panel" id="${panel.id}">
+                        <div class="panel-header">
+                            <div class="panel-title">${panel.title}</div>
+                            <div class="panel-meta">
+                                <span class="detail-level">${state.detail}</span>
+                                <span class="zoom-badge">${state.zoom.toFixed(1)}×</span>
+                            </div>
+                        </div>
+                        <div class="chart-canvas">
+                            <svg id="${panel.id}-svg"></svg>
+                        </div>
+                    </div>
+                `;
+
+                viewport.appendChild(container);
+
+                // Add scroll listener
+                container.addEventListener('wheel', (e) => handlePanelScroll(e, panel.id), { passive: false });
+
+                // Render chart
+                setTimeout(() => renderChart(panel.id), 50);
+            });
+        }
+
+        // Calculate layout with fisheye effect
+        function calculateLayout(focusId) {
+            const panel = panels.find(p => p.id === focusId);
+            const state = panelStates[focusId];
+
+            // Base position and size
+            let x = panel.x * vw;
+            let y = panel.y * vh;
+            let w = panel.w * vw;
+            let h = panel.h * vh;
+
+            // Apply zoom expansion (fisheye effect)
+            if (state.zoom > 1.0) {
+                const expansionFactor = 1 + (state.zoom - 1) * 0.8;
+                const centerX = x + w / 2;
+                const centerY = y + h / 2;
+
+                w *= expansionFactor;
+                h *= expansionFactor;
+                x = centerX - w / 2;
+                y = centerY - h / 2;
+
+                // Push other panels away (repulsion)
+                panels.forEach(other => {
+                    if (other.id !== focusId) {
+                        const otherState = panelStates[other.id];
+                        const otherCenterX = other.x * vw + (other.w * vw) / 2;
+                        const otherCenterY = other.y * vh + (other.h * vh) / 2;
+
+                        const dx = otherCenterX - centerX;
+                        const dy = otherCenterY - centerY;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < 400 * state.zoom) {
+                            const pushFactor = (state.zoom - 1) * 0.3;
+                            const pushX = (dx / distance) * 100 * pushFactor;
+                            const pushY = (dy / distance) * 100 * pushFactor;
+
+                            // Apply push to other's base position (stored temporarily)
+                            if (!other.pushX) other.pushX = 0;
+                            if (!other.pushY) other.pushY = 0;
+                            other.pushX = pushX;
+                            other.pushY = pushY;
+                        }
+                    }
+                });
+            }
+
+            // Apply accumulated push
+            if (panel.pushX || panel.pushY) {
+                x += panel.pushX || 0;
+                y += panel.pushY || 0;
+                // Reset push for next frame
+                panel.pushX = 0;
+                panel.pushY = 0;
+            }
+
+            return { x, y, w, h };
+        }
+
+        // Handle scroll on panel
+        function handlePanelScroll(e, panelId) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const state = panelStates[panelId];
+            const delta = -e.deltaY * 0.003;
+            const newZoom = Math.max(0.5, Math.min(4, state.zoom + delta));
+
+            if (Math.abs(newZoom - state.zoom) > 0.01) {
+                state.zoom = newZoom;
+
+                // Update detail level based on zoom
+                if (newZoom < 1.2) {
+                    state.detail = 'overview';
+                } else if (newZoom < 2.0) {
+                    state.detail = 'medium';
+                } else if (newZoom < 3.0) {
+                    state.detail = 'detailed';
+                } else {
+                    state.detail = 'full';
+                }
+
+                // Morph chart type at certain thresholds
+                const panel = panels.find(p => p.id === panelId);
+                if (panel.type === 'bar') {
+                    if (newZoom > 2.0 && state.morphedType === 'bar') {
+                        state.morphedType = 'line';
+                        showMorphIndicator(panelId, '→ Line');
+                    } else if (newZoom <= 2.0 && state.morphedType === 'line') {
+                        state.morphedType = 'bar';
+                    }
+                    if (newZoom > 3.0 && state.morphedType === 'line') {
+                        state.morphedType = 'scatter';
+                        showMorphIndicator(panelId, '→ Scatter');
+                    } else if (newZoom <= 3.0 && state.morphedType === 'scatter') {
+                        state.morphedType = 'line';
+                    }
+                }
+
+                renderPanels();
+            }
+        }
+
+        function showMorphIndicator(panelId, text) {
+            const panel = document.getElementById(panelId);
+            if (!panel) return;
+
+            const indicator = document.createElement('div');
+            indicator.className = 'morphing-indicator';
+            indicator.textContent = text;
+            panel.appendChild(indicator);
+
+            setTimeout(() => indicator.remove(), 800);
+        }
+
+        // Render chart based on type and detail level
+        function renderChart(panelId) {
+            const panel = panels.find(p => p.id === panelId);
+            const state = panelStates[panelId];
+            const svg = d3.select(`#${panelId}-svg`);
+            svg.selectAll('*').remove();
+
+            const rect = svg.node().parentElement.getBoundingClientRect();
+            const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+            const width = rect.width - margin.left - margin.right;
+            const height = rect.height - margin.top - margin.bottom;
+
+            if (width <= 0 || height <= 0) return;
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            // Get appropriate dataset
+            const data = datasets[state.morphedType] || datasets[panel.type];
+
+            // Adjust data density based on detail level
+            let visibleData = data;
+            if (state.detail === 'overview') {
+                visibleData = data.filter((_, i) => i % 2 === 0);
+            } else if (state.detail === 'full') {
+                // Show extra data points at full zoom
+                visibleData = [...data, ...data.slice(0, 5).map(d => ({ ...d, x: d.x + 0.5 }))];
+            }
+
+            // Render based on chart type
+            if (state.morphedType === 'bar' || (panel.type === 'bar' && state.morphedType === panel.type)) {
+                renderBar(g, visibleData, width, height, state, panel.color);
+            } else if (state.morphedType === 'line') {
+                renderLine(g, visibleData, width, height, state, panel.color);
+            } else if (state.morphedType === 'scatter') {
+                renderScatter(g, visibleData, width, height, state, panel.color);
+            } else if (panel.type === 'area') {
+                renderArea(g, visibleData, width, height, state, panel.color);
+            }
+        }
+
+        function renderBar(g, data, width, height, state, color) {
+            const x = d3.scaleBand()
+                .domain(data.map((_, i) => i))
+                .range([0, width])
+                .padding(0.2);
+
+            const y = d3.scaleLinear()
+                .domain([0, 100])
+                .range([height, 0]);
+
+            // Grid
+            g.append('g').attr('class', 'grid')
+                .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+            // Bars
+            g.selectAll('.bar')
+                .data(data)
+                .join('rect')
+                .attr('class', 'bar data-element')
+                .attr('x', (d, i) => x(i))
+                .attr('y', d => y(d.y))
+                .attr('width', x.bandwidth())
+                .attr('height', d => height - y(d.y))
+                .attr('fill', color)
+                .attr('opacity', 0.7);
+
+            // Labels (detail dependent)
+            if (state.detail !== 'overview') {
+                g.selectAll('.detail-label')
+                    .data(data)
+                    .join('text')
+                    .attr('class', 'detail-label')
+                    .attr('x', (d, i) => x(i) + x.bandwidth() / 2)
+                    .attr('y', d => y(d.y) - 6)
+                    .attr('text-anchor', 'middle')
+                    .text(d => d.y.toFixed(0))
+                    .style('opacity', state.zoom > 1.5 ? 1 : 0);
+            }
+
+            // Axes
+            g.append('g').attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickFormat(''));
+
+            g.append('g').attr('class', 'axis')
+                .call(d3.axisLeft(y).ticks(5));
+        }
+
+        function renderLine(g, data, width, height, state, color) {
+            const x = d3.scaleLinear()
+                .domain([0, data.length - 1])
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([0, 100])
+                .range([height, 0]);
+
+            // Grid
+            g.append('g').attr('class', 'grid')
+                .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+            // Line
+            const line = d3.line()
+                .x((d, i) => x(i))
+                .y(d => y(d.y))
+                .curve(d3.curveMonotoneX);
+
+            g.append('path')
+                .datum(data)
+                .attr('class', 'data-element')
+                .attr('d', line)
+                .attr('stroke', color)
+                .attr('stroke-width', 2 + state.zoom)
+                .attr('fill', 'none');
+
+            // Points
+            g.selectAll('.point')
+                .data(data)
+                .join('circle')
+                .attr('class', 'point data-element')
+                .attr('cx', (d, i) => x(i))
+                .attr('cy', d => y(d.y))
+                .attr('r', state.zoom > 2 ? 5 : 3)
+                .attr('fill', color)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 1);
+
+            // Labels
+            if (state.detail === 'detailed' || state.detail === 'full') {
+                g.selectAll('.detail-label')
+                    .data(data)
+                    .join('text')
+                    .attr('class', 'detail-label')
+                    .attr('x', (d, i) => x(i))
+                    .attr('y', d => y(d.y) - 10)
+                    .attr('text-anchor', 'middle')
+                    .text(d => d.y.toFixed(1))
+                    .style('opacity', state.zoom > 2.5 ? 1 : 0);
+            }
+
+            // Axes
+            g.append('g').attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).ticks(5));
+
+            g.append('g').attr('class', 'axis')
+                .call(d3.axisLeft(y).ticks(5));
+        }
+
+        function renderScatter(g, data, width, height, state, color) {
+            const x = d3.scaleLinear()
+                .domain([0, 100])
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([0, 100])
+                .range([height, 0]);
+
+            // Grid
+            g.append('g').attr('class', 'grid')
+                .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+            g.append('g').attr('class', 'grid')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickSize(-height).tickFormat(''));
+
+            // Points
+            g.selectAll('.point')
+                .data(data)
+                .join('circle')
+                .attr('class', 'point data-element')
+                .attr('cx', d => x(d.x))
+                .attr('cy', d => y(d.y))
+                .attr('r', 2 + state.zoom * 1.5)
+                .attr('fill', color)
+                .attr('opacity', 0.6)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', state.zoom > 2 ? 1 : 0);
+
+            // Annotations at full detail
+            if (state.detail === 'full') {
+                g.selectAll('.detail-annotation')
+                    .data(data.filter((_, i) => i % 5 === 0))
+                    .join('text')
+                    .attr('class', 'detail-annotation')
+                    .attr('x', d => x(d.x) + 8)
+                    .attr('y', d => y(d.y))
+                    .text((d, i) => `#${i}`)
+                    .style('opacity', state.zoom > 3 ? 1 : 0);
+            }
+
+            // Axes
+            g.append('g').attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).ticks(5));
+
+            g.append('g').attr('class', 'axis')
+                .call(d3.axisLeft(y).ticks(5));
+        }
+
+        function renderArea(g, data, width, height, state, color) {
+            const x = d3.scaleLinear()
+                .domain([0, data.length - 1])
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.y) * 1.2])
+                .range([height, 0]);
+
+            // Grid
+            g.append('g').attr('class', 'grid')
+                .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+            // Area
+            const area = d3.area()
+                .x((d, i) => x(i))
+                .y0(height)
+                .y1(d => y(d.y))
+                .curve(d3.curveMonotoneX);
+
+            g.append('path')
+                .datum(data)
+                .attr('class', 'data-element')
+                .attr('d', area)
+                .attr('fill', color)
+                .attr('opacity', 0.3);
+
+            // Line
+            const line = d3.line()
+                .x((d, i) => x(i))
+                .y(d => y(d.y))
+                .curve(d3.curveMonotoneX);
+
+            g.append('path')
+                .datum(data)
+                .attr('class', 'data-element')
+                .attr('d', line)
+                .attr('stroke', color)
+                .attr('stroke-width', 2)
+                .attr('fill', 'none');
+
+            // Axes
+            g.append('g').attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).ticks(5));
+
+            g.append('g').attr('class', 'axis')
+                .call(d3.axisLeft(y).ticks(5));
+        }
+
+        function resetAll() {
+            panels.forEach(p => {
+                panelStates[p.id].zoom = 1.0;
+                panelStates[p.id].detail = 'overview';
+                panelStates[p.id].morphedType = p.type;
+            });
+            renderPanels();
+        }
+
+        // Hide hint after 5 seconds
+        setTimeout(() => {
+            document.getElementById('hint').style.opacity = '0';
+        }, 5000);
+
+        // Initialize
+        renderPanels();
+
+        // Re-render on window resize
+        window.addEventListener('resize', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>

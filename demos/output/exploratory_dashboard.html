@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring: How does the semantic cache accelerate HoloLoom queries? - HoloLoom Dashboard</title>
+
+    <!-- Tailwind CSS (CDN, no build step) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Plotly.js (interactive charts) -->
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+
+    <style>
+        /* Edward Tufte-inspired typography */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        /* Minimal chrome, maximum data-ink ratio */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Smooth transitions */
+        .panel {
+            transition: box-shadow 0.2s ease;
+        }
+
+        .panel:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="dashboard-container">
+        <!-- Dashboard Title (Tufte: Clear hierarchy) -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Exploring: How does the semantic cache accelerate HoloLoom queries?</h1>
+            <div class="h-1 w-24 bg-indigo-600 rounded"></div>
+        </div>
+
+        <!-- Dashboard Grid (Responsive layout) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-green-50">
+            <div class="text-sm font-medium text-gray-600 mb-2">Confidence</div>
+            <div class="text-4xl font-bold text-green-600">0.94%</div>
+            <div class="text-xs text-gray-500 mt-2">94%</div>
+        </div>
+        
+
+        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-yellow-50">
+            <div class="text-sm font-medium text-gray-600 mb-2">Duration</div>
+            <div class="text-4xl font-bold text-yellow-600">287.50ms</div>
+            <div class="text-xs text-gray-500 mt-2">288ms</div>
+        </div>
+        
+
+        <div class="md:col-span-2 lg:col-span-3 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Execution Timeline</div>
+            <div class="text-sm text-gray-600 mb-4">How the query was processed</div>
+            <div id="plot_timeline_trace_stage_durations" style="height: 300px;"></div>
+        </div>
+        <script>
+        (function() {
+            var data = [{
+                type: 'bar',
+                x: [12.3, 45.2, 89.7, 67.1, 73.2],
+                y: ['pattern_selection', 'feature_extraction', 'retrieval', 'convergence', 'tool_execution'],
+                orientation: 'h',
+                marker: {
+                    color: ['#6b7280', '#6b7280', '#10b981', '#6b7280', '#6b7280']
+                },
+                text: ['12.3ms (4%)', '45.2ms (16%)', '89.7ms (31%)', '67.1ms (23%)', '73.2ms (25%)'],
+                textposition: 'auto',
+                hovertemplate: '%{y}<br>%{x:.1f}ms (%{text})<extra></extra>'
+            }];
+
+            var layout = {
+                margin: { l: 120, r: 20, t: 20, b: 40 },
+                xaxis: {
+                    title: 'Duration (ms)',
+                    showgrid: true,
+                    gridcolor: '#f0f0f0'
+                },
+                yaxis: {
+                    autorange: 'reversed',
+                    showgrid: false
+                },
+                paper_bgcolor: 'white',
+                plot_bgcolor: 'white',
+                font: { family: 'system-ui, -apple-system, sans-serif', size: 12 },
+                showlegend: false
+            };
+
+            var config = { responsive: true, displayModeBar: false };
+            Plotly.newPlot('plot_timeline_trace_stage_durations', data, layout, config);
+        })();
+        </script>
+        
+
+        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Query</div>
+            <div class="text-sm text-gray-600 mb-4">How does the semantic cache accelerate HoloLoom qu...</div>
+            <div class="text-sm text-gray-700 whitespace-pre-wrap font-mono bg-gray-50 p-3 rounded border border-gray-200">
+How does the semantic cache accelerate HoloLoom queries?
+            </div>
+            <div class="text-xs text-gray-500 mt-2">56 characters</div>
+        </div>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Knowledge Threads</div>
+            <div class="text-sm text-gray-600 mb-4">Memory connections activated</div>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class='px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md text-xs'>weaving_fundamentals</span>, <span class='px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md text-xs'>hololoom_architecture</span>, <span class='px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md text-xs'>matryoshka_embeddings</span>, <span class='px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md text-xs'>semantic_cache</span>, <span class='px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md text-xs'>edward_tufte_principles</span>
+            </div>
+            <div class="text-xs text-gray-500">5 thread(s) activated</div>
+        </div>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Semantic Profile</div>
+            <div class="text-sm text-gray-600 mb-4">244D meaning projection</div>
+            <div class="text-sm text-gray-600">
+                Cache: Enabled<br>
+                Hit Rate: 0.0%
+            </div>
+        </div>
+        
+        </div>
+
+        <!-- Metadata Footer -->
+
+        <div class="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-500 text-center">
+            Complexity: FULL | Panels: 6 | Cache: 80% hits (8/10)
+            <br>
+            Generated: 2025-10-29T01:00:28
+        </div>
+        
+    </div>
+</body>
+</html>

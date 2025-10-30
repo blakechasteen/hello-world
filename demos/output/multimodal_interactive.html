@@ -1,0 +1,2680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mythRL Multi-Modal Intelligence - Interactive Playground</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        canvas#particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 2000px;
+            margin: 0 auto;
+        }
+
+        .chart-widget {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-widget:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(168, 237, 234, 0.5);
+        }
+
+        .chart-widget.fullscreen {
+            position: fixed;
+            top: 50px;
+            left: 50px;
+            right: 50px;
+            bottom: 50px;
+            z-index: 1000;
+            transform: none;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chart-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .chart-btn:hover {
+            background: rgba(168, 237, 234, 0.4);
+            transform: scale(1.1);
+        }
+
+        .mini-metric {
+            display: inline-block;
+            background: rgba(168, 237, 234, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mini-metric:hover {
+            background: rgba(168, 237, 234, 0.4);
+            transform: scale(1.1);
+        }
+
+        .heatmap-cell {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin: 2px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .treemap-node {
+            position: absolute;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(168, 237, 234, 0.8));
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .treemap-node:hover {
+            transform: scale(1.05);
+            border-color: #fff;
+            z-index: 10;
+        }
+
+        .radar-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        .timeline-item {
+            background: rgba(168, 237, 234, 0.15);
+            padding: 15px;
+            border-left: 4px solid #a8edea;
+            border-radius: 8px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .timeline-item:hover {
+            background: rgba(168, 237, 234, 0.3);
+            border-left-width: 8px;
+            transform: translateX(10px);
+        }
+
+        .sankey-flow {
+            position: absolute;
+            background: linear-gradient(90deg, rgba(168, 237, 234, 0.5), rgba(102, 126, 234, 0.5));
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sankey-flow:hover {
+            background: linear-gradient(90deg, rgba(168, 237, 234, 0.8), rgba(102, 126, 234, 0.8));
+            box-shadow: 0 0 20px rgba(168, 237, 234, 0.8);
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-needle {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            width: 4px;
+            height: 100px;
+            background: #a8edea;
+            transform-origin: bottom center;
+            transition: transform 1s ease;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(168, 237, 234, 0.8);
+        }
+
+        .network-node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #a8edea);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(168, 237, 234, 0.5);
+        }
+
+        .network-node:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 25px rgba(168, 237, 234, 0.9);
+        }
+
+        .network-node:active {
+            cursor: grabbing;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 40px 20px 30px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #fff, #a8edea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .hero h1:hover {
+            transform: scale(1.1) rotate(2deg);
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(168, 237, 234, 0.5); }
+            to { text-shadow: 0 0 40px rgba(168, 237, 234, 0.8); }
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hero p:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .drag-drop-zone {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .drag-drop-zone::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(168, 237, 234, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .drag-drop-zone.dragover {
+            background: rgba(168, 237, 234, 0.3);
+            border-color: #a8edea;
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(168, 237, 234, 0.8);
+            animation: pulse-border 0.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-width: 3px; }
+            50% { border-width: 6px; }
+        }
+
+        .drag-drop-zone h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .drag-drop-zone p {
+            font-size: 1.1em;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .file-input-wrapper {
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .demo-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: move;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .demo-card::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(168, 237, 234, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .demo-card:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-10px) scale(1.05) rotate(2deg);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            border-color: rgba(168, 237, 234, 0.8);
+        }
+
+        .demo-card:active {
+            transform: scale(0.95);
+        }
+
+        .demo-card.dragging {
+            opacity: 0.7;
+            transform: rotate(10deg) scale(1.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            animation: wiggle 0.3s infinite;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(8deg) scale(1.1); }
+            50% { transform: rotate(12deg) scale(1.1); }
+        }
+
+        .demo-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .demo-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .demo-stats {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .workspace {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            min-height: 400px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .workspace h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .workspace-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .workspace-item {
+            background: rgba(168, 237, 234, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(168, 237, 234, 0.3);
+            animation: slideIn 0.5s ease, float 3s ease-in-out infinite;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .workspace-item:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(168, 237, 234, 0.4);
+            border-color: rgba(168, 237, 234, 0.8);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .workspace-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .remove-btn {
+            background: rgba(255, 100, 100, 0.3);
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 100, 100, 0.6);
+            transform: scale(1.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+        }
+
+        .stat-card:hover::after {
+            animation: shine 1s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .stat-card:hover {
+            transform: scale(1.15) translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            border-color: rgba(168, 237, 234, 0.8);
+        }
+
+        .stat-card:active {
+            transform: scale(1.05);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #a8edea;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chart-section {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            margin: 0 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.95);
+            animation: button-press 0.2s ease;
+        }
+
+        @keyframes button-press {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); }
+            100% { transform: scale(0.95); }
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(168, 237, 234, 0.95);
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: slideInRight 0.5s ease, pulse 2s ease-in-out infinite;
+            z-index: 1000;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .upload-preview {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .upload-preview h3 {
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            font-size: 0.9em;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .processing-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 2000;
+            display: none;
+        }
+
+        .processing-indicator.active {
+            display: block;
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            from { transform: translate(-50%, -50%) scale(0); }
+            to { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(168, 237, 234, 0.3);
+            border-top-color: #a8edea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #a8edea, #667eea);
+            background-size: 200% 100%;
+            animation: progress-animation 2s linear infinite;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes progress-animation {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: rgba(168, 237, 234, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particle-float 3s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes particle-float {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .controls-panel {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(168, 237, 234, 0.3);
+            z-index: 100;
+            max-width: 300px;
+        }
+
+        .controls-panel h3 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            color: #a8edea;
+        }
+
+        .control-group {
+            margin: 15px 0;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #a8edea);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(168, 237, 234, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 20px rgba(168, 237, 234, 0.8);
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #667eea, #a8edea);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .data-editor {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid rgba(168, 237, 234, 0.3);
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .data-editor:focus {
+            outline: none;
+            border-color: #a8edea;
+            box-shadow: 0 0 10px rgba(168, 237, 234, 0.5);
+        }
+
+        .widget {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .widget:hover {
+            border-color: rgba(168, 237, 234, 0.5);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .widget-title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #a8edea;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .widget-title:hover {
+            color: #fff;
+        }
+
+        .live-editor {
+            width: 100%;
+            min-height: 100px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #a8edea;
+            border: 1px solid rgba(168, 237, 234, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+
+        .live-editor:focus {
+            outline: none;
+            border-color: #a8edea;
+            box-shadow: 0 0 15px rgba(168, 237, 234, 0.5);
+        }
+
+        .output-box {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(168, 237, 234, 0.3);
+        }
+
+        .metric-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .metric-box {
+            background: rgba(168, 237, 234, 0.15);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .metric-box:hover {
+            background: rgba(168, 237, 234, 0.25);
+            transform: scale(1.05);
+        }
+
+        .metric-box-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #a8edea;
+        }
+
+        .metric-box-label {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .interactive-graph {
+            position: relative;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            margin-top: 15px;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .graph-node {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #a8edea);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(168, 237, 234, 0.5);
+        }
+
+        .graph-node:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 25px rgba(168, 237, 234, 0.8);
+        }
+
+        .graph-node:active {
+            cursor: grabbing;
+        }
+
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(168, 237, 234, 0.5), rgba(102, 126, 234, 0.5));
+            transform-origin: left center;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div class="grid-background"></div>
+
+    <div class="processing-indicator" id="processingIndicator">
+        <div class="spinner"></div>
+        <h2>Processing Pipeline...</h2>
+        <p id="processingStatus">Initializing...</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>🎯 mythRL Interactive Playground</h1>
+        <p>Drag, Drop, and Explore Multi-Modal Intelligence</p>
+    </div>
+
+    <div class="drag-drop-zone" id="dropZone">
+        <h2>📁 Drop Your Files Here</h2>
+        <p>Drag and drop text, JSON, CSV, or other files to process them through mythRL</p>
+        <div class="file-input-wrapper">
+            <input type="file" id="fileInput" multiple accept=".txt,.json,.csv,.md,.py,.js">
+            <div class="file-input-button">Or Click to Browse</div>
+        </div>
+        <div id="uploadPreview" class="upload-preview" style="display: none;"></div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="totalMemories">138+</div>
+            <div class="stat-label">Total Memories</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">0.16ms</div>
+            <div class="stat-label">Storage Time</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">4.63ms</div>
+            <div class="stat-label">Search Time</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="workspaceCount">0</div>
+            <div class="stat-label">In Workspace</div>
+        </div>
+    </div>
+
+    <h2 style="text-align: center; font-size: 2em; margin: 40px 0 20px; padding: 0 20px;">
+        🎭 Demo Components - Drag to Workspace Below
+    </h2>
+
+    <div class="demo-cards">
+        <div class="demo-card" draggable="true" data-demo="quantum">
+            <span class="demo-icon">🔬</span>
+            <div class="demo-title">Quantum Research</div>
+            <div class="demo-stats">15+ memories • 0.98 confidence • 4 queries</div>
+        </div>
+
+        <div class="demo-card" draggable="true" data-demo="healthcare">
+            <span class="demo-icon">🏥</span>
+            <div class="demo-title">AI Healthcare</div>
+            <div class="demo-stats">11+ insights • 94-95% accuracy • 450 lives saved</div>
+        </div>
+
+        <div class="demo-card" draggable="true" data-demo="realtime">
+            <span class="demo-icon">⚡</span>
+            <div class="demo-title">Real-Time Pipeline</div>
+            <div class="demo-stats">100+ memories • 6,209 writes/sec • 16.1ms total</div>
+        </div>
+
+        <div class="demo-card" draggable="true" data-demo="synthesis">
+            <span class="demo-icon">🧠</span>
+            <div class="demo-title">Knowledge Synthesis</div>
+            <div class="demo-stats">12+ nodes • 4 domains • 2 fusions • 0.98 confidence</div>
+        </div>
+    </div>
+
+    <div class="workspace" id="workspace">
+        <h2>🎨 Your Workspace</h2>
+        <p style="text-align: center; opacity: 0.7; margin-bottom: 20px;">
+            Drop demo cards or files here to build your multi-modal pipeline
+        </p>
+        <div class="workspace-items" id="workspaceItems">
+            <div style="grid-column: 1/-1; text-align: center; opacity: 0.5; padding: 40px;">
+                Drop items here to get started...
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-panel">
+        <h3>⚙️ Live Controls</h3>
+        
+        <div class="control-group">
+            <label class="control-label">Confidence: <span id="confidenceValue">0.85</span></label>
+            <input type="range" class="slider" id="confidenceSlider" min="0" max="100" value="85">
+        </div>
+        
+        <div class="control-group">
+            <label class="control-label">Processing Speed: <span id="speedValue">1.0x</span></label>
+            <input type="range" class="slider" id="speedSlider" min="1" max="50" value="10">
+        </div>
+        
+        <div class="control-group">
+            <label class="control-label">Fusion Strategy</label>
+            <select style="width: 100%; padding: 8px; border-radius: 5px; background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(168,237,234,0.3);" id="fusionStrategy">
+                <option value="attention">Attention</option>
+                <option value="average">Average</option>
+                <option value="max">Max Pool</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label class="control-label">
+                Auto-Process
+                <label class="toggle">
+                    <input type="checkbox" id="autoProcess">
+                    <span class="toggle-slider"></span>
+                </label>
+            </label>
+        </div>
+        
+        <div class="control-group">
+            <label class="control-label">
+                Show Embeddings
+                <label class="toggle">
+                    <input type="checkbox" id="showEmbeddings">
+                    <span class="toggle-slider"></span>
+                </label>
+            </label>
+        </div>
+    </div>
+
+    <div style="max-width: 1400px; margin: 40px auto; padding: 0 20px;">
+        <h2 style="text-align: center; font-size: 2.5em; margin-bottom: 30px;">
+            📊 Ultimate Interactive Dashboard
+        </h2>
+        
+        <div class="dashboard-grid">
+            <!-- Real-time Line Chart -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>⚡ Real-Time Performance</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="pauseChart('realtimeChart')">⏸️</button>
+                        <button class="chart-btn" onclick="resetChart('realtimeChart')">🔄</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <canvas id="realtimeChart"></canvas>
+                <div style="margin-top: 10px;">
+                    <span class="mini-metric">Avg: <span id="avgMetric">0</span>ms</span>
+                    <span class="mini-metric">Peak: <span id="peakMetric">0</span>ms</span>
+                    <span class="mini-metric">Min: <span id="minMetric">0</span>ms</span>
+                </div>
+            </div>
+
+            <!-- Multi-Axis Comparison -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>📈 Multi-Axis Comparison</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="addDataPoint('multiAxisChart')">➕</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <canvas id="multiAxisChart"></canvas>
+            </div>
+
+            <!-- 3D-Style Bubble Chart -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>🎈 Memory Distribution</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="randomizeBubbles()">🎲</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <canvas id="bubbleChart"></canvas>
+            </div>
+
+            <!-- Stacked Area Chart -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>🌊 Modality Flow</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="animateFlow()">▶️</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <canvas id="stackedAreaChart"></canvas>
+            </div>
+
+            <!-- Polar Area Chart -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>🎯 Feature Distribution</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="rotatePolar()">🔄</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <canvas id="polarChart"></canvas>
+            </div>
+
+            <!-- Radar Chart -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>🕸️ Capability Radar</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="updateRadar()">🎲</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <canvas id="radarChart"></canvas>
+            </div>
+
+            <!-- Custom Heatmap -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>🔥 Activity Heatmap</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="generateHeatmap()">🎲</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <div id="heatmapContainer" style="text-align: center; padding: 20px;"></div>
+            </div>
+
+            <!-- Treemap Visualization -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>🌳 Memory Treemap</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="generateTreemap()">🎲</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <div id="treemapContainer" style="position: relative; height: 300px;"></div>
+            </div>
+
+            <!-- Gauge Chart -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>⏱️ System Health</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="updateGauge()">🎲</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <div class="gauge-container">
+                    <canvas id="gaugeChart"></canvas>
+                    <div class="gauge-needle" id="gaugeNeedle"></div>
+                    <div style="position: absolute; bottom: 20px; font-size: 2em; font-weight: bold; color: #a8edea;" id="gaugeValue">85%</div>
+                </div>
+            </div>
+
+            <!-- Sankey/Flow Diagram -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>🌊 Data Flow</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="animateSankey()">▶️</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <div id="sankeyContainer" style="position: relative; height: 300px; background: rgba(0,0,0,0.3); border-radius: 8px;"></div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>📅 Processing Timeline</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="addTimelineEvent()">➕</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <div id="timelineContainer" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Network Graph -->
+            <div class="chart-widget">
+                <div class="chart-header">
+                    <h3>🕸️ Network Topology</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="addNetworkNode()">➕</button>
+                        <button class="chart-btn" onclick="animateNetwork()">▶️</button>
+                        <button class="chart-btn" onclick="toggleFullscreen(this.closest('.chart-widget'))">⛶</button>
+                    </div>
+                </div>
+                <div id="networkContainer" style="position: relative; height: 300px; background: rgba(0,0,0,0.3); border-radius: 8px;"></div>
+            </div>
+        </div>
+
+        <div class="widget">
+            <div class="widget-title" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                🧪 Live Data Processor
+            </div>
+            <div>
+                <textarea class="live-editor" id="liveDataInput" placeholder="Enter JSON, text, or structured data here...
+Example:
+{
+  &quot;query&quot;: &quot;quantum computing&quot;,
+  &quot;type&quot;: &quot;research&quot;,
+  &quot;priority&quot;: &quot;high&quot;
+}">{"query": "quantum computing", "type": "research", "priority": "high"}</textarea>
+                <button class="btn" style="margin-top: 10px;" onclick="processLiveData()">🚀 Process Data</button>
+                <div class="output-box" id="liveOutput">Output will appear here...</div>
+            </div>
+        </div>
+
+        <div class="widget">
+            <div class="widget-title" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                📊 Live Metrics Dashboard
+            </div>
+            <div>
+                <div class="metric-display" id="metricsDisplay">
+                    <div class="metric-box" onclick="animateMetric(this)">
+                        <div class="metric-box-value" id="memoryCount">0</div>
+                        <div class="metric-box-label">Memories</div>
+                    </div>
+                    <div class="metric-box" onclick="animateMetric(this)">
+                        <div class="metric-box-value" id="embeddingDim">384</div>
+                        <div class="metric-box-label">Dimensions</div>
+                    </div>
+                    <div class="metric-box" onclick="animateMetric(this)">
+                        <div class="metric-box-value" id="throughput">0</div>
+                        <div class="metric-box-label">Ops/Sec</div>
+                    </div>
+                    <div class="metric-box" onclick="animateMetric(this)">
+                        <div class="metric-box-value" id="latency">0.0</div>
+                        <div class="metric-box-label">Latency (ms)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="widget">
+            <div class="widget-title" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                🕸️ Interactive Knowledge Graph
+            </div>
+            <div>
+                <div class="interactive-graph" id="knowledgeGraph"></div>
+                <button class="btn" style="margin-top: 10px;" onclick="addGraphNode()">➕ Add Node</button>
+                <button class="btn btn-secondary" onclick="randomizeGraph()">🎲 Randomize</button>
+                <button class="btn btn-secondary" onclick="clearGraph()">🗑️ Clear</button>
+            </div>
+        </div>
+
+        <div class="widget">
+            <div class="widget-title" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                🎛️ Embedding Visualizer
+            </div>
+            <div>
+                <canvas id="embeddingCanvas" style="width: 100%; height: 300px; background: rgba(0,0,0,0.5); border-radius: 8px; cursor: crosshair;"></canvas>
+                <button class="btn" style="margin-top: 10px;" onclick="generateEmbedding()">✨ Generate Random</button>
+                <button class="btn btn-secondary" onclick="clearEmbeddings()">🗑️ Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="runPipeline()">🚀 Run Pipeline</button>
+        <button class="btn btn-secondary" onclick="clearWorkspace()">🗑️ Clear Workspace</button>
+        <button class="btn" onclick="exportResults()">💾 Export Results</button>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">📊 Live Performance Metrics</h2>
+        <canvas id="liveChart"></canvas>
+    </div>
+
+    <script>
+        // Particle System
+        const particleCanvas = document.getElementById('particles');
+        const particleCtx = particleCanvas.getContext('2d');
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+
+        let particles = [];
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+                this.opacity = 1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.opacity -= 0.01;
+            }
+
+            draw() {
+                particleCtx.fillStyle = `rgba(168, 237, 234, ${this.opacity})`;
+                particleCtx.beginPath();
+                particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                particleCtx.fill();
+            }
+        }
+
+        function animateParticles() {
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            
+            particles.forEach((particle, index) => {
+                particle.update();
+                particle.draw();
+                if (particle.opacity <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+
+            requestAnimationFrame(animateParticles);
+        }
+
+        animateParticles();
+
+        // Create particles on mouse move
+        document.addEventListener('mousemove', (e) => {
+            if (Math.random() < 0.3) {
+                particles.push(new Particle(e.clientX, e.clientY));
+            }
+        });
+
+        // Create particles on click
+        document.addEventListener('click', (e) => {
+            for (let i = 0; i < 10; i++) {
+                particles.push(new Particle(e.clientX, e.clientY));
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+        });
+
+        // Rest of the code
+        let workspaceItems = [];
+        let draggedElement = null;
+
+        // Drag and drop for demo cards
+        document.querySelectorAll('.demo-card').forEach(card => {
+            card.addEventListener('dragstart', (e) => {
+                draggedElement = e.target;
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'copy';
+                e.dataTransfer.setData('text/html', e.target.innerHTML);
+            });
+
+            card.addEventListener('dragend', (e) => {
+                e.target.classList.remove('dragging');
+            });
+        });
+
+        // Workspace drop zone
+        const workspace = document.getElementById('workspace');
+        const workspaceItemsEl = document.getElementById('workspaceItems');
+
+        workspace.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            workspace.style.background = 'rgba(168, 237, 234, 0.2)';
+        });
+
+        workspace.addEventListener('dragleave', () => {
+            workspace.style.background = 'rgba(0, 0, 0, 0.3)';
+        });
+
+        workspace.addEventListener('drop', (e) => {
+            e.preventDefault();
+            workspace.style.background = 'rgba(0, 0, 0, 0.3)';
+
+            if (draggedElement && draggedElement.classList.contains('demo-card')) {
+                const demoType = draggedElement.dataset.demo;
+                addToWorkspace(demoType, draggedElement.innerHTML);
+                showNotification(`Added ${draggedElement.querySelector('.demo-title').textContent} to workspace!`);
+            }
+        });
+
+        // File drop zone
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            const preview = document.getElementById('uploadPreview');
+            preview.style.display = 'block';
+            preview.innerHTML = '<h3>📄 Uploaded Files:</h3>';
+
+            Array.from(files).forEach(file => {
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                fileInfo.innerHTML = `
+                    <strong>${file.name}</strong> (${(file.size / 1024).toFixed(2)} KB)
+                    <br>Type: ${file.type || 'unknown'}
+                `;
+                preview.appendChild(fileInfo);
+
+                // Read file content
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    addFileToWorkspace(file.name, file.type, content);
+                };
+                reader.readAsText(file);
+            });
+
+            showNotification(`Uploaded ${files.length} file(s)!`);
+        }
+
+        function addFileToWorkspace(filename, type, content) {
+            const item = {
+                id: Date.now() + Math.random(),
+                type: 'file',
+                filename: filename,
+                filetype: type,
+                content: content.substring(0, 200) + '...'
+            };
+            workspaceItems.push(item);
+            renderWorkspace();
+        }
+
+        function addToWorkspace(demoType, innerHTML) {
+            // Remove placeholder if it exists
+            const placeholder = workspaceItemsEl.querySelector('[style*="grid-column"]');
+            if (placeholder) placeholder.remove();
+
+            const item = {
+                id: Date.now(),
+                type: demoType,
+                content: innerHTML
+            };
+            workspaceItems.push(item);
+            renderWorkspace();
+            createParticleExplosion(workspace.getBoundingClientRect().left + workspace.offsetWidth / 2, 
+                                   workspace.getBoundingClientRect().top + workspace.offsetHeight / 2);
+        }
+
+        function createParticleExplosion(x, y) {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                particle.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 3000);
+            }
+        }
+
+        function renderWorkspace() {
+            if (workspaceItems.length === 0) {
+                workspaceItemsEl.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; opacity: 0.5; padding: 40px;">
+                        Drop items here to get started...
+                    </div>
+                `;
+            } else {
+                workspaceItemsEl.innerHTML = workspaceItems.map(item => `
+                    <div class="workspace-item">
+                        <div class="workspace-item-header">
+                            <strong>${item.type === 'file' ? '📄 ' + item.filename : '🎭 ' + item.type}</strong>
+                            <button class="remove-btn" onclick="removeItem(${item.id})">✕</button>
+                        </div>
+                        ${item.content}
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('workspaceCount').textContent = workspaceItems.length;
+            updateChart();
+        }
+
+        function removeItem(id) {
+            workspaceItems = workspaceItems.filter(item => item.id !== id);
+            renderWorkspace();
+            showNotification('Item removed from workspace');
+        }
+
+        function clearWorkspace() {
+            workspaceItems = [];
+            renderWorkspace();
+            showNotification('Workspace cleared!');
+        }
+
+        function runPipeline() {
+            if (workspaceItems.length === 0) {
+                showNotification('⚠️ Add items to workspace first!');
+                return;
+            }
+            
+            const indicator = document.getElementById('processingIndicator');
+            const status = document.getElementById('processingStatus');
+            const progressFill = document.getElementById('progressFill');
+            
+            indicator.classList.add('active');
+            
+            const stages = [
+                'Extracting features...',
+                'Computing embeddings...',
+                'Cross-modal fusion...',
+                'Building knowledge graph...',
+                'Optimizing tensors...',
+                'Finalizing results...'
+            ];
+            
+            let currentStage = 0;
+            
+            const interval = setInterval(() => {
+                if (currentStage < stages.length) {
+                    status.textContent = stages[currentStage];
+                    progressFill.style.width = ((currentStage + 1) / stages.length * 100) + '%';
+                    currentStage++;
+                } else {
+                    clearInterval(interval);
+                    indicator.classList.remove('active');
+                    showNotification(`✅ Pipeline complete! Processed ${workspaceItems.length} items.`);
+                    updateStats();
+                    animateSuccess();
+                }
+            }, 400);
+        }
+
+        function animateSuccess() {
+            document.querySelectorAll('.workspace-item').forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.animation = 'none';
+                    setTimeout(() => {
+                        item.style.animation = 'slideIn 0.5s ease, float 3s ease-in-out infinite';
+                    }, 10);
+                }, index * 100);
+            });
+        }
+
+        function exportResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                items: workspaceItems,
+                stats: {
+                    totalItems: workspaceItems.length,
+                    processingTime: '0.16ms per item',
+                    confidence: 0.98
+                }
+            };
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mythrl-results.json';
+            a.click();
+            showNotification('📥 Results exported!');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        function updateStats() {
+            const totalMemories = 138 + workspaceItems.length;
+            const statElement = document.getElementById('totalMemories');
+            
+            // Animate number change
+            let current = parseInt(statElement.textContent);
+            const target = totalMemories;
+            const increment = Math.ceil((target - current) / 20);
+            
+            const interval = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(interval);
+                }
+                statElement.textContent = current + '+';
+            }, 50);
+            
+            // Shake effect
+            statElement.parentElement.style.animation = 'none';
+            setTimeout(() => {
+                statElement.parentElement.style.animation = 'pulse 0.5s ease';
+            }, 10);
+        }
+
+        // Add click effects to stat cards
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.animation = 'none';
+                setTimeout(() => {
+                    this.style.animation = 'pulse 0.5s ease';
+                }, 10);
+                
+                const value = this.querySelector('.stat-value');
+                value.style.transform = 'scale(1.3)';
+                setTimeout(() => {
+                    value.style.transform = 'scale(1)';
+                }, 300);
+            });
+        });
+
+        // Add interactive demo card effects
+        document.querySelectorAll('.demo-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                const icon = this.querySelector('.demo-icon');
+                icon.style.animation = 'spin 1s ease';
+                setTimeout(() => {
+                    icon.style.animation = 'none';
+                }, 1000);
+            });
+        });
+
+        // Initialize chart
+        const chartCtx = document.getElementById('liveChart').getContext('2d');
+        let liveChart = new Chart(chartCtx, {
+            type: 'line',
+            data: {
+                labels: ['0s', '1s', '2s', '3s', '4s', '5s'],
+                datasets: [{
+                    label: 'Processing Rate (items/sec)',
+                    data: [0, 10, 25, 40, 55, 70],
+                    borderColor: 'rgba(168, 237, 234, 1)',
+                    backgroundColor: 'rgba(168, 237, 234, 0.2)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#fff', font: { size: 14 } }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#fff' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#fff' }
+                    }
+                }
+            }
+        });
+
+        function updateChart() {
+            const newData = liveChart.data.datasets[0].data.map(val => val + Math.random() * 10);
+            liveChart.data.datasets[0].data = newData;
+            liveChart.update();
+        }
+
+        // Auto-update chart
+        setInterval(() => {
+            if (workspaceItems.length > 0) {
+                updateChart();
+            }
+        }, 2000);
+
+        // Add hover effect to charts
+        liveChart.options.onHover = (event, activeElements) => {
+            event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+        };
+
+        // Make title interactive
+        document.querySelector('.hero h1').addEventListener('click', function() {
+            this.style.animation = 'none';
+            setTimeout(() => {
+                this.style.animation = 'glow 2s ease-in-out infinite alternate';
+            }, 10);
+            
+            // Create burst of particles
+            const rect = this.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < 50; i++) {
+                particles.push(new Particle(centerX, centerY));
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        runPipeline();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        clearWorkspace();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        exportResults();
+                        break;
+                }
+            }
+        });
+
+        // Live controls functionality
+        const confidenceSlider = document.getElementById('confidenceSlider');
+        const confidenceValue = document.getElementById('confidenceValue');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const fusionStrategy = document.getElementById('fusionStrategy');
+        const autoProcess = document.getElementById('autoProcess');
+
+        confidenceSlider.addEventListener('input', (e) => {
+            const val = (e.target.value / 100).toFixed(2);
+            confidenceValue.textContent = val;
+            showNotification(`Confidence threshold: ${val}`);
+            updateMetrics();
+        });
+
+        speedSlider.addEventListener('input', (e) => {
+            const val = (e.target.value / 10).toFixed(1);
+            speedValue.textContent = val + 'x';
+            showNotification(`Processing speed: ${val}x`);
+            updateMetrics();
+        });
+
+        fusionStrategy.addEventListener('change', (e) => {
+            showNotification(`Fusion strategy: ${e.target.value}`);
+            updateMetrics();
+        });
+
+        autoProcess.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                showNotification('Auto-processing enabled ✨');
+                startAutoProcess();
+            } else {
+                showNotification('Auto-processing disabled');
+                stopAutoProcess();
+            }
+        });
+
+        let autoProcessInterval;
+        function startAutoProcess() {
+            autoProcessInterval = setInterval(() => {
+                if (workspaceItems.length > 0) {
+                    updateMetrics();
+                }
+            }, 1000);
+        }
+
+        function stopAutoProcess() {
+            if (autoProcessInterval) {
+                clearInterval(autoProcessInterval);
+            }
+        }
+
+        // Live data processor
+        function processLiveData() {
+            const input = document.getElementById('liveDataInput').value;
+            const output = document.getElementById('liveOutput');
+            
+            try {
+                const data = JSON.parse(input);
+                const confidence = parseFloat(confidenceValue.textContent);
+                const speed = parseFloat(speedValue.textContent);
+                
+                output.innerHTML = `<strong>✅ Processing Complete</strong><br><br>`;
+                output.innerHTML += `<strong>Input:</strong> ${JSON.stringify(data, null, 2)}<br><br>`;
+                output.innerHTML += `<strong>Modality:</strong> STRUCTURED<br>`;
+                output.innerHTML += `<strong>Confidence:</strong> ${confidence}<br>`;
+                output.innerHTML += `<strong>Strategy:</strong> ${fusionStrategy.value}<br>`;
+                output.innerHTML += `<strong>Processing Time:</strong> ${(Math.random() * 5 * speed).toFixed(2)}ms<br>`;
+                output.innerHTML += `<strong>Embedding Dim:</strong> 384d<br><br>`;
+                output.innerHTML += `<strong>Extracted Features:</strong><br>`;
+                Object.keys(data).forEach(key => {
+                    output.innerHTML += `  • ${key}: ${data[key]}<br>`;
+                });
+                
+                showNotification('✅ Data processed successfully!');
+                updateMetrics();
+            } catch (e) {
+                output.innerHTML = `<strong style="color: #ff6b6b;">❌ Error:</strong> ${e.message}<br><br>Processing as text...`;
+                output.innerHTML += `<strong>Length:</strong> ${input.length} chars<br>`;
+                output.innerHTML += `<strong>Words:</strong> ${input.split(/\s+/).length}<br>`;
+                output.innerHTML += `<strong>Modality:</strong> TEXT<br>`;
+                showNotification('⚠️ Invalid JSON, processed as text');
+            }
+        }
+
+        // Metrics updates
+        function updateMetrics() {
+            const memoryCountEl = document.getElementById('memoryCount');
+            const throughputEl = document.getElementById('throughput');
+            const latencyEl = document.getElementById('latency');
+            
+            const currentCount = parseInt(memoryCountEl.textContent) || 0;
+            const targetCount = 138 + workspaceItems.length;
+            
+            animateValue(memoryCountEl, currentCount, targetCount, 500);
+            animateValue(throughputEl, parseInt(throughputEl.textContent), Math.floor(Math.random() * 1000 + 5000), 500);
+            animateValue(latencyEl, parseFloat(latencyEl.textContent), (Math.random() * 5).toFixed(1), 500, true);
+        }
+
+        function animateValue(element, start, end, duration, isFloat = false) {
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    element.textContent = isFloat ? end.toFixed(1) : Math.round(end);
+                    clearInterval(timer);
+                } else {
+                    element.textContent = isFloat ? current.toFixed(1) : Math.round(current);
+                }
+            }, 16);
+        }
+
+        function animateMetric(element) {
+            element.style.animation = 'none';
+            setTimeout(() => {
+                element.style.animation = 'pulse 0.5s ease';
+            }, 10);
+        }
+
+        // Interactive knowledge graph
+        let graphNodes = [];
+        let selectedNode = null;
+
+        function initializeGraph() {
+            const graph = document.getElementById('knowledgeGraph');
+            
+            // Add some initial nodes
+            for (let i = 0; i < 5; i++) {
+                addGraphNode(true);
+            }
+            
+            // Draw connections
+            updateConnections();
+        }
+
+        function addGraphNode(silent = false) {
+            const graph = document.getElementById('knowledgeGraph');
+            const node = document.createElement('div');
+            node.className = 'graph-node';
+            node.textContent = graphNodes.length + 1;
+            node.style.left = Math.random() * (graph.offsetWidth - 40) + 'px';
+            node.style.top = Math.random() * (graph.offsetHeight - 40) + 'px';
+            
+            node.addEventListener('mousedown', (e) => {
+                selectedNode = node;
+                node.style.cursor = 'grabbing';
+                
+                const moveHandler = (e) => {
+                    const rect = graph.getBoundingClientRect();
+                    let x = e.clientX - rect.left - 20;
+                    let y = e.clientY - rect.top - 20;
+                    
+                    x = Math.max(0, Math.min(x, graph.offsetWidth - 40));
+                    y = Math.max(0, Math.min(y, graph.offsetHeight - 40));
+                    
+                    node.style.left = x + 'px';
+                    node.style.top = y + 'px';
+                    updateConnections();
+                };
+                
+                const upHandler = () => {
+                    node.style.cursor = 'grab';
+                    document.removeEventListener('mousemove', moveHandler);
+                    document.removeEventListener('mouseup', upHandler);
+                };
+                
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('mouseup', upHandler);
+            });
+            
+            graph.appendChild(node);
+            graphNodes.push(node);
+            
+            if (!silent) {
+                showNotification(`Node ${graphNodes.length} added`);
+                updateConnections();
+            }
+        }
+
+        function updateConnections() {
+            const graph = document.getElementById('knowledgeGraph');
+            document.querySelectorAll('.connection-line').forEach(line => line.remove());
+            
+            for (let i = 0; i < graphNodes.length - 1; i++) {
+                const node1 = graphNodes[i];
+                const node2 = graphNodes[i + 1];
+                
+                const x1 = parseInt(node1.style.left) + 20;
+                const y1 = parseInt(node1.style.top) + 20;
+                const x2 = parseInt(node2.style.left) + 20;
+                const y2 = parseInt(node2.style.top) + 20;
+                
+                const line = document.createElement('div');
+                line.className = 'connection-line';
+                
+                const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                line.style.width = length + 'px';
+                line.style.left = x1 + 'px';
+                line.style.top = y1 + 'px';
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                graph.appendChild(line);
+            }
+        }
+
+        function randomizeGraph() {
+            const graph = document.getElementById('knowledgeGraph');
+            graphNodes.forEach(node => {
+                node.style.left = Math.random() * (graph.offsetWidth - 40) + 'px';
+                node.style.top = Math.random() * (graph.offsetHeight - 40) + 'px';
+            });
+            updateConnections();
+            showNotification('Graph randomized!');
+        }
+
+        function clearGraph() {
+            graphNodes.forEach(node => node.remove());
+            graphNodes = [];
+            document.querySelectorAll('.connection-line').forEach(line => line.remove());
+            showNotification('Graph cleared');
+        }
+
+        // Embedding visualizer
+        const embeddingCanvas = document.getElementById('embeddingCanvas');
+        const embeddingCtx = embeddingCanvas.getContext('2d');
+        embeddingCanvas.width = embeddingCanvas.offsetWidth;
+        embeddingCanvas.height = 300;
+
+        let embeddingPoints = [];
+
+        function generateEmbedding() {
+            const x = Math.random() * embeddingCanvas.width;
+            const y = Math.random() * embeddingCanvas.height;
+            const size = Math.random() * 10 + 5;
+            const color = `hsla(${Math.random() * 360}, 80%, 60%, 0.8)`;
+            
+            embeddingPoints.push({ x, y, size, color, vx: Math.random() * 2 - 1, vy: Math.random() * 2 - 1 });
+            showNotification('Embedding point added');
+        }
+
+        function drawEmbeddings() {
+            embeddingCtx.clearRect(0, 0, embeddingCanvas.width, embeddingCanvas.height);
+            
+            embeddingPoints.forEach((point, index) => {
+                // Update position
+                point.x += point.vx;
+                point.y += point.vy;
+                
+                // Bounce off walls
+                if (point.x < 0 || point.x > embeddingCanvas.width) point.vx *= -1;
+                if (point.y < 0 || point.y > embeddingCanvas.height) point.vy *= -1;
+                
+                // Draw point
+                embeddingCtx.fillStyle = point.color;
+                embeddingCtx.beginPath();
+                embeddingCtx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
+                embeddingCtx.fill();
+                
+                // Draw connections to nearby points
+                embeddingPoints.forEach((other, otherIndex) => {
+                    if (index !== otherIndex) {
+                        const dx = other.x - point.x;
+                        const dy = other.y - point.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 150) {
+                            embeddingCtx.strokeStyle = `rgba(168, 237, 234, ${0.3 * (1 - distance / 150)})`;
+                            embeddingCtx.lineWidth = 1;
+                            embeddingCtx.beginPath();
+                            embeddingCtx.moveTo(point.x, point.y);
+                            embeddingCtx.lineTo(other.x, other.y);
+                            embeddingCtx.stroke();
+                        }
+                    }
+                });
+            });
+            
+            requestAnimationFrame(drawEmbeddings);
+        }
+
+        function clearEmbeddings() {
+            embeddingPoints = [];
+            embeddingCtx.clearRect(0, 0, embeddingCanvas.width, embeddingCanvas.height);
+            showNotification('Embeddings cleared');
+        }
+
+        embeddingCanvas.addEventListener('click', (e) => {
+            const rect = embeddingCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const size = Math.random() * 10 + 5;
+            const color = `hsla(${Math.random() * 360}, 80%, 60%, 0.8)`;
+            
+            embeddingPoints.push({ x, y, size, color, vx: Math.random() * 2 - 1, vy: Math.random() * 2 - 1 });
+        });
+
+        // Initialize everything
+        drawEmbeddings();
+        initializeGraph();
+        updateMetrics();
+
+        // Initialize all dashboard charts
+        initializeDashboard();
+
+        function initializeDashboard() {
+            // Real-time line chart
+            const realtimeCtx = document.getElementById('realtimeChart').getContext('2d');
+            window.realtimeChart = new Chart(realtimeCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Latency (ms)',
+                        data: [],
+                        borderColor: '#a8edea',
+                        backgroundColor: 'rgba(168, 237, 234, 0.2)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Throughput',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: '#fff' } } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#fff' } },
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#fff' } }
+                    },
+                    animation: { duration: 750 }
+                }
+            });
+
+            // Multi-axis chart
+            const multiAxisCtx = document.getElementById('multiAxisChart').getContext('2d');
+            window.multiAxisChart = new Chart(multiAxisCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Quantum', 'Healthcare', 'Real-time', 'Synthesis'],
+                    datasets: [{
+                        label: 'Memories',
+                        data: [15, 11, 100, 12],
+                        backgroundColor: 'rgba(168, 237, 234, 0.7)',
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Confidence',
+                        data: [0.98, 0.95, 0.92, 0.98],
+                        type: 'line',
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        yAxisID: 'y1',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#fff' } } },
+                    scales: {
+                        y: { type: 'linear', position: 'left', grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#fff' } },
+                        y1: { type: 'linear', position: 'right', grid: { display: false }, ticks: { color: '#fff' }, min: 0, max: 1 },
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#fff' } }
+                    }
+                }
+            });
+
+            // Bubble chart
+            const bubbleCtx = document.getElementById('bubbleChart').getContext('2d');
+            window.bubbleChart = new Chart(bubbleCtx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'TEXT',
+                        data: [{x: 20, y: 30, r: 15}],
+                        backgroundColor: 'rgba(168, 237, 234, 0.7)'
+                    }, {
+                        label: 'STRUCTURED',
+                        data: [{x: 40, y: 50, r: 25}],
+                        backgroundColor: 'rgba(102, 126, 234, 0.7)'
+                    }, {
+                        label: 'MULTIMODAL',
+                        data: [{x: 60, y: 40, r: 20}],
+                        backgroundColor: 'rgba(118, 75, 162, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#fff' } } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#fff' } },
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#fff' } }
+                    }
+                }
+            });
+
+            // Stacked area chart
+            const stackedCtx = document.getElementById('stackedAreaChart').getContext('2d');
+            window.stackedAreaChart = new Chart(stackedCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'TEXT',
+                        data: [30, 35, 40, 45, 50, 55],
+                        backgroundColor: 'rgba(168, 237, 234, 0.5)',
+                        borderColor: '#a8edea',
+                        fill: true
+                    }, {
+                        label: 'STRUCTURED',
+                        data: [20, 25, 30, 35, 40, 45],
+                        backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                        borderColor: '#667eea',
+                        fill: true
+                    }, {
+                        label: 'MULTIMODAL',
+                        data: [10, 15, 20, 25, 30, 35],
+                        backgroundColor: 'rgba(118, 75, 162, 0.5)',
+                        borderColor: '#764ba2',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#fff' } } },
+                    scales: {
+                        y: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#fff' } },
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#fff' } }
+                    }
+                }
+            });
+
+            // Polar area chart
+            const polarCtx = document.getElementById('polarChart').getContext('2d');
+            window.polarChart = new Chart(polarCtx, {
+                type: 'polarArea',
+                data: {
+                    labels: ['Speed', 'Accuracy', 'Scalability', 'Elegance', 'Innovation'],
+                    datasets: [{
+                        data: [85, 95, 90, 98, 92],
+                        backgroundColor: [
+                            'rgba(168, 237, 234, 0.7)',
+                            'rgba(102, 126, 234, 0.7)',
+                            'rgba(118, 75, 162, 0.7)',
+                            'rgba(255, 193, 7, 0.7)',
+                            'rgba(255, 107, 107, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#fff' } } },
+                    scales: {
+                        r: { grid: { color: 'rgba(255, 255, 255, 0.2)' }, ticks: { color: '#fff', backdropColor: 'rgba(0, 0, 0, 0.5)' } }
+                    }
+                }
+            });
+
+            // Radar chart
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            window.radarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Memory', 'Processing', 'Fusion', 'Search', 'Analytics', 'Visualization'],
+                    datasets: [{
+                        label: 'Current',
+                        data: [90, 85, 95, 88, 92, 87],
+                        borderColor: '#a8edea',
+                        backgroundColor: 'rgba(168, 237, 234, 0.3)',
+                        borderWidth: 3
+                    }, {
+                        label: 'Target',
+                        data: [95, 90, 98, 93, 95, 92],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.3)',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#fff' } } },
+                    scales: {
+                        r: { grid: { color: 'rgba(255, 255, 255, 0.2)' }, ticks: { color: '#fff', backdropColor: 'rgba(0, 0, 0, 0.5)' } }
+                    }
+                }
+            });
+
+            // Gauge chart (semi-circle)
+            const gaugeCtx = document.getElementById('gaugeChart').getContext('2d');
+            window.gaugeChart = new Chart(gaugeCtx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [85, 15],
+                        backgroundColor: ['#a8edea', 'rgba(255, 255, 255, 0.1)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    circumference: 180,
+                    rotation: 270,
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Start real-time updates
+            startRealtimeUpdates();
+            generateHeatmap();
+            generateTreemap();
+            generateTimeline();
+            generateSankey();
+            initializeNetwork();
+        }
+
+        let realtimeInterval;
+        function startRealtimeUpdates() {
+            realtimeInterval = setInterval(() => {
+                const chart = window.realtimeChart;
+                if (chart.data.labels.length > 20) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                    chart.data.datasets[1].data.shift();
+                }
+                
+                const time = new Date().toLocaleTimeString();
+                const latency = Math.random() * 5 + 2;
+                const throughput = Math.random() * 2000 + 5000;
+                
+                chart.data.labels.push(time);
+                chart.data.datasets[0].data.push(latency);
+                chart.data.datasets[1].data.push(throughput / 100);
+                chart.update('none');
+                
+                // Update mini metrics
+                const values = chart.data.datasets[0].data;
+                document.getElementById('avgMetric').textContent = (values.reduce((a,b) => a+b, 0) / values.length).toFixed(2);
+                document.getElementById('peakMetric').textContent = Math.max(...values).toFixed(2);
+                document.getElementById('minMetric').textContent = Math.min(...values).toFixed(2);
+            }, 1000);
+        }
+
+        function pauseChart(chartId) {
+            if (realtimeInterval) {
+                clearInterval(realtimeInterval);
+                realtimeInterval = null;
+                showNotification('Chart paused');
+            } else {
+                startRealtimeUpdates();
+                showNotification('Chart resumed');
+            }
+        }
+
+        function resetChart(chartId) {
+            window[chartId].data.labels = [];
+            window[chartId].data.datasets.forEach(ds => ds.data = []);
+            window[chartId].update();
+            showNotification('Chart reset');
+        }
+
+        function addDataPoint(chartId) {
+            const chart = window[chartId];
+            const newData = Math.floor(Math.random() * 100);
+            chart.data.datasets[0].data = chart.data.datasets[0].data.map(v => v + Math.random() * 10 - 5);
+            chart.update();
+            showNotification('Data added');
+        }
+
+        function randomizeBubbles() {
+            const chart = window.bubbleChart;
+            chart.data.datasets.forEach(ds => {
+                ds.data = [{
+                    x: Math.random() * 100,
+                    y: Math.random() * 100,
+                    r: Math.random() * 30 + 10
+                }];
+            });
+            chart.update();
+            showNotification('Bubbles randomized');
+        }
+
+        function animateFlow() {
+            const chart = window.stackedAreaChart;
+            chart.data.datasets.forEach(ds => {
+                const shift = ds.data.shift();
+                ds.data.push(shift + Math.random() * 10 - 5);
+            });
+            chart.update();
+        }
+
+        function rotatePolar() {
+            const chart = window.polarChart;
+            const shift = chart.data.datasets[0].data.shift();
+            chart.data.datasets[0].data.push(shift);
+            chart.update();
+            showNotification('Polar rotated');
+        }
+
+        function updateRadar() {
+            const chart = window.radarChart;
+            chart.data.datasets[0].data = chart.data.datasets[0].data.map(() => Math.floor(Math.random() * 100));
+            chart.update();
+            showNotification('Radar updated');
+        }
+
+        function generateHeatmap() {
+            const container = document.getElementById('heatmapContainer');
+            container.innerHTML = '';
+            for (let i = 0; i < 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+                const intensity = Math.random();
+                cell.style.background = `rgba(168, 237, 234, ${intensity})`;
+                cell.title = `Value: ${(intensity * 100).toFixed(0)}`;
+                cell.onclick = function() {
+                    this.style.background = `rgba(168, 237, 234, ${Math.random()})`;
+                };
+                container.appendChild(cell);
+            }
+        }
+
+        function generateTreemap() {
+            const container = document.getElementById('treemapContainer');
+            container.innerHTML = '';
+            const data = [
+                {name: 'Text', size: 60, color: 'rgba(168, 237, 234, 0.8)'},
+                {name: 'Structured', size: 25, color: 'rgba(102, 126, 234, 0.8)'},
+                {name: 'Multimodal', size: 15, color: 'rgba(118, 75, 162, 0.8)'}
+            ];
+            
+            let offset = 0;
+            data.forEach(item => {
+                const node = document.createElement('div');
+                node.className = 'treemap-node';
+                node.textContent = item.name;
+                node.style.left = offset + '%';
+                node.style.width = item.size + '%';
+                node.style.height = '100%';
+                node.style.background = item.color;
+                node.onclick = function() {
+                    this.style.transform = 'scale(1.1)';
+                    setTimeout(() => this.style.transform = 'scale(1)', 300);
+                };
+                container.appendChild(node);
+                offset += item.size;
+            });
+        }
+
+        function updateGauge() {
+            const value = Math.floor(Math.random() * 100);
+            const needle = document.getElementById('gaugeNeedle');
+            const valueEl = document.getElementById('gaugeValue');
+            const angle = (value / 100) * 180 - 90;
+            needle.style.transform = `rotate(${angle}deg)`;
+            valueEl.textContent = value + '%';
+            
+            window.gaugeChart.data.datasets[0].data = [value, 100 - value];
+            window.gaugeChart.update();
+            showNotification(`Gauge: ${value}%`);
+        }
+
+        function generateSankey() {
+            const container = document.getElementById('sankeyContainer');
+            container.innerHTML = '';
+            const flows = [
+                {y: 50, height: 40, color: 'rgba(168, 237, 234, 0.6)'},
+                {y: 120, height: 60, color: 'rgba(102, 126, 234, 0.6)'},
+                {y: 210, height: 30, color: 'rgba(118, 75, 162, 0.6)'}
+            ];
+            
+            flows.forEach((flow, i) => {
+                const el = document.createElement('div');
+                el.className = 'sankey-flow';
+                el.style.top = flow.y + 'px';
+                el.style.left = '20px';
+                el.style.width = 'calc(100% - 40px)';
+                el.style.height = flow.height + 'px';
+                el.style.background = flow.color;
+                el.onclick = function() {
+                    this.style.height = (parseInt(this.style.height) + 10) + 'px';
+                };
+                container.appendChild(el);
+            });
+        }
+
+        function animateSankey() {
+            document.querySelectorAll('.sankey-flow').forEach(flow => {
+                flow.style.width = '0%';
+                setTimeout(() => {
+                    flow.style.width = 'calc(100% - 40px)';
+                }, 100);
+            });
+        }
+
+        function generateTimeline() {
+            const container = document.getElementById('timelineContainer');
+            const events = [
+                {time: '10:00', event: 'Quantum research initiated'},
+                {time: '10:15', event: 'Healthcare data processed'},
+                {time: '10:30', event: 'Real-time pipeline started'},
+                {time: '10:45', event: 'Knowledge synthesis complete'}
+            ];
+            
+            container.innerHTML = events.map(e => `
+                <div class="timeline-item" onclick="this.style.borderLeftColor = 'rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})'">
+                    <strong>${e.time}</strong> - ${e.event}
+                </div>
+            `).join('');
+        }
+
+        function addTimelineEvent() {
+            const container = document.getElementById('timelineContainer');
+            const time = new Date().toLocaleTimeString();
+            const events = ['Data processed', 'Memory stored', 'Query executed', 'Fusion completed'];
+            const event = events[Math.floor(Math.random() * events.length)];
+            
+            const item = document.createElement('div');
+            item.className = 'timeline-item';
+            item.innerHTML = `<strong>${time}</strong> - ${event}`;
+            item.style.animation = 'slideIn 0.5s ease';
+            container.insertBefore(item, container.firstChild);
+            showNotification('Timeline event added');
+        }
+
+        let networkNodes = [];
+        function initializeNetwork() {
+            const container = document.getElementById('networkContainer');
+            for (let i = 0; i < 5; i++) {
+                addNetworkNode(true);
+            }
+        }
+
+        function addNetworkNode(silent = false) {
+            const container = document.getElementById('networkContainer');
+            const node = document.createElement('div');
+            node.className = 'network-node';
+            node.textContent = networkNodes.length + 1;
+            node.style.left = Math.random() * (container.offsetWidth - 50) + 'px';
+            node.style.top = Math.random() * (container.offsetHeight - 50) + 'px';
+            
+            node.addEventListener('mousedown', (e) => {
+                const moveHandler = (e) => {
+                    const rect = container.getBoundingClientRect();
+                    let x = e.clientX - rect.left - 25;
+                    let y = e.clientY - rect.top - 25;
+                    node.style.left = Math.max(0, Math.min(x, container.offsetWidth - 50)) + 'px';
+                    node.style.top = Math.max(0, Math.min(y, container.offsetHeight - 50)) + 'px';
+                };
+                
+                const upHandler = () => {
+                    document.removeEventListener('mousemove', moveHandler);
+                    document.removeEventListener('mouseup', upHandler);
+                };
+                
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('mouseup', upHandler);
+            });
+            
+            container.appendChild(node);
+            networkNodes.push(node);
+            if (!silent) showNotification(`Network node ${networkNodes.length} added`);
+        }
+
+        function animateNetwork() {
+            networkNodes.forEach(node => {
+                const currentLeft = parseInt(node.style.left);
+                const currentTop = parseInt(node.style.top);
+                node.style.left = (currentLeft + Math.random() * 40 - 20) + 'px';
+                node.style.top = (currentTop + Math.random() * 40 - 20) + 'px';
+            });
+            showNotification('Network animated');
+        }
+
+        function toggleFullscreen(widget) {
+            widget.classList.toggle('fullscreen');
+        }
+
+        // Show keyboard shortcuts hint
+        showNotification('💡 Dashboard loaded! Click chart controls to interact');
+    </script>
+</body>
+</html>

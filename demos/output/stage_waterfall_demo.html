@@ -1,0 +1,790 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Stage Waterfall Visualization Demo</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                margin: 40px;
+                background: #f9fafb;
+            }
+            h1 {
+                color: #111827;
+                font-size: 24px;
+                font-weight: 600;
+                margin-bottom: 8px;
+            }
+            .subtitle {
+                color: #6b7280;
+                font-size: 14px;
+                margin-bottom: 32px;
+            }
+            .section {
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 24px;
+                margin-bottom: 24px;
+            }
+            .section-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #374151;
+                margin-bottom: 16px;
+            }
+            .tufte-quote {
+                border-left: 4px solid #3b82f6;
+                padding-left: 16px;
+                margin: 24px 0;
+                font-style: italic;
+                color: #6b7280;
+            }
+            .use-cases {
+                background: #f0fdf4;
+                border-left: 4px solid #10b981;
+                padding: 16px;
+                margin: 16px 0;
+                border-radius: 4px;
+            }
+            .use-cases h3 {
+                margin-top: 0;
+                color: #065f46;
+                font-size: 14px;
+            }
+            .use-cases ul {
+                margin: 8px 0;
+                padding-left: 20px;
+                color: #374151;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Stage Waterfall Visualization</h1>
+        <div class="subtitle">
+            Sequential pipeline timing with bottleneck detection - Tufte-style
+        </div>
+
+        <div class="tufte-quote">
+            "Above all else show the data. The representation of numbers, as physically measured on the
+            surface of the graphic itself, should be directly proportional to the quantities represented."
+            <br><strong>— Edward Tufte</strong>
+        </div>
+
+        <div class="use-cases">
+            <h3>Use Cases for Waterfall Charts</h3>
+            <ul>
+                <li><strong>Pipeline Optimization:</strong> Identify bottlenecks in processing stages</li>
+                <li><strong>Performance Debugging:</strong> See exactly which stages are slowing down</li>
+                <li><strong>Parallel Execution:</strong> Visualize concurrent vs sequential operations</li>
+                <li><strong>Historical Trends:</strong> Track stage performance over time with sparklines</li>
+                <li><strong>Comparative Analysis:</strong> Compare different execution modes (BARE/FAST/FUSED)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Example 1: Standard Pipeline (FAST mode)</div>
+            <p style="color: #6b7280; font-size: 13px; margin-bottom: 16px;">
+                Typical query processing with 4 sequential stages. Sparklines show historical performance trends.
+                Tool Execution takes 42.9% of total time but is not highlighted as bottleneck (threshold: 40%).
+            </p>
+            
+        <div class="stage-waterfall" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                             background: #ffffff; padding: 16px; border-radius: 4px;">
+            
+        <div class="waterfall-title" style="font-size: 14px; font-weight: 600;
+                                             color: #374151; margin-bottom: 8px;">
+            Standard Pipeline (FAST mode)
+            <span style="font-size: 12px; font-weight: 400; color: #6b7280; margin-left: 8px;">
+                Total: 150.0ms
+            </span>
+        </div>
+        
+            <div class="waterfall-stages" style="margin: 16px 0;">
+                
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #f0fdf4; color: #10b981;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Pattern Selection
+                </span>
+                
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(3.5%)</span>
+                
+        <svg width="60" height="16" style="margin-left: 8px; vertical-align: middle;">
+            <path d="M 2.0,2.0 L 16.0,9.5 L 30.0,12.5 L 44.0,14.0 L 58.0,14.0" stroke="#10b981" stroke-width="1.5" fill="none" opacity="0.6"/>
+        </svg>
+        
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 0.0%; width: 3.4666666666666663%;
+                    background: #10b981; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            5.2ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #f0fdf4; color: #10b981;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Retrieval
+                </span>
+                
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(33.7%)</span>
+                
+        <svg width="60" height="16" style="margin-left: 8px; vertical-align: middle;">
+            <path d="M 2.0,14.0 L 16.0,9.6 L 30.0,7.5 L 44.0,3.1 L 58.0,2.0" stroke="#10b981" stroke-width="1.5" fill="none" opacity="0.6"/>
+        </svg>
+        
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 3.4666666666666663%; width: 33.666666666666664%;
+                    background: #10b981; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            50.5ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #f0fdf4; color: #10b981;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Convergence
+                </span>
+                
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(20.0%)</span>
+                
+        <svg width="60" height="16" style="margin-left: 8px; vertical-align: middle;">
+            <path d="M 2.0,2.0 L 16.0,8.0 L 30.0,14.0 L 44.0,14.0 L 58.0,14.0" stroke="#10b981" stroke-width="1.5" fill="none" opacity="0.6"/>
+        </svg>
+        
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 37.13333333333333%; width: 20.0%;
+                    background: #10b981; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            30.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #fffbeb; color: #f59e0b;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Tool Execution
+                </span>
+                <span style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px; font-weight: 600;">BOTTLENECK</span>
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(42.9%)</span>
+                
+        <svg width="60" height="16" style="margin-left: 8px; vertical-align: middle;">
+            <path d="M 2.0,14.0 L 16.0,11.2 L 30.0,8.4 L 44.0,5.6 L 58.0,2.0" stroke="#f59e0b" stroke-width="1.5" fill="none" opacity="0.6"/>
+        </svg>
+        
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 57.13333333333333%; width: 42.86666666666667%;
+                    background: #f59e0b; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            64.3ms
+        </div>
+        
+            </div>
+        </div>
+        
+            </div>
+            
+        <div style="position: relative; height: 30px; margin-top: 16px; margin-bottom: 8px;">
+            
+            <div style="position: absolute; left: 0.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    0ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 25.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    38ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 50.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    75ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 75.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    112ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 100.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    150ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; top: 0; left: 0; right: 0;
+                       border-top: 1px solid #e5e7eb;"></div>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+            <div style="display: flex; gap: 16px; font-size: 11px; color: #6b7280;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #10b981; border-radius: 2px;"></div>
+                    Success
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 2px;"></div>
+                    Bottleneck (40%+)
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 2px;"></div>
+                    Error
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #9ca3af; border-radius: 2px;"></div>
+                    Skipped
+                </div>
+            </div>
+        </div>
+        
+        </div>
+        
+        </div>
+
+        <div class="section">
+            <div class="section-title">Example 2: Pipeline with Bottleneck</div>
+            <p style="color: #6b7280; font-size: 13px; margin-bottom: 16px;">
+                Pipeline with database bottleneck. Database Query takes 82.2% of total time and is
+                automatically highlighted in amber. This immediately signals where optimization is needed.
+            </p>
+            
+        <div class="stage-waterfall" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                             background: #ffffff; padding: 16px; border-radius: 4px;">
+            
+        <div class="waterfall-title" style="font-size: 14px; font-weight: 600;
+                                             color: #374151; margin-bottom: 8px;">
+            Pipeline with Bottleneck (Database)
+            <span style="font-size: 12px; font-weight: 400; color: #6b7280; margin-left: 8px;">
+                Total: 146.0ms
+            </span>
+        </div>
+        
+            <div class="waterfall-stages" style="margin: 16px 0;">
+                
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #f0fdf4; color: #10b981;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Pattern Selection
+                </span>
+                
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(2.1%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 0.0%; width: 2.054794520547945%;
+                    background: #10b981; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            3.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #f0fdf4; color: #10b981;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Retrieval
+                </span>
+                
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(10.3%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 2.054794520547945%; width: 10.273972602739725%;
+                    background: #10b981; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            15.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #f0fdf4; color: #10b981;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Convergence
+                </span>
+                
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(5.5%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 12.32876712328767%; width: 5.47945205479452%;
+                    background: #10b981; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            8.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #fffbeb; color: #f59e0b;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Database Query
+                </span>
+                <span style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px; font-weight: 600;">BOTTLENECK</span>
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(82.2%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 17.80821917808219%; width: 82.1917808219178%;
+                    background: #f59e0b; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            120.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+            </div>
+            
+        <div style="position: relative; height: 30px; margin-top: 16px; margin-bottom: 8px;">
+            
+            <div style="position: absolute; left: 0.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    0ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 25.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    36ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 50.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    73ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 75.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    110ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 100.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    146ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; top: 0; left: 0; right: 0;
+                       border-top: 1px solid #e5e7eb;"></div>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+            <div style="display: flex; gap: 16px; font-size: 11px; color: #6b7280;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #10b981; border-radius: 2px;"></div>
+                    Success
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 2px;"></div>
+                    Bottleneck (40%+)
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 2px;"></div>
+                    Error
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #9ca3af; border-radius: 2px;"></div>
+                    Skipped
+                </div>
+            </div>
+        </div>
+        
+        </div>
+        
+        </div>
+
+        <div class="section">
+            <div class="section-title">Example 3: Parallel Feature Extraction</div>
+            <p style="color: #6b7280; font-size: 13px; margin-bottom: 16px;">
+                Multi-modal feature extraction with parallel execution. Four feature extractors run concurrently.
+                Total time is determined by slowest parallel stage (Embedding 192D: 35ms), not sum of all stages.
+            </p>
+            
+        <div class="stage-waterfall" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                             background: #ffffff; padding: 16px; border-radius: 4px;">
+            
+        <div class="waterfall-title" style="font-size: 14px; font-weight: 600;
+                                             color: #374151; margin-bottom: 8px;">
+            Parallel Feature Extraction
+            <span style="font-size: 12px; font-weight: 400; color: #6b7280; margin-left: 8px;">
+                Total: 55.0ms
+            </span>
+        </div>
+        
+            <div class="waterfall-stages" style="margin: 16px 0;">
+                
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #f0fdf4; color: #10b981;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Input Parsing
+                </span>
+                
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(9.1%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 0.0%; width: 9.090909090909092%;
+                    background: #10b981; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            5.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #fffbeb; color: #f59e0b;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Motif Detection
+                </span>
+                <span style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px; font-weight: 600;">BOTTLENECK</span>
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(45.5%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 9.090909090909092%; width: 45.45454545454545%;
+                    background: #f59e0b; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            25.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #fffbeb; color: #f59e0b;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Embedding (96D)
+                </span>
+                <span style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px; font-weight: 600;">BOTTLENECK</span>
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(54.5%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 9.090909090909092%; width: 54.54545454545454%;
+                    background: #f59e0b; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            30.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #fffbeb; color: #f59e0b;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Embedding (192D)
+                </span>
+                <span style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px; font-weight: 600;">BOTTLENECK</span>
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(63.6%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 9.090909090909092%; width: 63.63636363636363%;
+                    background: #f59e0b; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            35.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #f0fdf4; color: #10b981;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Spectral Features
+                </span>
+                
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(36.4%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 9.090909090909092%; width: 36.36363636363637%;
+                    background: #10b981; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            20.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+        <div class="waterfall-stage-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 16px; height: 16px;
+                             border-radius: 50%; background: #f0fdf4; color: #10b981;
+                             text-align: center; line-height: 16px; font-size: 10px; font-weight: 600;">
+                    &#10003;
+                </span>
+                <span style="font-size: 12px; font-weight: 500; color: #374151; margin-left: 8px;">
+                    Policy Decision
+                </span>
+                
+                <span style="color: #6b7280; font-size: 11px; margin-left: 8px;">(27.3%)</span>
+                
+            </div>
+            <div style="position: relative; height: 24px; background: #f3f4f6; border-radius: 2px;">
+                
+        <div style="margin-left: 72.72727272727273%; width: 27.27272727272727%;
+                    background: #10b981; height: 24px; border-radius: 2px;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 11px; font-weight: 500;">
+            15.0ms
+        </div>
+        
+            </div>
+        </div>
+        
+            </div>
+            
+        <div style="position: relative; height: 30px; margin-top: 16px; margin-bottom: 8px;">
+            
+            <div style="position: absolute; left: 0.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    0ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 25.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    14ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 50.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    28ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 75.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    41ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; left: 100.0%; top: 0;
+                        border-left: 1px solid #d1d5db; height: 8px;">
+                <div style="position: absolute; top: 10px; left: -12px;
+                           font-size: 10px; color: #9ca3af; font-family: monospace;">
+                    55ms
+                </div>
+            </div>
+            
+            <div style="position: absolute; top: 0; left: 0; right: 0;
+                       border-top: 1px solid #e5e7eb;"></div>
+        </div>
+        
+            
+        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+            <div style="display: flex; gap: 16px; font-size: 11px; color: #6b7280;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #10b981; border-radius: 2px;"></div>
+                    Success
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 2px;"></div>
+                    Bottleneck (40%+)
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 2px;"></div>
+                    Error
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="width: 12px; height: 12px; background: #9ca3af; border-radius: 2px;"></div>
+                    Skipped
+                </div>
+            </div>
+        </div>
+        
+        </div>
+        
+        </div>
+
+        <div class="section">
+            <div class="section-title">Design Principles Applied</div>
+            <ul style="color: #374151; font-size: 13px; line-height: 1.8;">
+                <li><strong>Meaning First:</strong> Bottlenecks immediately visible with amber highlighting</li>
+                <li><strong>Maximize data-ink ratio:</strong> No axes, grids, or unnecessary decoration</li>
+                <li><strong>Layering:</strong> Color, position, width, status icons convey multiple dimensions</li>
+                <li><strong>Data density:</strong> Duration, percentage, trend, status in compact space</li>
+                <li><strong>Direct labeling:</strong> Values shown in bars, no legend lookup needed</li>
+                <li><strong>Sparklines:</strong> Historical context inline with current metrics</li>
+                <li><strong>Semantic colors:</strong> Green (success), Amber (bottleneck/warning), Red (error), Gray (skipped)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Integration with HoloLoom</div>
+            <p style="color: #6b7280; font-size: 13px; line-height: 1.6;">
+                The Stage Waterfall visualization integrates seamlessly with HoloLoom's WeavingOrchestrator.
+                The <code>Spacetime.trace.stage_durations</code> dict can be passed directly to
+                <code>render_pipeline_waterfall()</code> to visualize any query's execution timeline.
+            </p>
+            <pre style="background: #f3f4f6; padding: 12px; border-radius: 4px; font-size: 12px; overflow-x: auto;">
+from HoloLoom.visualization.stage_waterfall import render_pipeline_waterfall
+
+# After weaving
+spacetime = await orchestrator.weave(query)
+
+# Render waterfall
+html = render_pipeline_waterfall(
+    spacetime.trace.stage_durations,
+    title=f"Pipeline: {query.text[:50]}"
+)
+            </pre>
+        </div>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb;
+                    text-align: center; color: #9ca3af; font-size: 12px;">
+            Generated with HoloLoom Visualizer | Stage Waterfall Visualization
+        </div>
+    </body>
+    </html>
+    

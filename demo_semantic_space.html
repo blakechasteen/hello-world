@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Semantic Space (244D → 2D)</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #ffffff;
+        color: #1f2937;
+        padding: 40px 20px;
+    }
+
+    .space-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 30px;
+    }
+
+    .space-header {
+        margin-bottom: 20px;
+    }
+
+    .space-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .space-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+
+    .space-stats {
+        display: flex;
+        gap: 24px;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .space-info {
+        display: flex;
+        gap: 16px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-size: 12px;
+        color: #4b5563;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .info-icon {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+
+    .space-svg {
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        background: #fafafa;
+    }
+
+    .space-point {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .space-point:hover {
+        stroke-width: 2.5px;
+        r: 8;
+    }
+
+    .space-trajectory {
+        fill: none;
+        stroke-width: 2;
+        opacity: 0.6;
+    }
+
+    .trajectory-point {
+        fill: white;
+        stroke-width: 2;
+    }
+
+    .space-label {
+        font-size: 11px;
+        font-weight: 500;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .cluster-label {
+        font-size: 12px;
+        font-weight: 600;
+        fill: #374151;
+        pointer-events: none;
+    }
+
+    .grid-line {
+        stroke: #e5e7eb;
+        stroke-width: 1;
+        opacity: 0.3;
+    }
+
+    /* Tooltip */
+    .tooltip {
+        position: absolute;
+        background: rgba(17, 24, 39, 0.95);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 1000;
+        max-width: 250px;
+    }
+
+    .tooltip.visible {
+        opacity: 1;
+    }
+
+    .tooltip-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+
+    .tooltip-detail {
+        font-size: 11px;
+        color: #d1d5db;
+        margin: 2px 0;
+    }
+</style>
+</head>
+<body>
+<div class="space-container">
+<div class="space-header">
+<h2>HoloLoom Semantic Space (244D → 2D)</h2>
+<p class="space-subtitle">PCA projection with query trajectory overlay</p>
+
+        <div class="space-stats">
+            <div class="stat-item">
+                <span class="stat-label">Points</span>
+                <span class="stat-value">30</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Dimensions</span>
+                <span class="stat-value">244D → 2D</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Method</span>
+                <span class="stat-value">PCA</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Clusters</span>
+                <span class="stat-value">3</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Trajectories</span>
+                <span class="stat-value">1</span>
+            </div>
+        </div>
+</div>
+
+        <div class="space-info">
+            <div class="info-item">
+                <div class="info-icon" style="background: #3b82f6;"></div>
+                <span>Point: Embedding in semantic space</span>
+            </div>
+            <div class="info-item">
+                <div class="info-icon" style="background: #10b981;"></div>
+                <span>Cluster: Semantically related group</span>
+            </div>
+            <div class="info-item">
+                <div class="info-icon" style="background: #f59e0b;"></div>
+                <span>Trajectory: Query sequence path</span>
+            </div>
+        </div>
+<svg class="space-svg" width="900" height="700" xmlns="http://www.w3.org/2000/svg">
+
+    <path class="space-trajectory" d="M 840.0 504.74446670536156 L 838.0482014266414 482.171408770189 L 447.42746211054873 67.3706661394153 L 446.4734733642423 60.0 L 60.0 640.0" stroke="#f59e0b" />
+    <circle class="trajectory-point" cx="840.0" cy="504.74446670536156" r="4" stroke="#f59e0b" />
+    <text x="840.0" y="494.74446670536156" text-anchor="middle" font-size="10" fill="#f59e0b">▶</text>
+    <circle class="trajectory-point" cx="838.0482014266414" cy="482.171408770189" r="4" stroke="#f59e0b" />
+    <circle class="trajectory-point" cx="447.42746211054873" cy="67.3706661394153" r="4" stroke="#f59e0b" />
+    <circle class="trajectory-point" cx="446.4734733642423" cy="60.0" r="4" stroke="#f59e0b" />
+    <circle class="trajectory-point" cx="60.0" cy="640.0" r="4" stroke="#f59e0b" />
+    <text x="60.0" y="630.0" text-anchor="middle" font-size="10" fill="#f59e0b">★</text>
+    <text x="447.42746211054873" y="52.370666139415306" text-anchor="middle" font-size="11" font-weight="600" fill="#f59e0b">User Session A</text>
+
+    <text class="cluster-label" x="66.74099042866413" y="611.8127137574885" text-anchor="middle">Cluster 0</text>
+    <text class="cluster-label" x="443.5741503150788" y="76.17012100668441" text-anchor="middle">Cluster 1</text>
+    <text class="cluster-label" x="834.9382340699564" y="605.023483222119" text-anchor="middle">Cluster 2</text>
+
+    <circle class="space-point"
+            data-point-id="point_0"
+            cx="65.64028231632521" cy="623.2231898226845" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="65.64028231632521" y="641.2231898226845"
+          text-anchor="middle">Query 1</text>
+
+    <circle class="space-point"
+            data-point-id="point_1"
+            cx="62.8417959004826" cy="617.1018395635945" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="62.8417959004826" y="635.1018395635945"
+          text-anchor="middle">Query 2</text>
+
+    <circle class="space-point"
+            data-point-id="point_2"
+            cx="64.89149783041353" cy="615.1110334742937" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="64.89149783041353" y="633.1110334742937"
+          text-anchor="middle">Query 3</text>
+
+    <circle class="space-point"
+            data-point-id="point_3"
+            cx="73.07079377400373" cy="640.0" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="73.07079377400373" y="658.0"
+          text-anchor="middle">Query 4</text>
+
+    <circle class="space-point"
+            data-point-id="point_4"
+            cx="60.0" cy="608.6453105204142" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="60.0" y="626.6453105204142"
+          text-anchor="middle">Query 5</text>
+
+    <circle class="space-point"
+            data-point-id="point_5"
+            cx="67.17993120891036" cy="600.2478145501069" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="67.17993120891036" y="618.2478145501069"
+          text-anchor="middle">Query 6</text>
+
+    <circle class="space-point"
+            data-point-id="point_6"
+            cx="60.88526143121175" cy="598.1611811434234" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="60.88526143121175" y="616.1611811434234"
+          text-anchor="middle">Query 7</text>
+
+    <circle class="space-point"
+            data-point-id="point_7"
+            cx="70.60679401675543" cy="603.8355734808524" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="70.60679401675543" y="621.8355734808524"
+          text-anchor="middle">Query 8</text>
+
+    <circle class="space-point"
+            data-point-id="point_8"
+            cx="74.4237602584356" cy="618.4841914203507" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="74.4237602584356" y="636.4841914203507"
+          text-anchor="middle">Query 9</text>
+
+    <circle class="space-point"
+            data-point-id="point_9"
+            cx="67.86978755010308" cy="593.3170035991643" r="6.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="67.86978755010308" y="611.3170035991643"
+          text-anchor="middle">Query 10</text>
+
+    <circle class="space-point"
+            data-point-id="point_10"
+            cx="446.5856209293765" cy="76.86597332497773" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="446.5856209293765" y="94.86597332497773"
+          text-anchor="middle">Query 11</text>
+
+    <circle class="space-point"
+            data-point-id="point_11"
+            cx="440.26833204157384" cy="70.91467000522765" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="440.26833204157384" y="88.91467000522765"
+          text-anchor="middle">Query 12</text>
+
+    <circle class="space-point"
+            data-point-id="point_12"
+            cx="447.02757965276913" cy="79.49463948220212" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="447.02757965276913" y="97.49463948220212"
+          text-anchor="middle">Query 13</text>
+
+    <circle class="space-point"
+            data-point-id="point_13"
+            cx="435.06154595490756" cy="69.2438751725534" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="435.06154595490756" y="87.2438751725534"
+          text-anchor="middle">Query 14</text>
+
+    <circle class="space-point"
+            data-point-id="point_14"
+            cx="439.37664490903137" cy="108.69800664817154" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="439.37664490903137" y="126.69800664817154"
+          text-anchor="middle">Query 15</text>
+
+    <circle class="space-point"
+            data-point-id="point_15"
+            cx="447.7580147316306" cy="60.0" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="447.7580147316306" y="78.0"
+          text-anchor="middle">Query 16</text>
+
+    <circle class="space-point"
+            data-point-id="point_16"
+            cx="441.3821472308792" cy="77.31690569124501" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="441.3821472308792" y="95.31690569124501"
+          text-anchor="middle">Query 17</text>
+
+    <circle class="space-point"
+            data-point-id="point_17"
+            cx="448.40982542353754" cy="67.01579448539655" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="448.40982542353754" y="85.01579448539655"
+          text-anchor="middle">Query 18</text>
+
+    <circle class="space-point"
+            data-point-id="point_18"
+            cx="447.49771807721856" cy="80.6590646618215" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="447.49771807721856" y="98.6590646618215"
+          text-anchor="middle">Query 19</text>
+
+    <circle class="space-point"
+            data-point-id="point_19"
+            cx="442.37407419986374" cy="71.49228059524853" r="6.0"
+            fill="#10b981"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="442.37407419986374" y="89.49228059524853"
+          text-anchor="middle">Query 20</text>
+
+    <circle class="space-point"
+            data-point-id="point_20"
+            cx="835.9357027606142" cy="591.8937857961573" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="835.9357027606142" y="609.8937857961573"
+          text-anchor="middle">Query 21</text>
+
+    <circle class="space-point"
+            data-point-id="point_21"
+            cx="833.3159066905356" cy="614.0452128954846" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="833.3159066905356" y="632.0452128954846"
+          text-anchor="middle">Query 22</text>
+
+    <circle class="space-point"
+            data-point-id="point_22"
+            cx="836.0705847349448" cy="588.7226056237854" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="836.0705847349448" y="606.7226056237854"
+          text-anchor="middle">Query 23</text>
+
+    <circle class="space-point"
+            data-point-id="point_23"
+            cx="828.0197324067093" cy="585.7049986754085" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="828.0197324067093" y="603.7049986754085"
+          text-anchor="middle">Query 24</text>
+
+    <circle class="space-point"
+            data-point-id="point_24"
+            cx="834.7675695565418" cy="611.4335659635956" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="834.7675695565418" y="629.4335659635956"
+          text-anchor="middle">Query 25</text>
+
+    <circle class="space-point"
+            data-point-id="point_25"
+            cx="837.0536060948255" cy="615.0711934392733" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="837.0536060948255" y="633.0711934392733"
+          text-anchor="middle">Query 26</text>
+
+    <circle class="space-point"
+            data-point-id="point_26"
+            cx="832.7031283483934" cy="633.1108092864908" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="832.7031283483934" y="651.1108092864908"
+          text-anchor="middle">Query 27</text>
+
+    <circle class="space-point"
+            data-point-id="point_27"
+            cx="835.0271720628125" cy="594.4218052208228" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="835.0271720628125" y="612.4218052208228"
+          text-anchor="middle">Query 28</text>
+
+    <circle class="space-point"
+            data-point-id="point_28"
+            cx="840.0" cy="611.1182707202261" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="840.0" y="629.1182707202261"
+          text-anchor="middle">Query 29</text>
+
+    <circle class="space-point"
+            data-point-id="point_29"
+            cx="836.4889380441872" cy="604.7125845999454" r="6.0"
+            fill="#f59e0b"
+            stroke="#1e40af"
+            stroke-width="1.5"
+            opacity="0.8" />
+    <text class="space-label"
+          x="836.4889380441872" y="622.7125845999454"
+          text-anchor="middle">Query 30</text>
+</svg>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+(function() {
+    const points = [
+        {
+            id: "point_0",
+            label: "Query 1",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [0.4877966353932598, -0.05465067356417819, 0.10875407734097237]
+        },
+        {
+            id: "point_1",
+            label: "Query 2",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [1.1298894537147197, -0.2549647583978567, 0.4344894335436002]
+        },
+        {
+            id: "point_2",
+            label: "Query 3",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [0.9642971312973934, -0.623533136056552, 0.9704249556007458]
+        },
+        {
+            id: "point_3",
+            label: "Query 4",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [1.0588957318261158, -0.418011994427415, -0.4066111823662579]
+        },
+        {
+            id: "point_4",
+            label: "Query 5",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [1.1471779746659359, 0.09545722086150499, 0.2184452041752522]
+        },
+        {
+            id: "point_5",
+            label: "Query 6",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [1.202985361065784, -0.7748335854713736, 0.23844890462085053]
+        },
+        {
+            id: "point_6",
+            label: "Query 7",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [1.200865323907229, -0.6866569372358035, 0.7650110632498411]
+        },
+        {
+            id: "point_7",
+            label: "Query 8",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [1.3356884361498866, -0.6905690552193858, 0.6066992773446435]
+        },
+        {
+            id: "point_8",
+            label: "Query 9",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [1.232438609126895, -0.1968998333611084, 0.6019905504543773]
+        },
+        {
+            id: "point_9",
+            label: "Query 10",
+            cluster: 0,
+            embedding_dim: 244,
+            embedding_preview: [1.2750452118843374, -0.9892672466232777, 0.22684203297689065]
+        },
+        {
+            id: "point_10",
+            label: "Query 11",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [2.3827351652831137, 1.5941646497943573, 3.423462623479977]
+        },
+        {
+            id: "point_11",
+            label: "Query 12",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [2.0254699218840218, 1.251385654704799, 2.090133510635353]
+        },
+        {
+            id: "point_12",
+            label: "Query 13",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [2.018480593826285, 1.072655348392843, 2.762918096073682]
+        },
+        {
+            id: "point_13",
+            label: "Query 14",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [1.9188227072421737, 1.566164747389348, 2.351121835785099]
+        },
+        {
+            id: "point_14",
+            label: "Query 15",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [2.461823473906813, 1.76606358079709, 2.0926362557209015]
+        },
+        {
+            id: "point_15",
+            label: "Query 16",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [1.9409254338813702, 1.433186940951073, 2.316474468476736]
+        },
+        {
+            id: "point_16",
+            label: "Query 17",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [2.326197506073331, 0.9731107753065499, 2.5842846437531626]
+        },
+        {
+            id: "point_17",
+            label: "Query 18",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [2.0707452188205835, 1.6087994838997597, 1.9462368039567748]
+        },
+        {
+            id: "point_18",
+            label: "Query 19",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [1.7722584497174279, 1.781382571808943, 2.7114361669799987]
+        },
+        {
+            id: "point_19",
+            label: "Query 20",
+            cluster: 1,
+            embedding_dim: 244,
+            embedding_preview: [1.822240787581324, 1.5917952472236125, 2.501371789661585]
+        },
+        {
+            id: "point_20",
+            label: "Query 21",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.126865278127654, 3.2219564741832687, 4.0207349891798705]
+        },
+        {
+            id: "point_21",
+            label: "Query 22",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.638325560066149, 3.157895940046659, 4.223024952952466]
+        },
+        {
+            id: "point_22",
+            label: "Query 23",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.753555223907603, 3.450984715121475, 4.093958423489588]
+        },
+        {
+            id: "point_23",
+            label: "Query 24",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.69045928019806, 3.624931491247957, 3.5565881470385747]
+        },
+        {
+            id: "point_24",
+            label: "Query 25",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.50059133173392, 3.3077453815702937, 4.0346934710637905]
+        },
+        {
+            id: "point_25",
+            label: "Query 26",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.4494712936239695, 2.994990773414377, 3.918338994223558]
+        },
+        {
+            id: "point_26",
+            label: "Query 27",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.2764817970802715, 3.577691620688281, 3.7968652396074094]
+        },
+        {
+            id: "point_27",
+            label: "Query 28",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.43523403071659, 3.4514659606073295, 4.095631344723767]
+        },
+        {
+            id: "point_28",
+            label: "Query 29",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.333206717837689, 3.287901298981918, 3.731043550625183]
+        },
+        {
+            id: "point_29",
+            label: "Query 30",
+            cluster: 2,
+            embedding_dim: 244,
+            embedding_preview: [4.114914808389651, 3.497171708303721, 4.003156576776225]
+        }];
+    const tooltip = document.getElementById('tooltip');
+
+    // Add hover listeners to points
+    document.querySelectorAll('.space-point').forEach(point => {
+        point.addEventListener('mouseenter', function(e) {
+            const pointId = this.getAttribute('data-point-id');
+            const pointData = points.find(p => p.id === pointId);
+
+            if (pointData) {
+                const clusterText = pointData.cluster !== null ? `Cluster ${pointData.cluster}` : 'No cluster';
+                tooltip.innerHTML = `
+                    <div class="tooltip-title">${pointData.label}</div>
+                    <div class="tooltip-detail">${clusterText}</div>
+                    <div class="tooltip-detail">Embedding: ${pointData.embedding_dim}D</div>
+                    <div class="tooltip-detail">Preview: [${pointData.embedding_preview.map(x => x.toFixed(3)).join(', ')}...]</div>
+                `;
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top = e.pageY + 10 + 'px';
+                tooltip.classList.add('visible');
+            }
+        });
+
+        point.addEventListener('mouseleave', function() {
+            tooltip.classList.remove('visible');
+        });
+
+        point.addEventListener('mousemove', function(e) {
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY + 10 + 'px';
+        });
+    });
+})();
+</script>
+</div>
+</body>
+</html>

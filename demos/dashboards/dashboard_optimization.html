@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Analysis: How can I speed up retrieval?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Performance Analysis: How can I speed up retrieval?</h1>
+            <p class="text-sm text-gray-500 mt-2">
+                Generated: 2025-10-28T15:23:34.167418
+                | Complexity: FAST
+                | Intent: optimization
+            </p>
+        </div>
+
+        <!-- Panels -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+        <div class="bg-white p-6 rounded-lg shadow border border-gray-200">
+            <p class="text-sm text-gray-500">Confidence</p>
+            <p class="text-3xl font-bold text-green-600 mt-2">0.91</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow border border-gray-200 col-span-full">
+            <div id="chart_panel_2"></div>
+            <script>
+                Plotly.newPlot('chart_panel_2',
+                    [{"x": ["features", "retrieval", "decision", "execution"], "y": [78.3, 125.7, 56.2, 27.7], "type": "bar", "marker": {"color": ["#6366f1", "#10b981", "#f59e0b", "#ef4444"]}, "name": "Duration (ms)"}],
+                    {"title": "Bottlenecks", "xaxis": {"title": "Stage"}, "yaxis": {"title": "Duration (ms)"}, "showlegend": false},
+                    {responsive: true}
+                );
+            </script>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

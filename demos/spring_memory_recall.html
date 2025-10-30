@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring-Based Memory Recall - HoloLoom</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            background: #050508;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .viz-panel {
+            flex: 1;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            width: 350px;
+            background: rgba(10, 10, 20, 0.95);
+            border-left: 1px solid rgba(0, 245, 255, 0.2);
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            color: #00f5ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .memory-node {
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 11px;
+        }
+
+        .memory-node:hover {
+            background: rgba(0, 245, 255, 0.1);
+            border-color: #00f5ff;
+        }
+
+        .memory-node.active {
+            background: rgba(255, 0, 255, 0.2);
+            border-color: #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+        }
+
+        .memory-label {
+            font-weight: 600;
+            color: #00f5ff;
+            margin-bottom: 4px;
+        }
+
+        .memory-activation {
+            font-size: 9px;
+            color: #888;
+            font-family: 'Courier New', monospace;
+        }
+
+        .param-control {
+            margin-bottom: 16px;
+        }
+
+        .param-label {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .param-value {
+            color: #ff00ff;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 245, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #00f5ff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid rgba(0, 245, 255, 0.4);
+            color: #00f5ff;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Monaco', monospace;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        button:hover {
+            background: rgba(0, 245, 255, 0.2);
+            border-color: #00f5ff;
+        }
+
+        button.secondary {
+            background: rgba(255, 0, 255, 0.1);
+            border-color: rgba(255, 0, 255, 0.4);
+            color: #ff00ff;
+        }
+
+        button.secondary:hover {
+            background: rgba(255, 0, 255, 0.2);
+            border-color: #ff00ff;
+        }
+
+        .physics-equation {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 10px;
+            color: #888;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .physics-equation .var {
+            color: #00f5ff;
+            font-weight: 600;
+        }
+
+        .stats-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 10, 20, 0.9);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 10px;
+            color: #666;
+            min-width: 200px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .stat-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-value {
+            color: #00f5ff;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .hint strong {
+            color: #00f5ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="viz-panel">
+            <canvas id="canvas"></canvas>
+            <div class="stats-panel">
+                <div class="stat-row">
+                    <span>Active Memories:</span>
+                    <span class="stat-value" id="activeCount">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Total Activation:</span>
+                    <span class="stat-value" id="totalActivation">0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span>Energy:</span>
+                    <span class="stat-value" id="energy">0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span>Iterations:</span>
+                    <span class="stat-value" id="iterations">0</span>
+                </div>
+            </div>
+            <div class="hint">
+                <strong>Click memories</strong> on the right to trigger recall.<br>
+                Watch activation energy <strong>spread through springs</strong> to related memories.
+            </div>
+        </div>
+
+        <div class="controls">
+            <h1>Spring Memory Recall</h1>
+            <p class="subtitle">
+                Memories are nodes in a spring network. Query activation spreads through elastic connections (Hooke's Law). System settles into equilibrium revealing related memories.
+            </p>
+
+            <div class="section">
+                <div class="section-title">Physics Equations</div>
+                <div class="physics-equation">
+<span class="var">F</span> = -<span class="var">k</span> × <span class="var">Δx</span> - <span class="var">c</span> × <span class="var">v</span>
+(Hooke's Law + Damping)
+
+<span class="var">k</span> = connection strength
+<span class="var">Δx</span> = activation difference
+<span class="var">c</span> = damping coefficient
+<span class="var">v</span> = activation velocity
+
+Energy spreads until equilibrium.
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Spring Parameters</div>
+
+                <div class="param-control">
+                    <div class="param-label">
+                        <span>Stiffness (k)</span>
+                        <span class="param-value" id="stiffnessVal">0.15</span>
+                    </div>
+                    <input type="range" id="stiffness" min="0.05" max="0.5" step="0.01" value="0.15">
+                </div>
+
+                <div class="param-control">
+                    <div class="param-label">
+                        <span>Damping (c)</span>
+                        <span class="param-value" id="dampingVal">0.85</span>
+                    </div>
+                    <input type="range" id="damping" min="0.5" max="0.95" step="0.01" value="0.85">
+                </div>
+
+                <div class="param-control">
+                    <div class="param-label">
+                        <span>Activation Decay</span>
+                        <span class="param-value" id="decayVal">0.98</span>
+                    </div>
+                    <input type="range" id="decay" min="0.90" max="0.99" step="0.01" value="0.98">
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Memory Network</div>
+                <div id="memoryList"></div>
+            </div>
+
+            <button onclick="resetActivation()">Reset Activation</button>
+            <button class="secondary" onclick="randomQuery()">Random Query</button>
+        </div>
+    </div>
+
+    <script>
+        // Memory network definition - semantic knowledge graph
+        const memories = [
+            { id: 0, label: 'Thompson Sampling', x: 400, y: 200, connections: [1, 2, 3] },
+            { id: 1, label: 'Bandit Algorithms', x: 250, y: 150, connections: [0, 2, 4] },
+            { id: 2, label: 'Exploration', x: 300, y: 300, connections: [0, 1, 5, 6] },
+            { id: 3, label: 'Bayesian Inference', x: 550, y: 150, connections: [0, 7] },
+            { id: 4, label: 'UCB Algorithm', x: 150, y: 100, connections: [1, 5] },
+            { id: 5, label: 'Regret Bounds', x: 200, y: 250, connections: [2, 4] },
+            { id: 6, label: 'Epsilon Greedy', x: 350, y: 400, connections: [2, 8] },
+            { id: 7, label: 'Prior Distribution', x: 650, y: 250, connections: [3, 9] },
+            { id: 8, label: 'Exploitation', x: 500, y: 450, connections: [6, 9] },
+            { id: 9, label: 'Reward Optimization', x: 600, y: 350, connections: [7, 8] }
+        ];
+
+        // Physics state
+        const state = {
+            stiffness: 0.15,
+            damping: 0.85,
+            decay: 0.98,
+            iterations: 0
+        };
+
+        // Memory state
+        memories.forEach(m => {
+            m.activation = 0;
+            m.velocity = 0;
+            m.mass = 1;
+        });
+
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let animationFrame;
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Parameter controls
+        document.getElementById('stiffness').addEventListener('input', (e) => {
+            state.stiffness = parseFloat(e.target.value);
+            document.getElementById('stiffnessVal').textContent = state.stiffness.toFixed(2);
+        });
+
+        document.getElementById('damping').addEventListener('input', (e) => {
+            state.damping = parseFloat(e.target.value);
+            document.getElementById('dampingVal').textContent = state.damping.toFixed(2);
+        });
+
+        document.getElementById('decay').addEventListener('input', (e) => {
+            state.decay = parseFloat(e.target.value);
+            document.getElementById('decayVal').textContent = state.decay.toFixed(2);
+        });
+
+        // Render memory list
+        function renderMemoryList() {
+            const list = document.getElementById('memoryList');
+            list.innerHTML = '';
+
+            memories.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'memory-node';
+                if (m.activation > 0.1) div.classList.add('active');
+
+                div.innerHTML = `
+                    <div class="memory-label">${m.label}</div>
+                    <div class="memory-activation">Activation: ${m.activation.toFixed(3)}</div>
+                `;
+
+                div.onclick = () => activateMemory(m.id);
+                list.appendChild(div);
+            });
+        }
+
+        // Activate a memory (query)
+        function activateMemory(id) {
+            const memory = memories[id];
+            memory.activation = 1.0;
+            memory.velocity = 0;
+            state.iterations = 0;
+        }
+
+        function resetActivation() {
+            memories.forEach(m => {
+                m.activation = 0;
+                m.velocity = 0;
+            });
+            state.iterations = 0;
+        }
+
+        function randomQuery() {
+            const randomId = Math.floor(Math.random() * memories.length);
+            activateMemory(randomId);
+        }
+
+        // Physics update (spring-based spreading activation)
+        function updatePhysics(dt) {
+            state.iterations++;
+
+            memories.forEach(memory => {
+                // Calculate spring forces from connected memories
+                let force = 0;
+
+                memory.connections.forEach(connId => {
+                    const connected = memories[connId];
+                    // Hooke's Law: F = -k * Δx
+                    // Δx = activation difference (want to equalize activation)
+                    const activationDiff = connected.activation - memory.activation;
+                    const springForce = state.stiffness * activationDiff;
+                    force += springForce;
+                });
+
+                // Damping force: F_damping = -c * v
+                const dampingForce = -state.damping * memory.velocity;
+
+                // Total force
+                const totalForce = force + dampingForce;
+
+                // Update velocity: v += F / m * dt
+                memory.velocity += (totalForce / memory.mass) * dt;
+
+                // Update activation: a += v * dt
+                memory.activation += memory.velocity * dt;
+
+                // Decay (natural forgetting)
+                memory.activation *= state.decay;
+
+                // Clamp to [0, 1]
+                memory.activation = Math.max(0, Math.min(1, memory.activation));
+            });
+        }
+
+        // Render visualization
+        function render() {
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw connections (springs)
+            memories.forEach(memory => {
+                memory.connections.forEach(connId => {
+                    const connected = memories[connId];
+
+                    // Spring opacity based on activation
+                    const avgActivation = (memory.activation + connected.activation) / 2;
+                    const alpha = avgActivation * 0.6 + 0.1;
+
+                    ctx.beginPath();
+                    ctx.moveTo(memory.x, memory.y);
+                    ctx.lineTo(connected.x, connected.y);
+                    ctx.strokeStyle = `rgba(0, 245, 255, ${alpha})`;
+                    ctx.lineWidth = 1 + avgActivation * 2;
+                    ctx.stroke();
+
+                    // Draw spring coils for active connections
+                    if (avgActivation > 0.3) {
+                        const dx = connected.x - memory.x;
+                        const dy = connected.y - memory.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const steps = 8;
+                        const amplitude = 8;
+
+                        ctx.beginPath();
+                        for (let i = 0; i <= steps; i++) {
+                            const t = i / steps;
+                            const x = memory.x + dx * t;
+                            const y = memory.y + dy * t;
+                            const perpX = -dy / dist;
+                            const perpY = dx / dist;
+                            const offset = Math.sin(t * Math.PI * 4) * amplitude * avgActivation;
+
+                            if (i === 0) {
+                                ctx.moveTo(x + perpX * offset, y + perpY * offset);
+                            } else {
+                                ctx.lineTo(x + perpX * offset, y + perpY * offset);
+                            }
+                        }
+                        ctx.strokeStyle = `rgba(255, 0, 255, ${avgActivation * 0.4})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                });
+            });
+
+            // Draw memory nodes
+            memories.forEach(memory => {
+                const radius = 20 + memory.activation * 30;
+
+                // Glow
+                if (memory.activation > 0.1) {
+                    const gradient = ctx.createRadialGradient(
+                        memory.x, memory.y, 0,
+                        memory.x, memory.y, radius * 2
+                    );
+                    gradient.addColorStop(0, `rgba(255, 0, 255, ${memory.activation * 0.3})`);
+                    gradient.addColorStop(1, 'rgba(255, 0, 255, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(
+                        memory.x - radius * 2,
+                        memory.y - radius * 2,
+                        radius * 4,
+                        radius * 4
+                    );
+                }
+
+                // Node circle
+                ctx.beginPath();
+                ctx.arc(memory.x, memory.y, radius, 0, Math.PI * 2);
+
+                const color = memory.activation > 0.5 ?
+                    `rgba(255, 0, 255, ${0.7 + memory.activation * 0.3})` :
+                    `rgba(0, 245, 255, ${0.3 + memory.activation * 0.5})`;
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Label
+                ctx.fillStyle = memory.activation > 0.3 ? '#fff' : '#888';
+                ctx.font = `${10 + memory.activation * 4}px Monaco`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(memory.label, memory.x, memory.y);
+
+                // Activation value
+                if (memory.activation > 0.1) {
+                    ctx.font = '9px Monaco';
+                    ctx.fillStyle = '#ff00ff';
+                    ctx.fillText(
+                        memory.activation.toFixed(2),
+                        memory.x,
+                        memory.y + radius + 12
+                    );
+                }
+            });
+
+            // Update stats
+            const activeCount = memories.filter(m => m.activation > 0.1).length;
+            const totalActivation = memories.reduce((sum, m) => sum + m.activation, 0);
+            const energy = memories.reduce((sum, m) =>
+                sum + m.activation * m.activation * 0.5, 0);
+
+            document.getElementById('activeCount').textContent = activeCount;
+            document.getElementById('totalActivation').textContent = totalActivation.toFixed(2);
+            document.getElementById('energy').textContent = energy.toFixed(2);
+            document.getElementById('iterations').textContent = state.iterations;
+        }
+
+        // Animation loop
+        function animate() {
+            updatePhysics(0.016); // ~60fps
+            render();
+            renderMemoryList();
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        // Start
+        renderMemoryList();
+        animate();
+    </script>
+</body>
+</html>

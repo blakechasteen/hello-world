@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom - Unified Multithreaded Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+            gap: 0;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / 3;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-items: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        .header h1 {
+            color: #00d4ff;
+            font-size: 24px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+        }
+
+        .stat {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+
+        .stat-label {
+            color: #888;
+            margin-right: 5px;
+        }
+
+        .stat-value {
+            color: #00ff88;
+            font-weight: 600;
+        }
+
+        /* Chat Panel (Left) */
+        .chat-panel {
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #2a2a2a;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .chat-header h2 {
+            color: #00d4ff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .timeline {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 20px;
+            scroll-behavior: smooth;
+            max-height: calc(100vh - 280px);
+        }
+
+        /* Better scrollbar styling */
+        .timeline::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .timeline::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .timeline::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        .timeline::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Message Styles */
+        .message-thread {
+            margin-bottom: 20px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 3px solid #00d4ff;
+            transition: all 0.2s;
+        }
+
+        .message-thread:hover {
+            background: #222;
+            border-left-width: 4px;
+        }
+
+        .message-thread.active {
+            background: #252a3a;
+            border-left-color: #00ff88;
+        }
+
+        .message-root {
+            cursor: pointer;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .thread-indicator {
+            color: #00d4ff;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .message-content {
+            color: #e0e0e0;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .message-content.user {
+            color: #fff;
+        }
+
+        .message-content.assistant {
+            color: #b0e0ff;
+        }
+
+        .thread-preview {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .awareness-badge {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .domain-badge {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Thread expansion */
+        .thread-messages {
+            margin-top: 15px;
+            border-top: 1px solid #2a2a2a;
+            padding-top: 15px;
+            display: none;
+        }
+
+        .thread-messages.expanded {
+            display: block;
+        }
+
+        .message-reply {
+            margin-left: 20px;
+            margin-top: 10px;
+            padding-left: 15px;
+            border-left: 2px solid #333;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: #1a1a1a;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #e0e0e0;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #00d4ff;
+            background: #333;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .send-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        /* Awareness Panel (Right) */
+        .awareness-panel {
+            background: #0f0f0f;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .panel-section {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .panel-section h3 {
+            color: #00d4ff;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .metric-value {
+            color: #00ff88;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .connection-status.connected {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status disconnected" id="connectionStatus">⚫ Connecting...</div>
+
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <h1>🧵 HoloLoom - Unified Multithreaded Chat</h1>
+            <div class="header-stats">
+                <div class="stat">
+                    <span class="stat-label">Threads:</span>
+                    <span class="stat-value" id="threadCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Messages:</span>
+                    <span class="stat-value" id="messageCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Active:</span>
+                    <span class="stat-value" id="activeThread">None</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Panel (Left) -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                <h2>💬 Conversation Timeline</h2>
+            </div>
+            <div class="timeline" id="timeline">
+                <!-- Messages will be inserted here -->
+            </div>
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="Type your message..."
+                        autofocus
+                    />
+                    <button class="send-button" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Awareness Panel (Right) -->
+        <div class="awareness-panel" id="awarenessPanel">
+            <div class="panel-section">
+                <h3>📊 Active Thread Awareness</h3>
+                <div id="threadAwareness">
+                    <p style="color: #666; text-align: center; padding: 20px;">
+                        No active thread selected
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🎯 Compositional Analysis</h3>
+                <div id="compositionalAnalysis">
+                    <p style="color: #666; text-align: center; padding: 20px;">
+                        Waiting for first message...
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>📈 Confidence Trajectory</h3>
+                <div id="confidenceTrajectory">
+                    <p style="color: #666; text-align: center; padding: 20px;">
+                        No data yet
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let threads = {};
+        let activeThreadId = null;
+
+        // Connect to WebSocket
+        function connect() {
+            ws = new WebSocket('ws://localhost:8000/ws');
+
+            ws.onopen = () => {
+                console.log('Connected to server');
+                document.getElementById('connectionStatus').className = 'connection-status connected';
+                document.getElementById('connectionStatus').textContent = '🟢 Connected';
+            };
+
+            ws.onclose = () => {
+                console.log('Disconnected from server');
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionStatus').textContent = '🔴 Disconnected';
+
+                // Reconnect after 2 seconds
+                setTimeout(connect, 2000);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleServerMessage(data);
+            };
+        }
+
+        // Handle messages from server
+        function handleServerMessage(data) {
+            if (data.type === 'message_response') {
+                addMessageToTimeline(data.data);
+                updateAwarenessPanel(data.data);
+                updateStats();
+            } else if (data.type === 'threads_list') {
+                threads = data.data;
+                updateStats();
+            }
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            ws.send(JSON.stringify({
+                action: 'send_message',
+                message: message,
+                thread_id: activeThreadId  // null for auto-detect
+            }));
+
+            input.value = '';
+        }
+
+        // Add message to timeline
+        function addMessageToTimeline(data) {
+            const timeline = document.getElementById('timeline');
+            const threadId = data.thread_id;
+            const userMsg = data.user_message;
+            const assistantMsg = data.assistant_message;
+
+            // Store thread
+            threads[threadId] = data.thread;
+            activeThreadId = threadId;
+
+            // Create thread element
+            const threadElement = document.createElement('div');
+            threadElement.className = 'message-thread active';
+            threadElement.id = `thread-${threadId}`;
+
+            // Extract awareness data
+            const awareness = data.awareness_context || {};
+            const confidence = awareness.confidence ? (1 - awareness.confidence.uncertainty_level).toFixed(2) : 'N/A';
+            const domain = awareness.patterns ? awareness.patterns.domain : 'Unknown';
+
+            threadElement.innerHTML = `
+                <div class="message-root" onclick="toggleThread('${threadId}')">
+                    <div class="message-header">
+                        <span class="timestamp">${new Date(userMsg.timestamp).toLocaleTimeString()}</span>
+                        <span class="thread-indicator">[+ 1 reply]</span>
+                    </div>
+                    <div class="message-content user">
+                        You: ${escapeHtml(userMsg.content)}
+                    </div>
+                    <div class="thread-preview">
+                        <span class="awareness-badge">Confidence: ${confidence}</span>
+                        <span class="domain-badge">${domain}</span>
+                    </div>
+                </div>
+                <div class="thread-messages expanded">
+                    <div class="message-reply">
+                        <div class="message-header">
+                            <span class="timestamp">${new Date(assistantMsg.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <div class="message-content assistant">
+                            Assistant: ${escapeHtml(assistantMsg.content)}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            timeline.appendChild(threadElement);
+            timeline.scrollTop = timeline.scrollHeight;
+        }
+
+        // Update awareness panel
+        function updateAwarenessPanel(data) {
+            const awareness = data.awareness_context || {};
+
+            // Thread awareness
+            const threadAwarenessHTML = `
+                <div class="metric-row">
+                    <span class="metric-label">Thread ID</span>
+                    <span class="metric-value">${data.thread_id.substr(0, 8)}...</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Messages</span>
+                    <span class="metric-value">${data.thread.message_count}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Topic</span>
+                    <span class="metric-value">${data.thread.dominant_topic}</span>
+                </div>
+            `;
+            document.getElementById('threadAwareness').innerHTML = threadAwarenessHTML;
+
+            // Compositional analysis
+            if (awareness.structural && awareness.patterns && awareness.confidence) {
+                const analysisHTML = `
+                    <div class="metric-row">
+                        <span class="metric-label">Structure</span>
+                        <span class="metric-value">${awareness.structural.phrase_type}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Domain</span>
+                        <span class="metric-value">${awareness.patterns.domain}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Cache Status</span>
+                        <span class="metric-value">${awareness.confidence.query_cache_status}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Uncertainty</span>
+                        <span class="metric-value">${awareness.confidence.uncertainty_level.toFixed(2)}</span>
+                    </div>
+                `;
+                document.getElementById('compositionalAnalysis').innerHTML = analysisHTML;
+            }
+
+            // Confidence trajectory
+            if (data.thread.confidence_trend) {
+                const trend = data.thread.confidence_trend;
+                const trendHTML = `
+                    <div class="metric-row">
+                        <span class="metric-label">Current</span>
+                        <span class="metric-value">${trend[trend.length - 1].toFixed(2)}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Average</span>
+                        <span class="metric-value">${(trend.reduce((a,b) => a+b, 0) / trend.length).toFixed(2)}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Trend</span>
+                        <span class="metric-value">${trend.length > 1 ? (trend[trend.length-1] > trend[0] ? '↗ Rising' : '↘ Falling') : '→ Stable'}</span>
+                    </div>
+                `;
+                document.getElementById('confidenceTrajectory').innerHTML = trendHTML;
+            }
+        }
+
+        // Update header stats
+        function updateStats() {
+            document.getElementById('threadCount').textContent = Object.keys(threads).length;
+
+            let totalMessages = 0;
+            Object.values(threads).forEach(thread => {
+                totalMessages += thread.message_count || 0;
+            });
+            document.getElementById('messageCount').textContent = totalMessages;
+
+            if (activeThreadId) {
+                document.getElementById('activeThread').textContent = activeThreadId.substr(0, 8) + '...';
+            }
+        }
+
+        // Toggle thread expansion
+        function toggleThread(threadId) {
+            const thread = document.getElementById(`thread-${threadId}`);
+            const messages = thread.querySelector('.thread-messages');
+            messages.classList.toggle('expanded');
+
+            // Update active state
+            document.querySelectorAll('.message-thread').forEach(t => t.classList.remove('active'));
+            thread.classList.add('active');
+            activeThreadId = threadId;
+        }
+
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Handle Enter key
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Connect on load
+        connect();
+    </script>
+</body>
+</html>

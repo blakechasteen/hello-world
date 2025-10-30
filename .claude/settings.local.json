@@ -45,7 +45,8 @@
       "Bash(git restore:*)",
       "Bash(export PYTHONIOENCODING=utf-8)",
       "Bash(npm run compile:*)",
-      "Bash(PYTHONPATH=.. python:*)"
+      "Bash(PYTHONPATH=.. python:*)",
+      "Bash(PYTHONPATH=. timeout 60 python:*)"
     ],
     "deny": [],
     "ask": []

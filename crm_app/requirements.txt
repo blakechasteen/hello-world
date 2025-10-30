@@ -1,0 +1,16 @@
+# HoloLoom CRM Requirements
+
+# Core dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic[email]==2.5.0
+
+# Data processing
+numpy==1.24.3
+
+# Optional: Production database backends
+# neo4j==5.14.0
+# qdrant-client==1.7.0
+
+# HoloLoom (from parent directory)
+# Install with: pip install -e ../HoloLoom

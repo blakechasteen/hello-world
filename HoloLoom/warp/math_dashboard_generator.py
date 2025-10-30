@@ -1,0 +1,589 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Math Pipeline Interactive Dashboard Generator
+==============================================
+Generates beautiful interactive HTML dashboards for visualizing:
+- Real-time operation selection
+- RL learning curves
+- Operation flow diagrams
+- Performance metrics
+- Intent classification heatmaps
+
+Philosophy: "Data is beautiful when beautifully presented."
+
+Author: HoloLoom Team
+Date: 2025-10-29
+"""
+
+from typing import Dict, List, Any, Optional
+from pathlib import Path
+import json
+
+
+def generate_math_dashboard(
+    stats: Dict[str, Any],
+    history: List[Dict[str, Any]],
+    output_path: str = "demos/output/math_pipeline_interactive.html"
+) -> str:
+    """
+    Generate interactive HTML dashboard for math pipeline.
+
+    Args:
+        stats: Pipeline statistics
+        history: List of analysis results
+        output_path: Output file path
+
+    Returns:
+        Path to generated HTML file
+    """
+
+    # Prepare data for JavaScript
+    history_data = json.dumps(history, indent=2, default=str)
+    stats_data = json.dumps(stats, indent=2, default=str)
+
+    # Extract RL leaderboard if available
+    leaderboard = []
+    if "rl_stats" in stats and "rl_learning" in stats["rl_stats"]:
+        leaderboard = stats["rl_stats"]["rl_learning"].get("leaderboard", [])[:10]
+    leaderboard_data = json.dumps(leaderboard, indent=2)
+
+    # Build HTML
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Math Pipeline - Interactive Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }}
+
+        .container {{
+            max-width: 1400px;
+            margin: 0 auto;
+        }}
+
+        h1 {{
+            text-align: center;
+            color: #00d4ff;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }}
+
+        .subtitle {{
+            text-align: center;
+            color: #a0a0a0;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }}
+
+        .grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }}
+
+        .card {{
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }}
+
+        .card:hover {{
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(0, 212, 255, 0.3);
+        }}
+
+        .card-title {{
+            color: #00d4ff;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+
+        .card-title::before {{
+            content: '●';
+            color: #00ff88;
+            font-size: 0.8em;
+            animation: pulse 2s ease-in-out infinite;
+        }}
+
+        @keyframes pulse {{
+            0%, 100% {{ opacity: 1; }}
+            50% {{ opacity: 0.3; }}
+        }}
+
+        .metric {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #00d4ff;
+        }}
+
+        .metric-label {{
+            color: #b0b0b0;
+            font-size: 0.9em;
+        }}
+
+        .metric-value {{
+            color: #00ff88;
+            font-size: 1.2em;
+            font-weight: bold;
+        }}
+
+        .chart-container {{
+            width: 100%;
+            height: 400px;
+            margin: 10px 0;
+        }}
+
+        .full-width {{
+            grid-column: 1 / -1;
+        }}
+
+        .leaderboard {{
+            list-style: none;
+        }}
+
+        .leaderboard li {{
+            padding: 12px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s ease;
+        }}
+
+        .leaderboard li:hover {{
+            background: rgba(0, 212, 255, 0.1);
+        }}
+
+        .rank {{
+            font-size: 1.5em;
+            width: 40px;
+            text-align: center;
+        }}
+
+        .operation-name {{
+            flex: 1;
+            color: #ffffff;
+            font-weight: 500;
+        }}
+
+        .intent-badge {{
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid #00d4ff;
+        }}
+
+        .success-rate {{
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #00ff88;
+            min-width: 60px;
+            text-align: right;
+        }}
+
+        .flow-diagram {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            overflow-x: auto;
+        }}
+
+        .flow-step {{
+            background: rgba(0, 212, 255, 0.15);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px solid #00d4ff;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+        }}
+
+        .flow-step::after {{
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00d4ff;
+            font-size: 1.5em;
+        }}
+
+        .flow-step:last-child::after {{
+            content: '';
+        }}
+
+        .sparkline {{
+            height: 30px;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            padding: 5px;
+        }}
+
+        .sparkline-bar {{
+            flex: 1;
+            background: linear-gradient(to top, #00d4ff, #00ff88);
+            border-radius: 2px;
+            transition: height 0.3s ease;
+        }}
+
+        @media (max-width: 768px) {{
+            .grid {{
+                grid-template-columns: 1fr;
+            }}
+
+            h1 {{
+                font-size: 1.8em;
+            }}
+        }}
+
+        .loading {{
+            text-align: center;
+            color: #00d4ff;
+            font-size: 1.2em;
+            padding: 40px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 HoloLoom Math Pipeline</h1>
+        <p class="subtitle">Interactive Real-Time Analysis Dashboard</p>
+
+        <!-- Key Metrics -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">📊 Overall Statistics</div>
+                <div class="metric">
+                    <span class="metric-label">Total Analyses</span>
+                    <span class="metric-value" id="total-analyses">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Operations</span>
+                    <span class="metric-value" id="avg-operations">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Confidence</span>
+                    <span class="metric-value" id="avg-confidence">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Time (ms)</span>
+                    <span class="metric-value" id="avg-time">-</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚡ Performance Trends</div>
+                <div class="sparkline" id="time-sparkline"></div>
+                <div style="text-align: center; color: #a0a0a0; font-size: 0.9em; margin-top: 5px;">
+                    Execution Time Trend
+                </div>
+                <div class="sparkline" id="confidence-sparkline" style="margin-top: 15px;"></div>
+                <div style="text-align: center; color: #a0a0a0; font-size: 0.9em; margin-top: 5px;">
+                    Confidence Trend
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 Intent Distribution</div>
+                <div id="intent-distribution"></div>
+            </div>
+        </div>
+
+        <!-- Pipeline Flow -->
+        <div class="card full-width">
+            <div class="card-title">🔄 Pipeline Flow</div>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div style="font-size: 2em;">🔍</div>
+                    <div>Query</div>
+                </div>
+                <div class="flow-step">
+                    <div style="font-size: 2em;">🎯</div>
+                    <div>Intent Classification</div>
+                </div>
+                <div class="flow-step">
+                    <div style="font-size: 2em;">🧠</div>
+                    <div>Smart Selection (RL)</div>
+                </div>
+                <div class="flow-step">
+                    <div style="font-size: 2em;">🔢</div>
+                    <div>Math Execution</div>
+                </div>
+                <div class="flow-step">
+                    <div style="font-size: 2em;">💬</div>
+                    <div>Meaning Synthesis</div>
+                </div>
+                <div class="flow-step">
+                    <div style="font-size: 2em;">✨</div>
+                    <div>Result</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid">
+            <div class="card full-width">
+                <div class="card-title">📈 Execution Time Over Queries</div>
+                <div id="time-chart" class="chart-container"></div>
+            </div>
+
+            <div class="card full-width">
+                <div class="card-title">🎨 Operation Usage Frequency</div>
+                <div id="operation-chart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- RL Leaderboard -->
+        <div class="card full-width">
+            <div class="card-title">🏆 RL Operation Leaderboard</div>
+            <ul class="leaderboard" id="leaderboard">
+                <li class="loading">Learning data will appear after RL training...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const stats = {stats_data};
+        const history = {history_data};
+        const leaderboard = {leaderboard_data};
+
+        // Update metrics
+        document.getElementById('total-analyses').textContent =
+            stats.total_analyses || 0;
+        document.getElementById('avg-operations').textContent =
+            stats.avg_operations_per_analysis?.toFixed(1) || '0.0';
+        document.getElementById('avg-confidence').textContent =
+            ((stats.avg_confidence || 0) * 100).toFixed(0) + '%';
+        document.getElementById('avg-time').textContent =
+            stats.avg_execution_time_ms?.toFixed(1) || '0.0';
+
+        // Sparklines
+        function renderSparkline(containerId, values) {{
+            const container = document.getElementById(containerId);
+            if (!values || values.length === 0) return;
+
+            const max = Math.max(...values);
+            const min = Math.min(...values);
+            const range = max - min || 1;
+
+            container.innerHTML = '';
+            values.forEach(val => {{
+                const bar = document.createElement('div');
+                bar.className = 'sparkline-bar';
+                const height = ((val - min) / range) * 100;
+                bar.style.height = height + '%';
+                container.appendChild(bar);
+            }});
+        }}
+
+        if (history && history.length > 0) {{
+            const times = history.map(h => h.execution_time_ms || 0);
+            const confidences = history.map(h => (h.confidence || 0) * 100);
+
+            renderSparkline('time-sparkline', times);
+            renderSparkline('confidence-sparkline', confidences);
+        }}
+
+        // Intent distribution chart
+        if (stats.operations_by_intent) {{
+            const intents = Object.keys(stats.operations_by_intent);
+            const counts = intents.map(intent => stats.operations_by_intent[intent].count);
+
+            const data = [{{
+                x: intents,
+                y: counts,
+                type: 'bar',
+                marker: {{
+                    color: intents.map((_, i) =>
+                        `rgba(0, 212, 255, ${{0.3 + (i / intents.length) * 0.7}})`
+                    ),
+                    line: {{
+                        color: '#00d4ff',
+                        width: 2
+                    }}
+                }}
+            }}];
+
+            const layout = {{
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {{ color: '#e0e0e0' }},
+                xaxis: {{ gridcolor: 'rgba(255,255,255,0.1)' }},
+                yaxis: {{ gridcolor: 'rgba(255,255,255,0.1)' }},
+                margin: {{ t: 10, l: 40, r: 10, b: 40 }},
+                height: 200
+            }};
+
+            Plotly.newPlot('intent-distribution', data, layout, {{responsive: true}});
+        }}
+
+        // Execution time chart
+        if (history && history.length > 0) {{
+            const data = [{{
+                x: history.map((_, i) => i + 1),
+                y: history.map(h => h.execution_time_ms || 0),
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {{ color: '#00d4ff', width: 2 }},
+                marker: {{ color: '#00ff88', size: 8 }}
+            }}];
+
+            const layout = {{
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {{ color: '#e0e0e0' }},
+                xaxis: {{
+                    title: 'Query Number',
+                    gridcolor: 'rgba(255,255,255,0.1)'
+                }},
+                yaxis: {{
+                    title: 'Time (ms)',
+                    gridcolor: 'rgba(255,255,255,0.1)'
+                }},
+                margin: {{ t: 10, l: 50, r: 10, b: 50 }}
+            }};
+
+            Plotly.newPlot('time-chart', data, layout, {{responsive: true}});
+        }}
+
+        // Operation usage chart
+        if (stats.selector_stats && stats.selector_stats.most_common_operations) {{
+            const ops = Object.keys(stats.selector_stats.most_common_operations);
+            const counts = Object.values(stats.selector_stats.most_common_operations);
+
+            const data = [{{
+                x: counts,
+                y: ops,
+                type: 'bar',
+                orientation: 'h',
+                marker: {{
+                    color: '#00d4ff',
+                    line: {{
+                        color: '#00ff88',
+                        width: 2
+                    }}
+                }}
+            }}];
+
+            const layout = {{
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {{ color: '#e0e0e0' }},
+                xaxis: {{
+                    title: 'Usage Count',
+                    gridcolor: 'rgba(255,255,255,0.1)'
+                }},
+                yaxis: {{ gridcolor: 'rgba(255,255,255,0.1)' }},
+                margin: {{ t: 10, l: 150, r: 10, b: 50 }}
+            }};
+
+            Plotly.newPlot('operation-chart', data, layout, {{responsive: true}});
+        }}
+
+        // RL Leaderboard
+        if (leaderboard && leaderboard.length > 0) {{
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+
+            leaderboard.forEach((op, i) => {{
+                const total = op.successes + op.failures;
+                const rate = total > 0 ? (op.successes / total * 100).toFixed(0) : 0;
+
+                const medals = ['🥇', '🥈', '🥉'];
+                const rank = i < 3 ? medals[i] : (i + 1) + '.';
+
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="rank">${{rank}}</span>
+                    <span class="operation-name">${{op.operation_name}}</span>
+                    <span class="intent-badge">${{op.intent}}</span>
+                    <span class="success-rate">${{rate}}%</span>
+                `;
+                container.appendChild(li);
+            }});
+        }}
+
+        // Auto-refresh every 5 seconds if this is a live dashboard
+        // setInterval(() => location.reload(), 5000);
+    </script>
+</body>
+</html>
+"""
+
+    # Write to file
+    output_file = Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    output_file.write_text(html, encoding='utf-8')
+
+    print(f"✨ Dashboard generated: {output_file}")
+    return str(output_file)
+
+
+if __name__ == "__main__":
+    # Generate demo dashboard
+    demo_stats = {
+        "total_analyses": 25,
+        "total_operations": 105,
+        "avg_operations_per_analysis": 4.2,
+        "avg_confidence": 0.92,
+        "avg_execution_time_ms": 8.5,
+        "operations_by_intent": {
+            "similarity": {"count": 12, "operations": {"inner_product": 12, "metric_distance": 10}},
+            "optimization": {"count": 8, "operations": {"gradient": 8, "geodesic": 6}},
+            "analysis": {"count": 5, "operations": {"eigenvalues": 5, "laplacian": 4}}
+        },
+        "selector_stats": {
+            "most_common_operations": {
+                "inner_product": 15,
+                "metric_distance": 12,
+                "gradient": 10,
+                "eigenvalues": 8,
+                "norm": 6
+            }
+        }
+    }
+
+    demo_history = [
+        {"execution_time_ms": 12.5, "confidence": 0.95, "total_cost": 10},
+        {"execution_time_ms": 8.2, "confidence": 0.88, "total_cost": 8},
+        {"execution_time_ms": 15.1, "confidence": 0.92, "total_cost": 15},
+        {"execution_time_ms": 6.8, "confidence": 0.90, "total_cost": 7},
+        {"execution_time_ms": 10.3, "confidence": 0.94, "total_cost": 12},
+    ]
+
+    generate_math_dashboard(demo_stats, demo_history)

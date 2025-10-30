@@ -1,0 +1,2265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mythRL - Tufte-Inspired Data Excellence</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        /* Sparklines - Tufte's signature */
+        .sparkline-container {
+            margin: 60px 0;
+        }
+
+        .sparkline-row {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.2s ease;
+        }
+
+        .sparkline-row:hover {
+            background: #f5f5f5;
+        }
+
+        .sparkline-label {
+            width: 200px;
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        .sparkline-value {
+            width: 100px;
+            font-weight: 600;
+            text-align: right;
+            margin-right: 20px;
+            font-size: 1.1em;
+        }
+
+        .sparkline-chart {
+            flex: 1;
+            height: 40px;
+            cursor: crosshair;
+        }
+
+        .sparkline-change {
+            width: 80px;
+            text-align: right;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-left: 20px;
+        }
+
+        .change-positive { color: #2ecc71; }
+        .change-negative { color: #e74c3c; }
+
+        /* Small Multiples - Compare patterns at a glance */
+        .small-multiples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 60px 0;
+        }
+
+        .multiple-panel {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .multiple-panel:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .multiple-title {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .multiple-value {
+            font-size: 2em;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .multiple-chart {
+            height: 100px;
+            margin-top: 15px;
+        }
+
+        /* High Data Density Table - Maximum information, minimum ink */
+        .dense-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 60px 0;
+            background: white;
+            font-size: 0.9em;
+        }
+
+        .dense-table th {
+            text-align: left;
+            font-weight: 600;
+            padding: 12px 8px;
+            border-bottom: 2px solid #333;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #555;
+        }
+
+        .dense-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .dense-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .inline-sparkline {
+            display: inline-block;
+            width: 60px;
+            height: 20px;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+
+        /* Horizon Chart - Layered time series */
+        .horizon-chart {
+            margin: 60px 0;
+        }
+
+        .horizon-band {
+            height: 30px;
+            position: relative;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .horizon-band:hover {
+            height: 60px;
+        }
+
+        .horizon-label {
+            position: absolute;
+            left: 10px;
+            top: 8px;
+            font-size: 0.85em;
+            color: #666;
+            z-index: 10;
+            background: rgba(250, 250, 250, 0.9);
+            padding: 0 5px;
+        }
+
+        /* Slopegraph - Show change over time */
+        .slopegraph {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .slope-line {
+            stroke: #999;
+            stroke-width: 1.5;
+            fill: none;
+            opacity: 0.4;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .slope-line:hover {
+            stroke-width: 3;
+            opacity: 1;
+            stroke: #2ecc71;
+        }
+
+        .slope-label {
+            font-size: 0.9em;
+            fill: #555;
+            cursor: pointer;
+        }
+
+        .slope-value {
+            font-size: 0.85em;
+            fill: #999;
+        }
+
+        /* Dot Plot with Statistical Range */
+        .dot-plot {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .dot-plot circle {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dot-plot circle:hover {
+            r: 8;
+            fill: #e74c3c;
+        }
+
+        /* Parallel Coordinates - Multivariate data */
+        .parallel-coords {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .parallel-line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 1.5;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .parallel-line:hover {
+            stroke: #e74c3c;
+            stroke-width: 3;
+            opacity: 1;
+        }
+
+        /* Data-ink ratio optimization */
+        .minimal-chart {
+            margin: 60px 0;
+        }
+
+        .axis-line {
+            stroke: #ddd;
+            stroke-width: 1;
+        }
+
+        .grid-line {
+            stroke: #f0f0f0;
+            stroke-width: 1;
+        }
+
+        /* Interactive annotation layer */
+        .annotation {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #333;
+            padding: 10px 15px;
+            font-size: 0.85em;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            max-width: 300px;
+        }
+
+        .annotation-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        /* Marey's train schedule style */
+        .marey-schedule {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .schedule-line {
+            stroke: #666;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .schedule-line:hover {
+            stroke: #2ecc71;
+            stroke-width: 3;
+            opacity: 1;
+        }
+
+        /* Small multiples with conditional formatting */
+        .conditional-cell {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .conditional-cell:hover {
+            transform: scale(1.5);
+            z-index: 100;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            font-weight: 300;
+            margin: 80px 0 20px 0;
+            letter-spacing: -0.5px;
+            color: #333;
+        }
+
+        .section-description {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 30px;
+            max-width: 800px;
+            line-height: 1.8;
+        }
+
+        /* Range frame - Tufte's alternative to axes */
+        .range-frame {
+            stroke: #333;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .data-point {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .data-point:hover {
+            transform: scale(1.5);
+        }
+
+        /* Minimalist legend */
+        .legend {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .legend-color {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        /* Scatterplot matrix (SPLOM) */
+        .splom-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .splom-cell {
+            cursor: crosshair;
+        }
+
+        .splom-cell:hover {
+            outline: 2px solid #3498db;
+        }
+
+        /* Violin plot */
+        .violin-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .violin-path {
+            fill: #3498db;
+            opacity: 0.6;
+            stroke: #2c3e50;
+            stroke-width: 1;
+            transition: all 0.3s ease;
+        }
+
+        .violin-path:hover {
+            opacity: 0.9;
+            fill: #e74c3c;
+        }
+
+        /* Ridgeline plot */
+        .ridgeline-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .ridgeline-area {
+            opacity: 0.7;
+            stroke: #333;
+            stroke-width: 1.5;
+            transition: all 0.3s ease;
+        }
+
+        .ridgeline-area:hover {
+            opacity: 1;
+            stroke-width: 2.5;
+        }
+
+        /* Sunburst / radial tree */
+        .sunburst-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .sunburst-arc {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sunburst-arc:hover {
+            opacity: 0.8;
+        }
+
+        .sunburst-text {
+            pointer-events: none;
+            font-size: 11px;
+            fill: #333;
+        }
+
+        /* Chord diagram */
+        .chord-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .chord-path {
+            fill-opacity: 0.67;
+            stroke: none;
+            transition: all 0.3s ease;
+        }
+
+        .chord-path:hover {
+            fill-opacity: 0.9;
+        }
+
+        /* Voronoi overlay for nearest point selection */
+        .voronoi-overlay {
+            fill: none;
+            pointer-events: all;
+        }
+
+        .voronoi-cell {
+            fill: none;
+            pointer-events: all;
+        }
+
+        .voronoi-cell:hover {
+            fill: rgba(52, 152, 219, 0.1);
+        }
+
+        /* Brushing selection */
+        .brush .selection {
+            fill: steelblue;
+            fill-opacity: 0.3;
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        /* Connected scatterplot */
+        .connected-scatter {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .connection-line {
+            stroke: #999;
+            stroke-width: 1;
+            fill: none;
+            opacity: 0.3;
+        }
+
+        .time-dot {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .time-dot:hover {
+            r: 8;
+            fill: #e74c3c;
+        }
+
+        /* Waterfall chart */
+        .waterfall-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .waterfall-bar {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .waterfall-bar:hover {
+            opacity: 0.7;
+        }
+
+        .waterfall-connector {
+            stroke: #999;
+            stroke-width: 1;
+            stroke-dasharray: 3,3;
+        }
+
+        /* Bullet graph - Tufte's dashboard staple */
+        .bullet-container {
+            margin: 60px 0;
+        }
+
+        .bullet-row {
+            display: flex;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .bullet-label {
+            width: 200px;
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        .bullet-chart {
+            flex: 1;
+            height: 40px;
+        }
+
+        .bullet-range {
+            fill: #ddd;
+        }
+
+        .bullet-range-mid {
+            fill: #bbb;
+        }
+
+        .bullet-range-good {
+            fill: #999;
+        }
+
+        .bullet-measure {
+            fill: #333;
+        }
+
+        .bullet-marker {
+            stroke: #e74c3c;
+            stroke-width: 3;
+        }
+
+        /* Sankey with gradients */
+        .sankey-link {
+            fill: none;
+            stroke-opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .sankey-link:hover {
+            stroke-opacity: 0.8;
+        }
+
+        .sankey-node rect {
+            cursor: move;
+            fill-opacity: 0.9;
+            stroke: #333;
+            stroke-width: 1;
+        }
+
+        .sankey-node text {
+            pointer-events: none;
+            font-size: 12px;
+        }
+
+        /* Circle packing */
+        .circle-pack-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .circle-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .circle-node:hover {
+            stroke: #333;
+            stroke-width: 3;
+        }
+
+        /* Stream graph */
+        .stream-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .stream-layer {
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+
+        .stream-layer:hover {
+            opacity: 1;
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        /* Real-time animated transitions */
+        @keyframes pulse-data {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .live-data {
+            animation: pulse-data 2s ease-in-out infinite;
+        }
+
+        /* Focus + Context (overview + detail) */
+        .focus-context-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .focus-chart {
+            margin-bottom: 20px;
+        }
+
+        .context-chart {
+            margin-top: 20px;
+        }
+
+        /* Heatmap calendar (GitHub style) */
+        .calendar-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .calendar-cell {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-cell:hover {
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        /* Box plot ensemble */
+        .boxplot-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .box-rect {
+            fill: #3498db;
+            opacity: 0.6;
+            stroke: #2c3e50;
+            stroke-width: 2;
+            cursor: pointer;
+        }
+
+        .box-rect:hover {
+            opacity: 0.9;
+        }
+
+        .box-line {
+            stroke: #2c3e50;
+            stroke-width: 2;
+        }
+
+        .outlier-dot {
+            fill: #e74c3c;
+            cursor: pointer;
+        }
+
+        /* Hexbin density plot */
+        .hexbin-container {
+            margin: 60px 0;
+            padding: 40px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .hexagon {
+            stroke: white;
+            stroke-width: 1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .hexagon:hover {
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        /* Animated path transitions */
+        @keyframes draw-path {
+            from { stroke-dashoffset: 1000; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        .animated-path {
+            stroke-dasharray: 1000;
+            animation: draw-path 2s ease-in-out;
+        }
+
+        /* Control panel */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid #333;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .control-panel h3 {
+            font-size: 1em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .control-item {
+            margin-bottom: 15px;
+        }
+
+        .control-label {
+            font-size: 0.85em;
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .control-slider {
+            width: 100%;
+        }
+
+        .control-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-right: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .control-button:hover {
+            background: #2980b9;
+        }
+
+        .control-toggle {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        /* Linked highlighting */
+        .linked-highlight {
+            stroke: #e74c3c;
+            stroke-width: 3;
+            fill: #e74c3c;
+        }
+
+        /* Tooltip enhancement */
+        .advanced-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 16px;
+            font-size: 0.85em;
+            pointer-events: none;
+            z-index: 2000;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 5px;
+        }
+
+        .tooltip-value {
+            margin: 3px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <h3>⚙️ Visualization Controls</h3>
+        
+        <div class="control-item">
+            <label class="control-label">Animation Speed</label>
+            <input type="range" class="control-slider" id="animSpeed" min="0.5" max="5" step="0.5" value="1">
+            <span id="animSpeedValue">1x</span>
+        </div>
+        
+        <div class="control-item">
+            <label class="control-label">Data Points</label>
+            <input type="range" class="control-slider" id="dataPoints" min="10" max="200" step="10" value="50">
+            <span id="dataPointsValue">50</span>
+        </div>
+        
+        <div class="control-item">
+            <button class="control-button" onclick="regenerateAll()">🔄 Regenerate All</button>
+            <button class="control-button" onclick="toggleAnimations()">⏸️ Pause</button>
+        </div>
+        
+        <div class="control-item">
+            <label class="control-toggle">
+                <input type="checkbox" id="showTooltips" checked> Show Tooltips
+            </label>
+        </div>
+        
+        <div class="control-item">
+            <label class="control-toggle">
+                <input type="checkbox" id="linkedViews" checked> Linked Views
+            </label>
+        </div>
+        
+        <div class="control-item">
+            <button class="control-button" onclick="exportDashboard()">💾 Export</button>
+        </div>
+    </div>
+
+    <!-- Advanced Tooltip -->
+    <div class="advanced-tooltip" id="tooltip" style="display: none;"></div>
+    <div class="container">
+        <h1>mythRL Multi-Modal Intelligence</h1>
+        <p class="subtitle">Excellence in Statistical Graphics: Maximum Data, Minimum Ink</p>
+
+        <h2>Sparklines: Intense, Simple, Word-Sized Graphics</h2>
+        <p class="section-description">
+            "Sparklines are datawords: data-intense, design-simple, word-sized graphics." 
+            Each line shows the complete time series at a glance, with current value and change.
+        </p>
+        <div class="sparkline-container" id="sparklines"></div>
+
+        <h2>Small Multiples: Eyeball Comparisons</h2>
+        <p class="section-description">
+            Uniform design across panels enables direct visual comparison. 
+            Each panel tells the same story structure, making differences immediately visible.
+        </p>
+        <div class="small-multiples" id="smallMultiples"></div>
+
+        <h2>High-Density Data Table: Every Number Tells a Story</h2>
+        <p class="section-description">
+            Tables are often underrated. With inline sparklines and conditional formatting, 
+            they become powerful analytical tools revealing patterns across dimensions.
+        </p>
+        <table class="dense-table" id="denseTable"></table>
+
+        <h2>Horizon Charts: Layered Time Series</h2>
+        <p class="section-description">
+            Negative values below, positive above, with color intensity showing magnitude. 
+            Hover to expand. 4x the data density of traditional time series.
+        </p>
+        <div class="horizon-chart" id="horizonChart"></div>
+
+        <h2>Slopegraph: Focus on Change</h2>
+        <p class="section-description">
+            Elegant simplicity. Two time points, connected lines show direction and magnitude of change.
+            Hover any line to highlight its journey.
+        </p>
+        <svg class="slopegraph" id="slopegraph" width="800" height="400"></svg>
+
+        <h2>Dot Plot with Range Frame</h2>
+        <p class="section-description">
+            Data points float in space defined only by the range of the data itself.
+            No chartjunk, no redundant grid lines. Pure data-ink.
+        </p>
+        <svg class="dot-plot" id="dotPlot" width="800" height="300"></svg>
+
+        <h2>Parallel Coordinates: Multivariate Patterns</h2>
+        <p class="section-description">
+            Each vertical axis represents a dimension. Lines connect a single observation across all dimensions.
+            Patterns emerge: clustering, correlation, outliers become visible.
+        </p>
+        <svg class="parallel-coords" id="parallelCoords" width="1000" height="400"></svg>
+
+        <h2>Marey's Train Schedule: Time-Space Visualization</h2>
+        <p class="section-description">
+            Originally designed by E.J. Marey in 1885. Vertical axis is space, horizontal is time.
+            Slope indicates speed. A masterclass in information design that remains unsurpassed.
+        </p>
+        <svg class="marey-schedule" id="mareySchedule" width="1000" height="400"></svg>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-color" style="background: #2ecc71;"></span>
+                <span>Positive Change</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #e74c3c;"></span>
+                <span>Negative Change</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #3498db;"></span>
+                <span>Neutral/Baseline</span>
+            </div>
+        </div>
+
+        <h2>Bullet Graphs: Tufte's Dashboard Design</h2>
+        <p class="section-description">
+            Combines bar chart with contextual ranges and targets. More information density than traditional gauges,
+            with qualitative ranges showing performance zones (poor/satisfactory/excellent).
+        </p>
+        <div class="bullet-container" id="bulletGraphs"></div>
+
+        <h2>Voronoi Scatterplot: Precision Point Selection</h2>
+        <p class="section-description">
+            Voronoi tessellation enables precise point selection in dense scatterplots. 
+            Each cell captures clicks nearest to its point. Hover to see boundaries and data.
+        </p>
+        <svg class="connected-scatter" id="voronoiScatter" width="1000" height="400"></svg>
+
+        <h2>Focus + Context: Overview & Detail</h2>
+        <p class="section-description">
+            Dual views with brushing. Bottom context chart shows entire dataset, 
+            brush selection updates top focus chart for detailed examination.
+        </p>
+        <div class="focus-context-container">
+            <svg class="focus-chart" id="focusChart" width="1000" height="300"></svg>
+            <svg class="context-chart" id="contextChart" width="1000" height="100"></svg>
+        </div>
+
+        <h2>Ridgeline Plot: Distribution Comparison</h2>
+        <p class="section-description">
+            Overlapping density curves reveal distribution shape across categories.
+            Also called "joy plots" after Joy Division's Unknown Pleasures album cover.
+        </p>
+        <svg class="ridgeline-container" id="ridgeline" width="1000" height="500"></svg>
+
+        <h2>Violin Plot: Distribution + Statistics</h2>
+        <p class="section-description">
+            Combines box plot with kernel density estimation. Width shows probability density,
+            revealing multi-modal distributions that box plots hide.
+        </p>
+        <svg class="violin-container" id="violinPlot" width="1000" height="400"></svg>
+
+        <h2>Scatterplot Matrix (SPLOM): Pairwise Relationships</h2>
+        <p class="section-description">
+            Every variable plotted against every other variable. Patterns, correlations, 
+            and outliers visible at a glance. Click any cell to highlight correlations.
+        </p>
+        <svg class="splom-container" id="splom" width="800" height="800"></svg>
+
+        <h2>Connected Scatterplot: Trajectory Through Time</h2>
+        <p class="section-description">
+            Points connected in temporal order reveal paths and cycles invisible in static scatterplots.
+            Direction and velocity of change become visible.
+        </p>
+        <svg class="connected-scatter" id="connectedScatter" width="1000" height="400"></svg>
+
+        <h2>Waterfall Chart: Cumulative Impact</h2>
+        <p class="section-description">
+            Shows how sequential positive/negative changes accumulate to a final value.
+            Essential for financial analysis and understanding contribution of components.
+        </p>
+        <svg class="waterfall-container" id="waterfallChart" width="1000" height="400"></svg>
+
+        <h2>Hexbin Density: 2D Histogram</h2>
+        <p class="section-description">
+            Hexagonal binning reveals density patterns in large scatterplots. 
+            Color intensity shows point count per hexagon. More elegant than square bins.
+        </p>
+        <svg class="hexbin-container" id="hexbinPlot" width="800" height="600"></svg>
+
+        <h2>Box Plot Ensemble: Statistical Distribution</h2>
+        <p class="section-description">
+            Box shows quartiles (Q1, median, Q3). Whiskers extend to 1.5×IQR. 
+            Points beyond are outliers. Compact statistical summary.
+        </p>
+        <svg class="boxplot-container" id="boxPlot" width="1000" height="400"></svg>
+
+        <h2>Calendar Heatmap: Temporal Patterns</h2>
+        <p class="section-description">
+            GitHub-style contribution calendar. Each cell is a day, color intensity shows activity.
+            Weekly patterns and gaps become immediately visible.
+        </p>
+        <svg class="calendar-container" id="calendarHeatmap" width="1000" height="200"></svg>
+
+        <h2>Sunburst: Hierarchical Radial Space</h2>
+        <p class="section-description">
+            Nested hierarchy as concentric rings. Angle represents proportion.
+            Click to zoom into branches. Efficient use of radial space.
+        </p>
+        <svg class="sunburst-container" id="sunburst" width="800" height="800"></svg>
+
+        <h2>Chord Diagram: Flow Between Categories</h2>
+        <p class="section-description">
+            Circular layout shows relationships between entities. Arc thickness represents flow magnitude.
+            Hover to highlight connections. Reveals network structure elegantly.
+        </p>
+        <svg class="chord-container" id="chordDiagram" width="800" height="800"></svg>
+
+        <h2>Circle Packing: Hierarchical Containment</h2>
+        <p class="section-description">
+            Nested circles represent hierarchical data. Size encodes value.
+            Space-efficient representation of tree structures.
+        </p>
+        <svg class="circle-pack-container" id="circlePack" width="800" height="800"></svg>
+
+        <h2>Stream Graph: Stacked Flow Over Time</h2>
+        <p class="section-description">
+            Organic flowing layers show changing composition over time.
+            Symmetric around centerline. Beautiful and functional.
+        </p>
+        <svg class="stream-container" id="streamGraph" width="1000" height="400"></svg>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-color" style="background: #2ecc71;"></span>
+                <span>Positive Change</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #e74c3c;"></span>
+                <span>Negative Change</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #3498db;"></span>
+                <span>Neutral/Baseline</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let animationSpeed = 1;
+        let animationsPaused = false;
+        let linkedViewsEnabled = true;
+        let currentHighlight = null;
+        // Generate time series data
+        function generateTimeSeries(points = 50, volatility = 10, trend = 0.1) {
+            const data = [];
+            let value = 50 + Math.random() * 20;
+            for (let i = 0; i < points; i++) {
+                value += (Math.random() - 0.5) * volatility + trend;
+                value = Math.max(0, Math.min(100, value));
+                data.push(value);
+            }
+            return data;
+        }
+
+        // Sparklines
+        const sparklineMetrics = [
+            { label: 'Storage Latency (ms)', current: 0.16, data: generateTimeSeries(100, 0.05, -0.002) },
+            { label: 'Search Latency (ms)', current: 4.63, data: generateTimeSeries(100, 0.5, 0.01) },
+            { label: 'Throughput (ops/s)', current: 6209, data: generateTimeSeries(100, 50, 5) },
+            { label: 'Memory Usage (MB)', current: 30.5, data: generateTimeSeries(100, 2, 0.1) },
+            { label: 'Confidence Score', current: 0.98, data: generateTimeSeries(100, 0.02, 0.001) },
+            { label: 'Embedding Quality', current: 0.95, data: generateTimeSeries(100, 0.03, 0.002) }
+        ];
+
+        const sparklineContainer = d3.select('#sparklines');
+        
+        sparklineMetrics.forEach(metric => {
+            const row = sparklineContainer.append('div').attr('class', 'sparkline-row');
+            
+            row.append('div')
+                .attr('class', 'sparkline-label')
+                .text(metric.label);
+            
+            row.append('div')
+                .attr('class', 'sparkline-value')
+                .text(metric.current.toLocaleString());
+            
+            const svg = row.append('svg')
+                .attr('class', 'sparkline-chart')
+                .attr('width', '100%')
+                .attr('height', 40);
+            
+            const width = 300;
+            const height = 40;
+            const data = metric.data;
+            
+            const x = d3.scaleLinear().domain([0, data.length - 1]).range([0, width]);
+            const y = d3.scaleLinear().domain([d3.min(data), d3.max(data)]).range([height - 5, 5]);
+            
+            const line = d3.line()
+                .x((d, i) => x(i))
+                .y(d => y(d))
+                .curve(d3.curveMonotoneX);
+            
+            svg.append('path')
+                .datum(data)
+                .attr('fill', 'none')
+                .attr('stroke', '#3498db')
+                .attr('stroke-width', 1.5)
+                .attr('d', line);
+            
+            // Add min/max dots
+            const minIdx = data.indexOf(d3.min(data));
+            const maxIdx = data.indexOf(d3.max(data));
+            
+            svg.append('circle')
+                .attr('cx', x(maxIdx))
+                .attr('cy', y(data[maxIdx]))
+                .attr('r', 2)
+                .attr('fill', '#2ecc71');
+            
+            svg.append('circle')
+                .attr('cx', x(minIdx))
+                .attr('cy', y(data[minIdx]))
+                .attr('r', 2)
+                .attr('fill', '#e74c3c');
+            
+            // Current value dot
+            svg.append('circle')
+                .attr('cx', x(data.length - 1))
+                .attr('cy', y(data[data.length - 1]))
+                .attr('r', 3)
+                .attr('fill', '#333');
+            
+            const change = ((data[data.length - 1] - data[0]) / data[0] * 100).toFixed(1);
+            row.append('div')
+                .attr('class', `sparkline-change ${change > 0 ? 'change-positive' : 'change-negative'}`)
+                .text(`${change > 0 ? '+' : ''}${change}%`);
+            
+            // Interactive tooltip
+            svg.on('mousemove', function(event) {
+                const [mx] = d3.pointer(event);
+                const idx = Math.round(x.invert(mx));
+                if (idx >= 0 && idx < data.length) {
+                    d3.select(this).selectAll('.hover-line').remove();
+                    d3.select(this).append('line')
+                        .attr('class', 'hover-line')
+                        .attr('x1', x(idx))
+                        .attr('x2', x(idx))
+                        .attr('y1', 0)
+                        .attr('y2', height)
+                        .attr('stroke', '#999')
+                        .attr('stroke-width', 1)
+                        .attr('stroke-dasharray', '2,2');
+                }
+            });
+        });
+
+        // Small Multiples
+        const smallMultiplesData = [
+            { title: 'Quantum Research', value: 15, trend: generateTimeSeries(20, 2, 0.3), color: '#3498db' },
+            { title: 'AI Healthcare', value: 11, trend: generateTimeSeries(20, 2, 0.2), color: '#2ecc71' },
+            { title: 'Real-time Pipeline', value: 100, trend: generateTimeSeries(20, 5, 1), color: '#e74c3c' },
+            { title: 'Knowledge Synthesis', value: 12, trend: generateTimeSeries(20, 2, 0.25), color: '#9b59b6' },
+            { title: 'Cross-Modal Fusion', value: 8, trend: generateTimeSeries(20, 1.5, 0.15), color: '#f39c12' },
+            { title: 'Embedding Generation', value: 138, trend: generateTimeSeries(20, 8, 1.5), color: '#1abc9c' }
+        ];
+
+        const smallMultiples = d3.select('#smallMultiples');
+        
+        smallMultiplesData.forEach(item => {
+            const panel = smallMultiples.append('div').attr('class', 'multiple-panel');
+            
+            panel.append('div')
+                .attr('class', 'multiple-title')
+                .text(item.title);
+            
+            panel.append('div')
+                .attr('class', 'multiple-value')
+                .style('color', item.color)
+                .text(item.value);
+            
+            const svg = panel.append('svg')
+                .attr('class', 'multiple-chart')
+                .attr('width', '100%')
+                .attr('height', 100);
+            
+            const width = 230;
+            const height = 100;
+            const data = item.trend;
+            
+            const x = d3.scaleLinear().domain([0, data.length - 1]).range([0, width]);
+            const y = d3.scaleLinear().domain([0, d3.max(data) * 1.1]).range([height, 0]);
+            
+            const area = d3.area()
+                .x((d, i) => x(i))
+                .y0(height)
+                .y1(d => y(d))
+                .curve(d3.curveMonotoneX);
+            
+            svg.append('path')
+                .datum(data)
+                .attr('fill', item.color)
+                .attr('opacity', 0.3)
+                .attr('d', area);
+            
+            const line = d3.line()
+                .x((d, i) => x(i))
+                .y(d => y(d))
+                .curve(d3.curveMonotoneX);
+            
+            svg.append('path')
+                .datum(data)
+                .attr('fill', 'none')
+                .attr('stroke', item.color)
+                .attr('stroke-width', 2)
+                .attr('d', line);
+        });
+
+        // Dense Table with inline sparklines
+        const tableData = [
+            { demo: 'Quantum Research', memories: 15, avg_time: 2.3, confidence: 0.98, modalities: ['TEXT', 'STRUCTURED'], trend: generateTimeSeries(30, 1, 0.1) },
+            { demo: 'AI Healthcare', memories: 11, avg_time: 3.1, confidence: 0.95, modalities: ['STRUCTURED', 'MULTIMODAL'], trend: generateTimeSeries(30, 1.2, -0.05) },
+            { demo: 'Real-time Pipeline', memories: 100, avg_time: 0.16, confidence: 0.92, modalities: ['TEXT', 'STRUCTURED'], trend: generateTimeSeries(30, 2, 0.3) },
+            { demo: 'Knowledge Synthesis', memories: 12, avg_time: 4.5, confidence: 0.98, modalities: ['MULTIMODAL'], trend: generateTimeSeries(30, 0.8, 0.05) }
+        ];
+
+        const table = d3.select('#denseTable');
+        const thead = table.append('thead').append('tr');
+        ['Demo', 'Memories', 'Avg Time (ms)', 'Confidence', 'Modalities', 'Trend'].forEach(header => {
+            thead.append('th').text(header);
+        });
+
+        const tbody = table.append('tbody');
+        tableData.forEach(row => {
+            const tr = tbody.append('tr');
+            tr.append('td').text(row.demo);
+            tr.append('td').text(row.memories);
+            tr.append('td').text(row.avg_time);
+            tr.append('td').text(row.confidence);
+            tr.append('td').text(row.modalities.join(', '));
+            
+            const sparkCell = tr.append('td');
+            const sparkSvg = sparkCell.append('svg')
+                .attr('class', 'inline-sparkline')
+                .attr('width', 60)
+                .attr('height', 20);
+            
+            const x = d3.scaleLinear().domain([0, row.trend.length - 1]).range([0, 60]);
+            const y = d3.scaleLinear().domain([d3.min(row.trend), d3.max(row.trend)]).range([20, 0]);
+            
+            const line = d3.line().x((d, i) => x(i)).y(d => y(d));
+            
+            sparkSvg.append('path')
+                .datum(row.trend)
+                .attr('fill', 'none')
+                .attr('stroke', '#3498db')
+                .attr('stroke-width', 1)
+                .attr('d', line);
+        });
+
+        // Horizon Chart
+        const horizonData = [
+            { label: 'Latency', values: generateTimeSeries(200, 15, 0) },
+            { label: 'Throughput', values: generateTimeSeries(200, 20, 1) },
+            { label: 'Memory', values: generateTimeSeries(200, 10, 0.5) },
+            { label: 'CPU', values: generateTimeSeries(200, 18, -0.2) },
+            { label: 'Network', values: generateTimeSeries(200, 12, 0.3) }
+        ];
+
+        const horizonChart = d3.select('#horizonChart');
+        
+        horizonData.forEach(series => {
+            const band = horizonChart.append('div').attr('class', 'horizon-band');
+            band.append('div').attr('class', 'horizon-label').text(series.label);
+            
+            const svg = band.append('svg')
+                .attr('width', '100%')
+                .attr('height', 30)
+                .style('position', 'absolute')
+                .style('top', 0);
+            
+            const width = 1200;
+            const height = 30;
+            
+            const x = d3.scaleLinear().domain([0, series.values.length - 1]).range([0, width]);
+            const y = d3.scaleLinear().domain([0, d3.max(series.values)]).range([height, 0]);
+            
+            const area = d3.area()
+                .x((d, i) => x(i))
+                .y0(height)
+                .y1(d => y(d))
+                .curve(d3.curveMonotoneX);
+            
+            svg.append('path')
+                .datum(series.values)
+                .attr('fill', '#3498db')
+                .attr('opacity', 0.6)
+                .attr('d', area);
+        });
+
+        // Slopegraph
+        const slopeData = [
+            { label: 'Storage Speed', before: 45, after: 85 },
+            { label: 'Search Accuracy', before: 70, after: 95 },
+            { label: 'Memory Efficiency', before: 60, after: 90 },
+            { label: 'Fusion Quality', before: 75, after: 98 },
+            { label: 'Scalability', before: 50, after: 92 }
+        ];
+
+        const slopeSvg = d3.select('#slopegraph');
+        const slopeWidth = 800;
+        const slopeHeight = 400;
+        const leftX = 150;
+        const rightX = 650;
+        
+        const slopeY = d3.scaleLinear()
+            .domain([0, 100])
+            .range([50, slopeHeight - 50]);
+        
+        // Title labels
+        slopeSvg.append('text')
+            .attr('x', leftX)
+            .attr('y', 30)
+            .attr('text-anchor', 'middle')
+            .style('font-weight', 'bold')
+            .style('font-size', '14px')
+            .text('Before (v1.0)');
+        
+        slopeSvg.append('text')
+            .attr('x', rightX)
+            .attr('y', 30)
+            .attr('text-anchor', 'middle')
+            .style('font-weight', 'bold')
+            .style('font-size', '14px')
+            .text('After (v2.0)');
+        
+        slopeData.forEach((d, i) => {
+            const line = slopeSvg.append('line')
+                .attr('class', 'slope-line')
+                .attr('x1', leftX)
+                .attr('y1', slopeY(d.before))
+                .attr('x2', rightX)
+                .attr('y2', slopeY(d.after))
+                .style('stroke', d.after > d.before ? '#2ecc71' : '#e74c3c');
+            
+            slopeSvg.append('text')
+                .attr('class', 'slope-label')
+                .attr('x', leftX - 10)
+                .attr('y', slopeY(d.before) + 4)
+                .attr('text-anchor', 'end')
+                .text(d.label);
+            
+            slopeSvg.append('text')
+                .attr('class', 'slope-value')
+                .attr('x', leftX - 60)
+                .attr('y', slopeY(d.before) + 4)
+                .attr('text-anchor', 'end')
+                .text(d.before);
+            
+            slopeSvg.append('text')
+                .attr('class', 'slope-value')
+                .attr('x', rightX + 10)
+                .attr('y', slopeY(d.after) + 4)
+                .text(d.after);
+        });
+
+        // Dot Plot with Range Frame
+        const dotData = Array.from({length: 50}, () => ({
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            size: Math.random() * 5 + 2
+        }));
+
+        const dotSvg = d3.select('#dotPlot');
+        const dotWidth = 800;
+        const dotHeight = 300;
+        const dotMargin = {top: 20, right: 20, bottom: 20, left: 20};
+        
+        const dotX = d3.scaleLinear()
+            .domain([0, 100])
+            .range([dotMargin.left, dotWidth - dotMargin.right]);
+        
+        const dotY = d3.scaleLinear()
+            .domain([0, 100])
+            .range([dotHeight - dotMargin.bottom, dotMargin.top]);
+        
+        // Range frame (only at data extremes)
+        const xExtent = d3.extent(dotData, d => d.x);
+        const yExtent = d3.extent(dotData, d => d.y);
+        
+        dotSvg.append('line')
+            .attr('class', 'range-frame')
+            .attr('x1', dotX(xExtent[0]))
+            .attr('x2', dotX(xExtent[1]))
+            .attr('y1', dotHeight - dotMargin.bottom)
+            .attr('y2', dotHeight - dotMargin.bottom);
+        
+        dotSvg.append('line')
+            .attr('class', 'range-frame')
+            .attr('x1', dotMargin.left)
+            .attr('x2', dotMargin.left)
+            .attr('y1', dotY(yExtent[0]))
+            .attr('y2', dotY(yExtent[1]));
+        
+        dotSvg.selectAll('circle')
+            .data(dotData)
+            .enter()
+            .append('circle')
+            .attr('class', 'data-point')
+            .attr('cx', d => dotX(d.x))
+            .attr('cy', d => dotY(d.y))
+            .attr('r', d => d.size)
+            .attr('fill', '#3498db')
+            .attr('opacity', 0.6);
+
+        // Parallel Coordinates
+        const parallelData = Array.from({length: 30}, () => ({
+            speed: Math.random() * 100,
+            accuracy: Math.random() * 100,
+            efficiency: Math.random() * 100,
+            scalability: Math.random() * 100,
+            quality: Math.random() * 100
+        }));
+
+        const parallelSvg = d3.select('#parallelCoords');
+        const parallelWidth = 1000;
+        const parallelHeight = 400;
+        const parallelMargin = {top: 50, right: 50, bottom: 50, left: 50};
+        
+        const dimensions = ['speed', 'accuracy', 'efficiency', 'scalability', 'quality'];
+        const yScales = {};
+        
+        dimensions.forEach(dim => {
+            yScales[dim] = d3.scaleLinear()
+                .domain([0, 100])
+                .range([parallelHeight - parallelMargin.bottom, parallelMargin.top]);
+        });
+        
+        const xScale = d3.scalePoint()
+            .domain(dimensions)
+            .range([parallelMargin.left, parallelWidth - parallelMargin.right]);
+        
+        // Draw axes
+        dimensions.forEach(dim => {
+            const g = parallelSvg.append('g')
+                .attr('transform', `translate(${xScale(dim)},0)`);
+            
+            g.append('line')
+                .attr('y1', parallelMargin.top)
+                .attr('y2', parallelHeight - parallelMargin.bottom)
+                .attr('stroke', '#333')
+                .attr('stroke-width', 2);
+            
+            g.append('text')
+                .attr('y', parallelMargin.top - 10)
+                .attr('text-anchor', 'middle')
+                .style('font-size', '12px')
+                .style('font-weight', 'bold')
+                .text(dim.toUpperCase());
+        });
+        
+        // Draw lines
+        parallelData.forEach(d => {
+            const line = d3.line();
+            const points = dimensions.map(dim => [xScale(dim), yScales[dim](d[dim])]);
+            
+            parallelSvg.append('path')
+                .attr('class', 'parallel-line')
+                .attr('d', line(points));
+        });
+
+        // Marey's Train Schedule
+        const scheduleData = Array.from({length: 8}, (_, i) => ({
+            id: i,
+            path: Array.from({length: 20}, (_, j) => ({
+                time: j * 5,
+                position: j * 20 + (Math.random() - 0.5) * 10
+            }))
+        }));
+
+        const mareySvg = d3.select('#mareySchedule');
+        const mareyWidth = 1000;
+        const mareyHeight = 400;
+        const mareyMargin = {top: 30, right: 30, bottom: 30, left: 60};
+        
+        const mareyX = d3.scaleLinear()
+            .domain([0, 100])
+            .range([mareyMargin.left, mareyWidth - mareyMargin.right]);
+        
+        const mareyY = d3.scaleLinear()
+            .domain([0, 400])
+            .range([mareyHeight - mareyMargin.bottom, mareyMargin.top]);
+        
+        // Axes
+        mareySvg.append('g')
+            .attr('transform', `translate(0,${mareyHeight - mareyMargin.bottom})`)
+            .call(d3.axisBottom(mareyX).ticks(10))
+            .style('color', '#999');
+        
+        mareySvg.append('g')
+            .attr('transform', `translate(${mareyMargin.left},0)`)
+            .call(d3.axisLeft(mareyY).ticks(10))
+            .style('color', '#999');
+        
+        mareySvg.append('text')
+            .attr('x', mareyWidth / 2)
+            .attr('y', mareyHeight - 5)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .text('Time (minutes)');
+        
+        mareySvg.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -mareyHeight / 2)
+            .attr('y', 15)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .text('Distance (km)');
+        
+        // Draw schedule lines
+        scheduleData.forEach(train => {
+            const line = d3.line()
+                .x(d => mareyX(d.time))
+                .y(d => mareyY(d.position))
+                .curve(d3.curveMonotoneX);
+            
+            mareySvg.append('path')
+                .attr('class', 'schedule-line')
+                .attr('d', line(train.path))
+                .style('stroke', `hsl(${train.id * 40}, 70%, 50%)`);
+        });
+
+        console.log('Tufte-inspired visualizations loaded. Every element optimized for data-ink ratio.');
+
+        // ===== ADVANCED VISUALIZATIONS =====
+
+        // Tooltip system
+        const tooltip = d3.select('#tooltip');
+        
+        function showTooltip(content, event) {
+            if (!document.getElementById('showTooltips').checked) return;
+            tooltip.html(content)
+                .style('display', 'block')
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        }
+        
+        function hideTooltip() {
+            tooltip.style('display', 'none');
+        }
+
+        // Control panel handlers
+        document.getElementById('animSpeed').addEventListener('input', (e) => {
+            animationSpeed = e.target.value;
+            document.getElementById('animSpeedValue').textContent = animationSpeed + 'x';
+        });
+
+        document.getElementById('dataPoints').addEventListener('input', (e) => {
+            document.getElementById('dataPointsValue').textContent = e.target.value;
+        });
+
+        document.getElementById('linkedViews').addEventListener('change', (e) => {
+            linkedViewsEnabled = e.target.checked;
+        });
+
+        function toggleAnimations() {
+            animationsPaused = !animationsPaused;
+            const btn = event.target;
+            btn.textContent = animationsPaused ? '▶️ Play' : '⏸️ Pause';
+        }
+
+        function regenerateAll() {
+            location.reload();
+        }
+
+        function exportDashboard() {
+            alert('Export functionality would save current visualization state to JSON/PNG/SVG');
+        }
+
+        // Bullet Graphs
+        const bulletData = [
+            { label: 'Storage Performance', value: 85, target: 90, ranges: [50, 75, 100] },
+            { label: 'Search Accuracy', value: 95, target: 92, ranges: [60, 80, 100] },
+            { label: 'Memory Efficiency', value: 78, target: 85, ranges: [50, 70, 100] },
+            { label: 'Throughput Rate', value: 92, target: 88, ranges: [55, 75, 100] },
+            { label: 'Response Time', value: 88, target: 90, ranges: [60, 80, 100] }
+        ];
+
+        const bulletContainer = d3.select('#bulletGraphs');
+        
+        bulletData.forEach(d => {
+            const row = bulletContainer.append('div').attr('class', 'bullet-row');
+            row.append('div').attr('class', 'bullet-label').text(d.label);
+            
+            const svg = row.append('svg').attr('class', 'bullet-chart').attr('width', '100%').attr('height', 40);
+            const width = 600;
+            const x = d3.scaleLinear().domain([0, 100]).range([0, width]);
+            
+            // Qualitative ranges
+            svg.append('rect').attr('class', 'bullet-range').attr('width', x(d.ranges[0])).attr('height', 20).attr('y', 10);
+            svg.append('rect').attr('class', 'bullet-range-mid').attr('width', x(d.ranges[1])).attr('height', 20).attr('y', 10);
+            svg.append('rect').attr('class', 'bullet-range-good').attr('width', x(d.ranges[2])).attr('height', 20).attr('y', 10);
+            
+            // Performance measure
+            svg.append('rect').attr('class', 'bullet-measure').attr('width', x(d.value)).attr('height', 12).attr('y', 14);
+            
+            // Target marker
+            svg.append('line').attr('class', 'bullet-marker')
+                .attr('x1', x(d.target)).attr('x2', x(d.target))
+                .attr('y1', 5).attr('y2', 35);
+        });
+
+        // Voronoi Scatterplot
+        const voronoiData = Array.from({length: 100}, () => ({
+            x: Math.random() * 900 + 50,
+            y: Math.random() * 300 + 50,
+            value: Math.random() * 100
+        }));
+
+        const voronoiSvg = d3.select('#voronoiScatter');
+        
+        const delaunay = d3.Delaunay.from(voronoiData, d => d.x, d => d.y);
+        const voronoi = delaunay.voronoi([0, 0, 1000, 400]);
+        
+        voronoiSvg.selectAll('path')
+            .data(voronoiData)
+            .enter()
+            .append('path')
+            .attr('class', 'voronoi-cell')
+            .attr('d', (d, i) => voronoi.renderCell(i))
+            .on('mouseenter', function(event, d) {
+                d3.select(this).attr('fill', 'rgba(52, 152, 219, 0.1)');
+                showTooltip(`<div class="tooltip-title">Data Point</div>
+                    <div class="tooltip-value">X: ${d.x.toFixed(1)}</div>
+                    <div class="tooltip-value">Y: ${d.y.toFixed(1)}</div>
+                    <div class="tooltip-value">Value: ${d.value.toFixed(1)}</div>`, event);
+            })
+            .on('mouseleave', function() {
+                d3.select(this).attr('fill', 'none');
+                hideTooltip();
+            });
+        
+        voronoiSvg.selectAll('circle')
+            .data(voronoiData)
+            .enter()
+            .append('circle')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', 4)
+            .attr('fill', '#3498db')
+            .attr('opacity', 0.6);
+
+        // Focus + Context with Brushing
+        const focusData = generateTimeSeries(200, 10, 0.2);
+        
+        const focusSvg = d3.select('#focusChart');
+        const contextSvg = d3.select('#contextChart');
+        
+        const focusMargin = {top: 20, right: 20, bottom: 30, left: 50};
+        const focusWidth = 1000 - focusMargin.left - focusMargin.right;
+        const focusHeight = 300 - focusMargin.top - focusMargin.bottom;
+        
+        const contextMargin = {top: 10, right: 20, bottom: 20, left: 50};
+        const contextWidth = 1000 - contextMargin.left - contextMargin.right;
+        const contextHeight = 100 - contextMargin.top - contextMargin.bottom;
+        
+        const focusX = d3.scaleLinear().domain([0, focusData.length]).range([0, focusWidth]);
+        const focusY = d3.scaleLinear().domain([0, d3.max(focusData)]).range([focusHeight, 0]);
+        
+        const contextX = d3.scaleLinear().domain([0, focusData.length]).range([0, contextWidth]);
+        const contextY = d3.scaleLinear().domain([0, d3.max(focusData)]).range([contextHeight, 0]);
+        
+        const focusLine = d3.line().x((d, i) => focusX(i)).y(d => focusY(d)).curve(d3.curveMonotoneX);
+        const contextLine = d3.line().x((d, i) => contextX(i)).y(d => contextY(d)).curve(d3.curveMonotoneX);
+        
+        const focusG = focusSvg.append('g').attr('transform', `translate(${focusMargin.left},${focusMargin.top})`);
+        const contextG = contextSvg.append('g').attr('transform', `translate(${contextMargin.left},${contextMargin.top})`);
+        
+        focusG.append('path').datum(focusData).attr('fill', 'none').attr('stroke', '#3498db')
+            .attr('stroke-width', 2).attr('d', focusLine).attr('class', 'animated-path');
+        
+        contextG.append('path').datum(focusData).attr('fill', 'none').attr('stroke', '#999')
+            .attr('stroke-width', 1).attr('d', contextLine);
+        
+        const brush = d3.brushX()
+            .extent([[0, 0], [contextWidth, contextHeight]])
+            .on('brush', brushed);
+        
+        contextG.append('g').attr('class', 'brush').call(brush)
+            .call(brush.move, [contextWidth * 0.3, contextWidth * 0.7]);
+        
+        function brushed(event) {
+            if (!event.selection) return;
+            const [x0, x1] = event.selection.map(contextX.invert);
+            focusX.domain([x0, x1]);
+            focusG.select('path').attr('d', focusLine);
+        }
+
+        // Ridgeline Plot
+        const ridgelineData = Array.from({length: 8}, (_, i) => ({
+            label: `Category ${i + 1}`,
+            values: Array.from({length: 100}, () => 
+                d3.randomNormal(50 + i * 5, 10)()
+            )
+        }));
+
+        const ridgelineSvg = d3.select('#ridgeline');
+        const ridgeWidth = 1000, ridgeHeight = 500;
+        const ridgeMargin = {top: 50, right: 50, bottom: 50, left: 150};
+        
+        const ridgeX = d3.scaleLinear().domain([0, 100]).range([ridgeMargin.left, ridgeWidth - ridgeMargin.right]);
+        const ridgeSpacing = 50;
+        
+        ridgelineData.forEach((series, i) => {
+            const density = d3.bin().domain([0, 100]).thresholds(30)(series.values);
+            const yOffset = ridgeMargin.top + i * ridgeSpacing;
+            const heightScale = d3.scaleLinear().domain([0, d3.max(density, d => d.length)]).range([0, 40]);
+            
+            const area = d3.area()
+                .x(d => ridgeX(d.x0))
+                .y0(yOffset)
+                .y1(d => yOffset - heightScale(d.length))
+                .curve(d3.curveBasis);
+            
+            const color = d3.interpolateViridis(i / ridgelineData.length);
+            
+            ridgelineSvg.append('path')
+                .datum(density)
+                .attr('class', 'ridgeline-area')
+                .attr('d', area)
+                .attr('fill', color);
+            
+            ridgelineSvg.append('text')
+                .attr('x', ridgeMargin.left - 10)
+                .attr('y', yOffset)
+                .attr('text-anchor', 'end')
+                .style('font-size', '12px')
+                .text(series.label);
+        });
+
+        // Violin Plot
+        const violinData = [
+            { label: 'A', values: Array.from({length: 100}, () => d3.randomNormal(50, 10)()) },
+            { label: 'B', values: Array.from({length: 100}, () => d3.randomNormal(60, 15)()) },
+            { label: 'C', values: Array.from({length: 100}, () => d3.randomNormal(55, 8)()) },
+            { label: 'D', values: Array.from({length: 100}, () => d3.randomNormal(70, 12)()) }
+        ];
+
+        const violinSvg = d3.select('#violinPlot');
+        const violinWidth = 1000, violinHeight = 400;
+        const violinMargin = {top: 50, right: 50, bottom: 50, left: 50};
+        
+        const violinX = d3.scaleBand()
+            .domain(violinData.map(d => d.label))
+            .range([violinMargin.left, violinWidth - violinMargin.right])
+            .padding(0.2);
+        
+        const violinY = d3.scaleLinear()
+            .domain([0, 100])
+            .range([violinHeight - violinMargin.bottom, violinMargin.top]);
+        
+        violinData.forEach(series => {
+            const density = d3.bin().domain([0, 100]).thresholds(20)(series.values);
+            const widthScale = d3.scaleLinear()
+                .domain([0, d3.max(density, d => d.length)])
+                .range([0, violinX.bandwidth() / 2]);
+            
+            const area = d3.area()
+                .y(d => violinY(d.x0))
+                .x0(violinX(series.label) + violinX.bandwidth() / 2 - widthScale(0))
+                .x1(d => violinX(series.label) + violinX.bandwidth() / 2 + widthScale(d.length))
+                .curve(d3.curveBasis);
+            
+            violinSvg.append('path')
+                .datum(density)
+                .attr('class', 'violin-path')
+                .attr('d', area);
+        });
+
+        // SPLOM (Scatterplot Matrix)
+        const splomVars = ['speed', 'accuracy', 'efficiency', 'quality'];
+        const splomData = Array.from({length: 50}, () => ({
+            speed: Math.random() * 100,
+            accuracy: Math.random() * 100,
+            efficiency: Math.random() * 100,
+            quality: Math.random() * 100
+        }));
+
+        const splomSvg = d3.select('#splom');
+        const splomSize = 800;
+        const splomCell = splomSize / splomVars.length;
+        
+        splomVars.forEach((yVar, i) => {
+            splomVars.forEach((xVar, j) => {
+                const cell = splomSvg.append('g')
+                    .attr('transform', `translate(${j * splomCell},${i * splomCell})`);
+                
+                cell.append('rect')
+                    .attr('class', 'splom-cell')
+                    .attr('width', splomCell)
+                    .attr('height', splomCell)
+                    .attr('fill', 'none')
+                    .attr('stroke', '#ddd');
+                
+                if (i === splomVars.length - 1) {
+                    cell.append('text')
+                        .attr('x', splomCell / 2)
+                        .attr('y', splomCell + 15)
+                        .attr('text-anchor', 'middle')
+                        .style('font-size', '12px')
+                        .text(xVar);
+                }
+                
+                if (j === 0) {
+                    cell.append('text')
+                        .attr('x', -10)
+                        .attr('y', splomCell / 2)
+                        .attr('text-anchor', 'end')
+                        .style('font-size', '12px')
+                        .text(yVar);
+                }
+                
+                if (i !== j) {
+                    const xScale = d3.scaleLinear().domain([0, 100]).range([5, splomCell - 5]);
+                    const yScale = d3.scaleLinear().domain([0, 100]).range([splomCell - 5, 5]);
+                    
+                    cell.selectAll('circle')
+                        .data(splomData)
+                        .enter()
+                        .append('circle')
+                        .attr('cx', d => xScale(d[xVar]))
+                        .attr('cy', d => yScale(d[yVar]))
+                        .attr('r', 2)
+                        .attr('fill', '#3498db')
+                        .attr('opacity', 0.5);
+                }
+            });
+        });
+
+        // Connected Scatterplot
+        const connectedData = Array.from({length: 30}, (_, i) => ({
+            x: 50 + 40 * Math.cos(i * 0.3) + Math.random() * 10,
+            y: 50 + 40 * Math.sin(i * 0.3) + Math.random() * 10,
+            time: i
+        }));
+
+        const connectedSvg = d3.select('#connectedScatter');
+        const connMargin = {top: 50, right: 50, bottom: 50, left: 50};
+        const connWidth = 1000 - connMargin.left - connMargin.right;
+        const connHeight = 400 - connMargin.top - connMargin.bottom;
+        
+        const connX = d3.scaleLinear().domain([0, 100]).range([connMargin.left, connWidth]);
+        const connY = d3.scaleLinear().domain([0, 100]).range([connHeight, connMargin.top]);
+        
+        const connLine = d3.line()
+            .x(d => connX(d.x))
+            .y(d => connY(d.y))
+            .curve(d3.curveCatmullRom);
+        
+        connectedSvg.append('path')
+            .datum(connectedData)
+            .attr('class', 'connection-line')
+            .attr('d', connLine);
+        
+        connectedSvg.selectAll('circle')
+            .data(connectedData)
+            .enter()
+            .append('circle')
+            .attr('class', 'time-dot')
+            .attr('cx', d => connX(d.x))
+            .attr('cy', d => connY(d.y))
+            .attr('r', 5)
+            .attr('fill', d => d3.interpolateViridis(d.time / connectedData.length))
+            .on('mouseenter', function(event, d) {
+                showTooltip(`<div class="tooltip-title">Time: ${d.time}</div>
+                    <div class="tooltip-value">X: ${d.x.toFixed(1)}</div>
+                    <div class="tooltip-value">Y: ${d.y.toFixed(1)}</div>`, event);
+            })
+            .on('mouseleave', hideTooltip);
+
+        // Waterfall Chart
+        const waterfallData = [
+            { label: 'Start', value: 100, type: 'start' },
+            { label: 'Improvement A', value: 15, type: 'positive' },
+            { label: 'Degradation B', value: -8, type: 'negative' },
+            { label: 'Improvement C', value: 22, type: 'positive' },
+            { label: 'Degradation D', value: -5, type: 'negative' },
+            { label: 'End', value: 124, type: 'end' }
+        ];
+
+        let cumulative = 0;
+        const waterfallProcessed = waterfallData.map(d => {
+            const start = cumulative;
+            if (d.type === 'start' || d.type === 'end') {
+                cumulative = d.value;
+            } else {
+                cumulative += d.value;
+            }
+            return { ...d, start, end: cumulative };
+        });
+
+        const waterfallSvg = d3.select('#waterfallChart');
+        const waterMargin = {top: 50, right: 50, bottom: 50, left: 50};
+        const waterWidth = 1000 - waterMargin.left - waterMargin.right;
+        const waterHeight = 400 - waterMargin.top - waterMargin.bottom;
+        
+        const waterX = d3.scaleBand()
+            .domain(waterfallProcessed.map(d => d.label))
+            .range([waterMargin.left, waterWidth])
+            .padding(0.2);
+        
+        const waterY = d3.scaleLinear()
+            .domain([0, 150])
+            .range([waterHeight, waterMargin.top]);
+        
+        waterfallProcessed.forEach((d, i) => {
+            const color = d.type === 'positive' ? '#2ecc71' : d.type === 'negative' ? '#e74c3c' : '#3498db';
+            
+            waterfallSvg.append('rect')
+                .attr('class', 'waterfall-bar')
+                .attr('x', waterX(d.label))
+                .attr('y', waterY(Math.max(d.start, d.end)))
+                .attr('width', waterX.bandwidth())
+                .attr('height', Math.abs(waterY(d.start) - waterY(d.end)))
+                .attr('fill', color);
+            
+            if (i < waterfallProcessed.length - 1) {
+                waterfallSvg.append('line')
+                    .attr('class', 'waterfall-connector')
+                    .attr('x1', waterX(d.label) + waterX.bandwidth())
+                    .attr('x2', waterX(waterfallProcessed[i + 1].label))
+                    .attr('y1', waterY(d.end))
+                    .attr('y2', waterY(d.end));
+            }
+        });
+
+        // Hexbin Density Plot
+        const hexbinData = Array.from({length: 500}, () => [
+            Math.random() * 700 + 50,
+            Math.random() * 500 + 50
+        ]);
+
+        const hexbinSvg = d3.select('#hexbinPlot');
+        const hexRadius = 15;
+        
+        const hexbin = d3.hexbin().radius(hexRadius).extent([[50, 50], [750, 550]]);
+        const bins = hexbin(hexbinData);
+        
+        const hexColor = d3.scaleSequential(d3.interpolateBlues)
+            .domain([0, d3.max(bins, d => d.length)]);
+        
+        hexbinSvg.selectAll('path')
+            .data(bins)
+            .enter()
+            .append('path')
+            .attr('class', 'hexagon')
+            .attr('d', hexbin.hexagon())
+            .attr('transform', d => `translate(${d.x},${d.y})`)
+            .attr('fill', d => hexColor(d.length))
+            .on('mouseenter', function(event, d) {
+                showTooltip(`<div class="tooltip-title">Hexbin</div>
+                    <div class="tooltip-value">Count: ${d.length}</div>`, event);
+            })
+            .on('mouseleave', hideTooltip);
+
+        // Box Plot
+        const boxData = [
+            { label: 'Group A', values: Array.from({length: 100}, () => d3.randomNormal(50, 10)()) },
+            { label: 'Group B', values: Array.from({length: 100}, () => d3.randomNormal(60, 15)()) },
+            { label: 'Group C', values: Array.from({length: 100}, () => d3.randomNormal(55, 8)()) },
+            { label: 'Group D', values: Array.from({length: 100}, () => d3.randomNormal(70, 12)()) }
+        ];
+
+        const boxSvg = d3.select('#boxPlot');
+        const boxMargin = {top: 50, right: 50, bottom: 50, left: 50};
+        const boxWidth = 1000 - boxMargin.left - boxMargin.right;
+        const boxHeight = 400 - boxMargin.top - boxMargin.bottom;
+        
+        const boxX = d3.scaleBand()
+            .domain(boxData.map(d => d.label))
+            .range([boxMargin.left, boxWidth])
+            .padding(0.3);
+        
+        const boxY = d3.scaleLinear().domain([0, 100]).range([boxHeight, boxMargin.top]);
+        
+        boxData.forEach(series => {
+            const sorted = series.values.sort(d3.ascending);
+            const q1 = d3.quantile(sorted, 0.25);
+            const median = d3.quantile(sorted, 0.5);
+            const q3 = d3.quantile(sorted, 0.75);
+            const iqr = q3 - q1;
+            const min = Math.max(d3.min(sorted), q1 - 1.5 * iqr);
+            const max = Math.min(d3.max(sorted), q3 + 1.5 * iqr);
+            const outliers = sorted.filter(v => v < min || v > max);
+            
+            const center = boxX(series.label) + boxX.bandwidth() / 2;
+            
+            // Whiskers
+            boxSvg.append('line').attr('class', 'box-line')
+                .attr('x1', center).attr('x2', center)
+                .attr('y1', boxY(min)).attr('y2', boxY(q1));
+            
+            boxSvg.append('line').attr('class', 'box-line')
+                .attr('x1', center).attr('x2', center)
+                .attr('y1', boxY(q3)).attr('y2', boxY(max));
+            
+            // Box
+            boxSvg.append('rect').attr('class', 'box-rect')
+                .attr('x', boxX(series.label))
+                .attr('y', boxY(q3))
+                .attr('width', boxX.bandwidth())
+                .attr('height', boxY(q1) - boxY(q3));
+            
+            // Median line
+            boxSvg.append('line').attr('class', 'box-line')
+                .attr('x1', boxX(series.label))
+                .attr('x2', boxX(series.label) + boxX.bandwidth())
+                .attr('y1', boxY(median))
+                .attr('y2', boxY(median))
+                .style('stroke-width', 3);
+            
+            // Outliers
+            outliers.forEach(v => {
+                boxSvg.append('circle').attr('class', 'outlier-dot')
+                    .attr('cx', center)
+                    .attr('cy', boxY(v))
+                    .attr('r', 3);
+            });
+        });
+
+        // Calendar Heatmap
+        const calendarSvg = d3.select('#calendarHeatmap');
+        const cellSize = 15;
+        const calendarData = Array.from({length: 365}, (_, i) => ({
+            day: i,
+            value: Math.random() * 100
+        }));
+
+        const calColor = d3.scaleSequential(d3.interpolateGreens).domain([0, 100]);
+        
+        calendarData.forEach(d => {
+            const week = Math.floor(d.day / 7);
+            const dayOfWeek = d.day % 7;
+            
+            calendarSvg.append('rect')
+                .attr('class', 'calendar-cell')
+                .attr('x', week * (cellSize + 2) + 50)
+                .attr('y', dayOfWeek * (cellSize + 2) + 20)
+                .attr('width', cellSize)
+                .attr('height', cellSize)
+                .attr('fill', calColor(d.value))
+                .attr('stroke', '#fff')
+                .on('mouseenter', function(event) {
+                    showTooltip(`<div class="tooltip-title">Day ${d.day}</div>
+                        <div class="tooltip-value">Value: ${d.value.toFixed(1)}</div>`, event);
+                })
+                .on('mouseleave', hideTooltip);
+        });
+
+        // Sunburst
+        const sunburstData = {
+            name: 'root',
+            children: [
+                {
+                    name: 'A', value: 100,
+                    children: [
+                        { name: 'A1', value: 40 },
+                        { name: 'A2', value: 60 }
+                    ]
+                },
+                {
+                    name: 'B', value: 150,
+                    children: [
+                        { name: 'B1', value: 50 },
+                        { name: 'B2', value: 70 },
+                        { name: 'B3', value: 30 }
+                    ]
+                },
+                { name: 'C', value: 80 }
+            ]
+        };
+
+        const sunburstSvg = d3.select('#sunburst');
+        const sunRadius = 300;
+        const sunG = sunburstSvg.append('g').attr('transform', `translate(400, 400)`);
+        
+        const partition = d3.partition().size([2 * Math.PI, sunRadius]);
+        const root = d3.hierarchy(sunburstData).sum(d => d.value);
+        partition(root);
+        
+        const arc = d3.arc()
+            .startAngle(d => d.x0)
+            .endAngle(d => d.x1)
+            .innerRadius(d => d.y0)
+            .outerRadius(d => d.y1);
+        
+        sunG.selectAll('path')
+            .data(root.descendants())
+            .enter()
+            .append('path')
+            .attr('class', 'sunburst-arc')
+            .attr('d', arc)
+            .attr('fill', d => d3.interpolateRainbow(d.x0 / (2 * Math.PI)))
+            .attr('stroke', 'white')
+            .on('click', function(event, d) {
+                alert(`Clicked: ${d.data.name}`);
+            });
+
+        // Chord Diagram
+        const chordMatrix = [
+            [11975,  5871, 8916, 2868],
+            [ 1951, 10048, 2060, 6171],
+            [ 8010, 16145, 8090, 8045],
+            [ 1013,   990,  940, 6907]
+        ];
+
+        const chordSvg = d3.select('#chordDiagram');
+        const chordG = chordSvg.append('g').attr('transform', `translate(400, 400)`);
+        const chordRadius = 300;
+        
+        const chord = d3.chord().padAngle(0.05).sortSubgroups(d3.descending);
+        const chords = chord(chordMatrix);
+        
+        const chordArc = d3.arc().innerRadius(chordRadius - 100).outerRadius(chordRadius - 80);
+        const ribbon = d3.ribbon().radius(chordRadius - 100);
+        
+        const chordColor = d3.scaleOrdinal(d3.schemeCategory10);
+        
+        chordG.selectAll('path')
+            .data(chords)
+            .enter()
+            .append('path')
+            .attr('class', 'chord-path')
+            .attr('d', ribbon)
+            .attr('fill', d => chordColor(d.target.index));
+        
+        chordG.selectAll('g')
+            .data(chords.groups)
+            .enter()
+            .append('path')
+            .attr('d', chordArc)
+            .attr('fill', (d, i) => chordColor(i))
+            .attr('stroke', '#333');
+
+        // Circle Packing
+        const circlePackData = {
+            name: 'root',
+            children: [
+                { name: 'A', value: 100 },
+                { name: 'B', value: 200 },
+                { name: 'C', value: 50 },
+                { name: 'D', value: 150 },
+                { name: 'E', value: 80 }
+            ]
+        };
+
+        const circlePackSvg = d3.select('#circlePack');
+        const packLayout = d3.pack().size([700, 700]).padding(10);
+        const packRoot = d3.hierarchy(circlePackData).sum(d => d.value);
+        packLayout(packRoot);
+        
+        const circleG = circlePackSvg.append('g').attr('transform', `translate(50, 50)`);
+        
+        circleG.selectAll('circle')
+            .data(packRoot.descendants())
+            .enter()
+            .append('circle')
+            .attr('class', 'circle-node')
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', d => d.r)
+            .attr('fill', d => d.children ? '#3498db' : d3.interpolateViridis(Math.random()))
+            .attr('opacity', 0.7);
+
+        // Stream Graph
+        const streamData = Array.from({length: 50}, (_, i) => ({
+            x: i,
+            y1: Math.sin(i * 0.1) * 20 + 30,
+            y2: Math.cos(i * 0.15) * 15 + 25,
+            y3: Math.sin(i * 0.12) * 10 + 20
+        }));
+
+        const streamSvg = d3.select('#streamGraph');
+        const streamMargin = {top: 50, right: 50, bottom: 50, left: 50};
+        const streamWidth = 1000 - streamMargin.left - streamMargin.right;
+        const streamHeight = 400 - streamMargin.top - streamMargin.bottom;
+        
+        const streamX = d3.scaleLinear().domain([0, 50]).range([streamMargin.left, streamWidth]);
+        const streamY = d3.scaleLinear().domain([-50, 50]).range([streamHeight, streamMargin.top]);
+        
+        const stack = d3.stack()
+            .keys(['y1', 'y2', 'y3'])
+            .offset(d3.stackOffsetWiggle);
+        
+        const series = stack(streamData);
+        
+        const streamArea = d3.area()
+            .x(d => streamX(d.data.x))
+            .y0(d => streamY(d[0]))
+            .y1(d => streamY(d[1]))
+            .curve(d3.curveBasis);
+        
+        const streamColors = ['#3498db', '#2ecc71', '#e74c3c'];
+        
+        streamSvg.selectAll('path')
+            .data(series)
+            .enter()
+            .append('path')
+            .attr('class', 'stream-layer')
+            .attr('d', streamArea)
+            .attr('fill', (d, i) => streamColors[i]);
+
+        console.log('Advanced visualizations loaded: 15+ additional techniques!');
+    </script>
+</body>
+</html>

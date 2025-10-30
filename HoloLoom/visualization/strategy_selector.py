@@ -39,17 +39,17 @@ class QueryAnalyzer:
 
     def __init__(self):
         self.intent_patterns = {
-            QueryIntent.FACTUAL: [r"what is", r"define"],
-            QueryIntent.DEBUGGING: [r"why.*fail", r"error"],
-            QueryIntent.OPTIMIZATION: [r"optimize", r"speed up"],
-            QueryIntent.EXPLORATORY: [r"how", r"why"],
+            QueryIntent.FACTUAL: [r"\bwhat is\b", r"\bdefine\b"],
+            QueryIntent.DEBUGGING: [r"\bwhy.*fail\b", r"\berror\b"],
+            QueryIntent.OPTIMIZATION: [r"\boptimize\b", r"\bspeed up\b"],
+            QueryIntent.EXPLORATORY: [r"\bhow\b", r"\bwhy\b"],
         }
 
     def analyze(self, spacetime: SpacetimeLike) -> QueryCharacteristics:
         """Analyze query and spacetime."""
         intent = self._detect_intent(spacetime.query_text)
         complexity = ComplexityLevel(spacetime.metadata.get("complexity", "FAST"))
-        
+
         return QueryCharacteristics(
             intent=intent,
             complexity_level=complexity,
@@ -119,26 +119,26 @@ class StrategySelector:
     def _generate_candidates(self, characteristics: QueryCharacteristics, spacetime: SpacetimeLike) -> List[PanelSpec]:
         """Generate candidate panels."""
         candidates = [PanelSpec(PanelType.METRIC, "confidence", PanelSize.SMALL, 100, "Confidence")]
-        
+
         if characteristics.intent == QueryIntent.FACTUAL:
             candidates.append(PanelSpec(PanelType.TEXT, "response", PanelSize.LARGE, 90, "Answer"))
-        
+
         elif characteristics.intent == QueryIntent.EXPLORATORY:
             if characteristics.has_timeline:
                 candidates.append(PanelSpec(PanelType.TIMELINE, "trace.stage_durations", PanelSize.FULL_WIDTH, 85, "Timeline"))
             if characteristics.has_graph_data:
                 candidates.append(PanelSpec(PanelType.NETWORK, "trace.threads_activated", PanelSize.MEDIUM, 80, "Graph"))
-        
+
         elif characteristics.intent == QueryIntent.DEBUGGING:
             if characteristics.has_errors:
                 candidates.append(PanelSpec(PanelType.TEXT, "trace.errors", PanelSize.FULL_WIDTH, 95, "Errors"))
             if characteristics.has_timeline:
                 candidates.append(PanelSpec(PanelType.TIMELINE, "trace.stage_durations", PanelSize.LARGE, 88, "Timeline"))
-        
+
         elif characteristics.intent == QueryIntent.OPTIMIZATION:
             if characteristics.has_timeline:
                 candidates.append(PanelSpec(PanelType.TIMELINE, "trace.stage_durations", PanelSize.FULL_WIDTH, 92, "Bottlenecks"))
-        
+
         return candidates
 
     def _select_top_panels(self, prioritized: List[PanelSpec], complexity: ComplexityLevel) -> List[PanelSpec]:

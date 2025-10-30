@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploratory Analysis: How does the weaving orchestrator work?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Exploratory Analysis: How does the weaving orchestrator work?</h1>
+            <p class="text-sm text-gray-500 mt-2">
+                Generated: 2025-10-28T15:23:33.950333
+                | Complexity: FULL
+                | Intent: exploratory
+            </p>
+        </div>
+
+        <!-- Panels -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+        <div class="bg-white p-6 rounded-lg shadow border border-gray-200">
+            <p class="text-sm text-gray-500">Confidence</p>
+            <p class="text-3xl font-bold text-green-600 mt-2">0.89</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow border border-gray-200 col-span-full">
+            <div id="chart_panel_2"></div>
+            <script>
+                Plotly.newPlot('chart_panel_2',
+                    [{"x": ["features", "retrieval", "decision", "execution"], "y": [145.3, 198.2, 112.5, 56.7], "type": "bar", "marker": {"color": ["#6366f1", "#10b981", "#f59e0b", "#ef4444"]}, "name": "Duration (ms)"}],
+                    {"title": "Timeline", "xaxis": {"title": "Stage"}, "yaxis": {"title": "Duration (ms)"}, "showlegend": false},
+                    {responsive: true}
+                );
+            </script>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Graph</h3>
+            <p class="text-gray-700">Activated threads: motif, embedding, spectral, graph, semantic</p>
+            <p class="text-sm text-gray-500 mt-2">
+                (Network visualization coming soon)
+            </p>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

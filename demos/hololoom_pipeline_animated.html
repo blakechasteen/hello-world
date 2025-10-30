@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Pipeline - Animated Architecture</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0f;
+            color: #f5f5f7;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(26, 26, 36, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            width: 320px;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-panel h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #00f5ff;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            font-size: 13px;
+            color: #a0a0b0;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #00f5ff, #00c8ff);
+            border: none;
+            border-radius: 8px;
+            color: #0a0a0f;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 245, 255, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f5f5f7;
+        }
+
+        .slider {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .metric-label {
+            color: #a0a0b0;
+        }
+
+        .metric-value {
+            color: #00f5ff;
+            font-weight: 600;
+            font-family: 'SF Mono', monospace;
+        }
+
+        /* Layer Node Styles */
+        .layer-node {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .layer-node:hover {
+            filter: brightness(1.3);
+        }
+
+        .layer-node.active {
+            filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.8));
+        }
+
+        .layer-box {
+            rx: 12;
+            ry: 12;
+        }
+
+        .layer-label {
+            pointer-events: none;
+            font-size: 14px;
+            font-weight: 600;
+            text-anchor: middle;
+        }
+
+        .layer-sublabel {
+            pointer-events: none;
+            font-size: 11px;
+            text-anchor: middle;
+            fill: #a0a0b0;
+        }
+
+        /* Connection Styles */
+        .connection {
+            fill: none;
+            stroke: #00f5ff;
+            stroke-width: 2;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .connection.active {
+            opacity: 1;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.6));
+        }
+
+        /* Data Packet */
+        .data-packet {
+            fill: #00f5ff;
+            filter: drop-shadow(0 0 15px rgba(0, 245, 255, 0.8));
+        }
+
+        /* Annotation */
+        .annotation {
+            position: fixed;
+            background: rgba(26, 26, 36, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 12px;
+            padding: 16px 20px;
+            max-width: 350px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            opacity: 0;
+            transform: scale(0.9) translateY(-10px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .annotation.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .annotation-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #00f5ff;
+            margin-bottom: 8px;
+        }
+
+        .annotation-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #d0d0d5;
+        }
+
+        /* Performance Monitor */
+        .perf-monitor {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(26, 26, 36, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            z-index: 1000;
+            font-family: 'SF Mono', monospace;
+            font-size: 11px;
+        }
+
+        .perf-metric {
+            margin-bottom: 4px;
+        }
+
+        .perf-good { color: #10b981; }
+        .perf-warn { color: #fbbf24; }
+        .perf-bad { color: #ef4444; }
+
+        /* Title */
+        .title {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 900;
+        }
+
+        .title h1 {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00f5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .title p {
+            font-size: 14px;
+            color: #a0a0b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        <h1>HoloLoom Pipeline</h1>
+        <p>9-Layer Weaving Architecture • Real-Time Data Flow</p>
+    </div>
+
+    <div class="control-panel">
+        <h2>⚡ Animation Control</h2>
+
+        <div class="control-group">
+            <button class="btn" onclick="runQuery()">🚀 Process Query</button>
+            <button class="btn btn-secondary" onclick="toggleAutoRun()">⏯️ Auto-Run: OFF</button>
+            <button class="btn btn-secondary" onclick="resetView()">🔄 Reset View</button>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Animation Speed</label>
+            <input type="range" class="slider" id="speedSlider" min="0.5" max="3" step="0.1" value="1">
+            <span id="speedValue">1.0×</span>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Processing Mode</label>
+            <select class="btn btn-secondary" id="modeSelect" style="padding: 8px;">
+                <option value="bare">BARE (Fast)</option>
+                <option value="fast" selected>FAST (Balanced)</option>
+                <option value="fused">FUSED (Full Power)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Pipeline Metrics</label>
+            <div class="metric">
+                <span class="metric-label">Queries Processed</span>
+                <span class="metric-value" id="queryCount">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Avg Latency</span>
+                <span class="metric-value" id="avgLatency">0ms</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Active Animations</span>
+                <span class="metric-value" id="activeAnims">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="perf-monitor" id="perfMonitor">
+        <div class="perf-metric">FPS: <span id="fps" class="perf-good">60</span></div>
+        <div class="perf-metric">Frame Time: <span id="frameTime" class="perf-good">16.7ms</span></div>
+        <div class="perf-metric">Memory: <span id="memory" class="perf-good">-</span></div>
+    </div>
+
+    <div class="annotation" id="annotation">
+        <div class="annotation-title" id="annotationTitle"></div>
+        <div class="annotation-text" id="annotationText"></div>
+    </div>
+
+    <svg id="canvas"></svg>
+
+    <script>
+        // ===== SPRING PHYSICS ENGINE =====
+        class Spring {
+            constructor(stiffness = 170, damping = 26, mass = 1) {
+                this.k = stiffness;
+                this.c = damping;
+                this.m = mass;
+                this.position = 0;
+                this.velocity = 0;
+                this.target = 0;
+            }
+
+            update(dt = 0.016) {
+                const F_spring = -this.k * (this.position - this.target);
+                const F_damping = -this.c * this.velocity;
+                const acceleration = (F_spring + F_damping) / this.m;
+
+                this.velocity += acceleration * dt;
+                this.position += this.velocity * dt;
+
+                return this.position;
+            }
+
+            isAtRest(threshold = 0.01) {
+                return Math.abs(this.position - this.target) < threshold &&
+                       Math.abs(this.velocity) < threshold;
+            }
+        }
+
+        // ===== HOLOLOOM ARCHITECTURE =====
+        const layers = [
+            { id: 'input', name: 'Input Processing', desc: 'Multi-Modal', color: '#3b82f6', y: 100 },
+            { id: 'pattern', name: 'Pattern Selection', desc: 'Loom Command', color: '#8b5cf6', y: 200 },
+            { id: 'temporal', name: 'Temporal Control', desc: 'Chrono Trigger', color: '#a855f7', y: 300 },
+            { id: 'memory', name: 'Memory Retrieval', desc: 'Yarn Graph', color: '#ec4899', y: 400 },
+            { id: 'resonance', name: 'Feature Extraction', desc: 'Resonance Shed', color: '#f43f5e', y: 500 },
+            { id: 'warp', name: 'Warp Space', desc: 'Continuous Manifold', color: '#f97316', y: 600 },
+            { id: 'policy', name: 'Policy Engine', desc: 'Neural Decision', color: '#eab308', y: 700 },
+            { id: 'convergence', name: 'Convergence', desc: 'Thompson Sampling', color: '#10b981', y: 800 },
+            { id: 'output', name: 'Spacetime Fabric', desc: 'Output + Trace', color: '#00f5ff', y: 900 }
+        ];
+
+        const connections = [];
+        for (let i = 0; i < layers.length - 1; i++) {
+            connections.push({
+                source: layers[i],
+                target: layers[i + 1],
+                type: 'flow'
+            });
+        }
+        // Feedback loop
+        connections.push({
+            source: layers[8],
+            target: layers[3],
+            type: 'feedback'
+        });
+
+        // ===== SVG SETUP =====
+        const svg = d3.select('#canvas');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        svg.attr('width', width).attr('height', height);
+
+        const g = svg.append('g');
+
+        // ===== DRAW CONNECTIONS =====
+        const connectionPaths = g.append('g').attr('class', 'connections')
+            .selectAll('.connection')
+            .data(connections)
+            .join('path')
+            .attr('class', 'connection')
+            .attr('d', d => {
+                const x1 = width / 2;
+                const y1 = d.source.y + 40;
+                const x2 = d.type === 'feedback' ? width / 2 + 300 : width / 2;
+                const y2 = d.target.y - 40;
+
+                if (d.type === 'feedback') {
+                    // Curved feedback loop
+                    const cx = width / 2 + 400;
+                    const cy = (y1 + y2) / 2;
+                    return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
+                } else {
+                    // Straight flow
+                    return `M ${x1} ${y1} L ${x2} ${y2}`;
+                }
+            })
+            .attr('marker-end', 'url(#arrowhead)');
+
+        // Arrow marker
+        svg.append('defs')
+            .append('marker')
+            .attr('id', 'arrowhead')
+            .attr('markerWidth', 10)
+            .attr('markerHeight', 10)
+            .attr('refX', 9)
+            .attr('refY', 3)
+            .attr('orient', 'auto')
+            .append('polygon')
+            .attr('points', '0 0, 10 3, 0 6')
+            .attr('fill', '#00f5ff');
+
+        // ===== DRAW LAYERS =====
+        const layerNodes = g.append('g').attr('class', 'layers')
+            .selectAll('.layer-node')
+            .data(layers)
+            .join('g')
+            .attr('class', 'layer-node')
+            .attr('transform', d => `translate(${width/2}, ${d.y})`)
+            .on('mouseenter', handleLayerHover)
+            .on('mouseleave', handleLayerLeave);
+
+        layerNodes.append('rect')
+            .attr('class', 'layer-box')
+            .attr('x', -150)
+            .attr('y', -30)
+            .attr('width', 300)
+            .attr('height', 60)
+            .attr('fill', d => d.color)
+            .attr('opacity', 0.2)
+            .attr('stroke', d => d.color)
+            .attr('stroke-width', 2);
+
+        layerNodes.append('text')
+            .attr('class', 'layer-label')
+            .attr('y', -5)
+            .text(d => d.name);
+
+        layerNodes.append('text')
+            .attr('class', 'layer-sublabel')
+            .attr('y', 12)
+            .text(d => d.desc);
+
+        // ===== GLOBAL STATE =====
+        let animationSpeed = 1;
+        let autoRun = false;
+        let queryCount = 0;
+        let latencies = [];
+        let activeAnimations = 0;
+
+        // Performance monitoring
+        let lastFrameTime = performance.now();
+        let frameTimes = [];
+
+        function monitorPerformance() {
+            const now = performance.now();
+            const frameTime = now - lastFrameTime;
+            frameTimes.push(frameTime);
+
+            if (frameTimes.length > 60) frameTimes.shift();
+
+            const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+            const fps = 1000 / avgFrameTime;
+
+            document.getElementById('fps').textContent = fps.toFixed(1);
+            document.getElementById('fps').className = fps >= 55 ? 'perf-good' : fps >= 30 ? 'perf-warn' : 'perf-bad';
+
+            document.getElementById('frameTime').textContent = `${avgFrameTime.toFixed(1)}ms`;
+            document.getElementById('frameTime').className = avgFrameTime <= 20 ? 'perf-good' : avgFrameTime <= 33 ? 'perf-warn' : 'perf-bad';
+
+            if (performance.memory) {
+                const mb = performance.memory.usedJSHeapSize / 1048576;
+                document.getElementById('memory').textContent = `${mb.toFixed(1)}MB`;
+            }
+
+            lastFrameTime = now;
+            requestAnimationFrame(monitorPerformance);
+        }
+        monitorPerformance();
+
+        // ===== LAYER HOVER =====
+        function handleLayerHover(event, d) {
+            d3.select(event.currentTarget).classed('active', true);
+
+            // Show annotation
+            const annotation = document.getElementById('annotation');
+            const rect = event.currentTarget.getBoundingClientRect();
+
+            document.getElementById('annotationTitle').textContent = d.name;
+            document.getElementById('annotationText').textContent = getLayerDescription(d.id);
+
+            annotation.style.left = `${rect.right + 20}px`;
+            annotation.style.top = `${rect.top}px`;
+            annotation.classList.add('visible');
+
+            // Highlight connections
+            connectionPaths.classed('active', conn =>
+                conn.source.id === d.id || conn.target.id === d.id
+            );
+        }
+
+        function handleLayerLeave(event, d) {
+            d3.select(event.currentTarget).classed('active', false);
+            document.getElementById('annotation').classList.remove('visible');
+            connectionPaths.classed('active', false);
+        }
+
+        function getLayerDescription(id) {
+            const descriptions = {
+                input: 'Processes multi-modal inputs (text, images, audio, structured data) through specialized adapters. Uses InputRouter for auto-detection and MultiModalFusion for unified representation.',
+                pattern: 'Analyzes query complexity and selects optimal processing pattern (BARE/FAST/FUSED). Determines which warp threads to lift and feature extraction density.',
+                temporal: 'Manages time-dependent aspects: temporal windows, execution limits, thread decay. Controls when threads activate and system evolution over time.',
+                memory: 'Retrieves relevant context from persistent symbolic memory. Supports INMEMORY (dev), HYBRID (production), and HYPERSPACE (research) backends with awareness graphs.',
+                resonance: 'Extracts multi-modal features: motif detection (symbolic), embeddings (continuous), spectral analysis (topological). Creates DotPlasma feature fluid.',
+                warp: 'Tensions discrete threads into continuous manifold for tensor operations. Lifecycle: tension() → compute() → collapse() back to discrete.',
+                policy: 'Neural decision-making with Thompson Sampling exploration. Transformer blocks with cross-attention, motif-gated attention, and LoRA adapters.',
+                convergence: 'Collapses probability distributions to discrete decisions. Strategies: ARGMAX, EPSILON_GREEDY, BAYESIAN_BLEND, PURE_THOMPSON.',
+                output: '4D fabric: 3D semantic space + 1D temporal trace. Complete computational provenance for debugging and reflection learning. Feeds back to memory.'
+            };
+            return descriptions[id] || 'HoloLoom processing layer';
+        }
+
+        // ===== DATA PACKET ANIMATION =====
+        function runQuery() {
+            activeAnimations++;
+            document.getElementById('activeAnims').textContent = activeAnimations;
+
+            const startTime = performance.now();
+            const mode = document.getElementById('modeSelect').value;
+            const speed = animationSpeed;
+
+            // Create data packet
+            const packet = g.append('circle')
+                .attr('class', 'data-packet')
+                .attr('r', 8)
+                .attr('cx', width / 2)
+                .attr('cy', layers[0].y - 40);
+
+            // Animate through layers
+            animatePacketThroughLayers(packet, 0, speed, () => {
+                // Completion
+                const endTime = performance.now();
+                const latency = endTime - startTime;
+
+                queryCount++;
+                latencies.push(latency);
+
+                const avgLatency = latencies.reduce((a, b) => a + b, 0) / latencies.length;
+
+                document.getElementById('queryCount').textContent = queryCount;
+                document.getElementById('avgLatency').textContent = `${avgLatency.toFixed(0)}ms`;
+
+                activeAnimations--;
+                document.getElementById('activeAnims').textContent = activeAnimations;
+
+                packet.remove();
+            });
+        }
+
+        function animatePacketThroughLayers(packet, layerIndex, speed, onComplete) {
+            if (layerIndex >= layers.length) {
+                onComplete();
+                return;
+            }
+
+            const layer = layers[layerIndex];
+            const duration = (800 / speed);
+
+            // Highlight current layer
+            layerNodes.filter(d => d.id === layer.id)
+                .classed('active', true)
+                .transition()
+                .duration(300)
+                .on('end', function() {
+                    d3.select(this).classed('active', false);
+                });
+
+            // Animate packet
+            packet.transition()
+                .duration(duration)
+                .ease(d3.easeCubicInOut)
+                .attr('cy', layer.y)
+                .on('end', () => {
+                    setTimeout(() => {
+                        animatePacketThroughLayers(packet, layerIndex + 1, speed, onComplete);
+                    }, 200 / speed);
+                });
+        }
+
+        // ===== CONTROLS =====
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            animationSpeed = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = `${animationSpeed.toFixed(1)}×`;
+        });
+
+        function toggleAutoRun() {
+            autoRun = !autoRun;
+            const btn = event.target;
+            btn.textContent = autoRun ? '⏸️ Auto-Run: ON' : '⏯️ Auto-Run: OFF';
+            btn.classList.toggle('btn', !autoRun);
+            btn.classList.toggle('btn-secondary', autoRun);
+
+            if (autoRun) {
+                autoRunLoop();
+            }
+        }
+
+        function autoRunLoop() {
+            if (!autoRun) return;
+            runQuery();
+            setTimeout(autoRunLoop, 3000 / animationSpeed);
+        }
+
+        function resetView() {
+            queryCount = 0;
+            latencies = [];
+            document.getElementById('queryCount').textContent = '0';
+            document.getElementById('avgLatency').textContent = '0ms';
+            document.getElementById('activeAnims').textContent = '0';
+        }
+
+        // ===== ZOOM/PAN =====
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 2])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+            });
+
+        svg.call(zoom);
+
+        console.log('✨ HoloLoom Pipeline Visualizer loaded');
+        console.log('Click "Process Query" to see data flow through all 9 layers');
+    </script>
+</body>
+</html>

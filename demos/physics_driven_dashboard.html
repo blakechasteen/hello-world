@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics-Driven Morphing Dashboard - HoloLoom</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            background: #050508;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #viewport {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .panel {
+            position: absolute;
+            background: radial-gradient(circle at top left, rgba(30, 30, 60, 0.95), rgba(10, 10, 25, 0.95));
+            border: 1px solid rgba(0, 245, 255, 0.15);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            will-change: transform, width, height;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel:hover {
+            border-color: rgba(0, 245, 255, 0.4);
+        }
+
+        .panel.focused {
+            border-color: rgba(255, 0, 255, 0.6);
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.4), 0 8px 32px rgba(0, 0, 0, 0.8);
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(20px);
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #00f5ff;
+            transition: font-size 0.3s ease;
+        }
+
+        .panel.focused .panel-title {
+            font-size: 16px;
+        }
+
+        .panel-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .stat {
+            background: rgba(0, 245, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stat.highlight {
+            background: rgba(255, 0, 255, 0.2);
+            color: #ff00ff;
+        }
+
+        .chart-container {
+            position: absolute;
+            top: 60px;
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 10, 20, 0.95);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            z-index: 10000;
+            backdrop-filter: blur(20px);
+            min-width: 200px;
+        }
+
+        .control-section {
+            margin-bottom: 12px;
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 10px;
+            color: #00f5ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .control-value {
+            font-size: 14px;
+            color: #ff00ff;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        button {
+            width: 100%;
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid rgba(0, 245, 255, 0.4);
+            color: #00f5ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Monaco', monospace;
+            transition: all 0.2s ease;
+            margin-top: 4px;
+        }
+
+        button:hover {
+            background: rgba(0, 245, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .hint {
+            font-size: 10px;
+            color: #555;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .axis path, .axis line {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .axis text {
+            fill: #666;
+            font-size: 9px;
+        }
+
+        .grid line {
+            stroke: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Visualization elements */
+        .bar {
+            transition: opacity 0.3s ease;
+        }
+
+        .line {
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
+        .point {
+            cursor: pointer;
+            transition: r 0.2s ease;
+        }
+
+        .point:hover {
+            r: 6;
+        }
+
+        .label {
+            font-size: 9px;
+            fill: #888;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .label.visible {
+            opacity: 1;
+        }
+
+        .heatmap-cell {
+            transition: opacity 0.2s ease;
+        }
+
+        .annotation {
+            font-size: 8px;
+            fill: #666;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .annotation.visible {
+            opacity: 1;
+        }
+
+        /* Performance indicator */
+        .fps-counter {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 10, 20, 0.8);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 10px;
+            color: #666;
+            z-index: 10000;
+            font-family: 'Courier New', monospace;
+        }
+
+        .fps-value {
+            color: #00f5ff;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div id="viewport"></div>
+
+    <div class="controls">
+        <div class="control-section">
+            <span class="control-label">Focus Mode</span>
+            <div class="control-value" id="focusMode">Distributed</div>
+        </div>
+        <div class="control-section">
+            <span class="control-label">Physics FPS</span>
+            <div class="control-value" id="physicsFps">60</div>
+        </div>
+        <button onclick="resetPhysics()">Reset Layout</button>
+        <button onclick="togglePhysics()">Toggle Physics</button>
+        <div class="hint">
+            Hover any panel and scroll to zoom. Physics engine continuously balances space.
+        </div>
+    </div>
+
+    <div class="fps-counter">
+        Render: <span class="fps-value" id="renderFps">60</span> fps
+    </div>
+
+    <script>
+        // Panel definitions with semantic content modes
+        const panelDefs = [
+            {
+                id: 'p1',
+                title: 'Query Performance',
+                color: '#00f5ff',
+                modes: ['summary', 'bars', 'detailed-bars', 'scatter'],
+                dataType: 'performance'
+            },
+            {
+                id: 'p2',
+                title: 'Latency Distribution',
+                color: '#ff00ff',
+                modes: ['histogram', 'line', 'heatmap', 'violin'],
+                dataType: 'latency'
+            },
+            {
+                id: 'p3',
+                title: 'Cache Analytics',
+                color: '#00ffaa',
+                modes: ['pie', 'scatter', 'bubble', 'network'],
+                dataType: 'cache'
+            },
+            {
+                id: 'p4',
+                title: 'System Resources',
+                color: '#ffaa00',
+                modes: ['gauge', 'area', 'stacked-area', 'horizon'],
+                dataType: 'resources'
+            }
+        ];
+
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        // Physics state
+        let panels = [];
+        let physicsEnabled = true;
+        let animationFrame = null;
+        let lastFrameTime = performance.now();
+        let fps = 60;
+
+        // Panel physics properties
+        class Panel {
+            constructor(def, index) {
+                this.def = def;
+                this.index = index;
+
+                // Home position (grid layout)
+                const col = index % 2;
+                const row = Math.floor(index / 2);
+                this.homeX = vw * 0.1 + col * (vw * 0.45);
+                this.homeY = vh * 0.1 + row * (vh * 0.45);
+                this.homeW = vw * 0.35;
+                this.homeH = vh * 0.35;
+
+                // Current state
+                this.x = this.homeX;
+                this.y = this.homeY;
+                this.w = this.homeW;
+                this.h = this.homeH;
+
+                // Physics properties
+                this.vx = 0;
+                this.vy = 0;
+                this.vw = 0;
+                this.vh = 0;
+
+                // Zoom level (0 = min, 1 = home, 3 = max)
+                this.zoom = 1;
+                this.targetZoom = 1;
+
+                // Content mode
+                this.modeIndex = 0;
+                this.mode = def.modes[0];
+
+                // Mass (for physics)
+                this.mass = 1;
+
+                // Create DOM element
+                this.element = this.createDOMElement();
+            }
+
+            createDOMElement() {
+                const el = document.createElement('div');
+                el.className = 'panel';
+                el.id = this.def.id;
+                el.innerHTML = `
+                    <div class="panel-header">
+                        <div class="panel-title">${this.def.title}</div>
+                        <div class="panel-stats">
+                            <span class="stat" id="${this.def.id}-zoom">1.0×</span>
+                            <span class="stat" id="${this.def.id}-mode">${this.mode}</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <svg id="${this.def.id}-svg"></svg>
+                    </div>
+                `;
+
+                // Scroll listener for zoom
+                el.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = -e.deltaY * 0.002;
+                    this.targetZoom = Math.max(0.5, Math.min(3.5, this.targetZoom + delta));
+                }, { passive: false });
+
+                return el;
+            }
+
+            update(dt) {
+                // Smooth zoom
+                this.zoom += (this.targetZoom - this.zoom) * 0.15;
+
+                // Update mode based on zoom
+                const newModeIndex = Math.min(
+                    this.def.modes.length - 1,
+                    Math.floor(this.zoom - 0.5)
+                );
+                if (newModeIndex !== this.modeIndex && newModeIndex >= 0) {
+                    this.modeIndex = newModeIndex;
+                    this.mode = this.def.modes[this.modeIndex];
+                    this.needsRender = true;
+                }
+
+                // Calculate target size based on zoom
+                const scale = 0.5 + this.zoom * 0.5; // 0.5× to 2.25×
+                const targetW = this.homeW * scale;
+                const targetH = this.homeH * scale;
+
+                // Spring force towards home position
+                const homeForceX = (this.homeX - this.x) * 0.1;
+                const homeForceY = (this.homeY - this.y) * 0.1;
+
+                // Spring force towards target size
+                const sizeForceW = (targetW - this.w) * 0.15;
+                const sizeForceH = (targetH - this.h) * 0.15;
+
+                // Repulsion from other panels (collision avoidance)
+                let repelX = 0, repelY = 0;
+                panels.forEach(other => {
+                    if (other === this) return;
+
+                    const dx = this.x - other.x;
+                    const dy = this.y - other.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy) + 1;
+
+                    // Check if bounding boxes overlap or are close
+                    const minDist = (this.w + other.w) * 0.6;
+                    if (dist < minDist) {
+                        const force = (minDist - dist) / minDist;
+                        const strength = 15 * force * Math.max(this.zoom, other.zoom);
+                        repelX += (dx / dist) * strength;
+                        repelY += (dy / dist) * strength;
+                    }
+                });
+
+                // Viewport boundary forces (keep panels on screen)
+                const margin = 50;
+                let boundaryForceX = 0, boundaryForceY = 0;
+
+                if (this.x < margin) boundaryForceX = (margin - this.x) * 0.5;
+                if (this.x + this.w > vw - margin) boundaryForceX = (vw - margin - this.w - this.x) * 0.5;
+                if (this.y < margin) boundaryForceY = (margin - this.y) * 0.5;
+                if (this.y + this.h > vh - margin) boundaryForceY = (vh - margin - this.h - this.y) * 0.5;
+
+                // Apply forces with mass
+                const totalForceX = homeForceX + repelX + boundaryForceX;
+                const totalForceY = homeForceY + repelY + boundaryForceY;
+
+                this.vx += totalForceX / this.mass;
+                this.vy += totalForceY / this.mass;
+                this.vw += sizeForceW;
+                this.vh += sizeForceH;
+
+                // Damping
+                this.vx *= 0.8;
+                this.vy *= 0.8;
+                this.vw *= 0.7;
+                this.vh *= 0.7;
+
+                // Update position and size
+                this.x += this.vx;
+                this.y += this.vy;
+                this.w += this.vw;
+                this.h += this.vh;
+
+                // Update DOM
+                this.element.style.left = `${this.x}px`;
+                this.element.style.top = `${this.y}px`;
+                this.element.style.width = `${this.w}px`;
+                this.element.style.height = `${this.h}px`;
+
+                // Update stats display
+                document.getElementById(`${this.def.id}-zoom`).textContent = `${this.zoom.toFixed(1)}×`;
+                document.getElementById(`${this.def.id}-mode`).textContent = this.mode;
+
+                // Update focus class
+                if (this.zoom > 1.5) {
+                    this.element.classList.add('focused');
+                } else {
+                    this.element.classList.remove('focused');
+                }
+
+                // Highlight stat if zoomed
+                const zoomStat = document.getElementById(`${this.def.id}-zoom`);
+                const modeStat = document.getElementById(`${this.def.id}-mode`);
+                if (this.zoom > 1.5) {
+                    zoomStat.classList.add('highlight');
+                    modeStat.classList.add('highlight');
+                } else {
+                    zoomStat.classList.remove('highlight');
+                    modeStat.classList.remove('highlight');
+                }
+            }
+
+            render() {
+                const svg = d3.select(`#${this.def.id}-svg`);
+                svg.selectAll('*').remove();
+
+                const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+                const width = this.w - 32 - margin.left - margin.right;
+                const height = this.h - 76 - margin.top - margin.bottom;
+
+                if (width <= 0 || height <= 0) return;
+
+                const g = svg.append('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+                // Render based on current mode
+                if (this.def.dataType === 'performance') {
+                    this.renderPerformance(g, width, height);
+                } else if (this.def.dataType === 'latency') {
+                    this.renderLatency(g, width, height);
+                } else if (this.def.dataType === 'cache') {
+                    this.renderCache(g, width, height);
+                } else if (this.def.dataType === 'resources') {
+                    this.renderResources(g, width, height);
+                }
+            }
+
+            renderPerformance(g, width, height) {
+                const data = Array.from({ length: 12 }, (_, i) => ({
+                    id: i,
+                    value: 40 + Math.random() * 50,
+                    label: `Q${i + 1}`
+                }));
+
+                if (this.mode === 'summary') {
+                    // Just show aggregate stats
+                    const avg = d3.mean(data, d => d.value);
+                    const max = d3.max(data, d => d.value);
+
+                    g.append('text')
+                        .attr('x', width / 2)
+                        .attr('y', height / 2 - 20)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', this.def.color)
+                        .attr('font-size', '48px')
+                        .attr('font-weight', '700')
+                        .text(avg.toFixed(0));
+
+                    g.append('text')
+                        .attr('x', width / 2)
+                        .attr('y', height / 2 + 20)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', '#666')
+                        .attr('font-size', '14px')
+                        .text('avg performance');
+
+                } else if (this.mode === 'bars' || this.mode === 'detailed-bars') {
+                    const x = d3.scaleBand()
+                        .domain(data.map(d => d.label))
+                        .range([0, width])
+                        .padding(0.2);
+
+                    const y = d3.scaleLinear()
+                        .domain([0, 100])
+                        .range([height, 0]);
+
+                    // Grid
+                    g.append('g').attr('class', 'grid')
+                        .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+                    // Bars
+                    g.selectAll('.bar')
+                        .data(data)
+                        .join('rect')
+                        .attr('class', 'bar')
+                        .attr('x', d => x(d.label))
+                        .attr('y', d => y(d.value))
+                        .attr('width', x.bandwidth())
+                        .attr('height', d => height - y(d.value))
+                        .attr('fill', this.def.color)
+                        .attr('opacity', 0.7);
+
+                    // Axes
+                    if (this.mode === 'detailed-bars') {
+                        g.append('g').attr('class', 'axis')
+                            .attr('transform', `translate(0,${height})`)
+                            .call(d3.axisBottom(x));
+
+                        g.append('g').attr('class', 'axis')
+                            .call(d3.axisLeft(y).ticks(5));
+
+                        // Labels
+                        g.selectAll('.label')
+                            .data(data)
+                            .join('text')
+                            .attr('class', 'label visible')
+                            .attr('x', d => x(d.label) + x.bandwidth() / 2)
+                            .attr('y', d => y(d.value) - 6)
+                            .attr('text-anchor', 'middle')
+                            .text(d => d.value.toFixed(0));
+                    }
+
+                } else if (this.mode === 'scatter') {
+                    const x = d3.scaleLinear()
+                        .domain([0, data.length])
+                        .range([0, width]);
+
+                    const y = d3.scaleLinear()
+                        .domain([0, 100])
+                        .range([height, 0]);
+
+                    // Grid
+                    g.append('g').attr('class', 'grid')
+                        .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+                    // Points
+                    g.selectAll('.point')
+                        .data(data)
+                        .join('circle')
+                        .attr('class', 'point')
+                        .attr('cx', d => x(d.id))
+                        .attr('cy', d => y(d.value))
+                        .attr('r', 5)
+                        .attr('fill', this.def.color)
+                        .attr('opacity', 0.7)
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
+
+                    // Axes
+                    g.append('g').attr('class', 'axis')
+                        .attr('transform', `translate(0,${height})`)
+                        .call(d3.axisBottom(x).ticks(6));
+
+                    g.append('g').attr('class', 'axis')
+                        .call(d3.axisLeft(y).ticks(5));
+
+                    // Detailed annotations
+                    g.selectAll('.annotation')
+                        .data(data)
+                        .join('text')
+                        .attr('class', 'annotation visible')
+                        .attr('x', d => x(d.id) + 8)
+                        .attr('y', d => y(d.value))
+                        .text(d => `${d.label}: ${d.value.toFixed(1)}`);
+                }
+            }
+
+            renderLatency(g, width, height) {
+                const data = Array.from({ length: 20 }, (_, i) => ({
+                    x: i,
+                    y: 30 + Math.sin(i * 0.3) * 15 + Math.random() * 10
+                }));
+
+                if (this.mode === 'histogram') {
+                    const histogram = d3.histogram()
+                        .domain([0, 100])
+                        .thresholds(10);
+
+                    const bins = histogram(data.map(d => d.y));
+
+                    const x = d3.scaleLinear()
+                        .domain([0, 100])
+                        .range([0, width]);
+
+                    const y = d3.scaleLinear()
+                        .domain([0, d3.max(bins, d => d.length)])
+                        .range([height, 0]);
+
+                    g.selectAll('.bar')
+                        .data(bins)
+                        .join('rect')
+                        .attr('class', 'bar')
+                        .attr('x', d => x(d.x0))
+                        .attr('y', d => y(d.length))
+                        .attr('width', d => x(d.x1) - x(d.x0) - 2)
+                        .attr('height', d => height - y(d.length))
+                        .attr('fill', this.def.color)
+                        .attr('opacity', 0.7);
+
+                } else {
+                    // Line chart
+                    const x = d3.scaleLinear()
+                        .domain([0, data.length - 1])
+                        .range([0, width]);
+
+                    const y = d3.scaleLinear()
+                        .domain([0, d3.max(data, d => d.y) * 1.2])
+                        .range([height, 0]);
+
+                    const line = d3.line()
+                        .x(d => x(d.x))
+                        .y(d => y(d.y))
+                        .curve(d3.curveMonotoneX);
+
+                    g.append('path')
+                        .datum(data)
+                        .attr('class', 'line')
+                        .attr('d', line)
+                        .attr('stroke', this.def.color);
+
+                    if (this.mode !== 'histogram') {
+                        g.selectAll('.point')
+                            .data(data)
+                            .join('circle')
+                            .attr('class', 'point')
+                            .attr('cx', d => x(d.x))
+                            .attr('cy', d => y(d.y))
+                            .attr('r', 3)
+                            .attr('fill', this.def.color);
+                    }
+                }
+            }
+
+            renderCache(g, width, height) {
+                if (this.mode === 'pie') {
+                    const data = [
+                        { label: 'Hit', value: 85 },
+                        { label: 'Miss', value: 15 }
+                    ];
+
+                    const radius = Math.min(width, height) / 2.5;
+                    const pie = d3.pie().value(d => d.value);
+                    const arc = d3.arc().innerRadius(0).outerRadius(radius);
+
+                    const pieG = g.append('g')
+                        .attr('transform', `translate(${width / 2},${height / 2})`);
+
+                    pieG.selectAll('path')
+                        .data(pie(data))
+                        .join('path')
+                        .attr('d', arc)
+                        .attr('fill', (d, i) => i === 0 ? this.def.color : '#666')
+                        .attr('opacity', 0.7)
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
+
+                } else {
+                    // Scatter
+                    const data = Array.from({ length: 30 }, () => ({
+                        x: Math.random() * 100,
+                        y: Math.random() * 100
+                    }));
+
+                    const x = d3.scaleLinear().domain([0, 100]).range([0, width]);
+                    const y = d3.scaleLinear().domain([0, 100]).range([height, 0]);
+
+                    g.selectAll('.point')
+                        .data(data)
+                        .join('circle')
+                        .attr('class', 'point')
+                        .attr('cx', d => x(d.x))
+                        .attr('cy', d => y(d.y))
+                        .attr('r', 4)
+                        .attr('fill', this.def.color)
+                        .attr('opacity', 0.6);
+                }
+            }
+
+            renderResources(g, width, height) {
+                const data = Array.from({ length: 30 }, (_, i) => ({
+                    x: i,
+                    y: 40 + i * 0.5 + Math.random() * 15
+                }));
+
+                if (this.mode === 'gauge') {
+                    const value = 67;
+                    const radius = Math.min(width, height) / 2.5;
+
+                    const gaugeG = g.append('g')
+                        .attr('transform', `translate(${width / 2},${height / 2})`);
+
+                    // Background arc
+                    const arc = d3.arc()
+                        .innerRadius(radius * 0.7)
+                        .outerRadius(radius)
+                        .startAngle(-Math.PI / 2)
+                        .endAngle(Math.PI / 2);
+
+                    gaugeG.append('path')
+                        .attr('d', arc)
+                        .attr('fill', '#222');
+
+                    // Value arc
+                    const valueArc = d3.arc()
+                        .innerRadius(radius * 0.7)
+                        .outerRadius(radius)
+                        .startAngle(-Math.PI / 2)
+                        .endAngle(-Math.PI / 2 + Math.PI * (value / 100));
+
+                    gaugeG.append('path')
+                        .attr('d', valueArc)
+                        .attr('fill', this.def.color);
+
+                    // Value text
+                    gaugeG.append('text')
+                        .attr('text-anchor', 'middle')
+                        .attr('y', 15)
+                        .attr('fill', this.def.color)
+                        .attr('font-size', '32px')
+                        .attr('font-weight', '700')
+                        .text(`${value}%`);
+
+                } else {
+                    // Area chart
+                    const x = d3.scaleLinear().domain([0, data.length]).range([0, width]);
+                    const y = d3.scaleLinear().domain([0, 100]).range([height, 0]);
+
+                    const area = d3.area()
+                        .x(d => x(d.x))
+                        .y0(height)
+                        .y1(d => y(d.y))
+                        .curve(d3.curveMonotoneX);
+
+                    g.append('path')
+                        .datum(data)
+                        .attr('d', area)
+                        .attr('fill', this.def.color)
+                        .attr('opacity', 0.3);
+
+                    const line = d3.line()
+                        .x(d => x(d.x))
+                        .y(d => y(d.y))
+                        .curve(d3.curveMonotoneX);
+
+                    g.append('path')
+                        .datum(data)
+                        .attr('class', 'line')
+                        .attr('d', line)
+                        .attr('stroke', this.def.color);
+                }
+            }
+        }
+
+        // Initialize panels
+        function initPanels() {
+            const viewport = document.getElementById('viewport');
+            panelDefs.forEach((def, i) => {
+                const panel = new Panel(def, i);
+                panels.push(panel);
+                viewport.appendChild(panel.element);
+                panel.render();
+            });
+        }
+
+        // Physics loop
+        function physicsLoop() {
+            if (!physicsEnabled) return;
+
+            const now = performance.now();
+            const dt = (now - lastFrameTime) / 1000;
+            lastFrameTime = now;
+
+            // Update FPS counter
+            fps = fps * 0.9 + (1 / dt) * 0.1;
+            document.getElementById('physicsFps').textContent = fps.toFixed(0);
+            document.getElementById('renderFps').textContent = fps.toFixed(0);
+
+            // Update all panels
+            panels.forEach(panel => {
+                panel.update(dt);
+
+                // Re-render if mode changed or zoomed significantly
+                if (panel.needsRender || Math.abs(panel.zoom - panel.lastRenderZoom || 1) > 0.3) {
+                    panel.render();
+                    panel.lastRenderZoom = panel.zoom;
+                    panel.needsRender = false;
+                }
+            });
+
+            // Update focus mode display
+            const focused = panels.filter(p => p.zoom > 1.5);
+            if (focused.length === 0) {
+                document.getElementById('focusMode').textContent = 'Distributed';
+            } else if (focused.length === 1) {
+                document.getElementById('focusMode').textContent = 'Single Focus';
+            } else {
+                document.getElementById('focusMode').textContent = 'Multi Focus';
+            }
+
+            animationFrame = requestAnimationFrame(physicsLoop);
+        }
+
+        function resetPhysics() {
+            panels.forEach(panel => {
+                panel.targetZoom = 1;
+                panel.x = panel.homeX;
+                panel.y = panel.homeY;
+                panel.vx = 0;
+                panel.vy = 0;
+                panel.vw = 0;
+                panel.vh = 0;
+            });
+        }
+
+        function togglePhysics() {
+            physicsEnabled = !physicsEnabled;
+            if (physicsEnabled) {
+                lastFrameTime = performance.now();
+                physicsLoop();
+            } else {
+                cancelAnimationFrame(animationFrame);
+            }
+        }
+
+        // Initialize
+        initPanels();
+        physicsLoop();
+    </script>
+</body>
+</html>

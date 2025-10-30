@@ -25,6 +25,10 @@ class PanelType(str, Enum):
     HEATMAP = "heatmap"
     DISTRIBUTION = "distribution"
     TEXT = "text"
+    SCATTER = "scatter"        # Scatter plot (correlation, clustering)
+    LINE = "line"              # Line chart (time-series trends)
+    BAR = "bar"                # Bar chart (categorical comparison)
+    INSIGHT = "insight"        # Intelligence card (auto-detected patterns)
 
 
 class LayoutType(str, Enum):
@@ -37,10 +41,15 @@ class LayoutType(str, Enum):
 
 class PanelSize(str, Enum):
     """Panel size specifications."""
-    SMALL = "small"
-    MEDIUM = "medium"
-    LARGE = "large"
-    FULL_WIDTH = "full-width"
+    TINY = "tiny"              # 1/6 width - compact metrics (6 per row)
+    COMPACT = "compact"        # 1/4 width - small metrics (4 per row)
+    SMALL = "small"            # 1/3 width - standard metrics (3 per row)
+    MEDIUM = "medium"          # 1/2 width (2 per row)
+    LARGE = "large"            # 2/3 width (2 of 3 columns)
+    TWO_THIRDS = "two-thirds"  # 2/3 width (2 of 3 columns) - alias for LARGE
+    THREE_QUARTERS = "three-quarters"  # 3/4 width (4 per row)
+    FULL_WIDTH = "full-width"  # Full width
+    HERO = "hero"              # Full width with extra padding
 
 
 class ComplexityLevel(str, Enum):
@@ -180,10 +189,14 @@ LAYOUT_CONFIGS: Dict[LayoutType, str] = {
 
 # Tailwind CSS column span classes for each panel size
 PANEL_SIZE_CLASSES: Dict[PanelSize, str] = {
-    PanelSize.SMALL: "md:col-span-1",
-    PanelSize.MEDIUM: "md:col-span-1 lg:col-span-1",
-    PanelSize.LARGE: "md:col-span-2",
-    PanelSize.FULL_WIDTH: "md:col-span-2 lg:col-span-3"
+    PanelSize.TINY: "col-span-1",           # 1 column (stacks on mobile, 6 per row desktop)
+    PanelSize.COMPACT: "col-span-1",        # 1 column (stacks on mobile, 4 per row desktop)
+    PanelSize.SMALL: "md:col-span-1",       # 1/3 width (3 per row)
+    PanelSize.MEDIUM: "md:col-span-1 lg:col-span-1",  # 1/2 width (2 per row)
+    PanelSize.LARGE: "md:col-span-2",       # 2/3 width (2 of 3 columns)
+    PanelSize.TWO_THIRDS: "md:col-span-2",  # 2 of 3 columns (alias)
+    PanelSize.FULL_WIDTH: "md:col-span-2 lg:col-span-3",
+    PanelSize.HERO: "md:col-span-2 lg:col-span-3"  # Full width with extra visual weight
 }
 
 # Semantic color mapping for metrics

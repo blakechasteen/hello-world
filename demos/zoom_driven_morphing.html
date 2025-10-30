@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoom-Driven Chart Morphing - HoloLoom Advanced Viz</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        .chart-container {
+            flex: 1;
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 10, 20, 0.9);
+            border: 1px solid rgba(0, 245, 255, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 250px;
+            z-index: 100;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 11px;
+            color: #00f5ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .zoom-level {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff00ff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .chart-type {
+            font-size: 16px;
+            color: #00f5ff;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .zoom-slider {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 245, 255, 0.2);
+            border-radius: 3px;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .zoom-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .zoom-markers {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            flex: 1;
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid rgba(0, 245, 255, 0.5);
+            color: #00f5ff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Monaco', monospace;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: rgba(0, 245, 255, 0.2);
+            border-color: #00f5ff;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.reset {
+            background: rgba(255, 0, 255, 0.1);
+            border-color: rgba(255, 0, 255, 0.5);
+            color: #ff00ff;
+        }
+
+        button.reset:hover {
+            background: rgba(255, 0, 255, 0.2);
+            border-color: #ff00ff;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+
+        .instruction {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .instruction strong {
+            color: #00f5ff;
+        }
+
+        .stats-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 10, 20, 0.9);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 11px;
+            color: #888;
+            z-index: 100;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            gap: 20px;
+        }
+
+        .stat-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            color: #00f5ff;
+            font-weight: 600;
+        }
+
+        .axis path,
+        .axis line {
+            stroke: rgba(255, 255, 255, 0.2);
+            shape-rendering: crispEdges;
+        }
+
+        .axis text {
+            fill: #888;
+            font-size: 11px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .grid line {
+            stroke: rgba(255, 255, 255, 0.05);
+            shape-rendering: crispEdges;
+        }
+
+        .bar {
+            transition: opacity 0.3s ease;
+        }
+
+        .line-path {
+            fill: none;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .point {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .point:hover {
+            stroke-width: 3;
+        }
+
+        .point-label {
+            font-size: 10px;
+            fill: #888;
+            pointer-events: none;
+        }
+
+        .point-detail {
+            font-size: 9px;
+            fill: #666;
+            pointer-events: none;
+        }
+
+        .threshold-line {
+            stroke: rgba(255, 0, 255, 0.3);
+            stroke-width: 1;
+            stroke-dasharray: 4, 4;
+        }
+
+        .threshold-label {
+            font-size: 10px;
+            fill: #ff00ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Zoom-Driven Chart Morphing</h1>
+        <p class="subtitle">Chart type automatically adapts to your zoom level - semantic representation switching</p>
+
+        <div class="chart-container">
+            <svg id="chart"></svg>
+
+            <div class="controls">
+                <div class="control-group">
+                    <span class="control-label">Zoom Level</span>
+                    <div class="zoom-level" id="zoomDisplay">1.0×</div>
+                    <div class="chart-type" id="chartTypeDisplay">Bar Chart</div>
+                </div>
+
+                <div class="control-group">
+                    <div class="zoom-slider">
+                        <div class="zoom-progress" id="zoomProgress"></div>
+                    </div>
+                    <div class="zoom-markers">
+                        <span>0.5×</span>
+                        <span>1.0×</span>
+                        <span>2.0×</span>
+                        <span>4.0×</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="button-group">
+                        <button onclick="zoomIn()">Zoom In (+)</button>
+                        <button onclick="zoomOut()">Zoom Out (−)</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <button class="reset" onclick="resetZoom()">Reset View</button>
+                </div>
+
+                <div class="control-group">
+                    <div class="instruction">
+                        <strong>Try:</strong> Use mouse wheel to zoom, or use the buttons above.<br><br>
+                        <strong>0.5-1.5×</strong> Bar Chart (overview)<br>
+                        <strong>1.5-2.5×</strong> Line Chart (trends)<br>
+                        <strong>2.5×+</strong> Scatter Plot (details)
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <div class="stat-row">
+                    <span class="stat-label">Data Points:</span>
+                    <span class="stat-value" id="pointCount">12</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Visible Range:</span>
+                    <span class="stat-value" id="visibleRange">100%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Detail Level:</span>
+                    <span class="stat-value" id="detailLevel">Overview</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Morphing:</span>
+                    <span class="stat-value" id="morphStatus">Idle</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const data = [
+            { id: 'A', name: 'Query A', value: 85, category: 'Fast', details: 'Cached result, 15ms latency' },
+            { id: 'B', name: 'Query B', value: 62, category: 'Medium', details: 'Database hit, 45ms latency' },
+            { id: 'C', name: 'Query C', value: 93, category: 'Fast', details: 'Optimized path, 12ms latency' },
+            { id: 'D', name: 'Query D', value: 45, category: 'Slow', details: 'Complex join, 120ms latency' },
+            { id: 'E', name: 'Query E', value: 78, category: 'Medium', details: 'Index scan, 35ms latency' },
+            { id: 'F', name: 'Query F', value: 91, category: 'Fast', details: 'Memory lookup, 8ms latency' },
+            { id: 'G', name: 'Query G', value: 56, category: 'Medium', details: 'Partial cache, 55ms latency' },
+            { id: 'H', name: 'Query H', value: 88, category: 'Fast', details: 'Hot path, 18ms latency' },
+            { id: 'I', name: 'Query I', value: 34, category: 'Slow', details: 'Full scan, 200ms latency' },
+            { id: 'J', name: 'Query J', value: 72, category: 'Medium', details: 'Batch query, 42ms latency' },
+            { id: 'K', name: 'Query K', value: 95, category: 'Fast', details: 'Pre-computed, 5ms latency' },
+            { id: 'L', name: 'Query L', value: 67, category: 'Medium', details: 'Network call, 68ms latency' }
+        ];
+
+        // Chart setup
+        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        const svg = d3.select('#chart');
+        const container = svg.node().parentElement;
+
+        let width, height;
+        let x, y, xAxis, yAxis;
+        let chartGroup, barsGroup, lineGroup, scatterGroup;
+        let currentZoom = 1;
+        let currentChartType = 'bar'; // 'bar', 'line', 'scatter'
+
+        // Color scale
+        const colorScale = d3.scaleOrdinal()
+            .domain(['Fast', 'Medium', 'Slow'])
+            .range(['#00f5ff', '#ff00ff', '#ff6b6b']);
+
+        function initChart() {
+            const rect = container.getBoundingClientRect();
+            width = rect.width - margin.left - margin.right;
+            height = rect.height - margin.top - margin.bottom;
+
+            svg.attr('width', rect.width)
+               .attr('height', rect.height);
+
+            // Clear existing content
+            svg.selectAll('*').remove();
+
+            // Main group with zoom/pan
+            chartGroup = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            // Scales
+            x = d3.scaleBand()
+                .domain(data.map(d => d.name))
+                .range([0, width])
+                .padding(0.2);
+
+            y = d3.scaleLinear()
+                .domain([0, 100])
+                .range([height, 0]);
+
+            // Axes
+            xAxis = d3.axisBottom(x).tickSize(0);
+            yAxis = d3.axisLeft(y).ticks(5);
+
+            // Grid
+            chartGroup.append('g')
+                .attr('class', 'grid')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickSize(-height).tickFormat(''));
+
+            chartGroup.append('g')
+                .attr('class', 'grid')
+                .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+            // Axes groups
+            chartGroup.append('g')
+                .attr('class', 'axis x-axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(xAxis)
+                .selectAll('text')
+                .attr('transform', 'rotate(-45)')
+                .style('text-anchor', 'end');
+
+            chartGroup.append('g')
+                .attr('class', 'axis y-axis')
+                .call(yAxis);
+
+            // Chart layers (back to front)
+            barsGroup = chartGroup.append('g').attr('class', 'bars-layer');
+            lineGroup = chartGroup.append('g').attr('class', 'line-layer');
+            scatterGroup = chartGroup.append('g').attr('class', 'scatter-layer');
+
+            // Threshold lines
+            const thresholds = [
+                { value: 1.5, label: 'Bar→Line', color: '#00f5ff' },
+                { value: 2.5, label: 'Line→Scatter', color: '#ff00ff' }
+            ];
+
+            // Zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.5, 5])
+                .on('zoom', handleZoom);
+
+            svg.call(zoom);
+
+            // Initial render
+            renderBars();
+            updateDisplay();
+        }
+
+        function handleZoom(event) {
+            const newZoom = event.transform.k;
+            const zoomChange = Math.abs(newZoom - currentZoom);
+
+            // Only morph if zoom changed significantly
+            if (zoomChange > 0.05) {
+                currentZoom = newZoom;
+
+                // Determine target chart type based on zoom level
+                let targetType;
+                if (newZoom < 1.5) {
+                    targetType = 'bar';
+                } else if (newZoom < 2.5) {
+                    targetType = 'line';
+                } else {
+                    targetType = 'scatter';
+                }
+
+                // Morph if type changed
+                if (targetType !== currentChartType) {
+                    morphTo(targetType);
+                }
+
+                updateDisplay();
+            }
+
+            // Apply zoom transform to chart elements
+            const newX = event.transform.rescaleX(x);
+
+            chartGroup.select('.x-axis')
+                .call(d3.axisBottom(newX).tickSize(0))
+                .selectAll('text')
+                .attr('transform', 'rotate(-45)')
+                .style('text-anchor', 'end');
+        }
+
+        function morphTo(targetType) {
+            d3.select('#morphStatus').text('Morphing...');
+
+            const morphDuration = 800;
+
+            if (currentChartType === 'bar' && targetType === 'line') {
+                morphBarToLine(morphDuration);
+            } else if (currentChartType === 'line' && targetType === 'scatter') {
+                morphLineToScatter(morphDuration);
+            } else if (currentChartType === 'scatter' && targetType === 'line') {
+                morphScatterToLine(morphDuration);
+            } else if (currentChartType === 'line' && targetType === 'bar') {
+                morphLineToBar(morphDuration);
+            } else if (currentChartType === 'bar' && targetType === 'scatter') {
+                morphBarToLine(400);
+                setTimeout(() => morphLineToScatter(400), 400);
+            } else if (currentChartType === 'scatter' && targetType === 'bar') {
+                morphScatterToLine(400);
+                setTimeout(() => morphLineToBar(400), 400);
+            }
+
+            currentChartType = targetType;
+
+            setTimeout(() => {
+                d3.select('#morphStatus').text('Idle');
+            }, morphDuration);
+        }
+
+        function renderBars() {
+            const bars = barsGroup.selectAll('.bar')
+                .data(data)
+                .join('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.name))
+                .attr('y', d => y(d.value))
+                .attr('width', x.bandwidth())
+                .attr('height', d => height - y(d.value))
+                .attr('fill', d => colorScale(d.category))
+                .attr('opacity', 0.8);
+        }
+
+        function morphBarToLine(duration) {
+            // Shrink bars to thin vertical lines
+            barsGroup.selectAll('.bar')
+                .transition()
+                .duration(duration * 0.5)
+                .attr('width', 3)
+                .attr('x', d => x(d.name) + x.bandwidth() / 2 - 1.5)
+                .attr('opacity', 0.3);
+
+            // Draw line connecting tops
+            const line = d3.line()
+                .x(d => x(d.name) + x.bandwidth() / 2)
+                .y(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+
+            lineGroup.append('path')
+                .datum(data)
+                .attr('class', 'line-path')
+                .attr('d', line)
+                .attr('stroke', '#00f5ff')
+                .attr('stroke-width', 0)
+                .transition()
+                .duration(duration)
+                .attr('stroke-width', 3);
+
+            // Add points on line
+            lineGroup.selectAll('.line-point')
+                .data(data)
+                .join('circle')
+                .attr('class', 'line-point')
+                .attr('cx', d => x(d.name) + x.bandwidth() / 2)
+                .attr('cy', d => y(d.value))
+                .attr('r', 0)
+                .attr('fill', d => colorScale(d.category))
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .transition()
+                .duration(duration)
+                .attr('r', 5);
+        }
+
+        function morphLineToScatter(duration) {
+            // Fade out line
+            lineGroup.select('.line-path')
+                .transition()
+                .duration(duration * 0.5)
+                .attr('stroke-width', 0)
+                .remove();
+
+            // Fade out bar remnants
+            barsGroup.selectAll('.bar')
+                .transition()
+                .duration(duration * 0.5)
+                .attr('opacity', 0);
+
+            // Move line points to scatter
+            const points = scatterGroup.selectAll('.point')
+                .data(data)
+                .join('circle')
+                .attr('class', 'point')
+                .attr('cx', d => x(d.name) + x.bandwidth() / 2)
+                .attr('cy', d => y(d.value))
+                .attr('r', 0)
+                .attr('fill', d => colorScale(d.category))
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Animate line points to scatter points
+            lineGroup.selectAll('.line-point')
+                .transition()
+                .duration(duration)
+                .attr('r', 8)
+                .on('end', function(d, i) {
+                    if (i === 0) {
+                        lineGroup.selectAll('.line-point').remove();
+                    }
+                });
+
+            points.transition()
+                .duration(duration)
+                .attr('r', 8);
+
+            // Add labels
+            scatterGroup.selectAll('.point-label')
+                .data(data)
+                .join('text')
+                .attr('class', 'point-label')
+                .attr('x', d => x(d.name) + x.bandwidth() / 2)
+                .attr('y', d => y(d.value) - 15)
+                .attr('text-anchor', 'middle')
+                .text(d => d.id)
+                .attr('opacity', 0)
+                .transition()
+                .duration(duration)
+                .attr('opacity', 1);
+
+            // Add detail text (only visible at high zoom)
+            scatterGroup.selectAll('.point-detail')
+                .data(data)
+                .join('text')
+                .attr('class', 'point-detail')
+                .attr('x', d => x(d.name) + x.bandwidth() / 2)
+                .attr('y', d => y(d.value) + 25)
+                .attr('text-anchor', 'middle')
+                .text(d => `${d.value}% - ${d.details}`)
+                .attr('opacity', 0)
+                .transition()
+                .delay(duration * 0.5)
+                .duration(duration * 0.5)
+                .attr('opacity', currentZoom > 3 ? 1 : 0);
+        }
+
+        function morphScatterToLine(duration) {
+            // Fade out labels
+            scatterGroup.selectAll('.point-label, .point-detail')
+                .transition()
+                .duration(duration * 0.5)
+                .attr('opacity', 0)
+                .remove();
+
+            // Shrink points
+            scatterGroup.selectAll('.point')
+                .transition()
+                .duration(duration)
+                .attr('r', 5)
+                .on('end', function(d, i) {
+                    if (i === 0) {
+                        scatterGroup.selectAll('.point').remove();
+                    }
+                });
+
+            // Recreate line
+            const line = d3.line()
+                .x(d => x(d.name) + x.bandwidth() / 2)
+                .y(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+
+            lineGroup.append('path')
+                .datum(data)
+                .attr('class', 'line-path')
+                .attr('d', line)
+                .attr('stroke', '#00f5ff')
+                .attr('stroke-width', 0)
+                .transition()
+                .duration(duration)
+                .attr('stroke-width', 3);
+
+            lineGroup.selectAll('.line-point')
+                .data(data)
+                .join('circle')
+                .attr('class', 'line-point')
+                .attr('cx', d => x(d.name) + x.bandwidth() / 2)
+                .attr('cy', d => y(d.value))
+                .attr('r', 0)
+                .attr('fill', d => colorScale(d.category))
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .transition()
+                .duration(duration)
+                .attr('r', 5);
+        }
+
+        function morphLineToBar(duration) {
+            // Fade out line
+            lineGroup.select('.line-path')
+                .transition()
+                .duration(duration * 0.5)
+                .attr('stroke-width', 0)
+                .remove();
+
+            lineGroup.selectAll('.line-point')
+                .transition()
+                .duration(duration * 0.5)
+                .attr('r', 0)
+                .remove();
+
+            // Restore bars
+            barsGroup.selectAll('.bar')
+                .transition()
+                .duration(duration)
+                .attr('width', x.bandwidth())
+                .attr('x', d => x(d.name))
+                .attr('opacity', 0.8);
+        }
+
+        function updateDisplay() {
+            // Update zoom display
+            d3.select('#zoomDisplay').text(`${currentZoom.toFixed(1)}×`);
+
+            // Update chart type display
+            const typeNames = { bar: 'Bar Chart', line: 'Line Chart', scatter: 'Scatter Plot' };
+            d3.select('#chartTypeDisplay').text(typeNames[currentChartType]);
+
+            // Update zoom progress bar
+            const progress = ((currentZoom - 0.5) / (5 - 0.5)) * 100;
+            d3.select('#zoomProgress').style('width', `${Math.min(100, Math.max(0, progress))}%`);
+
+            // Update stats
+            const visiblePercent = Math.min(100, 100 / currentZoom);
+            d3.select('#visibleRange').text(`${visiblePercent.toFixed(0)}%`);
+
+            let detailLevel;
+            if (currentZoom < 1.5) detailLevel = 'Overview';
+            else if (currentZoom < 2.5) detailLevel = 'Trends';
+            else if (currentZoom < 3.5) detailLevel = 'Details';
+            else detailLevel = 'Full Details';
+            d3.select('#detailLevel').text(detailLevel);
+
+            // Update detail text visibility based on zoom
+            if (currentChartType === 'scatter') {
+                scatterGroup.selectAll('.point-detail')
+                    .transition()
+                    .duration(300)
+                    .attr('opacity', currentZoom > 3 ? 1 : 0);
+            }
+        }
+
+        function zoomIn() {
+            const newZoom = Math.min(5, currentZoom * 1.3);
+            svg.transition()
+                .duration(500)
+                .call(d3.zoom().scaleTo, newZoom);
+        }
+
+        function zoomOut() {
+            const newZoom = Math.max(0.5, currentZoom / 1.3);
+            svg.transition()
+                .duration(500)
+                .call(d3.zoom().scaleTo, newZoom);
+        }
+
+        function resetZoom() {
+            currentZoom = 1;
+            svg.transition()
+                .duration(750)
+                .call(d3.zoom().transform, d3.zoomIdentity);
+
+            if (currentChartType !== 'bar') {
+                morphTo('bar');
+            }
+        }
+
+        // Initialize
+        initChart();
+        window.addEventListener('resize', initChart);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '+' || e.key === '=') {
+                zoomIn();
+            } else if (e.key === '-' || e.key === '_') {
+                zoomOut();
+            } else if (e.key === '0') {
+                resetZoom();
+            }
+        });
+    </script>
+</body>
+</html>

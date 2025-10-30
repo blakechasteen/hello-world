@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mythRL - Intelligent Sparkline Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.3;
+            padding: 20px;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            font-weight: 300;
+            margin-bottom: 5px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .section-meta {
+            font-size: 0.75em;
+            color: #999;
+        }
+
+        /* Featured sparklines - THE BIG 5 */
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .sparkline-featured {
+            background: white;
+            border: 3px solid #e74c3c;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sparkline-featured::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e74c3c, #f39c12);
+        }
+
+        .sparkline-featured:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .featured-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .featured-value {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .featured-chart {
+            height: 80px;
+            margin: 15px 0;
+        }
+
+        .featured-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .featured-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .featured-reason {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #fff9f0;
+            border-left: 3px solid #f39c12;
+            font-size: 0.75em;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Standard sparklines grid */
+        .sparkline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 6px;
+        }
+
+        .sparkline-row {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .sparkline-row:hover {
+            border-color: #3498db;
+            background: #f8f9fa;
+            transform: translateX(3px);
+        }
+
+        .spark-label {
+            flex: 0 0 100px;
+            font-size: 0.75em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .spark-chart {
+            flex: 1;
+            height: 30px;
+        }
+
+        .spark-value {
+            flex: 0 0 70px;
+            text-align: right;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .spark-change {
+            flex: 0 0 60px;
+            text-align: right;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        /* Interest score indicator */
+        .interest-indicator {
+            flex: 0 0 40px;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .interest-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            transition: width 1s ease;
+        }
+
+        /* Trend indicators */
+        .trend-up { color: #27ae60; }
+        .trend-down { color: #e74c3c; }
+        .trend-flat { color: #95a5a6; }
+
+        .trend-up::after { content: '↗'; margin-left: 3px; }
+        .trend-down::after { content: '↘'; margin-left: 3px; }
+        .trend-flat::after { content: '→'; margin-left: 3px; }
+
+        /* Mini stats summary */
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e0e0e0;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .summary-label {
+            font-size: 0.7em;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        @keyframes highlight-pulse {
+            0%, 100% { box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2); }
+            50% { box-shadow: 0 4px 20px rgba(231, 76, 60, 0.4); }
+        }
+
+        .sparkline-featured {
+            animation: highlight-pulse 3s ease-in-out infinite;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.8em;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slider-label {
+            font-size: 0.75em;
+            color: #666;
+        }
+
+        input[type="range"] {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>mythRL Intelligent Sparkline Dashboard</h1>
+        <p class="subtitle">Automatic detection of the 5 most interesting metrics • Size = Importance</p>
+
+        <div class="controls">
+            <button class="control-btn" onclick="regenerateData()">🔄 Regenerate Data</button>
+            <button class="control-btn" onclick="sortByValue()">📊 Sort by Value</button>
+            <button class="control-btn" onclick="sortByVolatility()">📈 Sort by Volatility</button>
+            <button class="control-btn" onclick="sortByTrend()">↗️ Sort by Trend</button>
+            <div class="slider-container">
+                <span class="slider-label">Total Metrics:</span>
+                <input type="range" id="metricCount" min="20" max="50" value="35" oninput="updateMetricCount(this.value)">
+                <span id="metricCountValue">35</span>
+            </div>
+        </div>
+
+        <div class="stats-summary">
+            <div class="summary-item">
+                <div class="summary-label">Total Metrics</div>
+                <div class="summary-value" id="totalMetrics">35</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Featured</div>
+                <div class="summary-value" style="color: #e74c3c;">5</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Avg Value</div>
+                <div class="summary-value" id="avgValue">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Max Volatility</div>
+                <div class="summary-value" id="maxVolatility">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Trending Up</div>
+                <div class="summary-value" style="color: #27ae60;" id="trendingUp">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Trending Down</div>
+                <div class="summary-value" style="color: #e74c3c;" id="trendingDown">0</div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <div class="section-title">🌟 Top 5 Most Interesting Metrics</div>
+            <div class="section-meta">Automatically selected based on volatility, trends, and extremes</div>
+        </div>
+        <div class="featured-grid" id="featuredGrid"></div>
+
+        <div class="section-header">
+            <div class="section-title">📊 All Metrics Overview</div>
+            <div class="section-meta">Complete dataset with interest scores</div>
+        </div>
+        <div class="sparkline-grid" id="sparklineGrid"></div>
+    </div>
+
+    <script>
+        let currentMetricCount = 35;
+        let allMetrics = [];
+
+        // Utility functions
+        function generateTimeSeries(points = 50, volatility = 10, trend = 0) {
+            const data = [];
+            let value = 50 + Math.random() * 20;
+            for (let i = 0; i < points; i++) {
+                value += (Math.random() - 0.5) * volatility + trend;
+                value = Math.max(0, Math.min(100, value));
+                data.push(value);
+            }
+            return data;
+        }
+
+        function calculateVolatility(data) {
+            let sum = 0;
+            for (let i = 1; i < data.length; i++) {
+                sum += Math.abs(data[i] - data[i-1]);
+            }
+            return sum / data.length;
+        }
+
+        function calculateTrend(data) {
+            const start = data[0];
+            const end = data[data.length - 1];
+            return ((end - start) / start) * 100;
+        }
+
+        function calculateInterestScore(metric) {
+            const volatility = metric.volatility;
+            const trendMagnitude = Math.abs(metric.trend);
+            const extremeValue = Math.abs(metric.currentValue - 50); // Distance from median
+            const recentChange = Math.abs(metric.data[metric.data.length - 1] - metric.data[metric.data.length - 5]);
+            
+            // Weighted scoring: volatility + trend + extremes + recent change
+            return (volatility * 2) + (trendMagnitude * 1.5) + (extremeValue * 0.5) + (recentChange * 1.5);
+        }
+
+        function getColorByValue(value) {
+            const ratio = value / 100;
+            if (ratio >= 0.9) return '#27ae60';
+            if (ratio >= 0.75) return '#2ecc71';
+            if (ratio >= 0.6) return '#f39c12';
+            if (ratio >= 0.4) return '#e74c3c';
+            return '#c0392b';
+        }
+
+        function getTrendClass(trend) {
+            if (trend > 5) return 'trend-up';
+            if (trend < -5) return 'trend-down';
+            return 'trend-flat';
+        }
+
+        function createSparkline(container, data, color = '#3498db', showMinMax = false) {
+            const svg = d3.select(container);
+            svg.selectAll('*').remove();
+            
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            const x = d3.scaleLinear().domain([0, data.length - 1]).range([0, width]);
+            const y = d3.scaleLinear().domain([d3.min(data), d3.max(data)]).range([height - 2, 2]);
+            
+            const line = d3.line()
+                .x((d, i) => x(i))
+                .y(d => y(d))
+                .curve(d3.curveMonotoneX);
+            
+            // Area fill
+            if (showMinMax) {
+                const area = d3.area()
+                    .x((d, i) => x(i))
+                    .y0(height)
+                    .y1(d => y(d))
+                    .curve(d3.curveMonotoneX);
+                
+                svg.append('path')
+                    .datum(data)
+                    .attr('fill', color)
+                    .attr('opacity', 0.2)
+                    .attr('d', area);
+            }
+            
+            // Line
+            const path = svg.append('path')
+                .datum(data)
+                .attr('fill', 'none')
+                .attr('stroke', color)
+                .attr('stroke-width', showMinMax ? 2.5 : 1.5)
+                .attr('d', line);
+            
+            // Animate line drawing
+            const totalLength = path.node().getTotalLength();
+            path
+                .attr('stroke-dasharray', totalLength + ' ' + totalLength)
+                .attr('stroke-dashoffset', totalLength)
+                .transition()
+                .duration(1500)
+                .ease(d3.easeCubicInOut)
+                .attr('stroke-dashoffset', 0);
+            
+            // Min/Max dots for featured
+            if (showMinMax) {
+                const minIdx = data.indexOf(d3.min(data));
+                const maxIdx = data.indexOf(d3.max(data));
+                
+                svg.append('circle')
+                    .attr('cx', x(maxIdx))
+                    .attr('cy', y(data[maxIdx]))
+                    .attr('r', 4)
+                    .attr('fill', '#27ae60')
+                    .attr('stroke', 'white')
+                    .attr('stroke-width', 2);
+                
+                svg.append('circle')
+                    .attr('cx', x(minIdx))
+                    .attr('cy', y(data[minIdx]))
+                    .attr('r', 4)
+                    .attr('fill', '#e74c3c')
+                    .attr('stroke', 'white')
+                    .attr('stroke-width', 2);
+            }
+            
+            // Current value dot
+            svg.append('circle')
+                .attr('cx', x(data.length - 1))
+                .attr('cy', y(data[data.length - 1]))
+                .attr('r', showMinMax ? 5 : 2.5)
+                .attr('fill', color)
+                .attr('stroke', 'white')
+                .attr('stroke-width', showMinMax ? 2 : 1);
+        }
+
+        function generateMetrics(count) {
+            const metrics = [];
+            const metricNames = [
+                'Storage Latency', 'Search Speed', 'Memory Usage', 'CPU Load', 'Network I/O',
+                'Query Time', 'Cache Hits', 'Error Rate', 'Throughput', 'Response Time',
+                'Disk Usage', 'Connection Pool', 'Queue Depth', 'Batch Size', 'Retry Count',
+                'Timeout Rate', 'Success Rate', 'Load Balance', 'Replica Lag', 'Index Size',
+                'Transaction Rate', 'Lock Wait', 'Page Faults', 'GC Pause', 'Thread Count',
+                'Heap Usage', 'Request Rate', 'Failure Rate', 'Latency P99', 'Bandwidth',
+                'Session Count', 'Auth Rate', 'Token Gen', 'Message Queue', 'Event Rate',
+                'Sync Time', 'Backup Size', 'Log Volume', 'Alert Count', 'Incident Rate',
+                'Deploy Freq', 'Recovery Time', 'Uptime', 'Availability', 'Saturation',
+                'Utilization', 'Capacity', 'Efficiency', 'Performance', 'Reliability'
+            ];
+
+            for (let i = 0; i < count; i++) {
+                const volatility = Math.random() * 20 + 5;
+                const trend = (Math.random() - 0.5) * 2;
+                const data = generateTimeSeries(60, volatility, trend);
+                const currentValue = data[data.length - 1];
+                
+                const metric = {
+                    id: i,
+                    name: metricNames[i % metricNames.length] + (i >= metricNames.length ? ` ${Math.floor(i / metricNames.length) + 1}` : ''),
+                    data: data,
+                    currentValue: currentValue,
+                    volatility: calculateVolatility(data),
+                    trend: calculateTrend(data),
+                    min: d3.min(data),
+                    max: d3.max(data),
+                    avg: d3.mean(data)
+                };
+                
+                metric.interestScore = calculateInterestScore(metric);
+                metrics.push(metric);
+            }
+
+            return metrics.sort((a, b) => b.interestScore - a.interestScore);
+        }
+
+        function getInterestReason(metric) {
+            const reasons = [];
+            if (metric.volatility > 10) reasons.push('High volatility');
+            if (Math.abs(metric.trend) > 20) reasons.push(metric.trend > 0 ? 'Strong upward trend' : 'Strong downward trend');
+            if (metric.currentValue > 85) reasons.push('Extreme high value');
+            if (metric.currentValue < 15) reasons.push('Extreme low value');
+            if (Math.abs(metric.data[metric.data.length - 1] - metric.data[metric.data.length - 5]) > 15) reasons.push('Rapid recent change');
+            
+            return reasons.length > 0 ? reasons.join(' • ') : 'Notable pattern detected';
+        }
+
+        function renderDashboard() {
+            allMetrics = generateMetrics(currentMetricCount);
+            
+            // Update stats
+            document.getElementById('totalMetrics').textContent = allMetrics.length;
+            document.getElementById('avgValue').textContent = d3.mean(allMetrics, d => d.currentValue).toFixed(1);
+            document.getElementById('maxVolatility').textContent = d3.max(allMetrics, d => d.volatility).toFixed(1);
+            document.getElementById('trendingUp').textContent = allMetrics.filter(m => m.trend > 5).length;
+            document.getElementById('trendingDown').textContent = allMetrics.filter(m => m.trend < -5).length;
+            
+            // Render featured (top 5)
+            const featuredGrid = d3.select('#featuredGrid');
+            featuredGrid.selectAll('*').remove();
+            
+            allMetrics.slice(0, 5).forEach((metric, idx) => {
+                const card = featuredGrid.append('div')
+                    .attr('class', 'sparkline-featured animate-in')
+                    .style('animation-delay', `${idx * 0.1}s`);
+                
+                card.append('div')
+                    .attr('class', 'featured-badge')
+                    .text(`#${idx + 1} FEATURED`);
+                
+                card.append('div')
+                    .attr('class', 'featured-label')
+                    .text(metric.name);
+                
+                card.append('div')
+                    .attr('class', 'featured-value')
+                    .style('color', getColorByValue(metric.currentValue))
+                    .text(metric.currentValue.toFixed(1));
+                
+                const chartDiv = card.append('div').attr('class', 'featured-chart');
+                const svg = chartDiv.append('svg')
+                    .attr('width', '100%')
+                    .attr('height', '100%');
+                
+                setTimeout(() => {
+                    createSparkline(svg.node(), metric.data, getColorByValue(metric.currentValue), true);
+                }, idx * 100);
+                
+                const stats = card.append('div').attr('class', 'featured-stats');
+                
+                const statMin = stats.append('div').attr('class', 'featured-stat');
+                statMin.append('div').attr('class', 'stat-label').text('Min');
+                statMin.append('div').attr('class', 'stat-value').style('color', '#e74c3c').text(metric.min.toFixed(1));
+                
+                const statAvg = stats.append('div').attr('class', 'featured-stat');
+                statAvg.append('div').attr('class', 'stat-label').text('Avg');
+                statAvg.append('div').attr('class', 'stat-value').text(metric.avg.toFixed(1));
+                
+                const statMax = stats.append('div').attr('class', 'featured-stat');
+                statMax.append('div').attr('class', 'stat-label').text('Max');
+                statMax.append('div').attr('class', 'stat-value').style('color', '#27ae60').text(metric.max.toFixed(1));
+                
+                const statVolatility = stats.append('div').attr('class', 'featured-stat');
+                statVolatility.append('div').attr('class', 'stat-label').text('Volatility');
+                statVolatility.append('div').attr('class', 'stat-value').style('color', '#f39c12').text(metric.volatility.toFixed(1));
+                
+                card.append('div')
+                    .attr('class', 'featured-reason')
+                    .html(`<strong>Why interesting:</strong> ${getInterestReason(metric)}`);
+            });
+            
+            // Render all metrics
+            const sparklineGrid = d3.select('#sparklineGrid');
+            sparklineGrid.selectAll('*').remove();
+            
+            allMetrics.forEach((metric, idx) => {
+                const row = sparklineGrid.append('div')
+                    .attr('class', 'sparkline-row animate-in')
+                    .style('animation-delay', `${(idx + 5) * 0.01}s`);
+                
+                row.append('div')
+                    .attr('class', 'spark-label')
+                    .text(metric.name);
+                
+                const chartDiv = row.append('div').attr('class', 'spark-chart');
+                const svg = chartDiv.append('svg')
+                    .attr('width', '100%')
+                    .attr('height', '100%');
+                
+                setTimeout(() => {
+                    createSparkline(svg.node(), metric.data, getColorByValue(metric.currentValue));
+                }, (idx + 5) * 10);
+                
+                row.append('div')
+                    .attr('class', 'spark-value')
+                    .style('color', getColorByValue(metric.currentValue))
+                    .text(metric.currentValue.toFixed(1));
+                
+                row.append('div')
+                    .attr('class', `spark-change ${getTrendClass(metric.trend)}`)
+                    .text(`${metric.trend > 0 ? '+' : ''}${metric.trend.toFixed(0)}%`);
+                
+                const indicator = row.append('div').attr('class', 'interest-indicator');
+                indicator.append('div')
+                    .attr('class', 'interest-fill')
+                    .style('width', '0%')
+                    .transition()
+                    .delay(idx * 10)
+                    .duration(1000)
+                    .style('width', `${Math.min(100, (metric.interestScore / allMetrics[0].interestScore) * 100)}%`);
+            });
+        }
+
+        function regenerateData() {
+            renderDashboard();
+        }
+
+        function sortByValue() {
+            allMetrics.sort((a, b) => b.currentValue - a.currentValue);
+            renderDashboard();
+        }
+
+        function sortByVolatility() {
+            allMetrics.sort((a, b) => b.volatility - a.volatility);
+            renderDashboard();
+        }
+
+        function sortByTrend() {
+            allMetrics.sort((a, b) => Math.abs(b.trend) - Math.abs(a.trend));
+            renderDashboard();
+        }
+
+        function updateMetricCount(value) {
+            currentMetricCount = parseInt(value);
+            document.getElementById('metricCountValue').textContent = value;
+            renderDashboard();
+        }
+
+        // Initial render
+        renderDashboard();
+
+        console.log('Intelligent sparkline dashboard loaded!');
+    </script>
+</body>
+</html>

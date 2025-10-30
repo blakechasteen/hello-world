@@ -1,0 +1,4590 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HoloLoom Performance Dashboard - HoloLoom Interactive Dashboard">
+    <title>HoloLoom Interactive Dashboard - HoloLoom Dashboard</title>
+
+    <!-- Plotly.js (interactive charts) -->
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+
+    <!-- D3.js (force-directed graphs) -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Modern CSS System (Phases 1-7) -->
+    <style>
+/**
+ * HoloLoom Modern Dashboard Styles
+ * =================================
+ * Modern CSS architecture with:
+ * - CSS Custom Properties (Phase 1)
+ * - Modern Selectors (Phase 2)
+ * - Accessibility (Phase 3)
+ * - Container Queries (Phase 4)
+ * - View Transitions (Phase 5)
+ * - OKLCH Colors (Phase 6)
+ * - Performance (Phase 7)
+ *
+ * Author: Claude Code with HoloLoom architecture
+ * Date: October 29, 2025
+ */
+
+/* ========================================================================
+   Phase 1: CSS Custom Properties - Design Token System
+   ======================================================================== */
+
+:root {
+  /* OKLCH Color System (Phase 6) - Perceptually uniform colors */
+  /* Neutrals */
+  --color-neutral-50: oklch(98% 0 0);
+  --color-neutral-100: oklch(96% 0.002 270);
+  --color-neutral-200: oklch(92% 0.004 270);
+  --color-neutral-300: oklch(85% 0.006 270);
+  --color-neutral-400: oklch(71% 0.008 270);
+  --color-neutral-500: oklch(58% 0.01 270);
+  --color-neutral-600: oklch(47% 0.008 270);
+  --color-neutral-700: oklch(37% 0.006 270);
+  --color-neutral-800: oklch(27% 0.004 270);
+  --color-neutral-900: oklch(17% 0.002 270);
+  --color-neutral-950: oklch(10% 0 0);
+
+  /* Semantic colors - OKLCH for better gradients */
+  --color-blue-50: oklch(95% 0.04 250);
+  --color-blue-500: oklch(65% 0.15 250);
+  --color-blue-600: oklch(55% 0.15 250);
+  --color-blue-700: oklch(45% 0.13 250);
+
+  --color-green-50: oklch(95% 0.06 145);
+  --color-green-500: oklch(70% 0.16 145);
+  --color-green-600: oklch(60% 0.16 145);
+  --color-green-700: oklch(50% 0.14 145);
+
+  --color-red-50: oklch(95% 0.06 25);
+  --color-red-500: oklch(65% 0.18 25);
+  --color-red-600: oklch(55% 0.18 25);
+  --color-red-700: oklch(45% 0.16 25);
+
+  --color-yellow-50: oklch(95% 0.08 90);
+  --color-yellow-500: oklch(75% 0.15 90);
+  --color-yellow-600: oklch(65% 0.15 90);
+  --color-yellow-700: oklch(55% 0.13 90);
+
+  --color-purple-50: oklch(95% 0.05 300);
+  --color-purple-500: oklch(65% 0.14 300);
+  --color-purple-600: oklch(55% 0.14 300);
+  --color-purple-700: oklch(45% 0.12 300);
+
+  --color-indigo-50: oklch(95% 0.04 270);
+  --color-indigo-500: oklch(60% 0.14 270);
+  --color-indigo-600: oklch(50% 0.14 270);
+  --color-indigo-700: oklch(40% 0.12 270);
+
+  --color-orange-50: oklch(95% 0.08 50);
+  --color-orange-500: oklch(70% 0.16 50);
+  --color-orange-600: oklch(60% 0.16 50);
+  --color-orange-700: oklch(50% 0.14 50);
+
+  /* Semantic tokens - Light theme */
+  --color-bg-primary: var(--color-neutral-50);
+  --color-bg-secondary: var(--color-neutral-100);
+  --color-bg-tertiary: white;
+  --color-bg-elevated: white;
+
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-500);
+
+  --color-border-subtle: var(--color-neutral-200);
+  --color-border-default: var(--color-neutral-300);
+  --color-border-strong: var(--color-neutral-400);
+
+  --color-surface-hover: var(--color-neutral-50);
+  --color-surface-active: var(--color-neutral-100);
+
+  --color-accent-primary: var(--color-indigo-600);
+  --color-accent-hover: var(--color-indigo-700);
+
+  /* Spacing scale (based on 4px grid) */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+
+  /* Visual Enhancement - Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-glow: 0 0 20px -5px currentColor;
+
+  /* Visual Enhancement - Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-indigo-600) 100%);
+  --gradient-success: linear-gradient(135deg, var(--color-green-500) 0%, oklch(65% 0.14 170) 100%);
+  --gradient-warning: linear-gradient(135deg, var(--color-orange-500) 0%, var(--color-yellow-500) 100%);
+  --gradient-danger: linear-gradient(135deg, var(--color-red-500) 0%, oklch(60% 0.16 15) 100%);
+  --gradient-mesh:
+    radial-gradient(at 40% 20%, var(--color-indigo-50) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, var(--color-blue-50) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, var(--color-purple-50) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, var(--color-indigo-50) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, var(--color-blue-50) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, var(--color-purple-50) 0px, transparent 50%);
+
+  /* Glass morphism - with fallbacks for browser compatibility */
+  --glass-bg: rgba(255, 255, 255, 0.8); /* Fallback */
+  --glass-bg: oklch(from var(--color-bg-elevated) l c h / 0.8);
+  --glass-blur: blur(16px);
+  --glass-border: rgba(0, 0, 0, 0.1); /* Fallback */
+  --glass-border: oklch(from var(--color-border-default) l c h / 0.3);
+
+  /* Shimmer effect for premium feel */
+  --shimmer-gradient: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+
+  /* Smooth easing curves */
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Fluid typography scale (responsive) - ULTRA READABLE! */
+  --font-size-xs: clamp(1rem, 0.9rem + 0.4vw, 1.125rem);          /* 16-18px - BIGGER! */
+  --font-size-sm: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);        /* 18-22px - BIGGER! */
+  --font-size-base: clamp(1.25rem, 1.125rem + 0.6vw, 1.625rem);   /* 20-26px - MUCH BIGGER! */
+  --font-size-lg: clamp(1.75rem, 1.5rem + 1vw, 2.5rem);           /* 28-40px - BIGGER! */
+  --font-size-xl: clamp(2.25rem, 2rem + 1.25vw, 3rem);            /* 36-48px - BIGGER! */
+  --font-size-2xl: clamp(3rem, 2.5rem + 2vw, 4rem);               /* 48-64px - MASSIVE! */
+  --font-size-3xl: clamp(4rem, 3.5rem + 2.5vw, 6rem);             /* 64-96px - HUGE! */
+  --font-size-4xl: clamp(5rem, 4.5rem + 3vw, 8rem);               /* 80-128px - ENORMOUS! */
+
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line heights - ENHANCED FOR READABILITY */
+  --line-height-tight: 1.3;      /* 1.3 (was 1.2) - better for headings */
+  --line-height-normal: 1.6;     /* 1.6 (was 1.5) - easier to read */
+  --line-height-relaxed: 1.8;    /* 1.8 (was 1.75) - maximum readability */
+
+  /* Border radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows (elevation system) */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index scale */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-modal: 1200;
+  --z-toast: 1300;
+  --z-tooltip: 1400;
+}
+
+/* Dark theme - Just swap semantic tokens! */
+[data-theme="dark"] {
+  --color-bg-primary: var(--color-neutral-950);
+  --color-bg-secondary: var(--color-neutral-900);
+  --color-bg-tertiary: var(--color-neutral-800);
+  --color-bg-elevated: var(--color-neutral-800);
+
+  --color-text-primary: var(--color-neutral-50);
+  --color-text-secondary: var(--color-neutral-400);
+  --color-text-tertiary: var(--color-neutral-500);
+
+  --color-border-subtle: var(--color-neutral-800);
+  --color-border-default: var(--color-neutral-700);
+  --color-border-strong: var(--color-neutral-600);
+
+  --color-surface-hover: var(--color-neutral-800);
+  --color-surface-active: var(--color-neutral-700);
+
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.7), 0 1px 2px -1px rgb(0 0 0 / 0.7);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.7), 0 2px 4px -2px rgb(0 0 0 / 0.7);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.7), 0 4px 6px -4px rgb(0 0 0 / 0.7);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.7);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+
+  /* Dark theme gradients - deeper, richer */
+  --gradient-mesh:
+    radial-gradient(at 40% 20%, oklch(20% 0.08 270) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, oklch(18% 0.06 250) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, oklch(16% 0.05 300) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, oklch(18% 0.06 270) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, oklch(16% 0.06 250) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, oklch(18% 0.05 300) 0px, transparent 50%);
+
+  /* Dark theme glass - with fallbacks */
+  --glass-bg: rgba(31, 41, 55, 0.8); /* Fallback */
+  --glass-bg: oklch(from var(--color-bg-elevated) l c h / 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1); /* Fallback */
+  --glass-border: oklch(from var(--color-border-default) l c h / 0.3);
+}
+
+/* ========================================================================
+   Phase 3: Accessibility - Motion & Color Preferences
+   ======================================================================== */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Respect user's contrast preferences */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border-default: var(--color-neutral-900);
+    --color-border-strong: var(--color-neutral-950);
+  }
+
+  [data-theme="dark"] {
+    --color-border-default: var(--color-neutral-50);
+    --color-border-strong: var(--color-neutral-100);
+  }
+}
+
+/* ========================================================================
+   Phase 5: View Transitions API
+   ======================================================================== */
+
+/* Smooth transitions between light/dark themes */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--transition-slow);
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: fade-in;
+}
+
+@keyframes fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+/* ========================================================================
+   Base Styles
+   ======================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+               'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+/* ========================================================================
+   Phase 4: Container Queries - Dashboard Layout
+   ======================================================================== */
+
+.dashboard-container {
+  container-type: inline-size;
+  container-name: dashboard;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-8);
+}
+
+.dashboard-grid {
+  container-type: inline-size;
+  container-name: grid;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: var(--space-6);
+}
+
+/* Container query breakpoints */
+@container dashboard (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container dashboard (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Layout variants */
+.dashboard-grid[data-layout="metric"] {
+  grid-template-columns: 1fr;
+}
+
+.dashboard-grid[data-layout="flow"] {
+  grid-template-columns: repeat(12, 1fr); /* Use 12-column grid for panel sizing */
+}
+
+@container dashboard (min-width: 768px) {
+  .dashboard-grid[data-layout="flow"] {
+    grid-template-columns: repeat(12, 1fr); /* Keep 12 columns at all sizes */
+  }
+}
+
+.dashboard-grid[data-layout="research"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr));
+}
+
+@container dashboard (min-width: 1200px) {
+  .dashboard-grid[data-layout="research"] {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ========================================================================
+   Phase 2 & 7: Modern Selectors + Performance
+   ======================================================================== */
+
+/* Enhanced Dashboard Background - Gradient Mesh */
+.dashboard-container,
+.dashboard {
+  background: var(--gradient-mesh), var(--color-bg-primary);
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: var(--space-8);
+}
+
+/* Panel base styles with visual enhancements - COMPATIBLE VERSION */
+:where(.panel) {
+  /* Glass morphism effect with fallback */
+  background: rgba(255, 255, 255, 0.9); /* Fallback for older browsers */
+  background: var(--glass-bg);
+
+  /* Backdrop blur - fallback gracefully if not supported */
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+
+  /* Enhanced borders */
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Fallback */
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8); /* 2rem (32px) - was 1.5rem (24px) for more breathing room */
+
+  /* Layered shadows for depth - simplified for compatibility */
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+
+  /* Smooth transitions */
+  transition:
+    box-shadow var(--transition-base),
+    border-color var(--transition-base),
+    transform var(--transition-fast);
+
+  /* Phase 7: Performance optimizations */
+  contain: layout style paint;
+  content-visibility: auto;
+
+  /* Subtle translate for 3D effect */
+  transform-style: preserve-3d;
+
+  /* Prevent content from escaping panel boundaries */
+  overflow: hidden;
+}
+
+.panel:hover {
+  /* Lift on hover with enhanced shadow */
+  box-shadow:
+    var(--shadow-xl),
+    0 0 40px -10px rgba(99, 102, 241, 0.2), /* Fallback indigo glow */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.3); /* Fallback indigo */
+}
+
+/* Dark theme panels */
+[data-theme="dark"] .panel {
+  background: rgba(31, 41, 55, 0.9); /* Fallback */
+  background: var(--glass-bg);
+  border-color: rgba(255, 255, 255, 0.1); /* Fallback */
+  border-color: var(--glass-border);
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .panel:hover {
+  box-shadow:
+    var(--shadow-xl),
+    0 0 40px -10px rgba(139, 92, 246, 0.3), /* Purple glow */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+/* Phase 3: Accessibility - Focus management */
+.panel:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 4px;
+  border-color: var(--color-accent-primary);
+}
+
+/* Phase 2: Modern selectors - Conditional styling */
+.panel:has(.bottleneck-warning) {
+  border-left: 4px solid var(--color-red-500);
+  background: var(--color-red-50);
+}
+
+[data-theme="dark"] .panel:has(.bottleneck-warning) {
+  background: oklch(from var(--color-red-500) calc(l - 40%) c h / 0.15);
+}
+
+.panel:has(.success-indicator) {
+  border-left: 4px solid var(--color-green-500);
+}
+
+/* Highlight when a panel is expanded */
+.dashboard:has(.panel[data-expanded="true"]) .panel:not([data-expanded="true"]) {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Panel size variants - SIMPLIFIED for browser compatibility */
+
+/* Use a 12-column grid for flexible sizing */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-6);
+}
+
+/* Mobile first - all panels stack */
+.panel[data-size="tiny"],
+.panel[data-size="compact"],
+.panel[data-size="small"],
+.panel[data-size="medium"],
+.panel[data-size="large"],
+.panel[data-size="two-thirds"],
+.panel[data-size="three-quarters"] {
+  grid-column: span 12;
+}
+
+.panel[data-size="full-width"],
+.panel[data-size="hero"] {
+  grid-column: 1 / -1;
+}
+
+/* Hero panel titles should be larger but not MASSIVE */
+.panel[data-size="hero"] .panel-title {
+  font-size: var(--font-size-xl); /* 36-48px instead of 48-64px */
+  max-width: 100%;
+}
+
+.panel[data-size="hero"] .panel-subtitle {
+  font-size: var(--font-size-sm); /* 18-22px - keep subtitle small */
+  max-width: 100%;
+}
+
+/* Tablet breakpoint (600px+) */
+@media (min-width: 600px) {
+  .panel[data-size="tiny"] {
+    grid-column: span 4; /* 3 per row (12/4 = 3) */
+  }
+
+  .panel[data-size="compact"] {
+    grid-column: span 6; /* 2 per row (12/6 = 2) */
+  }
+
+  .panel[data-size="small"] {
+    grid-column: span 6; /* 2 per row */
+  }
+
+  .panel[data-size="medium"] {
+    grid-column: span 12; /* Full width on tablet */
+  }
+
+  .panel[data-size="large"],
+  .panel[data-size="two-thirds"] {
+    grid-column: span 12;
+  }
+
+  .panel[data-size="three-quarters"] {
+    grid-column: span 12;
+  }
+}
+
+/* Desktop breakpoint (900px+) */
+@media (min-width: 900px) {
+  .panel[data-size="tiny"] {
+    grid-column: span 2; /* 6 per row (12/2 = 6) */
+  }
+
+  .panel[data-size="compact"] {
+    grid-column: span 3; /* 4 per row (12/3 = 4) */
+  }
+
+  .panel[data-size="small"] {
+    grid-column: span 4; /* 3 per row (12/4 = 3) */
+  }
+
+  .panel[data-size="medium"] {
+    grid-column: span 6; /* 2 per row (12/6 = 2) */
+  }
+
+  .panel[data-size="large"],
+  .panel[data-size="two-thirds"] {
+    grid-column: span 8; /* 2/3 width (8/12) */
+  }
+
+  .panel[data-size="three-quarters"] {
+    grid-column: span 9; /* 3/4 width (9/12) */
+  }
+
+  .panel[data-size="hero"] {
+    padding: var(--space-12);
+  }
+}
+
+/* Compact panel styling - reduce padding */
+.panel[data-size="tiny"] {
+  padding: var(--space-3);
+}
+
+.panel[data-size="compact"] {
+  padding: var(--space-4);
+}
+
+/* Tiny panel special styling */
+.panel[data-size="tiny"] .metric-value {
+  font-size: var(--font-size-2xl); /* 36-48px (was xl 28-36px) - still big! */
+}
+
+.panel[data-size="tiny"] .metric-label {
+  font-size: var(--font-size-xs); /* 13-15px (was 10px) - more readable */
+}
+
+.panel[data-size="tiny"] .panel-title {
+  font-size: var(--font-size-xl); /* 28-36px (smaller than default 2xl) */
+}
+
+/* Feature panel (highlighted with accent) */
+.panel[data-feature="true"] {
+  border: 2px solid var(--color-accent-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.panel[data-feature="true"]::before {
+  content: '⭐';
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  font-size: var(--font-size-lg);
+  opacity: 0.3;
+}
+
+/* ========================================================================
+   Panel Components
+   ======================================================================== */
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: var(--space-4);
+}
+
+.panel-title {
+  font-size: var(--font-size-2xl); /* 48-64px - MASSIVE! */
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-6) 0; /* 24px bottom margin - MORE SPACE! */
+  letter-spacing: -0.02em; /* Tighter tracking for modern look */
+  line-height: var(--line-height-tight);
+  word-wrap: break-word; /* Prevent cutoff */
+  overflow-wrap: break-word; /* Fallback */
+  white-space: normal; /* Allow wrapping */
+  max-width: 100%; /* Don't overflow container */
+}
+
+.panel-subtitle {
+  font-size: var(--font-size-base); /* 20-26px - BIGGER! */
+  color: var(--color-text-secondary);
+  margin-top: var(--space-3); /* 12px top spacing */
+  margin-bottom: var(--space-8); /* 32px bottom margin - LOTS OF SPACE! */
+  font-weight: var(--font-weight-medium);
+  opacity: 0.9;
+  line-height: var(--line-height-normal);
+  word-wrap: break-word; /* Prevent cutoff */
+  overflow-wrap: break-word; /* Fallback */
+  white-space: normal; /* Allow wrapping */
+  max-width: 100%; /* Don't overflow container */
+}
+
+/* Panel entrance animation */
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel {
+  animation: panelFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+/* Stagger panel animations for visual flow */
+.panel:nth-child(1) { animation-delay: 0.05s; }
+.panel:nth-child(2) { animation-delay: 0.1s; }
+.panel:nth-child(3) { animation-delay: 0.15s; }
+.panel:nth-child(4) { animation-delay: 0.2s; }
+.panel:nth-child(5) { animation-delay: 0.25s; }
+.panel:nth-child(6) { animation-delay: 0.3s; }
+.panel:nth-child(n+7) { animation-delay: 0.35s; }
+
+.panel-content {
+  min-height: 0; /* Allow content to shrink */
+  font-size: var(--font-size-base); /* 17-20px - bigger body text! */
+  line-height: var(--line-height-relaxed); /* 1.8 for excellent readability */
+  color: var(--color-text-primary);
+}
+
+/* Make text-sm class also bigger */
+.text-sm {
+  font-size: var(--font-size-sm) !important; /* 15-17px (was smaller) */
+  line-height: var(--line-height-normal);
+}
+
+/* Enhanced Metric panels with gradients */
+.metric-value {
+  font-size: var(--font-size-4xl); /* 64-96px (was 48-72px) - MASSIVE! */
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  margin: var(--space-4) 0; /* More vertical space (was space-2) */
+  line-height: 1;
+
+  /* Add subtle text shadow for depth */
+  text-shadow: 0 2px 4px oklch(from currentColor l c h / 0.1);
+
+  /* Smooth color transitions */
+  transition: color var(--transition-base), text-shadow var(--transition-base);
+}
+
+.metric-value:hover {
+  /* Enhance on hover */
+  text-shadow: 0 4px 8px oklch(from currentColor l c h / 0.2);
+}
+
+.metric-label {
+  font-size: var(--font-size-base); /* 17-20px (was 15-17px) - BIGGER! */
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.9; /* Slightly more visible (was 0.8) */
+  transition: opacity var(--transition-fast);
+  margin-bottom: var(--space-2); /* Add bottom margin */
+}
+
+.panel:hover .metric-label {
+  opacity: 1;
+}
+
+/* Enhanced metric colors with gradient support */
+.metric-value[data-color="green"] {
+  background: var(--gradient-success);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="blue"] {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="red"] {
+  background: var(--gradient-danger);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="yellow"] {
+  background: var(--gradient-warning);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="purple"] {
+  background: linear-gradient(135deg, var(--color-purple-500) 0%, oklch(60% 0.16 320) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="orange"] {
+  background: linear-gradient(135deg, var(--color-orange-500) 0%, oklch(65% 0.18 40) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced colored panel backgrounds with gradient overlays - COMPATIBLE */
+.panel[data-color="green"] {
+  background:
+    linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.panel[data-color="blue"] {
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.panel[data-color="red"] {
+  background:
+    linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.panel[data-color="yellow"] {
+  background:
+    linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(234, 179, 8, 0.3);
+}
+
+.panel[data-color="purple"] {
+  background:
+    linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.panel[data-color="orange"] {
+  background:
+    linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+/* Dark theme colored panels - deeper, glowing effect - COMPATIBLE */
+[data-theme="dark"] .panel[data-color="green"] {
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(34, 197, 94, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="blue"] {
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="red"] {
+  background:
+    radial-gradient(circle at top left, rgba(239, 68, 68, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(239, 68, 68, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(239, 68, 68, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="yellow"] {
+  background:
+    radial-gradient(circle at top left, rgba(234, 179, 8, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(234, 179, 8, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(234, 179, 8, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(234, 179, 8, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="purple"] {
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(168, 85, 247, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(168, 85, 247, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="orange"] {
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(249, 115, 22, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(249, 115, 22, 0.3);
+}
+
+/* Sparklines */
+.sparkline-container {
+  margin-top: var(--space-2);
+}
+
+.sparkline-svg {
+  display: inline-block;
+  vertical-align: middle;
+  /* Phase 7: Performance hint */
+  will-change: transform;
+}
+
+/* Trend indicators */
+.trend-indicator {
+  font-size: var(--font-size-xs);
+  margin-left: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+}
+
+.trend-up { color: var(--color-green-600); }
+.trend-down { color: var(--color-red-600); }
+.trend-flat { color: var(--color-neutral-400); }
+
+/* ========================================================================
+   Alert/Warning Banners
+   ======================================================================== */
+
+.alert {
+  display: flex;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+  margin-bottom: var(--space-4);
+}
+
+.alert-warning {
+  background: var(--color-orange-50);
+  border-color: var(--color-orange-500);
+  color: var(--color-orange-700);
+}
+
+.alert-error {
+  background: var(--color-red-50);
+  border-color: var(--color-red-500);
+  color: var(--color-red-700);
+}
+
+.alert-info {
+  background: var(--color-blue-50);
+  border-color: var(--color-blue-500);
+  color: var(--color-blue-700);
+}
+
+.alert-success {
+  background: var(--color-green-50);
+  border-color: var(--color-green-500);
+  color: var(--color-green-700);
+}
+
+[data-theme="dark"] .alert-warning {
+  background: oklch(from var(--color-orange-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-orange-500);
+}
+
+[data-theme="dark"] .alert-error {
+  background: oklch(from var(--color-red-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-red-500);
+}
+
+[data-theme="dark"] .alert-info {
+  background: oklch(from var(--color-blue-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-blue-500);
+}
+
+[data-theme="dark"] .alert-success {
+  background: oklch(from var(--color-green-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-green-500);
+}
+
+.alert-icon {
+  flex-shrink: 0;
+  font-size: var(--font-size-2xl);
+}
+
+.alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-1);
+}
+
+.alert-message {
+  font-size: var(--font-size-xs);
+  opacity: 0.9;
+}
+
+/* ========================================================================
+   Dashboard Header
+   ======================================================================== */
+
+.dashboard-header {
+  margin-bottom: var(--space-8);
+}
+
+.dashboard-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.dashboard-title-accent {
+  display: block;
+  height: 4px;
+  width: 6rem;
+  background: var(--color-accent-primary);
+  border-radius: var(--radius-full);
+  margin-top: var(--space-2);
+}
+
+/* ========================================================================
+   Footer/Metadata
+   ======================================================================== */
+
+.dashboard-footer {
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+/* ========================================================================
+   Utility Classes
+   ======================================================================== */
+
+/* Screen reader only (Phase 3: Accessibility) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to main content link (Phase 3: Accessibility) */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-accent-primary);
+  color: white;
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  z-index: var(--z-tooltip);
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+  left: var(--space-2);
+}
+
+/* Monospace numbers */
+.numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ========================================================================
+   COOL ENHANCEMENTS - Slick Modern Effects
+   ======================================================================== */
+
+/* Animated gradient background */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.dashboard-container {
+  background-size: 200% 200%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+/* Shimmer effect on hover */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--shimmer-gradient);
+  transform: translateX(-100%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1;
+}
+
+.panel:hover::before {
+  opacity: 1;
+  animation: shimmer 1.5s ease-in-out;
+}
+
+/* Make sure panel content is above shimmer */
+.panel-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Metric value pop animation on hover */
+.metric-value {
+  transition: all 0.3s var(--ease-bounce);
+}
+
+.panel:hover .metric-value {
+  transform: scale(1.05);
+}
+
+/* Floating animation for hero panel */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.panel[data-size="hero"] {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Pulse animation for important metrics */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow:
+      var(--shadow-md),
+      0 0 0 0 rgba(99, 102, 241, 0);
+  }
+  50% {
+    box-shadow:
+      var(--shadow-lg),
+      0 0 20px 5px rgba(99, 102, 241, 0.3);
+  }
+}
+
+.metric-value[data-color="blue"] {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Smooth scroll reveal */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.panel {
+  animation: reveal-up 0.6s var(--ease-in-out) backwards;
+  will-change: opacity, transform;
+}
+
+/* Stagger delays - smoother cascade */
+.panel:nth-child(1) { animation-delay: 0.05s; }
+.panel:nth-child(2) { animation-delay: 0.08s; }
+.panel:nth-child(3) { animation-delay: 0.11s; }
+.panel:nth-child(4) { animation-delay: 0.14s; }
+.panel:nth-child(5) { animation-delay: 0.17s; }
+.panel:nth-child(6) { animation-delay: 0.20s; }
+.panel:nth-child(7) { animation-delay: 0.23s; }
+.panel:nth-child(8) { animation-delay: 0.26s; }
+.panel:nth-child(9) { animation-delay: 0.29s; }
+.panel:nth-child(10) { animation-delay: 0.32s; }
+.panel:nth-child(n+11) { animation-delay: 0.35s; }
+
+/* 3D tilt effect on hover */
+.panel {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  transition: transform 0.3s var(--ease-smooth);
+}
+
+.panel:hover {
+  transform: translateY(-4px) rotateX(2deg);
+}
+
+/* Sparkline animate in */
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.sparkline-svg polyline {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw-line 1s ease-out forwards;
+}
+
+/* Panel title underline effect */
+.panel-title::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-accent-primary), transparent);
+  transition: width 0.4s var(--ease-smooth);
+  margin-top: 0.25rem;
+}
+
+.panel:hover .panel-title::after {
+  width: 60%;
+}
+
+/* Ripple effect on click */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.panel::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+}
+
+.panel:active::after {
+  animation: ripple 0.6s ease-out;
+}
+
+/* Gradient borders that animate */
+.panel[data-color] {
+  position: relative;
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+.panel[data-color]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  padding: 2px;
+  background: var(--gradient-primary);
+  border-radius: inherit;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 0;
+}
+
+.panel[data-color]:hover::before {
+  opacity: 1;
+}
+
+/* Number counter animation (for metrics) */
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.metric-value.numeric {
+  animation: count-up 0.8s var(--ease-bounce) backwards;
+}
+
+/* Glowing text effect for primary metrics */
+@keyframes glow-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 10px rgba(99, 102, 241, 0.3),
+      0 0 20px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(99, 102, 241, 0.5),
+      0 0 30px rgba(99, 102, 241, 0.3);
+  }
+}
+
+.panel:hover .metric-value[data-color="blue"] {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Smooth color transitions on theme change */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: var(--ease-smooth);
+}
+
+/* Disable transitions for animations */
+*:where(.panel, .metric-value, [class*="fade"], [class*="reveal"]) {
+  transition-property: none;
+}
+
+/* Print styles */
+@media print {
+  .dashboard-container {
+    max-width: 100%;
+    animation: none !important;
+  }
+
+  .panel {
+    break-inside: avoid;
+    box-shadow: none;
+    animation: none !important;
+  }
+
+  .panel::before,
+  .panel::after {
+    display: none;
+  }
+}
+
+/* ========================================
+   ADVANCED EFFECTS - Next Level
+   ======================================== */
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  background: var(--color-bg-default);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,
+    var(--color-accent-primary),
+    var(--color-indigo-700));
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg,
+    var(--color-indigo-600),
+    var(--color-indigo-800));
+  background-clip: padding-box;
+}
+
+/* Enhanced scroll reveal states */
+.panel.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.panel.revealing {
+  opacity: 0.5;
+  transform: translateY(10px);
+}
+
+/* Magnetic cursor effect (applied via JS) */
+.panel.magnetic {
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Enhanced focus states with pulse */
+.panel:focus-visible {
+  outline: 3px solid var(--color-accent-primary);
+  outline-offset: 2px;
+  animation: focus-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes focus-pulse {
+  0%, 100% {
+    outline-color: var(--color-accent-primary);
+  }
+  50% {
+    outline-color: var(--color-indigo-400);
+  }
+}
+
+/* Skeleton loading animation */
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.panel.loading .panel-content {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+/* Button press micro-interactions */
+button,
+.interactive-element {
+  transition: transform 0.1s var(--ease-smooth);
+}
+
+button:active,
+.interactive-element:active {
+  transform: scale(0.95);
+}
+
+/* Enhanced metric number styling */
+.metric-value {
+  font-feature-settings: "tnum" 1; /* Tabular numbers */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Sparkline enhancements */
+svg.sparkline {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: filter 0.3s var(--ease-smooth);
+}
+
+.panel:hover svg.sparkline {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* Status indicator pulses */
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+.status-indicator.success {
+  background: var(--color-green-500);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+}
+
+.status-indicator.warning {
+  background: var(--color-yellow-500);
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.4);
+}
+
+.status-indicator.error {
+  background: var(--color-red-500);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+/* Enhanced data visualization */
+.chart-container {
+  position: relative;
+  contain: layout style paint;
+  will-change: opacity;
+}
+
+.chart-container::before {
+  content: '';
+  display: block;
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg,
+    var(--color-accent-primary),
+    var(--color-purple-500));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-smooth);
+  pointer-events: none;
+}
+
+.panel:hover .chart-container::before {
+  opacity: 0.3;
+}
+
+/* Panel divider animation */
+.panel-divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-border-default) 50%,
+    transparent 100%);
+  margin: var(--space-4) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-divider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-accent-primary) 50%,
+    transparent 100%);
+  animation: divider-sweep 3s ease-in-out infinite;
+}
+
+@keyframes divider-sweep {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Loading spinner for async operations */
+@keyframes spinner-rotate {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--color-accent-primary);
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+/* Tooltip enhancements */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]::before,
+[data-tooltip]::after {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease-smooth);
+}
+
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(0, 0, 0, 0.9);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: var(--shadow-xl);
+}
+
+[data-tooltip]::after {
+  content: '';
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--color-bg-elevated);
+  z-index: 1000;
+}
+
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* Performance optimization */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+    </style>
+</head>
+<body>
+    <!-- Skip to main content (Accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <h1 class="dashboard-title">HoloLoom Interactive Dashboard</h1>
+            <div class="dashboard-title-accent"></div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <main id="main-content" role="main">
+            <div class="dashboard-grid" data-layout="flow">
+
+        <article class="panel"
+                 data-panel-id="hero-tabbed-charts"
+                 data-panel-type="text"
+                 data-size="hero"
+                 role="article"
+                 aria-labelledby="panel-hero-tabbed-charts-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-hero-tabbed-charts-title">HoloLoom Interactive Dashboard (HiD)</h3>
+                <div class="panel-subtitle">Real-time system monitoring - 5 visualization modes</div>
+                <div class="text-sm" style="color: var(--color-text-primary); line-height: 1.6;">
+
+                <div class="tabbed-hero">
+                    <!-- Tab Navigation -->
+                    <div class="tab-nav" role="tablist">
+                        <button class="tab-button active" data-tab="trends" role="tab" aria-selected="true">
+                            📈 Trends
+                        </button>
+                        <button class="tab-button" data-tab="timeline" role="tab" aria-selected="false">
+                            ⏱️ Timeline
+                        </button>
+                        <button class="tab-button" data-tab="network" role="tab" aria-selected="false">
+                            🕸️ Network
+                        </button>
+                        <button class="tab-button" data-tab="heatmap" role="tab" aria-selected="false">
+                            🔥 Heatmap
+                        </button>
+                        <button class="tab-button" data-tab="resources" role="tab" aria-selected="false">
+                            💾 Resources
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content active" id="tab-trends" role="tabpanel">
+                        <div id="chart-trends" style="height: 600px;"></div>
+                    </div>
+                    <div class="tab-content" id="tab-timeline" role="tabpanel">
+                        <div id="chart-timeline" style="height: 600px;"></div>
+                    </div>
+                    <div class="tab-content" id="tab-network" role="tabpanel">
+                        <div id="chart-network" style="height: 600px;"></div>
+                    </div>
+                    <div class="tab-content" id="tab-heatmap" role="tabpanel">
+                        <div id="chart-heatmap" style="height: 600px;"></div>
+                    </div>
+                    <div class="tab-content" id="tab-resources" role="tabpanel">
+                        <div id="chart-resources" style="height: 600px;"></div>
+                    </div>
+                </div>
+
+                <style>
+                    .tabbed-hero {
+                        margin-top: var(--space-4);
+                    }
+
+                    .tab-nav {
+                        display: flex;
+                        gap: var(--space-2);
+                        margin-bottom: var(--space-6);
+                        border-bottom: 2px solid var(--color-border-default);
+                        padding-bottom: var(--space-2);
+                    }
+
+                    .tab-button {
+                        padding: var(--space-3) var(--space-6);
+                        background: transparent;
+                        border: none;
+                        border-bottom: 3px solid transparent;
+                        color: var(--color-text-secondary);
+                        font-size: var(--font-size-base);
+                        font-weight: var(--font-weight-semibold);
+                        cursor: pointer;
+                        transition: all var(--transition-fast);
+                        position: relative;
+                        top: 2px;
+                    }
+
+                    .tab-button:hover {
+                        color: var(--color-text-primary);
+                        background: var(--color-surface-hover);
+                        border-radius: var(--radius-md) var(--radius-md) 0 0;
+                    }
+
+                    .tab-button.active {
+                        color: var(--color-accent-primary);
+                        border-bottom-color: var(--color-accent-primary);
+                        font-weight: var(--font-weight-bold);
+                    }
+
+                    .tab-content {
+                        display: none;
+                    }
+
+                    .tab-content.active {
+                        display: block;
+                        animation: fadeIn 0.3s ease-in;
+                    }
+
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                </style>
+
+                <script>
+                (function() {
+                    // Tab switching logic
+                    const tabButtons = document.querySelectorAll('.tab-button');
+                    const tabContents = document.querySelectorAll('.tab-content');
+
+                    tabButtons.forEach(button => {
+                        button.addEventListener('click', () => {
+                            const tabId = button.dataset.tab;
+
+                            // Update buttons
+                            tabButtons.forEach(btn => {
+                                btn.classList.remove('active');
+                                btn.setAttribute('aria-selected', 'false');
+                            });
+                            button.classList.add('active');
+                            button.setAttribute('aria-selected', 'true');
+
+                            // Update content
+                            tabContents.forEach(content => {
+                                content.classList.remove('active');
+                            });
+                            document.getElementById('tab-' + tabId).classList.add('active');
+                        });
+                    });
+
+                    // Initialize charts
+                    const themeColors = getThemeColors();
+
+                    // Chart 1: Multi-line Trends
+                    const trendsData = [
+                        {
+                            x: Array.from({length: 60}, (_, i) => i),
+                            y: Array.from({length: 60}, (_, i) => 120 + (i % 20) - 10 + Math.floor(i / 10) * 2),
+                            name: 'Query Latency (ms)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: { color: '#3b82f6', width: 3 }
+                        },
+                        {
+                            x: Array.from({length: 60}, (_, i) => i),
+                            y: Array.from({length: 60}, (_, i) => 850 + (i % 30) - 15 + Math.floor(i / 5) * 3),
+                            name: 'Queries/Min',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: { color: '#22c55e', width: 3 }
+                        },
+                        {
+                            x: Array.from({length: 60}, (_, i) => i),
+                            y: Array.from({length: 60}, (_, i) => 15 - (i % 8) + Math.floor(i / 15)),
+                            name: 'Errors/Min',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: { color: '#ef4444', width: 3 }
+                        }
+                    ];
+
+                    Plotly.newPlot('chart-trends', trendsData, {
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        font: { color: themeColors.text, family: 'Inter, sans-serif', size: 14 },
+                        margin: { t: 20, r: 40, b: 60, l: 60 },
+                        xaxis: { title: 'Time (seconds ago)', gridcolor: themeColors.grid },
+                        yaxis: { title: 'Value', gridcolor: themeColors.grid },
+                        showlegend: true,
+                        legend: { orientation: 'h', y: -0.15 }
+                    }, { responsive: true, displayModeBar: false });
+
+                    // Chart 2: Timeline Waterfall
+                    const timelineData = [{
+                        x: [25, 30, 20, 20, 30],
+                        y: ['Feature Extraction', 'Memory Retrieval', 'Warp Tensioning', 'Policy Decision', 'Tool Execution'],
+                        type: 'bar',
+                        orientation: 'h',
+                        marker: {
+                            color: ['#3b82f6', '#a855f7', '#22c55e', '#f97316', '#ef4444']
+                        },
+                        text: ['25ms (20%)', '30ms (24%)', '20ms (16%)', '20ms (16%)', '30ms (24%)'],
+                        textposition: 'inside',
+                        insidetextanchor: 'middle',
+                        textfont: { color: 'white', size: 14 }
+                    }];
+
+                    Plotly.newPlot('chart-timeline', timelineData, {
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        font: { color: themeColors.text, family: 'Inter, sans-serif', size: 14 },
+                        margin: { t: 20, r: 40, b: 40, l: 180 },
+                        xaxis: { title: 'Duration (ms)', gridcolor: themeColors.grid },
+                        yaxis: { gridcolor: themeColors.grid }
+                    }, { responsive: true, displayModeBar: false });
+
+                    // Chart 3: Network Graph (D3.js)
+                    const networkSvg = d3.select('#chart-network')
+                        .append('svg')
+                        .attr('width', '100%')
+                        .attr('height', '100%');
+
+                    const networkWidth = document.getElementById('chart-network').clientWidth;
+                    const networkHeight = 600;
+
+                    const nodes = [
+                        {id: 'Query', size: 20, color: '#3b82f6'},
+                        {id: 'Memory', size: 18, color: '#22c55e'},
+                        {id: 'Policy', size: 16, color: '#f97316'},
+                        {id: 'Warp', size: 14, color: '#a855f7'},
+                        {id: 'Tool', size: 12, color: '#ef4444'}
+                    ];
+
+                    const links = [
+                        {source: 'Query', target: 'Memory'},
+                        {source: 'Memory', target: 'Warp'},
+                        {source: 'Warp', target: 'Policy'},
+                        {source: 'Policy', target: 'Tool'}
+                    ];
+
+                    const simulation = d3.forceSimulation(nodes)
+                        .force('link', d3.forceLink(links).id(d => d.id).distance(150))
+                        .force('charge', d3.forceManyBody().strength(-400))
+                        .force('center', d3.forceCenter(networkWidth / 2, networkHeight / 2));
+
+                    const link = networkSvg.append('g')
+                        .selectAll('line')
+                        .data(links)
+                        .enter().append('line')
+                        .attr('stroke', '#cbd5e1')
+                        .attr('stroke-width', 2);
+
+                    const node = networkSvg.append('g')
+                        .selectAll('g')
+                        .data(nodes)
+                        .enter().append('g')
+                        .call(d3.drag()
+                            .on('start', (event, d) => {
+                                if (!event.active) simulation.alphaTarget(0.3).restart();
+                                d.fx = d.x;
+                                d.fy = d.y;
+                            })
+                            .on('drag', (event, d) => {
+                                d.fx = event.x;
+                                d.fy = event.y;
+                            })
+                            .on('end', (event, d) => {
+                                if (!event.active) simulation.alphaTarget(0);
+                                d.fx = null;
+                                d.fy = null;
+                            }));
+
+                    node.append('circle')
+                        .attr('r', d => d.size)
+                        .attr('fill', d => d.color);
+
+                    node.append('text')
+                        .text(d => d.id)
+                        .attr('x', 0)
+                        .attr('y', d => d.size + 20)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', themeColors.text)
+                        .style('font-size', '14px')
+                        .style('font-weight', 'bold');
+
+                    simulation.on('tick', () => {
+                        link
+                            .attr('x1', d => d.source.x)
+                            .attr('y1', d => d.source.y)
+                            .attr('x2', d => d.target.x)
+                            .attr('y2', d => d.target.y);
+
+                        node.attr('transform', d => `translate(${d.x},${d.y})`);
+                    });
+
+                    // Chart 4: Heatmap
+                    const heatmapData = [{
+                        z: [
+                            [45, 95, 180, 450],
+                            [42, 92, 175, 440],
+                            [48, 98, 185, 460],
+                            [52, 105, 195, 480],
+                            [50, 102, 190, 470],
+                            [46, 96, 182, 455]
+                        ],
+                        x: ['LITE', 'FAST', 'FULL', 'RESEARCH'],
+                        y: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                        type: 'heatmap',
+                        colorscale: [
+                            [0, 'rgb(34, 197, 94)'],
+                            [0.5, 'rgb(251, 191, 36)'],
+                            [1, 'rgb(239, 68, 68)']
+                        ],
+                        hovertemplate: '<b>%{y}</b><br>%{x}: %{z}ms<extra></extra>',
+                        colorbar: {
+                            title: 'Latency (ms)',
+                            titleside: 'right',
+                            tickfont: { color: themeColors.text }
+                        }
+                    }];
+
+                    Plotly.newPlot('chart-heatmap', heatmapData, {
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        font: { color: themeColors.text, family: 'Inter, sans-serif', size: 14 },
+                        margin: { t: 20, r: 100, b: 60, l: 80 },
+                        xaxis: { gridcolor: themeColors.grid },
+                        yaxis: { title: 'Time of Day', gridcolor: themeColors.grid }
+                    }, { responsive: true, displayModeBar: false });
+
+                    // Chart 5: Stacked Area (Resources)
+                    const resourcesData = [
+                        {
+                            x: Array.from({length: 60}, (_, i) => i),
+                            y: Array.from({length: 60}, (_, i) => 2.1 + (i % 10) / 50),
+                            name: 'Yarn Graph',
+                            type: 'scatter',
+                            mode: 'lines',
+                            fill: 'tonexty',
+                            line: { width: 0 },
+                            fillcolor: 'rgba(59, 130, 246, 0.3)'
+                        },
+                        {
+                            x: Array.from({length: 60}, (_, i) => i),
+                            y: Array.from({length: 60}, (_, i) => 1.8 + (i % 8) / 40),
+                            name: 'Warp Space',
+                            type: 'scatter',
+                            mode: 'lines',
+                            fill: 'tonexty',
+                            line: { width: 0 },
+                            fillcolor: 'rgba(168, 85, 247, 0.3)'
+                        },
+                        {
+                            x: Array.from({length: 60}, (_, i) => i),
+                            y: Array.from({length: 60}, (_, i) => 1.4 - (i % 12) / 60),
+                            name: 'Cache',
+                            type: 'scatter',
+                            mode: 'lines',
+                            fill: 'tonexty',
+                            line: { width: 0 },
+                            fillcolor: 'rgba(34, 197, 94, 0.3)'
+                        },
+                        {
+                            x: Array.from({length: 60}, (_, i) => i),
+                            y: Array.from({length: 60}, (_, i) => 0.9 + (i % 6) / 100),
+                            name: 'Features',
+                            type: 'scatter',
+                            mode: 'lines',
+                            fill: 'tozeroy',
+                            line: { width: 0 },
+                            fillcolor: 'rgba(249, 115, 22, 0.3)'
+                        }
+                    ];
+
+                    Plotly.newPlot('chart-resources', resourcesData, {
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        font: { color: themeColors.text, family: 'Inter, sans-serif', size: 14 },
+                        margin: { t: 20, r: 40, b: 60, l: 60 },
+                        xaxis: { title: 'Time (seconds ago)', gridcolor: themeColors.grid },
+                        yaxis: { title: 'Memory (GB)', gridcolor: themeColors.grid },
+                        showlegend: true,
+                        legend: { orientation: 'h', y: -0.15 }
+                    }, { responsive: true, displayModeBar: false });
+                })();
+                </script>
+            
+                </div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="tiny-kpi-0"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="blue"
+                 role="article"
+                 aria-labelledby="panel-tiny-kpi-0-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-tiny-kpi-0-title">Active Users</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="blue" aria-live="polite">
+                        2.4K
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="tiny-kpi-1"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="green"
+                 role="article"
+                 aria-labelledby="panel-tiny-kpi-1-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-tiny-kpi-1-title">Queries/Min</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="green" aria-live="polite">
+                        847
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="tiny-kpi-2"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="red"
+                 role="article"
+                 aria-labelledby="panel-tiny-kpi-2-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-tiny-kpi-2-title">Errors</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="red" aria-live="polite">
+                        12
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="tiny-kpi-3"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="yellow"
+                 role="article"
+                 aria-labelledby="panel-tiny-kpi-3-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-tiny-kpi-3-title">CPU Usage</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="yellow" aria-live="polite">
+                        42%
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="tiny-kpi-4"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="purple"
+                 role="article"
+                 aria-labelledby="panel-tiny-kpi-4-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-tiny-kpi-4-title">Memory</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="purple" aria-live="polite">
+                        6.2GB
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="tiny-kpi-5"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="green"
+                 role="article"
+                 aria-labelledby="panel-tiny-kpi-5-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-tiny-kpi-5-title">Uptime</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="green" aria-live="polite">
+                        99.9%
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="compact-metric-0"
+                 data-panel-type="metric"
+                 data-size="compact"
+                 data-color="green"
+                 role="article"
+                 aria-labelledby="panel-compact-metric-0-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-compact-metric-0-title">Query Latency</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="green" aria-live="polite">
+                        125.5ms
+                    </div>
+                    <span class="trend-indicator trend-down" aria-label="Trending down">&#9660;</span>
+                </div>
+                <div class="sparkline-container">
+            <svg class="sparkline-svg"
+                 width="100"
+                 height="30"
+                 role="img"
+                 aria-label="Trend: 5 data points">
+                <path d="M 2.0,2.0 L 26.0,11.3 L 50.0,19.3 L 74.0,24.7 L 98.0,28.0"
+                      fill="none"
+                      stroke="oklch(70% 0.16 145)"
+                      stroke-width="1.5"
+                      opacity="0.7"/>
+                <!-- Last point indicator -->
+                <circle cx="98.0"
+                        cy="28.0"
+                        r="2"
+                        fill="oklch(70% 0.16 145)"/>
+            </svg>
+            <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-left: var(--space-2);">
+                Last 5 queries
+            </span>
+        </div>
+                <div class="panel-subtitle">Avg response time</div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="compact-metric-1"
+                 data-panel-type="metric"
+                 data-size="compact"
+                 data-color="blue"
+                 role="article"
+                 aria-labelledby="panel-compact-metric-1-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-compact-metric-1-title">Confidence Score</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="blue" aria-live="polite">
+                        98%
+                    </div>
+                    <span class="trend-indicator trend-up" aria-label="Trending up">&#9650;</span>
+                </div>
+                <div class="sparkline-container">
+            <svg class="sparkline-svg"
+                 width="100"
+                 height="30"
+                 role="img"
+                 aria-label="Trend: 5 data points">
+                <path d="M 2.0,28.0 L 26.0,21.5 L 50.0,15.0 L 74.0,8.5 L 98.0,2.0"
+                      fill="none"
+                      stroke="oklch(65% 0.15 250)"
+                      stroke-width="1.5"
+                      opacity="0.7"/>
+                <!-- Last point indicator -->
+                <circle cx="98.0"
+                        cy="2.0"
+                        r="2"
+                        fill="oklch(65% 0.15 250)"/>
+            </svg>
+            <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-left: var(--space-2);">
+                Last 5 queries
+            </span>
+        </div>
+                <div class="panel-subtitle">Model certainty</div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="compact-metric-2"
+                 data-panel-type="metric"
+                 data-size="compact"
+                 data-color="purple"
+                 role="article"
+                 aria-labelledby="panel-compact-metric-2-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-compact-metric-2-title">Cache Hit Rate</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="purple" aria-live="polite">
+                        83%
+                    </div>
+                    <span class="trend-indicator trend-up" aria-label="Trending up">&#9650;</span>
+                </div>
+                <div class="sparkline-container">
+            <svg class="sparkline-svg"
+                 width="100"
+                 height="30"
+                 role="img"
+                 aria-label="Trend: 5 data points">
+                <path d="M 2.0,28.0 L 26.0,17.6 L 50.0,12.4 L 74.0,7.2 L 98.0,2.0"
+                      fill="none"
+                      stroke="oklch(65% 0.14 300)"
+                      stroke-width="1.5"
+                      opacity="0.7"/>
+                <!-- Last point indicator -->
+                <circle cx="98.0"
+                        cy="2.0"
+                        r="2"
+                        fill="oklch(65% 0.14 300)"/>
+            </svg>
+            <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-left: var(--space-2);">
+                Last 5 queries
+            </span>
+        </div>
+                <div class="panel-subtitle">Memory efficiency</div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="compact-metric-3"
+                 data-panel-type="metric"
+                 data-size="compact"
+                 data-color="orange"
+                 role="article"
+                 aria-labelledby="panel-compact-metric-3-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-compact-metric-3-title">Throughput</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="orange" aria-live="polite">
+                        1.8K/s
+                    </div>
+                    <span class="trend-indicator trend-up" aria-label="Trending up">&#9650;</span>
+                </div>
+                <div class="sparkline-container">
+            <svg class="sparkline-svg"
+                 width="100"
+                 height="30"
+                 role="img"
+                 aria-label="Trend: 5 data points">
+                <path d="M 2.0,28.0 L 26.0,17.7 L 50.0,9.7 L 74.0,5.1 L 98.0,2.0"
+                      fill="none"
+                      stroke="oklch(70% 0.16 50)"
+                      stroke-width="1.5"
+                      opacity="0.7"/>
+                <!-- Last point indicator -->
+                <circle cx="98.0"
+                        cy="2.0"
+                        r="2"
+                        fill="oklch(70% 0.16 50)"/>
+            </svg>
+            <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-left: var(--space-2);">
+                Last 5 queries
+            </span>
+        </div>
+                <div class="panel-subtitle">Queries per second</div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="chart-latency-trend"
+                 data-panel-type="line"
+                 data-size="small"
+                 role="article"
+                 aria-labelledby="panel-chart-latency-trend-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-chart-latency-trend-title">Latency Trend</h3>
+                <div class="panel-subtitle">Last 24 hours</div>
+                <div id="plot_chart-latency-trend" style="height: 550px;"></div>
+            </div>
+        </article>
+        <script>
+        (function() {
+            var traces = [{"x": ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "23:59"], "y": [150, 145, 135, 128, 125, 122, 120], "type": "scatter", "mode": "lines+markers", "line": {"color": "#6366f1", "width": 3}, "marker": {"size": 6}}];
+
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',
+                        bgSecondary: '#111827',
+                        text: '#f3f4f6',
+                        grid: '#374151'
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',
+                        bgSecondary: '#f9fafb',
+                        text: '#1f2937',
+                        grid: '#e5e7eb'
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
+            var layout = {
+                xaxis: { title: 'Time', gridcolor: colors.grid, color: colors.text },
+                yaxis: { title: 'Value', gridcolor: colors.grid, color: colors.text },
+                plot_bgcolor: colors.bgSecondary,
+                paper_bgcolor: colors.bg,
+                margin: { l: 60, r: 30, t: 30, b: 60 },
+                showlegend: false,
+                hovermode: 'x unified',
+                font: { color: colors.text }
+            };
+
+            var config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false
+            };
+
+            Plotly.newPlot('plot_chart-latency-trend', traces, layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_chart-latency-trend', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bgSecondary,
+                    'xaxis.gridcolor': newColors.grid,
+                    'yaxis.gridcolor': newColors.grid,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
+        })();
+        </script>
+        
+
+        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white" data-panel-id="chart-query-volume" data-panel-type="bar">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Query Volume</div>
+            <div class="text-sm text-gray-600 mb-4">By hour (today)</div>
+            <div id="plot_chart-query-volume" style="height: 550px;"></div>
+        </div>
+        <script>
+        (function() {
+            var trace = {
+                x: [],
+                y: [],
+                type: 'bar',
+                orientation: 'v',
+                marker: {
+                    color: [],
+                    opacity: 0.8
+                },
+                text: [],
+                textposition: 'auto',
+                hovertemplate: '<b>%{x}</b><br>Value: %{y}<extra></extra>'
+            };
+
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',
+                        bgSecondary: '#111827',
+                        text: '#f3f4f6',
+                        grid: '#374151'
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',
+                        bgSecondary: '#f9fafb',
+                        text: '#1f2937',
+                        grid: '#e5e7eb'
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
+            var layout = {
+                xaxis: { title: 'Category', gridcolor: colors.grid, color: colors.text },
+                yaxis: { title: 'Value', gridcolor: colors.grid, color: colors.text },
+                plot_bgcolor: colors.bgSecondary,
+                paper_bgcolor: colors.bg,
+                margin: { l: 60, r: 30, t: 30, b: 60 },
+                showlegend: false,
+                font: { color: colors.text }
+            };
+
+            var config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false
+            };
+
+            Plotly.newPlot('plot_chart-query-volume', [trace], layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_chart-query-volume', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bgSecondary,
+                    'xaxis.gridcolor': newColors.grid,
+                    'yaxis.gridcolor': newColors.grid,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
+        })();
+        </script>
+        
+
+        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white" data-panel-id="chart-error-types" data-panel-type="bar">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Error Types</div>
+            <div class="text-sm text-gray-600 mb-4">Last 7 days</div>
+            <div id="plot_chart-error-types" style="height: 550px;"></div>
+        </div>
+        <script>
+        (function() {
+            var trace = {
+                x: [],
+                y: [],
+                type: 'bar',
+                orientation: 'v',
+                marker: {
+                    color: [],
+                    opacity: 0.8
+                },
+                text: [],
+                textposition: 'auto',
+                hovertemplate: '<b>%{x}</b><br>Value: %{y}<extra></extra>'
+            };
+
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',
+                        bgSecondary: '#111827',
+                        text: '#f3f4f6',
+                        grid: '#374151'
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',
+                        bgSecondary: '#f9fafb',
+                        text: '#1f2937',
+                        grid: '#e5e7eb'
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
+            var layout = {
+                xaxis: { title: 'Category', gridcolor: colors.grid, color: colors.text },
+                yaxis: { title: 'Value', gridcolor: colors.grid, color: colors.text },
+                plot_bgcolor: colors.bgSecondary,
+                paper_bgcolor: colors.bg,
+                margin: { l: 60, r: 30, t: 30, b: 60 },
+                showlegend: false,
+                font: { color: colors.text }
+            };
+
+            var config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false
+            };
+
+            Plotly.newPlot('plot_chart-error-types', [trace], layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_chart-error-types', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bgSecondary,
+                    'xaxis.gridcolor': newColors.grid,
+                    'yaxis.gridcolor': newColors.grid,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
+        })();
+        </script>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white" data-panel-id="scatter-latency-confidence" data-panel-type="scatter">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Latency vs Confidence</div>
+            <div class="text-sm text-gray-600 mb-4">Query performance analysis</div>
+            
+            <div id="plot_scatter-latency-confidence" style="height: 550px;"></div>
+        </div>
+        <script>
+        (function() {
+            var trace = {
+                x: [95, 120, 145, 110, 130, 155, 100, 125, 140, 115],
+                y: [0.98, 0.96, 0.92, 0.97, 0.95, 0.9, 0.98, 0.96, 0.93, 0.97],
+                mode: 'markers',
+                type: 'scatter',
+                text: ["Query 1", "Query 2", "Query 3", "Query 4", "Query 5", "Query 6", "Query 7", "Query 8", "Query 9", "Query 10"],
+                marker: {
+                    size: [8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
+                    color: ["#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1"],
+                    opacity: 0.7,
+                    line: {
+                        color: 'white',
+                        width: 2
+                    }
+                },
+                hovertemplate: '<b>%{text}</b><br>X Axis: %{x}<br>Y Axis: %{y}<extra></extra>'
+            };
+
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',
+                        bgSecondary: '#111827',
+                        text: '#f3f4f6',
+                        grid: '#374151'
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',
+                        bgSecondary: '#f9fafb',
+                        text: '#1f2937',
+                        grid: '#e5e7eb'
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
+            var layout = {
+                xaxis: { title: 'X Axis', gridcolor: colors.grid, color: colors.text },
+                yaxis: { title: 'Y Axis', gridcolor: colors.grid, color: colors.text },
+                plot_bgcolor: colors.bgSecondary,
+                paper_bgcolor: colors.bg,
+                margin: { l: 60, r: 30, t: 30, b: 60 },
+                hovermode: 'closest',
+                font: { color: colors.text }
+            };
+
+            var config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
+            };
+
+            Plotly.newPlot('plot_scatter-latency-confidence', [trace], layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_scatter-latency-confidence', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bgSecondary,
+                    'xaxis.gridcolor': newColors.grid,
+                    'yaxis.gridcolor': newColors.grid,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
+        })();
+        </script>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white" data-panel-id="scatter-cache-perf" data-panel-type="scatter">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Cache Performance</div>
+            <div class="text-sm text-gray-600 mb-4">Hit rate vs speedup</div>
+            
+            <div id="plot_scatter-cache-perf" style="height: 550px;"></div>
+        </div>
+        <script>
+        (function() {
+            var trace = {
+                x: [0.65, 0.72, 0.78, 0.83, 0.88, 0.91, 0.94, 0.96, 0.98],
+                y: [2.1, 2.8, 3.5, 4.2, 5.1, 6.8, 8.5, 11.2, 15.4],
+                mode: 'markers',
+                type: 'scatter',
+                text: ["Shard 1", "Shard 2", "Shard 3", "Shard 4", "Shard 5", "Shard 6", "Shard 7", "Shard 8", "Shard 9"],
+                marker: {
+                    size: [8, 8, 8, 8, 8, 8, 8, 8, 8],
+                    color: ["#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1"],
+                    opacity: 0.7,
+                    line: {
+                        color: 'white',
+                        width: 2
+                    }
+                },
+                hovertemplate: '<b>%{text}</b><br>X Axis: %{x}<br>Y Axis: %{y}<extra></extra>'
+            };
+
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',
+                        bgSecondary: '#111827',
+                        text: '#f3f4f6',
+                        grid: '#374151'
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',
+                        bgSecondary: '#f9fafb',
+                        text: '#1f2937',
+                        grid: '#e5e7eb'
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
+            var layout = {
+                xaxis: { title: 'X Axis', gridcolor: colors.grid, color: colors.text },
+                yaxis: { title: 'Y Axis', gridcolor: colors.grid, color: colors.text },
+                plot_bgcolor: colors.bgSecondary,
+                paper_bgcolor: colors.bg,
+                margin: { l: 60, r: 30, t: 30, b: 60 },
+                hovermode: 'closest',
+                font: { color: colors.text }
+            };
+
+            var config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
+            };
+
+            Plotly.newPlot('plot_scatter-cache-perf', [trace], layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_scatter-cache-perf', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bgSecondary,
+                    'xaxis.gridcolor': newColors.grid,
+                    'yaxis.gridcolor': newColors.grid,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
+        })();
+        </script>
+        
+
+        <article class="panel"
+                 data-panel-id="timeline-processing"
+                 data-panel-type="timeline"
+                 data-size="large"
+                 role="article"
+                 aria-labelledby="panel-timeline-processing-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-timeline-processing-title">Query Processing Timeline</h3>
+                <div class="panel-subtitle">Detailed stage breakdown for last query (125ms total)</div>
+                
+                <div id="plot_timeline-processing" style="height: 450px;"></div>
+            </div>
+        </article>
+        <script>
+        (function() {
+            var data = [{
+                type: 'bar',
+                x: [25, 30, 20, 20, 30],
+                y: ['Feature Extraction', 'Memory Retrieval', 'Warp Tensioning', 'Policy Decision', 'Tool Execution'],
+                orientation: 'h',
+                marker: {
+                    color: ['#3b82f6', '#a855f7', '#22c55e', '#f97316', '#ef4444']
+                },
+                text: ['25.0ms (20%)', '30.0ms (24%)', '20.0ms (16%)', '20.0ms (16%)', '30.0ms (24%)'],
+                textposition: 'auto',
+                hovertemplate: '%{y}<br>%{x:.1f}ms (%{text})<extra></extra>'
+            }];
+
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',        // Dark elevated background
+                        bgSecondary: '#111827', // Dark secondary
+                        text: '#f3f4f6',      // Light text
+                        grid: '#374151'       // Dark grid
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',        // White background
+                        bgSecondary: '#f9fafb', // Light gray
+                        text: '#1f2937',      // Dark text
+                        grid: '#e5e7eb'       // Light grid
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
+            var layout = {
+                margin: { l: 120, r: 20, t: 20, b: 40 },
+                xaxis: {
+                    title: 'Duration (ms)',
+                    showgrid: true,
+                    gridcolor: colors.grid,
+                    color: colors.text
+                },
+                yaxis: {
+                    autorange: 'reversed',
+                    showgrid: false,
+                    color: colors.text
+                },
+                paper_bgcolor: colors.bg,
+                plot_bgcolor: colors.bg,
+                font: { family: 'system-ui, -apple-system, sans-serif', size: 12, color: colors.text },
+                showlegend: false
+            };
+
+            var config = { responsive: true, displayModeBar: false };
+            Plotly.newPlot('plot_timeline-processing', data, layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_timeline-processing', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bg,
+                    'xaxis.gridcolor': newColors.grid,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
+        })();
+        </script>
+        
+
+        <article class="panel"
+                 data-panel-id="heatmap-performance"
+                 data-panel-type="heatmap"
+                 data-size="three-quarters"
+                 role="article"
+                 aria-labelledby="panel-heatmap-performance-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-heatmap-performance-title">Performance Heatmap</h3>
+                <div class="panel-subtitle">Query latency by time and complexity</div>
+                <div id="plot_heatmap-performance" style="height: 550px;"></div>
+            </div>
+        </article>
+        <script>
+        (function() {
+            const themeColors = getThemeColors();
+
+            var data = [{
+                type: 'heatmap',
+                z: [[45, 95, 180, 450], [42, 92, 175, 440], [48, 98, 185, 460], [52, 105, 195, 480], [50, 102, 190, 470], [46, 96, 182, 455]],
+                x: ["LITE", "FAST", "FULL", "RESEARCH"],
+                y: ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"],
+                colorscale: [
+                    [0, 'rgb(34, 197, 94)'],      // green-500 (fast)
+                    [0.5, 'rgb(251, 191, 36)'],   // amber-400 (medium)
+                    [1, 'rgb(239, 68, 68)']       // red-500 (slow)
+                ],
+                hoverongaps: false,
+                hovertemplate: '<b>%{y}</b><br>%{x}: %{z}ms<extra></extra>',
+                colorbar: {
+                    title: 'Latency (ms)',
+                    titleside: 'right',
+                    tickmode: 'linear',
+                    tick0: 0,
+                    dtick: 100,
+                    thickness: 15,
+                    len: 0.9,
+                    bgcolor: 'rgba(0,0,0,0)',
+                    tickfont: { color: themeColors.text }
+                }
+            }];
+
+            var layout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: themeColors.text, family: 'Inter, sans-serif' },
+                margin: { t: 30, r: 80, b: 60, l: 80 },
+                xaxis: {
+                    title: '',
+                    gridcolor: themeColors.grid,
+                    tickfont: { size: 11 },
+                    showline: true,
+                    linecolor: themeColors.grid
+                },
+                yaxis: {
+                    title: 'Time of Day',
+                    gridcolor: themeColors.grid,
+                    tickfont: { size: 11 },
+                    showline: true,
+                    linecolor: themeColors.grid
+                },
+                hoverlabel: {
+                    bgcolor: themeColors.tooltipBg,
+                    bordercolor: themeColors.border,
+                    font: { color: themeColors.text }
+                }
+            };
+
+            var config = {
+                responsive: true,
+                displayModeBar: false
+            };
+
+            Plotly.newPlot('plot_heatmap-performance', data, layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_heatmap-performance', {
+                    'font.color': newColors.text,
+                    'xaxis.gridcolor': newColors.grid,
+                    'yaxis.gridcolor': newColors.grid,
+                    'xaxis.linecolor': newColors.grid,
+                    'yaxis.linecolor': newColors.grid
+                });
+            });
+        })();
+        </script>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-memory-breakdown"
+                 data-panel-type="text"
+                 data-size="small"
+                 role="article"
+                 aria-labelledby="panel-metric-memory-breakdown-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-metric-memory-breakdown-title">Memory Breakdown</h3>
+                <div class="panel-subtitle">Current allocation across HoloLoom subsystems</div>
+                <div class="text-sm" style="color: var(--color-text-primary); line-height: 1.6;">
+
+                <div style="font-family: monospace;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; padding: 0.5rem; background: var(--color-blue-50); border-radius: 0.5rem;">
+                            <span style="font-weight: 600;">🧵 Yarn Graph</span>
+                            <span style="color: var(--color-blue-600); font-weight: bold;">2.1 GB</span>
+                    ...
+                </div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-tool-usage"
+                 data-panel-type="text"
+                 data-size="small"
+                 role="article"
+                 aria-labelledby="panel-metric-tool-usage-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-metric-tool-usage-title">Tool Usage Stats</h3>
+                <div class="panel-subtitle">Last 1000 queries</div>
+                <div class="text-sm" style="color: var(--color-text-primary); line-height: 1.6;">
+
+                <div style="font-family: monospace; font-size: 0.875rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>🔍 Search:</span>
+                        <span style="color: var(--color-blue-600);">487 (48.7%)</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>💬 Answer:</span>
+        ...
+                </div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-system-health"
+                 data-panel-type="text"
+                 data-size="small"
+                 role="article"
+                 aria-labelledby="panel-metric-system-health-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-metric-system-health-title">System Health</h3>
+                <div class="panel-subtitle">Real-time status</div>
+                <div class="text-sm" style="color: var(--color-text-primary); line-height: 1.6;">
+
+                <div style="font-family: monospace; font-size: 0.875rem;">
+                    <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
+                        <span style="color: var(--color-green-600); font-size: 1.5rem; margin-right: 0.5rem;">●</span>
+                        <div>
+                            <div style="font-weight: bold;">All Systems Operational</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-seconda...
+                </div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="recent-query-0"
+                 data-panel-type="text"
+                 data-size="compact"
+                 role="article"
+                 aria-labelledby="panel-recent-query-0-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-recent-query-0-title">💬 Recent Query</h3>
+                <div class="panel-subtitle">2s ago</div>
+                <div class="text-sm" style="color: var(--color-text-primary); line-height: 1.6;">
+
+                    <div style="font-size: 0.875rem;">
+                        <div style="margin-bottom: 0.5rem; font-weight: 500;">
+                            "What is Thompson Sampling?"
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-secondary);">
+                            <span>⚡ 98ms</span>
+                            <span>2s ago</span>
+                        </div>
+         ...
+                </div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="recent-query-1"
+                 data-panel-type="text"
+                 data-size="compact"
+                 role="article"
+                 aria-labelledby="panel-recent-query-1-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-recent-query-1-title">🔍 Recent Query</h3>
+                <div class="panel-subtitle">15s ago</div>
+                <div class="text-sm" style="color: var(--color-text-primary); line-height: 1.6;">
+
+                    <div style="font-size: 0.875rem;">
+                        <div style="margin-bottom: 0.5rem; font-weight: 500;">
+                            "Explain matryoshka embeddings"
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-secondary);">
+                            <span>⚡ 145ms</span>
+                            <span>15s ago</span>
+                        </div>
+    ...
+                </div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="recent-query-2"
+                 data-panel-type="text"
+                 data-size="compact"
+                 role="article"
+                 aria-labelledby="panel-recent-query-2-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-recent-query-2-title">📊 Recent Query</h3>
+                <div class="panel-subtitle">1m ago</div>
+                <div class="text-sm" style="color: var(--color-text-primary); line-height: 1.6;">
+
+                    <div style="font-size: 0.875rem;">
+                        <div style="margin-bottom: 0.5rem; font-weight: 500;">
+                            "Show memory usage trends"
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-secondary);">
+                            <span>⚡ 210ms</span>
+                            <span>1m ago</span>
+                        </div>
+          ...
+                </div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="recent-query-3"
+                 data-panel-type="text"
+                 data-size="compact"
+                 role="article"
+                 aria-labelledby="panel-recent-query-3-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-recent-query-3-title">📊 Recent Query</h3>
+                <div class="panel-subtitle">3m ago</div>
+                <div class="text-sm" style="color: var(--color-text-primary); line-height: 1.6;">
+
+                    <div style="font-size: 0.875rem;">
+                        <div style="margin-bottom: 0.5rem; font-weight: 500;">
+                            "Compare LITE vs FAST modes"
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-secondary);">
+                            <span>⚡ 185ms</span>
+                            <span>3m ago</span>
+                        </div>
+        ...
+                </div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="network-knowledge-graph"
+                 data-panel-type="network"
+                 data-size="full-width"
+                 role="article"
+                 aria-labelledby="panel-network-knowledge-graph-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-network-knowledge-graph-title">Knowledge Graph Visualization</h3>
+                <div class="panel-subtitle">Entity relationships (top 20 nodes by centrality)</div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">
+                    <span style="margin-right: 1rem;">10 node(s), 9 edge(s)</span>
+                    <span style="opacity: 0.7;">💡 Drag nodes • Scroll to zoom • Double-click to reset</span>
+                </div>
+                <div id="plot_network-knowledge-graph" style="height: 600px; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); background: var(--color-bg-secondary); position: relative;"></div>
+            </div>
+        </article>
+        <script>
+        (function() {
+            // D3.js Enhanced Force-Directed Graph
+            const width = document.getElementById('plot_network-knowledge-graph').clientWidth;
+            const height = 450;
+
+            const svg = d3.select('#plot_network-knowledge-graph')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Add zoom behavior
+            const g = svg.append('g');
+            const zoom = d3.zoom()
+                .scaleExtent([0.3, 3])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                });
+
+            svg.call(zoom);
+
+            // Reset zoom on double-click
+            svg.on('dblclick.zoom', () => {
+                svg.transition().duration(750).call(
+                    zoom.transform,
+                    d3.zoomIdentity
+                );
+            });
+
+            const nodes = [{"id": "Thompson Sampling", "size": 20, "color": "blue"}, {"id": "Exploration", "size": 15, "color": "green"}, {"id": "Exploitation", "size": 15, "color": "green"}, {"id": "Multi-Armed Bandit", "size": 18, "color": "blue"}, {"id": "Bayesian", "size": 12, "color": "purple"}, {"id": "Policy Engine", "size": 16, "color": "orange"}, {"id": "Neural Network", "size": 14, "color": "orange"}, {"id": "Matryoshka", "size": 13, "color": "purple"}, {"id": "Embeddings", "size": 14, "color": "purple"}, {"id": "WarpSpace", "size": 12, "color": "red"}];
+            const links = [{"source": "Thompson Sampling", "target": "Multi-Armed Bandit"}, {"source": "Thompson Sampling", "target": "Exploration"}, {"source": "Thompson Sampling", "target": "Exploitation"}, {"source": "Thompson Sampling", "target": "Bayesian"}, {"source": "Policy Engine", "target": "Thompson Sampling"}, {"source": "Policy Engine", "target": "Neural Network"}, {"source": "Matryoshka", "target": "Embeddings"}, {"source": "Policy Engine", "target": "Embeddings"}, {"source": "WarpSpace", "target": "Embeddings"}];
+
+            // Create force simulation with better physics
+            const simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(120))
+                .force('charge', d3.forceManyBody().strength(-400))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => (d.size || 12) + 15));
+
+            // Draw edges with gradient
+            const link = g.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(links)
+                .enter().append('line')
+                .attr('stroke', '#cbd5e1')
+                .attr('stroke-width', 1.5)
+                .attr('stroke-opacity', 0.6);
+
+            // Draw nodes
+            const node = g.append('g')
+                .attr('class', 'nodes')
+                .selectAll('g')
+                .data(nodes)
+                .enter().append('g')
+                .style('cursor', 'pointer')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended))
+                .on('mouseover', function(event, d) {
+                    // Highlight on hover
+                    d3.select(this).select('circle')
+                        .transition().duration(200)
+                        .attr('r', (d.size || 12) * 1.3)
+                        .attr('stroke-width', 3);
+                })
+                .on('mouseout', function(event, d) {
+                    // Reset on mouseout
+                    d3.select(this).select('circle')
+                        .transition().duration(200)
+                        .attr('r', d.size || 12)
+                        .attr('stroke-width', 2);
+                });
+
+            // Node circles with drop shadow
+            node.append('circle')
+                .attr('r', d => d.size || 12)
+                .attr('fill', d => d.color || '#6366f1')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
+
+            // Node labels
+            node.append('text')
+                .text(d => d.label)
+                .attr('x', 0)
+                .attr('y', d => (d.size || 12) + 18)
+                .attr('text-anchor', 'middle')
+                .style('font-size', d => d.type === 'query' ? '12px' : '10px')
+                .style('font-weight', d => d.type === 'query' ? 600 : 400)
+                .style('fill', '#374151')
+                .style('pointer-events', 'none');
+
+            // Enhanced tooltip with full label
+            node.append('title')
+                .text(d => {
+                    const fullLabel = d.fullLabel || d.label;
+                    const type = d.type === 'query' ? 'Query Node' : 'Knowledge Thread';
+                    return `${type}\n${fullLabel}`;
+                });
+
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            // Enhanced drag functions
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+
+                // Highlight connected nodes
+                highlightConnected(event.subject);
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+
+                // Reset highlight
+                resetHighlight();
+            }
+
+            function highlightConnected(d) {
+                const connectedNodes = new Set();
+                connectedNodes.add(d.id);
+
+                links.forEach(link => {
+                    if (link.source.id === d.id) connectedNodes.add(link.target.id);
+                    if (link.target.id === d.id) connectedNodes.add(link.source.id);
+                });
+
+                node.style('opacity', n => connectedNodes.has(n.id) ? 1 : 0.2);
+                link.style('opacity', l =>
+                    l.source.id === d.id || l.target.id === d.id ? 0.8 : 0.1
+                );
+            }
+
+            function resetHighlight() {
+                node.style('opacity', 1);
+                link.style('opacity', 0.6);
+            }
+        })();
+        </script>
+        
+            </div>
+        </main>
+
+        <!-- Metadata Footer -->
+        <footer class="dashboard-footer" role="contentinfo">
+
+        <div class="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-500 text-center">
+            Complexity: UNKNOWN | Panels: 26
+            <br>
+            Generated: 2025-10-29T21:39:13
+        </div>
+        
+        </footer>
+    </div>
+
+    <!-- Modern JavaScript (Phases 3 & 5) -->
+    <script>
+/**
+ * HoloLoom Modern Dashboard Interactivity
+ * ========================================
+ * Modern JavaScript features:
+ * - View Transitions API (Phase 5)
+ * - Theme Management
+ * - Accessibility Features (Phase 3)
+ * - Progressive Enhancement
+ *
+ * Author: Claude Code with HoloLoom architecture
+ * Date: October 29, 2025
+ */
+
+(function() {
+  'use strict';
+
+  // ========================================================================
+  // Phase 5: Theme Management with View Transitions API
+  // ========================================================================
+
+  class ThemeManager {
+    constructor() {
+      this.root = document.documentElement;
+      this.storageKey = 'hololoom-theme';
+      this.init();
+    }
+
+    init() {
+      // Load saved theme or detect system preference
+      const savedTheme = localStorage.getItem(this.storageKey);
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+      this.setTheme(initialTheme, false); // No transition on initial load
+
+      // Listen for system preference changes
+      window.matchMedia('(prefers-color-scheme: dark)')
+        .addEventListener('change', (e) => {
+          if (!localStorage.getItem(this.storageKey)) {
+            this.setTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+
+      // Create theme toggle button
+      this.createThemeToggle();
+    }
+
+    setTheme(theme, useTransition = true) {
+      // Phase 5: Use View Transitions API if available
+      if (useTransition && document.startViewTransition) {
+        document.startViewTransition(() => {
+          this._applyTheme(theme);
+        });
+      } else {
+        this._applyTheme(theme);
+      }
+
+      localStorage.setItem(this.storageKey, theme);
+
+      // Dispatch custom event for other components
+      window.dispatchEvent(new CustomEvent('themechange', {
+        detail: { theme }
+      }));
+    }
+
+    _applyTheme(theme) {
+      this.root.setAttribute('data-theme', theme);
+    }
+
+    toggle() {
+      const currentTheme = this.root.getAttribute('data-theme') || 'light';
+      this.setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    }
+
+    createThemeToggle() {
+      const button = document.createElement('button');
+      button.className = 'theme-toggle';
+      button.setAttribute('aria-label', 'Toggle dark mode');
+      button.setAttribute('title', 'Toggle dark mode');
+      button.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path class="sun-icon" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+          <path class="moon-icon" style="display: none;" d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+        </svg>
+      `;
+
+      // Style the button
+      Object.assign(button.style, {
+        position: 'fixed',
+        bottom: '2rem',
+        right: '2rem',
+        width: '48px',
+        height: '48px',
+        borderRadius: '50%',
+        border: '1px solid var(--color-border-default)',
+        background: 'var(--color-accent-primary)',
+        color: 'white',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: 'var(--shadow-lg)',
+        transition: 'transform var(--transition-fast), box-shadow var(--transition-fast)',
+        zIndex: 'var(--z-sticky)'
+      });
+
+      button.addEventListener('click', () => this.toggle());
+
+      button.addEventListener('mouseenter', () => {
+        button.style.transform = 'scale(1.1)';
+        button.style.boxShadow = 'var(--shadow-xl)';
+      });
+
+      button.addEventListener('mouseleave', () => {
+        button.style.transform = 'scale(1)';
+        button.style.boxShadow = 'var(--shadow-lg)';
+      });
+
+      // Update icon based on theme
+      const updateIcon = () => {
+        const theme = this.root.getAttribute('data-theme');
+        const sunIcon = button.querySelector('.sun-icon');
+        const moonIcon = button.querySelector('.moon-icon');
+
+        if (theme === 'dark') {
+          sunIcon.style.display = 'block';
+          moonIcon.style.display = 'none';
+          button.setAttribute('aria-label', 'Switch to light mode');
+        } else {
+          sunIcon.style.display = 'none';
+          moonIcon.style.display = 'block';
+          button.setAttribute('aria-label', 'Switch to dark mode');
+        }
+      };
+
+      updateIcon();
+      window.addEventListener('themechange', updateIcon);
+
+      document.body.appendChild(button);
+    }
+  }
+
+  // ========================================================================
+  // Phase 3: Accessibility - Keyboard Navigation
+  // ========================================================================
+
+  class KeyboardNavigationManager {
+    constructor() {
+      this.focusableSelector = '.panel, button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      this.init();
+    }
+
+    init() {
+      // Add keyboard shortcuts
+      document.addEventListener('keydown', this.handleKeydown.bind(this));
+
+      // Add focus indicators to panels
+      this.enhancePanelFocus();
+    }
+
+    handleKeydown(e) {
+      // T key: Toggle theme
+      if (e.key === 't' && !this.isTyping(e)) {
+        e.preventDefault();
+        window.themeManager?.toggle();
+      }
+
+      // Escape: Close expanded panels
+      if (e.key === 'Escape') {
+        this.closeExpandedPanels();
+      }
+
+      // Arrow keys: Navigate between panels
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        if (document.activeElement.classList.contains('panel')) {
+          e.preventDefault();
+          this.navigatePanels(e.key);
+        }
+      }
+    }
+
+    isTyping(e) {
+      const target = e.target;
+      return target.tagName === 'INPUT' ||
+             target.tagName === 'TEXTAREA' ||
+             target.isContentEditable;
+    }
+
+    navigatePanels(direction) {
+      const panels = Array.from(document.querySelectorAll('.panel'));
+      const currentIndex = panels.indexOf(document.activeElement);
+
+      if (currentIndex === -1) return;
+
+      let nextIndex;
+      if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+        nextIndex = (currentIndex + 1) % panels.length;
+      } else {
+        nextIndex = (currentIndex - 1 + panels.length) % panels.length;
+      }
+
+      panels[nextIndex].focus();
+    }
+
+    enhancePanelFocus() {
+      document.querySelectorAll('.panel').forEach(panel => {
+        // Make panels keyboard focusable
+        if (!panel.hasAttribute('tabindex')) {
+          panel.setAttribute('tabindex', '0');
+        }
+
+        // Add ARIA labels if missing
+        if (!panel.getAttribute('aria-label')) {
+          const title = panel.querySelector('.panel-title')?.textContent;
+          if (title) {
+            panel.setAttribute('aria-label', title);
+          }
+        }
+      });
+    }
+
+    closeExpandedPanels() {
+      document.querySelectorAll('.panel[data-expanded="true"]').forEach(panel => {
+        panel.setAttribute('data-expanded', 'false');
+      });
+    }
+  }
+
+  // ========================================================================
+  // Panel Interactivity
+  // ========================================================================
+
+  class PanelManager {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      document.querySelectorAll('.panel').forEach(panel => {
+        this.enhancePanel(panel);
+      });
+    }
+
+    enhancePanel(panel) {
+      // Click to expand (optional)
+      const expandable = panel.hasAttribute('data-expandable');
+
+      if (expandable) {
+        panel.style.cursor = 'pointer';
+
+        panel.addEventListener('click', (e) => {
+          // Don't expand if clicking interactive elements
+          if (e.target.closest('button, a, input, select')) return;
+
+          this.togglePanel(panel);
+        });
+
+        // Enter key to expand
+        panel.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.togglePanel(panel);
+          }
+        });
+      }
+
+      // Hover effects are handled by CSS
+    }
+
+    togglePanel(panel) {
+      const isExpanded = panel.getAttribute('data-expanded') === 'true';
+      panel.setAttribute('data-expanded', !isExpanded);
+
+      // Announce to screen readers
+      const message = isExpanded ? 'Panel collapsed' : 'Panel expanded';
+      this.announceToScreenReader(message);
+    }
+
+    announceToScreenReader(message) {
+      const announcement = document.createElement('div');
+      announcement.className = 'sr-only';
+      announcement.setAttribute('role', 'status');
+      announcement.setAttribute('aria-live', 'polite');
+      announcement.textContent = message;
+
+      document.body.appendChild(announcement);
+      setTimeout(() => announcement.remove(), 1000);
+    }
+  }
+
+  // ========================================================================
+  // Performance Monitoring
+  // ========================================================================
+
+  class PerformanceMonitor {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Monitor paint performance
+      if ('PerformanceObserver' in window) {
+        try {
+          const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              console.log(`[HoloLoom] ${entry.name}: ${entry.duration.toFixed(2)}ms`);
+            }
+          });
+
+          observer.observe({ entryTypes: ['measure', 'paint'] });
+        } catch (e) {
+          // PerformanceObserver not fully supported
+        }
+      }
+
+      // Log page load metrics
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          if (perfData) {
+            console.log('[HoloLoom] Page Load Metrics:', {
+              domContentLoaded: `${perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart}ms`,
+              loadComplete: `${perfData.loadEventEnd - perfData.loadEventStart}ms`,
+              domInteractive: `${perfData.domInteractive - perfData.fetchStart}ms`
+            });
+          }
+        }, 0);
+      });
+    }
+  }
+
+  // ========================================================================
+  // Initialize All Managers
+  // ========================================================================
+
+  function init() {
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+      return;
+    }
+
+    console.log('[HoloLoom] Initializing modern dashboard features...');
+
+    // Initialize managers
+    window.themeManager = new ThemeManager();
+    window.keyboardNav = new KeyboardNavigationManager();
+    window.panelManager = new PanelManager();
+
+    // Performance monitoring (only in development)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window.perfMonitor = new PerformanceMonitor();
+    }
+
+    // Add keyboard shortcuts help
+    createKeyboardShortcutsHelp();
+
+    console.log('[HoloLoom] Dashboard ready! Press "?" for keyboard shortcuts.');
+  }
+
+  // ========================================================================
+  // Keyboard Shortcuts Help Modal
+  // ========================================================================
+
+  function createKeyboardShortcutsHelp() {
+    let helpVisible = false;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '?' && !window.keyboardNav.isTyping(e)) {
+        e.preventDefault();
+        toggleHelp();
+      }
+    });
+
+    function toggleHelp() {
+      if (helpVisible) {
+        document.getElementById('keyboard-help-modal')?.remove();
+        helpVisible = false;
+      } else {
+        showHelp();
+        helpVisible = true;
+      }
+    }
+
+    function showHelp() {
+      const modal = document.createElement('div');
+      modal.id = 'keyboard-help-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-labelledby', 'keyboard-help-title');
+      modal.setAttribute('aria-modal', 'true');
+
+      modal.innerHTML = `
+        <div style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: var(--z-modal);
+          padding: var(--space-4);
+        " id="help-backdrop">
+          <div style="
+            background: var(--color-bg-elevated);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+            max-width: 500px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--color-border-default);
+          ">
+            <h2 id="keyboard-help-title" style="
+              margin: 0 0 var(--space-4) 0;
+              font-size: var(--font-size-xl);
+              color: var(--color-text-primary);
+            ">Keyboard Shortcuts</h2>
+
+            <dl style="margin: 0; display: grid; gap: var(--space-3);">
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">T</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Toggle dark mode</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">Arrow Keys</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Navigate panels</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">Enter / Space</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Expand panel</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">Esc</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Close expanded panels</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">?</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Show this help</dd>
+              </div>
+            </dl>
+
+            <button style="
+              margin-top: var(--space-6);
+              width: 100%;
+              padding: var(--space-3);
+              background: var(--color-accent-primary);
+              color: white;
+              border: none;
+              border-radius: var(--radius-md);
+              font-weight: var(--font-weight-medium);
+              cursor: pointer;
+            " id="close-help-btn">Close</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Close on button click
+      document.getElementById('close-help-btn').addEventListener('click', toggleHelp);
+
+      // Close on backdrop click
+      document.getElementById('help-backdrop').addEventListener('click', (e) => {
+        if (e.target.id === 'help-backdrop') {
+          toggleHelp();
+        }
+      });
+
+      // Close on Escape
+      const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+          toggleHelp();
+          document.removeEventListener('keydown', escapeHandler);
+        }
+      };
+      document.addEventListener('keydown', escapeHandler);
+
+      // Focus the close button
+      setTimeout(() => {
+        document.getElementById('close-help-btn').focus();
+      }, 100);
+    }
+  }
+
+  // ========================================================================
+  // NEXT LEVEL: Advanced Interactive Effects
+  // ========================================================================
+
+  class ParallaxEffect {
+    constructor() {
+      this.panels = document.querySelectorAll('.panel');
+      this.enabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (this.enabled) this.init();
+    }
+
+    init() {
+      document.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+
+        this.panels.forEach((panel, index) => {
+          const speed = (index % 3 + 1) * 0.5; // Different speeds for depth
+          const x = (mouseX - 0.5) * speed * 10;
+          const y = (mouseY - 0.5) * speed * 10;
+
+          panel.style.transform = `translate(${x}px, ${y}px)`;
+        });
+      });
+
+      // Reset on mouse leave
+      document.addEventListener('mouseleave', () => {
+        this.panels.forEach(panel => {
+          panel.style.transform = '';
+        });
+      });
+    }
+  }
+
+  class CursorTrail {
+    constructor() {
+      this.trail = [];
+      this.maxTrail = 20;
+      this.enabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (this.enabled) this.init();
+    }
+
+    init() {
+      document.addEventListener('mousemove', (e) => {
+        this.createParticle(e.clientX, e.clientY);
+      });
+    }
+
+    createParticle(x, y) {
+      const particle = document.createElement('div');
+      particle.className = 'cursor-particle';
+      particle.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        width: 4px;
+        height: 4px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.8), transparent);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        animation: particle-fade 0.8s ease-out forwards;
+      `;
+      document.body.appendChild(particle);
+
+      // Add CSS animation if not exists
+      if (!document.getElementById('particle-style')) {
+        const style = document.createElement('style');
+        style.id = 'particle-style';
+        style.textContent = `
+          @keyframes particle-fade {
+            from {
+              opacity: 0.8;
+              transform: scale(1);
+            }
+            to {
+              opacity: 0;
+              transform: scale(0.3);
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      setTimeout(() => particle.remove(), 800);
+    }
+  }
+
+  class DataAnimator {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Animate metric numbers on scroll into view
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            this.animateNumber(entry.target);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      document.querySelectorAll('.metric-value.numeric').forEach(el => {
+        observer.observe(el);
+      });
+    }
+
+    animateNumber(element) {
+      const text = element.textContent.trim();
+      const number = parseFloat(text.replace(/[^0-9.]/g, ''));
+
+      if (isNaN(number)) return;
+
+      const suffix = text.replace(/[0-9.,]/g, '');
+      const duration = 1000;
+      const start = performance.now();
+
+      const animate = (currentTime) => {
+        const elapsed = currentTime - start;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Ease out cubic
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        const current = number * easeProgress;
+
+        // Format based on original format
+        let formatted;
+        if (text.includes('K')) {
+          // Value is already in thousands, don't divide again!
+          formatted = current.toFixed(1) + 'K';
+        } else if (text.includes('%')) {
+          formatted = current.toFixed(1) + '%';
+        } else if (text.includes('GB')) {
+          formatted = current.toFixed(1) + 'GB';
+        } else if (text.includes('ms')) {
+          formatted = current.toFixed(1) + 'ms';
+        } else {
+          formatted = Math.floor(current).toString();
+        }
+
+        element.textContent = formatted;
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }
+  }
+
+  class PanelMagnetism {
+    constructor() {
+      this.panels = document.querySelectorAll('.panel');
+      this.enabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (this.enabled) this.init();
+    }
+
+    init() {
+      this.panels.forEach(panel => {
+        panel.addEventListener('mouseenter', (e) => {
+          const rect = panel.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          panel.addEventListener('mousemove', this.handleMouseMove.bind(this, panel, centerX, centerY));
+        });
+
+        panel.addEventListener('mouseleave', () => {
+          panel.style.transform = '';
+        });
+      });
+    }
+
+    handleMouseMove(panel, centerX, centerY, e) {
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+
+      const deltaX = (mouseX - centerX) / 20;
+      const deltaY = (mouseY - centerY) / 20;
+
+      panel.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.02)`;
+    }
+  }
+
+  class SmoothScroll {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Add smooth scroll behavior
+      document.documentElement.style.scrollBehavior = 'smooth';
+
+      // Add scroll reveal for panels
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '-50px'
+      });
+
+      document.querySelectorAll('.panel').forEach(panel => {
+        observer.observe(panel);
+      });
+    }
+  }
+
+  class HoverSound {
+    constructor() {
+      this.enabled = false; // Disabled by default, can be enabled
+      if (this.enabled) this.init();
+    }
+
+    init() {
+      // Create audio context
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      document.querySelectorAll('.panel').forEach(panel => {
+        panel.addEventListener('mouseenter', () => this.playHoverSound());
+      });
+    }
+
+    playHoverSound() {
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + 0.1);
+    }
+  }
+
+  class DynamicColorShift {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Shift panel colors based on time of day
+      const hour = new Date().getHours();
+      const isDaytime = hour >= 6 && hour < 18;
+
+      if (!isDaytime && document.documentElement.getAttribute('data-theme') === 'light') {
+        // Subtle hint that dark mode might be nice
+        document.querySelectorAll('.panel').forEach(panel => {
+          panel.style.filter = 'brightness(0.95)';
+        });
+      }
+    }
+  }
+
+  // Initialize advanced effects
+  function initAdvancedEffects() {
+    // new ParallaxEffect(); // Uncomment for mouse parallax
+    new CursorTrail();
+    new DataAnimator();
+    // new PanelMagnetism(); // Uncomment for magnetic panels
+    new SmoothScroll();
+    // new HoverSound(); // Uncomment for sound effects (disabled by default)
+    new DynamicColorShift();
+
+    console.log('🎨 HoloLoom Advanced Effects Loaded');
+  }
+
+  // Start initialization
+  init();
+
+  // Initialize advanced effects after short delay
+  setTimeout(initAdvancedEffects, 100);
+
+})();
+
+    </script>
+
+    <!-- Legacy Interactivity (backward compatibility) -->
+    <script>
+/**
+ * HoloLoom Dashboard Interactivity
+ * ==================================
+ * Client-side JavaScript for interactive self-constructing dashboards.
+ *
+ * Features:
+ * - Panel expand/collapse
+ * - User preference management
+ * - localStorage persistence
+ * - Drill-down interactions
+ * - Theme switching
+ * - Panel reordering
+ *
+ * Author: Claude Code
+ * Date: October 29, 2025
+ */
+
+(function() {
+    'use strict';
+
+    // ========================================================================
+    // State Management
+    // ========================================================================
+
+    class DashboardState {
+        constructor() {
+            this.panels = new Map();  // panel_id -> state
+            this.preferences = this.loadPreferences();
+            this.expandedPanels = new Set();
+            this.init();
+        }
+
+        init() {
+            // Load panel states from localStorage
+            const saved = localStorage.getItem('hololoom_panel_states');
+            if (saved) {
+                const states = JSON.parse(saved);
+                Object.entries(states).forEach(([id, state]) => {
+                    this.panels.set(id, state);
+                    if (state.expanded) {
+                        this.expandedPanels.add(id);
+                    }
+                });
+            }
+        }
+
+        loadPreferences() {
+            const saved = localStorage.getItem('hololoom_preferences');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            // Default preferences
+            return {
+                preferred_panels: [],
+                hidden_panels: [],
+                layout_preference: null,
+                color_scheme: 'light',
+                detail_level: 'standard',
+                max_panels: null,
+                enable_animations: true,
+                auto_expand_errors: true,
+                panel_sizes: {}
+            };
+        }
+
+        savePreferences() {
+            localStorage.setItem('hololoom_preferences', JSON.stringify(this.preferences));
+        }
+
+        setPanelState(panelId, state) {
+            this.panels.set(panelId, { ...this.panels.get(panelId), ...state });
+            this.savePanelStates();
+        }
+
+        savePanelStates() {
+            const states = {};
+            this.panels.forEach((state, id) => {
+                states[id] = state;
+            });
+            localStorage.setItem('hololoom_panel_states', JSON.stringify(states));
+        }
+
+        togglePanel(panelId) {
+            if (this.expandedPanels.has(panelId)) {
+                this.expandedPanels.delete(panelId);
+                this.setPanelState(panelId, { expanded: false });
+                return false;
+            } else {
+                this.expandedPanels.add(panelId);
+                this.setPanelState(panelId, { expanded: true });
+                return true;
+            }
+        }
+
+        setPreference(key, value) {
+            this.preferences[key] = value;
+            this.savePreferences();
+        }
+
+        clearAll() {
+            localStorage.removeItem('hololoom_panel_states');
+            localStorage.removeItem('hololoom_preferences');
+            this.panels.clear();
+            this.expandedPanels.clear();
+            this.preferences = this.loadPreferences();
+        }
+    }
+
+    // ========================================================================
+    // Panel Interactions
+    // ========================================================================
+
+    class PanelController {
+        constructor(state) {
+            this.state = state;
+        }
+
+        attachHandlers() {
+            // Find all panels
+            document.querySelectorAll('[data-panel-id]').forEach(panel => {
+                this.attachPanelHandlers(panel);
+            });
+        }
+
+        attachPanelHandlers(panel) {
+            const panelId = panel.dataset.panelId;
+            const panelType = panel.dataset.panelType;
+
+            // Add expand/collapse button if not present
+            this.addExpandButton(panel, panelId);
+
+            // Add drill-down click handler
+            this.addDrillDownHandler(panel, panelId, panelType);
+
+            // Restore saved state
+            this.restorePanelState(panel, panelId);
+        }
+
+        addExpandButton(panel, panelId) {
+            // Check if button already exists
+            if (panel.querySelector('.expand-btn')) return;
+
+            // Find panel header
+            const header = panel.querySelector('.panel-header') ||
+                          panel.querySelector('h3') ||
+                          panel.querySelector('.text-lg');
+
+            if (!header) return;
+
+            // Create expand button
+            const btn = document.createElement('button');
+            btn.className = 'expand-btn ml-2 text-gray-500 hover:text-gray-700 transition-colors';
+            btn.innerHTML = '<svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+            btn.setAttribute('aria-label', 'Expand panel');
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.togglePanel(panel, panelId);
+            });
+
+            // Add button to header
+            if (header.style.display !== 'flex') {
+                header.style.display = 'flex';
+                header.style.alignItems = 'center';
+                header.style.justifyContent = 'space-between';
+            }
+            header.appendChild(btn);
+        }
+
+        togglePanel(panel, panelId) {
+            const isExpanded = this.state.togglePanel(panelId);
+            const content = panel.querySelector('.panel-content') || panel.querySelector('div:not(.panel-header)');
+            const btn = panel.querySelector('.expand-btn svg');
+
+            if (!content) return;
+
+            if (isExpanded) {
+                // Expand
+                content.style.maxHeight = content.scrollHeight + 'px';
+                content.classList.remove('collapsed');
+                if (btn) btn.style.transform = 'rotate(180deg)';
+                panel.classList.add('expanded');
+            } else {
+                // Collapse
+                content.style.maxHeight = '0';
+                content.classList.add('collapsed');
+                if (btn) btn.style.transform = 'rotate(0deg)';
+                panel.classList.remove('expanded');
+            }
+
+            // Animate if enabled
+            if (this.state.preferences.enable_animations) {
+                content.style.transition = 'max-height 0.3s ease-in-out';
+            }
+        }
+
+        addDrillDownHandler(panel, panelId, panelType) {
+            // Add click handler for drill-down
+            panel.style.cursor = 'pointer';
+
+            panel.addEventListener('click', (e) => {
+                // Don't drill down if clicking on interactive elements
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                if (e.target.tagName === 'A' || e.target.closest('a')) return;
+
+                this.showDrillDown(panel, panelId, panelType);
+            });
+        }
+
+        showDrillDown(panel, panelId, panelType) {
+            // Create modal for drill-down
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full m-4 max-h-[90vh] overflow-auto">
+                    <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-900">Panel Details: ${panelType}</h2>
+                        <button class="close-btn text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        ${this.getDrillDownContent(panel, panelType)}
+                    </div>
+                </div>
+            `;
+
+            // Add close handler
+            modal.querySelector('.close-btn').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+
+            // Close on background click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+
+            document.body.appendChild(modal);
+        }
+
+        getDrillDownContent(panel, panelType) {
+            // Extract detailed data from panel
+            const content = panel.cloneNode(true);
+
+            // Remove interactive elements
+            content.querySelectorAll('.expand-btn').forEach(el => el.remove());
+
+            // Add type-specific enhancements
+            if (panelType === 'timeline') {
+                return `
+                    <div class="space-y-4">
+                        ${content.innerHTML}
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-2">Stage Details</h3>
+                            <p class="text-sm text-gray-600">
+                                Click on chart bars for per-stage breakdown.
+                                Use mouse wheel to zoom, drag to pan.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else if (panelType === 'network') {
+                return `
+                    <div class="space-y-4">
+                        ${content.innerHTML}
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-2">Network Controls</h3>
+                            <p class="text-sm text-gray-600">
+                                Drag nodes to rearrange. Double-click nodes for details.
+                                Scroll to zoom.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return content.innerHTML;
+            }
+        }
+
+        restorePanelState(panel, panelId) {
+            const savedState = this.state.panels.get(panelId);
+            if (savedState && savedState.expanded) {
+                // Restore expanded state
+                setTimeout(() => this.togglePanel(panel, panelId), 100);
+            }
+
+            // Auto-expand errors if preference is set
+            if (this.state.preferences.auto_expand_errors &&
+                panel.dataset.panelType === 'text' &&
+                panel.textContent.toLowerCase().includes('error')) {
+                setTimeout(() => this.togglePanel(panel, panelId), 100);
+            }
+        }
+    }
+
+    // ========================================================================
+    // Preferences UI
+    // ========================================================================
+
+    class PreferencesUI {
+        constructor(state) {
+            this.state = state;
+        }
+
+        createPreferencesButton() {
+            const btn = document.createElement('button');
+            btn.className = 'fixed bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-40';
+            btn.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            `;
+            btn.setAttribute('aria-label', 'Dashboard preferences');
+            btn.addEventListener('click', () => this.showPreferences());
+            document.body.appendChild(btn);
+        }
+
+        showPreferences() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full m-4 max-h-[90vh] overflow-auto">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-900">Dashboard Preferences</h2>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        ${this.getPreferencesForm()}
+                    </div>
+                    <div class="p-6 border-t border-gray-200 flex justify-between">
+                        <button class="clear-btn px-4 py-2 text-red-600 hover:bg-red-50 rounded">Clear All</button>
+                        <div class="space-x-2">
+                            <button class="cancel-btn px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">Cancel</button>
+                            <button class="save-btn px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Attach handlers
+            modal.querySelector('.save-btn').addEventListener('click', () => {
+                this.savePreferencesFromForm(modal);
+                document.body.removeChild(modal);
+                window.location.reload();  // Reload to apply preferences
+            });
+
+            modal.querySelector('.cancel-btn').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+
+            modal.querySelector('.clear-btn').addEventListener('click', () => {
+                if (confirm('Clear all saved preferences and panel states?')) {
+                    this.state.clearAll();
+                    document.body.removeChild(modal);
+                    window.location.reload();
+                }
+            });
+
+            document.body.appendChild(modal);
+        }
+
+        getPreferencesForm() {
+            const prefs = this.state.preferences;
+            return `
+                <div class="space-y-4">
+                    <!-- Theme -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Color Scheme</label>
+                        <select id="pref-color-scheme" class="w-full border border-gray-300 rounded px-3 py-2">
+                            <option value="light" ${prefs.color_scheme === 'light' ? 'selected' : ''}>Light</option>
+                            <option value="dark" ${prefs.color_scheme === 'dark' ? 'selected' : ''}>Dark</option>
+                        </select>
+                    </div>
+
+                    <!-- Detail Level -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Detail Level</label>
+                        <select id="pref-detail-level" class="w-full border border-gray-300 rounded px-3 py-2">
+                            <option value="minimal" ${prefs.detail_level === 'minimal' ? 'selected' : ''}>Minimal</option>
+                            <option value="standard" ${prefs.detail_level === 'standard' ? 'selected' : ''}>Standard</option>
+                            <option value="detailed" ${prefs.detail_level === 'detailed' ? 'selected' : ''}>Detailed</option>
+                        </select>
+                    </div>
+
+                    <!-- Max Panels -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Panels</label>
+                        <input type="number" id="pref-max-panels" value="${prefs.max_panels || ''}"
+                               placeholder="No limit" class="w-full border border-gray-300 rounded px-3 py-2">
+                    </div>
+
+                    <!-- Animations -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="pref-animations" ${prefs.enable_animations ? 'checked' : ''}
+                               class="mr-2 h-4 w-4 text-indigo-600">
+                        <label for="pref-animations" class="text-sm text-gray-700">Enable animations</label>
+                    </div>
+
+                    <!-- Auto-expand errors -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="pref-auto-expand-errors" ${prefs.auto_expand_errors ? 'checked' : ''}
+                               class="mr-2 h-4 w-4 text-indigo-600">
+                        <label for="pref-auto-expand-errors" class="text-sm text-gray-700">Auto-expand error panels</label>
+                    </div>
+                </div>
+            `;
+        }
+
+        savePreferencesFromForm(modal) {
+            this.state.setPreference('color_scheme', modal.querySelector('#pref-color-scheme').value);
+            this.state.setPreference('detail_level', modal.querySelector('#pref-detail-level').value);
+            this.state.setPreference('max_panels', parseInt(modal.querySelector('#pref-max-panels').value) || null);
+            this.state.setPreference('enable_animations', modal.querySelector('#pref-animations').checked);
+            this.state.setPreference('auto_expand_errors', modal.querySelector('#pref-auto-expand-errors').checked);
+        }
+    }
+
+    // ========================================================================
+    // Initialization
+    // ========================================================================
+
+    function initDashboard() {
+        const state = new DashboardState();
+        const panelController = new PanelController(state);
+        const preferencesUI = new PreferencesUI(state);
+
+        // Attach panel handlers
+        panelController.attachHandlers();
+
+        // Create preferences button
+        preferencesUI.createPreferencesButton();
+
+        // Apply theme
+        if (state.preferences.color_scheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
+        // Expose to window for debugging
+        window.HoloLoom = { state, panelController, preferencesUI };
+
+        console.log('[HoloLoom] Dashboard initialized');
+    }
+
+    // Auto-initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    } else {
+        initDashboard();
+    }
+
+})();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Performance Monitoring - 24 Hour View - HoloLoom Dashboard</title>
+
+    <!-- Tailwind CSS (CDN, no build step) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Plotly.js (interactive charts) -->
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+
+    <!-- D3.js (force-directed graphs) -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        /* Edward Tufte-inspired typography */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        /* Minimal chrome, maximum data-ink ratio */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Smooth transitions */
+        .panel {
+            transition: box-shadow 0.2s ease;
+        }
+
+        .panel:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Panel state management */
+        .panel-content.collapsed {
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        .panel.expanded {
+            border-color: #6366f1;
+            border-width: 2px;
+        }
+
+        /* Dark theme support - Comprehensive overrides */
+        .dark-theme {
+            background: #111827 !important;
+            color: #f3f4f6 !important;
+        }
+
+        /* Background colors */
+        .dark-theme .bg-gray-50 {
+            background: #111827 !important;
+        }
+
+        .dark-theme .bg-white {
+            background: #1f2937 !important;
+            color: #f3f4f6 !important;
+        }
+
+        .dark-theme .bg-gray-100 {
+            background: #1f2937 !important;
+        }
+
+        /* Colored panel backgrounds */
+        .dark-theme .bg-green-50 {
+            background: #064e3b !important;
+        }
+
+        .dark-theme .bg-blue-50 {
+            background: #1e3a8a !important;
+        }
+
+        .dark-theme .bg-yellow-50 {
+            background: #78350f !important;
+        }
+
+        .dark-theme .bg-red-50 {
+            background: #7f1d1d !important;
+        }
+
+        .dark-theme .bg-purple-50 {
+            background: #581c87 !important;
+        }
+
+        .dark-theme .bg-indigo-50 {
+            background: #312e81 !important;
+        }
+
+        /* Text colors */
+        .dark-theme .text-gray-900 {
+            color: #f9fafb !important;
+        }
+
+        .dark-theme .text-gray-800 {
+            color: #f3f4f6 !important;
+        }
+
+        .dark-theme .text-gray-700 {
+            color: #e5e7eb !important;
+        }
+
+        .dark-theme .text-gray-600 {
+            color: #d1d5db !important;
+        }
+
+        .dark-theme .text-gray-500 {
+            color: #9ca3af !important;
+        }
+
+        /* Borders */
+        .dark-theme .border-gray-200 {
+            border-color: #374151 !important;
+        }
+
+        .dark-theme .border-gray-300 {
+            border-color: #4b5563 !important;
+        }
+
+        /* Shadows - reduce in dark mode */
+        .dark-theme .shadow-sm {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .dark-theme .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7) !important;
+        }
+
+        .dark-theme .shadow-xl {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7) !important;
+        }
+
+        /* Interactive elements */
+        .dark-theme .hover\:bg-gray-50:hover {
+            background: #374151 !important;
+        }
+
+        .dark-theme .hover\:bg-red-50:hover {
+            background: #991b1b !important;
+        }
+
+        /* Preferences button stays visible */
+        .dark-theme button[aria-label="Dashboard preferences"] {
+            background: #4f46e5 !important;
+        }
+
+        .dark-theme button[aria-label="Dashboard preferences"]:hover {
+            background: #4338ca !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="dashboard-container">
+        <!-- Dashboard Title (Tufte: Clear hierarchy) -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Server Performance Monitoring - 24 Hour View</h1>
+            <div class="h-1 w-24 bg-indigo-600 rounded"></div>
+        </div>
+
+        <!-- Dashboard Grid (Responsive layout) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="md:col-span-2 p-6 rounded-lg shadow-sm border border-gray-200 bg-white" data-panel-id="panel_0" data-panel-type="scatter">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Cpu_Usage vs Hour</div>
+            <div class="text-sm text-gray-600 mb-4">Two numeric variables - investigate correlation</div>
+            <div class="text-sm text-gray-600 mb-2">Correlation: -0.115 (weak negative)</div>
+            <div id="plot_panel_0" style="height: 400px;"></div>
+        </div>
+        <script>
+        (function() {
+            var trace = {
+                x: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+                y: [45, 48, 52, 49, 51, 47, 46, 55, 58, 62, 67, 71, 95, 68, 64, 59, 54, 51, 48, 46, 44, 42, 40, 43],
+                mode: 'markers',
+                type: 'scatter',
+                text: ["Point 1", "Point 2", "Point 3", "Point 4", "Point 5", "Point 6", "Point 7", "Point 8", "Point 9", "Point 10", "Point 11", "Point 12", "Point 13", "Point 14", "Point 15", "Point 16", "Point 17", "Point 18", "Point 19", "Point 20", "Point 21", "Point 22", "Point 23", "Point 24"],
+                marker: {
+                    size: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+                    color: ["#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1", "#6366f1"],
+                    opacity: 0.7,
+                    line: {
+                        color: 'white',
+                        width: 2
+                    }
+                },
+                hovertemplate: '<b>%{text}</b><br>Hour: %{x}<br>Cpu Usage: %{y}<extra></extra>'
+            };
+
+            var layout = {
+                xaxis: { title: 'Hour', gridcolor: '#e5e7eb' },
+                yaxis: { title: 'Cpu Usage', gridcolor: '#e5e7eb' },
+                plot_bgcolor: '#f9fafb',
+                paper_bgcolor: 'transparent',
+                margin: { l: 60, r: 30, t: 30, b: 60 },
+                hovermode: 'closest'
+            };
+
+            var config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
+            };
+
+            Plotly.newPlot('plot_panel_0', [trace], layout, config);
+        })();
+        </script>
+        
+
+        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-yellow-50">
+            <div class="text-sm font-medium text-gray-600 mb-2">Hour</div>
+            <div class="flex items-baseline">
+                <div class="text-4xl font-bold text-yellow-600">11.5</div>
+                
+            </div>
+            
+            
+        </div>
+        
+
+        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-blue-50">
+            <div class="text-sm font-medium text-gray-600 mb-2">Cpu Usage</div>
+            <div class="flex items-baseline">
+                <div class="text-4xl font-bold text-blue-600">54.4</div>
+                
+            </div>
+            
+            
+        </div>
+        
+
+        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-blue-50">
+            <div class="text-sm font-medium text-gray-600 mb-2">Memory Usage</div>
+            <div class="flex items-baseline">
+                <div class="text-4xl font-bold text-blue-600">68.1</div>
+                
+            </div>
+            
+            
+        </div>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 border-l-4 border-l-green-500 bg-white" data-panel-id="insight_4" data-panel-type="insight">
+            <div class="flex items-start mb-3">
+                <div class="text-3xl mr-3">📈</div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="text-sm font-medium text-gray-500">Trend</div>
+                        <div class="text-xs text-green-600 font-medium">95% confident</div>
+                    </div>
+                    <div class="text-base font-semibold text-gray-800">Hour is sharply increasing</div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-700 leading-relaxed">The hour shows a sharply increasing trend with 457.1% change from start to end.</div>
+
+            <ul class="mt-3 space-y-1"><li class="text-sm text-gray-600">• Direction: Increasing</li><li class="text-sm text-gray-600">• Change: +457.1%</li><li class="text-sm text-gray-600">• Start: 3.50</li><li class="text-sm text-gray-600">• End: 19.50</li></ul>
+
+            <!-- Confidence bar -->
+            <div class="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500" style="width: 95%;"></div>
+            </div>
+        </div>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 border-l-4 border-l-green-500 bg-white" data-panel-id="insight_6" data-panel-type="insight">
+            <div class="flex items-start mb-3">
+                <div class="text-3xl mr-3">📈</div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="text-sm font-medium text-gray-500">Trend</div>
+                        <div class="text-xs text-gray-600 font-medium">6% confident</div>
+                    </div>
+                    <div class="text-base font-semibold text-gray-800">Cpu_Usage is steadily decreasing</div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-700 leading-relaxed">The cpu_usage shows a steadily decreasing trend with 6.4% change from start to end.</div>
+
+            <ul class="mt-3 space-y-1"><li class="text-sm text-gray-600">• Direction: Decreasing</li><li class="text-sm text-gray-600">• Change: -6.4%</li><li class="text-sm text-gray-600">• Start: 49.12</li><li class="text-sm text-gray-600">• End: 46.00</li></ul>
+
+            <!-- Confidence bar -->
+            <div class="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-gray-500" style="width: 6%;"></div>
+            </div>
+        </div>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 border-l-4 border-l-yellow-500 bg-white" data-panel-id="insight_8" data-panel-type="insight">
+            <div class="flex items-start mb-3">
+                <div class="text-3xl mr-3">⚠️</div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="text-sm font-medium text-gray-500">Outlier</div>
+                        <div class="text-xs text-green-600 font-medium">85% confident</div>
+                    </div>
+                    <div class="text-base font-semibold text-gray-800">Anomalous value detected in cpu_usage</div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-700 leading-relaxed">Value at position 12 (95.00) is 3.4 standard deviations from the mean.</div>
+
+            <ul class="mt-3 space-y-1"><li class="text-sm text-gray-600">• Outlier Value: 95.00</li><li class="text-sm text-gray-600">• Mean: 54.38</li><li class="text-sm text-gray-600">• Std Dev: 12.03</li><li class="text-sm text-gray-600">• Total Outliers: 1</li></ul>
+
+            <!-- Confidence bar -->
+            <div class="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500" style="width: 85%;"></div>
+            </div>
+        </div>
+        
+        </div>
+
+        <!-- Metadata Footer -->
+
+        <div class="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-500 text-center">
+            Complexity: ComplexityLevel.FULL | Panels: 7
+            <br>
+            Generated: 2025-10-29T01:57:02
+        </div>
+        
+    </div>
+
+    <!-- Dashboard Interactivity -->
+    <script>
+/**
+ * HoloLoom Dashboard Interactivity
+ * ==================================
+ * Client-side JavaScript for interactive self-constructing dashboards.
+ *
+ * Features:
+ * - Panel expand/collapse
+ * - User preference management
+ * - localStorage persistence
+ * - Drill-down interactions
+ * - Theme switching
+ * - Panel reordering
+ *
+ * Author: Claude Code
+ * Date: October 29, 2025
+ */
+
+(function() {
+    'use strict';
+
+    // ========================================================================
+    // State Management
+    // ========================================================================
+
+    class DashboardState {
+        constructor() {
+            this.panels = new Map();  // panel_id -> state
+            this.preferences = this.loadPreferences();
+            this.expandedPanels = new Set();
+            this.init();
+        }
+
+        init() {
+            // Load panel states from localStorage
+            const saved = localStorage.getItem('hololoom_panel_states');
+            if (saved) {
+                const states = JSON.parse(saved);
+                Object.entries(states).forEach(([id, state]) => {
+                    this.panels.set(id, state);
+                    if (state.expanded) {
+                        this.expandedPanels.add(id);
+                    }
+                });
+            }
+        }
+
+        loadPreferences() {
+            const saved = localStorage.getItem('hololoom_preferences');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            // Default preferences
+            return {
+                preferred_panels: [],
+                hidden_panels: [],
+                layout_preference: null,
+                color_scheme: 'light',
+                detail_level: 'standard',
+                max_panels: null,
+                enable_animations: true,
+                auto_expand_errors: true,
+                panel_sizes: {}
+            };
+        }
+
+        savePreferences() {
+            localStorage.setItem('hololoom_preferences', JSON.stringify(this.preferences));
+        }
+
+        setPanelState(panelId, state) {
+            this.panels.set(panelId, { ...this.panels.get(panelId), ...state });
+            this.savePanelStates();
+        }
+
+        savePanelStates() {
+            const states = {};
+            this.panels.forEach((state, id) => {
+                states[id] = state;
+            });
+            localStorage.setItem('hololoom_panel_states', JSON.stringify(states));
+        }
+
+        togglePanel(panelId) {
+            if (this.expandedPanels.has(panelId)) {
+                this.expandedPanels.delete(panelId);
+                this.setPanelState(panelId, { expanded: false });
+                return false;
+            } else {
+                this.expandedPanels.add(panelId);
+                this.setPanelState(panelId, { expanded: true });
+                return true;
+            }
+        }
+
+        setPreference(key, value) {
+            this.preferences[key] = value;
+            this.savePreferences();
+        }
+
+        clearAll() {
+            localStorage.removeItem('hololoom_panel_states');
+            localStorage.removeItem('hololoom_preferences');
+            this.panels.clear();
+            this.expandedPanels.clear();
+            this.preferences = this.loadPreferences();
+        }
+    }
+
+    // ========================================================================
+    // Panel Interactions
+    // ========================================================================
+
+    class PanelController {
+        constructor(state) {
+            this.state = state;
+        }
+
+        attachHandlers() {
+            // Find all panels
+            document.querySelectorAll('[data-panel-id]').forEach(panel => {
+                this.attachPanelHandlers(panel);
+            });
+        }
+
+        attachPanelHandlers(panel) {
+            const panelId = panel.dataset.panelId;
+            const panelType = panel.dataset.panelType;
+
+            // Add expand/collapse button if not present
+            this.addExpandButton(panel, panelId);
+
+            // Add drill-down click handler
+            this.addDrillDownHandler(panel, panelId, panelType);
+
+            // Restore saved state
+            this.restorePanelState(panel, panelId);
+        }
+
+        addExpandButton(panel, panelId) {
+            // Check if button already exists
+            if (panel.querySelector('.expand-btn')) return;
+
+            // Find panel header
+            const header = panel.querySelector('.panel-header') ||
+                          panel.querySelector('h3') ||
+                          panel.querySelector('.text-lg');
+
+            if (!header) return;
+
+            // Create expand button
+            const btn = document.createElement('button');
+            btn.className = 'expand-btn ml-2 text-gray-500 hover:text-gray-700 transition-colors';
+            btn.innerHTML = '<svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+            btn.setAttribute('aria-label', 'Expand panel');
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.togglePanel(panel, panelId);
+            });
+
+            // Add button to header
+            if (header.style.display !== 'flex') {
+                header.style.display = 'flex';
+                header.style.alignItems = 'center';
+                header.style.justifyContent = 'space-between';
+            }
+            header.appendChild(btn);
+        }
+
+        togglePanel(panel, panelId) {
+            const isExpanded = this.state.togglePanel(panelId);
+            const content = panel.querySelector('.panel-content') || panel.querySelector('div:not(.panel-header)');
+            const btn = panel.querySelector('.expand-btn svg');
+
+            if (!content) return;
+
+            if (isExpanded) {
+                // Expand
+                content.style.maxHeight = content.scrollHeight + 'px';
+                content.classList.remove('collapsed');
+                if (btn) btn.style.transform = 'rotate(180deg)';
+                panel.classList.add('expanded');
+            } else {
+                // Collapse
+                content.style.maxHeight = '0';
+                content.classList.add('collapsed');
+                if (btn) btn.style.transform = 'rotate(0deg)';
+                panel.classList.remove('expanded');
+            }
+
+            // Animate if enabled
+            if (this.state.preferences.enable_animations) {
+                content.style.transition = 'max-height 0.3s ease-in-out';
+            }
+        }
+
+        addDrillDownHandler(panel, panelId, panelType) {
+            // Add click handler for drill-down
+            panel.style.cursor = 'pointer';
+
+            panel.addEventListener('click', (e) => {
+                // Don't drill down if clicking on interactive elements
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                if (e.target.tagName === 'A' || e.target.closest('a')) return;
+
+                this.showDrillDown(panel, panelId, panelType);
+            });
+        }
+
+        showDrillDown(panel, panelId, panelType) {
+            // Create modal for drill-down
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full m-4 max-h-[90vh] overflow-auto">
+                    <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-900">Panel Details: ${panelType}</h2>
+                        <button class="close-btn text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        ${this.getDrillDownContent(panel, panelType)}
+                    </div>
+                </div>
+            `;
+
+            // Add close handler
+            modal.querySelector('.close-btn').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+
+            // Close on background click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+
+            document.body.appendChild(modal);
+        }
+
+        getDrillDownContent(panel, panelType) {
+            // Extract detailed data from panel
+            const content = panel.cloneNode(true);
+
+            // Remove interactive elements
+            content.querySelectorAll('.expand-btn').forEach(el => el.remove());
+
+            // Add type-specific enhancements
+            if (panelType === 'timeline') {
+                return `
+                    <div class="space-y-4">
+                        ${content.innerHTML}
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-2">Stage Details</h3>
+                            <p class="text-sm text-gray-600">
+                                Click on chart bars for per-stage breakdown.
+                                Use mouse wheel to zoom, drag to pan.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else if (panelType === 'network') {
+                return `
+                    <div class="space-y-4">
+                        ${content.innerHTML}
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-2">Network Controls</h3>
+                            <p class="text-sm text-gray-600">
+                                Drag nodes to rearrange. Double-click nodes for details.
+                                Scroll to zoom.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return content.innerHTML;
+            }
+        }
+
+        restorePanelState(panel, panelId) {
+            const savedState = this.state.panels.get(panelId);
+            if (savedState && savedState.expanded) {
+                // Restore expanded state
+                setTimeout(() => this.togglePanel(panel, panelId), 100);
+            }
+
+            // Auto-expand errors if preference is set
+            if (this.state.preferences.auto_expand_errors &&
+                panel.dataset.panelType === 'text' &&
+                panel.textContent.toLowerCase().includes('error')) {
+                setTimeout(() => this.togglePanel(panel, panelId), 100);
+            }
+        }
+    }
+
+    // ========================================================================
+    // Preferences UI
+    // ========================================================================
+
+    class PreferencesUI {
+        constructor(state) {
+            this.state = state;
+        }
+
+        createPreferencesButton() {
+            const btn = document.createElement('button');
+            btn.className = 'fixed bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-40';
+            btn.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            `;
+            btn.setAttribute('aria-label', 'Dashboard preferences');
+            btn.addEventListener('click', () => this.showPreferences());
+            document.body.appendChild(btn);
+        }
+
+        showPreferences() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full m-4 max-h-[90vh] overflow-auto">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-900">Dashboard Preferences</h2>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        ${this.getPreferencesForm()}
+                    </div>
+                    <div class="p-6 border-t border-gray-200 flex justify-between">
+                        <button class="clear-btn px-4 py-2 text-red-600 hover:bg-red-50 rounded">Clear All</button>
+                        <div class="space-x-2">
+                            <button class="cancel-btn px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">Cancel</button>
+                            <button class="save-btn px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Attach handlers
+            modal.querySelector('.save-btn').addEventListener('click', () => {
+                this.savePreferencesFromForm(modal);
+                document.body.removeChild(modal);
+                window.location.reload();  // Reload to apply preferences
+            });
+
+            modal.querySelector('.cancel-btn').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+
+            modal.querySelector('.clear-btn').addEventListener('click', () => {
+                if (confirm('Clear all saved preferences and panel states?')) {
+                    this.state.clearAll();
+                    document.body.removeChild(modal);
+                    window.location.reload();
+                }
+            });
+
+            document.body.appendChild(modal);
+        }
+
+        getPreferencesForm() {
+            const prefs = this.state.preferences;
+            return `
+                <div class="space-y-4">
+                    <!-- Theme -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Color Scheme</label>
+                        <select id="pref-color-scheme" class="w-full border border-gray-300 rounded px-3 py-2">
+                            <option value="light" ${prefs.color_scheme === 'light' ? 'selected' : ''}>Light</option>
+                            <option value="dark" ${prefs.color_scheme === 'dark' ? 'selected' : ''}>Dark</option>
+                        </select>
+                    </div>
+
+                    <!-- Detail Level -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Detail Level</label>
+                        <select id="pref-detail-level" class="w-full border border-gray-300 rounded px-3 py-2">
+                            <option value="minimal" ${prefs.detail_level === 'minimal' ? 'selected' : ''}>Minimal</option>
+                            <option value="standard" ${prefs.detail_level === 'standard' ? 'selected' : ''}>Standard</option>
+                            <option value="detailed" ${prefs.detail_level === 'detailed' ? 'selected' : ''}>Detailed</option>
+                        </select>
+                    </div>
+
+                    <!-- Max Panels -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Panels</label>
+                        <input type="number" id="pref-max-panels" value="${prefs.max_panels || ''}"
+                               placeholder="No limit" class="w-full border border-gray-300 rounded px-3 py-2">
+                    </div>
+
+                    <!-- Animations -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="pref-animations" ${prefs.enable_animations ? 'checked' : ''}
+                               class="mr-2 h-4 w-4 text-indigo-600">
+                        <label for="pref-animations" class="text-sm text-gray-700">Enable animations</label>
+                    </div>
+
+                    <!-- Auto-expand errors -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="pref-auto-expand-errors" ${prefs.auto_expand_errors ? 'checked' : ''}
+                               class="mr-2 h-4 w-4 text-indigo-600">
+                        <label for="pref-auto-expand-errors" class="text-sm text-gray-700">Auto-expand error panels</label>
+                    </div>
+                </div>
+            `;
+        }
+
+        savePreferencesFromForm(modal) {
+            this.state.setPreference('color_scheme', modal.querySelector('#pref-color-scheme').value);
+            this.state.setPreference('detail_level', modal.querySelector('#pref-detail-level').value);
+            this.state.setPreference('max_panels', parseInt(modal.querySelector('#pref-max-panels').value) || null);
+            this.state.setPreference('enable_animations', modal.querySelector('#pref-animations').checked);
+            this.state.setPreference('auto_expand_errors', modal.querySelector('#pref-auto-expand-errors').checked);
+        }
+    }
+
+    // ========================================================================
+    // Initialization
+    // ========================================================================
+
+    function initDashboard() {
+        const state = new DashboardState();
+        const panelController = new PanelController(state);
+        const preferencesUI = new PreferencesUI(state);
+
+        // Attach panel handlers
+        panelController.attachHandlers();
+
+        // Create preferences button
+        preferencesUI.createPreferencesButton();
+
+        // Apply theme
+        if (state.preferences.color_scheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
+        // Expose to window for debugging
+        window.HoloLoom = { state, panelController, preferencesUI };
+
+        console.log('[HoloLoom] Dashboard initialized');
+    }
+
+    // Auto-initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    } else {
+        initDashboard();
+    }
+
+})();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph Network - Professional Demos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f9fafb;
+            color: #1f2937;
+            padding: 40px 20px;
+        }
+
+        .demo-header {
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            text-align: center;
+        }
+
+        .demo-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+
+        .demo-header p {
+            font-size: 16px;
+            color: #6b7280;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .demo-section {
+            max-width: 1200px;
+            margin: 0 auto 60px;
+        }
+
+        .demo-section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 20px;
+            padding-left: 20px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .demo-frame {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        iframe {
+            width: 100%;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .feature-list {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .feature-list h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .feature-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #10b981;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>Knowledge Graph Network Visualization</h1>
+        <p>
+            Interactive force-directed graph visualization for HoloLoom knowledge graphs.
+            Tufte-inspired design with semantic edge colors, node sizing by importance,
+            and zero external dependencies.
+        </p>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value">918</div>
+            <div class="stat-label">Lines of Code</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Demo Scenarios</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">7</div>
+            <div class="stat-label">Edge Types</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">0</div>
+            <div class="stat-label">Dependencies</div>
+        </div>
+    </div>
+
+    <div class="feature-list">
+        <h3>Key Features</h3>
+        <ul>
+            <li>Force-directed layout (Fruchterman-Reingold algorithm) - natural clustering</li>
+            <li>Node sizing by degree - importance visualization</li>
+            <li>Semantic edge colors - relationship types clearly distinguished</li>
+            <li>Interactive tooltips - details on demand</li>
+            <li>Path highlighting - reasoning chain visualization</li>
+            <li>Direct KG integration - works with HoloLoom.memory.graph.KG</li>
+            <li>Zero dependencies - pure HTML/CSS/SVG</li>
+            <li>Thread-safe rendering - no shared mutable state</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h2>Demo 1: Transformer Architecture</h2>
+        <div class="demo-frame">
+            <iframe id="demo1" srcdoc="" height="800"></iframe>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Demo 2: Programming Language Relationships</h2>
+        <div class="demo-frame">
+            <iframe id="demo2" srcdoc="" height="800"></iframe>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Demo 3: Reasoning Pipeline with Path Highlighting</h2>
+        <div class="demo-frame">
+            <iframe id="demo3" srcdoc="" height="800"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Embed demo HTML in iframes
+        const demo1Html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Architecture Knowledge Graph</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #ffffff;
+        color: #1f2937;
+        padding: 40px 20px;
+    }
+
+    .graph-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 30px;
+    }
+
+    .graph-header {
+        margin-bottom: 20px;
+    }
+
+    .graph-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .graph-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+
+    .graph-stats {
+        display: flex;
+        gap: 24px;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .graph-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #4b5563;
+    }
+
+    .legend-line {
+        width: 20px;
+        height: 2px;
+    }
+
+    .graph-svg {
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        background: #fafafa;
+    }
+
+    .graph-node {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .graph-node:hover {
+        stroke-width: 2.5px;
+    }
+
+    .graph-edge {
+        pointer-events: none;
+    }
+
+    .graph-edge.highlighted {
+        stroke-width: 3px;
+        opacity: 1.0;
+    }
+
+    .node-label {
+        font-size: 11px;
+        font-weight: 500;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .edge-label {
+        font-size: 9px;
+        fill: #6b7280;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    /* Tooltip */
+    .tooltip {
+        position: absolute;
+        background: rgba(17, 24, 39, 0.95);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 1000;
+        max-width: 250px;
+    }
+
+    .tooltip.visible {
+        opacity: 1;
+    }
+
+    .tooltip-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+
+    .tooltip-detail {
+        font-size: 11px;
+        color: #d1d5db;
+        margin: 2px 0;
+    }
+</style>
+</head>
+<body>
+<div class="graph-container">
+<div class="graph-header">
+<h2>Transformer Architecture Knowledge Graph</h2>
+<p class="graph-subtitle">Entity relationships in neural network domain (11 nodes, 11 edges)</p>
+
+        <div class="graph-stats">
+            <div class="stat-item">
+                <span class="stat-label">Nodes</span>
+                <span class="stat-value">11</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Edges</span>
+                <span class="stat-value">11</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Avg Degree</span>
+                <span class="stat-value">2.0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Edge Types</span>
+                <span class="stat-value">3</span>
+            </div>
+        </div>
+</div>
+
+        <div class="graph-legend">
+            <div class="legend-item"><div class="legend-line" style="background: #3b82f6;"></div><span>Is A</span></div> <div class="legend-item"><div class="legend-line" style="background: #10b981;"></div><span>Uses</span></div> <div class="legend-item"><div class="legend-line" style="background: #6b7280;"></div><span>Mentions</span></div> <div class="legend-item"><div class="legend-line" style="background: #f59e0b;"></div><span>Leads To</span></div> <div class="legend-item"><div class="legend-line" style="background: #8b5cf6;"></div><span>Part Of</span></div> <div class="legend-item"><div class="legend-line" style="background: #06b6d4;"></div><span>In Time</span></div> <div class="legend-item"><div class="legend-line" style="background: #14b8a6;"></div><span>Occurred At</span></div>
+        </div>
+<svg class="graph-svg" width="900" height="700" xmlns="http://www.w3.org/2000/svg">
+
+    <line class="graph-edge "
+          x1="535.8108495147576" y1="346.2410731345051"
+          x2="446.6558737845169" y2="344.1922962871817"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge "
+          x1="535.8108495147576" y1="346.2410731345051"
+          x2="498.56412765793107" y2="354.59045594358713"
+          stroke="#8b5cf6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-part_of)" />
+
+    <line class="graph-edge "
+          x1="431.6598328022042" y1="343.8476880214688"
+          x2="469.43977976966283" y2="353.9843565257573"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="450.7039436485799" y1="284.2967236457723"
+          x2="436.22881402835213" y2="329.56047658763373"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="378.7654098851311" y1="390.49837341502416"
+          x2="420.41006377559404" y2="353.76951733102266"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="363.2475712062413" y1="333.2618962275803"
+          x2="416.83624378749516" y2="341.55395553423375"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="561.633653742955" y1="287.79119578090217"
+          x2="541.8725440767914" y2="332.5204368869905"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="565.606338825218" y1="403.52599799957017"
+          x2="542.7324805930521" y2="359.5486282524066"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="602.6905252736422" y1="343.864086912667"
+          x2="550.8013846357109" y2="345.708291014434"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="434.96577041304926" y1="417.95588889899597"
+          x2="432.32831207384925" y2="358.8327851337127"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge "
+          x1="388.92430500788043" y1="276.8454677307461"
+          x2="423.5935724215729" y2="331.20112945908284"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <circle class="graph-node"
+            data-node-id="attention"
+            cx="535.8108495147576" cy="346.2410731345051" r="18.666666666666664"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="535.8108495147576" y="376.9077398011718"
+          text-anchor="middle">attention</text>
+
+    <circle class="graph-node"
+            data-node-id="transformer"
+            cx="431.6598328022042" cy="343.8476880214688" r="24.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="431.6598328022042" y="379.8476880214688"
+          text-anchor="middle">transformer</text>
+
+    <circle class="graph-node"
+            data-node-id="neural_network"
+            cx="483.9273661650466" cy="357.8714943463513" r="10.666666666666666"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="483.9273661650466" y="380.538161013018"
+          text-anchor="middle">neural_network</text>
+
+    <circle class="graph-node"
+            data-node-id="BERT"
+            cx="450.7039436485799" cy="284.2967236457723" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="450.7039436485799" y="304.2967236457723"
+          text-anchor="middle">BERT</text>
+
+    <circle class="graph-node"
+            data-node-id="GPT"
+            cx="378.7654098851311" cy="390.49837341502416" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="378.7654098851311" y="410.49837341502416"
+          text-anchor="middle">GPT</text>
+
+    <circle class="graph-node"
+            data-node-id="T5"
+            cx="363.2475712062413" cy="333.2618962275803" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="363.2475712062413" y="353.2618962275803"
+          text-anchor="middle">T5</text>
+
+    <circle class="graph-node"
+            data-node-id="multi-head"
+            cx="561.633653742955" cy="287.79119578090217" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="561.633653742955" y="307.79119578090217"
+          text-anchor="middle">multi-head</text>
+
+    <circle class="graph-node"
+            data-node-id="self-attention"
+            cx="565.606338825218" cy="403.52599799957017" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="565.606338825218" y="423.52599799957017"
+          text-anchor="middle">self-attention</text>
+
+    <circle class="graph-node"
+            data-node-id="cross-attention"
+            cx="602.6905252736422" cy="343.864086912667" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="602.6905252736422" y="363.864086912667"
+          text-anchor="middle">cross-attention</text>
+
+    <circle class="graph-node"
+            data-node-id="positional_encoding"
+            cx="434.96577041304926" cy="417.95588889899597" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="434.96577041304926" y="437.95588889899597"
+          text-anchor="middle">positional_enco</text>
+
+    <circle class="graph-node"
+            data-node-id="feed_forward"
+            cx="388.92430500788043" cy="276.8454677307461" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="388.92430500788043" y="296.8454677307461"
+          text-anchor="middle">feed_forward</text>
+</svg>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+(function() {
+    const nodes = [
+        {
+            id: "attention",
+            label: "attention",
+            degree: 5,
+            type: "default"
+        },
+        {
+            id: "transformer",
+            label: "transformer",
+            degree: 7,
+            type: "default"
+        },
+        {
+            id: "neural_network",
+            label: "neural_network",
+            degree: 2,
+            type: "default"
+        },
+        {
+            id: "BERT",
+            label: "BERT",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "GPT",
+            label: "GPT",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "T5",
+            label: "T5",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "multi-head",
+            label: "multi-head",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "self-attention",
+            label: "self-attention",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "cross-attention",
+            label: "cross-attention",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "positional_encoding",
+            label: "positional_encoding",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "feed_forward",
+            label: "feed_forward",
+            degree: 1,
+            type: "default"
+        }];
+    const tooltip = document.getElementById('tooltip');
+
+    // Add hover listeners to nodes
+    document.querySelectorAll('.graph-node').forEach(node => {
+        node.addEventListener('mouseenter', function(e) {
+            const nodeId = this.getAttribute('data-node-id');
+            const nodeData = nodes.find(n => n.id === nodeId);
+
+            if (nodeData) {
+                tooltip.innerHTML = \`
+                    <div class="tooltip-title">${nodeData.label}</div>
+                    <div class="tooltip-detail">Degree: ${nodeData.degree}</div>
+                    <div class="tooltip-detail">Type: ${nodeData.type}</div>
+                \`;
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top = e.pageY + 10 + 'px';
+                tooltip.classList.add('visible');
+            }
+        });
+
+        node.addEventListener('mouseleave', function() {
+            tooltip.classList.remove('visible');
+        });
+
+        node.addEventListener('mousemove', function(e) {
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY + 10 + 'px';
+        });
+    });
+})();
+</script>
+</div>
+</body>
+</html>`;
+        const demo2Html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Language Knowledge Graph</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #ffffff;
+        color: #1f2937;
+        padding: 40px 20px;
+    }
+
+    .graph-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 30px;
+    }
+
+    .graph-header {
+        margin-bottom: 20px;
+    }
+
+    .graph-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .graph-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+
+    .graph-stats {
+        display: flex;
+        gap: 24px;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .graph-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #4b5563;
+    }
+
+    .legend-line {
+        width: 20px;
+        height: 2px;
+    }
+
+    .graph-svg {
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        background: #fafafa;
+    }
+
+    .graph-node {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .graph-node:hover {
+        stroke-width: 2.5px;
+    }
+
+    .graph-edge {
+        pointer-events: none;
+    }
+
+    .graph-edge.highlighted {
+        stroke-width: 3px;
+        opacity: 1.0;
+    }
+
+    .node-label {
+        font-size: 11px;
+        font-weight: 500;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .edge-label {
+        font-size: 9px;
+        fill: #6b7280;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    /* Tooltip */
+    .tooltip {
+        position: absolute;
+        background: rgba(17, 24, 39, 0.95);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 1000;
+        max-width: 250px;
+    }
+
+    .tooltip.visible {
+        opacity: 1;
+    }
+
+    .tooltip-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+
+    .tooltip-detail {
+        font-size: 11px;
+        color: #d1d5db;
+        margin: 2px 0;
+    }
+</style>
+</head>
+<body>
+<div class="graph-container">
+<div class="graph-header">
+<h2>Programming Language Knowledge Graph</h2>
+<p class="graph-subtitle">Language relationships and ecosystem (10 nodes, 10 edges)</p>
+
+        <div class="graph-stats">
+            <div class="stat-item">
+                <span class="stat-label">Nodes</span>
+                <span class="stat-value">10</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Edges</span>
+                <span class="stat-value">10</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Avg Degree</span>
+                <span class="stat-value">2.0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Edge Types</span>
+                <span class="stat-value">2</span>
+            </div>
+        </div>
+</div>
+
+        <div class="graph-legend">
+            <div class="legend-item"><div class="legend-line" style="background: #3b82f6;"></div><span>Is A</span></div> <div class="legend-item"><div class="legend-line" style="background: #10b981;"></div><span>Uses</span></div> <div class="legend-item"><div class="legend-line" style="background: #6b7280;"></div><span>Mentions</span></div> <div class="legend-item"><div class="legend-line" style="background: #f59e0b;"></div><span>Leads To</span></div> <div class="legend-item"><div class="legend-line" style="background: #8b5cf6;"></div><span>Part Of</span></div> <div class="legend-item"><div class="legend-line" style="background: #06b6d4;"></div><span>In Time</span></div> <div class="legend-item"><div class="legend-line" style="background: #14b8a6;"></div><span>Occurred At</span></div>
+        </div>
+<svg class="graph-svg" width="900" height="700" xmlns="http://www.w3.org/2000/svg">
+
+    <line class="graph-edge "
+          x1="392.37964296065985" y1="408.32636057681054"
+          x2="430.9795573645925" y2="371.8120999591745"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="392.37964296065985" y1="408.32636057681054"
+          x2="341.7092733923757" y2="404.96077809752506"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge "
+          x1="392.37964296065985" y1="408.32636057681054"
+          x2="396.42681569463633" y2="342.06973651257147"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge "
+          x1="452.1704030915" y1="291.1158788127934"
+          x2="444.04705878650213" y2="346.6618586162253"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="452.1704030915" y1="291.1158788127934"
+          x2="409.88205774552756" y2="318.86776294213706"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge "
+          x1="517.7328862442725" y1="301.217990024861"
+          x2="466.99544885266346" y2="293.40017699372544"
+          stroke="#3b82f6"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-is_a)" />
+
+    <line class="graph-edge "
+          x1="364.19493174241046" y1="466.17286121815516"
+          x2="385.80952085206485" y2="421.8109256598286"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge "
+          x1="434.28129319845596" y1="454.3204108349627"
+          x2="402.4814606988494" y2="419.4147905100517"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge "
+          x1="415.60919749997095" y1="239.33017343045512"
+          x2="443.5191143822301" y2="278.8620955737746"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge "
+          x1="486.59813228791376" y1="236.2719841721097"
+          x2="460.14540734542976" y2="278.4115761105668"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <circle class="graph-node"
+            data-node-id="Python"
+            cx="392.37964296065985" cy="408.32636057681054" r="24.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="392.37964296065985" y="444.32636057681054"
+          text-anchor="middle">Python</text>
+
+    <circle class="graph-node"
+            data-node-id="programming_language"
+            cx="441.8764669142469" cy="361.5039787789278" r="12.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="441.8764669142469" y="385.5039787789278"
+          text-anchor="middle">programming_lan</text>
+
+    <circle class="graph-node"
+            data-node-id="JavaScript"
+            cx="452.1704030915" cy="291.1158788127934" r="24.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="452.1704030915" y="327.1158788127934"
+          text-anchor="middle">JavaScript</text>
+
+    <circle class="graph-node"
+            data-node-id="TypeScript"
+            cx="517.7328862442725" cy="301.217990024861" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="517.7328862442725" y="321.217990024861"
+          text-anchor="middle">TypeScript</text>
+
+    <circle class="graph-node"
+            data-node-id="data_science"
+            cx="326.7422525447867" cy="403.96665187423275" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="326.7422525447867" y="423.96665187423275"
+          text-anchor="middle">data_science</text>
+
+    <circle class="graph-node"
+            data-node-id="web_dev"
+            cx="397.3413605071001" cy="327.0976422106378" r="12.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="397.3413605071001" y="351.0976422106378"
+          text-anchor="middle">web_dev</text>
+
+    <circle class="graph-node"
+            data-node-id="pandas"
+            cx="364.19493174241046" cy="466.17286121815516" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="364.19493174241046" y="486.17286121815516"
+          text-anchor="middle">pandas</text>
+
+    <circle class="graph-node"
+            data-node-id="numpy"
+            cx="434.28129319845596" cy="454.3204108349627" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="434.28129319845596" y="474.3204108349627"
+          text-anchor="middle">numpy</text>
+
+    <circle class="graph-node"
+            data-node-id="React"
+            cx="415.60919749997095" cy="239.33017343045512" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="415.60919749997095" y="259.33017343045515"
+          text-anchor="middle">React</text>
+
+    <circle class="graph-node"
+            data-node-id="Node.js"
+            cx="486.59813228791376" cy="236.2719841721097" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="486.59813228791376" y="256.2719841721097"
+          text-anchor="middle">Node.js</text>
+</svg>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+(function() {
+    const nodes = [
+        {
+            id: "Python",
+            label: "Python",
+            degree: 5,
+            type: "default"
+        },
+        {
+            id: "programming_language",
+            label: "programming_language",
+            degree: 2,
+            type: "default"
+        },
+        {
+            id: "JavaScript",
+            label: "JavaScript",
+            degree: 5,
+            type: "default"
+        },
+        {
+            id: "TypeScript",
+            label: "TypeScript",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "data_science",
+            label: "data_science",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "web_dev",
+            label: "web_dev",
+            degree: 2,
+            type: "default"
+        },
+        {
+            id: "pandas",
+            label: "pandas",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "numpy",
+            label: "numpy",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "React",
+            label: "React",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "Node.js",
+            label: "Node.js",
+            degree: 1,
+            type: "default"
+        }];
+    const tooltip = document.getElementById('tooltip');
+
+    // Add hover listeners to nodes
+    document.querySelectorAll('.graph-node').forEach(node => {
+        node.addEventListener('mouseenter', function(e) {
+            const nodeId = this.getAttribute('data-node-id');
+            const nodeData = nodes.find(n => n.id === nodeId);
+
+            if (nodeData) {
+                tooltip.innerHTML = \`
+                    <div class="tooltip-title">${nodeData.label}</div>
+                    <div class="tooltip-detail">Degree: ${nodeData.degree}</div>
+                    <div class="tooltip-detail">Type: ${nodeData.type}</div>
+                \`;
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top = e.pageY + 10 + 'px';
+                tooltip.classList.add('visible');
+            }
+        });
+
+        node.addEventListener('mouseleave', function() {
+            tooltip.classList.remove('visible');
+        });
+
+        node.addEventListener('mousemove', function(e) {
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY + 10 + 'px';
+        });
+    });
+})();
+</script>
+</div>
+</body>
+</html>`;
+        const demo3Html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Reasoning Pipeline (Path Highlighted)</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #ffffff;
+        color: #1f2937;
+        padding: 40px 20px;
+    }
+
+    .graph-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 30px;
+    }
+
+    .graph-header {
+        margin-bottom: 20px;
+    }
+
+    .graph-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .graph-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+
+    .graph-stats {
+        display: flex;
+        gap: 24px;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .graph-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #4b5563;
+    }
+
+    .legend-line {
+        width: 20px;
+        height: 2px;
+    }
+
+    .graph-svg {
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        background: #fafafa;
+    }
+
+    .graph-node {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .graph-node:hover {
+        stroke-width: 2.5px;
+    }
+
+    .graph-edge {
+        pointer-events: none;
+    }
+
+    .graph-edge.highlighted {
+        stroke-width: 3px;
+        opacity: 1.0;
+    }
+
+    .node-label {
+        font-size: 11px;
+        font-weight: 500;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .edge-label {
+        font-size: 9px;
+        fill: #6b7280;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    /* Tooltip */
+    .tooltip {
+        position: absolute;
+        background: rgba(17, 24, 39, 0.95);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 1000;
+        max-width: 250px;
+    }
+
+    .tooltip.visible {
+        opacity: 1;
+    }
+
+    .tooltip-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+
+    .tooltip-detail {
+        font-size: 11px;
+        color: #d1d5db;
+        margin: 2px 0;
+    }
+</style>
+</head>
+<body>
+<div class="graph-container">
+<div class="graph-header">
+<h2>HoloLoom Reasoning Pipeline (Path Highlighted)</h2>
+<p class="graph-subtitle">Query processing flow with highlighted decision path (8 nodes, 8 edges)</p>
+
+        <div class="graph-stats">
+            <div class="stat-item">
+                <span class="stat-label">Nodes</span>
+                <span class="stat-value">9</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Edges</span>
+                <span class="stat-value">8</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Avg Degree</span>
+                <span class="stat-value">1.8</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Edge Types</span>
+                <span class="stat-value">2</span>
+            </div>
+        </div>
+</div>
+
+        <div class="graph-legend">
+            <div class="legend-item"><div class="legend-line" style="background: #3b82f6;"></div><span>Is A</span></div> <div class="legend-item"><div class="legend-line" style="background: #10b981;"></div><span>Uses</span></div> <div class="legend-item"><div class="legend-line" style="background: #6b7280;"></div><span>Mentions</span></div> <div class="legend-item"><div class="legend-line" style="background: #f59e0b;"></div><span>Leads To</span></div> <div class="legend-item"><div class="legend-line" style="background: #8b5cf6;"></div><span>Part Of</span></div> <div class="legend-item"><div class="legend-line" style="background: #06b6d4;"></div><span>In Time</span></div> <div class="legend-item"><div class="legend-line" style="background: #14b8a6;"></div><span>Occurred At</span></div>
+        </div>
+<svg class="graph-svg" width="900" height="700" xmlns="http://www.w3.org/2000/svg">
+
+    <line class="graph-edge highlighted"
+          x1="398.2847924115706" y1="549.2594579904613"
+          x2="393.0515772730339" y2="510.73325432278943"
+          stroke="#f59e0b"
+          stroke-width="3"
+          opacity="1.0"
+          marker-end="url(#arrowhead-leads_to)" />
+
+    <line class="graph-edge highlighted"
+          x1="391.03259029146824" y1="495.8697523273555"
+          x2="390.32238605424476" y2="446.8132667146882"
+          stroke="#f59e0b"
+          stroke-width="3"
+          opacity="1.0"
+          marker-end="url(#arrowhead-leads_to)" />
+
+    <line class="graph-edge highlighted"
+          x1="390.10524968165254" y1="431.8148384038385"
+          x2="433.52998793056094" y2="392.2278574973804"
+          stroke="#f59e0b"
+          stroke-width="3"
+          opacity="1.0"
+          marker-end="url(#arrowhead-leads_to)" />
+
+    <line class="graph-edge "
+          x1="390.10524968165254" y1="431.8148384038385"
+          x2="341.83160789276593" y2="424.4661669161999"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge highlighted"
+          x1="444.61510880600497" y1="382.12240871086954"
+          x2="446.94845287716396" y2="331.028149951079"
+          stroke="#f59e0b"
+          stroke-width="3"
+          opacity="1.0"
+          marker-end="url(#arrowhead-leads_to)" />
+
+    <line class="graph-edge "
+          x1="444.61510880600497" y1="382.12240871086954"
+          x2="493.9270307975602" y2="399.73772359385487"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <line class="graph-edge highlighted"
+          x1="447.632751313401" y1="316.04376689236875"
+          x2="452.6292559423882" y2="276.8623536450913"
+          stroke="#f59e0b"
+          stroke-width="3"
+          opacity="1.0"
+          marker-end="url(#arrowhead-leads_to)" />
+
+    <line class="graph-edge "
+          x1="508.05280429128265" y1="404.78376394288574"
+          x2="550.8401606629787" y2="425.62898177157285"
+          stroke="#10b981"
+          stroke-width="1.5"
+          opacity="0.4"
+          marker-end="url(#arrowhead-uses)" />
+
+    <circle class="graph-node"
+            data-node-id="query"
+            cx="398.2847924115706" cy="549.2594579904613" r="8.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="2.5" />
+    <text class="node-label"
+          x="398.2847924115706" y="569.2594579904613"
+          text-anchor="middle">query</text>
+
+    <circle class="graph-node"
+            data-node-id="retrieval"
+            cx="391.03259029146824" cy="495.8697523273555" r="16.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="2.5" />
+    <text class="node-label"
+          x="391.03259029146824" y="523.8697523273555"
+          text-anchor="middle">retrieval</text>
+
+    <circle class="graph-node"
+            data-node-id="context"
+            cx="390.10524968165254" cy="431.8148384038385" r="24.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="2.5" />
+    <text class="node-label"
+          x="390.10524968165254" y="467.8148384038385"
+          text-anchor="middle">context</text>
+
+    <circle class="graph-node"
+            data-node-id="reasoning"
+            cx="444.61510880600497" cy="382.12240871086954" r="24.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="2.5" />
+    <text class="node-label"
+          x="444.61510880600497" y="418.12240871086954"
+          text-anchor="middle">reasoning</text>
+
+    <circle class="graph-node"
+            data-node-id="decision"
+            cx="447.632751313401" cy="316.04376689236875" r="16.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="2.5" />
+    <text class="node-label"
+          x="447.632751313401" y="344.04376689236875"
+          text-anchor="middle">decision</text>
+
+    <circle class="graph-node"
+            data-node-id="action"
+            cx="454.5267246640534" cy="261.982850546859" r="8.0"
+            fill="#3b82f6"
+            stroke="#1e40af"
+            stroke-width="2.5" />
+    <text class="node-label"
+          x="454.5267246640534" y="281.982850546859"
+          text-anchor="middle">action</text>
+
+    <circle class="graph-node"
+            data-node-id="memory"
+            cx="327.00244791415764" cy="422.20873157297456" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="327.00244791415764" y="442.20873157297456"
+          text-anchor="middle">memory</text>
+
+    <circle class="graph-node"
+            data-node-id="policy"
+            cx="508.05280429128265" cy="404.78376394288574" r="16.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="508.05280429128265" y="432.78376394288574"
+          text-anchor="middle">policy</text>
+
+    <circle class="graph-node"
+            data-node-id="bandit"
+            cx="564.324996845913" cy="432.19854744362664" r="8.0"
+            fill="#6366f1"
+            stroke="#4f46e5"
+            stroke-width="1.5" />
+    <text class="node-label"
+          x="564.324996845913" y="452.19854744362664"
+          text-anchor="middle">bandit</text>
+</svg>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+(function() {
+    const nodes = [
+        {
+            id: "query",
+            label: "query",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "retrieval",
+            label: "retrieval",
+            degree: 2,
+            type: "default"
+        },
+        {
+            id: "context",
+            label: "context",
+            degree: 3,
+            type: "default"
+        },
+        {
+            id: "reasoning",
+            label: "reasoning",
+            degree: 3,
+            type: "default"
+        },
+        {
+            id: "decision",
+            label: "decision",
+            degree: 2,
+            type: "default"
+        },
+        {
+            id: "action",
+            label: "action",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "memory",
+            label: "memory",
+            degree: 1,
+            type: "default"
+        },
+        {
+            id: "policy",
+            label: "policy",
+            degree: 2,
+            type: "default"
+        },
+        {
+            id: "bandit",
+            label: "bandit",
+            degree: 1,
+            type: "default"
+        }];
+    const tooltip = document.getElementById('tooltip');
+
+    // Add hover listeners to nodes
+    document.querySelectorAll('.graph-node').forEach(node => {
+        node.addEventListener('mouseenter', function(e) {
+            const nodeId = this.getAttribute('data-node-id');
+            const nodeData = nodes.find(n => n.id === nodeId);
+
+            if (nodeData) {
+                tooltip.innerHTML = \`
+                    <div class="tooltip-title">${nodeData.label}</div>
+                    <div class="tooltip-detail">Degree: ${nodeData.degree}</div>
+                    <div class="tooltip-detail">Type: ${nodeData.type}</div>
+                \`;
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top = e.pageY + 10 + 'px';
+                tooltip.classList.add('visible');
+            }
+        });
+
+        node.addEventListener('mouseleave', function() {
+            tooltip.classList.remove('visible');
+        });
+
+        node.addEventListener('mousemove', function(e) {
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY + 10 + 'px';
+        });
+    });
+})();
+</script>
+</div>
+</body>
+</html>`;
+
+        document.getElementById('demo1').srcdoc = demo1Html;
+        document.getElementById('demo2').srcdoc = demo2Html;
+        document.getElementById('demo3').srcdoc = demo3Html;
+    </script>
+</body>
+</html>

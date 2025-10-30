@@ -1,0 +1,2619 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HoloLoom Performance Dashboard - Modern CSS/HTML5 Showcase">
+    <title>Modern CSS/HTML5 Showcase - HoloLoom Dashboard</title>
+
+    <!-- Plotly.js (interactive charts) -->
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+
+    <!-- D3.js (force-directed graphs) -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Modern CSS System (Phases 1-7) -->
+    <style>
+/**
+ * HoloLoom Modern Dashboard Styles
+ * =================================
+ * Modern CSS architecture with:
+ * - CSS Custom Properties (Phase 1)
+ * - Modern Selectors (Phase 2)
+ * - Accessibility (Phase 3)
+ * - Container Queries (Phase 4)
+ * - View Transitions (Phase 5)
+ * - OKLCH Colors (Phase 6)
+ * - Performance (Phase 7)
+ *
+ * Author: Claude Code with HoloLoom architecture
+ * Date: October 29, 2025
+ */
+
+/* ========================================================================
+   Phase 1: CSS Custom Properties - Design Token System
+   ======================================================================== */
+
+:root {
+  /* OKLCH Color System (Phase 6) - Perceptually uniform colors */
+  /* Neutrals */
+  --color-neutral-50: oklch(98% 0 0);
+  --color-neutral-100: oklch(96% 0.002 270);
+  --color-neutral-200: oklch(92% 0.004 270);
+  --color-neutral-300: oklch(85% 0.006 270);
+  --color-neutral-400: oklch(71% 0.008 270);
+  --color-neutral-500: oklch(58% 0.01 270);
+  --color-neutral-600: oklch(47% 0.008 270);
+  --color-neutral-700: oklch(37% 0.006 270);
+  --color-neutral-800: oklch(27% 0.004 270);
+  --color-neutral-900: oklch(17% 0.002 270);
+  --color-neutral-950: oklch(10% 0 0);
+
+  /* Semantic colors - OKLCH for better gradients */
+  --color-blue-50: oklch(95% 0.04 250);
+  --color-blue-500: oklch(65% 0.15 250);
+  --color-blue-600: oklch(55% 0.15 250);
+  --color-blue-700: oklch(45% 0.13 250);
+
+  --color-green-50: oklch(95% 0.06 145);
+  --color-green-500: oklch(70% 0.16 145);
+  --color-green-600: oklch(60% 0.16 145);
+  --color-green-700: oklch(50% 0.14 145);
+
+  --color-red-50: oklch(95% 0.06 25);
+  --color-red-500: oklch(65% 0.18 25);
+  --color-red-600: oklch(55% 0.18 25);
+  --color-red-700: oklch(45% 0.16 25);
+
+  --color-yellow-50: oklch(95% 0.08 90);
+  --color-yellow-500: oklch(75% 0.15 90);
+  --color-yellow-600: oklch(65% 0.15 90);
+  --color-yellow-700: oklch(55% 0.13 90);
+
+  --color-purple-50: oklch(95% 0.05 300);
+  --color-purple-500: oklch(65% 0.14 300);
+  --color-purple-600: oklch(55% 0.14 300);
+  --color-purple-700: oklch(45% 0.12 300);
+
+  --color-indigo-50: oklch(95% 0.04 270);
+  --color-indigo-500: oklch(60% 0.14 270);
+  --color-indigo-600: oklch(50% 0.14 270);
+  --color-indigo-700: oklch(40% 0.12 270);
+
+  --color-orange-50: oklch(95% 0.08 50);
+  --color-orange-500: oklch(70% 0.16 50);
+  --color-orange-600: oklch(60% 0.16 50);
+  --color-orange-700: oklch(50% 0.14 50);
+
+  /* Semantic tokens - Light theme */
+  --color-bg-primary: var(--color-neutral-50);
+  --color-bg-secondary: var(--color-neutral-100);
+  --color-bg-tertiary: white;
+  --color-bg-elevated: white;
+
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-500);
+
+  --color-border-subtle: var(--color-neutral-200);
+  --color-border-default: var(--color-neutral-300);
+  --color-border-strong: var(--color-neutral-400);
+
+  --color-surface-hover: var(--color-neutral-50);
+  --color-surface-active: var(--color-neutral-100);
+
+  --color-accent-primary: var(--color-indigo-600);
+  --color-accent-hover: var(--color-indigo-700);
+
+  /* Spacing scale (based on 4px grid) */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+
+  /* Fluid typography scale (responsive) */
+  --font-size-xs: clamp(0.625rem, 0.5rem + 0.25vw, 0.75rem);
+  --font-size-sm: clamp(0.75rem, 0.625rem + 0.25vw, 0.875rem);
+  --font-size-base: clamp(0.875rem, 0.75rem + 0.25vw, 1rem);
+  --font-size-lg: clamp(1rem, 0.875rem + 0.5vw, 1.25rem);
+  --font-size-xl: clamp(1.25rem, 1rem + 0.75vw, 1.5rem);
+  --font-size-2xl: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  --font-size-3xl: clamp(2rem, 1.5rem + 1.5vw, 3rem);
+
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Border radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows (elevation system) */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index scale */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-modal: 1200;
+  --z-toast: 1300;
+  --z-tooltip: 1400;
+}
+
+/* Dark theme - Just swap semantic tokens! */
+[data-theme="dark"] {
+  --color-bg-primary: var(--color-neutral-950);
+  --color-bg-secondary: var(--color-neutral-900);
+  --color-bg-tertiary: var(--color-neutral-800);
+  --color-bg-elevated: var(--color-neutral-800);
+
+  --color-text-primary: var(--color-neutral-50);
+  --color-text-secondary: var(--color-neutral-400);
+  --color-text-tertiary: var(--color-neutral-500);
+
+  --color-border-subtle: var(--color-neutral-800);
+  --color-border-default: var(--color-neutral-700);
+  --color-border-strong: var(--color-neutral-600);
+
+  --color-surface-hover: var(--color-neutral-800);
+  --color-surface-active: var(--color-neutral-700);
+
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.7), 0 1px 2px -1px rgb(0 0 0 / 0.7);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.7), 0 2px 4px -2px rgb(0 0 0 / 0.7);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.7), 0 4px 6px -4px rgb(0 0 0 / 0.7);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.7);
+}
+
+/* ========================================================================
+   Phase 3: Accessibility - Motion & Color Preferences
+   ======================================================================== */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Respect user's contrast preferences */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border-default: var(--color-neutral-900);
+    --color-border-strong: var(--color-neutral-950);
+  }
+
+  [data-theme="dark"] {
+    --color-border-default: var(--color-neutral-50);
+    --color-border-strong: var(--color-neutral-100);
+  }
+}
+
+/* ========================================================================
+   Phase 5: View Transitions API
+   ======================================================================== */
+
+/* Smooth transitions between light/dark themes */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--transition-slow);
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: fade-in;
+}
+
+@keyframes fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+/* ========================================================================
+   Base Styles
+   ======================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+               'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+/* ========================================================================
+   Phase 4: Container Queries - Dashboard Layout
+   ======================================================================== */
+
+.dashboard-container {
+  container-type: inline-size;
+  container-name: dashboard;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-8);
+}
+
+.dashboard-grid {
+  container-type: inline-size;
+  container-name: grid;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: var(--space-6);
+}
+
+/* Container query breakpoints */
+@container dashboard (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container dashboard (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Layout variants */
+.dashboard-grid[data-layout="metric"] {
+  grid-template-columns: 1fr;
+}
+
+.dashboard-grid[data-layout="flow"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
+}
+
+@container dashboard (min-width: 768px) {
+  .dashboard-grid[data-layout="flow"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.dashboard-grid[data-layout="research"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr));
+}
+
+@container dashboard (min-width: 1200px) {
+  .dashboard-grid[data-layout="research"] {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ========================================================================
+   Phase 2 & 7: Modern Selectors + Performance
+   ======================================================================== */
+
+/* Panel base styles with performance optimizations (Phase 7) */
+:where(.panel) {
+  /* Low specificity - easy to override */
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast),
+              border-color var(--transition-fast);
+
+  /* Phase 7: Performance optimizations */
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
+.panel:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Phase 3: Accessibility - Focus management */
+.panel:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 4px;
+  border-color: var(--color-accent-primary);
+}
+
+/* Phase 2: Modern selectors - Conditional styling */
+.panel:has(.bottleneck-warning) {
+  border-left: 4px solid var(--color-red-500);
+  background: var(--color-red-50);
+}
+
+[data-theme="dark"] .panel:has(.bottleneck-warning) {
+  background: oklch(from var(--color-red-500) calc(l - 40%) c h / 0.15);
+}
+
+.panel:has(.success-indicator) {
+  border-left: 4px solid var(--color-green-500);
+}
+
+/* Highlight when a panel is expanded */
+.dashboard:has(.panel[data-expanded="true"]) .panel:not([data-expanded="true"]) {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Panel size variants - using container queries */
+
+/* Compact sizes - mobile first */
+.panel[data-size="tiny"],
+.panel[data-size="compact"],
+.panel[data-size="small"] {
+  grid-column: span 1;
+}
+
+.panel[data-size="medium"] {
+  grid-column: span 1;
+}
+
+/* Tablet breakpoint (600px+) */
+@container grid (min-width: 600px) {
+  /* Tiny panels - 3 per row on tablet */
+  .panel[data-size="tiny"] {
+    grid-column: span 1;
+    min-width: 0;
+  }
+
+  /* Compact panels - 2 per row on tablet */
+  .panel[data-size="compact"] {
+    grid-column: span 1;
+  }
+
+  /* Large panels - 2 columns */
+  .panel[data-size="large"],
+  .panel[data-size="two-thirds"] {
+    grid-column: span 2;
+  }
+}
+
+/* Desktop breakpoint (900px+) */
+@container grid (min-width: 900px) {
+  /* Tiny panels - 6 per row (1/6 width) */
+  .panel[data-size="tiny"] {
+    grid-column: span 1;
+  }
+
+  /* Update grid for tiny panels */
+  .dashboard-grid:has(.panel[data-size="tiny"]) {
+    grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr));
+  }
+
+  /* Compact panels - 4 per row (1/4 width) */
+  .panel[data-size="compact"] {
+    grid-column: span 1;
+  }
+
+  /* Update grid for compact panels */
+  .dashboard-grid:has(.panel[data-size="compact"]) {
+    grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+  }
+
+  /* Full width panels */
+  .panel[data-size="full-width"] {
+    grid-column: 1 / -1;
+  }
+
+  /* Hero panel (spans all columns, extra large) */
+  .panel[data-size="hero"] {
+    grid-column: 1 / -1;
+    padding: var(--space-8);
+  }
+}
+
+/* Compact panel styling - reduce padding */
+.panel[data-size="tiny"] {
+  padding: var(--space-3);
+}
+
+.panel[data-size="compact"] {
+  padding: var(--space-4);
+}
+
+/* Tiny panel special styling */
+.panel[data-size="tiny"] .metric-value {
+  font-size: var(--font-size-xl); /* Smaller than default 3xl */
+}
+
+.panel[data-size="tiny"] .metric-label {
+  font-size: 0.625rem; /* Smaller label */
+}
+
+/* Feature panel (highlighted with accent) */
+.panel[data-feature="true"] {
+  border: 2px solid var(--color-accent-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.panel[data-feature="true"]::before {
+  content: '⭐';
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  font-size: var(--font-size-lg);
+  opacity: 0.3;
+}
+
+/* ========================================================================
+   Panel Components
+   ======================================================================== */
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: var(--space-4);
+}
+
+.panel-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.panel-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.panel-content {
+  min-height: 0; /* Allow content to shrink */
+}
+
+/* Metric panels */
+.metric-value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  margin: var(--space-2) 0;
+}
+
+.metric-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Metric semantic colors using OKLCH */
+.metric-value[data-color="green"] {
+  color: var(--color-green-600);
+}
+
+.metric-value[data-color="blue"] {
+  color: var(--color-blue-600);
+}
+
+.metric-value[data-color="red"] {
+  color: var(--color-red-600);
+}
+
+.metric-value[data-color="yellow"] {
+  color: var(--color-yellow-600);
+}
+
+.metric-value[data-color="purple"] {
+  color: var(--color-purple-600);
+}
+
+.metric-value[data-color="orange"] {
+  color: var(--color-orange-600);
+}
+
+/* Colored panel backgrounds */
+.panel[data-color="green"] {
+  background: var(--color-green-50);
+}
+
+.panel[data-color="blue"] {
+  background: var(--color-blue-50);
+}
+
+.panel[data-color="red"] {
+  background: var(--color-red-50);
+}
+
+.panel[data-color="yellow"] {
+  background: var(--color-yellow-50);
+}
+
+.panel[data-color="purple"] {
+  background: var(--color-purple-50);
+}
+
+.panel[data-color="orange"] {
+  background: var(--color-orange-50);
+}
+
+[data-theme="dark"] .panel[data-color="green"] {
+  background: oklch(from var(--color-green-500) calc(l - 40%) c h / 0.15);
+}
+
+[data-theme="dark"] .panel[data-color="blue"] {
+  background: oklch(from var(--color-blue-500) calc(l - 40%) c h / 0.15);
+}
+
+[data-theme="dark"] .panel[data-color="red"] {
+  background: oklch(from var(--color-red-500) calc(l - 40%) c h / 0.15);
+}
+
+[data-theme="dark"] .panel[data-color="yellow"] {
+  background: oklch(from var(--color-yellow-500) calc(l - 40%) c h / 0.15);
+}
+
+[data-theme="dark"] .panel[data-color="purple"] {
+  background: oklch(from var(--color-purple-500) calc(l - 40%) c h / 0.15);
+}
+
+[data-theme="dark"] .panel[data-color="orange"] {
+  background: oklch(from var(--color-orange-500) calc(l - 40%) c h / 0.15);
+}
+
+/* Sparklines */
+.sparkline-container {
+  margin-top: var(--space-2);
+}
+
+.sparkline-svg {
+  display: inline-block;
+  vertical-align: middle;
+  /* Phase 7: Performance hint */
+  will-change: transform;
+}
+
+/* Trend indicators */
+.trend-indicator {
+  font-size: var(--font-size-xs);
+  margin-left: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+}
+
+.trend-up { color: var(--color-green-600); }
+.trend-down { color: var(--color-red-600); }
+.trend-flat { color: var(--color-neutral-400); }
+
+/* ========================================================================
+   Alert/Warning Banners
+   ======================================================================== */
+
+.alert {
+  display: flex;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+  margin-bottom: var(--space-4);
+}
+
+.alert-warning {
+  background: var(--color-orange-50);
+  border-color: var(--color-orange-500);
+  color: var(--color-orange-700);
+}
+
+.alert-error {
+  background: var(--color-red-50);
+  border-color: var(--color-red-500);
+  color: var(--color-red-700);
+}
+
+.alert-info {
+  background: var(--color-blue-50);
+  border-color: var(--color-blue-500);
+  color: var(--color-blue-700);
+}
+
+.alert-success {
+  background: var(--color-green-50);
+  border-color: var(--color-green-500);
+  color: var(--color-green-700);
+}
+
+[data-theme="dark"] .alert-warning {
+  background: oklch(from var(--color-orange-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-orange-500);
+}
+
+[data-theme="dark"] .alert-error {
+  background: oklch(from var(--color-red-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-red-500);
+}
+
+[data-theme="dark"] .alert-info {
+  background: oklch(from var(--color-blue-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-blue-500);
+}
+
+[data-theme="dark"] .alert-success {
+  background: oklch(from var(--color-green-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-green-500);
+}
+
+.alert-icon {
+  flex-shrink: 0;
+  font-size: var(--font-size-2xl);
+}
+
+.alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-1);
+}
+
+.alert-message {
+  font-size: var(--font-size-xs);
+  opacity: 0.9;
+}
+
+/* ========================================================================
+   Dashboard Header
+   ======================================================================== */
+
+.dashboard-header {
+  margin-bottom: var(--space-8);
+}
+
+.dashboard-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.dashboard-title-accent {
+  display: block;
+  height: 4px;
+  width: 6rem;
+  background: var(--color-accent-primary);
+  border-radius: var(--radius-full);
+  margin-top: var(--space-2);
+}
+
+/* ========================================================================
+   Footer/Metadata
+   ======================================================================== */
+
+.dashboard-footer {
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+/* ========================================================================
+   Utility Classes
+   ======================================================================== */
+
+/* Screen reader only (Phase 3: Accessibility) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to main content link (Phase 3: Accessibility) */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-accent-primary);
+  color: white;
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  z-index: var(--z-tooltip);
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+  left: var(--space-2);
+}
+
+/* Monospace numbers */
+.numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Print styles */
+@media print {
+  .dashboard-container {
+    max-width: 100%;
+  }
+
+  .panel {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+}
+
+    </style>
+</head>
+<body>
+    <!-- Skip to main content (Accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <h1 class="dashboard-title">Modern CSS/HTML5 Showcase</h1>
+            <div class="dashboard-title-accent"></div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <main id="main-content" role="main">
+            <div class="dashboard-grid" data-layout="research">
+
+        <article class="panel"
+                 data-panel-id="metric-queries"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="blue"
+                 role="article"
+                 aria-labelledby="panel-metric-queries-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-queries-title">Total Queries</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="blue" aria-live="polite">
+                        1.25K
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-users"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="green"
+                 role="article"
+                 aria-labelledby="panel-metric-users-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-users-title">Active Users</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="green" aria-live="polite">
+                        342
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-errors"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="red"
+                 role="article"
+                 aria-labelledby="panel-metric-errors-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-errors-title">Error Count</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="red" aria-live="polite">
+                        3
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-uptime"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="green"
+                 role="article"
+                 aria-labelledby="panel-metric-uptime-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-uptime-title">Uptime %</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="green" aria-live="polite">
+                        99.9%
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-latency-tiny"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="green"
+                 role="article"
+                 aria-labelledby="panel-metric-latency-tiny-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-latency-tiny-title">Avg Latency</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="green" aria-live="polite">
+                        45ms
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-cache-tiny"
+                 data-panel-type="metric"
+                 data-size="tiny"
+                 data-color="purple"
+                 role="article"
+                 aria-labelledby="panel-metric-cache-tiny-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-cache-tiny-title">Hit Rate</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="purple" aria-live="polite">
+                        83%
+                    </div>
+                    
+                </div>
+                
+                
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-latency"
+                 data-panel-type="metric"
+                 data-size="compact"
+                 data-color="green"
+                 role="article"
+                 aria-labelledby="panel-metric-latency-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-latency-title">Query Latency</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="green" aria-live="polite">
+                        125.5ms
+                    </div>
+                    <span class="trend-indicator trend-down" aria-label="Trending down">&#9660;</span>
+                </div>
+                <div class="sparkline-container">
+            <svg class="sparkline-svg"
+                 width="100"
+                 height="30"
+                 role="img"
+                 aria-label="Trend: 5 data points">
+                <path d="M 2.0,2.0 L 26.0,11.3 L 50.0,19.3 L 74.0,24.7 L 98.0,28.0"
+                      fill="none"
+                      stroke="oklch(70% 0.16 145)"
+                      stroke-width="1.5"
+                      opacity="0.7"/>
+                <!-- Last point indicator -->
+                <circle cx="98.0"
+                        cy="28.0"
+                        r="2"
+                        fill="oklch(70% 0.16 145)"/>
+            </svg>
+            <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-left: var(--space-2);">
+                Last 5 queries
+            </span>
+        </div>
+                <div class="panel-subtitle">Optimized with Phase 7</div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-confidence"
+                 data-panel-type="metric"
+                 data-size="compact"
+                 data-color="blue"
+                 role="article"
+                 aria-labelledby="panel-metric-confidence-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-confidence-title">Confidence</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="blue" aria-live="polite">
+                        98%
+                    </div>
+                    <span class="trend-indicator trend-up" aria-label="Trending up">&#9650;</span>
+                </div>
+                <div class="sparkline-container">
+            <svg class="sparkline-svg"
+                 width="100"
+                 height="30"
+                 role="img"
+                 aria-label="Trend: 5 data points">
+                <path d="M 2.0,28.0 L 26.0,19.3 L 50.0,15.0 L 74.0,6.3 L 98.0,2.0"
+                      fill="none"
+                      stroke="oklch(65% 0.15 250)"
+                      stroke-width="1.5"
+                      opacity="0.7"/>
+                <!-- Last point indicator -->
+                <circle cx="98.0"
+                        cy="2.0"
+                        r="2"
+                        fill="oklch(65% 0.15 250)"/>
+            </svg>
+            <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-left: var(--space-2);">
+                Last 5 queries
+            </span>
+        </div>
+                <div class="panel-subtitle">OKLCH colors</div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-cache"
+                 data-panel-type="metric"
+                 data-size="compact"
+                 data-color="purple"
+                 role="article"
+                 aria-labelledby="panel-metric-cache-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-cache-title">Cache Hits</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="purple" aria-live="polite">
+                        83%
+                    </div>
+                    <span class="trend-indicator trend-up" aria-label="Trending up">&#9650;</span>
+                </div>
+                <div class="sparkline-container">
+            <svg class="sparkline-svg"
+                 width="100"
+                 height="30"
+                 role="img"
+                 aria-label="Trend: 5 data points">
+                <path d="M 2.0,28.0 L 26.0,18.6 L 50.0,12.3 L 74.0,6.1 L 98.0,2.0"
+                      fill="none"
+                      stroke="oklch(65% 0.14 300)"
+                      stroke-width="1.5"
+                      opacity="0.7"/>
+                <!-- Last point indicator -->
+                <circle cx="98.0"
+                        cy="2.0"
+                        r="2"
+                        fill="oklch(65% 0.14 300)"/>
+            </svg>
+            <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-left: var(--space-2);">
+                Last 5 queries
+            </span>
+        </div>
+                <div class="panel-subtitle">High performance</div>
+            </div>
+        </article>
+        
+
+        <article class="panel"
+                 data-panel-id="metric-throughput"
+                 data-panel-type="metric"
+                 data-size="compact"
+                 data-color="orange"
+                 role="article"
+                 aria-labelledby="panel-metric-throughput-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric-throughput-title">Throughput</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="orange" aria-live="polite">
+                        1.8K/s
+                    </div>
+                    <span class="trend-indicator trend-up" aria-label="Trending up">&#9650;</span>
+                </div>
+                <div class="sparkline-container">
+            <svg class="sparkline-svg"
+                 width="100"
+                 height="30"
+                 role="img"
+                 aria-label="Trend: 5 data points">
+                <path d="M 2.0,28.0 L 26.0,18.8 L 50.0,10.8 L 74.0,6.9 L 98.0,2.0"
+                      fill="none"
+                      stroke="oklch(70% 0.16 50)"
+                      stroke-width="1.5"
+                      opacity="0.7"/>
+                <!-- Last point indicator -->
+                <circle cx="98.0"
+                        cy="2.0"
+                        r="2"
+                        fill="oklch(70% 0.16 50)"/>
+            </svg>
+            <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-left: var(--space-2);">
+                Last 5 queries
+            </span>
+        </div>
+                <div class="panel-subtitle">Queries per second</div>
+            </div>
+        </article>
+        
+
+        <div class="md:col-span-2 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Execution Timeline</div>
+            <div class="text-sm text-gray-600 mb-4">Phase 2: :has() selector detects bottlenecks</div>
+            
+            <div class="bg-orange-50 border-orange-200 border-l-4 p-4 mb-4 rounded-r">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 text-2xl mr-3">⚠️</div>
+                    <div class="flex-1">
+                        <div class="text-sm font-semibold text-orange-800 mb-1">
+                            Bottleneck Detected: Retrieval (36% of total time)
+                        </div>
+                        <div class="text-xs text-orange-800 opacity-90">
+                            Consider enabling Phase 5 compositional cache for 10-50× speedup
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="plot_timeline-execution" style="height: 300px;"></div>
+        </div>
+        <script>
+        (function() {
+            var data = [{
+                type: 'bar',
+                x: [25.0, 45.5, 35.0, 20.0],
+                y: ['Features', 'Retrieval', 'Decision', 'Execution'],
+                orientation: 'h',
+                marker: {
+                    color: ['#6366f1', '#10b981', '#f59e0b', '#ef4444']
+                },
+                text: ['25.0ms (20%)', '45.5ms (36%)', '35.0ms (28%)', '20.0ms (16%)'],
+                textposition: 'auto',
+                hovertemplate: '%{y}<br>%{x:.1f}ms (%{text})<extra></extra>'
+            }];
+
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',        // Dark elevated background
+                        bgSecondary: '#111827', // Dark secondary
+                        text: '#f3f4f6',      // Light text
+                        grid: '#374151'       // Dark grid
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',        // White background
+                        bgSecondary: '#f9fafb', // Light gray
+                        text: '#1f2937',      // Dark text
+                        grid: '#e5e7eb'       // Light grid
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
+            var layout = {
+                margin: { l: 120, r: 20, t: 20, b: 40 },
+                xaxis: {
+                    title: 'Duration (ms)',
+                    showgrid: true,
+                    gridcolor: colors.grid,
+                    color: colors.text
+                },
+                yaxis: {
+                    autorange: 'reversed',
+                    showgrid: false,
+                    color: colors.text
+                },
+                paper_bgcolor: colors.bg,
+                plot_bgcolor: colors.bg,
+                font: { family: 'system-ui, -apple-system, sans-serif', size: 12, color: colors.text },
+                showlegend: false
+            };
+
+            var config = { responsive: true, displayModeBar: false };
+            Plotly.newPlot('plot_timeline-execution', data, layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_timeline-execution', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bg,
+                    'xaxis.gridcolor': newColors.grid,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
+        })();
+        </script>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Query Text</div>
+            <div class="text-sm text-gray-600 mb-4">Phase 4: Container queries for responsive sizing</div>
+            <div class="text-sm text-gray-700 whitespace-pre-wrap font-mono bg-gray-50 p-3 rounded border border-gray-200">
+Demonstrate all modern CSS/HTML5 features including OKLCH colors, container queries, View Transitions API, and accessibility enhancements.
+            </div>
+            <div class="text-xs text-gray-500 mt-2">145 characters</div>
+        </div>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Semantic Dimensions</div>
+            <div class="text-sm text-gray-600 mb-2">Phase 3: ARIA labels for screen readers</div>
+            
+        <div class="flex items-center justify-between mb-3 text-xs text-gray-600">
+            <div>
+                <span class="font-semibold">8 / 244</span> dimensions shown
+                (sorted by activation strength)
+            </div>
+            <div>
+                Cache Hit Rate: <span class="font-semibold">83.3%</span>
+            </div>
+        </div>
+        
+            <div id="plot_heatmap-dims" style="height: 400px;"></div>
+        </div>
+        <script>
+        (function() {
+            var data = [{
+                type: 'heatmap',
+                z: [[0.92, 0.85, 0.98, 0.94, 0.88, 0.91, 0.95, 0.87]],
+                x: ['technical', 'visual', 'modern', 'accessible', 'performant', 'responsive', 'semantic', 'elegant'],
+                y: ['Query'],
+                colorscale: 'RdBu_r',
+                zmid: 0,  // Center colorscale at zero
+                colorbar: {
+                    title: 'Activation',
+                    titleside: 'right',
+                    tickmode: 'linear',
+                    tick0: -1,
+                    dtick: 0.5
+                },
+                hovertemplate: '%{x}<br>Score: %{z:.3f}<extra></extra>'
+            }];
+
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',
+                        text: '#f3f4f6',
+                        grid: '#374151'
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',
+                        text: '#1f2937',
+                        grid: '#e5e7eb'
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
+            var layout = {
+                margin: { l: 80, r: 80, t: 10, b: 120 },
+                xaxis: {
+                    tickangle: -45,
+                    tickfont: { size: 10 },
+                    showgrid: false,
+                    color: colors.text
+                },
+                yaxis: {
+                    tickfont: { size: 12 },
+                    showgrid: false,
+                    color: colors.text
+                },
+                paper_bgcolor: colors.bg,
+                plot_bgcolor: colors.bg,
+                font: { family: 'system-ui, -apple-system, sans-serif', color: colors.text },
+                showlegend: false
+            };
+
+            var config = { responsive: true, displayModeBar: false };
+            Plotly.newPlot('plot_heatmap-dims', data, layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_heatmap-dims', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bg,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
+        })();
+        </script>
+        
+
+        <div class="md:col-span-2 lg:col-span-3 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Knowledge Threads</div>
+            <div class="text-sm text-gray-600 mb-4">All phases: Modern selectors, colors, accessibility, performance</div>
+            <div class="text-xs text-gray-500 mb-2">
+                <span class="mr-4">8 node(s), 10 edge(s)</span>
+                <span class="text-gray-400">💡 Drag nodes • Scroll to zoom • Double-click to reset</span>
+            </div>
+            <div id="plot_network-threads" style="height: 450px; border: 1px solid #e5e7eb; border-radius: 0.375rem; background: #fafafa; position: relative;"></div>
+        </div>
+        <script>
+        (function() {
+            // D3.js Enhanced Force-Directed Graph
+            const width = document.getElementById('plot_network-threads').clientWidth;
+            const height = 450;
+
+            const svg = d3.select('#plot_network-threads')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Add zoom behavior
+            const g = svg.append('g');
+            const zoom = d3.zoom()
+                .scaleExtent([0.3, 3])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                });
+
+            svg.call(zoom);
+
+            // Reset zoom on double-click
+            svg.on('dblclick.zoom', () => {
+                svg.transition().duration(750).call(
+                    zoom.transform,
+                    d3.zoomIdentity
+                );
+            });
+
+            const nodes = [{"id": "query", "label": "Query", "type": "query", "size": 16, "color": "#6366f1"}, {"id": "css-props", "label": "CSS Variables", "type": "thread", "size": 12, "color": "#10b981"}, {"id": "oklch", "label": "OKLCH Colors", "type": "thread", "size": 12, "color": "#f59e0b"}, {"id": "container-q", "label": "Container Queries", "type": "thread", "size": 12, "color": "#8b5cf6"}, {"id": "view-trans", "label": "View Transitions", "type": "thread", "size": 12, "color": "#ec4899"}, {"id": "a11y", "label": "Accessibility", "type": "thread", "size": 12, "color": "#14b8a6"}, {"id": "perf", "label": "Performance", "type": "thread", "size": 12, "color": "#f97316"}, {"id": "modern-sel", "label": ":has() :where()", "type": "thread", "size": 12, "color": "#06b6d4"}];
+            const links = [{"source": "query", "target": "css-props"}, {"source": "query", "target": "oklch"}, {"source": "query", "target": "container-q"}, {"source": "query", "target": "view-trans"}, {"source": "query", "target": "a11y"}, {"source": "query", "target": "perf"}, {"source": "query", "target": "modern-sel"}, {"source": "css-props", "target": "oklch"}, {"source": "a11y", "target": "perf"}, {"source": "container-q", "target": "perf"}];
+
+            // Create force simulation with better physics
+            const simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(120))
+                .force('charge', d3.forceManyBody().strength(-400))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => (d.size || 12) + 15));
+
+            // Draw edges with gradient
+            const link = g.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(links)
+                .enter().append('line')
+                .attr('stroke', '#cbd5e1')
+                .attr('stroke-width', 1.5)
+                .attr('stroke-opacity', 0.6);
+
+            // Draw nodes
+            const node = g.append('g')
+                .attr('class', 'nodes')
+                .selectAll('g')
+                .data(nodes)
+                .enter().append('g')
+                .style('cursor', 'pointer')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended))
+                .on('mouseover', function(event, d) {
+                    // Highlight on hover
+                    d3.select(this).select('circle')
+                        .transition().duration(200)
+                        .attr('r', (d.size || 12) * 1.3)
+                        .attr('stroke-width', 3);
+                })
+                .on('mouseout', function(event, d) {
+                    // Reset on mouseout
+                    d3.select(this).select('circle')
+                        .transition().duration(200)
+                        .attr('r', d.size || 12)
+                        .attr('stroke-width', 2);
+                });
+
+            // Node circles with drop shadow
+            node.append('circle')
+                .attr('r', d => d.size || 12)
+                .attr('fill', d => d.color || '#6366f1')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
+
+            // Node labels
+            node.append('text')
+                .text(d => d.label)
+                .attr('x', 0)
+                .attr('y', d => (d.size || 12) + 18)
+                .attr('text-anchor', 'middle')
+                .style('font-size', d => d.type === 'query' ? '12px' : '10px')
+                .style('font-weight', d => d.type === 'query' ? 600 : 400)
+                .style('fill', '#374151')
+                .style('pointer-events', 'none');
+
+            // Enhanced tooltip with full label
+            node.append('title')
+                .text(d => {
+                    const fullLabel = d.fullLabel || d.label;
+                    const type = d.type === 'query' ? 'Query Node' : 'Knowledge Thread';
+                    return `${type}\n${fullLabel}`;
+                });
+
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            // Enhanced drag functions
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+
+                // Highlight connected nodes
+                highlightConnected(event.subject);
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+
+                // Reset highlight
+                resetHighlight();
+            }
+
+            function highlightConnected(d) {
+                const connectedNodes = new Set();
+                connectedNodes.add(d.id);
+
+                links.forEach(link => {
+                    if (link.source.id === d.id) connectedNodes.add(link.target.id);
+                    if (link.target.id === d.id) connectedNodes.add(link.source.id);
+                });
+
+                node.style('opacity', n => connectedNodes.has(n.id) ? 1 : 0.2);
+                link.style('opacity', l =>
+                    l.source.id === d.id || l.target.id === d.id ? 0.8 : 0.1
+                );
+            }
+
+            function resetHighlight() {
+                node.style('opacity', 1);
+                link.style('opacity', 0.6);
+            }
+        })();
+        </script>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 border-l-4 border-l-indigo-500 bg-white" data-panel-id="insight-theme" data-panel-type="insight">
+            <div class="flex items-start mb-3">
+                <div class="text-3xl mr-3">💡</div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="text-sm font-medium text-gray-500">Recommendation</div>
+                        <div class="text-xs text-green-600 font-medium">100% confident</div>
+                    </div>
+                    <div class="text-base font-semibold text-gray-800">Smooth Theme Switching</div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-700 leading-relaxed">Press "T" to toggle dark mode with smooth View Transitions API animation. Theme persists across sessions via localStorage.</div>
+
+            <ul class="mt-3 space-y-1"><li class="text-sm text-gray-600">• Animation Duration: 350ms</li><li class="text-sm text-gray-600">• Fallback: Instant for unsupported browsers</li><li class="text-sm text-gray-600">• Storage Key: hololoom-theme</li></ul>
+
+            <!-- Confidence bar -->
+            <div class="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500" style="width: 100%;"></div>
+            </div>
+        </div>
+        
+
+        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 border-l-4 border-l-blue-500 bg-white" data-panel-id="insight-keyboard" data-panel-type="insight">
+            <div class="flex items-start mb-3">
+                <div class="text-3xl mr-3">🔍</div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="text-sm font-medium text-gray-500">Pattern</div>
+                        <div class="text-xs text-green-600 font-medium">100% confident</div>
+                    </div>
+                    <div class="text-base font-semibold text-gray-800">Keyboard Navigation</div>
+                </div>
+            </div>
+
+            <div class="text-sm text-gray-700 leading-relaxed">Press "?" to see all keyboard shortcuts. Full WCAG 2.1 AA compliance with screen reader support, focus management, and motion preferences.</div>
+
+            <ul class="mt-3 space-y-1"><li class="text-sm text-gray-600">• T key: Toggle theme</li><li class="text-sm text-gray-600">• Arrow keys: Navigate panels</li><li class="text-sm text-gray-600">• ? key: Show help</li><li class="text-sm text-gray-600">• Esc key: Close modals</li></ul>
+
+            <!-- Confidence bar -->
+            <div class="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-green-500" style="width: 100%;"></div>
+            </div>
+        </div>
+        
+
+        <div class="md:col-span-2 p-6 rounded-lg shadow-sm border border-gray-200 bg-white" data-panel-id="scatter-perf" data-panel-type="scatter">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Performance Improvements</div>
+            <div class="text-sm text-gray-600 mb-4">Before vs After modern CSS optimization</div>
+            <div class="text-sm text-gray-600 mb-2">Correlation: -0.950 (strong negative)</div>
+            <div id="plot_scatter-perf" style="height: 400px;"></div>
+        </div>
+        <script>
+        (function() {
+            var trace = {
+                x: [120, 80, 8, 25],
+                y: [45, 15, 3, 8],
+                mode: 'markers',
+                type: 'scatter',
+                text: ["Initial Paint", "Theme Toggle", "Panel Render", "Layout Recalc"],
+                marker: {
+                    size: [12, 12, 12, 12],
+                    color: ["#10b981", "#10b981", "#10b981", "#10b981"],
+                    opacity: 0.7,
+                    line: {
+                        color: 'white',
+                        width: 2
+                    }
+                },
+                hovertemplate: '<b>%{text}</b><br>Before (ms): %{x}<br>After (ms): %{y}<extra></extra>'
+            };
+
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',
+                        bgSecondary: '#111827',
+                        text: '#f3f4f6',
+                        grid: '#374151'
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',
+                        bgSecondary: '#f9fafb',
+                        text: '#1f2937',
+                        grid: '#e5e7eb'
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
+            var layout = {
+                xaxis: { title: 'Before (ms)', gridcolor: colors.grid, color: colors.text },
+                yaxis: { title: 'After (ms)', gridcolor: colors.grid, color: colors.text },
+                plot_bgcolor: colors.bgSecondary,
+                paper_bgcolor: colors.bg,
+                margin: { l: 60, r: 30, t: 30, b: 60 },
+                hovermode: 'closest',
+                font: { color: colors.text }
+            };
+
+            var config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
+            };
+
+            Plotly.newPlot('plot_scatter-perf', [trace], layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_scatter-perf', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bgSecondary,
+                    'xaxis.gridcolor': newColors.grid,
+                    'yaxis.gridcolor': newColors.grid,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
+        })();
+        </script>
+        
+            </div>
+        </main>
+
+        <!-- Metadata Footer -->
+        <footer class="dashboard-footer" role="contentinfo">
+
+        <div class="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-500 text-center">
+            Complexity: RESEARCH | Panels: 17 | Cache: 83% hits (15/18)
+            <br>
+            Generated: 2025-10-29T03:08:28
+        </div>
+        
+        </footer>
+    </div>
+
+    <!-- Modern JavaScript (Phases 3 & 5) -->
+    <script>
+/**
+ * HoloLoom Modern Dashboard Interactivity
+ * ========================================
+ * Modern JavaScript features:
+ * - View Transitions API (Phase 5)
+ * - Theme Management
+ * - Accessibility Features (Phase 3)
+ * - Progressive Enhancement
+ *
+ * Author: Claude Code with HoloLoom architecture
+ * Date: October 29, 2025
+ */
+
+(function() {
+  'use strict';
+
+  // ========================================================================
+  // Phase 5: Theme Management with View Transitions API
+  // ========================================================================
+
+  class ThemeManager {
+    constructor() {
+      this.root = document.documentElement;
+      this.storageKey = 'hololoom-theme';
+      this.init();
+    }
+
+    init() {
+      // Load saved theme or detect system preference
+      const savedTheme = localStorage.getItem(this.storageKey);
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+      this.setTheme(initialTheme, false); // No transition on initial load
+
+      // Listen for system preference changes
+      window.matchMedia('(prefers-color-scheme: dark)')
+        .addEventListener('change', (e) => {
+          if (!localStorage.getItem(this.storageKey)) {
+            this.setTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+
+      // Create theme toggle button
+      this.createThemeToggle();
+    }
+
+    setTheme(theme, useTransition = true) {
+      // Phase 5: Use View Transitions API if available
+      if (useTransition && document.startViewTransition) {
+        document.startViewTransition(() => {
+          this._applyTheme(theme);
+        });
+      } else {
+        this._applyTheme(theme);
+      }
+
+      localStorage.setItem(this.storageKey, theme);
+
+      // Dispatch custom event for other components
+      window.dispatchEvent(new CustomEvent('themechange', {
+        detail: { theme }
+      }));
+    }
+
+    _applyTheme(theme) {
+      this.root.setAttribute('data-theme', theme);
+    }
+
+    toggle() {
+      const currentTheme = this.root.getAttribute('data-theme') || 'light';
+      this.setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    }
+
+    createThemeToggle() {
+      const button = document.createElement('button');
+      button.className = 'theme-toggle';
+      button.setAttribute('aria-label', 'Toggle dark mode');
+      button.setAttribute('title', 'Toggle dark mode');
+      button.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path class="sun-icon" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+          <path class="moon-icon" style="display: none;" d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+        </svg>
+      `;
+
+      // Style the button
+      Object.assign(button.style, {
+        position: 'fixed',
+        bottom: '2rem',
+        right: '2rem',
+        width: '48px',
+        height: '48px',
+        borderRadius: '50%',
+        border: '1px solid var(--color-border-default)',
+        background: 'var(--color-accent-primary)',
+        color: 'white',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: 'var(--shadow-lg)',
+        transition: 'transform var(--transition-fast), box-shadow var(--transition-fast)',
+        zIndex: 'var(--z-sticky)'
+      });
+
+      button.addEventListener('click', () => this.toggle());
+
+      button.addEventListener('mouseenter', () => {
+        button.style.transform = 'scale(1.1)';
+        button.style.boxShadow = 'var(--shadow-xl)';
+      });
+
+      button.addEventListener('mouseleave', () => {
+        button.style.transform = 'scale(1)';
+        button.style.boxShadow = 'var(--shadow-lg)';
+      });
+
+      // Update icon based on theme
+      const updateIcon = () => {
+        const theme = this.root.getAttribute('data-theme');
+        const sunIcon = button.querySelector('.sun-icon');
+        const moonIcon = button.querySelector('.moon-icon');
+
+        if (theme === 'dark') {
+          sunIcon.style.display = 'block';
+          moonIcon.style.display = 'none';
+          button.setAttribute('aria-label', 'Switch to light mode');
+        } else {
+          sunIcon.style.display = 'none';
+          moonIcon.style.display = 'block';
+          button.setAttribute('aria-label', 'Switch to dark mode');
+        }
+      };
+
+      updateIcon();
+      window.addEventListener('themechange', updateIcon);
+
+      document.body.appendChild(button);
+    }
+  }
+
+  // ========================================================================
+  // Phase 3: Accessibility - Keyboard Navigation
+  // ========================================================================
+
+  class KeyboardNavigationManager {
+    constructor() {
+      this.focusableSelector = '.panel, button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      this.init();
+    }
+
+    init() {
+      // Add keyboard shortcuts
+      document.addEventListener('keydown', this.handleKeydown.bind(this));
+
+      // Add focus indicators to panels
+      this.enhancePanelFocus();
+    }
+
+    handleKeydown(e) {
+      // T key: Toggle theme
+      if (e.key === 't' && !this.isTyping(e)) {
+        e.preventDefault();
+        window.themeManager?.toggle();
+      }
+
+      // Escape: Close expanded panels
+      if (e.key === 'Escape') {
+        this.closeExpandedPanels();
+      }
+
+      // Arrow keys: Navigate between panels
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        if (document.activeElement.classList.contains('panel')) {
+          e.preventDefault();
+          this.navigatePanels(e.key);
+        }
+      }
+    }
+
+    isTyping(e) {
+      const target = e.target;
+      return target.tagName === 'INPUT' ||
+             target.tagName === 'TEXTAREA' ||
+             target.isContentEditable;
+    }
+
+    navigatePanels(direction) {
+      const panels = Array.from(document.querySelectorAll('.panel'));
+      const currentIndex = panels.indexOf(document.activeElement);
+
+      if (currentIndex === -1) return;
+
+      let nextIndex;
+      if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+        nextIndex = (currentIndex + 1) % panels.length;
+      } else {
+        nextIndex = (currentIndex - 1 + panels.length) % panels.length;
+      }
+
+      panels[nextIndex].focus();
+    }
+
+    enhancePanelFocus() {
+      document.querySelectorAll('.panel').forEach(panel => {
+        // Make panels keyboard focusable
+        if (!panel.hasAttribute('tabindex')) {
+          panel.setAttribute('tabindex', '0');
+        }
+
+        // Add ARIA labels if missing
+        if (!panel.getAttribute('aria-label')) {
+          const title = panel.querySelector('.panel-title')?.textContent;
+          if (title) {
+            panel.setAttribute('aria-label', title);
+          }
+        }
+      });
+    }
+
+    closeExpandedPanels() {
+      document.querySelectorAll('.panel[data-expanded="true"]').forEach(panel => {
+        panel.setAttribute('data-expanded', 'false');
+      });
+    }
+  }
+
+  // ========================================================================
+  // Panel Interactivity
+  // ========================================================================
+
+  class PanelManager {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      document.querySelectorAll('.panel').forEach(panel => {
+        this.enhancePanel(panel);
+      });
+    }
+
+    enhancePanel(panel) {
+      // Click to expand (optional)
+      const expandable = panel.hasAttribute('data-expandable');
+
+      if (expandable) {
+        panel.style.cursor = 'pointer';
+
+        panel.addEventListener('click', (e) => {
+          // Don't expand if clicking interactive elements
+          if (e.target.closest('button, a, input, select')) return;
+
+          this.togglePanel(panel);
+        });
+
+        // Enter key to expand
+        panel.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.togglePanel(panel);
+          }
+        });
+      }
+
+      // Hover effects are handled by CSS
+    }
+
+    togglePanel(panel) {
+      const isExpanded = panel.getAttribute('data-expanded') === 'true';
+      panel.setAttribute('data-expanded', !isExpanded);
+
+      // Announce to screen readers
+      const message = isExpanded ? 'Panel collapsed' : 'Panel expanded';
+      this.announceToScreenReader(message);
+    }
+
+    announceToScreenReader(message) {
+      const announcement = document.createElement('div');
+      announcement.className = 'sr-only';
+      announcement.setAttribute('role', 'status');
+      announcement.setAttribute('aria-live', 'polite');
+      announcement.textContent = message;
+
+      document.body.appendChild(announcement);
+      setTimeout(() => announcement.remove(), 1000);
+    }
+  }
+
+  // ========================================================================
+  // Performance Monitoring
+  // ========================================================================
+
+  class PerformanceMonitor {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Monitor paint performance
+      if ('PerformanceObserver' in window) {
+        try {
+          const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              console.log(`[HoloLoom] ${entry.name}: ${entry.duration.toFixed(2)}ms`);
+            }
+          });
+
+          observer.observe({ entryTypes: ['measure', 'paint'] });
+        } catch (e) {
+          // PerformanceObserver not fully supported
+        }
+      }
+
+      // Log page load metrics
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          if (perfData) {
+            console.log('[HoloLoom] Page Load Metrics:', {
+              domContentLoaded: `${perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart}ms`,
+              loadComplete: `${perfData.loadEventEnd - perfData.loadEventStart}ms`,
+              domInteractive: `${perfData.domInteractive - perfData.fetchStart}ms`
+            });
+          }
+        }, 0);
+      });
+    }
+  }
+
+  // ========================================================================
+  // Initialize All Managers
+  // ========================================================================
+
+  function init() {
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+      return;
+    }
+
+    console.log('[HoloLoom] Initializing modern dashboard features...');
+
+    // Initialize managers
+    window.themeManager = new ThemeManager();
+    window.keyboardNav = new KeyboardNavigationManager();
+    window.panelManager = new PanelManager();
+
+    // Performance monitoring (only in development)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window.perfMonitor = new PerformanceMonitor();
+    }
+
+    // Add keyboard shortcuts help
+    createKeyboardShortcutsHelp();
+
+    console.log('[HoloLoom] Dashboard ready! Press "?" for keyboard shortcuts.');
+  }
+
+  // ========================================================================
+  // Keyboard Shortcuts Help Modal
+  // ========================================================================
+
+  function createKeyboardShortcutsHelp() {
+    let helpVisible = false;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '?' && !window.keyboardNav.isTyping(e)) {
+        e.preventDefault();
+        toggleHelp();
+      }
+    });
+
+    function toggleHelp() {
+      if (helpVisible) {
+        document.getElementById('keyboard-help-modal')?.remove();
+        helpVisible = false;
+      } else {
+        showHelp();
+        helpVisible = true;
+      }
+    }
+
+    function showHelp() {
+      const modal = document.createElement('div');
+      modal.id = 'keyboard-help-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-labelledby', 'keyboard-help-title');
+      modal.setAttribute('aria-modal', 'true');
+
+      modal.innerHTML = `
+        <div style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: var(--z-modal);
+          padding: var(--space-4);
+        " id="help-backdrop">
+          <div style="
+            background: var(--color-bg-elevated);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+            max-width: 500px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--color-border-default);
+          ">
+            <h2 id="keyboard-help-title" style="
+              margin: 0 0 var(--space-4) 0;
+              font-size: var(--font-size-xl);
+              color: var(--color-text-primary);
+            ">Keyboard Shortcuts</h2>
+
+            <dl style="margin: 0; display: grid; gap: var(--space-3);">
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">T</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Toggle dark mode</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">Arrow Keys</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Navigate panels</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">Enter / Space</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Expand panel</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">Esc</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Close expanded panels</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">?</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Show this help</dd>
+              </div>
+            </dl>
+
+            <button style="
+              margin-top: var(--space-6);
+              width: 100%;
+              padding: var(--space-3);
+              background: var(--color-accent-primary);
+              color: white;
+              border: none;
+              border-radius: var(--radius-md);
+              font-weight: var(--font-weight-medium);
+              cursor: pointer;
+            " id="close-help-btn">Close</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Close on button click
+      document.getElementById('close-help-btn').addEventListener('click', toggleHelp);
+
+      // Close on backdrop click
+      document.getElementById('help-backdrop').addEventListener('click', (e) => {
+        if (e.target.id === 'help-backdrop') {
+          toggleHelp();
+        }
+      });
+
+      // Close on Escape
+      const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+          toggleHelp();
+          document.removeEventListener('keydown', escapeHandler);
+        }
+      };
+      document.addEventListener('keydown', escapeHandler);
+
+      // Focus the close button
+      setTimeout(() => {
+        document.getElementById('close-help-btn').focus();
+      }, 100);
+    }
+  }
+
+  // Start initialization
+  init();
+
+})();
+
+    </script>
+
+    <!-- Legacy Interactivity (backward compatibility) -->
+    <script>
+/**
+ * HoloLoom Dashboard Interactivity
+ * ==================================
+ * Client-side JavaScript for interactive self-constructing dashboards.
+ *
+ * Features:
+ * - Panel expand/collapse
+ * - User preference management
+ * - localStorage persistence
+ * - Drill-down interactions
+ * - Theme switching
+ * - Panel reordering
+ *
+ * Author: Claude Code
+ * Date: October 29, 2025
+ */
+
+(function() {
+    'use strict';
+
+    // ========================================================================
+    // State Management
+    // ========================================================================
+
+    class DashboardState {
+        constructor() {
+            this.panels = new Map();  // panel_id -> state
+            this.preferences = this.loadPreferences();
+            this.expandedPanels = new Set();
+            this.init();
+        }
+
+        init() {
+            // Load panel states from localStorage
+            const saved = localStorage.getItem('hololoom_panel_states');
+            if (saved) {
+                const states = JSON.parse(saved);
+                Object.entries(states).forEach(([id, state]) => {
+                    this.panels.set(id, state);
+                    if (state.expanded) {
+                        this.expandedPanels.add(id);
+                    }
+                });
+            }
+        }
+
+        loadPreferences() {
+            const saved = localStorage.getItem('hololoom_preferences');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            // Default preferences
+            return {
+                preferred_panels: [],
+                hidden_panels: [],
+                layout_preference: null,
+                color_scheme: 'light',
+                detail_level: 'standard',
+                max_panels: null,
+                enable_animations: true,
+                auto_expand_errors: true,
+                panel_sizes: {}
+            };
+        }
+
+        savePreferences() {
+            localStorage.setItem('hololoom_preferences', JSON.stringify(this.preferences));
+        }
+
+        setPanelState(panelId, state) {
+            this.panels.set(panelId, { ...this.panels.get(panelId), ...state });
+            this.savePanelStates();
+        }
+
+        savePanelStates() {
+            const states = {};
+            this.panels.forEach((state, id) => {
+                states[id] = state;
+            });
+            localStorage.setItem('hololoom_panel_states', JSON.stringify(states));
+        }
+
+        togglePanel(panelId) {
+            if (this.expandedPanels.has(panelId)) {
+                this.expandedPanels.delete(panelId);
+                this.setPanelState(panelId, { expanded: false });
+                return false;
+            } else {
+                this.expandedPanels.add(panelId);
+                this.setPanelState(panelId, { expanded: true });
+                return true;
+            }
+        }
+
+        setPreference(key, value) {
+            this.preferences[key] = value;
+            this.savePreferences();
+        }
+
+        clearAll() {
+            localStorage.removeItem('hololoom_panel_states');
+            localStorage.removeItem('hololoom_preferences');
+            this.panels.clear();
+            this.expandedPanels.clear();
+            this.preferences = this.loadPreferences();
+        }
+    }
+
+    // ========================================================================
+    // Panel Interactions
+    // ========================================================================
+
+    class PanelController {
+        constructor(state) {
+            this.state = state;
+        }
+
+        attachHandlers() {
+            // Find all panels
+            document.querySelectorAll('[data-panel-id]').forEach(panel => {
+                this.attachPanelHandlers(panel);
+            });
+        }
+
+        attachPanelHandlers(panel) {
+            const panelId = panel.dataset.panelId;
+            const panelType = panel.dataset.panelType;
+
+            // Add expand/collapse button if not present
+            this.addExpandButton(panel, panelId);
+
+            // Add drill-down click handler
+            this.addDrillDownHandler(panel, panelId, panelType);
+
+            // Restore saved state
+            this.restorePanelState(panel, panelId);
+        }
+
+        addExpandButton(panel, panelId) {
+            // Check if button already exists
+            if (panel.querySelector('.expand-btn')) return;
+
+            // Find panel header
+            const header = panel.querySelector('.panel-header') ||
+                          panel.querySelector('h3') ||
+                          panel.querySelector('.text-lg');
+
+            if (!header) return;
+
+            // Create expand button
+            const btn = document.createElement('button');
+            btn.className = 'expand-btn ml-2 text-gray-500 hover:text-gray-700 transition-colors';
+            btn.innerHTML = '<svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+            btn.setAttribute('aria-label', 'Expand panel');
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.togglePanel(panel, panelId);
+            });
+
+            // Add button to header
+            if (header.style.display !== 'flex') {
+                header.style.display = 'flex';
+                header.style.alignItems = 'center';
+                header.style.justifyContent = 'space-between';
+            }
+            header.appendChild(btn);
+        }
+
+        togglePanel(panel, panelId) {
+            const isExpanded = this.state.togglePanel(panelId);
+            const content = panel.querySelector('.panel-content') || panel.querySelector('div:not(.panel-header)');
+            const btn = panel.querySelector('.expand-btn svg');
+
+            if (!content) return;
+
+            if (isExpanded) {
+                // Expand
+                content.style.maxHeight = content.scrollHeight + 'px';
+                content.classList.remove('collapsed');
+                if (btn) btn.style.transform = 'rotate(180deg)';
+                panel.classList.add('expanded');
+            } else {
+                // Collapse
+                content.style.maxHeight = '0';
+                content.classList.add('collapsed');
+                if (btn) btn.style.transform = 'rotate(0deg)';
+                panel.classList.remove('expanded');
+            }
+
+            // Animate if enabled
+            if (this.state.preferences.enable_animations) {
+                content.style.transition = 'max-height 0.3s ease-in-out';
+            }
+        }
+
+        addDrillDownHandler(panel, panelId, panelType) {
+            // Add click handler for drill-down
+            panel.style.cursor = 'pointer';
+
+            panel.addEventListener('click', (e) => {
+                // Don't drill down if clicking on interactive elements
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                if (e.target.tagName === 'A' || e.target.closest('a')) return;
+
+                this.showDrillDown(panel, panelId, panelType);
+            });
+        }
+
+        showDrillDown(panel, panelId, panelType) {
+            // Create modal for drill-down
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full m-4 max-h-[90vh] overflow-auto">
+                    <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-900">Panel Details: ${panelType}</h2>
+                        <button class="close-btn text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        ${this.getDrillDownContent(panel, panelType)}
+                    </div>
+                </div>
+            `;
+
+            // Add close handler
+            modal.querySelector('.close-btn').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+
+            // Close on background click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+
+            document.body.appendChild(modal);
+        }
+
+        getDrillDownContent(panel, panelType) {
+            // Extract detailed data from panel
+            const content = panel.cloneNode(true);
+
+            // Remove interactive elements
+            content.querySelectorAll('.expand-btn').forEach(el => el.remove());
+
+            // Add type-specific enhancements
+            if (panelType === 'timeline') {
+                return `
+                    <div class="space-y-4">
+                        ${content.innerHTML}
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-2">Stage Details</h3>
+                            <p class="text-sm text-gray-600">
+                                Click on chart bars for per-stage breakdown.
+                                Use mouse wheel to zoom, drag to pan.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else if (panelType === 'network') {
+                return `
+                    <div class="space-y-4">
+                        ${content.innerHTML}
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-2">Network Controls</h3>
+                            <p class="text-sm text-gray-600">
+                                Drag nodes to rearrange. Double-click nodes for details.
+                                Scroll to zoom.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return content.innerHTML;
+            }
+        }
+
+        restorePanelState(panel, panelId) {
+            const savedState = this.state.panels.get(panelId);
+            if (savedState && savedState.expanded) {
+                // Restore expanded state
+                setTimeout(() => this.togglePanel(panel, panelId), 100);
+            }
+
+            // Auto-expand errors if preference is set
+            if (this.state.preferences.auto_expand_errors &&
+                panel.dataset.panelType === 'text' &&
+                panel.textContent.toLowerCase().includes('error')) {
+                setTimeout(() => this.togglePanel(panel, panelId), 100);
+            }
+        }
+    }
+
+    // ========================================================================
+    // Preferences UI
+    // ========================================================================
+
+    class PreferencesUI {
+        constructor(state) {
+            this.state = state;
+        }
+
+        createPreferencesButton() {
+            const btn = document.createElement('button');
+            btn.className = 'fixed bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-40';
+            btn.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            `;
+            btn.setAttribute('aria-label', 'Dashboard preferences');
+            btn.addEventListener('click', () => this.showPreferences());
+            document.body.appendChild(btn);
+        }
+
+        showPreferences() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full m-4 max-h-[90vh] overflow-auto">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-900">Dashboard Preferences</h2>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        ${this.getPreferencesForm()}
+                    </div>
+                    <div class="p-6 border-t border-gray-200 flex justify-between">
+                        <button class="clear-btn px-4 py-2 text-red-600 hover:bg-red-50 rounded">Clear All</button>
+                        <div class="space-x-2">
+                            <button class="cancel-btn px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">Cancel</button>
+                            <button class="save-btn px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Attach handlers
+            modal.querySelector('.save-btn').addEventListener('click', () => {
+                this.savePreferencesFromForm(modal);
+                document.body.removeChild(modal);
+                window.location.reload();  // Reload to apply preferences
+            });
+
+            modal.querySelector('.cancel-btn').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+
+            modal.querySelector('.clear-btn').addEventListener('click', () => {
+                if (confirm('Clear all saved preferences and panel states?')) {
+                    this.state.clearAll();
+                    document.body.removeChild(modal);
+                    window.location.reload();
+                }
+            });
+
+            document.body.appendChild(modal);
+        }
+
+        getPreferencesForm() {
+            const prefs = this.state.preferences;
+            return `
+                <div class="space-y-4">
+                    <!-- Theme -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Color Scheme</label>
+                        <select id="pref-color-scheme" class="w-full border border-gray-300 rounded px-3 py-2">
+                            <option value="light" ${prefs.color_scheme === 'light' ? 'selected' : ''}>Light</option>
+                            <option value="dark" ${prefs.color_scheme === 'dark' ? 'selected' : ''}>Dark</option>
+                        </select>
+                    </div>
+
+                    <!-- Detail Level -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Detail Level</label>
+                        <select id="pref-detail-level" class="w-full border border-gray-300 rounded px-3 py-2">
+                            <option value="minimal" ${prefs.detail_level === 'minimal' ? 'selected' : ''}>Minimal</option>
+                            <option value="standard" ${prefs.detail_level === 'standard' ? 'selected' : ''}>Standard</option>
+                            <option value="detailed" ${prefs.detail_level === 'detailed' ? 'selected' : ''}>Detailed</option>
+                        </select>
+                    </div>
+
+                    <!-- Max Panels -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Panels</label>
+                        <input type="number" id="pref-max-panels" value="${prefs.max_panels || ''}"
+                               placeholder="No limit" class="w-full border border-gray-300 rounded px-3 py-2">
+                    </div>
+
+                    <!-- Animations -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="pref-animations" ${prefs.enable_animations ? 'checked' : ''}
+                               class="mr-2 h-4 w-4 text-indigo-600">
+                        <label for="pref-animations" class="text-sm text-gray-700">Enable animations</label>
+                    </div>
+
+                    <!-- Auto-expand errors -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="pref-auto-expand-errors" ${prefs.auto_expand_errors ? 'checked' : ''}
+                               class="mr-2 h-4 w-4 text-indigo-600">
+                        <label for="pref-auto-expand-errors" class="text-sm text-gray-700">Auto-expand error panels</label>
+                    </div>
+                </div>
+            `;
+        }
+
+        savePreferencesFromForm(modal) {
+            this.state.setPreference('color_scheme', modal.querySelector('#pref-color-scheme').value);
+            this.state.setPreference('detail_level', modal.querySelector('#pref-detail-level').value);
+            this.state.setPreference('max_panels', parseInt(modal.querySelector('#pref-max-panels').value) || null);
+            this.state.setPreference('enable_animations', modal.querySelector('#pref-animations').checked);
+            this.state.setPreference('auto_expand_errors', modal.querySelector('#pref-auto-expand-errors').checked);
+        }
+    }
+
+    // ========================================================================
+    // Initialization
+    // ========================================================================
+
+    function initDashboard() {
+        const state = new DashboardState();
+        const panelController = new PanelController(state);
+        const preferencesUI = new PreferencesUI(state);
+
+        // Attach panel handlers
+        panelController.attachHandlers();
+
+        // Create preferences button
+        preferencesUI.createPreferencesButton();
+
+        // Apply theme
+        if (state.preferences.color_scheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
+        // Expose to window for debugging
+        window.HoloLoom = { state, panelController, preferencesUI };
+
+        console.log('[HoloLoom] Dashboard initialized');
+    }
+
+    // Auto-initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    } else {
+        initDashboard();
+    }
+
+})();
+
+    </script>
+</body>
+</html>

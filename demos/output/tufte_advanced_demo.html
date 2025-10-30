@@ -1,0 +1,596 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Tufte Visualization Demo - Meaning First</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                margin: 40px;
+                background: #f9fafb;
+            }
+            h1 {
+                color: #111827;
+                font-size: 24px;
+                font-weight: 600;
+                margin-bottom: 8px;
+            }
+            .subtitle {
+                color: #6b7280;
+                font-size: 14px;
+                margin-bottom: 32px;
+            }
+            .section {
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 24px;
+                margin-bottom: 24px;
+            }
+            .section-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #374151;
+                margin-bottom: 16px;
+            }
+            .tufte-quote {
+                border-left: 4px solid #3b82f6;
+                padding-left: 16px;
+                margin: 24px 0;
+                font-style: italic;
+                color: #6b7280;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Tufte Visualization Demo: Meaning First</h1>
+        <div class="subtitle">
+            High-density, low-decoration visualizations following Edward Tufte's principles
+        </div>
+
+        <div class="tufte-quote">
+            "Above all else show the data. Graphical excellence is that which gives to the viewer
+            the greatest number of ideas in the shortest time with the least ink in the smallest space."
+            <br><strong>— Edward Tufte</strong>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Small Multiples: Query Comparison</div>
+            <p style="color: #6b7280; font-size: 13px; margin-bottom: 16px;">
+                Compare multiple queries side-by-side. Consistent scales, minimal decoration,
+                maximum information. Best query marked with ★, worst with ⚠.
+            </p>
+            
+        <div class="small-multiples-container"
+             style="display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 16px;
+                    margin: 16px 0;">
+            
+        <div class="small-multiple"
+             style="border: 2px solid #10b981;
+                    border-radius: 6px;
+                    padding: 12px;
+                    background: #ffffff;
+                    min-width: 200px;">
+
+            <!-- Query Text -->
+            <div style="font-size: 11px;
+                        color: #6b7280;
+                        margin-bottom: 8px;
+                        font-weight: 500;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;"
+                 title="Query A (fast)">
+                <span style="color: #10b981; font-size: 16px;">★</span> Query A (fast) 💾
+            </div>
+
+            <!-- Main Metric: Latency -->
+            <div style="font-size: 28px;
+                        font-weight: bold;
+                        color: #10b981;
+                        margin-bottom: 4px;">
+                85<span style="font-size: 14px; font-weight: normal; color: #9ca3af;">ms</span>
+            </div>
+
+            <!-- Sparkline -->
+            
+        <div style="margin-top: 6px;">
+            <svg width="80" height="20" style="display: block;">
+                <path d="M 2.0,2.0 L 21.0,8.4 L 40.0,11.6 L 59.0,14.8 L 78.0,18.0"
+                      fill="none"
+                      stroke="#10b981"
+                      stroke-width="1"
+                      opacity="0.6"/>
+                <circle cx="78.0"
+                        cy="18.0"
+                        r="1.5"
+                        fill="#10b981"/>
+            </svg>
+        </div>
+        
+
+            <!-- Secondary Metrics -->
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px;">
+                <div>
+                    <span style="color: #9ca3af;">Conf:</span>
+                    <span style="color: #10b981; font-weight: 600;">92%</span>
+                </div>
+                <div>
+                    <span style="color: #9ca3af;">Threads:</span>
+                    <span style="color: #374151; font-weight: 600;">2</span>
+                </div>
+                <div>
+                    <span style="color: #9ca3af;">Tool:</span>
+                    <span style="color: #374151; font-weight: 600;">answer</span>
+                </div>
+            </div>
+
+            <!-- Trend Direction Indicator -->
+            <div style="margin-top: 6px; font-size: 10px; color: #9ca3af;">
+                Trend: <span style="color: #10b981;">↓ improving</span>
+            </div>
+        </div>
+        
+        <div class="small-multiple"
+             style="border: 2px solid #ef4444;
+                    border-radius: 6px;
+                    padding: 12px;
+                    background: #ffffff;
+                    min-width: 200px;">
+
+            <!-- Query Text -->
+            <div style="font-size: 11px;
+                        color: #6b7280;
+                        margin-bottom: 8px;
+                        font-weight: 500;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;"
+                 title="Query B (slow)">
+                <span style="color: #ef4444; font-size: 16px;">⚠</span> Query B (slow) 
+            </div>
+
+            <!-- Main Metric: Latency -->
+            <div style="font-size: 28px;
+                        font-weight: bold;
+                        color: #f59e0b;
+                        margin-bottom: 4px;">
+                150<span style="font-size: 14px; font-weight: normal; color: #9ca3af;">ms</span>
+            </div>
+
+            <!-- Sparkline -->
+            
+        <div style="margin-top: 6px;">
+            <svg width="80" height="20" style="display: block;">
+                <path d="M 2.0,18.0 L 21.0,11.6 L 40.0,8.4 L 59.0,5.2 L 78.0,2.0"
+                      fill="none"
+                      stroke="#f59e0b"
+                      stroke-width="1"
+                      opacity="0.6"/>
+                <circle cx="78.0"
+                        cy="2.0"
+                        r="1.5"
+                        fill="#f59e0b"/>
+            </svg>
+        </div>
+        
+
+            <!-- Secondary Metrics -->
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px;">
+                <div>
+                    <span style="color: #9ca3af;">Conf:</span>
+                    <span style="color: #f59e0b; font-weight: 600;">88%</span>
+                </div>
+                <div>
+                    <span style="color: #9ca3af;">Threads:</span>
+                    <span style="color: #374151; font-weight: 600;">5</span>
+                </div>
+                <div>
+                    <span style="color: #9ca3af;">Tool:</span>
+                    <span style="color: #374151; font-weight: 600;">answer</span>
+                </div>
+            </div>
+
+            <!-- Trend Direction Indicator -->
+            <div style="margin-top: 6px; font-size: 10px; color: #9ca3af;">
+                Trend: <span style="color: #ef4444;">↑ degrading</span>
+            </div>
+        </div>
+        
+        </div>
+        
+        </div>
+
+        <div class="section">
+            <div class="section-title">Data Density Table: Stage Timing Analysis</div>
+            <p style="color: #6b7280; font-size: 13px; margin-bottom: 16px;">
+                Maximum information per square inch. Inline sparklines, delta indicators,
+                bottleneck detection. Right-aligned numbers, monospace font, tight spacing.
+            </p>
+            
+        <div class="density-table" style="margin: 16px 0;">
+            
+            <div style="font-size: 12px;
+                        font-weight: 600;
+                        color: #374151;
+                        margin-bottom: 8px;
+                        padding-left: 8px;">
+                Stage Timing Analysis
+            </div>
+            
+            <div style="border: 1px solid #e5e7eb;
+                        border-radius: 6px;
+                        overflow: hidden;
+                        background: #ffffff;">
+                
+        <div style="display: grid;
+                    grid-template-columns: 2fr 1fr 1fr 1fr 60px 80px;
+                    gap: 4px;
+                    padding: 4px 8px;
+                    background: #f9fafb;
+                    border-bottom: 2px solid #e5e7eb;">
+            
+                <div style="text-align: left;
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;">
+                    Stage
+                </div>
+            
+                <div style="text-align: right;
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;">
+                    Time
+                </div>
+            
+                <div style="text-align: right;
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;">
+                    %
+                </div>
+            
+                <div style="text-align: right;
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;">
+                    Δ
+                </div>
+            
+                <div style="text-align: center;
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;">
+                    Trend
+                </div>
+            
+                <div style="text-align: left;
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;">
+                    Bottleneck?
+                </div>
+            
+        </div>
+        
+                
+        <div style="display: grid;
+                    grid-template-columns: 2fr 1fr 1fr 1fr 60px 80px;
+                    gap: 4px;
+                    padding: 4px 8px;
+                    background: #ffffff;
+                    border-bottom: 1px solid #f3f4f6;
+                    min-height: 28px;
+                    align-items: center;"
+             onmouseover="this.style.background='#f9fafb'"
+             onmouseout="this.style.background='#ffffff'">
+            
+        <div style="text-align: left;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: inherit;">
+            Pattern Selection
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            10ms
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            7%
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            <span style="color: #ef4444;">+1</span>
+        </div>
+        
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <svg width="60" height="16">
+                <path d="M 2.0,14.0 L 16.0,8.0 L 30.0,2.0 L 44.0,2.0 L 58.0,2.0"
+                      fill="none"
+                      stroke="#ef4444"
+                      stroke-width="1"
+                      opacity="0.7"/>
+                <circle cx="58.0"
+                        cy="2.0"
+                        r="1"
+                        fill="#ef4444"/>
+            </svg>
+        </div>
+        
+        <div style="text-align: left;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: inherit;">
+            <span style="color: #9ca3af;">—</span>
+        </div>
+        
+        </div>
+        
+        <div style="display: grid;
+                    grid-template-columns: 2fr 1fr 1fr 1fr 60px 80px;
+                    gap: 4px;
+                    padding: 4px 8px;
+                    background: #fef2f2;
+                    border-bottom: 1px solid #f3f4f6;
+                    min-height: 28px;
+                    align-items: center;"
+             onmouseover="this.style.background='#f9fafb'"
+             onmouseout="this.style.background='#fef2f2'">
+            
+        <div style="text-align: left;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: inherit;">
+            Retrieval
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            75ms
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            50%
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            <span style="color: #ef4444;">+3</span>
+        </div>
+        
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <svg width="60" height="16">
+                <path d="M 2.0,14.0 L 16.0,9.2 L 30.0,6.8 L 44.0,4.4 L 58.0,2.0"
+                      fill="none"
+                      stroke="#ef4444"
+                      stroke-width="1"
+                      opacity="0.7"/>
+                <circle cx="58.0"
+                        cy="2.0"
+                        r="1"
+                        fill="#ef4444"/>
+            </svg>
+        </div>
+        
+        <div style="text-align: left;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: inherit;">
+            <span style="color: #ef4444; font-weight: 600;">YES</span>
+        </div>
+        
+        </div>
+        
+        <div style="display: grid;
+                    grid-template-columns: 2fr 1fr 1fr 1fr 60px 80px;
+                    gap: 4px;
+                    padding: 4px 8px;
+                    background: #ffffff;
+                    border-bottom: 1px solid #f3f4f6;
+                    min-height: 28px;
+                    align-items: center;"
+             onmouseover="this.style.background='#f9fafb'"
+             onmouseout="this.style.background='#ffffff'">
+            
+        <div style="text-align: left;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: inherit;">
+            Convergence
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            30ms
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            20%
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            <span style="color: #9ca3af;">0</span>
+        </div>
+        
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <svg width="60" height="16">
+                <path d="M 2.0,14.0 L 16.0,14.0 L 30.0,14.0 L 44.0,14.0 L 58.0,14.0"
+                      fill="none"
+                      stroke="#9ca3af"
+                      stroke-width="1"
+                      opacity="0.7"/>
+                <circle cx="58.0"
+                        cy="14.0"
+                        r="1"
+                        fill="#9ca3af"/>
+            </svg>
+        </div>
+        
+        <div style="text-align: left;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: inherit;">
+            <span style="color: #9ca3af;">—</span>
+        </div>
+        
+        </div>
+        
+        <div style="display: grid;
+                    grid-template-columns: 2fr 1fr 1fr 1fr 60px 80px;
+                    gap: 4px;
+                    padding: 4px 8px;
+                    background: #ffffff;
+                    border-bottom: 1px solid #f3f4f6;
+                    min-height: 28px;
+                    align-items: center;"
+             onmouseover="this.style.background='#f9fafb'"
+             onmouseout="this.style.background='#ffffff'">
+            
+        <div style="text-align: left;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: inherit;">
+            Tool Execution
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            35ms
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            23%
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            <span style="color: #ef4444;">+1</span>
+        </div>
+        
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <svg width="60" height="16">
+                <path d="M 2.0,14.0 L 16.0,8.0 L 30.0,8.0 L 44.0,2.0 L 58.0,2.0"
+                      fill="none"
+                      stroke="#ef4444"
+                      stroke-width="1"
+                      opacity="0.7"/>
+                <circle cx="58.0"
+                        cy="2.0"
+                        r="1"
+                        fill="#ef4444"/>
+            </svg>
+        </div>
+        
+        <div style="text-align: left;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: inherit;">
+            <span style="color: #9ca3af;">—</span>
+        </div>
+        
+        </div>
+        
+                
+        <div style="display: grid;
+                    grid-template-columns: 2fr 1fr 1fr 1fr 60px 80px;
+                    gap: 4px;
+                    padding: 4px 8px;
+                    background: #f9fafb;
+                    border-top: 2px solid #e5e7eb;
+                    font-weight: 600;">
+            
+        <div style="text-align: left;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: inherit;">
+            Total
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            150ms
+        </div>
+        
+        <div style="text-align: right;
+                    font-size: 11px;
+                    color: #374151;
+                    font-family: monospace;">
+            100%
+        </div>
+        <div></div><div></div><div></div>
+        </div>
+        
+            </div>
+        </div>
+        
+        </div>
+
+        <div class="section">
+            <div class="section-title">Design Principles Applied</div>
+            <ul style="color: #374151; font-size: 13px; line-height: 1.8;">
+                <li><strong>Maximize data-ink ratio:</strong> Remove chartjunk, keep only what conveys information</li>
+                <li><strong>Small multiples:</strong> Enable comparison through consistent repetition</li>
+                <li><strong>Data density:</strong> Show lots of information in small space</li>
+                <li><strong>Content-rich labels:</strong> Labels inform, not just identify</li>
+                <li><strong>Layering:</strong> Multiple dimensions without clutter (color, opacity, position)</li>
+                <li><strong>Meaning first:</strong> Information directly where eyes go first</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb;
+                    text-align: center; color: #9ca3af; font-size: 12px;">
+            Generated with HoloLoom Visualizer | Inspired by Edward Tufte's principles
+        </div>
+    </body>
+    </html>
+    

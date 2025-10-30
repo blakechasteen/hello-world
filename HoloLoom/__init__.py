@@ -1,11 +1,22 @@
-"""HoloLoom package initializer.
+"""
+HoloLoom - Unified Memory System
 
-Expose convenient imports for top-level modules used across the codebase.
-This file also includes a small compatibility shim: some parts of the
-repository use a lowercase `holoLoom` directory on disk. To make
-`import HoloLoom.*` work regardless of the on-disk capitalization we
-prepend the sibling `holoLoom` directory to the package search path if
-it exists.
+The 10/10 Layer: Everything is a memory operation.
+
+Perfect API Surface:
+    from HoloLoom import HoloLoom, Memory
+
+    # That's it. Two imports.
+
+    loom = HoloLoom()
+    memory = await loom.experience("content")
+    memories = await loom.recall("query")
+    await loom.reflect(memories, feedback={...})
+
+Advanced users can still import internal components:
+    from HoloLoom.memory.awareness_graph import AwarenessGraph
+    from HoloLoom.input.router import InputRouter
+    # Full control when needed
 """
 import os
 
@@ -15,25 +26,47 @@ alt = os.path.join(base_dir, 'holoLoom')
 if os.path.isdir(alt) and os.path.abspath(alt) not in __path__:
 	__path__.insert(0, os.path.abspath(alt))
 
-# Re-export common subpackages for simpler imports
+# ============================================================================
+# 10/10 API: Minimal, Perfect, Inevitable
+# ============================================================================
+
+from .hololoom import HoloLoom
+from .memory.protocol import Memory
+from .memory.awareness_types import ActivationStrategy
+from .config import Config
+
+__all__ = [
+    # Core API (99% of users)
+    'HoloLoom',          # The system
+    'Memory',            # The data
+    'ActivationStrategy', # Recall strategies
+    'Config',            # Configuration
+
+    # Legacy/Advanced (for backward compatibility)
+    'policy',
+    'embedding',
+]
+
+# ============================================================================
+# Backward Compatibility: Keep existing exports
+# ============================================================================
+
+# Re-export common subpackages for existing code
 from . import policy
 from . import embedding
+
+# Documentation compatibility
 try:
-	# filesystem has `documentation` (lowercase); expose it as `Documentation`
 	from . import documentation as Documentation
 except Exception:
-	# Fall back to a direct import if the package is named differently
 	try:
 		from . import Documentation
 	except Exception:
 		Documentation = None
 
-# Import unified API as main export
+# Old unified_api compatibility (if it exists)
 try:
-	from .unified_api import HoloLoom, create_hololoom
-	__all__ = ["HoloLoom", "create_hololoom", "policy", "embedding", "Documentation"]
-except ImportError as e:
-	# Fallback if unified_api not available
-	HoloLoom = None
-	create_hololoom = None
-	__all__ = ["policy", "embedding", "Documentation"]
+	from .unified_api import create_hololoom
+	__all__.append('create_hololoom')
+except ImportError:
+	pass

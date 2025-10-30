@@ -78,6 +78,16 @@ from .shuttle import (
 )
 
 # ============================================================================
+# Import Retrieval Protocols (from retrieval.py)
+# ============================================================================
+
+from .retrieval import (
+    RetrievalStrategy,
+    RetrievalResult,
+    SpringActivationMetadata,
+)
+
+# ============================================================================
 # Re-exports from Documentation.types for convenience
 # ============================================================================
 
@@ -133,6 +143,11 @@ __all__ = [
     'FeatureExtractionProtocol',
     'WarpSpaceProtocol',
     'DecisionEngineProtocol',
+
+    # ===== Retrieval Protocols =====
+    'RetrievalStrategy',
+    'RetrievalResult',
+    'SpringActivationMetadata',
 
     # ===== Compatibility Aliases =====
     'MemoryBackendProtocol',

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Report: Why did the Neo4j connection fail?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Debug Report: Why did the Neo4j connection fail?</h1>
+            <p class="text-sm text-gray-500 mt-2">
+                Generated: 2025-10-28T15:23:34.058334
+                | Complexity: FAST
+                | Intent: debugging
+            </p>
+        </div>
+
+        <!-- Panels -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+        <div class="bg-white p-6 rounded-lg shadow border border-gray-200">
+            <p class="text-sm text-gray-500">Confidence</p>
+            <p class="text-3xl font-bold text-green-600 mt-2">0.82</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Errors</h3>
+            <ul class="list-disc list-inside space-y-1"><li class="text-red-600">ConnectionRefused: Neo4j unreachable at bolt://localhost:7687</li><li class="text-red-600">Timeout: Connection attempt exceeded 5000ms</li><li class="text-red-600">FallbackTriggered: Using InMemory backend</li></ul>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow border border-gray-200 col-span-full">
+            <div id="chart_panel_3"></div>
+            <script>
+                Plotly.newPlot('chart_panel_3',
+                    [{"x": ["features", "retrieval", "decision", "execution"], "y": [89.2, 892.5, 198.1, 67.5], "type": "bar", "marker": {"color": ["#6366f1", "#10b981", "#f59e0b", "#ef4444"]}, "name": "Duration (ms)"}],
+                    {"title": "Timeline", "xaxis": {"title": "Stage"}, "yaxis": {"title": "Duration (ms)"}, "showlegend": false},
+                    {responsive: true}
+                );
+            </script>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

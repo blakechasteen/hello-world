@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Visualization Demo - HoloLoom Dashboard</title>
+
+    <!-- Tailwind CSS (CDN, no build step) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Plotly.js (interactive charts) -->
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+
+    <!-- D3.js (force-directed graphs) -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        /* Edward Tufte-inspired typography */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        /* Minimal chrome, maximum data-ink ratio */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Smooth transitions */
+        .panel {
+            transition: box-shadow 0.2s ease;
+        }
+
+        .panel:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="dashboard-container">
+        <!-- Dashboard Title (Tufte: Clear hierarchy) -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Network Visualization Demo</h1>
+            <div class="h-1 w-24 bg-indigo-600 rounded"></div>
+        </div>
+
+        <!-- Dashboard Grid (Responsive layout) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="md:col-span-2 lg:col-span-3 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <div class="text-lg font-semibold text-gray-800 mb-1">Thread Activation Network</div>
+            <div class="text-sm text-gray-600 mb-4">Interactive force-directed graph (drag nodes to explore)</div>
+            <div id="plot_network_1" style="height: 400px; border: 1px solid #e5e7eb; border-radius: 0.375rem; background: #fafafa;"></div>
+            <div class="text-xs text-gray-500 mt-2">5 node(s), 5 edge(s)</div>
+        </div>
+        <script>
+        (function() {
+            // D3.js Force-Directed Graph
+            const width = document.getElementById('plot_network_1').clientWidth;
+            const height = 400;
+
+            const svg = d3.select('#plot_network_1')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const nodes = [{"id": "motif", "label": "Motif Detector", "size": 15, "color": "#6366f1"}, {"id": "embedding", "label": "Embeddings", "size": 18, "color": "#10b981"}, {"id": "spectral", "label": "Spectral", "size": 12, "color": "#f59e0b"}, {"id": "graph", "label": "Graph Store", "size": 20, "color": "#ef4444"}, {"id": "policy", "label": "Policy Engine", "size": 16, "color": "#8b5cf6"}];
+            const links = [{"source": "motif", "target": "policy"}, {"source": "embedding", "target": "policy"}, {"source": "spectral", "target": "policy"}, {"source": "graph", "target": "embedding"}, {"source": "graph", "target": "spectral"}];
+
+            // Create force simulation
+            const simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(30));
+
+            // Draw edges
+            const link = svg.append('g')
+                .selectAll('line')
+                .data(links)
+                .enter().append('line')
+                .attr('stroke', '#94a3b8')
+                .attr('stroke-width', 2);
+
+            // Draw nodes
+            const node = svg.append('g')
+                .selectAll('g')
+                .data(nodes)
+                .enter().append('g')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            // Node circles
+            node.append('circle')
+                .attr('r', d => d.size || 12)
+                .attr('fill', d => d.color || '#6366f1')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
+
+            // Node labels
+            node.append('text')
+                .text(d => d.label)
+                .attr('x', 0)
+                .attr('y', 25)
+                .attr('text-anchor', 'middle')
+                .style('font-size', '10px')
+                .style('fill', '#374151');
+
+            // Tooltip on hover
+            node.append('title')
+                .text(d => d.label + (d.description ? '\n' + d.description : ''));
+
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            // Drag functions
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+        })();
+        </script>
+        
+        </div>
+
+        <!-- Metadata Footer -->
+
+        <div class="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-500 text-center">
+            Complexity: FAST | Panels: 1
+            <br>
+            Generated: 2025-10-29T01:02:43
+        </div>
+        
+    </div>
+</body>
+</html>

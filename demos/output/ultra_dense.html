@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mythRL - Ultra-Dense Information Display</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.3;
+            padding: 15px;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 2000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            font-weight: 400;
+            margin-bottom: 3px;
+            letter-spacing: -0.3px;
+        }
+
+        .subtitle {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Ultra-compact metric cards with SEMANTIC SIZING */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 4px;
+            margin: 15px 0;
+        }
+
+        .metric-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .metric-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            z-index: 20;
+        }
+
+        /* Semantic importance sizing */
+        .metric-card.critical {
+            grid-column: span 2;
+            grid-row: span 2;
+            padding: 12px;
+            border-width: 2px;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+        }
+
+        .metric-card.critical .metric-value {
+            font-size: 2em;
+        }
+
+        .metric-card.critical .metric-spark {
+            height: 40px;
+        }
+
+        .metric-card.high {
+            grid-column: span 2;
+            padding: 8px;
+            border-width: 2px;
+            box-shadow: 0 2px 6px rgba(52, 152, 219, 0.15);
+        }
+
+        .metric-card.high .metric-value {
+            font-size: 1.6em;
+        }
+
+        .metric-card.high .metric-spark {
+            height: 30px;
+        }
+
+        .metric-card.low {
+            opacity: 0.7;
+            padding: 4px;
+        }
+
+        .metric-card.low .metric-value {
+            font-size: 1em;
+        }
+
+        .metric-card.low .metric-spark {
+            height: 15px;
+        }
+
+        .metric-label {
+            font-size: 0.65em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
+        }
+
+        .metric-value {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .metric-spark {
+            height: 20px;
+            margin: 2px 0;
+        }
+
+        .metric-change {
+            font-size: 0.65em;
+            font-weight: 600;
+        }
+
+        /* Importance badges */
+        .importance-badge {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .importance-critical { background: #e74c3c; }
+        .importance-high { background: #f39c12; }
+        .importance-medium { background: #3498db; }
+        .importance-low { background: #95a5a6; }
+
+        /* Tiny sparklines in table */
+        .ultra-dense-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 0.7em;
+            margin: 15px 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .ultra-dense-table th {
+            padding: 4px 3px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            font-size: 0.65em;
+            text-transform: uppercase;
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .ultra-dense-table td {
+            padding: 3px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .ultra-dense-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .tiny-spark {
+            display: inline-block;
+            width: 40px;
+            height: 12px;
+            vertical-align: middle;
+        }
+
+        .tiny-bar {
+            display: inline-block;
+            height: 8px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            border-radius: 2px;
+            vertical-align: middle;
+            margin-left: 3px;
+        }
+
+        .tiny-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin: 0 1px;
+        }
+
+        /* Mini status indicators */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 3px;
+            margin: 15px 0;
+        }
+
+        .status-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 4px;
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 0.6em;
+            color: #888;
+            margin-bottom: 2px;
+        }
+
+        .status-indicator {
+            width: 100%;
+            height: 3px;
+            border-radius: 2px;
+            margin: 2px 0;
+        }
+
+        .status-value {
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        /* Compact histogram bars */
+        .mini-histogram-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 4px;
+            margin: 15px 0;
+        }
+
+        .mini-histogram {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 4px;
+            transition: all 0.3s ease;
+        }
+
+        /* Semantic sizing for histograms */
+        .mini-histogram.important {
+            grid-column: span 2;
+            padding: 8px;
+            border-width: 2px;
+            border-color: #3498db;
+        }
+
+        .mini-histogram.important .mini-hist-bars {
+            height: 40px;
+        }
+
+        .mini-hist-label {
+            font-size: 0.6em;
+            color: #888;
+            margin-bottom: 3px;
+        }
+
+        .mini-hist-bars {
+            display: flex;
+            height: 25px;
+            gap: 1px;
+            align-items: flex-end;
+        }
+
+        .mini-hist-bar {
+            flex: 1;
+            background: #3498db;
+            min-width: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .mini-hist-bar:hover {
+            background: #e74c3c;
+        }
+
+        /* Inline performance badges */
+        .badge {
+            display: inline-block;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 0.65em;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge-excellent { background: #27ae60; }
+        .badge-good { background: #2ecc71; }
+        .badge-fair { background: #f39c12; }
+        .badge-poor { background: #e74c3c; }
+
+        /* Color coding */
+        .c-excellent { color: #27ae60; }
+        .c-good { color: #2ecc71; }
+        .c-fair { color: #f39c12; }
+        .c-poor { color: #e74c3c; }
+
+        /* Section headers - minimal */
+        h2 {
+            font-size: 1em;
+            font-weight: 600;
+            margin: 25px 0 8px 0;
+            padding-bottom: 3px;
+            border-bottom: 2px solid #3498db;
+            color: #2c3e50;
+        }
+
+        .section-meta {
+            font-size: 0.65em;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        /* Ultra-compact comparison bars */
+        .comparison-row {
+            display: flex;
+            align-items: center;
+            padding: 3px 0;
+            gap: 5px;
+            font-size: 0.7em;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .comparison-label {
+            width: 80px;
+            font-size: 0.65em;
+            color: #666;
+        }
+
+        .comparison-bars {
+            flex: 1;
+            display: flex;
+            gap: 2px;
+            height: 15px;
+        }
+
+        .comparison-segment {
+            transition: all 0.3s ease;
+        }
+
+        .comparison-segment:hover {
+            opacity: 0.7;
+        }
+
+        /* Tiny trend arrows */
+        .trend-up { color: #27ae60; }
+        .trend-down { color: #e74c3c; }
+        .trend-flat { color: #95a5a6; }
+
+        .trend-up::after { content: '↗'; font-size: 0.9em; }
+        .trend-down::after { content: '↘'; font-size: 0.9em; }
+        .trend-flat::after { content: '→'; font-size: 0.9em; }
+
+        /* Mini radial indicators */
+        .radial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 4px;
+            margin: 15px 0;
+        }
+
+        .radial-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 4px;
+            text-align: center;
+        }
+
+        .radial-chart {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 3px;
+        }
+
+        .radial-label {
+            font-size: 0.6em;
+            color: #888;
+        }
+
+        /* Heatmap cells - tiny */
+        .tiny-heatmap {
+            display: inline-flex;
+            gap: 1px;
+            margin: 2px 0;
+        }
+
+        .heatmap-cell {
+            width: 8px;
+            height: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.3);
+            border: 1px solid #333;
+        }
+
+        /* Dense data rows */
+        .data-row-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3px;
+            margin: 15px 0;
+        }
+
+        .data-row {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 4px 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7em;
+        }
+
+        .data-row-label {
+            flex: 0 0 70px;
+            font-size: 0.65em;
+            color: #666;
+        }
+
+        .data-row-spark {
+            flex: 1;
+            height: 18px;
+        }
+
+        .data-row-value {
+            flex: 0 0 40px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        /* Animation for data reveal */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.4s ease-out forwards;
+        }
+
+        /* Connecting lines between related elements */
+        #connectionCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Particle effects container */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Live pulse effect on active elements */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .pulse-active {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Glow effect for highlighted items */
+        .glow {
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.6);
+            border-color: #3498db !important;
+        }
+
+        /* Real-time update indicator */
+        .live-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #27ae60;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            font-weight: 600;
+            z-index: 100;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Mini timeline */
+        .mini-timeline {
+            display: flex;
+            gap: 1px;
+            margin: 2px 0;
+        }
+
+        .timeline-block {
+            flex: 1;
+            height: 4px;
+            background: #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-block.active {
+            background: #3498db;
+        }
+
+        /* Micro gauges */
+        .micro-gauge {
+            display: inline-block;
+            width: 30px;
+            height: 15px;
+            position: relative;
+            background: #f0f0f0;
+            border-radius: 15px 15px 0 0;
+            overflow: hidden;
+            vertical-align: middle;
+        }
+
+        .gauge-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            transition: height 0.5s ease;
+        }
+
+        /* Grid lines for structure */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.05;
+            background-image: 
+                repeating-linear-gradient(0deg, #333, #333 1px, transparent 1px, transparent 20px),
+                repeating-linear-gradient(90deg, #333, #333 1px, transparent 1px, transparent 20px);
+        }
+
+        /* Correlation matrix mini */
+        .correlation-matrix {
+            display: grid;
+            grid-template-columns: repeat(8, 12px);
+            gap: 1px;
+            margin: 5px 0;
+        }
+
+        .corr-cell {
+            width: 12px;
+            height: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .corr-cell:hover {
+            transform: scale(1.4);
+            z-index: 10;
+        }
+
+        /* Flow arrows */
+        .flow-container {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.65em;
+        }
+
+        .flow-arrow {
+            color: #3498db;
+            animation: flow-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes flow-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Stacked micro area charts */
+        .micro-area-stack {
+            height: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .micro-area-layer {
+            flex: 1;
+            display: flex;
+            gap: 1px;
+        }
+
+        .micro-area-bar {
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+
+        /* Interactive tooltip */
+        .rich-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.7em;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            max-width: 200px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 3px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 0;
+        }
+
+        /* Control panel */
+        .control-panel {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background: white;
+            border: 2px solid #3498db;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 100;
+            font-size: 0.7em;
+        }
+
+        .control-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .control-btn.active {
+            background: #27ae60;
+        }
+
+        /* Zoom level indicator */
+        .zoom-controls {
+            display: flex;
+            gap: 3px;
+            margin: 5px 0;
+        }
+
+        .zoom-btn {
+            width: 25px;
+            height: 20px;
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            transition: all 0.2s ease;
+        }
+
+        .zoom-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+    <canvas id="connectionCanvas"></canvas>
+    <div class="grid-overlay"></div>
+    <div class="live-indicator">● LIVE</div>
+    
+    <div class="control-panel">
+        <div style="font-weight: 600; margin-bottom: 5px;">CONTROLS</div>
+        <button class="control-btn active" id="btnConnections">Connections</button>
+        <button class="control-btn active" id="btnParticles">Particles</button>
+        <button class="control-btn active" id="btnLiveUpdate">Live Data</button>
+        <button class="control-btn" id="btnHighlight">Highlight</button>
+        <div class="zoom-controls">
+            <div class="zoom-btn" id="zoomOut">-</div>
+            <div class="zoom-btn" id="zoomReset">1x</div>
+            <div class="zoom-btn" id="zoomIn">+</div>
+        </div>
+    </div>
+
+    <div class="rich-tooltip" id="richTooltip"></div>
+    <div class="container">
+        <h1>mythRL Ultra-Dense Information Display</h1>
+        <p class="subtitle">Maximum Information Density • Hundreds of Sparklines • Every Pixel Counts</p>
+
+        <h2>Core Performance Metrics (36 Cards)</h2>
+        <div class="section-meta">Real-time metrics with embedded sparklines • Color-coded performance</div>
+        <div class="metric-grid" id="metricGrid"></div>
+
+        <h2>System Status Grid (48 Indicators)</h2>
+        <div class="section-meta">Binary health checks • Visual status bars • Quick scan capabilities</div>
+        <div class="status-grid" id="statusGrid"></div>
+
+        <h2>Mini Histograms (40 Distributions)</h2>
+        <div class="section-meta">Data distribution fingerprints • Hover for details</div>
+        <div class="mini-histogram-grid" id="miniHistogramGrid"></div>
+
+        <h2>Ultra-Dense Data Table (60 Rows × 9 Columns)</h2>
+        <div class="section-meta">540 data points • Inline sparklines • Color-coded values • Sortable</div>
+        <table class="ultra-dense-table" id="ultraDenseTable"></table>
+
+        <h2>Comparison Rows (30 Comparisons)</h2>
+        <div class="section-meta">Stacked bar comparisons • Proportional sizing • Category distributions</div>
+        <div id="comparisonRows"></div>
+
+        <h2>Radial Mini-Charts (36 Gauges)</h2>
+        <div class="section-meta">Compact circular progress indicators • Single metric focus</div>
+        <div class="radial-grid" id="radialGrid"></div>
+
+        <h2>Data Rows with Inline Sparklines (50 Metrics)</h2>
+        <div class="section-meta">Label • Sparkline • Value format • Trend indicators</div>
+        <div class="data-row-grid" id="dataRowGrid"></div>
+
+        <h2>Temporal Heatmap Grid (12 Series × 52 Weeks)</h2>
+        <div class="section-meta">624 cells showing activity patterns • Hover for exact values</div>
+        <div id="temporalHeatmap"></div>
+
+        <div class="section-meta" style="margin-top: 30px; padding-top: 15px; border-top: 2px solid #e0e0e0;">
+            <strong>Total Information Elements:</strong> 
+            36 metric cards + 48 status indicators + 40 histograms + 540 table cells + 
+            30 comparisons + 36 radials + 50 data rows + 624 heatmap cells = 
+            <strong style="color: #e74c3c;">1,404 discrete visualizations</strong> on one screen
+        </div>
+    </div>
+
+    <script>
+        // Utility functions
+        function generateTimeSeries(points = 30, volatility = 10, trend = 0) {
+            const data = [];
+            let value = 50 + Math.random() * 20;
+            for (let i = 0; i < points; i++) {
+                value += (Math.random() - 0.5) * volatility + trend;
+                value = Math.max(0, Math.min(100, value));
+                data.push(value);
+            }
+            return data;
+        }
+
+        function getColorByValue(value, max = 100) {
+            const ratio = value / max;
+            if (ratio >= 0.9) return '#27ae60';
+            if (ratio >= 0.75) return '#2ecc71';
+            if (ratio >= 0.6) return '#f39c12';
+            if (ratio >= 0.4) return '#e74c3c';
+            return '#c0392b';
+        }
+
+        function getTrendClass(data) {
+            const start = data[0];
+            const end = data[data.length - 1];
+            const change = ((end - start) / start) * 100;
+            if (change > 5) return 'trend-up';
+            if (change < -5) return 'trend-down';
+            return 'trend-flat';
+        }
+
+        function createTinySparkline(container, data, color = '#3498db') {
+            const svg = d3.select(container);
+            const width = container.clientWidth || 40;
+            const height = container.clientHeight || 12;
+            
+            const x = d3.scaleLinear().domain([0, data.length - 1]).range([0, width]);
+            const y = d3.scaleLinear().domain([d3.min(data), d3.max(data)]).range([height - 1, 1]);
+            
+            const line = d3.line()
+                .x((d, i) => x(i))
+                .y(d => y(d))
+                .curve(d3.curveMonotoneX);
+            
+            svg.append('path')
+                .datum(data)
+                .attr('fill', 'none')
+                .attr('stroke', color)
+                .attr('stroke-width', 1)
+                .attr('d', line);
+            
+            // Add current value dot
+            svg.append('circle')
+                .attr('cx', x(data.length - 1))
+                .attr('cy', y(data[data.length - 1]))
+                .attr('r', 1.5)
+                .attr('fill', color);
+        }
+
+        // 1. METRIC CARDS (36) with SEMANTIC SIZING
+        const metricData = Array.from({length: 36}, (_, i) => {
+            const value = Math.random() * 100;
+            // Assign importance based on value and position
+            let importance = 'medium';
+            if (value > 90 && i < 6) importance = 'critical';  // Top performers get critical
+            else if (value > 80 && i < 12) importance = 'high'; // Good performers get high
+            else if (value < 30) importance = 'low';             // Poor performers get low
+            
+            return {
+                label: `Metric ${String.fromCharCode(65 + Math.floor(i / 4))}${(i % 4) + 1}`,
+                value: value.toFixed(1),
+                data: generateTimeSeries(importance === 'critical' ? 40 : importance === 'high' ? 30 : 20, 5, Math.random() - 0.5),
+                importance: importance
+            };
+        });
+
+        const metricGrid = d3.select('#metricGrid');
+        metricData.forEach((metric, idx) => {
+            const card = metricGrid.append('div')
+                .attr('class', `metric-card ${metric.importance} animate-in`)
+                .style('animation-delay', `${idx * 0.01}s`);
+            
+            // Add importance badge
+            if (metric.importance === 'critical' || metric.importance === 'high') {
+                card.append('div')
+                    .attr('class', `importance-badge importance-${metric.importance}`);
+            }
+            
+            card.append('div').attr('class', 'metric-label').text(metric.label);
+            card.append('div')
+                .attr('class', 'metric-value')
+                .style('color', getColorByValue(metric.value))
+                .text(metric.value);
+            
+            const sparkSvg = card.append('svg')
+                .attr('class', 'metric-spark')
+                .attr('width', '100%')
+                .attr('height', metric.importance === 'critical' ? 40 : metric.importance === 'high' ? 30 : 20);
+            
+            setTimeout(() => {
+                createTinySparkline(sparkSvg.node(), metric.data, getColorByValue(metric.value));
+            }, idx * 10);
+            
+            const change = ((metric.data[metric.data.length - 1] - metric.data[0]) / metric.data[0] * 100).toFixed(0);
+            card.append('div')
+                .attr('class', `metric-change ${getTrendClass(metric.data)}`)
+                .text(`${change > 0 ? '+' : ''}${change}%`);
+        });
+
+        // 2. STATUS GRID (48)
+        const statusData = Array.from({length: 48}, (_, i) => ({
+            label: `S${i + 1}`,
+            value: Math.random() * 100
+        }));
+
+        const statusGrid = d3.select('#statusGrid');
+        statusData.forEach((status, idx) => {
+            const item = statusGrid.append('div')
+                .attr('class', 'status-item animate-in')
+                .style('animation-delay', `${idx * 0.008}s`);
+            
+            item.append('div').attr('class', 'status-label').text(status.label);
+            item.append('div')
+                .attr('class', 'status-indicator')
+                .style('background', getColorByValue(status.value))
+                .style('width', '0%')
+                .transition()
+                .delay(idx * 8)
+                .duration(500)
+                .style('width', '100%');
+            
+            item.append('div')
+                .attr('class', 'status-value')
+                .style('color', getColorByValue(status.value))
+                .text(status.value.toFixed(0));
+        });
+
+        // 3. MINI HISTOGRAMS (40) with semantic sizing
+        const miniHistogramGrid = d3.select('#miniHistogramGrid');
+        for (let i = 0; i < 40; i++) {
+            const bars = Array.from({length: 15}, () => Math.random() * 100);
+            const avgValue = bars.reduce((a, b) => a + b, 0) / bars.length;
+            const isImportant = avgValue > 75 && i < 8; // Top 8 with high values are important
+            
+            const item = miniHistogramGrid.append('div')
+                .attr('class', `mini-histogram ${isImportant ? 'important' : ''} animate-in`)
+                .style('animation-delay', `${i * 0.01}s`);
+            
+            item.append('div').attr('class', 'mini-hist-label').text(`H${i + 1}`);
+            
+            const container = item.append('div').attr('class', 'mini-hist-bars');
+            bars.forEach((value, j) => {
+                container.append('div')
+                    .attr('class', 'mini-hist-bar')
+                    .style('background', getColorByValue(value))
+                    .style('height', '0%')
+                    .transition()
+                    .delay(i * 10 + j * 15)
+                    .duration(400)
+                    .style('height', `${value}%`);
+            });
+        }
+
+        // 4. ULTRA-DENSE TABLE (60 rows × 9 columns = 540 cells)
+        const table = d3.select('#ultraDenseTable');
+        const thead = table.append('thead').append('tr');
+        ['ID', 'Name', 'Val1', 'Val2', 'Val3', 'Status', 'Trend', 'Spark', 'Score'].forEach(h => {
+            thead.append('th').text(h);
+        });
+
+        const tbody = table.append('tbody');
+        for (let i = 0; i < 60; i++) {
+            const tr = tbody.append('tr');
+            
+            tr.append('td').text(`R${i + 1}`);
+            tr.append('td').text(`Item-${i}`);
+            tr.append('td').text((Math.random() * 100).toFixed(1));
+            tr.append('td').text((Math.random() * 100).toFixed(1));
+            tr.append('td').text((Math.random() * 100).toFixed(1));
+            
+            const statusVal = Math.random() * 100;
+            tr.append('td').html(`<span class="badge ${
+                statusVal > 90 ? 'badge-excellent' : 
+                statusVal > 75 ? 'badge-good' : 
+                statusVal > 60 ? 'badge-fair' : 'badge-poor'
+            }">${statusVal.toFixed(0)}</span>`);
+            
+            const trendData = generateTimeSeries(10, 5, Math.random() - 0.5);
+            tr.append('td').html(`<span class="${getTrendClass(trendData)}">${
+                ((trendData[trendData.length - 1] - trendData[0]) / trendData[0] * 100).toFixed(0)
+            }%</span>`);
+            
+            const sparkCell = tr.append('td');
+            const sparkSvg = sparkCell.append('svg')
+                .attr('class', 'tiny-spark')
+                .attr('width', 40)
+                .attr('height', 12);
+            
+            setTimeout(() => {
+                createTinySparkline(sparkSvg.node(), trendData);
+            }, i * 5);
+            
+            const score = Math.random() * 100;
+            tr.append('td')
+                .style('color', getColorByValue(score))
+                .style('font-weight', '600')
+                .text(score.toFixed(0));
+        }
+
+        // 5. COMPARISON ROWS (30)
+        const comparisonRows = d3.select('#comparisonRows');
+        const categories = ['TEXT', 'STRUCT', 'MULTI', 'OTHER'];
+        const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f39c12'];
+        
+        for (let i = 0; i < 30; i++) {
+            const values = categories.map(() => Math.random() * 100);
+            const total = values.reduce((a, b) => a + b, 0);
+            
+            const row = comparisonRows.append('div')
+                .attr('class', 'comparison-row animate-in')
+                .style('animation-delay', `${i * 0.01}s`);
+            
+            row.append('div').attr('class', 'comparison-label').text(`Comp ${i + 1}`);
+            
+            const bars = row.append('div').attr('class', 'comparison-bars');
+            values.forEach((value, j) => {
+                bars.append('div')
+                    .attr('class', 'comparison-segment')
+                    .style('flex', `0 0 ${(value / total * 100)}%`)
+                    .style('background', colors[j])
+                    .style('height', '100%')
+                    .style('width', '0%')
+                    .transition()
+                    .delay(i * 10)
+                    .duration(600)
+                    .style('width', '100%');
+            });
+        }
+
+        // 6. RADIAL MINI-CHARTS (36)
+        const radialGrid = d3.select('#radialGrid');
+        for (let i = 0; i < 36; i++) {
+            const value = Math.random() * 100;
+            const item = radialGrid.append('div')
+                .attr('class', 'radial-item animate-in')
+                .style('animation-delay', `${i * 0.01}s`);
+            
+            const svg = item.append('svg')
+                .attr('class', 'radial-chart')
+                .attr('width', 40)
+                .attr('height', 40);
+            
+            const g = svg.append('g').attr('transform', 'translate(20, 20)');
+            
+            const arc = d3.arc()
+                .innerRadius(12)
+                .outerRadius(18)
+                .startAngle(0);
+            
+            // Background
+            g.append('path')
+                .attr('d', arc.endAngle(2 * Math.PI))
+                .attr('fill', '#e0e0e0');
+            
+            // Value arc with animation
+            const valuePath = g.append('path')
+                .attr('fill', getColorByValue(value));
+            
+            valuePath.transition()
+                .delay(i * 10)
+                .duration(800)
+                .attrTween('d', function() {
+                    const interpolate = d3.interpolate(0, (value / 100) * 2 * Math.PI);
+                    return function(t) {
+                        return arc.endAngle(interpolate(t))();
+                    };
+                });
+            
+            // Center text
+            g.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dominant-baseline', 'middle')
+                .style('font-size', '8px')
+                .style('font-weight', '600')
+                .style('fill', getColorByValue(value))
+                .text(value.toFixed(0));
+            
+            item.append('div').attr('class', 'radial-label').text(`R${i + 1}`);
+        }
+
+        // 7. DATA ROWS WITH SPARKLINES (50)
+        const dataRowGrid = d3.select('#dataRowGrid');
+        for (let i = 0; i < 50; i++) {
+            const data = generateTimeSeries(25, 5, Math.random() - 0.5);
+            const value = data[data.length - 1];
+            
+            const row = dataRowGrid.append('div')
+                .attr('class', 'data-row animate-in')
+                .style('animation-delay', `${i * 0.008}s`);
+            
+            row.append('div').attr('class', 'data-row-label').text(`DR-${i + 1}`);
+            
+            const sparkSvg = row.append('svg')
+                .attr('class', 'data-row-spark')
+                .attr('width', '100%')
+                .attr('height', 18);
+            
+            setTimeout(() => {
+                createTinySparkline(sparkSvg.node(), data, getColorByValue(value));
+            }, i * 8);
+            
+            row.append('div')
+                .attr('class', 'data-row-value')
+                .style('color', getColorByValue(value))
+                .text(value.toFixed(1));
+        }
+
+        // 8. TEMPORAL HEATMAP (12 series × 52 weeks = 624 cells)
+        const temporalHeatmap = d3.select('#temporalHeatmap');
+        const series = ['Q1', 'Q2', 'Q3', 'Q4', 'Mem', 'CPU', 'Net', 'I/O', 'DB', 'API', 'Srv', 'Cache'];
+        
+        series.forEach((seriesName, sIdx) => {
+            const row = temporalHeatmap.append('div')
+                .style('display', 'flex')
+                .style('align-items', 'center')
+                .style('margin', '2px 0')
+                .style('gap', '4px');
+            
+            row.append('div')
+                .style('font-size', '0.65em')
+                .style('width', '40px')
+                .style('color', '#666')
+                .text(seriesName);
+            
+            const heatmap = row.append('div').attr('class', 'tiny-heatmap');
+            
+            for (let week = 0; week < 52; week++) {
+                const value = Math.random() * 100;
+                const color = d3.interpolateViridis(value / 100);
+                
+                heatmap.append('div')
+                    .attr('class', 'heatmap-cell')
+                    .style('background', color)
+                    .style('opacity', 0)
+                    .transition()
+                    .delay(sIdx * 50 + week * 5)
+                    .duration(200)
+                    .style('opacity', 1)
+                    .on('end', function() {
+                        d3.select(this).on('mouseenter', function() {
+                            d3.select(this).style('transform', 'scale(1.5)');
+                        }).on('mouseleave', function() {
+                            d3.select(this).style('transform', 'scale(1)');
+                        });
+                    });
+            }
+        });
+
+        console.log('Ultra-dense dashboard loaded: 1,404+ visualization elements!');
+
+        // ========== ADVANCED FEATURES ==========
+
+        // Particle system
+        const particleCanvas = document.getElementById('particleCanvas');
+        const particleCtx = particleCanvas.getContext('2d');
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+
+        const particles = [];
+        let particlesEnabled = true;
+
+        class Particle {
+            constructor(x, y, targetX, targetY, color) {
+                this.x = x;
+                this.y = y;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.color = color;
+                this.alpha = 1;
+                this.size = Math.random() * 3 + 1;
+                this.speed = Math.random() * 0.02 + 0.01;
+            }
+
+            update() {
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                this.x += dx * this.speed;
+                this.y += dy * this.speed;
+                this.alpha -= 0.01;
+            }
+
+            draw() {
+                particleCtx.save();
+                particleCtx.globalAlpha = this.alpha;
+                particleCtx.fillStyle = this.color;
+                particleCtx.beginPath();
+                particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                particleCtx.fill();
+                particleCtx.restore();
+            }
+        }
+
+        function animateParticles() {
+            if (!particlesEnabled) return;
+            
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                
+                if (particles[i].alpha <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+            
+            requestAnimationFrame(animateParticles);
+        }
+
+        animateParticles();
+
+        // Connection lines between related elements
+        const connectionCanvas = document.getElementById('connectionCanvas');
+        const connectionCtx = connectionCanvas.getContext('2d');
+        connectionCanvas.width = window.innerWidth;
+        connectionCanvas.height = window.innerHeight;
+
+        let connectionsEnabled = true;
+        const connections = [];
+
+        function drawConnections() {
+            if (!connectionsEnabled) {
+                connectionCtx.clearRect(0, 0, connectionCanvas.width, connectionCanvas.height);
+                return;
+            }
+
+            connectionCtx.clearRect(0, 0, connectionCanvas.width, connectionCanvas.height);
+
+            // Find critical and high importance elements
+            const criticalElements = document.querySelectorAll('.metric-card.critical, .mini-histogram.important');
+            const highElements = document.querySelectorAll('.metric-card.high');
+
+            // Draw connections from critical to high importance elements
+            criticalElements.forEach(critical => {
+                const rect1 = critical.getBoundingClientRect();
+                const x1 = rect1.left + rect1.width / 2;
+                const y1 = rect1.top + rect1.height / 2;
+
+                highElements.forEach(high => {
+                    const rect2 = high.getBoundingClientRect();
+                    const x2 = rect2.left + rect2.width / 2;
+                    const y2 = rect2.top + rect2.height / 2;
+
+                    // Only draw if elements are close enough
+                    const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                    if (distance < 400) {
+                        connectionCtx.beginPath();
+                        connectionCtx.moveTo(x1, y1);
+                        connectionCtx.lineTo(x2, y2);
+                        connectionCtx.strokeStyle = `rgba(52, 152, 219, ${0.3 - distance / 1500})`;
+                        connectionCtx.lineWidth = 1;
+                        connectionCtx.stroke();
+
+                        // Animate particle along connection
+                        if (Math.random() < 0.02) {
+                            particles.push(new Particle(x1, y1, x2, y2, '#3498db'));
+                        }
+                    }
+                });
+            });
+
+            requestAnimationFrame(drawConnections);
+        }
+
+        drawConnections();
+
+        // Live data updates
+        let liveUpdateEnabled = true;
+        
+        function liveDataUpdate() {
+            if (!liveUpdateEnabled) return;
+
+            // Update random sparklines
+            const allSparklines = document.querySelectorAll('.metric-spark, .data-row-spark');
+            if (allSparklines.length > 0) {
+                const randomSpark = allSparklines[Math.floor(Math.random() * allSparklines.length)];
+                const parent = randomSpark.closest('.metric-card, .data-row');
+                if (parent) {
+                    parent.classList.add('pulse-active');
+                    setTimeout(() => parent.classList.remove('pulse-active'), 2000);
+                }
+            }
+
+            // Update random status indicators
+            const statusBars = document.querySelectorAll('.status-indicator');
+            if (statusBars.length > 0) {
+                const randomBar = statusBars[Math.floor(Math.random() * statusBars.length)];
+                const newValue = Math.random() * 100;
+                randomBar.style.background = getColorByValue(newValue);
+            }
+
+            setTimeout(liveDataUpdate, 2000);
+        }
+
+        liveDataUpdate();
+
+        // Control buttons
+        document.getElementById('btnConnections').addEventListener('click', function() {
+            connectionsEnabled = !connectionsEnabled;
+            this.classList.toggle('active');
+            if (!connectionsEnabled) {
+                connectionCtx.clearRect(0, 0, connectionCanvas.width, connectionCanvas.height);
+            } else {
+                drawConnections();
+            }
+        });
+
+        document.getElementById('btnParticles').addEventListener('click', function() {
+            particlesEnabled = !particlesEnabled;
+            this.classList.toggle('active');
+            if (particlesEnabled) {
+                animateParticles();
+            } else {
+                particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            }
+        });
+
+        document.getElementById('btnLiveUpdate').addEventListener('click', function() {
+            liveUpdateEnabled = !liveUpdateEnabled;
+            this.classList.toggle('active');
+            if (liveUpdateEnabled) {
+                liveDataUpdate();
+            }
+        });
+
+        document.getElementById('btnHighlight').addEventListener('click', function() {
+            const criticalElements = document.querySelectorAll('.metric-card.critical, .metric-card.high, .mini-histogram.important');
+            const isActive = this.classList.toggle('active');
+            
+            criticalElements.forEach(el => {
+                if (isActive) {
+                    el.classList.add('glow');
+                } else {
+                    el.classList.remove('glow');
+                }
+            });
+        });
+
+        // Zoom controls
+        let zoomLevel = 1;
+        document.getElementById('zoomIn').addEventListener('click', function() {
+            zoomLevel = Math.min(1.5, zoomLevel + 0.1);
+            document.querySelector('.container').style.transform = `scale(${zoomLevel})`;
+            document.querySelector('.container').style.transformOrigin = 'top left';
+            document.getElementById('zoomReset').textContent = `${zoomLevel.toFixed(1)}x`;
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', function() {
+            zoomLevel = Math.max(0.5, zoomLevel - 0.1);
+            document.querySelector('.container').style.transform = `scale(${zoomLevel})`;
+            document.querySelector('.container').style.transformOrigin = 'top left';
+            document.getElementById('zoomReset').textContent = `${zoomLevel.toFixed(1)}x`;
+        });
+
+        document.getElementById('zoomReset').addEventListener('click', function() {
+            zoomLevel = 1;
+            document.querySelector('.container').style.transform = `scale(1)`;
+            this.textContent = '1x';
+        });
+
+        // Rich tooltip
+        const richTooltip = document.getElementById('richTooltip');
+        
+        document.querySelectorAll('.metric-card, .mini-histogram, .data-row').forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                const importance = this.classList.contains('critical') ? 'CRITICAL' :
+                                 this.classList.contains('high') ? 'HIGH' :
+                                 this.classList.contains('important') ? 'IMPORTANT' : 'NORMAL';
+                
+                const label = this.querySelector('.metric-label, .mini-hist-label, .data-row-label');
+                const value = this.querySelector('.metric-value, .data-row-value');
+                
+                richTooltip.innerHTML = `
+                    <div class="tooltip-title">${label ? label.textContent : 'Element'}</div>
+                    <div class="tooltip-row">
+                        <span>Value:</span>
+                        <span>${value ? value.textContent : 'N/A'}</span>
+                    </div>
+                    <div class="tooltip-row">
+                        <span>Priority:</span>
+                        <span style="color: ${importance === 'CRITICAL' ? '#e74c3c' : importance === 'HIGH' ? '#f39c12' : '#3498db'}">${importance}</span>
+                    </div>
+                `;
+                
+                richTooltip.style.display = 'block';
+                richTooltip.style.left = (e.pageX + 10) + 'px';
+                richTooltip.style.top = (e.pageY - 10) + 'px';
+
+                // Create particle burst
+                if (particlesEnabled && importance !== 'NORMAL') {
+                    const rect = this.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    
+                    for (let i = 0; i < 5; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = 50 + Math.random() * 50;
+                        const targetX = centerX + Math.cos(angle) * distance;
+                        const targetY = centerY + Math.sin(angle) * distance;
+                        particles.push(new Particle(centerX, centerY, targetX, targetY, 
+                            importance === 'CRITICAL' ? '#e74c3c' : '#f39c12'));
+                    }
+                }
+            });
+
+            el.addEventListener('mouseleave', function() {
+                richTooltip.style.display = 'none';
+            });
+
+            el.addEventListener('mousemove', function(e) {
+                richTooltip.style.left = (e.pageX + 10) + 'px';
+                richTooltip.style.top = (e.pageY - 10) + 'px';
+            });
+        });
+
+        // Resize handler
+        window.addEventListener('resize', function() {
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+            connectionCanvas.width = window.innerWidth;
+            connectionCanvas.height = window.innerHeight;
+        });
+
+        console.log('Advanced features loaded: Semantic sizing, connections, particles, live updates!');
+    </script>
+</body>
+</html>

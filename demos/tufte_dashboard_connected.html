@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mythRL - Connected Visualizations (Prototype)</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, sans-serif;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        h1 {
+            font-size: 3em;
+            font-weight: 300;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 60px;
+            font-weight: 300;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid #333;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 5000;
+            max-width: 280px;
+        }
+
+        .control-panel h3 {
+            font-size: 1em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .control-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin: 5px 0;
+            width: 100%;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .control-button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .control-button.active {
+            background: #2ecc71;
+        }
+
+        /* Sparklines */
+        .sparkline-container {
+            margin: 80px 0;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sparkline-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .sparkline-row {
+            display: flex;
+            align-items: center;
+            padding: 15px 10px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sparkline-row:hover {
+            background: rgba(52, 152, 219, 0.05);
+            transform: translateX(5px);
+        }
+
+        .sparkline-row.highlighted {
+            background: rgba(52, 152, 219, 0.15);
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+            transform: translateX(10px);
+            z-index: 100;
+        }
+
+        .sparkline-label {
+            width: 220px;
+            font-size: 0.95em;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .sparkline-value {
+            width: 100px;
+            font-weight: 600;
+            text-align: right;
+            margin-right: 20px;
+            font-size: 1.1em;
+        }
+
+        .sparkline-chart {
+            flex: 1;
+            height: 40px;
+        }
+
+        /* Small Multiples */
+        .small-multiples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 80px 0;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .small-multiples.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .multiple-panel {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 25px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .multiple-panel.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .multiple-panel:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            transform: translateY(-4px) scale(1.02);
+        }
+
+        .multiple-panel.highlighted {
+            box-shadow: 0 0 30px rgba(52, 152, 219, 0.5);
+            border-color: #3498db;
+            transform: scale(1.05);
+        }
+
+        .multiple-title {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .multiple-value {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 15px;
+        }
+
+        /* Flow Particles */
+        .flow-particle {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #00f5ff, rgba(0, 245, 255, 0.3));
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 4000;
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.8);
+            opacity: 0;
+        }
+
+        @keyframes particle-flow {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            10% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+        }
+
+        .flow-particle.animating {
+            animation: particle-flow 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Connection Lines */
+        .connection-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 3000;
+        }
+
+        .connection-line {
+            stroke: #00f5ff;
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.6));
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+        }
+
+        .connection-line.animating {
+            animation: draw-line 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes draw-line {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Annotation Bubbles */
+        .annotation-bubble {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.98);
+            border: 2px solid #00f5ff;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 8px 32px rgba(0, 245, 255, 0.3);
+            z-index: 4500;
+            max-width: 300px;
+            opacity: 0;
+            transform: scale(0.8) translateY(-10px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .annotation-bubble.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .annotation-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .annotation-text {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Spotlight Effect */
+        .spotlight-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            pointer-events: none;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .spotlight-overlay.active {
+            opacity: 1;
+        }
+
+        /* Ripple Effect */
+        @keyframes ripple-pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(46, 204, 113, 0);
+            }
+            50% {
+                transform: scale(1.03);
+                box-shadow: 0 0 30px rgba(46, 204, 113, 0.6);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(46, 204, 113, 0);
+            }
+        }
+
+        .ripple-affected {
+            animation: ripple-pulse 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Section Headers */
+        h2 {
+            font-size: 1.8em;
+            font-weight: 300;
+            margin: 100px 0 30px 0;
+            letter-spacing: -0.5px;
+            color: #333;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        h2.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-description {
+            font-size: 1em;
+            color: #666;
+            margin-bottom: 40px;
+            max-width: 700px;
+            line-height: 1.8;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+        }
+
+        .section-description.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Tour indicator */
+        .tour-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            z-index: 5000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tour-indicator.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Spotlight Overlay -->
+    <div class="spotlight-overlay" id="spotlight"></div>
+
+    <!-- Connection SVG Overlay -->
+    <svg class="connection-overlay" id="connectionOverlay">
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                <polygon points="0 0, 10 3, 0 6" fill="#00f5ff" />
+            </marker>
+        </defs>
+    </svg>
+
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <h3>✨ Animation Controls</h3>
+        <button class="control-button" onclick="startGuidedTour()">🎬 Start Guided Tour</button>
+        <button class="control-button" onclick="toggleLinkedHighlight()" id="linkedBtn">🔗 Linked Views: ON</button>
+        <button class="control-button" onclick="showAllConnections()">🕸️ Show All Connections</button>
+        <button class="control-button" onclick="resetDashboard()">🔄 Reset Dashboard</button>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+            <small style="color: #666;">Hover over sparklines to see cross-chart highlighting and flow particles.</small>
+        </div>
+    </div>
+
+    <!-- Tour Indicator -->
+    <div class="tour-indicator" id="tourIndicator"></div>
+
+    <div class="container">
+        <h1>Connected Visualizations</h1>
+        <p class="subtitle">Watch data flow between charts • See relationships come alive • Experience visual storytelling</p>
+
+        <h2 id="h2-sparklines">📊 Sparklines: Time Series at a Glance</h2>
+        <p class="section-description">
+            Hover any metric to see how it connects to other visualizations. Notice the flow particles and cross-chart highlighting.
+        </p>
+        <div class="sparkline-container" id="sparklines"></div>
+
+        <h2 id="h2-multiples">📈 Small Multiples: Category Breakdown</h2>
+        <p class="section-description">
+            Each panel shows aggregated metrics. Watch them highlight when you interact with related sparklines above.
+        </p>
+        <div class="small-multiples" id="smallMultiples"></div>
+    </div>
+
+    <script>
+        // ===== GLOBAL STATE =====
+        let linkedHighlightEnabled = true;
+        let tourRunning = false;
+
+        // ===== DATA GENERATION =====
+        function generateTimeSeries(points = 50, volatility = 10, trend = 0.1) {
+            const data = [];
+            let value = 50 + Math.random() * 20;
+            for (let i = 0; i < points; i++) {
+                value += (Math.random() - 0.5) * volatility + trend;
+                value = Math.max(0, Math.min(100, value));
+                data.push(value);
+            }
+            return data;
+        }
+
+        // ===== SPARKLINES DATA =====
+        const metrics = [
+            { id: 'storage-latency', label: 'Storage Latency (ms)', value: 0.16, data: generateTimeSeries(100, 0.05, -0.002), relatedMultiple: 'storage-opt' },
+            { id: 'search-latency', label: 'Search Latency (ms)', value: 4.63, data: generateTimeSeries(100, 0.5, 0.01), relatedMultiple: 'real-time' },
+            { id: 'throughput', label: 'Throughput (ops/s)', value: 6209, data: generateTimeSeries(100, 50, 5), relatedMultiple: 'embedding-gen' },
+            { id: 'confidence', label: 'Confidence Score', value: 0.98, data: generateTimeSeries(100, 0.02, 0.001), relatedMultiple: 'knowledge-synth' }
+        ];
+
+        // ===== SMALL MULTIPLES DATA =====
+        const multiples = [
+            { id: 'storage-opt', title: 'Storage Optimization', value: 15, trend: generateTimeSeries(20, 2, 0.3), color: '#3498db' },
+            { id: 'real-time', title: 'Real-time Pipeline', value: 100, trend: generateTimeSeries(20, 5, 1), color: '#e74c3c' },
+            { id: 'knowledge-synth', title: 'Knowledge Synthesis', value: 12, trend: generateTimeSeries(20, 2, 0.25), color: '#9b59b6' },
+            { id: 'embedding-gen', title: 'Embedding Generation', value: 138, trend: generateTimeSeries(20, 8, 1.5), color: '#1abc9c' }
+        ];
+
+        // ===== RENDER SPARKLINES =====
+        const sparklineContainer = d3.select('#sparklines');
+
+        metrics.forEach(metric => {
+            const row = sparklineContainer.append('div')
+                .attr('class', 'sparkline-row')
+                .attr('id', `sparkline-${metric.id}`)
+                .attr('data-metric-id', metric.id);
+
+            row.append('div')
+                .attr('class', 'sparkline-label')
+                .text(metric.label);
+
+            row.append('div')
+                .attr('class', 'sparkline-value')
+                .text(metric.value.toLocaleString());
+
+            const svg = row.append('svg')
+                .attr('class', 'sparkline-chart')
+                .attr('width', '100%')
+                .attr('height', 40);
+
+            const width = 400;
+            const height = 40;
+
+            const x = d3.scaleLinear().domain([0, metric.data.length - 1]).range([0, width]);
+            const y = d3.scaleLinear().domain([d3.min(metric.data), d3.max(metric.data)]).range([height - 5, 5]);
+
+            const line = d3.line()
+                .x((d, i) => x(i))
+                .y(d => y(d))
+                .curve(d3.curveMonotoneX);
+
+            svg.append('path')
+                .datum(metric.data)
+                .attr('fill', 'none')
+                .attr('stroke', '#3498db')
+                .attr('stroke-width', 1.5)
+                .attr('d', line);
+
+            // Add hover interaction
+            row.on('mouseenter', function() {
+                if (linkedHighlightEnabled) {
+                    handleSparklineHover(metric);
+                }
+            });
+
+            row.on('mouseleave', function() {
+                if (linkedHighlightEnabled) {
+                    clearHighlights();
+                }
+            });
+        });
+
+        // ===== RENDER SMALL MULTIPLES =====
+        const multiplesContainer = d3.select('#smallMultiples');
+
+        multiples.forEach((item, index) => {
+            const panel = multiplesContainer.append('div')
+                .attr('class', 'multiple-panel')
+                .attr('id', `multiple-${item.id}`)
+                .attr('data-multiple-id', item.id)
+                .style('transition-delay', `${index * 100}ms`);
+
+            panel.append('div')
+                .attr('class', 'multiple-title')
+                .text(item.title);
+
+            panel.append('div')
+                .attr('class', 'multiple-value')
+                .style('color', item.color)
+                .text(item.value);
+
+            const svg = panel.append('svg')
+                .attr('width', '100%')
+                .attr('height', 100);
+
+            const width = 250;
+            const height = 100;
+
+            const x = d3.scaleLinear().domain([0, item.trend.length - 1]).range([0, width]);
+            const y = d3.scaleLinear().domain([0, d3.max(item.trend) * 1.1]).range([height, 0]);
+
+            const area = d3.area()
+                .x((d, i) => x(i))
+                .y0(height)
+                .y1(d => y(d))
+                .curve(d3.curveMonotoneX);
+
+            svg.append('path')
+                .datum(item.trend)
+                .attr('fill', item.color)
+                .attr('opacity', 0.3)
+                .attr('d', area);
+
+            const line = d3.line()
+                .x((d, i) => x(i))
+                .y(d => y(d))
+                .curve(d3.curveMonotoneX);
+
+            svg.append('path')
+                .datum(item.trend)
+                .attr('fill', 'none')
+                .attr('stroke', item.color)
+                .attr('stroke-width', 2)
+                .attr('d', line);
+        });
+
+        // ===== CROSS-CHART HIGHLIGHTING =====
+        function handleSparklineHover(metric) {
+            // Highlight sparkline
+            d3.select(`#sparkline-${metric.id}`)
+                .classed('highlighted', true);
+
+            // Highlight related multiple
+            const multipleId = metric.relatedMultiple;
+            d3.select(`#multiple-${multipleId}`)
+                .classed('highlighted', true);
+
+            // Create flow particles
+            createFlowParticles(`#sparkline-${metric.id}`, `#multiple-${multipleId}`);
+
+            // Draw connection line
+            drawConnectionLine(`#sparkline-${metric.id}`, `#multiple-${multipleId}`);
+
+            // Show annotation
+            showAnnotation(`#multiple-${multipleId}`, `Related to ${metric.label}`);
+        }
+
+        function clearHighlights() {
+            d3.selectAll('.sparkline-row').classed('highlighted', false);
+            d3.selectAll('.multiple-panel').classed('highlighted', false);
+            d3.select('#connectionOverlay').selectAll('path').remove();
+            d3.selectAll('.annotation-bubble').remove();
+            d3.selectAll('.flow-particle').remove();
+        }
+
+        // ===== FLOW PARTICLES =====
+        function createFlowParticles(fromSelector, toSelector, count = 5) {
+            const fromEl = document.querySelector(fromSelector);
+            const toEl = document.querySelector(toSelector);
+            if (!fromEl || !toEl) return;
+
+            const fromRect = fromEl.getBoundingClientRect();
+            const toRect = toEl.getBoundingClientRect();
+
+            const fromX = fromRect.left + fromRect.width * 0.8;
+            const fromY = fromRect.top + fromRect.height / 2;
+            const toX = toRect.left + toRect.width / 2;
+            const toY = toRect.top + toRect.height / 2;
+
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'flow-particle';
+                    document.body.appendChild(particle);
+
+                    particle.style.left = `${fromX}px`;
+                    particle.style.top = `${fromY}px`;
+
+                    // Animate to target
+                    const duration = 1500;
+                    const startTime = performance.now();
+
+                    function animate(currentTime) {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+
+                        // Bezier curve path
+                        const t = progress;
+                        const controlX = (fromX + toX) / 2;
+                        const controlY = Math.min(fromY, toY) - 100;
+
+                        const x = (1 - t) * (1 - t) * fromX + 2 * (1 - t) * t * controlX + t * t * toX;
+                        const y = (1 - t) * (1 - t) * fromY + 2 * (1 - t) * t * controlY + t * t * toY;
+
+                        particle.style.left = `${x}px`;
+                        particle.style.top = `${y}px`;
+
+                        // Opacity animation
+                        if (progress < 0.1) {
+                            particle.style.opacity = progress / 0.1;
+                        } else if (progress > 0.9) {
+                            particle.style.opacity = (1 - progress) / 0.1;
+                        } else {
+                            particle.style.opacity = 1;
+                        }
+
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            particle.remove();
+                        }
+                    }
+
+                    requestAnimationFrame(animate);
+                }, i * 300);
+            }
+        }
+
+        // ===== CONNECTION LINES =====
+        function drawConnectionLine(fromSelector, toSelector) {
+            const fromEl = document.querySelector(fromSelector);
+            const toEl = document.querySelector(toSelector);
+            if (!fromEl || !toEl) return;
+
+            const fromRect = fromEl.getBoundingClientRect();
+            const toRect = toEl.getBoundingClientRect();
+
+            const fromX = fromRect.right - 20;
+            const fromY = fromRect.top + fromRect.height / 2;
+            const toX = toRect.left + toRect.width / 2;
+            const toY = toRect.top;
+
+            const svg = d3.select('#connectionOverlay');
+
+            // Curved path
+            const controlX = (fromX + toX) / 2;
+            const controlY = (fromY + toY) / 2 - 60;
+
+            const path = svg.append('path')
+                .attr('class', 'connection-line')
+                .attr('d', `M ${fromX} ${fromY} Q ${controlX} ${controlY} ${toX} ${toY}`)
+                .attr('marker-end', 'url(#arrowhead)');
+
+            // Animate draw
+            const totalLength = path.node().getTotalLength();
+            path
+                .attr('stroke-dasharray', `${totalLength} ${totalLength}`)
+                .attr('stroke-dashoffset', totalLength)
+                .transition()
+                .duration(800)
+                .ease(d3.easeCubicOut)
+                .attr('stroke-dashoffset', 0);
+        }
+
+        // ===== ANNOTATIONS =====
+        function showAnnotation(targetSelector, message) {
+            const targetEl = document.querySelector(targetSelector);
+            if (!targetEl) return;
+
+            const rect = targetEl.getBoundingClientRect();
+
+            const bubble = d3.select('body')
+                .append('div')
+                .attr('class', 'annotation-bubble')
+                .style('left', `${rect.right + 15}px`)
+                .style('top', `${rect.top}px`)
+                .html(`
+                    <div class="annotation-title">💡 Connected Data</div>
+                    <div class="annotation-text">${message}</div>
+                `);
+
+            setTimeout(() => bubble.classed('visible', true), 50);
+        }
+
+        // ===== SCROLL REVEAL =====
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '-50px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+
+                    // Stagger child animations for small multiples
+                    if (entry.target.id === 'smallMultiples') {
+                        const panels = entry.target.querySelectorAll('.multiple-panel');
+                        panels.forEach((panel, index) => {
+                            setTimeout(() => {
+                                panel.classList.add('visible');
+                            }, index * 150);
+                        });
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Observe sections
+        ['h2-sparklines', 'sparklines', 'h2-multiples', 'smallMultiples'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) observer.observe(el);
+        });
+
+        document.querySelectorAll('.section-description').forEach(el => observer.observe(el));
+        document.querySelectorAll('h2').forEach(el => observer.observe(el));
+
+        // ===== GUIDED TOUR =====
+        function startGuidedTour() {
+            if (tourRunning) return;
+            tourRunning = true;
+
+            const scenes = [
+                {
+                    message: 'Scene 1: Notice the sparkline metrics',
+                    action: () => {
+                        document.getElementById('sparklines').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                },
+                {
+                    message: 'Scene 2: Hover to see connections',
+                    action: () => {
+                        const firstMetric = metrics[0];
+                        handleSparklineHover(firstMetric);
+                    }
+                },
+                {
+                    message: 'Scene 3: Data flows to related charts',
+                    action: () => {
+                        clearHighlights();
+                        const secondMetric = metrics[2];
+                        handleSparklineHover(secondMetric);
+                    }
+                },
+                {
+                    message: 'Tour complete! Explore on your own',
+                    action: () => {
+                        clearHighlights();
+                        tourRunning = false;
+                    }
+                }
+            ];
+
+            scenes.forEach((scene, index) => {
+                setTimeout(() => {
+                    showTourMessage(scene.message);
+                    scene.action();
+                }, index * 3000);
+            });
+        }
+
+        function showTourMessage(message) {
+            const indicator = document.getElementById('tourIndicator');
+            indicator.textContent = message;
+            indicator.classList.add('visible');
+
+            setTimeout(() => {
+                indicator.classList.remove('visible');
+            }, 2500);
+        }
+
+        // ===== CONTROL FUNCTIONS =====
+        function toggleLinkedHighlight() {
+            linkedHighlightEnabled = !linkedHighlightEnabled;
+            const btn = document.getElementById('linkedBtn');
+            btn.textContent = linkedHighlightEnabled ? '🔗 Linked Views: ON' : '🔗 Linked Views: OFF';
+            btn.classList.toggle('active', linkedHighlightEnabled);
+            if (!linkedHighlightEnabled) clearHighlights();
+        }
+
+        function showAllConnections() {
+            metrics.forEach((metric, index) => {
+                setTimeout(() => {
+                    const multipleId = metric.relatedMultiple;
+                    drawConnectionLine(`#sparkline-${metric.id}`, `#multiple-${multipleId}`);
+                }, index * 200);
+            });
+
+            setTimeout(() => {
+                d3.select('#connectionOverlay').selectAll('path').remove();
+            }, 5000);
+        }
+
+        function resetDashboard() {
+            clearHighlights();
+            tourRunning = false;
+            d3.select('#connectionOverlay').selectAll('path').remove();
+            document.getElementById('tourIndicator').classList.remove('visible');
+        }
+
+        console.log('✨ Connected visualizations loaded. Hover sparklines to see magic!');
+    </script>
+</body>
+</html>
