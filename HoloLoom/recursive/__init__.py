@@ -1,17 +1,17 @@
 """
-Recursive Learning - HoloLoom + Scratchpad + Loop Engine Integration
-======================================================================
-Phase 1: Scratchpad Integration for Full Provenance Tracking
+Recursive Learning - Complete 6-Phase Self-Improving System
+============================================================
 
-This module connects HoloLoom's WeavingOrchestrator with Promptly's
-Scratchpad to enable full provenance tracking and recursive refinement.
+Phases:
+1. Scratchpad Integration - Full provenance tracking
+2. Loop Engine Integration - Pattern learning from successes
+3. Hot Pattern Feedback - Usage-based adaptive retrieval
+4. Advanced Refinement - Multi-strategy quality improvement
+5. Full Learning Loop - Thompson Sampling + background learning
+6. Action Items System - Persistent task tracking with priority learning
 
-Key Components:
-- ScratchpadOrchestrator: HoloLoom + Scratchpad integration
-- ProvenanceTracker: Extract provenance from Spacetime traces
-- RecursiveRefiner: Trigger refinement loops on low confidence
-
-Vision: Self-improving knowledge system that learns from usage patterns.
+Vision: Self-improving knowledge system that learns from usage patterns
+and maintains long-term goals across sessions.
 """
 
 from .scratchpad_integration import (
@@ -57,6 +57,16 @@ from .full_learning_loop import (
     weave_with_full_learning,
 )
 
+from .action_items import (
+    ActionItemTracker,
+    ActionItem,
+    ActionStatus,
+    ActionCategory,
+    PriorityModel,
+    extract_action_items_from_text,
+    create_action_tracker,
+)
+
 __all__ = [
     # Phase 1: Scratchpad Integration
     "ScratchpadOrchestrator",
@@ -95,4 +105,13 @@ __all__ = [
     "BackgroundLearner",
     "LearningMetrics",
     "weave_with_full_learning",
+
+    # Phase 6: Action Items System
+    "ActionItemTracker",
+    "ActionItem",
+    "ActionStatus",
+    "ActionCategory",
+    "PriorityModel",
+    "extract_action_items_from_text",
+    "create_action_tracker",
 ]
