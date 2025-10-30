@@ -22,6 +22,15 @@ from .twin_networks import (
     InterventionType,
 )
 
+from .meta_learning import (
+    MetaLearner,
+    MetaLearningConfig,
+    MetaAlgorithm,
+    Task,
+    generate_sinusoid_task,
+    generate_linear_task,
+)
+
 __all__ = [
     # Twin networks
     'TwinNetwork',
@@ -29,4 +38,12 @@ __all__ = [
     'CounterfactualResult',
     'CounterfactualReasoner',
     'InterventionType',
+
+    # Meta-learning
+    'MetaLearner',
+    'MetaLearningConfig',
+    'MetaAlgorithm',
+    'Task',
+    'generate_sinusoid_task',
+    'generate_linear_task',
 ]
