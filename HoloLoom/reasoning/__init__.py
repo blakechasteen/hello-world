@@ -19,6 +19,26 @@ from .deductive import (
     create_fact, create_rule
 )
 
+from .abductive import (
+    Hypothesis, Observation, CausalRule,
+    HypothesisGenerator, HypothesisScorer, AbductiveReasoner,
+    create_causal_rule, create_observation
+)
+
+from .analogical import (
+    Entity, Relation, Domain, AnalogicalMapping,
+    StructureMapper, KnowledgeTransferer, Case, CaseLibrary,
+    AnalogicalReasoner,
+    create_entity, create_relation, create_domain
+)
+
+from .integration import (
+    ReasoningEnhancedPlanner,
+    PlanExplanation,
+    FailureDiagnosis,
+    create_planning_knowledge_base
+)
+
 __all__ = [
     # Deductive reasoning
     'Fact',
@@ -29,4 +49,34 @@ __all__ = [
     'DeductiveReasoner',
     'create_fact',
     'create_rule',
+
+    # Abductive reasoning
+    'Hypothesis',
+    'Observation',
+    'CausalRule',
+    'HypothesisGenerator',
+    'HypothesisScorer',
+    'AbductiveReasoner',
+    'create_causal_rule',
+    'create_observation',
+
+    # Analogical reasoning
+    'Entity',
+    'Relation',
+    'Domain',
+    'AnalogicalMapping',
+    'StructureMapper',
+    'KnowledgeTransferer',
+    'Case',
+    'CaseLibrary',
+    'AnalogicalReasoner',
+    'create_entity',
+    'create_relation',
+    'create_domain',
+
+    # Layer 2-3 Integration
+    'ReasoningEnhancedPlanner',
+    'PlanExplanation',
+    'FailureDiagnosis',
+    'create_planning_knowledge_base',
 ]
