@@ -9,6 +9,15 @@
 
 ---
 
+## 🔬 Research Status
+
+**Current Release**: Layers 1-5 (memory, decision-making, explainability) - Production ready
+**Reserved**: Layer 6 (self-modification) - Requires research infrastructure
+
+See [README_SAFETY.md](README_SAFETY.md) for details.
+
+---
+
 ## What is HoloLoom?
 
 Unlike ChatGPT (which forgets every conversation), **HoloLoom**:
