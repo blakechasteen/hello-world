@@ -22,7 +22,8 @@ from typing import List, Optional, Dict, Any, Set
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
 
-from HoloLoom.documentation.types import Query, Spacetime, MemoryShard
+from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.config import Config
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from Promptly.promptly.recursive_loops import Scratchpad

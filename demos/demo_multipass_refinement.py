@@ -27,7 +27,8 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from HoloLoom.documentation.types import Query, MemoryShard, Spacetime, WeavingTrace
+from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.config import Config
 from HoloLoom.recursive import AdvancedRefiner, RefinementStrategy
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
