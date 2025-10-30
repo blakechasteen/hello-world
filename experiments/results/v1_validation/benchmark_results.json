@@ -1,0 +1,493 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2025-10-30T02:18:31.363072",
+  "total_benchmarks": 26,
+  "test_queries": [
+    "What is Thompson Sampling?",
+    "How does reinforcement learning work?",
+    "Explain the difference between supervised and unsupervised learning",
+    "What are the benefits of multi-scale embeddings?",
+    "How do knowledge graphs improve retrieval?",
+    "What is the role of attention in transformers?",
+    "Explain Bayesian exploration vs exploitation",
+    "What is semantic similarity?",
+    "How does recursive learning improve AI systems?",
+    "What are the key components of a neural network?"
+  ],
+  "results": [
+    {
+      "experiment_name": "Old Model (384d)",
+      "query": "What is Thompson Sampling?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        384
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1053,
+      "latency_ms": 3687.969799968414,
+      "embedding_time_ms": 1954.7495000297204,
+      "retrieval_time_ms": 1106.3909399905242,
+      "decision_time_ms": 737.5939599936828,
+      "memory_mb": 114.796875,
+      "token_count": 267,
+      "timestamp": "2025-10-30T02:17:12.931064"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "What is Thompson Sampling?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1040,
+      "latency_ms": 3217.1916000079364,
+      "embedding_time_ms": 1411.117000039667,
+      "retrieval_time_ms": 965.1574800023809,
+      "decision_time_ms": 643.4383200015873,
+      "memory_mb": 6.66796875,
+      "token_count": 264,
+      "timestamp": "2025-10-30T02:17:16.282523"
+    },
+    {
+      "experiment_name": "Old Model (384d)",
+      "query": "How does reinforcement learning work?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        384
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1050,
+      "latency_ms": 3085.427699959837,
+      "embedding_time_ms": 2052.655200008303,
+      "retrieval_time_ms": 925.6283099879511,
+      "decision_time_ms": 617.0855399919674,
+      "memory_mb": 92.08203125,
+      "token_count": 267,
+      "timestamp": "2025-10-30T02:17:19.401318"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "How does reinforcement learning work?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1049,
+      "latency_ms": 2952.675599954091,
+      "embedding_time_ms": 1408.4345999872312,
+      "retrieval_time_ms": 885.8026799862273,
+      "decision_time_ms": 590.5351199908182,
+      "memory_mb": 4.546875,
+      "token_count": 267,
+      "timestamp": "2025-10-30T02:17:22.476051"
+    },
+    {
+      "experiment_name": "Old Model (384d)",
+      "query": "Explain the difference between supervised and unsupervised learning",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        384
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1083,
+      "latency_ms": 3089.876100071706,
+      "embedding_time_ms": 2111.893199966289,
+      "retrieval_time_ms": 926.9628300215118,
+      "decision_time_ms": 617.9752200143412,
+      "memory_mb": -83.50390625,
+      "token_count": 278,
+      "timestamp": "2025-10-30T02:17:25.596930"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "Explain the difference between supervised and unsupervised learning",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1103,
+      "latency_ms": 3089.8954999865964,
+      "embedding_time_ms": 1524.6689999476075,
+      "retrieval_time_ms": 926.9686499959789,
+      "decision_time_ms": 617.9790999973193,
+      "memory_mb": 4.515625,
+      "token_count": 283,
+      "timestamp": "2025-10-30T02:17:28.806269"
+    },
+    {
+      "experiment_name": "Old Model (384d)",
+      "query": "What are the benefits of multi-scale embeddings?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        384
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1062,
+      "latency_ms": 2883.0037000589073,
+      "embedding_time_ms": 1860.050999908708,
+      "retrieval_time_ms": 864.9011100176722,
+      "decision_time_ms": 576.6007400117815,
+      "memory_mb": 88.1953125,
+      "token_count": 272,
+      "timestamp": "2025-10-30T02:17:31.721412"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "What are the benefits of multi-scale embeddings?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1077,
+      "latency_ms": 2956.726699951105,
+      "embedding_time_ms": 1441.1398000083864,
+      "retrieval_time_ms": 887.0180099853314,
+      "decision_time_ms": 591.345339990221,
+      "memory_mb": 4.4921875,
+      "token_count": 276,
+      "timestamp": "2025-10-30T02:17:34.806281"
+    },
+    {
+      "experiment_name": "Old Model (384d)",
+      "query": "How do knowledge graphs improve retrieval?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        384
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1076,
+      "latency_ms": 2772.48290006537,
+      "embedding_time_ms": 1819.0451000118628,
+      "retrieval_time_ms": 831.744870019611,
+      "decision_time_ms": 554.496580013074,
+      "memory_mb": 88.0234375,
+      "token_count": 275,
+      "timestamp": "2025-10-30T02:17:37.646397"
+    },
+    {
+      "experiment_name": "Nomic v1.5 (768d)",
+      "query": "How do knowledge graphs improve retrieval?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1091,
+      "latency_ms": 3071.9282999634743,
+      "embedding_time_ms": 1360.1390999974683,
+      "retrieval_time_ms": 921.5784899890423,
+      "decision_time_ms": 614.3856599926949,
+      "memory_mb": -81.55859375,
+      "token_count": 278,
+      "timestamp": "2025-10-30T02:17:40.844329"
+    },
+    {
+      "experiment_name": "Multi-scale [96,192,384]",
+      "query": "What is the role of attention in transformers?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        96,
+        192,
+        384
+      ],
+      "confidence": 0.296010016240941,
+      "relevance_score": 0.85,
+      "response_length": 1934,
+      "latency_ms": 2852.817100007087,
+      "embedding_time_ms": 1860.6415999820456,
+      "retrieval_time_ms": 855.8451300021261,
+      "decision_time_ms": 570.5634200014174,
+      "memory_mb": 90.16796875,
+      "token_count": 491,
+      "timestamp": "2025-10-30T02:17:43.729303"
+    },
+    {
+      "experiment_name": "Single-scale [768]",
+      "query": "What is the role of attention in transformers?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1056,
+      "latency_ms": 3157.265100046061,
+      "embedding_time_ms": 1424.509200034663,
+      "retrieval_time_ms": 947.1795300138183,
+      "decision_time_ms": 631.4530200092122,
+      "memory_mb": 4.51171875,
+      "token_count": 272,
+      "timestamp": "2025-10-30T02:17:47.005678"
+    },
+    {
+      "experiment_name": "Multi-scale [96,192,384]",
+      "query": "Explain Bayesian exploration vs exploitation",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        96,
+        192,
+        384
+      ],
+      "confidence": 0.3450519356771434,
+      "relevance_score": 0.85,
+      "response_length": 1909,
+      "latency_ms": 2860.314700054005,
+      "embedding_time_ms": 1878.2692999811843,
+      "retrieval_time_ms": 858.0944100162014,
+      "decision_time_ms": 572.062940010801,
+      "memory_mb": 2.90625,
+      "token_count": 482,
+      "timestamp": "2025-10-30T02:17:49.896513"
+    },
+    {
+      "experiment_name": "Single-scale [768]",
+      "query": "Explain Bayesian exploration vs exploitation",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1093,
+      "latency_ms": 2864.6681000245735,
+      "embedding_time_ms": 1362.0441999519244,
+      "retrieval_time_ms": 859.400430007372,
+      "decision_time_ms": 572.9336200049147,
+      "memory_mb": 4.5078125,
+      "token_count": 278,
+      "timestamp": "2025-10-30T02:17:52.882187"
+    },
+    {
+      "experiment_name": "Multi-scale [96,192,384]",
+      "query": "What is semantic similarity?",
+      "model": "sentence-transformers/all-MiniLM-L12-v2",
+      "scales": [
+        96,
+        192,
+        384
+      ],
+      "confidence": 0.32412094331938557,
+      "relevance_score": 0.85,
+      "response_length": 1858,
+      "latency_ms": 3027.088399976492,
+      "embedding_time_ms": 1841.4440000196919,
+      "retrieval_time_ms": 908.1265199929476,
+      "decision_time_ms": 605.4176799952984,
+      "memory_mb": 87.16015625,
+      "token_count": 468,
+      "timestamp": "2025-10-30T02:17:55.942799"
+    },
+    {
+      "experiment_name": "Single-scale [768]",
+      "query": "What is semantic similarity?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1060,
+      "latency_ms": 3031.6447000950575,
+      "embedding_time_ms": 1344.9821999529377,
+      "retrieval_time_ms": 909.4934100285172,
+      "decision_time_ms": 606.3289400190115,
+      "memory_mb": 4.4921875,
+      "token_count": 269,
+      "timestamp": "2025-10-30T02:17:59.094403"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "What is Thompson Sampling?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1057,
+      "latency_ms": 3047.2641000524163,
+      "embedding_time_ms": 1383.803299977444,
+      "retrieval_time_ms": 914.1792300157249,
+      "decision_time_ms": 609.4528200104833,
+      "memory_mb": 4.44140625,
+      "token_count": 268,
+      "timestamp": "2025-10-30T02:18:02.243188"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "How does reinforcement learning work?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1047,
+      "latency_ms": 3273.7385999644175,
+      "embedding_time_ms": 1554.5791999902576,
+      "retrieval_time_ms": 982.1215799893253,
+      "decision_time_ms": 654.7477199928835,
+      "memory_mb": 4.50390625,
+      "token_count": 266,
+      "timestamp": "2025-10-30T02:18:05.613775"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "Explain the difference between supervised and unsupervised learning",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1100,
+      "latency_ms": 2944.781900034286,
+      "embedding_time_ms": 1432.613999932073,
+      "retrieval_time_ms": 883.4345700102858,
+      "decision_time_ms": 588.9563800068572,
+      "memory_mb": 4.5078125,
+      "token_count": 283,
+      "timestamp": "2025-10-30T02:18:08.652647"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "What are the benefits of multi-scale embeddings?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1082,
+      "latency_ms": 2989.942399901338,
+      "embedding_time_ms": 1371.2331999558955,
+      "retrieval_time_ms": 896.9827199704014,
+      "decision_time_ms": 597.9884799802676,
+      "memory_mb": 4.50390625,
+      "token_count": 277,
+      "timestamp": "2025-10-30T02:18:11.738300"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "How do knowledge graphs improve retrieval?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1056,
+      "latency_ms": 3051.72460002359,
+      "embedding_time_ms": 1437.0588000165299,
+      "retrieval_time_ms": 915.517380007077,
+      "decision_time_ms": 610.344920004718,
+      "memory_mb": 4.50390625,
+      "token_count": 270,
+      "timestamp": "2025-10-30T02:18:14.898268"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "What is the role of attention in transformers?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1060,
+      "latency_ms": 3204.6105000190437,
+      "embedding_time_ms": 1614.9816999677569,
+      "retrieval_time_ms": 961.3831500057131,
+      "decision_time_ms": 640.9221000038087,
+      "memory_mb": 4.5078125,
+      "token_count": 273,
+      "timestamp": "2025-10-30T02:18:18.206578"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "Explain Bayesian exploration vs exploitation",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1058,
+      "latency_ms": 3363.7602999806404,
+      "embedding_time_ms": 1468.6982000712305,
+      "retrieval_time_ms": 1009.1280899941921,
+      "decision_time_ms": 672.7520599961281,
+      "memory_mb": 8.171875,
+      "token_count": 269,
+      "timestamp": "2025-10-30T02:18:21.677945"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "What is semantic similarity?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1042,
+      "latency_ms": 3220.4746999777853,
+      "embedding_time_ms": 1516.2749999435619,
+      "retrieval_time_ms": 966.1424099933356,
+      "decision_time_ms": 644.0949399955571,
+      "memory_mb": 4.50390625,
+      "token_count": 264,
+      "timestamp": "2025-10-30T02:18:24.998734"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "How does recursive learning improve AI systems?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1081,
+      "latency_ms": 3146.7679999768734,
+      "embedding_time_ms": 1489.815799985081,
+      "retrieval_time_ms": 944.030399993062,
+      "decision_time_ms": 629.3535999953747,
+      "memory_mb": 4.50390625,
+      "token_count": 277,
+      "timestamp": "2025-10-30T02:18:28.241110"
+    },
+    {
+      "experiment_name": "v1.0 (Nomic, 768d)",
+      "query": "What are the key components of a neural network?",
+      "model": "nomic-ai/nomic-embed-text-v1.5",
+      "scales": [
+        768
+      ],
+      "confidence": 0.0,
+      "relevance_score": 0.85,
+      "response_length": 1096,
+      "latency_ms": 3024.7776999603957,
+      "embedding_time_ms": 1438.0246000364423,
+      "retrieval_time_ms": 907.4333099881187,
+      "decision_time_ms": 604.9555399920791,
+      "memory_mb": 4.50390625,
+      "token_count": 283,
+      "timestamp": "2025-10-30T02:18:31.362071"
+    }
+  ]
+}
