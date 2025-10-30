@@ -6,6 +6,30 @@ This document tracks optional features that may be added in future versions **if
 
 ---
 
+## v1.0 Validation Status
+
+**Date**: October 30, 2025
+**Experiment**: experiments/v1_validation.py (26 benchmarks)
+**Report**: experiments/results/v1_validation/
+
+### Performance Validated ✅
+
+- **Latency**: 3.1s average (stable, acceptable)
+- **Memory**: 4.5MB per query (excellent efficiency)
+- **Stability**: 26 runs, no crashes
+- **Consistency**: ±5% response variance
+
+### Quality Validation Deferred ⚠️
+
+**Benchmark infrastructure needs fixes**:
+1. Confidence extraction broken (Spacetime.context.confidence)
+2. Scale mismatch errors (auto-pattern vs embedder config)
+3. Nomic model loading (needs trust_remote_code=True)
+
+**Re-validation planned for v1.0.1**
+
+---
+
 ## Optional Features (Not in v1.0)
 
 These were removed in v1.0 simplification. They can be re-added **IF** proven necessary through benchmarking.
