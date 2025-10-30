@@ -16,12 +16,45 @@ Public API:
 
 from .planner import HierarchicalPlanner, Goal, Plan, Action, ActionType
 from .causal_chain import CausalChainFinder
+from .multi_agent import (
+    Agent, AgentType, MultiAgentCoordinator, NegotiationProtocol,
+    Task, Capability, Proposal, Agreement, Coalition, create_agent
+)
+from .resources import (
+    Resource, ResourceType, ResourceRequirement, ResourceState,
+    ResourceViolation, ViolationType, ResourceTracker,
+    ResourceAwarePlanner, ResourceAllocator
+)
 
 __all__ = [
+    # Core planning
     'HierarchicalPlanner',
     'Goal',
     'Plan',
     'Action',
     'ActionType',
-    'CausalChainFinder'
+    'CausalChainFinder',
+
+    # Multi-agent
+    'Agent',
+    'AgentType',
+    'MultiAgentCoordinator',
+    'NegotiationProtocol',
+    'Task',
+    'Capability',
+    'Proposal',
+    'Agreement',
+    'Coalition',
+    'create_agent',
+
+    # Resources
+    'Resource',
+    'ResourceType',
+    'ResourceRequirement',
+    'ResourceState',
+    'ResourceViolation',
+    'ViolationType',
+    'ResourceTracker',
+    'ResourceAwarePlanner',
+    'ResourceAllocator',
 ]
