@@ -172,9 +172,10 @@ async def complete_pipeline_demo():
         llm_generator=None  # Use templates for speed
     )
     
-    dual_result = await generator.generate_dual_stream(
+    dual_result = await generator.generate(
         query=query,
-        awareness_context=awareness_ctx
+        show_internal=True,
+        use_llm=False  # Template-based for speed
     )
     generation_time = (time.time() - start) * 1000
     

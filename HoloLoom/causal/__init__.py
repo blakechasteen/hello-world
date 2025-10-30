@@ -18,6 +18,7 @@ from .intervention import InterventionEngine
 from .counterfactual import CounterfactualEngine
 from .neural_scm import NeuralStructuralCausalModel, NeuralMechanism
 from .discovery import CausalDiscovery, ActiveCausalLearner
+from .temporal import TemporalCausalDAG, TemporalEdge, TemporalState
 
 __all__ = [
     'CausalNode',
@@ -32,5 +33,8 @@ __all__ = [
     'NeuralStructuralCausalModel',
     'NeuralMechanism',
     'CausalDiscovery',
-    'ActiveCausalLearner'
+    'ActiveCausalLearner',
+    'TemporalCausalDAG',
+    'TemporalEdge',
+    'TemporalState'
 ]

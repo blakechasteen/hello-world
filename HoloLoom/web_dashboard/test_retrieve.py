@@ -35,41 +35,19 @@ async def test_retrieval():
     print("[SEARCH] Querying persistent memory...\n")
 
     try:
-        # Try different search methods depending on backend
-        results = []
+        # Use the protocol's retrieve() method
+        from HoloLoom.memory.protocol import MemoryQuery
 
-        # Method 1: Semantic search
-        if hasattr(memory, 'search'):
-            print("[METHOD] Using semantic search...")
-            results = await memory.search(search_term, k=10)
-            print(f"[RESULTS] Found {len(results)} results\n")
+        # Create query object
+        query = MemoryQuery(
+            text=search_term,
+            user_id="chat_user",
+            k=10
+        )
 
-        # Method 2: Direct query
-        elif hasattr(memory, 'query'):
-            print("[METHOD] Using query...")
-            results = await memory.query(search_term)
-            print(f"[RESULTS] Found {len(results)} results\n")
-
-        # Method 3: Get recent memories
-        elif hasattr(memory, 'get_recent'):
-            print("[METHOD] Using get_recent...")
-            results = await memory.get_recent(limit=50)
-            print(f"[RESULTS] Got {len(results)} recent memories\n")
-
-        # Method 4: Neo4j direct query (fallback)
-        else:
-            print("[METHOD] Trying direct Neo4j query...")
-            if hasattr(memory, 'kg') and hasattr(memory.kg, 'graph'):
-                # Direct cypher query
-                query = """
-                MATCH (n)
-                WHERE n.content CONTAINS $search_term
-                RETURN n
-                LIMIT 10
-                """
-                # Note: This might not work depending on backend implementation
-                print("[INFO] Backend doesn't expose standard search interface")
-                print("[INFO] Would need custom Neo4j query here")
+        print("[METHOD] Using protocol retrieve() method...")
+        results = await memory.retrieve(query)
+        print(f"[RESULTS] Found {len(results)} results\n")
 
         # Display results
         if results:
@@ -80,16 +58,15 @@ async def test_retrieval():
             for i, result in enumerate(results, 1):
                 print(f"Result {i}:")
 
-                # Handle different result formats
-                if isinstance(result, dict):
-                    content = result.get('content', str(result))
-                    metadata = result.get('metadata', {})
-
-                    print(f"  Content: {content[:200]}...")
-                    if metadata:
-                        print(f"  Thread ID: {metadata.get('thread_id', 'N/A')}")
-                        print(f"  Role: {metadata.get('role', 'N/A')}")
-                        print(f"  Topic: {metadata.get('thread_topic', 'N/A')}")
+                # RetrievalResult has: memory, score, explanation
+                if hasattr(result, 'memory'):
+                    mem = result.memory
+                    print(f"  Score: {result.score:.3f}")
+                    print(f"  Content: {mem.text[:200]}...")
+                    if hasattr(mem, 'metadata') and mem.metadata:
+                        print(f"  Thread ID: {mem.metadata.get('thread_id', 'N/A')}")
+                        print(f"  Role: {mem.metadata.get('role', 'N/A')}")
+                        print(f"  Topic: {mem.metadata.get('thread_topic', 'N/A')}")
                 else:
                     print(f"  {str(result)[:200]}...")
                 print()

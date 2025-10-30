@@ -486,14 +486,15 @@ class ThreadManager:
         """Actually perform the archiving (runs in background)"""
         try:
             # Import here to avoid circular dependency
-            from HoloLoom.documentation.types import MemoryShard
+            from HoloLoom.memory.protocol import Memory
+            import uuid
 
-            # Create memory shard from message
-            shard = MemoryShard(
-                content=message.content,
-                source=f"chat_{message.role}",
+            # Create Memory object (protocol type, not MemoryShard)
+            memory_obj = Memory(
+                id=message.id,
+                text=message.content,  # Note: protocol uses 'text', not 'content'
+                user_id="chat_user",
                 timestamp=message.timestamp.isoformat(),
-                embedding=None,  # Will be computed by memory backend
                 metadata={
                     'message_id': message.id,
                     'thread_id': message.thread_id,
@@ -501,15 +502,13 @@ class ThreadManager:
                     'depth': message.depth,
                     'thread_topic': thread.dominant_topic,
                     'thread_status': thread.status.value,
+                    'source': f"chat_{message.role}",
                 }
             )
 
-            # Store in memory backend
-            # Note: This assumes memory backend has a store/add method
-            if hasattr(self.memory, 'add_memory'):
-                await self.memory.add_memory(shard)
-            elif hasattr(self.memory, 'store'):
-                await self.memory.store(shard)
+            # Store in memory backend (use protocol method)
+            if hasattr(self.memory, 'store'):
+                await self.memory.store(memory_obj, user_id="chat_user")
 
             # Also store thread metadata as entity (first message only)
             if message.depth == 0 and hasattr(self.memory, 'add_entity'):
