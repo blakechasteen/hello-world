@@ -17,6 +17,7 @@ from .query import CausalQuery, QueryType, CausalAnswer
 from .intervention import InterventionEngine
 from .counterfactual import CounterfactualEngine
 from .neural_scm import NeuralStructuralCausalModel, NeuralMechanism
+from .discovery import CausalDiscovery, ActiveCausalLearner
 
 __all__ = [
     'CausalNode',
@@ -29,5 +30,7 @@ __all__ = [
     'InterventionEngine',
     'CounterfactualEngine',
     'NeuralStructuralCausalModel',
-    'NeuralMechanism'
+    'NeuralMechanism',
+    'CausalDiscovery',
+    'ActiveCausalLearner'
 ]

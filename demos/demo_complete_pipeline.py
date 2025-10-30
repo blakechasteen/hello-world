@@ -167,7 +167,10 @@ async def complete_pipeline_demo():
     print_subsection("🎭 STAGE 4: Dual-Stream Generation")
     
     start = time.time()
-    generator = DualStreamGenerator(use_llm=False)  # Use templates for speed
+    generator = DualStreamGenerator(
+        awareness_layer=awareness,
+        llm_generator=None  # Use templates for speed
+    )
     
     dual_result = await generator.generate_dual_stream(
         query=query,
