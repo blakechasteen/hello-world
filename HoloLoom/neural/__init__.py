@@ -31,6 +31,15 @@ from .meta_learning import (
     generate_linear_task,
 )
 
+from .value_functions import (
+    ValueNetworkPyTorch,
+    QNetworkPyTorch,
+    ActorCriticPyTorch,
+    ValueFunctionLearner,
+    Experience,
+    ValueEstimate,
+)
+
 __all__ = [
     # Twin networks
     'TwinNetwork',
@@ -46,4 +55,12 @@ __all__ = [
     'Task',
     'generate_sinusoid_task',
     'generate_linear_task',
+
+    # Value functions
+    'ValueNetworkPyTorch',
+    'QNetworkPyTorch',
+    'ActorCriticPyTorch',
+    'ValueFunctionLearner',
+    'Experience',
+    'ValueEstimate',
 ]
