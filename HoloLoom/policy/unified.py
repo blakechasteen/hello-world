@@ -47,12 +47,16 @@ from enum import Enum
 from typing import Dict, List, Optional, Protocol, Tuple, Any
 
 import numpy as np
+import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 # Import only from shared types and embedding (package-relative)
 from HoloLoom.documentation.types import Features, Context, ActionPlan, Decision
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Import canonical protocol from Phase 2 consolidation
@@ -635,7 +639,15 @@ class UnifiedPolicy:
             mem = torch.zeros(1, 1, self.mem_dim).to(self.device)
         else:
             # Encode context shards
+            logger.info(
+                f"[DEBUG] Policy encoding context: n_texts={len(context.shard_texts)}, "
+                f"requested_size={self.mem_dim}"
+            )
             mem_np = self.emb.encode_scales(context.shard_texts, size=self.mem_dim)
+            logger.info(
+                f"[DEBUG] Policy received embeddings: shape={mem_np.shape}, "
+                f"expected=({len(context.shard_texts)}, {self.mem_dim})"
+            )
             mem = torch.tensor(mem_np, dtype=torch.float32).unsqueeze(0).to(self.device)
         
         # Step 2: Build control signal from Ψ and motifs

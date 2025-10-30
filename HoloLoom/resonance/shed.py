@@ -76,7 +76,8 @@ class ResonanceShed:
         spectral_fusion=None,
         semantic_calculus=None,
         interference_mode: str = "weighted_sum",
-        max_feature_density: float = 1.0
+        max_feature_density: float = 1.0,
+        target_scale: Optional[int] = None
     ):
         """
         Initialize Resonance Shed.
@@ -89,6 +90,7 @@ class ResonanceShed:
             interference_mode: How to combine features ("weighted_sum", "attention", "concat")
             max_feature_density: Maximum feature density before pressure relief (0-1)
                                 0.85 = shed features when > 85% of extractors active
+            target_scale: Target embedding scale (for matryoshka embeddings)
         """
         self.motif_detector = motif_detector
         self.embedder = embedder
@@ -96,6 +98,7 @@ class ResonanceShed:
         self.semantic_calculus = semantic_calculus
         self.interference_mode = interference_mode
         self.max_feature_density = max_feature_density
+        self.target_scale = target_scale
 
         # Active threads
         self.threads: List[FeatureThread] = []
@@ -185,8 +188,17 @@ class ResonanceShed:
         # Thread 2: Embeddings (continuous semantic)
         if self.embedder:
             try:
-                # embedder.encode() is synchronous, not async
-                embeddings = self.embedder.encode([text])
+                # Phase 5: Use matryoshka scale-aware encoding for dimensional alignment
+                # This ensures DotPlasma embeddings match policy's expected dimension
+                # (e.g., 96d for BARE, 192d for FAST, 384d for FUSED)
+                if self.target_scale and hasattr(self.embedder, 'encode_scales'):
+                    embeddings = self.embedder.encode_scales([text], size=self.target_scale)
+                    logger.debug(f"  Using encode_scales with size={self.target_scale}")
+                else:
+                    # Fallback: Use standard encode() (returns full dimension)
+                    embeddings = self.embedder.encode([text])
+                    logger.debug(f"  Using standard encode() (full dimension)")
+
                 embedding = embeddings[0] if len(embeddings) > 0 else []
 
                 self.threads.append(FeatureThread(
