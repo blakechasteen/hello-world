@@ -1,0 +1,100 @@
+# HoloLoom v1.0 Dependencies
+# ================================
+# Core dependencies for production use
+
+# Deep Learning & Embeddings
+torch>=2.0.0,<3.0.0
+sentence-transformers>=2.2.0,<3.0.0
+numpy>=1.24.0,<2.0.0
+
+# Graph Processing
+networkx>=3.0,<4.0.0
+
+# Optional: NLP (for motif detection, Phase 5 Universal Grammar)
+spacy>=3.7.0,<4.0.0  # Optional: pip install spacy && python -m spacy download en_core_web_sm
+
+# Optional: Scientific Computing (for spectral features)
+scipy>=1.10.0,<2.0.0  # Optional: better performance for graph operations
+
+# Optional: Vector Database (production memory backend)
+# qdrant-client>=1.7.0,<2.0.0  # Uncomment for production HYBRID backend
+
+# Optional: Neo4j (production graph backend)
+# neo4j>=5.0.0,<6.0.0  # Uncomment for production HYBRID backend
+
+# Development Dependencies (optional)
+# =====================================
+# Uncomment for development/testing
+
+# Testing
+# pytest>=7.4.0,<8.0.0
+# pytest-asyncio>=0.21.0,<1.0.0
+# pytest-cov>=4.1.0,<5.0.0
+
+# Visualization
+# matplotlib>=3.7.0,<4.0.0
+# plotly>=5.17.0,<6.0.0
+
+# Code Quality
+# black>=23.0.0,<24.0.0
+# mypy>=1.5.0,<2.0.0
+# ruff>=0.1.0,<1.0.0
+
+# Documentation
+# mkdocs>=1.5.0,<2.0.0
+# mkdocs-material>=9.4.0,<10.0.0
+
+# =====================================
+# Installation Instructions
+# =====================================
+#
+# Minimal install (core functionality):
+#   pip install -r requirements.txt
+#
+# With optional NLP (Phase 5 Universal Grammar):
+#   pip install spacy
+#   python -m spacy download en_core_web_sm
+#
+# With production backends (Neo4j + Qdrant):
+#   Uncomment qdrant-client and neo4j above
+#   pip install -r requirements.txt
+#   docker-compose up -d  # Start backends
+#
+# Development install:
+#   Uncomment dev dependencies above
+#   pip install -r requirements.txt
+#
+# =====================================
+# Version Notes
+# =====================================
+#
+# v1.0.0: Initial release
+#   - Core: torch, sentence-transformers, numpy, networkx
+#   - Optional: spacy, scipy, qdrant-client, neo4j
+#   - Tested on Python 3.10, 3.11, 3.12
+#
+# Embedding Model (auto-downloaded on first run):
+#   - nomic-ai/nomic-embed-text-v1.5 (~137MB)
+#   - Cached in ~/.cache/huggingface/
+#
+# =====================================
+# Platform Notes
+# =====================================
+#
+# PyTorch CPU vs GPU:
+#   - Default: CPU-only (works everywhere)
+#   - GPU: See https://pytorch.org/get-started/locally/
+#   - For CUDA 11.8: pip install torch --index-url https://download.pytorch.org/whl/cu118
+#   - For CUDA 12.1: pip install torch --index-url https://download.pytorch.org/whl/cu121
+#
+# Apple Silicon (M1/M2):
+#   - PyTorch has native MPS support
+#   - Use torch>=2.0.0 for best performance
+#
+# Windows:
+#   - All dependencies work on Windows 10/11
+#   - Use virtual environment: python -m venv .venv
+#
+# Linux:
+#   - Tested on Ubuntu 20.04+, Debian 11+
+#   - May need: apt-get install python3-dev
