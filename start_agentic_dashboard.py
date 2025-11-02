@@ -18,7 +18,7 @@ if __name__ == "__main__":
     print("\n" + "="*70)
     print("  >> Launching HoloLoom Agentic Dashboard")
     print("="*70)
-    print("\n  The dashboard will open at: http://localhost:8001")
+    print("\n  The dashboard will open at: http://localhost:8002")
     print("\n  Features:")
     print("    - 4 reasoning modes (DIRECT, VERIFY, RESEARCH, PLAN_EXECUTE)")
     print("    - LLM-activated intelligent search")

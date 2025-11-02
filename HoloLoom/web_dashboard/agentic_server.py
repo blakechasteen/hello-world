@@ -646,7 +646,7 @@ Example: How does Thompson Sampling compare to other exploration strategies?"></
 
         // Connect to WebSocket
         function connect() {
-            ws = new WebSocket('ws://localhost:8001/ws');
+            ws = new WebSocket('ws://localhost:8002/ws');
 
             ws.onopen = () => {
                 console.log('✓ Connected to server');
@@ -818,6 +818,6 @@ if __name__ == "__main__":
     print("\n" + "="*60)
     print("  >> Starting HoloLoom Agentic Dashboard")
     print("="*60)
-    print("\n  Open your browser to: http://localhost:8001\n")
+    print("\n  Open your browser to: http://localhost:8002\n")
 
-    uvicorn.run(app, host="0.0.0.0", port=8001, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8002, log_level="info")
