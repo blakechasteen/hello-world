@@ -57,38 +57,38 @@ jobs:
       # Cost: ~$15-30 per run
       # ============================================================================
 
-      # - name: Run Petri alignment evaluations
-      #   if: env.ANTHROPIC_API_KEY != ''
-      #   env:
-      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      #   run: |
-      #     # Run comprehensive Petri red-teaming with all 44 seed instructions
-      #     inspect eval petri/audit \
-      #       --model-role auditor=anthropic/claude-sonnet-4-20250514 \
-      #       --model-role target=anthropic/claude-3-7-sonnet-20250219 \
-      #       --model-role judge=anthropic/claude-opus-4-20250514 \
-      #       -T max_turns=30 \
-      #       -T transcript_save_dir=./petri_results \
-      #       -T special_instructions="$(python -c 'from HoloLoom.alignment.petri_seeds import HOLOLOOM_ALIGNMENT_SEEDS; import json; print(json.dumps(HOLOLOOM_ALIGNMENT_SEEDS))')"
-      #
-      # - name: Check Petri results
-      #   if: env.ANTHROPIC_API_KEY != ''
-      #   run: |
-      #     # Parse results and fail if concerning behavior detected
-      #     SCORE=$(python -c "import json; r=json.load(open('./petri_results/results.json')); print(r.get('max_score', 0))")
-      #     if (( $(echo "$SCORE > $ALIGNMENT_THRESHOLD" | bc -l) )); then
-      #       echo "❌ ALIGNMENT FAILURE: Max score $SCORE exceeds threshold $ALIGNMENT_THRESHOLD"
-      #       exit 1
-      #     fi
-      #     echo "✅ Petri evaluations: PASSED (max score: $SCORE)"
-      #
-      # - name: Upload Petri transcripts
-      #   if: always() && env.ANTHROPIC_API_KEY != ''
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: petri-transcripts-${{ github.sha }}
-      #     path: ./petri_results/
-      #     retention-days: 90
+       - name: Run Petri alignment evaluations
+        if: env.ANTHROPIC_API_KEY != ''
+         env:
+           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+         run: |
+           # Run comprehensive Petri red-teaming with all 44 seed instructions
+           inspect eval petri/audit \
+             --model-role auditor=anthropic/claude-sonnet-4-20250514 \
+             --model-role target=anthropic/claude-3-7-sonnet-20250219 \
+             --model-role judge=anthropic/claude-opus-4-20250514 \
+             -T max_turns=30 \
+             -T transcript_save_dir=./petri_results \
+             -T special_instructions="$(python -c 'from HoloLoom.alignment.petri_seeds import HOLOLOOM_ALIGNMENT_SEEDS; import json; print(json.dumps(HOLOLOOM_ALIGNMENT_SEEDS))')"
+      
+       - name: Check Petri results
+         if: env.ANTHROPIC_API_KEY != ''
+         run: |
+           # Parse results and fail if concerning behavior detected
+           SCORE=$(python -c "import json; r=json.load(open('./petri_results/results.json')); print(r.get('max_score', 0))")
+           if (( $(echo "$SCORE > $ALIGNMENT_THRESHOLD" | bc -l) )); then
+             echo "❌ ALIGNMENT FAILURE: Max score $SCORE exceeds threshold $ALIGNMENT_THRESHOLD"
+             exit 1
+           fi
+           echo "✅ Petri evaluations: PASSED (max score: $SCORE)"
+      
+       - name: Upload Petri transcripts
+         if: always() && env.ANTHROPIC_API_KEY != ''
+         uses: actions/upload-artifact@v3
+         with:
+           name: petri-transcripts-${{ github.sha }}
+           path: ./petri_results/
+           retention-days: 90
 
       - name: Generate report
         if: always()
