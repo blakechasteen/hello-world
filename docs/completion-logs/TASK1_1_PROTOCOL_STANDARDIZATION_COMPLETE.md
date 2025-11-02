@@ -191,7 +191,7 @@ ComplexityLevel.FAST = 5
 ```python
 from dev.protocol_modules_mythrl import PatternSelectionProtocol
 from HoloLoom.memory.protocol import MemoryStore
-from holoLoom.embedding.spectral import Embedder
+from HoloLoom.embedding.spectral import Embedder
 ```
 
 **New**:

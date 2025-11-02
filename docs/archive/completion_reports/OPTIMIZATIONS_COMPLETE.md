@@ -50,7 +50,7 @@ These optimizations enable:
 ### Usage
 
 ```python
-from holoLoom.chatops import PatternTuner
+from HoloLoom.chatops import PatternTuner
 
 # Initialize tuner
 tuner = PatternTuner()
@@ -162,7 +162,7 @@ tuner.save("pattern_config.json")
 ### Usage
 
 ```python
-from holoLoom.chatops import PerformanceOptimizer
+from HoloLoom.chatops import PerformanceOptimizer
 
 # Initialize optimizer
 optimizer = PerformanceOptimizer(
@@ -292,7 +292,7 @@ resources = optimizer.get_resource_usage()
 #### Define Commands via Decorator
 
 ```python
-from holoLoom.chatops import CustomCommandManager, CommandContext
+from HoloLoom.chatops import CustomCommandManager, CommandContext
 
 manager = CustomCommandManager()
 
@@ -377,7 +377,7 @@ help_text = manager.get_help("deploy")
 
 ```python
 # my_custom_commands.py
-from holoLoom.chatops.custom_commands import manager
+from HoloLoom.chatops.custom_commands import manager
 
 @manager.command(
     name="ticket",
@@ -403,7 +403,7 @@ async def check_oncall(ctx):
 ### Integration with Matrix Bot
 
 ```python
-from holoLoom.chatops import MatrixBot, CustomCommandManager
+from HoloLoom.chatops import MatrixBot, CustomCommandManager
 
 bot = MatrixBot(config)
 cmd_manager = CustomCommandManager()
@@ -587,12 +587,12 @@ python HoloLoom/chatops/custom_commands.py
 
 ```python
 # OLD
-from holoLoom.chatops import ProactiveAgent
+from HoloLoom.chatops import ProactiveAgent
 agent = ProactiveAgent()
 insights = agent.process_messages(messages, conv_id)
 
 # NEW - with tuning
-from holoLoom.chatops import ProactiveAgent, PatternTuner
+from HoloLoom.chatops import ProactiveAgent, PatternTuner
 
 tuner = PatternTuner()
 tuner.load("pattern_config.json")  # Load custom config
@@ -605,7 +605,7 @@ insights = agent.process_messages(messages, conv_id)
 
 ```python
 # Wrap ChatOps orchestrator
-from holoLoom.chatops import ChatOpsOrchestrator, PerformanceOptimizer
+from HoloLoom.chatops import ChatOpsOrchestrator, PerformanceOptimizer
 
 optimizer = PerformanceOptimizer()
 
@@ -622,7 +622,7 @@ class OptimizedChatOpsOrchestrator(ChatOpsOrchestrator):
 ### Register Custom Commands
 
 ```python
-from holoLoom.chatops import CustomCommandManager
+from HoloLoom.chatops import CustomCommandManager
 
 # In bot setup
 cmd_manager = CustomCommandManager()

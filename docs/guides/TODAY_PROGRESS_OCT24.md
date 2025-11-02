@@ -48,14 +48,14 @@ Continued development across three major subsystems: TextSpinner implementation,
 ## 2. Import Path Fixes ✅
 
 ### Problem
-Inconsistent import case sensitivity (`holoLoom` vs `HoloLoom`) causing `ModuleNotFoundError` on Windows.
+Inconsistent import case sensitivity (`HoloLoom` vs `HoloLoom`) causing `ModuleNotFoundError` on Windows.
 
 ### Solution
 Fixed imports in 4 core modules:
-- `holoLoom/policy/unified.py:55-56` - Fixed HoloLoom.Documentation imports
-- `holoLoom/embedding/spectral.py:30` - Fixed HoloLoom.Documentation.types
-- `holoLoom/memory/cache.py:32-33` - Fixed HoloLoom imports
-- `holoLoom/motif/base.py:12` - Fixed HoloLoom.Documentation.types
+- `HoloLoom/policy/unified.py:55-56` - Fixed HoloLoom.Documentation imports
+- `HoloLoom/embedding/spectral.py:30` - Fixed HoloLoom.Documentation.types
+- `HoloLoom/memory/cache.py:32-33` - Fixed HoloLoom imports
+- `HoloLoom/motif/base.py:12` - Fixed HoloLoom.Documentation.types
 
 ### Impact
 - Package now imports correctly across all platforms
@@ -214,10 +214,10 @@ class Promptly:
 
 ### Modified (Uncommitted)
 - `Promptly/promptly/promptly.py` (+303 lines) - Skills system
-- `holoLoom/policy/unified.py` (import fixes)
-- `holoLoom/embedding/spectral.py` (import fixes)
-- `holoLoom/memory/cache.py` (import fixes)
-- `holoLoom/motif/base.py` (import fixes)
+- `HoloLoom/policy/unified.py` (import fixes)
+- `HoloLoom/embedding/spectral.py` (import fixes)
+- `HoloLoom/memory/cache.py` (import fixes)
+- `HoloLoom/motif/base.py` (import fixes)
 
 ### Created (Uncommitted)
 - `HoloLoom/spinningWheel/text.py` (392 lines)
@@ -320,7 +320,7 @@ TextSpinner Implementation:
 
 Import Path Fixes:
 - Fixed case sensitivity in 4 core modules
-- holoLoom → HoloLoom consistency
+- HoloLoom → HoloLoom consistency
 - Resolves ModuleNotFoundError on Windows
 
 AudioSpinner Restoration:
@@ -351,10 +351,10 @@ Files Modified:
 - HoloLoom/config.py (+18 lines - Neo4j config)
 - HoloLoom/spinningWheel/__init__.py (+8 - exports)
 - Promptly/promptly/promptly.py (+303 - Skills system)
-- holoLoom/policy/unified.py (import fixes)
-- holoLoom/embedding/spectral.py (import fixes)
-- holoLoom/memory/cache.py (import fixes)
-- holoLoom/motif/base.py (import fixes)
+- HoloLoom/policy/unified.py (import fixes)
+- HoloLoom/embedding/spectral.py (import fixes)
+- HoloLoom/memory/cache.py (import fixes)
+- HoloLoom/motif/base.py (import fixes)
 
 Tested and verified:
 - All TextSpinner chunking modes working

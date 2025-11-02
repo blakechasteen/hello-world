@@ -299,7 +299,7 @@ Specific, contextual, adaptive, gap-aware.
 **Error**:
 ```
 TypeError: ResonanceShed.__init__() got an unexpected keyword argument 'cfg'
-File: holoLoom/weaving_orchestrator.py, line 1103
+File: HoloLoom/weaving_orchestrator.py, line 1103
 ```
 
 **Status**: Separate system issue (not related to agentic search implementation)

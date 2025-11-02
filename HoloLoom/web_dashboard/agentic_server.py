@@ -25,15 +25,17 @@ Usage:
 Then open: http://localhost:8001
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, Form
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import json
 import asyncio
-from typing import Dict, List
+from typing import Dict, List, Optional
 import sys
 import logging
+import tempfile
+import os
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -45,7 +47,13 @@ logger = logging.getLogger(__name__)
 from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
 from HoloLoom.config import Config, MemoryBackend
 from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.alignment.audit_trail import OutcomeType
+from HoloLoom.alignment.audit_trail import OutcomeType, AuditTrail
+from HoloLoom.web_dashboard.conversation_manager import ConversationManager
+from HoloLoom.web_dashboard.promptly_bridge import PromptlyBridge, PROMPTLY_AVAILABLE
+
+# Spinners for content ingestion
+from HoloLoom.spinningWheel.youtube_spinner import YouTubeSpinner, TRANSCRIPT_API_AVAILABLE as YOUTUBE_AVAILABLE
+from HoloLoom.spinningWheel.whisper_spinner import WhisperSpinner, WHISPER_AVAILABLE
 
 # Create FastAPI app
 app = FastAPI(title="HoloLoom Agentic Dashboard")
@@ -53,27 +61,59 @@ app = FastAPI(title="HoloLoom Agentic Dashboard")
 # Active WebSocket connections
 active_connections: List[WebSocket] = []
 
+# Conversation tracking: WebSocket -> conversation_id
+websocket_conversations: Dict[WebSocket, int] = {}
+
 # Agentic orchestrator (initialized on startup)
 agentic_orchestrator = None
 orchestrator_config = None
+conversation_manager = None
+promptly_bridge = None
+
+# Spinners for content ingestion
+youtube_spinner = None
+whisper_spinner = None
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize agentic orchestrator on startup"""
-    global agentic_orchestrator, orchestrator_config
+    global agentic_orchestrator, orchestrator_config, conversation_manager, promptly_bridge, youtube_spinner, whisper_spinner
 
     logger.info("="*60)
-    logger.info("🚀 Starting HoloLoom Agentic Dashboard")
+    logger.info("Starting HoloLoom Agentic Dashboard")
     logger.info("="*60)
+
+    # Initialize conversation manager (persistent SQLite storage)
+    conversation_manager = ConversationManager(db_path="./data/conversations.db")
+    stats = conversation_manager.get_stats()
+    logger.info(f"Conversation database initialized")
+    logger.info(f"  - Total conversations: {stats['total_conversations']}")
+    logger.info(f"  - Total messages: {stats['total_messages']}")
+    logger.info(f"  - Database: {stats['db_path']}")
+
+    # Initialize Promptly integration (if available)
+    if PROMPTLY_AVAILABLE:
+        try:
+            promptly_bridge = PromptlyBridge()
+            logger.info("Promptly integration enabled")
+        except Exception as e:
+            logger.warning(f"Promptly integration failed: {e}")
+            promptly_bridge = None
+    else:
+        logger.info("Promptly not available (optional)")
 
     # Create configuration
     orchestrator_config = Config.fast()
     orchestrator_config.memory_backend = MemoryBackend.HYBRID  # Neo4j + Qdrant with fallback
+    orchestrator_config.enable_safety_guardrails = False  # Disable strict safety for dashboard
 
     # Create initial knowledge shards (can be loaded from files)
     shards = create_demo_shards()
-    logger.info(f"✓ Loaded {len(shards)} knowledge shards")
+    logger.info(f"Loaded {len(shards)} knowledge shards")
+
+    # Create permissive audit trail for dashboard (auto-approve read-only actions)
+    permissive_audit = AuditTrail(persist_path=None)  # In-memory only for dashboard
 
     # Create agentic orchestrator with persistent memory
     try:
@@ -81,12 +121,13 @@ async def startup_event():
             config=orchestrator_config,
             shards=shards,
             enable_verification=True,
-            enable_goal_tracking=True
+            enable_goal_tracking=True,
+            audit_trail=permissive_audit
         )
 
         # Check LLM status
         llm_status = "available" if agentic_orchestrator.llm else "unavailable"
-        logger.info(f"✓ Agentic orchestrator initialized")
+        logger.info(f"Agentic orchestrator initialized")
         logger.info(f"  - LLM status: {llm_status}")
         logger.info(f"  - Alignment: enabled")
         logger.info(f"  - Memory backend: {orchestrator_config.memory_backend.value}")
@@ -94,13 +135,37 @@ async def startup_event():
         logger.info(f"  - Goal tracking: enabled")
 
     except Exception as e:
-        logger.error(f"✗ Failed to initialize orchestrator: {e}")
+        logger.error(f"Failed to initialize orchestrator: {e}")
         import traceback
         traceback.print_exc()
         raise
 
+    # Initialize spinners for content ingestion
+    logger.info("Initializing content spinners...")
+
+    # YouTube spinner
+    if YOUTUBE_AVAILABLE:
+        youtube_spinner = YouTubeSpinner(
+            importance_threshold=0.2,  # Lower threshold for dashboard
+            languages=['en', 'auto'],
+            chunk_duration=60.0  # 1-minute chunks
+        )
+        logger.info("  - YouTube spinner: enabled")
+    else:
+        logger.info("  - YouTube spinner: unavailable (install youtube-transcript-api)")
+
+    # Whisper spinner
+    if WHISPER_AVAILABLE:
+        whisper_spinner = WhisperSpinner(
+            model_size="base",  # Fast model for dashboard
+            importance_threshold=0.2
+        )
+        logger.info("  - Whisper spinner: enabled (model: base)")
+    else:
+        logger.info("  - Whisper spinner: unavailable (install openai-whisper)")
+
     logger.info("="*60)
-    logger.info("✓ Dashboard ready at http://localhost:8001")
+    logger.info("Dashboard ready at http://localhost:8002")
     logger.info("="*60)
 
 
@@ -122,7 +187,11 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     active_connections.append(websocket)
 
-    logger.info(f"✓ Client connected. Active connections: {len(active_connections)}")
+    # Don't create conversation yet - wait for first message
+    # This prevents empty conversations from accumulating on page refreshes
+    websocket_conversations[websocket] = None
+
+    logger.info(f"Client connected. Active: {len(active_connections)}")
 
     try:
         while True:
@@ -132,11 +201,291 @@ async def websocket_endpoint(websocket: WebSocket):
 
             action = message_data.get('action', 'reason')
 
-            if action == 'reason':
+            if action == 'new_conversation':
+                # Create new conversation thread
+                new_conv = conversation_manager.create_conversation()
+                websocket_conversations[websocket] = new_conv.id
+
+                await websocket.send_json({
+                    'type': 'conversation_created',
+                    'data': new_conv.to_dict()
+                })
+                logger.info(f"New conversation {new_conv.id} created")
+
+            elif action == 'load_conversation':
+                # Load existing conversation
+                conversation_id = message_data.get('conversation_id')
+                conversation = conversation_manager.get_conversation(conversation_id)
+
+                if conversation:
+                    websocket_conversations[websocket] = conversation_id
+                    messages = conversation_manager.get_messages(conversation_id)
+
+                    await websocket.send_json({
+                        'type': 'conversation_loaded',
+                        'data': {
+                            'conversation': conversation.to_dict(),
+                            'messages': [msg.to_dict() for msg in messages]
+                        }
+                    })
+                    logger.info(f"Loaded conversation {conversation_id} with {len(messages)} messages")
+                else:
+                    await websocket.send_json({
+                        'type': 'error',
+                        'data': {'error': f'Conversation {conversation_id} not found'}
+                    })
+
+            elif action == 'list_conversations':
+                # List conversations with pagination support
+                limit = message_data.get('limit', 50)
+                offset = message_data.get('offset', 0)
+
+                conversations, has_more = conversation_manager.list_conversations(limit=limit, offset=offset)
+
+                await websocket.send_json({
+                    'type': 'conversations_list',
+                    'data': {
+                        'conversations': [conv.to_dict() for conv in conversations],
+                        'has_more': has_more,
+                        'offset': offset + len(conversations)
+                    }
+                })
+
+            elif action == 'delete_conversation':
+                # Delete a conversation
+                conversation_id = message_data.get('conversation_id')
+                conversation_manager.delete_conversation(conversation_id)
+
+                # If it's the current conversation, create a new one
+                if websocket_conversations.get(websocket) == conversation_id:
+                    new_conv = conversation_manager.create_conversation()
+                    websocket_conversations[websocket] = new_conv.id
+                    await websocket.send_json({
+                        'type': 'conversation_created',
+                        'data': new_conv.to_dict()
+                    })
+
+                await websocket.send_json({
+                    'type': 'conversation_deleted',
+                    'data': {'conversation_id': conversation_id}
+                })
+
+                # Send updated conversation list
+                conversations = conversation_manager.list_conversations(limit=50)
+                await websocket.send_json({
+                    'type': 'conversations_list',
+                    'data': {
+                        'conversations': [conv.to_dict() for conv in conversations]
+                    }
+                })
+
+            # [REMOVED DUPLICATE] create_project handler moved to line 684
+
+            elif action == 'list_projects':
+                # List all projects
+                projects = conversation_manager.list_projects()
+
+                await websocket.send_json({
+                    'type': 'projects_list',
+                    'data': {
+                        'projects': [proj.to_dict() for proj in projects]
+                    }
+                })
+
+            elif action == 'update_project':
+                # Update project details
+                project_id = message_data.get('project_id')
+                name = message_data.get('name')
+                color = message_data.get('color')
+                icon = message_data.get('icon')
+
+                conversation_manager.update_project(project_id, name, color, icon)
+
+                # Send updated project list
+                projects = conversation_manager.list_projects()
+                await websocket.send_json({
+                    'type': 'project_updated',
+                    'data': {'project_id': project_id}
+                })
+                await websocket.send_json({
+                    'type': 'projects_list',
+                    'data': {
+                        'projects': [proj.to_dict() for proj in projects]
+                    }
+                })
+
+            elif action == 'delete_project':
+                # Delete project
+                project_id = message_data.get('project_id')
+                delete_conversations = message_data.get('delete_conversations', False)
+
+                conversation_manager.delete_project(project_id, delete_conversations)
+
+                await websocket.send_json({
+                    'type': 'project_deleted',
+                    'data': {'project_id': project_id}
+                })
+
+                # Send updated lists
+                projects = conversation_manager.list_projects()
+                await websocket.send_json({
+                    'type': 'projects_list',
+                    'data': {
+                        'projects': [proj.to_dict() for proj in projects]
+                    }
+                })
+
+                conversations = conversation_manager.list_conversations(limit=50)
+                await websocket.send_json({
+                    'type': 'conversations_list',
+                    'data': {
+                        'conversations': [conv.to_dict() for conv in conversations]
+                    }
+                })
+
+            elif action == 'move_to_project':
+                # Move conversation to project
+                conversation_id = message_data.get('conversation_id')
+                project_id = message_data.get('project_id')  # None = uncategorized
+
+                conversation_manager.move_to_project(conversation_id, project_id)
+
+                await websocket.send_json({
+                    'type': 'conversation_moved',
+                    'data': {
+                        'conversation_id': conversation_id,
+                        'project_id': project_id
+                    }
+                })
+
+                # Send updated lists
+                projects = conversation_manager.list_projects()
+                await websocket.send_json({
+                    'type': 'projects_list',
+                    'data': {
+                        'projects': [proj.to_dict() for proj in projects]
+                    }
+                })
+
+                conversations = conversation_manager.list_conversations(limit=50)
+                await websocket.send_json({
+                    'type': 'conversations_list',
+                    'data': {
+                        'conversations': [conv.to_dict() for conv in conversations]
+                    }
+                })
+
+            elif action == 'rename_conversation':
+                # Rename conversation
+                conversation_id = message_data.get('conversation_id')
+                new_title = message_data.get('title', '')
+
+                if new_title and conversation_id:
+                    conversation_manager.rename_conversation(conversation_id, new_title)
+
+                    await websocket.send_json({
+                        'type': 'conversation_renamed',
+                        'data': {
+                            'conversation_id': conversation_id,
+                            'title': new_title
+                        }
+                    })
+
+                    # Send updated conversation list
+                    conversations = conversation_manager.list_conversations(limit=50)
+                    await websocket.send_json({
+                        'type': 'conversations_list',
+                        'data': {
+                            'conversations': [conv.to_dict() for conv in conversations]
+                        }
+                    })
+
+            elif action == 'search_conversations':
+                # Search conversations
+                query = message_data.get('query', '')
+                limit = message_data.get('limit', 20)
+
+                results = conversation_manager.search_conversations(query, limit)
+
+                await websocket.send_json({
+                    'type': 'search_results',
+                    'data': {
+                        'query': query,
+                        'results': [conv.to_dict() for conv in results]
+                    }
+                })
+
+            elif action == 'toggle_favorite':
+                # Toggle favorite status
+                conversation_id = message_data.get('conversation_id')
+
+                conversation_manager.toggle_favorite(conversation_id)
+
+                await websocket.send_json({
+                    'type': 'favorite_toggled',
+                    'data': {'conversation_id': conversation_id}
+                })
+
+                # Send updated conversation list
+                conversations = conversation_manager.list_conversations(limit=50)
+                await websocket.send_json({
+                    'type': 'conversations_list',
+                    'data': {
+                        'conversations': [conv.to_dict() for conv in conversations]
+                    }
+                })
+
+            elif action == 'update_tags':
+                # Update conversation tags
+                conversation_id = message_data.get('conversation_id')
+                tags = message_data.get('tags', [])
+
+                conversation_manager.update_tags(conversation_id, tags)
+
+                await websocket.send_json({
+                    'type': 'tags_updated',
+                    'data': {
+                        'conversation_id': conversation_id,
+                        'tags': tags
+                    }
+                })
+
+                # Send updated conversation list
+                conversations = conversation_manager.list_conversations(limit=50)
+                await websocket.send_json({
+                    'type': 'conversations_list',
+                    'data': {
+                        'conversations': [conv.to_dict() for conv in conversations]
+                    }
+                })
+
+            elif action == 'reason':
                 # Process agentic reasoning request
                 user_query = message_data.get('query', '')
                 reasoning_mode_str = message_data.get('mode', 'direct')
                 max_steps = message_data.get('max_steps', 3)
+
+                # Get current conversation ID
+                conversation_id = websocket_conversations.get(websocket)
+                if not conversation_id:
+                    # Create new conversation on first message
+                    new_conv = conversation_manager.create_conversation()
+                    conversation_id = new_conv.id
+                    websocket_conversations[websocket] = conversation_id
+
+                    # Notify client
+                    await websocket.send_json({
+                        'type': 'conversation_created',
+                        'data': new_conv.to_dict()
+                    })
+
+                # Save user message to database
+                user_message = conversation_manager.add_message(
+                    conversation_id=conversation_id,
+                    role='user',
+                    content=user_query,
+                    metadata={'mode': reasoning_mode_str}
+                )
 
                 # Map string to ReasoningMode enum
                 mode_map = {
@@ -148,8 +497,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 reasoning_mode = mode_map.get(reasoning_mode_str, ReasoningMode.DIRECT)
 
                 logger.info(f"\n{'='*60}")
-                logger.info(f"📥 Query: {user_query}")
-                logger.info(f"🧠 Mode: {reasoning_mode.value.upper()}")
+                logger.info(f"Query: {user_query}")
+                logger.info(f"Mode: {reasoning_mode.value.upper()}")
+                logger.info(f"Conversation: {conversation_id}")
                 logger.info(f"{'='*60}")
 
                 # Send acknowledgment
@@ -211,15 +561,47 @@ async def websocket_endpoint(websocket: WebSocket):
                         'llm_status': 'active' if agentic_orchestrator.llm else 'unavailable'
                     }
 
-                    logger.info(f"✓ Reasoning complete:")
+                    logger.info(f"Reasoning complete:")
                     logger.info(f"  - Steps: {len(result.steps_taken)}")
                     logger.info(f"  - Confidence: {result.spacetime.confidence:.2f}")
                     logger.info(f"  - Duration: {result.total_duration_ms:.1f}ms")
+
+                    # Save assistant message to database
+                    assistant_metadata = {
+                        'confidence': result.spacetime.confidence,
+                        'duration_ms': result.total_duration_ms,
+                        'total_steps': len(result.steps_taken),
+                        'mode': reasoning_mode.value,
+                        'reasoning_steps': reasoning_steps,
+                        'llm_status': 'active' if agentic_orchestrator.llm else 'unavailable'
+                    }
+                    assistant_message = conversation_manager.add_message(
+                        conversation_id=conversation_id,
+                        role='assistant',
+                        content=result.spacetime.response or "No response generated",
+                        metadata=assistant_metadata
+                    )
+
+                    # Update conversation title if this is the first exchange
+                    conversation = conversation_manager.get_conversation(conversation_id)
+                    if conversation and conversation.message_count == 2:  # User + assistant
+                        # Generate title from first user query (limit to 50 chars)
+                        title = user_query[:50] + "..." if len(user_query) > 50 else user_query
+                        conversation_manager.update_conversation_title(conversation_id, title)
 
                     # Send response
                     await websocket.send_json({
                         'type': 'reasoning_complete',
                         'data': response_data
+                    })
+
+                    # Send updated conversation list
+                    conversations = conversation_manager.list_conversations(limit=50)
+                    await websocket.send_json({
+                        'type': 'conversations_list',
+                        'data': {
+                            'conversations': [conv.to_dict() for conv in conversations]
+                        }
                     })
 
                 except Exception as e:
@@ -234,6 +616,220 @@ async def websocket_endpoint(websocket: WebSocket):
                             'traceback': traceback.format_exc()
                         }
                     })
+
+            elif action == 'get_preview':
+                # Get conversation preview (first N messages)
+                conversation_id = message_data.get('conversation_id')
+                limit = message_data.get('limit', 3)
+
+                # Get messages from conversation manager
+                messages = conversation_manager.get_messages(conversation_id, limit=limit)
+
+                await websocket.send_json({
+                    'type': 'preview_messages',
+                    'data': {
+                        'conversation_id': conversation_id,
+                        'messages': [msg.to_dict() for msg in messages]
+                    }
+                })
+
+            elif action == 'save_as_template':
+                # Save conversation as template
+                conversation_id = message_data.get('conversation_id')
+                template_name = message_data.get('name')
+                description = message_data.get('description', '')
+                icon = message_data.get('icon', '📄')
+
+                # Get conversation messages
+                messages = conversation_manager.get_messages(conversation_id)
+                messages_data = [{'role': msg.role, 'content': msg.content} for msg in messages]
+
+                # Create template
+                template = conversation_manager.create_template(template_name, description, messages_data, icon)
+
+                await websocket.send_json({
+                    'type': 'template_created',
+                    'data': template.to_dict()
+                })
+
+            elif action == 'list_templates':
+                # List all templates
+                templates = conversation_manager.list_templates()
+
+                await websocket.send_json({
+                    'type': 'templates_list',
+                    'data': {
+                        'templates': [t.to_dict() for t in templates]
+                    }
+                })
+
+            elif action == 'load_template':
+                # Load template and create new conversation from it
+                template_id = message_data.get('template_id')
+                template = conversation_manager.load_template(template_id)
+
+                if template:
+                    # Create new conversation from template
+                    new_conv = conversation_manager.create_conversation(title=template.name)
+
+                    # Add template messages
+                    for msg in json.loads(template.messages):
+                        conversation_manager.add_message(
+                            conversation_id=new_conv.id,
+                            role=msg['role'],
+                            content=msg['content']
+                        )
+
+                    await websocket.send_json({
+                        'type': 'conversation_created',
+                        'data': new_conv.to_dict()
+                    })
+
+            elif action == 'delete_template':
+                # Delete a template
+                template_id = message_data.get('template_id')
+                conversation_manager.delete_template(template_id)
+
+                await websocket.send_json({
+                    'type': 'template_deleted',
+                    'data': {'template_id': template_id}
+                })
+
+            elif action == 'create_project':
+                # Create a new project
+                name = message_data.get('name')
+                icon = message_data.get('icon', '📁')
+                color = message_data.get('color', '#667eea')
+
+                project = conversation_manager.create_project(name, icon, color)
+
+                await websocket.send_json({
+                    'type': 'project_created',
+                    'data': project.to_dict()
+                })
+
+                # Send updated project list so UI refreshes
+                projects = conversation_manager.list_projects()
+                await websocket.send_json({
+                    'type': 'projects_list',
+                    'data': {
+                        'projects': [proj.to_dict() for proj in projects]
+                    }
+                })
+
+            elif action == 'get_analytics':
+                # Get analytics data
+                analytics_data = conversation_manager.get_analytics()
+
+                await websocket.send_json({
+                    'type': 'analytics_data',
+                    'data': analytics_data
+                })
+
+            elif action == 'list_prompts':
+                # List Promptly prompts
+                if not promptly_bridge:
+                    await websocket.send_json({
+                        'type': 'error',
+                        'data': {'error': 'Promptly not available'}
+                    })
+                else:
+                    prompts = promptly_bridge.list_prompts()
+                    await websocket.send_json({
+                        'type': 'prompts_list',
+                        'data': {'prompts': prompts}
+                    })
+
+            elif action == 'get_prompt':
+                # Get specific Promptly prompt
+                if not promptly_bridge:
+                    await websocket.send_json({
+                        'type': 'error',
+                        'data': {'error': 'Promptly not available'}
+                    })
+                else:
+                    prompt_name = message_data.get('name')
+                    version = message_data.get('version')
+                    prompt = promptly_bridge.get_prompt(prompt_name, version)
+                    await websocket.send_json({
+                        'type': 'prompt_data',
+                        'data': prompt
+                    })
+
+            elif action == 'save_prompt':
+                # Save prompt to Promptly
+                if not promptly_bridge:
+                    await websocket.send_json({
+                        'type': 'error',
+                        'data': {'error': 'Promptly not available'}
+                    })
+                else:
+                    name = message_data.get('name')
+                    content = message_data.get('content')
+                    description = message_data.get('description', '')
+                    tags = message_data.get('tags', [])
+
+                    promptly_bridge.save_prompt(name, content, description, tags)
+
+                    await websocket.send_json({
+                        'type': 'prompt_saved',
+                        'data': {'name': name}
+                    })
+
+            elif action == 'ingest_youtube':
+                # Ingest YouTube video transcript
+                if not youtube_spinner:
+                    await websocket.send_json({
+                        'type': 'error',
+                        'data': {'error': 'YouTube spinner not available. Install: pip install youtube-transcript-api'}
+                    })
+                else:
+                    url = message_data.get('url', '')
+                    logger.info(f"Ingesting YouTube: {url}")
+
+                    try:
+                        # Save permalink (raw "wool")
+                        wool_dir = Path("./data/wool/youtube")
+                        wool_dir.mkdir(parents=True, exist_ok=True)
+
+                        video_id = youtube_spinner._extract_video_id(url)
+                        permalink_file = wool_dir / f"{video_id}_permalink.txt"
+                        with open(permalink_file, 'w') as f:
+                            f.write(f"URL: {url}\n")
+                            f.write(f"Video ID: {video_id}\n")
+                            f.write(f"Ingested: {asyncio.get_event_loop().time()}\n")
+
+                        # Transcribe YouTube video
+                        result = await youtube_spinner.spin(url)
+
+                        if result.success:
+                            # Add shards to orchestrator memory
+                            for shard in result.shards:
+                                await agentic_orchestrator.add_shard(shard)
+
+                            await websocket.send_json({
+                                'type': 'youtube_ingested',
+                                'data': {
+                                    'video_id': result.metadata.get('video_id'),
+                                    'title': result.metadata.get('title'),
+                                    'shard_count': len(result.shards),
+                                    'duration': result.metadata.get('duration'),
+                                    'language': result.metadata.get('language')
+                                }
+                            })
+                            logger.info(f"  ✓ Ingested {len(result.shards)} shards from {url}")
+                        else:
+                            await websocket.send_json({
+                                'type': 'error',
+                                'data': {'error': result.error_message}
+                            })
+
+                    except Exception as e:
+                        logger.error(f"  ✗ YouTube ingestion failed: {e}")
+                        await websocket.send_json({
+                            'type': 'error',
+                            'data': {'error': str(e)}
+                        })
 
             elif action == 'get_status':
                 # Return system status
@@ -252,7 +848,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         active_connections.remove(websocket)
-        logger.info(f"✓ Client disconnected. Active connections: {len(active_connections)}")
+        if websocket in websocket_conversations:
+            del websocket_conversations[websocket]
+        logger.info(f"Client disconnected. Active connections: {len(active_connections)}")
 
 
 @app.get("/api/status")
@@ -264,8 +862,67 @@ async def get_status():
         'llm_available': agentic_orchestrator.llm is not None if agentic_orchestrator else False,
         'memory_backend': orchestrator_config.memory_backend.value if orchestrator_config else 'unknown',
         'alignment_enabled': True,
-        'active_connections': len(active_connections)
+        'active_connections': len(active_connections),
+        'youtube_available': youtube_spinner is not None,
+        'whisper_available': whisper_spinner is not None
     }
+
+
+@app.post("/api/upload_audio")
+async def upload_audio(file: UploadFile = File(...)):
+    """
+    Upload and transcribe audio file.
+    Saves raw audio (wool) and creates memory shards.
+    """
+    if not whisper_spinner:
+        return JSONResponse(
+            status_code=503,
+            content={'error': 'Whisper not available. Install: pip install openai-whisper'}
+        )
+
+    try:
+        # Save raw audio file (wool)
+        wool_dir = Path("./data/wool/audio")
+        wool_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save uploaded file
+        file_path = wool_dir / file.filename
+        with open(file_path, 'wb') as f:
+            content = await file.read()
+            f.write(content)
+
+        logger.info(f"Transcribing audio: {file.filename}")
+
+        # Transcribe
+        result = await whisper_spinner.spin(file_path)
+
+        if result.success:
+            # Add shards to orchestrator memory
+            for shard in result.shards:
+                await agentic_orchestrator.add_shard(shard)
+
+            logger.info(f"  ✓ Transcribed {len(result.shards)} shards from {file.filename}")
+
+            return {
+                'success': True,
+                'filename': file.filename,
+                'shard_count': len(result.shards),
+                'duration': result.metadata.get('duration'),
+                'language': result.metadata.get('language'),
+                'full_text': result.metadata.get('full_text', '')[:200]  # Preview
+            }
+        else:
+            return JSONResponse(
+                status_code=400,
+                content={'error': result.error_message}
+            )
+
+    except Exception as e:
+        logger.error(f"  ✗ Audio transcription failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
 
 
 def create_demo_shards() -> List[MemoryShard]:
@@ -311,7 +968,7 @@ def get_agentic_html() -> str:
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HoloLoom - Agentic Intelligence</title>
+    <title>HoloLoom Chat</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -322,253 +979,447 @@ def get_agentic_html() -> str:
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #e0e0e0;
-            min-height: 100vh;
-            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        h1 {
-            font-size: 2.5em;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            color: #aaa;
-            font-size: 1.1em;
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .panel {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px;
-        }
-
-        .panel-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #fff;
-        }
-
-        .mode-selector {
+        /* Main Content Area (everything except sidebar) */
+        .main-content {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            overflow: hidden;
         }
 
-        .mode-btn {
-            padding: 12px;
-            background: rgba(102, 126, 234, 0.2);
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1em;
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(0, 0, 0, 0.4);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .mode-btn:hover {
-            background: rgba(102, 126, 234, 0.4);
-            transform: translateY(-2px);
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .mode-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: #764ba2;
-        }
-
-        .mode-description {
-            font-size: 0.85em;
-            color: #aaa;
-            margin-top: 5px;
-        }
-
-        textarea {
+        .new-chat-btn {
             width: 100%;
-            min-height: 100px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
             color: #fff;
-            font-size: 1em;
-            font-family: inherit;
-            resize: vertical;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        textarea:focus {
-            outline: none;
+        .new-chat-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .conversation-item {
+            padding: 12px 14px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .conversation-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.4);
+        }
+
+        .conversation-item.active {
+            background: rgba(102, 126, 234, 0.2);
             border-color: #667eea;
         }
 
-        .send-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
+        .conversation-title {
+            font-size: 0.9em;
+            color: #e0e0e0;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .send-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .response-area {
-            max-height: calc(100vh - 200px);
-            overflow-y: auto;
-        }
-
-        .reasoning-step {
-            background: rgba(0, 0, 0, 0.3);
-            border-left: 3px solid #667eea;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-        }
-
-        .reasoning-step.llm-generated {
-            border-left-color: #f39c12;
-        }
-
-        .step-header {
+        .conversation-meta {
+            font-size: 0.75em;
+            color: #888;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
         }
 
-        .step-type {
+        .conversation-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(231, 76, 60, 0.2);
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+        }
+
+        .conversation-item:hover .conversation-delete {
+            opacity: 1;
+        }
+
+        .conversation-delete:hover {
+            background: rgba(231, 76, 60, 0.4);
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.3em;
             font-weight: 600;
-            color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .step-type.llm-generated::after {
-            content: " 🤖";
-        }
-
-        .step-confidence {
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
             color: #aaa;
             font-size: 0.9em;
         }
 
-        .step-content {
-            color: #ddd;
-            line-height: 1.6;
-        }
-
-        .final-response {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            border: 2px solid #667eea;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .stat-box {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5em;
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        .stat-label {
-            font-size: 0.85em;
-            color: #aaa;
-            margin-top: 5px;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
+        .status-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            margin-right: 5px;
-        }
-
-        .status-indicator.online {
             background: #2ecc71;
             box-shadow: 0 0 5px #2ecc71;
         }
 
-        .status-indicator.offline {
+        .status-dot.offline {
             background: #e74c3c;
+            box-shadow: none;
         }
 
-        .loading {
+        /* Mode Selector */
+        .mode-bar {
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-chip {
+            padding: 6px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.4);
+            border-radius: 20px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85em;
+        }
+
+        .mode-chip:hover {
+            background: rgba(102, 126, 234, 0.3);
+            color: #fff;
+        }
+
+        .mode-chip.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #764ba2;
+            color: #fff;
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 85%;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-meta {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 4px;
+            padding: 0 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message.user .message-meta {
+            justify-content: flex-end;
+        }
+
+        /* Reasoning Steps (Collapsible) */
+        .reasoning-toggle {
+            color: #667eea;
+            cursor: pointer;
+            font-size: 0.85em;
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            display: inline-block;
+            user-select: none;
+        }
+
+        .reasoning-toggle:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .reasoning-steps {
+            margin-top: 10px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            display: none;
+        }
+
+        .reasoning-steps.expanded {
+            display: block;
+        }
+
+        .reasoning-step {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9em;
+        }
+
+        .reasoning-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-title {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .step-detail {
+            color: #aaa;
+            margin-top: 4px;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Input Area */
+        .input-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 12px 20px;
+            color: #fff;
+            font-size: 0.95em;
+            font-family: inherit;
+            resize: none;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Welcome Message */
+        .welcome-message {
             text-align: center;
-            padding: 40px;
+            padding: 40px 20px;
             color: #aaa;
         }
 
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+        .welcome-message h2 {
+            color: #667eea;
+            margin-bottom: 10px;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
 
         ::-webkit-scrollbar-track {
@@ -586,83 +1437,87 @@ def get_agentic_html() -> str:
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🧠 HoloLoom Agentic Intelligence</h1>
-            <p class="subtitle">
-                <span class="status-indicator online" id="statusIndicator"></span>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <button class="new-chat-btn" onclick="newChat()">
+                <span>+</span>
+                <span>New Chat</span>
+            </button>
+        </div>
+        <div class="conversations-list" id="conversationsList">
+            <!-- Conversation items will be added here dynamically -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">HoloLoom Chat</div>
+            <div class="header-status">
+                <span class="status-dot" id="statusDot"></span>
                 <span id="statusText">Connecting...</span>
-            </p>
-        </header>
-
-        <div class="main-grid">
-            <!-- Left Panel: Controls -->
-            <div class="panel">
-                <div class="panel-title">Reasoning Mode</div>
-                <div class="mode-selector">
-                    <button class="mode-btn active" data-mode="direct">
-                        <div>DIRECT</div>
-                        <div class="mode-description">Single-pass answer (~150ms)</div>
-                    </button>
-                    <button class="mode-btn" data-mode="verify">
-                        <div>VERIFY</div>
-                        <div class="mode-description">Answer + verification (~340ms)</div>
-                    </button>
-                    <button class="mode-btn" data-mode="research">
-                        <div>RESEARCH ⭐</div>
-                        <div class="mode-description">LLM-activated search (~4500ms)</div>
-                    </button>
-                    <button class="mode-btn" data-mode="plan_execute">
-                        <div>PLAN & EXECUTE</div>
-                        <div class="mode-description">Goal decomposition (~340ms)</div>
-                    </button>
-                </div>
-
-                <div style="margin-top: 30px;">
-                    <div class="panel-title">Your Query</div>
-                    <textarea id="queryInput" placeholder="Enter your question here...
-Example: How does Thompson Sampling compare to other exploration strategies?"></textarea>
-                    <button class="send-btn" id="sendBtn">🚀 Send Query</button>
-                </div>
             </div>
+        </div>
 
-            <!-- Right Panel: Response -->
-            <div class="panel">
-                <div class="panel-title">Response</div>
-                <div class="response-area" id="responseArea">
-                    <div class="loading">
-                        <p>Ready to process your queries with agentic intelligence.</p>
-                        <p style="margin-top: 10px; color: #667eea;">Select a reasoning mode and enter your question.</p>
-                    </div>
-                </div>
+        <!-- Mode Selector -->
+        <div class="mode-bar">
+            <div class="mode-chip active" data-mode="direct">DIRECT</div>
+            <div class="mode-chip" data-mode="verify">VERIFY</div>
+            <div class="mode-chip" data-mode="research">RESEARCH</div>
+            <div class="mode-chip" data-mode="plan_execute">PLAN</div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-container" id="chatContainer">
+            <div class="welcome-message">
+                <h2>Welcome to HoloLoom</h2>
+                <p>Ask me anything. I'll use agentic reasoning to find the best answer.</p>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea
+                    class="input-field"
+                    id="messageInput"
+                    placeholder="Type your message..."
+                    rows="1"
+                ></textarea>
+                <button class="send-button" id="sendButton">
+                    <span>&#10148;</span>
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // WebSocket connection
+        // State
         let ws = null;
         let selectedMode = 'direct';
+        let messageHistory = [];
+        let typingMessageId = null;
+        let currentConversationId = null;
+        let conversations = [];
 
         // Connect to WebSocket
         function connect() {
             ws = new WebSocket('ws://localhost:8002/ws');
 
             ws.onopen = () => {
-                console.log('✓ Connected to server');
-                document.getElementById('statusIndicator').className = 'status-indicator online';
+                console.log('Connected to server');
+                document.getElementById('statusDot').className = 'status-dot';
                 document.getElementById('statusText').textContent = 'Connected';
-
-                // Request status
                 ws.send(JSON.stringify({ action: 'get_status' }));
+                ws.send(JSON.stringify({ action: 'list_conversations' }));
             };
 
             ws.onclose = () => {
-                console.log('✗ Disconnected from server');
-                document.getElementById('statusIndicator').className = 'status-indicator offline';
-                document.getElementById('statusText').textContent = 'Disconnected - Reconnecting...';
-
-                // Reconnect after 3 seconds
+                console.log('Disconnected from server');
+                document.getElementById('statusDot').className = 'status-dot offline';
+                document.getElementById('statusText').textContent = 'Reconnecting...';
                 setTimeout(connect, 3000);
             };
 
@@ -678,131 +1533,352 @@ Example: How does Thompson Sampling compare to other exploration strategies?"></
 
         // Handle incoming messages
         function handleMessage(message) {
-            console.log('Received:', message.type);
-
             if (message.type === 'status_response') {
                 const status = message.data;
-                const statusText = document.getElementById('statusText');
-                statusText.innerHTML = `
-                    LLM: ${status.llm_available ? 'Active 🤖' : 'Unavailable'}
-                    | Memory: ${status.memory_backend}
-                    | Alignment: ${status.alignment_enabled ? 'Enabled ✓' : 'Disabled'}
-                `;
+                document.getElementById('statusText').textContent =
+                    `LLM: ${status.llm_available ? 'Active' : 'N/A'} | ${status.memory_backend}`;
             }
             else if (message.type === 'reasoning_started') {
-                const responseArea = document.getElementById('responseArea');
-                responseArea.innerHTML = `
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Processing query with ${message.data.mode.toUpperCase()} mode...</p>
-                    </div>
-                `;
+                showTypingIndicator();
             }
             else if (message.type === 'reasoning_complete') {
-                displayResponse(message.data);
+                removeTypingIndicator();
+                addAssistantMessage(message.data);
+                document.getElementById('sendButton').disabled = false;
+                document.getElementById('messageInput').value = '';
+                autoResize(document.getElementById('messageInput'));
             }
             else if (message.type === 'reasoning_error') {
-                const responseArea = document.getElementById('responseArea');
-                responseArea.innerHTML = `
-                    <div style="color: #e74c3c; padding: 20px;">
-                        <h3>Error</h3>
-                        <p>${message.data.error}</p>
+                removeTypingIndicator();
+                addAssistantMessage({
+                    response: 'Sorry, an error occurred: ' + message.data.error,
+                    confidence: 0,
+                    duration_ms: 0,
+                    total_steps: 0,
+                    reasoning_steps: []
+                });
+                document.getElementById('sendButton').disabled = false;
+            }
+            else if (message.type === 'conversation_created') {
+                currentConversationId = message.data.id;
+                console.log('New conversation created:', currentConversationId);
+                ws.send(JSON.stringify({ action: 'list_conversations' }));
+            }
+            else if (message.type === 'conversation_loaded') {
+                const { conversation, messages } = message.data;
+                currentConversationId = conversation.id;
+                console.log('Loaded conversation:', conversation.id);
+
+                // Clear chat area
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.innerHTML = '';
+                messageHistory = [];
+
+                // Restore messages
+                messages.forEach(msg => {
+                    if (msg.role === 'user') {
+                        addUserMessage(msg.content);
+                    } else {
+                        addAssistantMessage({
+                            response: msg.content,
+                            confidence: msg.metadata.confidence || 0,
+                            duration_ms: msg.metadata.duration_ms || 0,
+                            total_steps: msg.metadata.total_steps || 0,
+                            reasoning_steps: msg.metadata.reasoning_steps || []
+                        });
+                    }
+                });
+
+                updateConversationList();
+            }
+            else if (message.type === 'conversations_list') {
+                conversations = message.data.conversations;
+                updateConversationList();
+            }
+        }
+
+        // Add user message to chat
+        function addUserMessage(text) {
+            const chatContainer = document.getElementById('chatContainer');
+
+            // Remove welcome message if exists
+            const welcome = chatContainer.querySelector('.welcome-message');
+            if (welcome) welcome.remove();
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `
+                <div class="message-avatar">👤</div>
+                <div class="message-content">
+                    <div class="message-bubble">${escapeHtml(text)}</div>
+                    <div class="message-meta">
+                        <span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
+                        <span>${selectedMode.toUpperCase()}</span>
+                    </div>
+                </div>
+            `;
+
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Add assistant message to chat
+        function addAssistantMessage(data) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageId = 'msg-' + Date.now();
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.id = messageId;
+
+            let reasoningHtml = '';
+            if (data.reasoning_steps && data.reasoning_steps.length > 0) {
+                const stepCount = data.reasoning_steps.length;
+                const toggleId = `toggle-${messageId}`;
+                const stepsId = `steps-${messageId}`;
+
+                reasoningHtml = `
+                    <div class="reasoning-toggle" onclick="toggleReasoning('${stepsId}')">
+                        Show reasoning (${stepCount} steps)
+                    </div>
+                    <div class="reasoning-steps" id="${stepsId}">
+                        ${data.reasoning_steps.map((step, i) => `
+                            <div class="reasoning-step">
+                                <div class="step-title">Step ${i + 1}: ${step.type}</div>
+                                <div class="step-detail">
+                                    ${step.query ? `Query: ${escapeHtml(step.query)}` : ''}
+                                    ${step.confidence !== undefined ? ` (${(step.confidence * 100).toFixed(0)}% confidence)` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 `;
             }
 
-            // Re-enable send button
-            document.getElementById('sendBtn').disabled = false;
+            messageDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">${escapeHtml(data.response || 'No response')}</div>
+                    ${reasoningHtml}
+                    <div class="message-meta">
+                        <span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
+                        <span>${(data.confidence * 100).toFixed(0)}% confidence</span>
+                        <span>${data.duration_ms.toFixed(0)}ms</span>
+                    </div>
+                </div>
+            `;
+
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
         }
 
-        // Display reasoning response
-        function displayResponse(data) {
-            const responseArea = document.getElementById('responseArea');
+        // Show typing indicator
+        function showTypingIndicator() {
+            const chatContainer = document.getElementById('chatContainer');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            scrollToBottom();
+        }
 
-            let html = '';
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
 
-            // Reasoning steps
-            if (data.reasoning_steps && data.reasoning_steps.length > 0) {
-                html += '<div style="margin-bottom: 20px;">';
-                html += '<h3 style="margin-bottom: 15px;">Reasoning Steps:</h3>';
-
-                data.reasoning_steps.forEach((step, i) => {
-                    const llmClass = step.llm_generated ? 'llm-generated' : '';
-                    const typeClass = step.llm_generated ? 'llm-generated' : '';
-
-                    html += `<div class="reasoning-step ${llmClass}">`;
-                    html += `<div class="step-header">`;
-                    html += `<div class="step-type ${typeClass}">Step ${i + 1}: ${step.type.toUpperCase()}</div>`;
-                    html += `<div class="step-confidence">Confidence: ${(step.confidence * 100).toFixed(0)}%</div>`;
-                    html += `</div>`;
-
-                    if (step.query) {
-                        html += `<div class="step-content"><strong>Query:</strong> ${step.query}</div>`;
-                    }
-                    if (step.findings) {
-                        const findings = step.findings.substring(0, 200) + (step.findings.length > 200 ? '...' : '');
-                        html += `<div class="step-content" style="margin-top: 5px;"><strong>Findings:</strong> ${findings}</div>`;
-                    }
-
-                    html += `</div>`;
-                });
-
-                html += '</div>';
+        // Toggle reasoning steps
+        function toggleReasoning(stepsId) {
+            const steps = document.getElementById(stepsId);
+            if (steps) {
+                steps.classList.toggle('expanded');
             }
-
-            // Final response
-            html += `<div class="final-response">`;
-            html += `<h3 style="margin-bottom: 15px;">Final Response:</h3>`;
-            html += `<p style="line-height: 1.6;">${data.response}</p>`;
-            html += `</div>`;
-
-            // Stats
-            html += `<div class="stats">`;
-            html += `<div class="stat-box"><div class="stat-value">${data.total_steps}</div><div class="stat-label">Steps</div></div>`;
-            html += `<div class="stat-box"><div class="stat-value">${(data.confidence * 100).toFixed(0)}%</div><div class="stat-label">Confidence</div></div>`;
-            html += `<div class="stat-box"><div class="stat-value">${data.duration_ms.toFixed(0)}ms</div><div class="stat-label">Duration</div></div>`;
-            html += `<div class="stat-box"><div class="stat-value">${data.llm_status === 'active' ? '🤖' : '⚠️'}</div><div class="stat-label">LLM</div></div>`;
-            html += `</div>`;
-
-            responseArea.innerHTML = html;
         }
 
-        // Mode selection
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedMode = btn.getAttribute('data-mode');
-            });
-        });
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
 
-        // Send query
-        document.getElementById('sendBtn').addEventListener('click', () => {
-            const query = document.getElementById('queryInput').value.trim();
-            if (!query) {
-                alert('Please enter a question');
+            if (!message || !ws || ws.readyState !== WebSocket.OPEN) {
                 return;
             }
 
+            // Add user message to chat
+            addUserMessage(message);
+
             // Disable send button
-            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('sendButton').disabled = true;
 
             // Send to server
             ws.send(JSON.stringify({
                 action: 'reason',
-                query: query,
+                query: message,
                 mode: selectedMode,
                 max_steps: 3
             }));
+        }
+
+        // Auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Mode selection
+        document.querySelectorAll('.mode-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.mode-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                selectedMode = chip.getAttribute('data-mode');
+            });
         });
 
-        // Allow Enter to send (with Shift+Enter for new line)
-        document.getElementById('queryInput').addEventListener('keydown', (e) => {
+        // Send button click
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        // Input field handling
+        const messageInput = document.getElementById('messageInput');
+        messageInput.addEventListener('input', function() {
+            autoResize(this);
+        });
+
+        messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                document.getElementById('sendBtn').click();
+                sendMessage();
             }
         });
+
+        // Conversation management
+        function newChat() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                console.error('WebSocket not connected');
+                return;
+            }
+
+            // Clear current chat
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = `
+                <div class="welcome-message">
+                    <h2>Welcome to HoloLoom</h2>
+                    <p>Ask me anything. I'll use agentic reasoning to find the best answer.</p>
+                </div>
+            `;
+            messageHistory = [];
+
+            // Request new conversation
+            ws.send(JSON.stringify({ action: 'new_conversation' }));
+        }
+
+        function loadConversation(conversationId) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                console.error('WebSocket not connected');
+                return;
+            }
+
+            ws.send(JSON.stringify({
+                action: 'load_conversation',
+                conversation_id: conversationId
+            }));
+        }
+
+        function deleteConversation(conversationId, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                console.error('WebSocket not connected');
+                return;
+            }
+
+            if (confirm('Delete this conversation?')) {
+                ws.send(JSON.stringify({
+                    action: 'delete_conversation',
+                    conversation_id: conversationId
+                }));
+            }
+        }
+
+        function updateConversationList() {
+            const listContainer = document.getElementById('conversationsList');
+
+            if (conversations.length === 0) {
+                listContainer.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #666; font-size: 0.85em;">
+                        No conversations yet.<br>Start chatting!
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = conversations.map(conv => {
+                const isActive = conv.id === currentConversationId;
+                const timestamp = formatTimestamp(conv.updated_at);
+                const msgCount = conv.message_count || 0;
+
+                return `
+                    <div class="conversation-item ${isActive ? 'active' : ''}"
+                         onclick="loadConversation(${conv.id})">
+                        <button class="conversation-delete"
+                                onclick="deleteConversation(${conv.id}, event)">
+                            ×
+                        </button>
+                        <div class="conversation-title">${escapeHtml(conv.title)}</div>
+                        <div class="conversation-meta">
+                            <span>${timestamp}</span>
+                            <span>${msgCount} msgs</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+
+            return date.toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric'
+            });
+        }
 
         // Connect on load
         connect();

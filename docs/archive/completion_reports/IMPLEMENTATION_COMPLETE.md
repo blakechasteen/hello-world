@@ -471,7 +471,7 @@ neo4j                     # Neo4j KG backend
 **Memory issues:**
 ```python
 # Check KG size
-from holoLoom.chatops import ConversationMemory
+from HoloLoom.chatops import ConversationMemory
 memory = ConversationMemory()
 print(f"Nodes: {len(memory.kg.G.nodes)}")
 ```

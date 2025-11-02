@@ -57,7 +57,7 @@ Copy-Item "c:\Users\blake\Documents\mythRL\mcp_server\claude_desktop_config.json
 ```json
 {
   "mcpServers": {
-    "holoLoom-memory": {
+    "HoloLoom-memory": {
       "command": "python",
       "args": ["-m", "HoloLoom.memory.mcp_server"],
       "env": {
@@ -117,7 +117,7 @@ Expected: Claude explains memory retrieval capabilities
 ```
 You: "Check memory health"
 
-Expected: Claude calls holoLoom-memory:memory_health
+Expected: Claude calls HoloLoom-memory:memory_health
 Shows Neo4j and Qdrant status
 ```
 
@@ -129,7 +129,7 @@ You: "Add this article to memory: https://docs.anthropic.com/en/docs/intro-to-cl
 Expected:
 - SpinningWheel skill activates
 - Scrapes webpage
-- Calls holoLoom-memory:ingest_webpage
+- Calls HoloLoom-memory:ingest_webpage
 - Reports: "Stored X chunks from article"
 ```
 
@@ -140,7 +140,7 @@ You: "What did I just learn about Claude?"
 
 Expected:
 - Loom skill activates
-- Calls holoLoom-memory:recall_memories
+- Calls HoloLoom-memory:recall_memories
 - Returns memories with citations
 ```
 
@@ -204,7 +204,7 @@ Claude loads appropriate skill (spinning-wheel or loom)
         ↓
 Skill provides workflow guidance
         ↓
-Claude calls MCP tools (holoLoom-memory:*)
+Claude calls MCP tools (HoloLoom-memory:*)
         ↓
 MCP server (STDIO) processes request
         ↓
@@ -306,7 +306,7 @@ docker ps | grep qdrant
 ### Issue: "Tool call failed"
 
 **Solution:**
-- Check tool name is correct (e.g., `holoLoom-memory:recall_memories`)
+- Check tool name is correct (e.g., `HoloLoom-memory:recall_memories`)
 - Check parameters are valid JSON
 - Look for error in Claude Desktop console logs
 
@@ -394,13 +394,13 @@ docker ps | grep qdrant
 ### MCP Tools (Direct)
 
 ```
-holoLoom-memory:recall_memories
-holoLoom-memory:store_memory
-holoLoom-memory:process_text
-holoLoom-memory:ingest_webpage
-holoLoom-memory:chat
-holoLoom-memory:memory_health
-holoLoom-memory:conversation_stats
+HoloLoom-memory:recall_memories
+HoloLoom-memory:store_memory
+HoloLoom-memory:process_text
+HoloLoom-memory:ingest_webpage
+HoloLoom-memory:chat
+HoloLoom-memory:memory_health
+HoloLoom-memory:conversation_stats
 ```
 
 ---

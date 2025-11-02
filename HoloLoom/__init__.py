@@ -19,6 +19,7 @@ Advanced users can still import internal components:
     # Full control when needed
 """
 import os
+import sys
 
 # Compatibility: if a sibling directory named `holoLoom` exists, prefer it
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -57,12 +58,22 @@ from . import embedding
 
 # Documentation compatibility
 try:
-	from . import documentation as Documentation
+    from . import documentation as Documentation
+    # Ensure uppercase alias resolves as a proper submodule in sys.modules
+    sys.modules.setdefault(__name__ + '.documentation', Documentation)
+    sys.modules.setdefault(__name__ + '.Documentation', Documentation)
+    try:
+        _types = Documentation.types  # type: ignore[attr-defined]
+        sys.modules.setdefault(__name__ + '.Documentation.types', _types)
+        sys.modules.setdefault(__name__ + '.documentation.types', _types)
+    except Exception:
+        pass
 except Exception:
-	try:
-		from . import Documentation
-	except Exception:
-		Documentation = None
+    try:
+        from . import Documentation
+        sys.modules.setdefault(__name__ + '.Documentation', Documentation)
+    except Exception:
+        Documentation = None
 
 # Old unified_api compatibility (if it exists)
 try:

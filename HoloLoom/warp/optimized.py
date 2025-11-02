@@ -21,6 +21,14 @@ from typing import Dict, List, Any, Optional, Union, Tuple
 from dataclasses import dataclass
 import warnings
 
+from HoloLoom.alignment.safety_guardrails import (
+    ActionCategory,
+    ActionRequest,
+    SafetyDecision,
+    SafetyGuardrails,
+    create_guardrails,
+)
+
 logger = logging.getLogger(__name__)
 
 # Optional PyTorch for GPU acceleration
@@ -87,10 +95,39 @@ class SparseTensorField:
         return dense
 
     def __matmul__(self, other: Union['SparseTensorField', np.ndarray]) -> np.ndarray:
-        """Sparse matrix multiplication."""
-        # For now, convert to dense and multiply
-        # TODO: Implement true sparse multiplication
-        return self.to_dense() @ other
+        """Sparse matrix multiplication with dense operand support."""
+        if self.shape is None:
+            return np.array([])
+
+        # Ensure dense operand for computation
+        if isinstance(other, SparseTensorField):
+            other_matrix = other.to_dense()
+        else:
+            other_matrix = other
+
+        if other_matrix.ndim == 1:
+            other_matrix = other_matrix[:, None]
+            squeeze = True
+        else:
+            squeeze = False
+
+        if self.shape[1] != other_matrix.shape[0]:
+            raise ValueError(
+                f"Incompatible shapes for matmul: {self.shape} and {other_matrix.shape}"
+            )
+
+        result = np.zeros((self.shape[0], other_matrix.shape[1]), dtype=np.result_type(self.values, other_matrix))
+
+        if len(self.values) == 0:
+            return result.squeeze(axis=1) if squeeze else result
+
+        rows = self.indices[:, 0]
+        cols = self.indices[:, 1]
+        contributions = self.values[:, None] * other_matrix[cols]
+
+        np.add.at(result, rows, contributions)
+
+        return result.squeeze(axis=1) if squeeze else result
 
 
 # ============================================================================
@@ -110,7 +147,8 @@ class GPUWarpSpace:
         embedder,
         scales: List[int] = [96, 192, 384],
         use_gpu: bool = True,
-        dtype: str = "float32"
+        dtype: str = "float32",
+        guardrails: Optional[SafetyGuardrails] = None,
     ):
         """
         Initialize GPU warp space.
@@ -135,7 +173,55 @@ class GPUWarpSpace:
         self.tensor_field = None
         self.threads_meta = []
 
+        self.guardrails = guardrails or create_guardrails()
+        self.guardrails_enabled = self.guardrails is not None
+        self._guardrail_decisions: Dict[str, Optional[SafetyDecision]] = {
+            "tension": None,
+            "attention": None,
+            "weighted_context": None,
+            "batch_attention": None,
+        }
+        self._last_text_sample: str = ""
+
         logger.info(f"GPUWarpSpace initialized: device={self.device}, dtype={self.dtype}")
+
+    @staticmethod
+    def _decision_to_dict(decision: Optional[SafetyDecision]) -> Optional[Dict[str, Any]]:
+        return decision.to_dict() if decision else None
+
+    def _evaluate_guardrails(
+        self,
+        stage: str,
+        *,
+        action: str,
+        category: ActionCategory,
+        context: Dict[str, Any],
+        text_input: str = "",
+    ) -> Optional[SafetyDecision]:
+        if not self.guardrails_enabled:
+            return None
+
+        request = ActionRequest(action=action, category=category, context=context)
+        decision = self.guardrails.evaluate(request, text_input=text_input)
+
+        if not decision.allowed:
+            logger.warning("GPU warp guardrails blocked action '%s': %s", action, decision.reason)
+            raise PermissionError(decision.reason)
+
+        if decision.requires_approval:
+            logger.warning(
+                "GPU warp guardrails require approval for action '%s': %s",
+                action,
+                decision.reason,
+            )
+            raise PermissionError(f"Warp operation requires approval: {decision.reason}")
+
+        self._guardrail_decisions[stage] = decision
+        return decision
+
+    def _reset_guardrail_trace(self) -> None:
+        for stage in self._guardrail_decisions:
+            self._guardrail_decisions[stage] = None
 
     async def tension(
         self,
@@ -150,6 +236,22 @@ class GPUWarpSpace:
             batch_size: Batch size for parallel processing
         """
         logger.info(f"Tensioning {len(thread_texts)} threads on {self.device}")
+
+        self._reset_guardrail_trace()
+        sample_text = " ".join(thread_texts[:3])[:500]
+        self._evaluate_guardrails(
+            stage="tension",
+            action="gpu_warp_tension",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "thread_count": len(thread_texts),
+                "batch_size": batch_size,
+                "scales": list(self.scales),
+                "device": str(self.device),
+            },
+            text_input=sample_text,
+        )
+        self._last_text_sample = sample_text
 
         # Batch encode (already supports batching)
         embeddings_dict = self.embedder.encode_scales(thread_texts)
@@ -189,6 +291,18 @@ class GPUWarpSpace:
             Attention weights (on GPU)
         """
         # Convert query to GPU tensor
+        self._evaluate_guardrails(
+            stage="attention",
+            action="gpu_warp_attention",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "thread_count": int(self.tensor_field.shape[0]) if self.tensor_field is not None else 0,
+                "query_dim": int(query_embedding.shape[0]) if hasattr(query_embedding, "shape") else None,
+                "temperature": float(temperature),
+            },
+            text_input=self._last_text_sample,
+        )
+
         query = torch.tensor(
             query_embedding,
             dtype=self.dtype,
@@ -214,6 +328,17 @@ class GPUWarpSpace:
             Context vector (numpy)
         """
         # Weighted sum on GPU
+        self._evaluate_guardrails(
+            stage="weighted_context",
+            action="gpu_warp_weighted_context",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "thread_count": int(self.tensor_field.shape[0]) if self.tensor_field is not None else 0,
+                "attention_length": int(attention.shape[0]) if hasattr(attention, "shape") else None,
+            },
+            text_input=self._last_text_sample,
+        )
+
         context = torch.matmul(attention, self.tensor_field)
 
         # Convert back to numpy
@@ -235,6 +360,18 @@ class GPUWarpSpace:
             List of context vectors
         """
         # Stack queries into batch
+        self._evaluate_guardrails(
+            stage="batch_attention",
+            action="gpu_warp_batch_attention",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "thread_count": int(self.tensor_field.shape[0]) if self.tensor_field is not None else 0,
+                "batch_size": len(query_embeddings),
+                "temperature": float(temperature),
+            },
+            text_input=self._last_text_sample,
+        )
+
         queries = torch.tensor(
             np.stack(query_embeddings),
             dtype=self.dtype,
@@ -251,6 +388,12 @@ class GPUWarpSpace:
         contexts = torch.matmul(attention, self.tensor_field)
 
         return contexts.cpu().numpy()
+
+    def guardrail_trace(self) -> Dict[str, Optional[Dict[str, Any]]]:
+        return {
+            stage: self._decision_to_dict(decision)
+            for stage, decision in self._guardrail_decisions.items()
+        }
 
 
 # ============================================================================

@@ -295,7 +295,7 @@ AuditTrail (Complete Provenance)
 The underlying WeavingOrchestrator has a `ResonanceShed` initialization bug:
 ```
 TypeError: ResonanceShed.__init__() got an unexpected keyword argument 'cfg'
-File: holoLoom/weaving_orchestrator.py, line 1103
+File: HoloLoom/weaving_orchestrator.py, line 1103
 ```
 
 **Impact**:

@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom - Agentic Chat with Project Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+            gap: 0;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / 3;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        .header h1 {
+            color: #00d4ff;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .connection-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .connection-status.connected {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+        }
+
+        /* Projects Sidebar */
+        .projects-sidebar {
+            background: #151515;
+            border-right: 1px solid #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-box {
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px 14px;
+            background: #1f1f1f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .projects-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .project-section {
+            margin-bottom: 20px;
+        }
+
+        .project-header {
+            padding: 10px 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .project-header:hover {
+            background: #222;
+        }
+
+        .project-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .project-icon {
+            font-size: 16px;
+        }
+
+        .project-count {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .conversation-list {
+            margin-left: 12px;
+        }
+
+        .conversation-item {
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .conversation-item:hover {
+            background: #222;
+            border-left-color: #667eea;
+        }
+
+        .conversation-item.active {
+            background: #2a2a4a;
+            border-left-color: #00d4ff;
+        }
+
+        .conversation-item.favorite {
+            border-left-color: #ffaa00;
+        }
+
+        .conversation-title {
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .conversation-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .conversation-item:hover .conversation-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: #00d4ff;
+        }
+
+        .uncategorized-section {
+            margin-top: 20px;
+        }
+
+        /* Main Chat Area */
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: #111;
+        }
+
+        .mode-bar {
+            padding: 12px 20px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            background: #2a2a2a;
+            border: none;
+            border-radius: 6px;
+            color: #888;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn:hover {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-user {
+            background: #1e3c72;
+            padding: 14px 18px;
+            border-radius: 12px;
+            max-width: 80%;
+            margin-left: auto;
+        }
+
+        .message-assistant {
+            background: #1a1a1a;
+            padding: 14px 18px;
+            border-radius: 12px;
+            max-width: 80%;
+            border-left: 4px solid #667eea;
+        }
+
+        .message-header {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message-content {
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .message-meta {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 11px;
+            color: #666;
+        }
+
+        .reasoning-step {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 8px 12px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
+        .reasoning-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: #1a1a1a;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            padding: 14px 18px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #00d4ff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .color-picker-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: white;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <div class="header">
+            <h1>🧠 HoloLoom - Agentic Chat</h1>
+            <div class="connection-status disconnected" id="connectionStatus">⚫ Connecting...</div>
+        </div>
+
+        <!-- Projects Sidebar -->
+        <div class="projects-sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" onclick="newConversation()">+ New Chat</button>
+                <input type="text" class="search-box" placeholder="Search conversations..." id="searchBox" oninput="searchConversations()">
+            </div>
+
+            <div class="projects-container" id="projectsContainer">
+                <div class="project-section">
+                    <div class="project-header" onclick="toggleProject('favorites')">
+                        <div class="project-title">
+                            <span class="project-icon">⭐</span>
+                            <span>Favorites</span>
+                        </div>
+                        <span class="project-count" id="favoritesCount">0</span>
+                    </div>
+                    <div class="conversation-list" id="favoritesList"></div>
+                </div>
+
+                <div id="projectsList"></div>
+
+                <div class="uncategorized-section">
+                    <div class="project-header" onclick="toggleProject('uncategorized')">
+                        <div class="project-title">
+                            <span class="project-icon">📝</span>
+                            <span>Uncategorized</span>
+                        </div>
+                        <span class="project-count" id="uncategorizedCount">0</span>
+                    </div>
+                    <div class="conversation-list" id="uncategorizedList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-area">
+            <div class="mode-bar">
+                <button class="mode-btn active" data-mode="DIRECT" onclick="setMode('DIRECT')">Direct</button>
+                <button class="mode-btn" data-mode="VERIFY" onclick="setMode('VERIFY')">Verify</button>
+                <button class="mode-btn" data-mode="RESEARCH" onclick="setMode('RESEARCH')">Research</button>
+                <button class="mode-btn" data-mode="PLAN_EXECUTE" onclick="setMode('PLAN_EXECUTE')">Plan & Execute</button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div style="text-align: center; color: #666; padding: 40px;">
+                    <p style="font-size: 18px; margin-bottom: 10px;">👋 Welcome to HoloLoom Agentic Chat</p>
+                    <p style="font-size: 14px;">Start a new conversation or select an existing one from the sidebar.</p>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="messageInput" placeholder="Ask me anything..." onkeypress="handleEnter(event)">
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Project Modal -->
+    <div class="modal" id="createProjectModal">
+        <div class="modal-content">
+            <div class="modal-title">Create New Project</div>
+            <div class="form-group">
+                <label class="form-label">Project Name</label>
+                <input type="text" class="form-input" id="projectName" placeholder="e.g., Work, Personal, Research">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Icon</label>
+                <input type="text" class="form-input" id="projectIcon" placeholder="📁" maxlength="2">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <div class="color-picker-group">
+                    <div class="color-option selected" style="background: #667eea" data-color="#667eea"></div>
+                    <div class="color-option" style="background: #f093fb" data-color="#f093fb"></div>
+                    <div class="color-option" style="background: #4facfe" data-color="#4facfe"></div>
+                    <div class="color-option" style="background: #43e97b" data-color="#43e97b"></div>
+                    <div class="color-option" style="background: #fa709a" data-color="#fa709a"></div>
+                    <div class="color-option" style="background: #feca57" data-color="#feca57"></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('createProjectModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createProject()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentMode = 'DIRECT';
+        let currentConversationId = null;
+        let conversations = [];
+        let projects = [];
+        let selectedProjectColor = '#667eea';
+
+        // WebSocket Connection
+        function connect() {
+            ws = new WebSocket('ws://localhost:8002/ws');
+
+            ws.onopen = () => {
+                console.log('Connected to server');
+                document.getElementById('connectionStatus').className = 'connection-status connected';
+                document.getElementById('connectionStatus').textContent = '🟢 Connected';
+
+                // Request initial data
+                ws.send(JSON.stringify({ action: 'list_conversations' }));
+                ws.send(JSON.stringify({ action: 'list_projects' }));
+            };
+
+            ws.onclose = () => {
+                console.log('Disconnected from server');
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionStatus').textContent = '🔴 Disconnected';
+                setTimeout(connect, 2000);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleServerMessage(data);
+            };
+        }
+
+        // Handle Server Messages
+        function handleServerMessage(data) {
+            console.log('Received:', data.type, data);
+
+            switch (data.type) {
+                case 'conversations_list':
+                    conversations = data.data.conversations;
+                    renderConversations();
+                    break;
+
+                case 'projects_list':
+                    projects = data.data.projects;
+                    renderProjects();
+                    break;
+
+                case 'conversation_created':
+                    currentConversationId = data.data.id;
+                    ws.send(JSON.stringify({ action: 'list_conversations' }));
+                    break;
+
+                case 'conversation_loaded':
+                    currentConversationId = data.data.conversation.id;
+                    loadMessages(data.data.messages);
+                    break;
+
+                case 'response':
+                    addAssistantMessage(data.data);
+                    break;
+
+                case 'project_created':
+                case 'project_updated':
+                case 'project_deleted':
+                case 'conversation_moved':
+                case 'conversation_renamed':
+                case 'favorite_toggled':
+                    // Refresh lists
+                    ws.send(JSON.stringify({ action: 'list_conversations' }));
+                    ws.send(JSON.stringify({ action: 'list_projects' }));
+                    break;
+
+                case 'search_results':
+                    // TODO: Display search results
+                    break;
+            }
+        }
+
+        // UI Functions
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+        }
+
+        function newConversation() {
+            ws.send(JSON.stringify({ action: 'new_conversation' }));
+            document.getElementById('chatMessages').innerHTML = '';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Display user message immediately
+            addUserMessage(message);
+
+            // Send to server
+            ws.send(JSON.stringify({
+                action: 'reason',
+                query: message,
+                mode: currentMode.toLowerCase(),
+                max_steps: 3
+            }));
+
+            input.value = '';
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function addUserMessage(text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+            messageEl.innerHTML = `
+                <div class="message-user">
+                    <div class="message-header">
+                        <span>You</span>
+                        <span>${new Date().toLocaleTimeString()}</span>
+                    </div>
+                    <div class="message-content">${escapeHtml(text)}</div>
+                </div>
+            `;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addAssistantMessage(data) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+
+            let stepsHtml = '';
+            if (data.reasoning_steps && data.reasoning_steps.length > 0) {
+                stepsHtml = data.reasoning_steps.map(step => `
+                    <div class="reasoning-step">
+                        <div class="reasoning-label">${step.type}</div>
+                        <div>${escapeHtml(step.description)}</div>
+                    </div>
+                `).join('');
+            }
+
+            messageEl.innerHTML = `
+                <div class="message-assistant">
+                    <div class="message-header">
+                        <span>HoloLoom</span>
+                        <span>${new Date().toLocaleTimeString()}</span>
+                    </div>
+                    <div class="message-content">${escapeHtml(data.response)}</div>
+                    ${stepsHtml}
+                    <div class="message-meta">
+                        Confidence: ${(data.confidence * 100).toFixed(1)}% |
+                        Duration: ${data.duration_ms}ms |
+                        Mode: ${data.mode || currentMode}
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function loadMessages(messages) {
+            const messagesDiv = document.getElementById('chatMessages');
+            messagesDiv.innerHTML = '';
+
+            messages.forEach(msg => {
+                if (msg.role === 'user') {
+                    addUserMessage(msg.content);
+                } else {
+                    const metadata = typeof msg.metadata === 'string' ?
+                        JSON.parse(msg.metadata) : msg.metadata;
+                    addAssistantMessage({
+                        response: msg.content,
+                        ...metadata
+                    });
+                }
+            });
+        }
+
+        function renderConversations() {
+            const favoritesList = document.getElementById('favoritesList');
+            const uncategorizedList = document.getElementById('uncategorizedList');
+
+            favoritesList.innerHTML = '';
+            uncategorizedList.innerHTML = '';
+
+            const favorites = conversations.filter(c => c.is_favorite);
+            const uncategorized = conversations.filter(c => !c.project_id && !c.is_favorite);
+
+            document.getElementById('favoritesCount').textContent = favorites.length;
+            document.getElementById('uncategorizedCount').textContent = uncategorized.length;
+
+            favorites.forEach(conv => {
+                favoritesList.appendChild(createConversationElement(conv));
+            });
+
+            uncategorized.forEach(conv => {
+                uncategorizedList.appendChild(createConversationElement(conv));
+            });
+
+            // Render project conversations
+            projects.forEach(project => {
+                const projectConversations = conversations.filter(c => c.project_id === project.id);
+                const listId = `project-${project.id}-list`;
+                const listEl = document.getElementById(listId);
+                if (listEl) {
+                    listEl.innerHTML = '';
+                    projectConversations.forEach(conv => {
+                        listEl.appendChild(createConversationElement(conv));
+                    });
+                }
+            });
+        }
+
+        function createConversationElement(conv) {
+            const div = document.createElement('div');
+            div.className = 'conversation-item' + (conv.id === currentConversationId ? ' active' : '') +
+                           (conv.is_favorite ? ' favorite' : '');
+            div.onclick = () => loadConversation(conv.id);
+
+            div.innerHTML = `
+                <span class="conversation-title">${escapeHtml(conv.title)}</span>
+                <div class="conversation-actions">
+                    <button class="action-btn" onclick="event.stopPropagation(); toggleFavorite(${conv.id})"
+                            title="Toggle Favorite">⭐</button>
+                    <button class="action-btn" onclick="event.stopPropagation(); renameConversation(${conv.id})"
+                            title="Rename">✏️</button>
+                    <button class="action-btn" onclick="event.stopPropagation(); deleteConversation(${conv.id})"
+                            title="Delete">🗑️</button>
+                </div>
+            `;
+
+            return div;
+        }
+
+        function renderProjects() {
+            const projectsList = document.getElementById('projectsList');
+            projectsList.innerHTML = '';
+
+            projects.forEach(project => {
+                const section = document.createElement('div');
+                section.className = 'project-section';
+                section.innerHTML = `
+                    <div class="project-header" onclick="toggleProject('project-${project.id}')">
+                        <div class="project-title" style="color: ${project.color}">
+                            <span class="project-icon">${project.icon}</span>
+                            <span>${escapeHtml(project.name)}</span>
+                        </div>
+                        <span class="project-count">${project.conversation_count}</span>
+                    </div>
+                    <div class="conversation-list" id="project-${project.id}-list"></div>
+                `;
+                projectsList.appendChild(section);
+            });
+
+            renderConversations();
+        }
+
+        function loadConversation(id) {
+            ws.send(JSON.stringify({ action: 'load_conversation', conversation_id: id }));
+        }
+
+        function toggleFavorite(id) {
+            ws.send(JSON.stringify({ action: 'toggle_favorite', conversation_id: id }));
+        }
+
+        function renameConversation(id) {
+            const newTitle = prompt('Enter new title:');
+            if (newTitle && newTitle.trim()) {
+                ws.send(JSON.stringify({
+                    action: 'rename_conversation',
+                    conversation_id: id,
+                    title: newTitle.trim()
+                }));
+            }
+        }
+
+        function deleteConversation(id) {
+            if (confirm('Delete this conversation?')) {
+                ws.send(JSON.stringify({ action: 'delete_conversation', conversation_id: id }));
+            }
+        }
+
+        function toggleProject(projectId) {
+            const list = document.getElementById(`${projectId === 'favorites' || projectId === 'uncategorized' ? projectId + 'List' : projectId + '-list'}`);
+            if (list) {
+                list.style.display = list.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function searchConversations() {
+            const query = document.getElementById('searchBox').value.trim();
+            if (query.length > 2) {
+                ws.send(JSON.stringify({ action: 'search_conversations', query: query }));
+            } else {
+                renderConversations();
+            }
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function createProject() {
+            const name = document.getElementById('projectName').value.trim();
+            const icon = document.getElementById('projectIcon').value.trim() || '📁';
+
+            if (!name) {
+                alert('Please enter a project name');
+                return;
+            }
+
+            ws.send(JSON.stringify({
+                action: 'create_project',
+                name: name,
+                icon: icon,
+                color: selectedProjectColor
+            }));
+
+            closeModal('createProjectModal');
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectIcon').value = '';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Color picker
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.onclick = function() {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedProjectColor = this.dataset.color;
+            };
+        });
+
+        // Initialize
+        connect();
+    </script>
+</body>
+</html>

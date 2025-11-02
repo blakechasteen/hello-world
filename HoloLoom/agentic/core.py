@@ -207,6 +207,49 @@ class AgenticOrchestrator:
         """Direct answer without verification."""
         spacetime = await self.learning_engine.weave(query)
 
+        # Generate LLM answer if available
+        if self.llm:
+            try:
+                # Extract context from retrieved memories
+                context_text = ""
+                if hasattr(spacetime, 'context_used') and spacetime.context_used:
+                    context_text = "\n\n".join([str(ctx) for ctx in spacetime.context_used[:3]])
+                elif hasattr(spacetime, 'memories') and spacetime.memories:
+                    context_text = "\n\n".join([m.text for m in spacetime.memories[:3]])
+
+                # Build prompt
+                system_prompt = "You are a helpful AI assistant. Answer the question based on the provided context."
+
+                if context_text:
+                    user_prompt = f"""Context:
+{context_text}
+
+Question: {query.text}
+
+Please provide a clear and concise answer based on the context above."""
+                else:
+                    user_prompt = f"Question: {query.text}\n\nPlease provide a helpful answer."
+
+                # Generate answer
+                self.logger.info(f"[AGENTIC] Generating LLM answer for: {query.text}")
+                llm_response = await self.llm.generate(
+                    prompt=user_prompt,
+                    system_prompt=system_prompt,
+                    max_tokens=500,
+                    temperature=0.7
+                )
+
+                # Set response in spacetime
+                spacetime.response = llm_response.content
+                self.logger.info(f"[AGENTIC] LLM answer generated ({len(llm_response.content)} chars)")
+
+            except Exception as e:
+                self.logger.warning(f"[AGENTIC] LLM answer generation failed: {e}")
+                spacetime.response = f"Retrieved relevant information but could not generate answer: {e}"
+        else:
+            self.logger.warning("[AGENTIC] No LLM available for answer generation")
+            spacetime.response = "LLM unavailable - retrieved context but cannot generate natural language answer"
+
         return AgenticResult(
             spacetime=spacetime,
             intent=intent,
@@ -215,7 +258,8 @@ class AgenticOrchestrator:
             steps_taken=[{
                 "type": "direct_answer",
                 "query": query.text,
-                "confidence": spacetime.confidence
+                "confidence": spacetime.confidence,
+                "llm_generated": bool(self.llm)
             }]
         )
 

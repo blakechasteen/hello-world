@@ -393,7 +393,7 @@ All Phase 1 commands plus:
 ### Enable Multi-Modal in Chatops Bridge
 
 ```python
-from holoLoom.chatops import ChatOpsOrchestrator, MultiModalHandler
+from HoloLoom.chatops import ChatOpsOrchestrator, MultiModalHandler
 
 chatops = ChatOpsOrchestrator(...)
 
@@ -420,7 +420,7 @@ bot.client.add_event_callback(
 ### Enable Thread Awareness
 
 ```python
-from holoLoom.chatops import ThreadHandler
+from HoloLoom.chatops import ThreadHandler
 
 thread_handler = ThreadHandler(max_thread_depth=10)
 
@@ -447,7 +447,7 @@ async def handle_message(room, event, message):
 ### Enable Proactive Agent
 
 ```python
-from holoLoom.chatops import ProactiveAgent
+from HoloLoom.chatops import ProactiveAgent
 
 agent = ProactiveAgent(
     suggestion_threshold=10,

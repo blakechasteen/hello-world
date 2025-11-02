@@ -44,7 +44,7 @@ Press `Ctrl+C` to stop.
 ```json
 {
   "mcpServers": {
-    "holoLoom-memory": {
+    "HoloLoom-memory": {
       "command": "python",
       "args": ["-m", "HoloLoom.memory.mcp_server"],
       "env": {

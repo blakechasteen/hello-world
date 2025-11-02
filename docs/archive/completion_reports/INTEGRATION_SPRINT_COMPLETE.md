@@ -242,9 +242,9 @@ Stage 7: Spacetime
 **User Experience:**
 ```python
 # Multiple imports, unclear usage
-from holoLoom.weaving_orchestrator import WeavingOrchestrator
-from holoLoom.synthesis.enriched_memory import MemoryEnricher
-from holoLoom.memory.protocol import create_unified_memory
+from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from HoloLoom.synthesis.enriched_memory import MemoryEnricher
+from HoloLoom.memory.protocol import create_unified_memory
 # ... complex setup required
 ```
 

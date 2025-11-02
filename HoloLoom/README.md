@@ -1,4 +1,4 @@
-holoLoom - it's TS all the way down!
+HoloLoom - it's TS all the way down!
 ## Running train_agent
 
 Quick instructions to run the example trainer shipped with HoloLoom. It's recommended to use the project's virtual environment.

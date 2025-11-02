@@ -2,7 +2,7 @@
 
 ## What Was Wrong
 
-The original `mcp_server.py` tried to import through `HoloLoom/__init__.py` which has circular dependency issues with `holoLoom.documentation.types`.
+The original `mcp_server.py` tried to import through `HoloLoom/__init__.py` which has circular dependency issues with `HoloLoom.documentation.types`.
 
 ## Solution
 
@@ -24,7 +24,7 @@ File: `C:\Users\blake\AppData\Roaming\Claude\claude_desktop_config.json`
 ```json
 {
   "mcpServers": {
-    "holoLoom-memory": {
+    "HoloLoom-memory": {
       "command": "C:/Users/blake/Documents/mythRL/.venv/Scripts/python.exe",
       "args": [
         "c:/Users/blake/Documents/mythRL/HoloLoom/memory/mcp_server_standalone.py"

@@ -202,6 +202,14 @@ async def test_4_warp_space():
     logger.info(f"   Operations performed: {len(updates['operations'])}")
     logger.info(f"   Field stats: {updates['field_stats']}")
 
+    guardrail_meta = updates.get('guardrails', {})
+    assert guardrail_meta, "Warp Space guardrail metadata missing"
+    for stage in ("tension", "spectral", "attention", "weighted_context", "collapse"):
+        assert stage in guardrail_meta
+        # Ensure each stage captured a decision dict with at least a risk level
+        decision = guardrail_meta[stage]
+        assert decision is None or "risk_level" in decision
+
     logger.info("\n✅ TEST 4 PASSED: Warp Space (WARP DRIVE OPERATIONAL!)\n")
 
 

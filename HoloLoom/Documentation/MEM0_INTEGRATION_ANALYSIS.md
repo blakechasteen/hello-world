@@ -182,7 +182,7 @@ Query → Parallel Processing:
 **Implementation**:
 ```python
 from mem0 import Memory
-from holoLoom.memory.cache import MemoryManager, MemoryShard
+from HoloLoom.memory.cache import MemoryManager, MemoryShard
 
 class HybridMemoryManager:
     def __init__(self, hololoom_memory: MemoryManager):

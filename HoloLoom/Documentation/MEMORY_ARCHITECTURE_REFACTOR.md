@@ -383,7 +383,7 @@ The **Model Context Protocol** is a standardized way to expose resources (files,
 from mcp.server import Server
 from mcp.types import Resource, Tool
 
-server = Server("holoLoom-memory")
+server = Server("HoloLoom-memory")
 
 @server.list_resources()
 async def list_memories():

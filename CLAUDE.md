@@ -108,7 +108,7 @@ Validates 3-backend architecture (INMEMORY/HYBRID/HYPERSPACE) and auto-fallback.
 
 Run a short CartPole training session:
 ```bash
-PYTHONPATH=. .venv/bin/python -c "from holoLoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
+PYTHONPATH=. .venv/bin/python -c "from HoloLoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
 ```
 
 Training checkpoints are saved to the specified `log_dir`.
@@ -117,7 +117,7 @@ Training checkpoints are saved to the specified `log_dir`.
 
 Example usage of the full HoloLoom orchestrator:
 ```bash
-PYTHONPATH=. .venv/bin/python holoLoom/orchestrator.py
+PYTHONPATH=. .venv/bin/python HoloLoom/orchestrator.py
 ```
 
 This runs a demo showing query → features → context → decision → response pipeline.
@@ -126,7 +126,7 @@ This runs a demo showing query → features → context → decision → respons
 
 ### Core Design Philosophy
 
-**"Warp Thread" Modules**: Each major component (motif detection, embedding, memory, policy) is independent and protocol-based. They don't import from each other, only from shared types (`holoLoom/documentation/types.py`).
+**"Warp Thread" Modules**: Each major component (motif detection, embedding, memory, policy) is independent and protocol-based. They don't import from each other, only from shared types (`HoloLoom/documentation/types.py`).
 
 **"Shuttle" Orchestrator**: The `orchestrator.py` is the only module that imports from all others. It weaves components together into the full processing pipeline.
 
@@ -134,60 +134,60 @@ This runs a demo showing query → features → context → decision → respons
 
 HoloLoom implements a complete weaving metaphor as first-class abstractions:
 
-#### 1. Yarn Graph (holoLoom/memory/graph.py)
+#### 1. Yarn Graph (HoloLoom/memory/graph.py)
 The persistent symbolic memory - discrete thread structure stored as a NetworkX MultiDiGraph.
 - **Alias**: `YarnGraph = KG`
 - Entities and relationships form the "threads" of memory
 - Remains discrete until "tensioned" into Warp Space
 
-#### 2. Loom Command (holoLoom/loom/command.py)
+#### 2. Loom Command (HoloLoom/loom/command.py)
 Pattern card selector that chooses execution template (BARE/FAST/FUSED).
 - **Classes**: `LoomCommand`, `PatternCard`, `PatternSpec`
 - Determines which warp threads to lift and how densely to weave
 - Configures scales, features, timeouts for entire cycle
 
-#### 3. Chrono Trigger (holoLoom/chrono/trigger.py)
+#### 3. Chrono Trigger (HoloLoom/chrono/trigger.py)
 Temporal control system managing time-dependent aspects.
 - **Classes**: `ChronoTrigger`, `TemporalWindow`, `ExecutionLimits`
 - Controls when threads activate (temporal windows)
 - Manages execution timing, rhythm (heartbeat), halt conditions
 - Handles thread decay and system evolution over time
 
-#### 4. Resonance Shed (holoLoom/resonance/shed.py)
+#### 4. Resonance Shed (HoloLoom/resonance/shed.py)
 Feature interference zone where extraction threads combine.
 - **Classes**: `ResonanceShed`, `FeatureThread`
 - Lifts feature threads (motif, embedding, spectral)
 - Creates interference patterns through multi-modal fusion
 - Produces DotPlasma (flowing feature representation)
 
-#### 5. DotPlasma (holoLoom/documentation/types.py)
+#### 5. DotPlasma (HoloLoom/documentation/types.py)
 The "feature fluid" - flowing continuous representation.
 - **Alias**: `DotPlasma = Features`
 - Malleable medium between extraction and decision
 - Contains motifs (symbolic), embeddings (continuous), spectral (topological)
 
-#### 6. Warp Space (holoLoom/warp/space.py)
+#### 6. Warp Space (HoloLoom/warp/space.py)
 Tensioned tensor field for continuous mathematics.
 - **Classes**: `WarpSpace`, `TensionedThread`
 - Temporary manifold where activated threads undergo tensor operations
 - Lifecycle: tension() → compute() → collapse()
 - Detensions back to discrete Yarn Graph after computation
 
-#### 7. Convergence Engine (holoLoom/convergence/engine.py)
+#### 7. Convergence Engine (HoloLoom/convergence/engine.py)
 Decision collapse from continuous → discrete.
 - **Classes**: `ConvergenceEngine`, `CollapseStrategy`, `ThompsonBandit`
 - Collapses probability distributions to discrete tool selections
 - Strategies: ARGMAX, EPSILON_GREEDY, BAYESIAN_BLEND, PURE_THOMPSON
 - Thompson Sampling for exploration/exploitation balance
 
-#### 8. Spacetime (holoLoom/fabric/spacetime.py)
+#### 8. Spacetime (HoloLoom/fabric/spacetime.py)
 Woven fabric - structured output with complete lineage.
 - **Classes**: `Spacetime`, `WeavingTrace`, `FabricCollection`
 - 4-dimensional output: 3D semantic space + 1D temporal trace
 - Full computational provenance for debugging and reflection learning
 - Serializable for persistence and analysis
 
-#### 9. Reflection Buffer (holoLoom/memory/cache.py)
+#### 9. Reflection Buffer (HoloLoom/memory/cache.py)
 Learning loop - stores outcomes for improvement.
 - **Alias**: `ReflectionBuffer = MemoryManager`
 - Episodic buffer of recent interactions
@@ -263,7 +263,7 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
     # Automatic cleanup on exit
 ```
 
-#### 2. Policy Engine (`holoLoom/policy/unified.py`)
+#### 2. Policy Engine (`HoloLoom/policy/unified.py`)
 Neural decision-making with three bandit exploration strategies:
 - **Epsilon-Greedy** (default): 90% neural exploitation, 10% Thompson Sampling exploration
 - **Bayesian Blend**: Combines neural predictions (70%) with bandit priors (30%)
@@ -277,7 +277,7 @@ The policy uses:
 
 Key fix from code review: Bandit now updates statistics for the **actually selected tool** (previously disconnected).
 
-#### 3. Configuration (`holoLoom/config.py`)
+#### 3. Configuration (`HoloLoom/config.py`)
 Three execution modes:
 - **BARE**: Minimal processing (regex motifs, single scale, simple policy) - fastest
 - **FAST**: Balanced (hybrid motifs, 2 scales, neural policy) - good tradeoff
@@ -285,27 +285,27 @@ Three execution modes:
 
 Access via factory methods:
 ```python
-from holoLoom.config import Config
+from HoloLoom.config import Config
 cfg_fast = Config.fast()
 cfg_fused = Config.fused()
 ```
 
 #### 4. Memory Systems
 
-**Vector Memory** (`holoLoom/memory/cache.py`): BM25 + semantic similarity retrieval
-**Knowledge Graph** (`holoLoom/memory/graph.py`): NetworkX-based entity relationships with:
+**Vector Memory** (`HoloLoom/memory/cache.py`): BM25 + semantic similarity retrieval
+**Knowledge Graph** (`HoloLoom/memory/graph.py`): NetworkX-based entity relationships with:
 - Typed edges (IS_A, USES, MENTIONS, etc.)
 - Subgraph extraction for context expansion
 - Path finding between entities
 - Spectral graph features for policy input
 
-#### 5. Embeddings (`holoLoom/embedding/spectral.py`)
+#### 5. Embeddings (`HoloLoom/embedding/spectral.py`)
 Matryoshka embeddings at multiple scales (96, 192, 384 dimensions) with:
 - Multi-scale fusion for retrieval
 - Spectral features: graph Laplacian eigenvalues, SVD topic components
 - Optional sentence-transformers backend (degrades gracefully without it)
 
-#### 6. SpinningWheel (`holoLoom/spinningWheel/`)
+#### 6. SpinningWheel (`HoloLoom/spinningWheel/`)
 Input adapters that convert raw data → `MemoryShard` objects:
 - **AudioSpinner**: Processes transcripts, task lists, summaries
 - **YouTubeSpinner**: Extracts YouTube video transcripts with optional chunking
@@ -317,7 +317,7 @@ Input adapters that convert raw data → `MemoryShard` objects:
 - Optional Ollama enrichment for entity/motif extraction
 - Standardized output format feeds directly into orchestrator
 
-#### 7. Training (`holoLoom/train_agent`)
+#### 7. Training (`HoloLoom/train_agent`)
 PPO trainer for RL environments with:
 - GAE (Generalized Advantage Estimation)
 - Optional ICM/RND curiosity modules
@@ -326,16 +326,202 @@ PPO trainer for RL environments with:
 
 ### Module Structure (Phase 1+2 Cleanup - Oct 2025)
 
-**Clean Root Directory** (6 core files only):
+**Root Directory** (8 Python files, ~4,665 lines):
 ```
 HoloLoom/
-├── __init__.py                # Package entry point
-├── config.py                  # Configuration (BARE/FAST/FUSED modes)
-├── unified_api.py             # Programmatic API
-├── weaving_shuttle.py         # Main entry point (async context manager)
-├── weaving_orchestrator.py    # Full 9-step weaving cycle
-└── protocols.py               # DEPRECATED (use protocols/ directory)
+├── __init__.py                  # Package entry point (72 lines)
+├── config.py                    # Configuration (BARE/FAST/FUSED modes) (460 lines)
+├── hololoom.py                  # Unified memory system API (471 lines)
+├── terminal_ui.py               # Interactive terminal interface (751 lines)
+├── unified_api.py               # Programmatic API (729 lines)
+├── weaving_orchestrator.py      # MAIN: Full 9-step weaving cycle (1,963 lines)
+├── weaving_orchestrator_llm.py  # LLM-integrated variant (173 lines)
+└── weaving_shuttle.py           # DEPRECATED: Backward compatibility shim (46 lines)
 ```
+
+**Root File Documentation:**
+
+### hololoom.py - Unified Memory System API (471 lines)
+
+**Purpose**: Main entry point for the entire HoloLoom system. Provides a simplified "10/10 Layer" API where everything is a memory operation.
+
+**Core Philosophy**:
+- Single entry point (`HoloLoom` class)
+- Single representation (`Memory`)
+- Three core operations: `experience()`, `recall()`, `reflect()`
+- Implementation details hidden
+- Modality-agnostic
+
+**Key Methods**:
+- `experience(content)` - Form memories from any input (text, audio, etc.)
+- `recall(query)` - Retrieve relevant memories based on query
+- `reflect(memories, feedback)` - Learn from feedback to improve future recalls
+- `experience_batch(contents)` - Batch experience multiple items
+- `search(query, k)` - Search memories with limit
+- `get_metrics()` - Get awareness graph metrics (activation, coherence, temporal)
+- `summary()` - Human-readable system summary
+
+**Architecture**:
+- Integrates `AwarenessGraph` for memory activation tracking
+- Uses `MatryoshkaSemanticCalculus` for 244D semantic projection
+- Supports multimodal input via `InputRouter` (graceful degradation if unavailable)
+- Async context manager support for proper resource cleanup
+
+**Usage Example**:
+```python
+from HoloLoom import HoloLoom
+
+async with HoloLoom() as loom:
+    # Experience (form memories)
+    mem = await loom.experience("Thompson Sampling balances exploration")
+
+    # Recall (retrieve memories)
+    memories = await loom.recall("What did I learn about sampling?")
+
+    # Reflect (learn from feedback)
+    await loom.reflect(memories, feedback={"helpful": True})
+
+    # Get metrics
+    metrics = loom.get_metrics()
+    print(f"Active memories: {metrics['activation']['active_nodes']}")
+```
+
+**Integration Points**:
+- Uses `Config` for system configuration
+- Backs onto `AwarenessGraph` for memory graph management
+- Wraps `MatryoshkaEmbeddings` for semantic encoding
+- Optional `InputRouter` for multimodal support
+
+**When to Use**:
+- Simple API for memory operations
+- Don't need full weaving cycle control
+- Want automatic awareness graph management
+- Building higher-level applications
+
+---
+
+### terminal_ui.py - Interactive Terminal Interface (751 lines)
+
+**Purpose**: Provides an interactive terminal UI for exploring and interacting with HoloLoom's memory system.
+
+**Features**:
+- Interactive command-line interface with rich formatting
+- Real-time memory visualization
+- Graph exploration and traversal
+- Awareness metrics monitoring
+- Session management with history
+
+**Key Components**:
+- `TerminalUI` class - Main UI controller
+- Rich terminal formatting (colors, tables, progress bars)
+- Command parser and dispatcher
+- Interactive memory browser
+- Awareness graph visualizer
+
+**Available Commands** (typical):
+- `experience <text>` - Add new memory
+- `recall <query>` - Search memories
+- `metrics` - Show awareness graph metrics
+- `graph` - Visualize memory graph
+- `history` - Show session history
+- `help` - Command reference
+- `exit` - Quit interface
+
+**Usage Example**:
+```python
+from HoloLoom.terminal_ui import TerminalUI
+
+# Start interactive session
+ui = TerminalUI()
+await ui.run()
+
+# Or programmatic use
+ui = TerminalUI(config=Config.fused())
+await ui.execute_command("experience Learning about Python decorators")
+await ui.execute_command("recall What did I learn about Python?")
+```
+
+**Architecture**:
+- Built on top of `HoloLoom` class (uses unified API)
+- Rich terminal formatting library for visual appeal
+- Async command processing
+- Session state management
+- Command history tracking
+
+**When to Use**:
+- Interactive exploration of memory system
+- Debugging memory graph behavior
+- Quick prototyping and testing
+- Educational demonstrations
+- Development and debugging
+
+---
+
+### weaving_orchestrator_llm.py - LLM-Integrated Variant (173 lines)
+
+**Purpose**: Variant of `WeavingOrchestrator` that integrates LLM-based reasoning into the weaving cycle.
+
+**Key Differences from Standard Orchestrator**:
+- Injects LLM reasoning at decision points
+- Can use LLM for feature extraction enhancement
+- Supports LLM-based reflection and learning
+- Hybrid neural + LLM decision making
+
+**Integration Points**:
+- Wraps standard `WeavingOrchestrator`
+- Adds LLM client (OpenAI, Anthropic, local models)
+- Optional LLM enhancement at each weaving stage
+- Falls back to neural-only when LLM unavailable
+
+**Key Methods**:
+- `weave(query, use_llm)` - Main weaving with optional LLM enhancement
+- `llm_enhance_features(features)` - Use LLM to enrich extracted features
+- `llm_decide(features, context)` - LLM-based tool selection
+- `llm_reflect(spacetime, feedback)` - LLM-assisted reflection
+
+**Configuration**:
+```python
+from HoloLoom.weaving_orchestrator_llm import WeavingOrchestratorLLM
+
+orchestrator = WeavingOrchestratorLLM(
+    cfg=Config.fused(),
+    llm_provider="openai",  # or "anthropic", "local"
+    llm_model="gpt-4",
+    fallback_to_neural=True  # Graceful degradation
+)
+
+spacetime = await orchestrator.weave(
+    Query(text="Explain Thompson Sampling"),
+    use_llm=True  # Enable LLM enhancement
+)
+```
+
+**Use Cases**:
+- Research experiments combining neural + LLM
+- Enhanced reasoning for complex queries
+- Explainable decision making (LLM generates explanations)
+- Hybrid systems leveraging both approaches
+
+**Architecture**:
+- Extends/wraps `WeavingOrchestrator`
+- LLM client abstraction (supports multiple providers)
+- Configurable LLM injection points
+- Graceful fallback to neural-only mode
+- Cost tracking for LLM calls
+
+**When to Use**:
+- Need LLM-enhanced reasoning
+- Want explainable decisions
+- Research on neural-LLM hybrid systems
+- Complex queries requiring deep reasoning
+
+**Performance Considerations**:
+- LLM calls add latency (~500ms - 3s per query)
+- Cost per query (API fees for OpenAI/Anthropic)
+- Consider caching LLM responses
+- Use sparingly in production (enable for complex queries only)
+
+---
 
 **Organized Subdirectories:**
 ```
@@ -351,7 +537,7 @@ HoloLoom/
 │   ├── visualize_bootstrap.py
 │   └── archive/               # Archived dead code (safety net)
 │
-├── memory/                    # Storage backends (13 files, was 17)
+├── memory/                    # Storage backends (24 Python files)
 │   ├── backend_factory.py    # Create backends (231 lines, was 550)
 │   ├── graph.py              # NetworkX (default, always works)
 │   ├── neo4j_graph.py        # Production backend
@@ -471,16 +657,16 @@ The orchestrator uses `async/await` for the main processing pipeline, enabling:
 
 ### Import Path Requirements
 
-**CRITICAL**: When running holoLoom modules, set `PYTHONPATH=.` from repository root or run with proper path:
+**CRITICAL**: When running HoloLoom modules, set `PYTHONPATH=.` from repository root or run with proper path:
 ```bash
 # Correct - from repository root
-PYTHONPATH=. python holoLoom/test_unified_policy.py
+PYTHONPATH=. python HoloLoom/test_unified_policy.py
 
 # Also correct - cd into directory
-cd holoLoom && python test_unified_policy.py
+cd HoloLoom && python test_unified_policy.py
 ```
 
-The codebase uses absolute imports like `from holoLoom.policy.unified import ...`, which require the repository root to be on the Python path.
+The codebase uses absolute imports like `from HoloLoom.policy.unified import ...`, which require the repository root to be on the Python path.
 
 ### Testing Strategy
 
@@ -1112,15 +1298,29 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### Production Deployment
 
 ```python
-from HoloLoom.alignment import create_aligned_orchestrator
+from HoloLoom.alignment import create_guardrails, create_audit_trail
+from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from HoloLoom.config import Config
 
-# One-liner: orchestrator with full alignment
-async with create_aligned_orchestrator(
-    config=Config.fused(),
-    enable_monitoring=True,
-    enable_human_in_loop=True
+# Orchestrator with full alignment
+config = Config.fused()
+guardrails = create_guardrails(enable_human_in_loop=True)
+audit_trail = create_audit_trail()
+
+async with WeavingOrchestrator(
+    cfg=config,
+    shards=shards,
+    guardrails=guardrails
 ) as orchestrator:
     spacetime = await orchestrator.weave(query)
+
+    # Log to audit trail
+    await audit_trail.log_decision(
+        query=query.text,
+        action=spacetime.metadata.get('tool_used'),
+        outcome="success",
+        safety_score=spacetime.confidence
+    )
 ```
 
 ### Documentation
@@ -1182,12 +1382,16 @@ async with AgenticOrchestrator(cfg=config, shards=shards) as orchestrator:
 The agentic system automatically integrates with the alignment framework:
 
 ```python
-from HoloLoom.agentic import create_safe_agentic_orchestrator
+from HoloLoom.agentic import create_agentic_orchestrator
+from HoloLoom.alignment import create_guardrails
 
 # Orchestrator with alignment checks
-async with create_safe_agentic_orchestrator(
+guardrails = create_guardrails(enable_human_in_loop=True)
+
+async with create_agentic_orchestrator(
     config=Config.fused(),
-    enable_alignment=True
+    shards=shards,
+    guardrails=guardrails
 ) as orchestrator:
     # All reasoning steps are gated by safety guardrails
     result = await orchestrator.reason(query, mode=ReasoningMode.RESEARCH)
@@ -1420,7 +1624,7 @@ shards = await spinner.spin({'url': 'VIDEO_ID', 'languages': ['en']})
 ### Tuning Exploration Strategy
 Change bandit strategy when creating policy:
 ```python
-from holoLoom.policy.unified import BanditStrategy
+from HoloLoom.policy.unified import BanditStrategy
 policy = create_policy(
     mem_dim=384,
     emb=emb,

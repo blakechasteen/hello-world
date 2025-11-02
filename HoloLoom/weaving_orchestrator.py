@@ -24,10 +24,13 @@ Author: Claude Code (with HoloLoom architecture by Blake)
 Date: 2025-10-27 (Task 1.2: Shuttle Integration Complete)
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import time
-from typing import Dict, List, Any, Optional
+import numpy as np
+from typing import Dict, List, Any, Optional, TYPE_CHECKING
 from datetime import datetime, timedelta
 
 # Shared types
@@ -72,6 +75,10 @@ except ImportError:
     METRICS_ENABLED = False
 
 logging.basicConfig(level=logging.INFO)
+
+
+if TYPE_CHECKING:
+    from HoloLoom.awareness.llm_integration import OllamaLLM
 
 
 # ============================================================================
@@ -427,8 +434,13 @@ class WeavingOrchestrator:
 
         # Create a single shared SafetyGuardrails instance used across components
         try:
-            self.guardrails: SafetyGuardrails = create_guardrails()
-            self.logger.info("Shared SafetyGuardrails instance created and will be threaded to components")
+            # Check if guardrails should be disabled via config
+            testing_mode = not getattr(self.cfg, 'enable_safety_guardrails', True)
+            self.guardrails: SafetyGuardrails = create_guardrails(testing_mode=testing_mode)
+            if testing_mode:
+                self.logger.info("Shared SafetyGuardrails created in testing mode (approval bypassed)")
+            else:
+                self.logger.info("Shared SafetyGuardrails instance created and will be threaded to components")
         except Exception as e:
             self.logger.warning(f"Failed to initialize shared guardrails: {e}. Falling back to local guardrails where needed.")
             self.guardrails = None
@@ -447,6 +459,7 @@ class WeavingOrchestrator:
 
         # Lifecycle management
         self._background_tasks: List[asyncio.Task] = []
+        self._bg_lock = asyncio.Lock()  # Protect concurrent access to _background_tasks
         self._closed = False
 
         # Initialize weaving components
@@ -1047,6 +1060,7 @@ class WeavingOrchestrator:
 
             threads = self.yarn_graph.select_threads(temporal_window, query)
             thread_ids = [s.id for s in threads]
+            thread_texts = [s.text for s in threads]
 
             self.logger.info(f"  [3] Selected {len(threads)} threads from Yarn Graph")
             stage_timings['thread_selection'] = (time.time() - step_start) * 1000
@@ -1108,10 +1122,8 @@ class WeavingOrchestrator:
                 interference_mode="weighted_sum",
                 # Phase 5: Ensure embeddings match policy's expected dimension
                 # ResonanceShed will call encode_scales() with this target
-                target_scale=max(pattern_spec.scales)
-                ,
+                target_scale=max(pattern_spec.scales),
                 guardrails=self.guardrails,
-                cfg=self.cfg,  # Environment-aware safety configuration
             )
 
             # Extract features through Resonance Shed
@@ -1132,11 +1144,12 @@ class WeavingOrchestrator:
             warp_space = WarpSpace(
                 embedder=self.embedder,
                 scales=pattern_spec.scales,
-                spectral_fusion=spectral_fusion
+                spectral_fusion=spectral_fusion,
+                guardrails=self.guardrails,
             )
 
             # Tension threads from Yarn Graph
-            await warp_space.tension(thread_ids, self.yarn_graph.shards)
+            await warp_space.tension(thread_texts, thread_ids=thread_ids)
             warp_operations = [(datetime.now().isoformat(), "tension", len(thread_ids))]
 
             self.logger.info(f"  [5] Warp Space tensioned with {len(thread_ids)} threads")
@@ -1227,7 +1240,6 @@ class WeavingOrchestrator:
                         query_embedding = psi_raw
 
                     # Convert to numpy if needed
-                    import numpy as np
                     if not isinstance(query_embedding, np.ndarray):
                         query_embedding = np.array(query_embedding, dtype=np.float32)
 
@@ -1335,11 +1347,24 @@ class WeavingOrchestrator:
             )
             context.features = features
 
-            # Get neural predictions
-            action_plan = await policy.decide(features=features, context=context)
+            # Get neural predictions with timeout (prevent hung decisions)
+            try:
+                action_plan = await asyncio.wait_for(
+                    policy.decide(features=features, context=context),
+                    timeout=2.0
+                )
+            except asyncio.TimeoutError:
+                self.logger.error("Policy decision timed out after 2.0s, using safe default")
+                # Create safe default action plan
+                from HoloLoom.documentation.types import ActionPlan
+                action_plan = ActionPlan(
+                    tool="answer",
+                    confidence=0.5,
+                    tool_probs={"answer": 1.0},
+                    metadata={"timeout": True, "fallback": True}
+                )
 
             # Get tool probabilities (mock for now - would come from policy)
-            import numpy as np
             neural_probs = np.array([
                 action_plan.tool_probs.get(tool, 0.0)
                 for tool in self.tool_executor.tools
@@ -1775,23 +1800,28 @@ class WeavingOrchestrator:
 
         self.logger.info("Closing WeavingOrchestrator...")
 
-        # Cancel background tasks
-        if self._background_tasks:
-            self.logger.info(f"Cancelling {len(self._background_tasks)} background tasks")
-            for task in self._background_tasks:
-                if not task.done():
-                    task.cancel()
-
-            # Wait for cancellation with timeout
+        # Cancel background tasks (with lock protection)
+        async with self._bg_lock:
             if self._background_tasks:
-                try:
-                    await asyncio.wait(
-                        self._background_tasks,
-                        timeout=5.0,
-                        return_when=asyncio.ALL_COMPLETED
-                    )
-                except asyncio.TimeoutError:
-                    self.logger.warning("Some background tasks did not complete within timeout")
+                self.logger.info(f"Cancelling {len(self._background_tasks)} background tasks")
+                for task in self._background_tasks:
+                    if not task.done():
+                        task.cancel()
+
+                # Wait for cancellation with timeout
+                tasks_to_wait = list(self._background_tasks)  # Copy for waiting
+            else:
+                tasks_to_wait = []
+
+        if tasks_to_wait:
+            try:
+                await asyncio.wait(
+                    tasks_to_wait,
+                    timeout=5.0,
+                    return_when=asyncio.ALL_COMPLETED
+                )
+            except asyncio.TimeoutError:
+                self.logger.warning("Some background tasks did not complete within timeout")
 
             self._background_tasks.clear()
 
@@ -1835,6 +1865,10 @@ class WeavingOrchestrator:
         """
         Spawn a background task and track it for cleanup.
 
+        NOTE: While this method is synchronous, _background_tasks access is
+        protected by _bg_lock in async contexts. Since asyncio is single-threaded,
+        synchronous appends are safe, but removal via callback needs protection.
+
         Args:
             coro: Coroutine to run in background
 
@@ -1845,10 +1879,18 @@ class WeavingOrchestrator:
             task = shuttle.spawn_background_task(some_async_function())
         """
         task = asyncio.create_task(coro)
+
+        # Append is atomic in Python, safe in single-threaded asyncio
         self._background_tasks.append(task)
 
-        # Clean up completed tasks
-        task.add_done_callback(lambda t: self._background_tasks.remove(t) if t in self._background_tasks else None)
+        # Clean up completed tasks (callback is synchronous, but list operations are atomic)
+        def cleanup_callback(t):
+            try:
+                self._background_tasks.remove(t)
+            except ValueError:
+                pass  # Already removed
+
+        task.add_done_callback(cleanup_callback)
 
         return task
 

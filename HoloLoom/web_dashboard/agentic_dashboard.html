@@ -1,0 +1,2777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom - Enhanced Agentic Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== LOADING SPINNER ===== */
+        .spinner {
+            display: inline-block;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .spinner-sm { width: 16px; height: 16px; border-width: 2px; }
+        .spinner-md { width: 32px; height: 32px; border-width: 3px; }
+        .spinner-lg { width: 48px; height: 48px; border-width: 4px; }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            min-width: 300px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease-out;
+            cursor: pointer;
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
+            color: #0a0a0a;
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, #00d4ff 0%, #667eea 100%);
+            color: white;
+        }
+
+        .toast.warning {
+            background: linear-gradient(135deg, #ffaa00 0%, #ff6600 100%);
+            color: #0a0a0a;
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .app {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+            gap: 0;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            grid-column: 1 / 3;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        .header h1 {
+            color: #00d4ff;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        /* ===== LLM PROVIDER DROPDOWN ===== */
+        .llm-selector {
+            padding: 10px 16px;
+            background: #2a2a2a;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            min-width: 220px;
+            transition: all 0.2s;
+        }
+
+        .llm-selector:hover {
+            background: #333;
+            border-color: #764ba2;
+        }
+
+        .llm-selector:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .connection-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .connection-status.connected {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+        }
+
+        /* ===== PROJECTS SIDEBAR ===== */
+        .projects-sidebar {
+            background: #151515;
+            border-right: 1px solid #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .new-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .new-chat-btn .spinner {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+        }
+
+        .new-chat-btn.loading .spinner {
+            display: inline-block;
+        }
+
+        .search-box {
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            background: #1f1f1f url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23888" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>') no-repeat 12px center;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* ===== BULK ACTIONS TOOLBAR ===== */
+        .bulk-toolbar {
+            padding: 12px 15px;
+            background: #1e3c72;
+            border-bottom: 1px solid #2a2a2a;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .bulk-toolbar.show {
+            display: flex;
+        }
+
+        .bulk-count {
+            font-size: 13px;
+            font-weight: 600;
+            color: #00d4ff;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .bulk-btn {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bulk-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .projects-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .project-section {
+            margin-bottom: 20px;
+        }
+
+        .project-header {
+            padding: 10px 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .project-header:hover {
+            background: #222;
+        }
+
+        .project-header.drop-target {
+            background: #2a5298;
+            border: 2px dashed #00d4ff;
+        }
+
+        /* Autocomplete dropdown */
+        .autocomplete-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            margin-bottom: 8px;
+        }
+
+        .autocomplete-dropdown.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background: #2a2a2a;
+        }
+
+        .autocomplete-item-name {
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 4px;
+        }
+
+        .autocomplete-item-description {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .autocomplete-empty {
+            padding: 16px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .project-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .project-count {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .conversation-list {
+            margin-left: 12px;
+        }
+
+        .conversation-item {
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .conversation-item:hover {
+            background: #222;
+            border-left-color: #667eea;
+        }
+
+        .conversation-item.active {
+            background: #2a2a4a;
+            border-left-color: #00d4ff;
+        }
+
+        .conversation-item.favorite {
+            border-left-color: #ffaa00;
+        }
+
+        .conversation-item.dragging {
+            opacity: 0.5;
+        }
+
+        /* ===== CONVERSATION CHECKBOX ===== */
+        .conversation-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .bulk-mode .conversation-checkbox {
+            display: block;
+        }
+
+        /* ===== CONVERSATION CONTENT ===== */
+        .conversation-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .conversation-title {
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 4px;
+        }
+
+        .conversation-meta {
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .last-message {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .timestamp {
+            flex-shrink: 0;
+        }
+
+        /* ===== CONVERSATION ACTIONS ===== */
+        .conversation-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .conversation-item:hover .conversation-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: #00d4ff;
+        }
+
+        /* ===== HOVER PREVIEW ===== */
+        .conversation-preview {
+            position: absolute;
+            left: 110%;
+            top: 0;
+            width: 350px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .conversation-item:hover .conversation-preview {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .preview-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #00d4ff;
+        }
+
+        .preview-message {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #222;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .preview-role {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        /* ===== CONTEXT MENU ===== */
+        .context-menu {
+            position: fixed;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 4px 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: none;
+            min-width: 200px;
+        }
+
+        .context-menu.show {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .context-menu-item:hover {
+            background: #2a2a2a;
+        }
+
+        .context-menu-divider {
+            height: 1px;
+            background: #333;
+            margin: 4px 0;
+        }
+
+        .context-menu-submenu {
+            position: absolute;
+            left: 100%;
+            top: 0;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 4px 0;
+            display: none;
+        }
+
+        .context-menu-item:hover .context-menu-submenu {
+            display: block;
+        }
+
+        /* ===== CHAT AREA ===== */
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: #111;
+        }
+
+        .mode-bar {
+            padding: 12px 20px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            background: #2a2a2a;
+            border: none;
+            border-radius: 6px;
+            color: #888;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn:hover {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .message-user {
+            background: #1e3c72;
+            padding: 14px 18px;
+            border-radius: 12px;
+            max-width: 80%;
+            margin-left: auto;
+        }
+
+        .message-assistant {
+            background: #1a1a1a;
+            padding: 14px 18px;
+            border-radius: 12px;
+            max-width: 80%;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .message-assistant .spinner {
+            position: absolute;
+            right: 18px;
+            top: 18px;
+        }
+
+        .message-header {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message-content {
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .message-meta {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 11px;
+            color: #666;
+        }
+
+        .reasoning-step {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 8px 12px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
+        .reasoning-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: #1a1a1a;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            position: relative;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            padding: 14px 18px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-btn .spinner {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+        }
+
+        .send-btn.loading .spinner {
+            display: inline-block;
+        }
+
+        /* ===== SCROLLBAR STYLING ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* ===== MODAL BASE ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #00d4ff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #333;
+        }
+
+        /* ===== KEYBOARD SHORTCUTS HELP ===== */
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #2a2a2a;
+            border-radius: 6px;
+        }
+
+        .shortcut-key {
+            background: #1a1a1a;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #00d4ff;
+        }
+
+        /* ===== TEMPLATES =====  */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .template-card {
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .template-card:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+        }
+
+        .template-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .template-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .template-description {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* ===== ANALYTICS STYLES ===== */
+        .analytics-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .analytics-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .analytics-button {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 8px;
+            transition: color 0.2s;
+            margin-left: 12px;
+        }
+
+        .analytics-button:hover {
+            color: #667eea;
+        }
+
+        /* ===== PROMPTLY STYLES ===== */
+        .promptly-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            min-height: 500px;
+        }
+
+        .prompts-list {
+            border-right: 1px solid #333;
+            padding-right: 16px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .prompt-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .prompt-item:hover {
+            background: #222;
+            border-color: #667eea;
+        }
+
+        .prompt-item.active {
+            background: #667eea;
+            border-color: #764ba2;
+        }
+
+        .prompt-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .prompt-description {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .prompt-tags {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .prompt-editor {
+            padding-left: 16px;
+        }
+
+        .prompt-editor textarea {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="contextMenuAction('rename')">
+            <span>✏️</span>
+            <span>Rename</span>
+        </div>
+        <div class="context-menu-item" onclick="contextMenuAction('favorite')">
+            <span>⭐</span>
+            <span>Toggle Favorite</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item">
+            <span>📁</span>
+            <span>Move to Project</span>
+            <div class="context-menu-submenu" id="projectsSubmenu"></div>
+        </div>
+        <div class="context-menu-item" onclick="contextMenuAction('tags')">
+            <span>🏷️</span>
+            <span>Add Tags</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="contextMenuAction('export')">
+            <span>💾</span>
+            <span>Export</span>
+        </div>
+        <div class="context-menu-item" onclick="contextMenuAction('duplicate')">
+            <span>📋</span>
+            <span>Duplicate</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="contextMenuAction('delete')">
+            <span>🗑️</span>
+            <span>Delete</span>
+        </div>
+    </div>
+
+    <div class="app">
+        <!-- Header -->
+        <div class="header">
+            <h1>🧠 HoloLoom - Enhanced Agentic Chat</h1>
+            <div class="header-controls">
+                <select class="llm-selector" id="llmProvider" onchange="changeLLMProvider()">
+                    <option value="anthropic-claude-3.5">Anthropic Claude 3.5 Sonnet</option>
+                    <option value="anthropic-claude-3-opus">Anthropic Claude 3 Opus</option>
+                    <option value="openai-gpt4">OpenAI GPT-4</option>
+                    <option value="openai-gpt3.5">OpenAI GPT-3.5 Turbo</option>
+                    <option value="ollama-llama3">Ollama Llama 3</option>
+                    <option value="ollama-mistral">Ollama Mistral</option>
+                </select>
+                <button class="analytics-button" onclick="showAnalytics()" title="Analytics Dashboard">📊</button>
+                <button class="analytics-button" onclick="showPromptly()" title="Prompt Library">📝</button>
+                <div class="connection-status disconnected" id="connectionStatus">⚫ Connecting...</div>
+            </div>
+        </div>
+
+        <!-- Projects Sidebar -->
+        <div class="projects-sidebar" id="projectsSidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" onclick="newConversation()">
+                    + New Chat
+                    <span class="spinner spinner-sm"></span>
+                </button>
+                <input type="text" class="search-box" placeholder="Search conversations..."
+                       id="searchBox" oninput="debouncedSearch()">
+            </div>
+
+            <!-- Bulk Actions Toolbar -->
+            <div class="bulk-toolbar" id="bulkToolbar">
+                <span class="bulk-count" id="bulkCount">0 selected</span>
+                <div class="bulk-actions">
+                    <button class="bulk-btn" onclick="bulkAction('favorite')">⭐ Favorite</button>
+                    <button class="bulk-btn" onclick="bulkAction('move')">📁 Move</button>
+                    <button class="bulk-btn" onclick="bulkAction('export')">💾 Export</button>
+                    <button class="bulk-btn" onclick="bulkAction('delete')">🗑️ Delete</button>
+                    <button class="bulk-btn" onclick="clearSelection()">✖ Clear</button>
+                </div>
+            </div>
+
+            <div class="projects-container" id="projectsContainer">
+                <div class="project-section">
+                    <div class="project-header" onclick="toggleProject('favorites')"
+                         ondrop="handleDrop(event, null)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <div class="project-title">
+                            <span class="project-icon">⭐</span>
+                            <span>Favorites</span>
+                        </div>
+                        <span class="project-count" id="favoritesCount">0</span>
+                    </div>
+                    <div class="conversation-list" id="favoritesList"></div>
+                </div>
+
+                <!-- Projects Header with Add Button -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #333;">
+                    <h3 style="margin: 0; font-size: 13px; color: #aaa;">Projects</h3>
+                    <button class="action-btn" onclick="showNewProjectDialog()" title="New Project" style="opacity: 1;">
+                        ➕
+                    </button>
+                </div>
+
+                <div id="projectsList"></div>
+
+                <div class="uncategorized-section">
+                    <div class="project-header" onclick="toggleProject('uncategorized')"
+                         ondrop="handleDrop(event, null)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <div class="project-title">
+                            <span class="project-icon">📝</span>
+                            <span>Uncategorized</span>
+                        </div>
+                        <span class="project-count" id="uncategorizedCount">0</span>
+                    </div>
+                    <div class="conversation-list" id="uncategorizedList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-area">
+            <div class="mode-bar">
+                <button class="mode-btn active" data-mode="DIRECT" onclick="setMode('DIRECT')">Direct</button>
+                <button class="mode-btn" data-mode="VERIFY" onclick="setMode('VERIFY')">Verify</button>
+                <button class="mode-btn" data-mode="RESEARCH" onclick="setMode('RESEARCH')">Research</button>
+                <button class="mode-btn" data-mode="PLAN_EXECUTE" onclick="setMode('PLAN_EXECUTE')">Plan & Execute</button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div style="text-align: center; color: #666; padding: 40px;">
+                    <p style="font-size: 18px; margin-bottom: 10px;">👋 Welcome to HoloLoom Enhanced</p>
+                    <p style="font-size: 14px; margin-bottom: 12px;">Start a new conversation or select an existing one from the sidebar.</p>
+                    <p style="font-size: 12px; color: #444;">Press <kbd style="background: #222; padding: 2px 8px; border-radius: 4px;">Ctrl+/</kbd> for keyboard shortcuts</p>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrapper" style="position: relative;">
+                    <input type="text" id="messageInput" placeholder="Ask me anything (type [/ for prompts)..."
+                           onkeypress="handleEnter(event)" oninput="handleInputChange(event)"
+                           onkeydown="handleAutocompleteKeydown(event)">
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        Send
+                        <span class="spinner spinner-sm"></span>
+                    </button>
+                    <!-- Autocomplete dropdown -->
+                    <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal" id="shortcutsModal">
+        <div class="modal-content">
+            <div class="modal-title">⌨️ Keyboard Shortcuts</div>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item">
+                    <span>New Chat</span>
+                    <span class="shortcut-key">Ctrl+N</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Search</span>
+                    <span class="shortcut-key">Ctrl+K</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Navigate Up</span>
+                    <span class="shortcut-key">↑</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Navigate Down</span>
+                    <span class="shortcut-key">↓</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Open Selected</span>
+                    <span class="shortcut-key">Enter</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Delete Selected</span>
+                    <span class="shortcut-key">Delete</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Select Mode</span>
+                    <span class="shortcut-key">Ctrl+M</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Export Selected</span>
+                    <span class="shortcut-key">Ctrl+E</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Close/Escape</span>
+                    <span class="shortcut-key">Esc</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>This Menu</span>
+                    <span class="shortcut-key">Ctrl+/</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('shortcutsModal')">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-title">💾 Export Conversations</div>
+            <div class="form-group">
+                <label class="form-label">Export Format</label>
+                <select class="form-input" id="exportFormat">
+                    <option value="json">JSON (Full Data)</option>
+                    <option value="markdown">Markdown (Readable)</option>
+                    <option value="txt">Plain Text</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" id="exportIncludeMetadata" checked> Include metadata
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('exportModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="performExport()">Export</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Modal -->
+    <div class="modal" id="templatesModal">
+        <div class="modal-content">
+            <div class="modal-title">📄 Conversation Templates</div>
+
+            <div class="templates-grid" id="templatesGrid">
+                <!-- Templates will be rendered here -->
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('templatesModal')">Close</button>
+                <button class="btn btn-primary" onclick="showSaveTemplateDialog()">Save Current as Template</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Template Modal -->
+    <div class="modal" id="saveTemplateModal">
+        <div class="modal-content">
+            <div class="modal-title">Save as Template</div>
+            <div class="form-group">
+                <label class="form-label">Template Name</label>
+                <input type="text" class="form-input" id="templateName" placeholder="e.g., Code Review">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-input" id="templateDescription" rows="3" placeholder="What is this template for?"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Icon</label>
+                <input type="text" class="form-input" id="templateIcon" placeholder="📄" maxlength="2">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('saveTemplateModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal" id="newProjectModal">
+        <div class="modal-content">
+            <div class="modal-title">📁 New Project</div>
+            <div class="form-group">
+                <label class="form-label">Project Name</label>
+                <input type="text" class="form-input" id="newProjectName" placeholder="e.g., Research Papers">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Icon</label>
+                <input type="text" class="form-input" id="newProjectIcon" placeholder="📁" maxlength="2">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <input type="color" class="form-input" id="newProjectColor" value="#667eea">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('newProjectModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createProject()">Create Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Dashboard Modal -->
+    <div class="modal" id="analyticsModal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-title">📊 Analytics Dashboard</div>
+            <div id="analyticsContent">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="analytics-card">
+                        <h3>Messages per Day</h3>
+                        <canvas id="messagesChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Confidence Distribution</h3>
+                        <canvas id="confidenceChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="analytics-card">
+                        <h3>Mode Usage</h3>
+                        <canvas id="modeChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Response Times</h3>
+                        <canvas id="responseTimeChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('analyticsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Promptly Integration Modal -->
+    <div class="modal" id="promptlyModal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-title">📝 Prompt Library (Promptly)</div>
+            <div class="promptly-layout">
+                <!-- Prompts List -->
+                <div class="prompts-list">
+                    <input type="text" class="search-box" placeholder="Search prompts..." id="promptSearch" oninput="filterPrompts()">
+                    <div id="promptsList"></div>
+                </div>
+
+                <!-- Prompt Editor -->
+                <div class="prompt-editor">
+                    <div class="form-group">
+                        <label class="form-label">Prompt Name</label>
+                        <input type="text" class="form-input" id="promptName" placeholder="e.g., code-reviewer">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-input" id="promptDescription" placeholder="What does this prompt do?">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-input" id="promptContent" rows="15" placeholder="Enter your prompt template here..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tags (comma-separated)</label>
+                        <input type="text" class="form-input" id="promptTags" placeholder="coding, review, analysis">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('promptlyModal')">Close</button>
+                <button class="btn btn-primary" onclick="savePromptToPromptly()">Save Prompt</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== GLOBAL STATE =====
+        let ws = null;
+        let currentMode = 'DIRECT';
+        let currentConversationId = null;
+        let conversations = [];
+        let projects = [];
+        let selectedLLMProvider = 'anthropic-claude-3.5';
+        let selectedConversations = new Set();
+        let bulkMode = false;
+        let contextMenuTarget = null;
+        let selectedConversationIndex = 0;
+        let searchTimeout = null;
+
+        // Pagination state
+        let conversationsPage = 0;
+        let conversationsPerPage = 50;
+        let hasMoreConversations = true;
+        let loadingMore = false;
+
+        // Autocomplete state
+        let availablePrompts = [];
+        let autocompleteSelectedIndex = -1;
+        let autocompleteVisible = false;
+        let promptsLoaded = false;
+
+        // ===== AUTOCOMPLETE FOR PROMPTS =====
+        function handleInputChange(event) {
+            const input = event.target;
+            const text = input.value;
+            const cursorPos = input.selectionStart;
+
+            // Find if there's a [/ pattern before cursor
+            const beforeCursor = text.substring(0, cursorPos);
+            const match = beforeCursor.match(/\[\/([^\]]*?)$/);
+
+            if (match) {
+                // User is typing [/... - show autocomplete
+                const query = match[1].toLowerCase();
+                showAutocomplete(query);
+            } else {
+                hideAutocomplete();
+            }
+        }
+
+        async function showAutocomplete(query) {
+            // Load prompts if not loaded yet
+            if (!promptsLoaded) {
+                await loadAvailablePrompts();
+            }
+
+            // Filter prompts by query
+            const filtered = query
+                ? availablePrompts.filter(p =>
+                    p.name.toLowerCase().includes(query) ||
+                    (p.description && p.description.toLowerCase().includes(query))
+                  )
+                : availablePrompts;
+
+            const dropdown = document.getElementById('autocompleteDropdown');
+
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="autocomplete-empty">No prompts found. Try "debug", "code", or "explain"</div>';
+                dropdown.classList.add('show');
+                autocompleteVisible = true;
+                return;
+            }
+
+            dropdown.innerHTML = filtered.map((prompt, index) => `
+                <div class="autocomplete-item ${index === 0 ? 'selected' : ''}"
+                     data-index="${index}"
+                     data-name="${escapeHtml(prompt.name)}"
+                     onclick="selectAutocompleteItem('${escapeHtml(prompt.name)}')">
+                    <div class="autocomplete-item-name">[/${escapeHtml(prompt.name)}]</div>
+                    ${prompt.description ? `<div class="autocomplete-item-description">${escapeHtml(prompt.description)}</div>` : ''}
+                </div>
+            `).join('');
+
+            dropdown.classList.add('show');
+            autocompleteVisible = true;
+            autocompleteSelectedIndex = 0;
+        }
+
+        function hideAutocomplete() {
+            const dropdown = document.getElementById('autocompleteDropdown');
+            dropdown.classList.remove('show');
+            autocompleteVisible = false;
+            autocompleteSelectedIndex = -1;
+        }
+
+        async function loadAvailablePrompts() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                // If no WebSocket, use sample prompts
+                availablePrompts = [
+                    {name: 'debug', description: 'Debug code and find issues'},
+                    {name: 'explain', description: 'Explain code or concepts'},
+                    {name: 'refactor', description: 'Improve code structure'},
+                    {name: 'test', description: 'Write unit tests'},
+                    {name: 'document', description: 'Generate documentation'},
+                ];
+                promptsLoaded = true;
+                return;
+            }
+
+            try {
+                // Request prompts list from server
+                const prompts = await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => reject(new Error('Timeout')), 3000);
+
+                    const handler = (event) => {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'prompts_list') {
+                            clearTimeout(timeout);
+                            ws.removeEventListener('message', handler);
+                            resolve(data.data.prompts || []);
+                        }
+                    };
+
+                    ws.addEventListener('message', handler);
+                    ws.send(JSON.stringify({action: 'list_prompts'}));
+                });
+
+                availablePrompts = prompts.length > 0 ? prompts : [
+                    {name: 'debug', description: 'Debug code and find issues'},
+                    {name: 'explain', description: 'Explain code or concepts'},
+                    {name: 'refactor', description: 'Improve code structure'},
+                    {name: 'test', description: 'Write unit tests'},
+                    {name: 'document', description: 'Generate documentation'},
+                ];
+            } catch (err) {
+                // Fallback to sample prompts
+                availablePrompts = [
+                    {name: 'debug', description: 'Debug code and find issues'},
+                    {name: 'explain', description: 'Explain code or concepts'},
+                    {name: 'refactor', description: 'Improve code structure'},
+                    {name: 'test', description: 'Write unit tests'},
+                    {name: 'document', description: 'Generate documentation'},
+                ];
+            }
+
+            promptsLoaded = true;
+        }
+
+        function selectAutocompleteItem(promptName) {
+            const input = document.getElementById('messageInput');
+            const text = input.value;
+            const cursorPos = input.selectionStart;
+
+            // Find the [/ pattern before cursor
+            const beforeCursor = text.substring(0, cursorPos);
+            const match = beforeCursor.match(/\[\/([^\]]*?)$/);
+
+            if (match) {
+                const startPos = cursorPos - match[0].length;
+                const replacement = `[/${promptName}]`;
+                const newText = text.substring(0, startPos) + replacement + text.substring(cursorPos);
+
+                input.value = newText;
+                input.selectionStart = input.selectionEnd = startPos + replacement.length;
+            }
+
+            hideAutocomplete();
+            input.focus();
+        }
+
+        function handleAutocompleteKeydown(event) {
+            if (!autocompleteVisible) return;
+
+            const dropdown = document.getElementById('autocompleteDropdown');
+            const items = dropdown.querySelectorAll('.autocomplete-item');
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                autocompleteSelectedIndex = Math.min(autocompleteSelectedIndex + 1, items.length - 1);
+                updateAutocompleteSelection(items);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                autocompleteSelectedIndex = Math.max(autocompleteSelectedIndex - 1, 0);
+                updateAutocompleteSelection(items);
+            } else if (event.key === 'Enter' && autocompleteSelectedIndex >= 0) {
+                event.preventDefault();
+                const selectedItem = items[autocompleteSelectedIndex];
+                const promptName = selectedItem.dataset.name;
+                selectAutocompleteItem(promptName);
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                hideAutocomplete();
+            }
+        }
+
+        function updateAutocompleteSelection(items) {
+            items.forEach((item, index) => {
+                if (index === autocompleteSelectedIndex) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({block: 'nearest'});
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        // ===== WEBSOCKET CONNECTION =====
+        function connect() {
+            ws = new WebSocket('ws://localhost:8002/ws');
+
+            ws.onopen = () => {
+                console.log('Connected to server');
+                document.getElementById('connectionStatus').className = 'connection-status connected';
+                document.getElementById('connectionStatus').textContent = '🟢 Connected';
+                showToast('Connected to server', 'success');
+
+                // Request initial data
+                ws.send(JSON.stringify({ action: 'list_conversations' }));
+                ws.send(JSON.stringify({ action: 'list_projects' }));
+            };
+
+            ws.onclose = () => {
+                console.log('Disconnected from server');
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionStatus').textContent = '🔴 Disconnected';
+                showToast('Disconnected from server', 'error');
+                setTimeout(connect, 2000);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleServerMessage(data);
+            };
+        }
+
+        // ===== SERVER MESSAGE HANDLER =====
+        function handleServerMessage(data) {
+            console.log('Received:', data.type, data);
+
+            switch (data.type) {
+                case 'conversations_list':
+                    const newConversations = data.data.conversations;
+                    hasMoreConversations = data.data.has_more || false;
+
+                    if (data.data.offset === 0 || !data.data.offset) {
+                        // First page, replace
+                        conversations = newConversations;
+                        conversationsPage = 0;
+                    } else {
+                        // Append to existing
+                        conversations = conversations.concat(newConversations);
+                    }
+
+                    renderConversations();
+                    loadingMore = false;
+                    updateLoadMoreButton();
+                    break;
+
+                case 'projects_list':
+                    console.log('[Projects Debug] Received projects_list:', data.data);
+                    projects = data.data.projects;
+                    console.log('[Projects Debug] Set projects array to:', projects);
+                    renderProjects();
+                    break;
+
+                case 'conversation_created':
+                    currentConversationId = data.data.id;
+                    ws.send(JSON.stringify({ action: 'list_conversations' }));
+                    showToast('New conversation created', 'success');
+                    break;
+
+                case 'conversation_loaded':
+                    currentConversationId = data.data.conversation.id;
+                    loadMessages(data.data.messages);
+                    break;
+
+                case 'response':
+                    hideSpinner('send-btn');
+                    addAssistantMessage(data.data);
+                    break;
+
+                case 'project_created':
+                case 'project_updated':
+                case 'project_deleted':
+                case 'conversation_moved':
+                case 'conversation_renamed':
+                case 'favorite_toggled':
+                    ws.send(JSON.stringify({ action: 'list_conversations' }));
+                    ws.send(JSON.stringify({ action: 'list_projects' }));
+                    showToast('Action completed successfully', 'success');
+                    break;
+
+                case 'search_results':
+                    conversations = data.data.results;
+                    renderConversations();
+                    break;
+
+                case 'preview_messages':
+                    const convId = data.data.conversation_id;
+                    const messages = data.data.messages;
+                    // Cache the preview
+                    previewCache[convId] = messages;
+                    // Render it
+                    renderPreview(convId, messages);
+                    break;
+
+                case 'templates_list':
+                    renderTemplates(data.data.templates);
+                    break;
+
+                case 'template_created':
+                    showToast('Template saved successfully', 'success');
+                    break;
+
+                case 'template_deleted':
+                    showToast('Template deleted', 'success');
+                    ws.send(JSON.stringify({ action: 'list_templates' }));
+                    break;
+
+                case 'project_created':
+                    showToast('Project created successfully', 'success');
+                    ws.send(JSON.stringify({ action: 'list_projects' }));
+                    break;
+
+                case 'analytics_data':
+                    renderAnalytics(data.data);
+                    break;
+
+                case 'prompts_list':
+                    renderPromptsList(data.data.prompts);
+                    break;
+
+                case 'prompt_data':
+                    document.getElementById('promptName').value = data.data.name;
+                    document.getElementById('promptContent').value = data.data.content;
+                    document.getElementById('promptDescription').value = data.data.description;
+                    document.getElementById('promptTags').value = (data.data.tags || []).join(', ');
+                    break;
+
+                case 'prompt_saved':
+                    showToast('Prompt saved to Promptly', 'success');
+                    break;
+
+                case 'error':
+                    showToast(data.data.error || 'An error occurred', 'error');
+                    break;
+            }
+        }
+
+        // ===== TOAST NOTIFICATION SYSTEM =====
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icons = {
+                success: '✓',
+                error: '✗',
+                info: 'ℹ',
+                warning: '⚠'
+            };
+
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type]}</span>
+                <span class="toast-message">${escapeHtml(message)}</span>
+            `;
+
+            toast.onclick = () => {
+                toast.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            };
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
+        }
+
+        // ===== SPINNER FUNCTIONS =====
+        function showSpinner(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.classList.add('loading');
+                element.disabled = true;
+            }
+        }
+
+        function hideSpinner(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.classList.remove('loading');
+                element.disabled = false;
+            }
+        }
+
+        // ===== DEBOUNCED SEARCH =====
+        function debouncedSearch() {
+            clearTimeout(searchTimeout);
+            const query = document.getElementById('searchBox').value.trim();
+
+            if (query.length === 0) {
+                ws.send(JSON.stringify({ action: 'list_conversations' }));
+                return;
+            }
+
+            if (query.length < 2) return;
+
+            searchTimeout = setTimeout(() => {
+                ws.send(JSON.stringify({ action: 'search_conversations', query: query }));
+            }, 300);
+        }
+
+        // ===== LLM PROVIDER =====
+        function changeLLMProvider() {
+            selectedLLMProvider = document.getElementById('llmProvider').value;
+            showToast(`Switched to ${selectedLLMProvider}`, 'info');
+        }
+
+        // ===== UI FUNCTIONS =====
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+        }
+
+        function newConversation() {
+            showSpinner('new-chat-btn');
+            ws.send(JSON.stringify({ action: 'new_conversation' }));
+            document.getElementById('chatMessages').innerHTML = '';
+            setTimeout(() => hideSpinner('new-chat-btn'), 1000);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            let message = input.value.trim();
+
+            if (!message) return;
+
+            // Check for [/prompt_name] patterns
+            const promptPattern = /\[\/([^\]]+)\]/g;
+            const matches = [...message.matchAll(promptPattern)];
+
+            if (matches.length > 0) {
+                // Expand prompts from Promptly
+                for (const match of matches) {
+                    const promptName = match[1];
+
+                    try {
+                        // Request prompt content from Promptly
+                        const promptContent = await fetchPromptContent(promptName);
+
+                        if (promptContent) {
+                            // Replace [/prompt_name] with actual content
+                            message = message.replace(match[0], promptContent);
+                        } else {
+                            showToast(`Prompt not found: ${promptName}`, 'warning');
+                        }
+                    } catch (err) {
+                        showToast(`Failed to load prompt: ${promptName}`, 'error');
+                    }
+                }
+            }
+
+            addUserMessage(message);
+            showSpinner('sendBtn');
+
+            ws.send(JSON.stringify({
+                action: 'reason',
+                query: message,
+                mode: currentMode.toLowerCase(),
+                max_steps: 3,
+                llm_provider: selectedLLMProvider
+            }));
+
+            input.value = '';
+        }
+
+        // Helper function to fetch prompt content from Promptly
+        function fetchPromptContent(promptName) {
+            return new Promise((resolve, reject) => {
+                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    reject(new Error('WebSocket not connected'));
+                    return;
+                }
+
+                // Create temporary handler for this specific prompt
+                const handler = (event) => {
+                    const data = JSON.parse(event.data);
+
+                    if (data.type === 'prompt_data' && data.data.name === promptName) {
+                        ws.removeEventListener('message', handler);
+                        resolve(data.data.content);
+                    } else if (data.type === 'error') {
+                        ws.removeEventListener('message', handler);
+                        reject(new Error(data.data.error));
+                    }
+                };
+
+                // Add temporary listener
+                ws.addEventListener('message', handler);
+
+                // Request the prompt
+                ws.send(JSON.stringify({
+                    action: 'get_prompt',
+                    name: promptName
+                }));
+
+                // Timeout after 5 seconds
+                setTimeout(() => {
+                    ws.removeEventListener('message', handler);
+                    reject(new Error('Timeout waiting for prompt'));
+                }, 5000);
+            });
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function addUserMessage(text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+            messageEl.innerHTML = `
+                <div class="message-user">
+                    <div class="message-header">
+                        <span>You</span>
+                        <span>${new Date().toLocaleTimeString()}</span>
+                    </div>
+                    <div class="message-content">${escapeHtml(text)}</div>
+                </div>
+            `;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addAssistantMessage(data) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+
+            let stepsHtml = '';
+            if (data.reasoning_steps && data.reasoning_steps.length > 0) {
+                stepsHtml = data.reasoning_steps.map(step => `
+                    <div class="reasoning-step">
+                        <div class="reasoning-label">${step.type}</div>
+                        <div>${escapeHtml(step.description)}</div>
+                    </div>
+                `).join('');
+            }
+
+            messageEl.innerHTML = `
+                <div class="message-assistant">
+                    <div class="message-header">
+                        <span>HoloLoom</span>
+                        <span>${new Date().toLocaleTimeString()}</span>
+                    </div>
+                    <div class="message-content">${escapeHtml(data.response)}</div>
+                    ${stepsHtml}
+                    <div class="message-meta">
+                        Confidence: ${((data.confidence || 0) * 100).toFixed(1)}% |
+                        Duration: ${data.duration_ms}ms |
+                        Mode: ${data.mode || currentMode}
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function loadMessages(messages) {
+            const messagesDiv = document.getElementById('chatMessages');
+            messagesDiv.innerHTML = '';
+
+            messages.forEach(msg => {
+                if (msg.role === 'user') {
+                    addUserMessage(msg.content);
+                } else {
+                    const metadata = typeof msg.metadata === 'string' ?
+                        JSON.parse(msg.metadata) : msg.metadata;
+                    addAssistantMessage({
+                        response: msg.content,
+                        ...metadata
+                    });
+                }
+            });
+        }
+
+        // ===== CONVERSATION MANAGEMENT =====
+        function renderConversations() {
+            const favoritesList = document.getElementById('favoritesList');
+            const uncategorizedList = document.getElementById('uncategorizedList');
+
+            favoritesList.innerHTML = '';
+            uncategorizedList.innerHTML = '';
+
+            const favorites = conversations.filter(c => c.is_favorite);
+            const uncategorized = conversations.filter(c => !c.project_id && !c.is_favorite);
+
+            document.getElementById('favoritesCount').textContent = favorites.length;
+            document.getElementById('uncategorizedCount').textContent = uncategorized.length;
+
+            favorites.forEach(conv => {
+                favoritesList.appendChild(createConversationElement(conv));
+            });
+
+            uncategorized.forEach(conv => {
+                uncategorizedList.appendChild(createConversationElement(conv));
+            });
+
+            projects.forEach(project => {
+                const projectConversations = conversations.filter(c => c.project_id === project.id);
+                const listId = `project-${project.id}-list`;
+                const listEl = document.getElementById(listId);
+                if (listEl) {
+                    listEl.innerHTML = '';
+                    projectConversations.forEach(conv => {
+                        listEl.appendChild(createConversationElement(conv));
+                    });
+                }
+            });
+        }
+
+        function createConversationElement(conv) {
+            const div = document.createElement('div');
+            div.className = 'conversation-item' +
+                           (conv.id === currentConversationId ? ' active' : '') +
+                           (conv.is_favorite ? ' favorite' : '');
+            div.draggable = true;
+            div.dataset.conversationId = conv.id;
+
+            div.ondragstart = handleDragStart;
+            div.ondragend = handleDragEnd;
+            div.onclick = () => !bulkMode && loadConversation(conv.id);
+            div.oncontextmenu = (e) => showContextMenu(e, conv.id);
+            div.onmouseenter = () => loadPreview(conv.id);
+
+            div.innerHTML = `
+                <input type="checkbox" class="conversation-checkbox"
+                       onchange="toggleConversationSelection(${conv.id})"
+                       ${selectedConversations.has(conv.id) ? 'checked' : ''}>
+                <div class="conversation-content">
+                    <div class="conversation-title">${escapeHtml(conv.title)}</div>
+                    <div class="conversation-meta">
+                        <span class="last-message">Last activity</span>
+                        <span class="timestamp">${formatTimestamp(conv.updated_at)}</span>
+                    </div>
+                </div>
+                <div class="conversation-actions">
+                    <button class="action-btn" onclick="event.stopPropagation(); toggleFavorite(${conv.id})"
+                            title="Toggle Favorite">⭐</button>
+                    <button class="action-btn" onclick="event.stopPropagation(); renameConversation(${conv.id})"
+                            title="Rename">✏️</button>
+                    <button class="action-btn" onclick="event.stopPropagation(); deleteConversation(${conv.id})"
+                            title="Delete">🗑️</button>
+                </div>
+                <div class="conversation-preview">
+                    <div class="preview-title">${escapeHtml(conv.title)}</div>
+                    <div id="preview-messages-${conv.id}">
+                        <div style="text-align: center; color: #666;">Hover to load preview...</div>
+                    </div>
+                </div>
+            `;
+
+            return div;
+        }
+
+        function renderProjects() {
+            console.log('[Projects Debug] renderProjects called with', projects.length, 'projects:', projects);
+
+            const projectsList = document.getElementById('projectsList');
+            if (!projectsList) {
+                console.error('[Projects Debug] projectsList element not found!');
+                return;
+            }
+
+            projectsList.innerHTML = '';
+
+            if (projects.length === 0) {
+                console.log('[Projects Debug] No projects to render');
+            }
+
+            projects.forEach((project, index) => {
+                console.log(`[Projects Debug] Rendering project ${index}:`, project);
+                const section = document.createElement('div');
+                section.className = 'project-section';
+                section.innerHTML = `
+                    <div class="project-header" onclick="toggleProject('project-${project.id}')"
+                         ondrop="handleDrop(event, ${project.id})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <div class="project-title" style="color: ${project.color}">
+                            <span class="project-icon">${project.icon}</span>
+                            <span>${escapeHtml(project.name)}</span>
+                        </div>
+                        <span class="project-count">${project.conversation_count}</span>
+                    </div>
+                    <div class="conversation-list" id="project-${project.id}-list"></div>
+                `;
+                projectsList.appendChild(section);
+            });
+
+            console.log('[Projects Debug] Projects rendered, calling renderConversations');
+            renderConversations();
+        }
+
+        function loadConversation(id) {
+            ws.send(JSON.stringify({ action: 'load_conversation', conversation_id: id }));
+        }
+
+        function toggleFavorite(id) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                showToast('Not connected to server', 'error');
+                return;
+            }
+            ws.send(JSON.stringify({ action: 'toggle_favorite', conversation_id: id }));
+        }
+
+        function renameConversation(id) {
+            const newTitle = prompt('Enter new title:');
+            if (newTitle && newTitle.trim()) {
+                ws.send(JSON.stringify({
+                    action: 'rename_conversation',
+                    conversation_id: id,
+                    title: newTitle.trim()
+                }));
+            }
+        }
+
+        function deleteConversation(id) {
+            if (confirm('Delete this conversation?')) {
+                ws.send(JSON.stringify({ action: 'delete_conversation', conversation_id: id }));
+            }
+        }
+
+        function toggleProject(projectId) {
+            const list = document.getElementById(`${projectId}List`);
+            if (!list) {
+                const alternateId = `${projectId}-list`;
+                const altList = document.getElementById(alternateId);
+                if (altList) {
+                    altList.style.display = altList.style.display === 'none' ? 'block' : 'none';
+                }
+            } else {
+                list.style.display = list.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // ===== HOVER PREVIEWS =====
+        let previewCache = {};
+        let previewTimeout = null;
+
+        function loadPreview(conversationId) {
+            clearTimeout(previewTimeout);
+
+            // Delay 500ms for better UX
+            previewTimeout = setTimeout(() => {
+                // Check cache first
+                if (previewCache[conversationId]) {
+                    renderPreview(conversationId, previewCache[conversationId]);
+                    return;
+                }
+
+                // Fetch from server
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        action: 'get_preview',
+                        conversation_id: conversationId,
+                        limit: 3
+                    }));
+                }
+            }, 500);
+        }
+
+        function renderPreview(conversationId, messages) {
+            const container = document.getElementById(`preview-messages-${conversationId}`);
+            if (!container) return;
+
+            if (!messages || messages.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666;">No messages yet</div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => `
+                <div class="preview-message">
+                    <div class="preview-role">${msg.role === 'user' ? 'You' : 'HoloLoom'}</div>
+                    <div>${escapeHtml(msg.content.substring(0, 100))}${msg.content.length > 100 ? '...' : ''}</div>
+                </div>
+            `).join('');
+        }
+
+        // ===== DRAG AND DROP =====
+        function handleDragStart(e) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', e.target.dataset.conversationId);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.drop-target').forEach(el => {
+                el.classList.remove('drop-target');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            // Remove drop-target from all project headers
+            document.querySelectorAll('.project-header').forEach(el => {
+                el.classList.remove('drop-target');
+            });
+
+            // Add to current target
+            e.currentTarget.classList.add('drop-target');
+        }
+
+        function handleDragLeave(e) {
+            // Only remove if leaving the element (not entering a child)
+            if (e.currentTarget.contains(e.relatedTarget)) {
+                return;
+            }
+            e.currentTarget.classList.remove('drop-target');
+        }
+
+        function handleDrop(e, projectId) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const conversationId = e.dataTransfer.getData('text/plain');
+
+            if (!conversationId) {
+                showToast('Failed to move conversation', 'error');
+                return;
+            }
+
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                showToast('Not connected to server', 'error');
+                return;
+            }
+
+            ws.send(JSON.stringify({
+                action: 'move_to_project',
+                conversation_id: parseInt(conversationId),
+                project_id: projectId
+            }));
+
+            // Remove drop-target class
+            e.currentTarget.classList.remove('drop-target');
+        }
+
+        // ===== CONTEXT MENU =====
+        function showContextMenu(e, conversationId) {
+            e.preventDefault();
+            contextMenuTarget = conversationId;
+
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+            menu.classList.add('show');
+
+            // Populate projects submenu
+            const submenu = document.getElementById('projectsSubmenu');
+            submenu.innerHTML = projects.map(p => `
+                <div class="context-menu-item" onclick="moveToProjectFromContext(${p.id})">
+                    ${p.icon} ${escapeHtml(p.name)}
+                </div>
+            `).join('');
+        }
+
+        function contextMenuAction(action) {
+            if (!contextMenuTarget) return;
+
+            switch(action) {
+                case 'rename':
+                    renameConversation(contextMenuTarget);
+                    break;
+                case 'favorite':
+                    toggleFavorite(contextMenuTarget);
+                    break;
+                case 'delete':
+                    deleteConversation(contextMenuTarget);
+                    break;
+                case 'export':
+                    exportConversations([contextMenuTarget]);
+                    break;
+                // Add more actions as needed
+            }
+
+            hideContextMenu();
+        }
+
+        function moveToProjectFromContext(projectId) {
+            ws.send(JSON.stringify({
+                action: 'move_to_project',
+                conversation_id: contextMenuTarget,
+                project_id: projectId
+            }));
+            hideContextMenu();
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').classList.remove('show');
+            contextMenuTarget = null;
+        }
+
+        // Click outside to close context menu
+        document.addEventListener('click', hideContextMenu);
+
+        // ===== BULK OPERATIONS =====
+        function toggleConversationSelection(id) {
+            if (selectedConversations.has(id)) {
+                selectedConversations.delete(id);
+            } else {
+                selectedConversations.add(id);
+            }
+            updateBulkToolbar();
+        }
+
+        function updateBulkToolbar() {
+            const toolbar = document.getElementById('bulkToolbar');
+            const count = document.getElementById('bulkCount');
+            const sidebar = document.getElementById('projectsSidebar');
+
+            if (selectedConversations.size > 0) {
+                toolbar.classList.add('show');
+                sidebar.classList.add('bulk-mode');
+                bulkMode = true;
+                count.textContent = `${selectedConversations.size} selected`;
+            } else {
+                toolbar.classList.remove('show');
+                sidebar.classList.remove('bulk-mode');
+                bulkMode = false;
+            }
+        }
+
+        function clearSelection() {
+            selectedConversations.clear();
+            updateBulkToolbar();
+            document.querySelectorAll('.conversation-checkbox').forEach(cb => cb.checked = false);
+        }
+
+        function bulkAction(action) {
+            if (selectedConversations.size === 0) {
+                showToast('No conversations selected', 'warning');
+                return;
+            }
+
+            switch(action) {
+                case 'favorite':
+                    selectedConversations.forEach(id => toggleFavorite(id));
+                    break;
+                case 'delete':
+                    if (confirm(`Delete ${selectedConversations.size} conversations?`)) {
+                        selectedConversations.forEach(id => deleteConversation(id));
+                        clearSelection();
+                    }
+                    break;
+                case 'export':
+                    exportConversations(Array.from(selectedConversations));
+                    break;
+                case 'move':
+                    // Show project selection dialog
+                    showToast('Move feature coming soon', 'info');
+                    break;
+            }
+        }
+
+        // ===== EXPORT/IMPORT =====
+        function exportConversations(ids) {
+            showModal('exportModal');
+        }
+
+        function performExport() {
+            const format = document.getElementById('exportFormat').value;
+            const includeMetadata = document.getElementById('exportIncludeMetadata').checked;
+
+            // Create export data
+            const exportData = {
+                version: '1.0',
+                exported_at: new Date().toISOString(),
+                conversations: conversations.filter(c => selectedConversations.has(c.id))
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `hololoom-export-${Date.now()}.json`;
+            link.click();
+
+            closeModal('exportModal');
+            showToast('Export successful', 'success');
+        }
+
+        // ===== TEMPLATE FUNCTIONS =====
+        function showTemplates() {
+            ws.send(JSON.stringify({ action: 'list_templates' }));
+            showModal('templatesModal');
+        }
+
+        function renderTemplates(templates) {
+            const grid = document.getElementById('templatesGrid');
+            grid.innerHTML = templates.map(t => `
+                <div class="template-card" onclick="useTemplate(${t.id})">
+                    <div class="template-icon">${t.icon}</div>
+                    <div class="template-name">${escapeHtml(t.name)}</div>
+                    <div class="template-description">${escapeHtml(t.description)}</div>
+                </div>
+            `).join('');
+        }
+
+        function useTemplate(templateId) {
+            ws.send(JSON.stringify({
+                action: 'load_template',
+                template_id: templateId
+            }));
+            closeModal('templatesModal');
+        }
+
+        function showSaveTemplateDialog() {
+            if (!currentConversationId) {
+                showToast('No active conversation to save', 'warning');
+                return;
+            }
+            closeModal('templatesModal');
+            showModal('saveTemplateModal');
+        }
+
+        function saveTemplate() {
+            const name = document.getElementById('templateName').value.trim();
+            const description = document.getElementById('templateDescription').value.trim();
+            const icon = document.getElementById('templateIcon').value.trim() || '📄';
+
+            if (!name) {
+                showToast('Please enter a template name', 'warning');
+                return;
+            }
+
+            ws.send(JSON.stringify({
+                action: 'save_as_template',
+                conversation_id: currentConversationId,
+                name: name,
+                description: description,
+                icon: icon
+            }));
+
+            closeModal('saveTemplateModal');
+            showToast('Template saved successfully', 'success');
+
+            // Clear form
+            document.getElementById('templateName').value = '';
+            document.getElementById('templateDescription').value = '';
+            document.getElementById('templateIcon').value = '';
+        }
+
+        // ===== PROJECT MANAGEMENT =====
+        function showNewProjectDialog() {
+            showModal('newProjectModal');
+        }
+
+        function createProject() {
+            const name = document.getElementById('newProjectName').value.trim();
+            const icon = document.getElementById('newProjectIcon').value.trim() || '📁';
+            const color = document.getElementById('newProjectColor').value;
+
+            if (!name) {
+                showToast('Please enter a project name', 'warning');
+                return;
+            }
+
+            ws.send(JSON.stringify({
+                action: 'create_project',
+                name: name,
+                icon: icon,
+                color: color
+            }));
+
+            closeModal('newProjectModal');
+            showToast('Project created successfully', 'success');
+
+            // Clear form
+            document.getElementById('newProjectName').value = '';
+            document.getElementById('newProjectIcon').value = '';
+            document.getElementById('newProjectColor').value = '#667eea';
+        }
+
+        // ===== ANALYTICS DASHBOARD =====
+        function showAnalytics() {
+            // Request analytics data from server
+            ws.send(JSON.stringify({ action: 'get_analytics' }));
+            showModal('analyticsModal');
+        }
+
+        function renderAnalytics(data) {
+            // Render analytics charts using simple canvas-based charts
+            // For production, you might want to use Chart.js or similar library
+            renderMessagesChart(data.messages_per_day);
+            renderConfidenceChart(data.confidence_distribution);
+            renderModeChart(data.mode_usage);
+            renderResponseTimeChart(data.response_times);
+        }
+
+        function renderMessagesChart(data) {
+            const canvas = document.getElementById('messagesChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            // Simple bar chart
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const barWidth = canvas.width / data.length;
+            const maxValue = Math.max(...data.map(d => d.count));
+
+            data.forEach((item, i) => {
+                const height = (item.count / maxValue) * canvas.height * 0.8;
+                ctx.fillStyle = '#667eea';
+                ctx.fillRect(i * barWidth, canvas.height - height, barWidth - 2, height);
+            });
+        }
+
+        function renderConfidenceChart(data) {
+            const canvas = document.getElementById('confidenceChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            // Simple histogram
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const barWidth = canvas.width / data.length;
+            const maxValue = Math.max(...data.map(d => d.count));
+
+            data.forEach((item, i) => {
+                const height = (item.count / maxValue) * canvas.height * 0.8;
+                ctx.fillStyle = '#764ba2';
+                ctx.fillRect(i * barWidth, canvas.height - height, barWidth - 2, height);
+            });
+        }
+
+        function renderModeChart(data) {
+            const canvas = document.getElementById('modeChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            // Simple pie chart
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const total = data.reduce((sum, item) => sum + item.count, 0);
+            let currentAngle = 0;
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe'];
+
+            data.forEach((item, i) => {
+                const sliceAngle = (item.count / total) * 2 * Math.PI;
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, canvas.height / 2);
+                ctx.arc(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) / 2 - 10,
+                        currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fill();
+                currentAngle += sliceAngle;
+            });
+        }
+
+        function renderResponseTimeChart(data) {
+            const canvas = document.getElementById('responseTimeChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            // Simple line chart
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const stepX = canvas.width / (data.length - 1);
+            const maxValue = Math.max(...data.map(d => d.time));
+
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            data.forEach((item, i) => {
+                const x = i * stepX;
+                const y = canvas.height - (item.time / maxValue) * canvas.height * 0.8;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.stroke();
+        }
+
+        // ===== PROMPTLY INTEGRATION =====
+        let allPrompts = [];
+
+        function showPromptly() {
+            if (!ws) {
+                showToast('Not connected to server', 'error');
+                return;
+            }
+
+            ws.send(JSON.stringify({ action: 'list_prompts' }));
+            showModal('promptlyModal');
+        }
+
+        function renderPromptsList(prompts) {
+            allPrompts = prompts;
+            const list = document.getElementById('promptsList');
+
+            if (prompts.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No prompts available</div>';
+                return;
+            }
+
+            list.innerHTML = prompts.map(p => `
+                <div class="prompt-item" onclick="loadPrompt('${escapeHtml(p.name)}')">
+                    <div class="prompt-name">${escapeHtml(p.name)}</div>
+                    <div class="prompt-description">${escapeHtml(p.description || 'No description')}</div>
+                    ${p.tags && p.tags.length > 0 ? `<div class="prompt-tags">${p.tags.join(', ')}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function loadPrompt(name) {
+            ws.send(JSON.stringify({
+                action: 'get_prompt',
+                name: name
+            }));
+
+            // Highlight selected prompt
+            document.querySelectorAll('.prompt-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.textContent.includes(name)) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        function savePromptToPromptly() {
+            const name = document.getElementById('promptName').value.trim();
+            const content = document.getElementById('promptContent').value.trim();
+            const description = document.getElementById('promptDescription').value.trim();
+            const tags = document.getElementById('promptTags').value.split(',').map(t => t.trim()).filter(t => t);
+
+            if (!name || !content) {
+                showToast('Name and content are required', 'warning');
+                return;
+            }
+
+            ws.send(JSON.stringify({
+                action: 'save_prompt',
+                name: name,
+                content: content,
+                description: description,
+                tags: tags
+            }));
+
+            showToast('Prompt saved successfully', 'success');
+
+            // Clear form
+            document.getElementById('promptName').value = '';
+            document.getElementById('promptContent').value = '';
+            document.getElementById('promptDescription').value = '';
+            document.getElementById('promptTags').value = '';
+
+            // Refresh list
+            setTimeout(() => {
+                ws.send(JSON.stringify({ action: 'list_prompts' }));
+            }, 500);
+        }
+
+        function filterPrompts() {
+            const query = document.getElementById('promptSearch').value.toLowerCase();
+
+            if (!query) {
+                renderPromptsList(allPrompts);
+                return;
+            }
+
+            const filtered = allPrompts.filter(p =>
+                p.name.toLowerCase().includes(query) ||
+                (p.description && p.description.toLowerCase().includes(query)) ||
+                (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
+            );
+
+            renderPromptsList(filtered);
+        }
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+/ - Show shortcuts help
+            if (e.ctrlKey && e.key === '/') {
+                e.preventDefault();
+                showModal('shortcutsModal');
+            }
+
+            // Escape - Close modals, clear search
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+                hideContextMenu();
+                document.getElementById('searchBox').value = '';
+                debouncedSearch();
+            }
+
+            // Ctrl+N - New conversation
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                newConversation();
+            }
+
+            // Ctrl+K - Focus search
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchBox').focus();
+            }
+
+            // Ctrl+T - Show templates
+            if (e.ctrlKey && e.key === 't') {
+                e.preventDefault();
+                showTemplates();
+            }
+
+            // Ctrl+E - Export selected
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                if (selectedConversations.size > 0) {
+                    exportConversations(Array.from(selectedConversations));
+                }
+            }
+
+            // Ctrl+M - Toggle bulk selection mode
+            if (e.ctrlKey && e.key === 'm') {
+                e.preventDefault();
+                bulkMode = !bulkMode;
+                document.getElementById('projectsSidebar').classList.toggle('bulk-mode', bulkMode);
+            }
+        });
+
+        // ===== MODAL HELPERS =====
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // ===== UTILITY FUNCTIONS =====
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        // ===== INITIALIZE =====
+        connect();
+    </script>
+</body>
+</html>

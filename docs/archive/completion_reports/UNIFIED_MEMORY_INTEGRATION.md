@@ -354,7 +354,7 @@ print(f"Healthy backends: {health['healthy_backends']}/{health['total_backends']
 
 **Problem**: Windows filesystem case-insensitive, code uses inconsistent casing
 
-**Evidence**: `from holoLoom` vs `from HoloLoom`
+**Evidence**: `from HoloLoom` vs `from HoloLoom`
 
 **Impact**: Import errors on case-sensitive systems (Linux)
 

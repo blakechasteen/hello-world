@@ -33,7 +33,7 @@ Status: **READY FOR TESTING**
         │                                 │
         ↓                                 ↓
 ┌──────────────────┐              ┌──────────────────┐
-│ holoLoom-memory  │              │ expertloom       │
+│ HoloLoom-memory  │              │ expertloom       │
 │ MCP Server       │              │ MCP Server       │
 │                  │              │                  │
 │ Tools:           │              │ Tools:           │
@@ -147,7 +147,7 @@ loom/
 ```json
 {
   "mcpServers": {
-    "holoLoom-memory": {
+    "HoloLoom-memory": {
       "command": "python",
       "args": ["-m", "HoloLoom.memory.mcp_server"],
       "env": {
@@ -160,34 +160,34 @@ loom/
 
 **Available Tools:**
 
-1. **`holoLoom-memory:recall_memories`**
+1. **`HoloLoom-memory:recall_memories`**
    - Search with multiple strategies
    - Parameters: query, strategy, limit, user_id
 
-2. **`holoLoom-memory:store_memory`**
+2. **`HoloLoom-memory:store_memory`**
    - Store new memory with metadata
    - Parameters: text, context, tags, user_id
 
-3. **`holoLoom-memory:process_text`**
+3. **`HoloLoom-memory:process_text`**
    - SpinningWheel text processing
    - Chunks, extracts entities, stores
    - Parameters: text, source, chunk_by, metadata
 
-4. **`holoLoom-memory:ingest_webpage`**
+4. **`HoloLoom-memory:ingest_webpage`**
    - Scrape and ingest webpage
    - Multimodal support (text + images)
    - Parameters: url, extract_images, metadata
 
-5. **`holoLoom-memory:chat`**
+5. **`HoloLoom-memory:chat`**
    - Conversational interface
    - Auto-importance scoring
    - Filters noise, remembers signal
 
-6. **`holoLoom-memory:memory_health`**
+6. **`HoloLoom-memory:memory_health`**
    - System status check
    - Backend availability
 
-7. **`holoLoom-memory:conversation_stats`**
+7. **`HoloLoom-memory:conversation_stats`**
    - Signal/noise metrics
    - Conversation health
 
@@ -204,7 +204,7 @@ SpinningWheel activates:
 1. Detects documentation site pattern
 2. Recommends recursive crawl
 3. Executes with matryoshka gating
-4. Calls: holoLoom-memory:ingest_webpage for each page
+4. Calls: HoloLoom-memory:ingest_webpage for each page
 5. Reports: "Stored 124 chunks from 32 pages"
 
 User: "What did I just learn about agent skills?"
@@ -212,7 +212,7 @@ User: "What did I just learn about agent skills?"
 Loom activates:
 1. Assesses query complexity (BARE pattern)
 2. Selects temporal strategy (recent memory)
-3. Calls: holoLoom-memory:recall_memories(query="agent skills", strategy="temporal")
+3. Calls: HoloLoom-memory:recall_memories(query="agent skills", strategy="temporal")
 4. Synthesizes response with citations
 5. Reports: Key concepts with memory IDs
 ```
@@ -227,7 +227,7 @@ SpinningWheel activates:
 2. Filters high-value pages (>30s duration)
 3. Checks memory for duplicates
 4. Batch processes 27 new pages
-5. Calls: holoLoom-memory:ingest_webpage for each
+5. Calls: HoloLoom-memory:ingest_webpage for each
 6. Reports: Domain statistics and themes
 
 User: "Synthesize insights from my knowledge graph research"
@@ -235,7 +235,7 @@ User: "Synthesize insights from my knowledge graph research"
 Loom activates:
 1. Assesses query complexity (FUSED pattern)
 2. Selects fused strategy (all retrieval methods)
-3. Calls: holoLoom-memory:recall_memories(query="knowledge graphs", strategy="fused", limit=30)
+3. Calls: HoloLoom-memory:recall_memories(query="knowledge graphs", strategy="fused", limit=30)
 4. Cross-domain synthesis
 5. Reports: Novel insights with provenance
 ```
@@ -249,7 +249,7 @@ SpinningWheel activates:
 1. Detects org-mode format
 2. Parses heading structure
 3. Chunks by sections
-4. Calls: holoLoom-memory:process_text for each chunk
+4. Calls: HoloLoom-memory:process_text for each chunk
 5. Reports: "8 sections ingested, entities extracted"
 
 User: "What are my thoughts on mirrorCore?"
@@ -257,7 +257,7 @@ User: "What are my thoughts on mirrorCore?"
 Loom activates:
 1. Assesses query complexity (FAST pattern)
 2. Selects semantic strategy
-3. Calls: holoLoom-memory:recall_memories(query="mirrorCore", strategy="semantic")
+3. Calls: HoloLoom-memory:recall_memories(query="mirrorCore", strategy="semantic")
 4. Groups by topic
 5. Reports: Notes sections with context
 ```
@@ -307,7 +307,7 @@ Claude Desktop auto-loads on startup.
 
 **Updated:** `c:\Users\blake\Documents\mythRL\mcp_server\claude_desktop_config.json`
 
-Contains `holoLoom-memory` server configuration.
+Contains `HoloLoom-memory` server configuration.
 
 ### 4. Start Services
 
@@ -334,7 +334,7 @@ Test Loom:
 
 Test MCP connection:
 > "Check memory health"
-Should call: holoLoom-memory:memory_health
+Should call: HoloLoom-memory:memory_health
 
 Test ingestion:
 > "Add this to memory: https://docs.anthropic.com"
@@ -545,7 +545,7 @@ Run: python -m HoloLoom.memory.mcp_server (test manually)
 ```
 Check: Neo4j running (neo4j status)
 Check: Qdrant running (docker ps)
-Run: holoLoom-memory:memory_health
+Run: HoloLoom-memory:memory_health
 ```
 
 ### Ingestion Fails

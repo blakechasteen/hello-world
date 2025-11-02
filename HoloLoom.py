@@ -17,6 +17,18 @@ except Exception:
 # Register the loaded module under the alternate name
 sys.modules.setdefault('HoloLoom', holo)
 
+# Uppercase Documentation compatibility: mirror lowercase package exports
+try:
+    doc_mod = importlib.import_module('holoLoom.documentation')
+    sys.modules.setdefault('HoloLoom.documentation', doc_mod)
+    sys.modules.setdefault('HoloLoom.Documentation', doc_mod)
+    # Ensure .types alias resolves regardless of case
+    types_mod = importlib.import_module('holoLoom.documentation.types')
+    sys.modules.setdefault('HoloLoom.documentation.types', types_mod)
+    sys.modules.setdefault('HoloLoom.Documentation.types', types_mod)
+except Exception:
+    pass
+
 # Expose the package's attributes at module level
 for attr in ('__path__', '__file__', '__name__'):
     if hasattr(holo, attr):

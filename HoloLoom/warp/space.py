@@ -22,6 +22,14 @@ from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 import numpy as np
 
+from HoloLoom.alignment.safety_guardrails import (
+    ActionCategory,
+    ActionRequest,
+    SafetyDecision,
+    SafetyGuardrails,
+    create_guardrails,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -71,7 +79,8 @@ class WarpSpace:
         self,
         embedder,
         scales: List[int] = [96, 192, 384],
-        spectral_fusion = None
+        spectral_fusion=None,
+        guardrails: Optional[SafetyGuardrails] = None,
     ):
         """
         Initialize Warp Space.
@@ -84,6 +93,16 @@ class WarpSpace:
         self.embedder = embedder
         self.scales = scales
         self.spectral_fusion = spectral_fusion
+        self.guardrails = guardrails or create_guardrails()
+        self.guardrails_enabled = self.guardrails is not None
+        self._guardrail_decisions: Dict[str, Optional[SafetyDecision]] = {
+            "tension": None,
+            "spectral": None,
+            "attention": None,
+            "weighted_context": None,
+            "collapse": None,
+        }
+        self._last_text_sample: str = ""
 
         # Tensioned threads
         self.threads: List[TensionedThread] = []
@@ -98,12 +117,46 @@ class WarpSpace:
 
         logger.info(f"WarpSpace initialized (scales={scales})")
 
+    @staticmethod
+    def _decision_to_dict(decision: Optional[SafetyDecision]) -> Optional[Dict[str, Any]]:
+        return decision.to_dict() if decision else None
+
+    def _evaluate_guardrails(
+        self,
+        stage: str,
+        *,
+        action: str,
+        category: ActionCategory,
+        context: Dict[str, Any],
+        text_input: str = "",
+    ) -> Optional[SafetyDecision]:
+        if not self.guardrails_enabled:
+            return None
+
+        request = ActionRequest(action=action, category=category, context=context)
+        decision = self.guardrails.evaluate(request, text_input=text_input)
+
+        if not decision.allowed:
+            logger.warning("Warp guardrails blocked action '%s': %s", action, decision.reason)
+            raise PermissionError(decision.reason)
+
+        if decision.requires_approval:
+            logger.warning(
+                "Warp guardrails require approval for action '%s': %s",
+                action,
+                decision.reason,
+            )
+            raise PermissionError(f"Warp operation requires approval: {decision.reason}")
+
+        self._guardrail_decisions[stage] = decision
+        return decision
+
     async def tension(
         self,
         thread_texts: List[str],
         thread_ids: Optional[List[str]] = None,
         tension_weights: Optional[List[float]] = None,
-        sparsity: float = 0.0
+        sparsity: float = 0.0,
     ) -> None:
         """
         Pull threads taut into Warp Space with optional sparsity.
@@ -124,7 +177,23 @@ class WarpSpace:
             logger.warning("No threads to tension")
             return
 
-        logger.info(f"Tensioning {len(thread_texts)} threads into Warp Space (sparsity={sparsity:.2f})")
+        logger.info(
+            f"Tensioning {len(thread_texts)} threads into Warp Space (sparsity={sparsity:.2f})"
+        )
+
+        sample_text = " ".join(thread_texts[:3])[:500]
+        self._evaluate_guardrails(
+            stage="tension",
+            action="warp_tension",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "thread_count": len(thread_texts),
+                "sparsity": float(sparsity),
+                "scales": list(self.scales),
+            },
+            text_input=sample_text,
+        )
+        self._last_text_sample = sample_text
 
         # Generate IDs if not provided
         if thread_ids is None:
@@ -180,7 +249,9 @@ class WarpSpace:
         self.tensor_field = np.stack([t.embedding for t in self.threads])
         self.is_tensioned = True
 
-        logger.info(f"Warp Space tensioned: {len(self.threads)} threads, field shape={self.tensor_field.shape}")
+        logger.info(
+            f"Warp Space tensioned: {len(self.threads)} threads, field shape={self.tensor_field.shape}"
+        )
 
     def get_field(self, scale: Optional[int] = None) -> np.ndarray:
         """
@@ -225,6 +296,17 @@ class WarpSpace:
 
         features = {}
 
+        self._evaluate_guardrails(
+            stage="spectral",
+            action="warp_spectral_features",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "operations_recorded": len(self.operations),
+                "thread_count": len(self.threads),
+            },
+            text_input=self._last_text_sample,
+        )
+
         # Basic tensor statistics
         features['field_norm'] = np.linalg.norm(self.tensor_field)
         features['mean_activation'] = float(np.mean([t.tension for t in self.threads]))
@@ -255,6 +337,17 @@ class WarpSpace:
         if not self.is_tensioned:
             raise RuntimeError("Warp Space not tensioned")
 
+        self._evaluate_guardrails(
+            stage="attention",
+            action="warp_attention",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "thread_count": len(self.threads),
+                "query_dim": int(query_embedding.shape[0]) if hasattr(query_embedding, "shape") else None,
+            },
+            text_input=self._last_text_sample,
+        )
+
         # Compute attention scores (dot product similarity)
         scores = self.tensor_field @ query_embedding
 
@@ -279,6 +372,17 @@ class WarpSpace:
         if not self.is_tensioned:
             raise RuntimeError("Warp Space not tensioned")
 
+        self._evaluate_guardrails(
+            stage="weighted_context",
+            action="warp_weighted_context",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "thread_count": len(self.threads),
+                "attention_length": len(attention),
+            },
+            text_input=self._last_text_sample,
+        )
+
         context = attention @ self.tensor_field
 
         self.operations.append(('weighted_context', {'attention_entropy': float(-np.sum(attention * np.log(attention + 1e-10)))}))
@@ -298,7 +402,20 @@ class WarpSpace:
             logger.warning("Warp Space already collapsed")
             return {}
 
-        logger.info(f"Collapsing Warp Space: {len(self.threads)} threads, {len(self.operations)} operations")
+        logger.info(
+            f"Collapsing Warp Space: {len(self.threads)} threads, {len(self.operations)} operations"
+        )
+
+        self._evaluate_guardrails(
+            stage="collapse",
+            action="warp_collapse",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "thread_count": len(self.threads),
+                "operations_count": len(self.operations),
+            },
+            text_input=self._last_text_sample,
+        )
 
         # Prepare updates
         updates = {
@@ -317,7 +434,11 @@ class WarpSpace:
                 'norm': float(np.linalg.norm(self.tensor_field)),
                 'mean': float(np.mean(self.tensor_field)),
                 'std': float(np.std(self.tensor_field))
-            }
+            },
+            'guardrails': {
+                stage: self._decision_to_dict(decision)
+                for stage, decision in self._guardrail_decisions.items()
+            },
         }
 
         # Reset state
@@ -326,6 +447,9 @@ class WarpSpace:
         self.tensor_field = None
         self.is_tensioned = False
         self.operations = []
+        self._last_text_sample = ""
+        for stage in self._guardrail_decisions:
+            self._guardrail_decisions[stage] = None
 
         logger.info("Warp Space collapsed")
 
@@ -352,7 +476,7 @@ class WarpSpace:
 
 if __name__ == "__main__":
     import asyncio
-    from holoLoom.embedding.spectral import MatryoshkaEmbeddings
+    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 
     async def demo():
         print("="*80)

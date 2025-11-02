@@ -9,7 +9,7 @@
 
 ### Before (InMemoryStore - Ephemeral)
 ```json
-"holoLoom-memory": {
+"HoloLoom-memory": {
   "command": "...",
   "args": ["HoloLoom/memory/mcp_server_standalone.py"]  ← InMemoryStore
 }

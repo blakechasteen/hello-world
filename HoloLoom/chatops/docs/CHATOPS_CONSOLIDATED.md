@@ -118,7 +118,7 @@ from promptly.chatops_skills import ChatOpsSkills
 
 **New imports:**
 ```python
-from holoLoom.chatops import ChatOpsSkills
+from HoloLoom.chatops import ChatOpsSkills
 ```
 
 **Files updated:**
@@ -162,7 +162,7 @@ Updated README.md:
 
 ```python
 # All-in-one import
-from holoLoom.chatops import (
+from HoloLoom.chatops import (
     MatrixBot,
     MatrixBotConfig,
     ChatOpsOrchestrator,
@@ -172,7 +172,7 @@ from holoLoom.chatops import (
 )
 
 # Or use the runner directly
-from holoLoom.chatops import ChatOpsRunner
+from HoloLoom.chatops import ChatOpsRunner
 import asyncio
 
 config = {...}
@@ -188,7 +188,7 @@ The old Promptly import still exists but is deprecated:
 from promptly.chatops_skills import ChatOpsSkills
 
 # NEW (recommended)
-from holoLoom.chatops import ChatOpsSkills
+from HoloLoom.chatops import ChatOpsSkills
 ```
 
 ---
@@ -199,7 +199,7 @@ from holoLoom.chatops import ChatOpsSkills
 
 ```bash
 # From repository root
-PYTHONPATH=. python -c "from holoLoom.chatops import ChatOpsSkills; print('✓ Import successful')"
+PYTHONPATH=. python -c "from HoloLoom.chatops import ChatOpsSkills; print('✓ Import successful')"
 ```
 
 ### Full Verification
@@ -350,19 +350,19 @@ For existing code using the old imports:
 from promptly.chatops_skills import ChatOpsSkills
 
 # To this:
-from holoLoom.chatops import ChatOpsSkills
+from HoloLoom.chatops import ChatOpsSkills
 ```
 
 ### Option 2: Compatibility shim (temporary)
 Add to `Promptly/promptly/chatops_skills.py`:
 ```python
 # Compatibility shim - DEPRECATED
-from holoLoom.chatops.chatops_skills import *
+from HoloLoom.chatops.chatops_skills import *
 
 import warnings
 warnings.warn(
     "Importing from promptly.chatops_skills is deprecated. "
-    "Use 'from holoLoom.chatops import ChatOpsSkills' instead.",
+    "Use 'from HoloLoom.chatops import ChatOpsSkills' instead.",
     DeprecationWarning,
     stacklevel=2
 )

@@ -25,6 +25,11 @@ from .auto import (
 
 # Advanced API (for custom pipelines)
 from .multimodal_spinner import MultiModalSpinner
+from .chat_history import (
+    ChatHistorySpinner,
+    ChatHistoryAutoCapture,
+    ingest_chat_history
+)
 
 __all__ = [
     # Primary API (ruthlessly simple)
@@ -36,4 +41,7 @@ __all__ = [
 
     # Advanced
     'MultiModalSpinner',
+    'ChatHistorySpinner',
+    'ChatHistoryAutoCapture',
+    'ingest_chat_history',
 ]

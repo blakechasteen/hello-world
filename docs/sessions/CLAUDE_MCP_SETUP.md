@@ -3,7 +3,7 @@
 ## Configuration Status
 
 ✅ **Config file created:** `C:\Users\blake\AppData\Roaming\Claude\claude_desktop_config.json`  
-✅ **MCP server registered:** `holoLoom-memory`  
+✅ **MCP server registered:** `HoloLoom-memory`  
 ✅ **Python environment configured:** Using your `.venv`
 
 ## Next Steps

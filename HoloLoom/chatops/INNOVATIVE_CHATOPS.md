@@ -396,12 +396,12 @@ docs = miner.generate_docs("api_design")
 ```python
 # chatops_bridge.py
 
-from holoLoom.chatops.innovative_features import (
+from HoloLoom.chatops.innovative_features import (
     WorkflowEngine,
     IncidentManager,
     ChatDashboard
 )
-from holoLoom.chatops.advanced_chatops import (
+from HoloLoom.chatops.advanced_chatops import (
     CodeReviewAssistant,
     ContextAwareAgent,
     KnowledgeMiner

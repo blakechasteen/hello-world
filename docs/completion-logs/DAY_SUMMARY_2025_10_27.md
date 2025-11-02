@@ -396,7 +396,7 @@ None currently - taking a victory lap! 🎉
 
 ### Challenges Overcome 💪
 1. **Async event loop nesting**: Fixed with ThreadPoolExecutor
-2. **Case sensitivity**: holoLoom vs HoloLoom on Windows
+2. **Case sensitivity**: HoloLoom vs HoloLoom on Windows
 3. **MemoryShard schema**: Removed invalid embedding field
 4. **Backend routing**: Fixed "unified" vs "factory" type
 5. **Windows encoding**: Replaced emojis with ASCII markers
@@ -611,7 +611,7 @@ ETHICAL ANALYSIS:
 
 **As Warp Thread** (`semantic_calculus/`):
 ```
-holoLoom/
+HoloLoom/
 ├── semantic_calculus/          # NEW WARP THREAD MODULE
 │   ├── __init__.py
 │   ├── flow.py                # SemanticFlowCalculus
