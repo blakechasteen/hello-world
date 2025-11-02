@@ -9,7 +9,7 @@ from HoloLoom.alignment.deception_detection import (
     DeceptionDetector,
     BehavioralProbe,
     GoalTransparency,
-    DeceptionIndicator,
+    DeceptionSignal,
 )
 
 

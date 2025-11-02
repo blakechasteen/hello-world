@@ -7,9 +7,9 @@ Tests for resource bounds and autonomy limits.
 import pytest
 from HoloLoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
-    ConvergenceRisk,
+    ResourceViolation,
     ResourceBounds,
-    AutonomyLimiter,
+    AutonomyLimit,
 )
 
 

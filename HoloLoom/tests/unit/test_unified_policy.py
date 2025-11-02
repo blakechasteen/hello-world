@@ -14,21 +14,24 @@ import sys
 
 # Import the policy module
 try:
-    from policy.unified import (
+    from HoloLoom.policy.unified import (
         UnifiedPolicy, PPOAgent, PPOConfig,
         IntrinsicCuriosityModule, RandomNetworkDistillation,
         HierarchicalPolicy, MLPBlock, AttentionBlock
     )
-    print("✓ Successfully imported all modules from policy.unified")
+    print("✓ Successfully imported all modules from HoloLoom.policy.unified")
 except ImportError as e:
     print(f"✗ Import Error: {e}")
-    print("\nMake sure policy/unified.py exists and is in the correct location.")
+    print("\nMake sure HoloLoom/policy/unified.py exists and is in the correct location.")
     print("Expected structure:")
-    print("  your_project/")
-    print("  ├── policy/")
-    print("  │   ├── __init__.py")
-    print("  │   └── unified.py")
-    print("  └── test_unified_policy.py  (this file)")
+    print("  mythRL/")
+    print("  └── HoloLoom/")
+    print("      ├── policy/")
+    print("      │   ├── __init__.py")
+    print("      │   └── unified.py")
+    print("      └── tests/")
+    print("          └── unit/")
+    print("              └── test_unified_policy.py  (this file)")
     sys.exit(1)
 
 
