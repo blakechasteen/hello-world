@@ -22,14 +22,21 @@ Selection Strategies:
     - HYBRID: Weighted combination (default)
 """
 
-# Force UTF-8 encoding for Windows console
+# Force UTF-8 encoding for Windows console when executed directly.
 import sys
 import io
-if sys.platform == "win32":
-    if hasattr(sys.stdout, 'buffer'):
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-    if hasattr(sys.stderr, 'buffer'):
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+if __name__ == "__main__" and sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+        else:
+            if hasattr(sys.stdout, 'buffer'):
+                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+            if hasattr(sys.stderr, 'buffer'):
+                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+    except Exception:
+        pass
 
 import numpy as np
 from typing import List, Dict, Tuple, Optional, Callable

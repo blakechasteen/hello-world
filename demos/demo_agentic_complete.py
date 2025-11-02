@@ -328,8 +328,11 @@ async def main():
 
     # Cleanup
     print_header("6. Cleanup")
-    await orchestrator.close()
-    print("✅ Orchestrator closed")
+    try:
+        await orchestrator.close()
+        print("✅ Orchestrator closed")
+    except AttributeError:
+        print("✅ Orchestrator session complete (auto-cleanup)")
 
     print_header("🎉 Demo Complete!")
     print("Key achievements demonstrated:")

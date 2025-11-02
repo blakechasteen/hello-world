@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime
 
 import pytest  # type: ignore[import]
@@ -10,13 +11,18 @@ from HoloLoom.memory.backend_factory import create_memory_backend
 from HoloLoom.memory.protocol import Memory, MemoryQuery
 
 
+def run_sync(awaitable):
+    """Execute an awaitable to completion for synchronous tests."""
+    return asyncio.run(awaitable)
+
+
 @pytest.mark.parametrize("memory_backend", [MemoryBackend.INMEMORY, MemoryBackend.HYBRID])
 def test_guardrails_metadata_on_recall(memory_backend: MemoryBackend) -> None:
     guardrails = SafetyGuardrails()
     config = Config()
     config.memory_backend = memory_backend
 
-    store = await create_memory_backend(config=config, guardrails=guardrails)
+    store = run_sync(create_memory_backend(config=config, guardrails=guardrails))
 
     memory = Memory(
         id=f"{memory_backend.value}-memory",
@@ -28,10 +34,10 @@ def test_guardrails_metadata_on_recall(memory_backend: MemoryBackend) -> None:
 
     import asyncio
 
-    asyncio.run(store.store(memory, user_id="tester"))
+    run_sync(store.store(memory, user_id="tester"))
 
     query = MemoryQuery(text="What does MythRL store?", user_id="tester", limit=1)
-    result = asyncio.run(store.recall(query, limit=1))
+    result = run_sync(store.recall(query, limit=1))
 
     guardrail_meta = result.metadata.get("guardrails") if result.metadata else None
     assert guardrail_meta is not None, "Guardrail metadata missing from recall result"
@@ -47,7 +53,7 @@ def test_guardrails_block_delete_without_approval() -> None:
     config = Config()
     config.memory_backend = MemoryBackend.INMEMORY
 
-    store = await create_memory_backend(config=config, guardrails=guardrails)
+    store = run_sync(create_memory_backend(config=config, guardrails=guardrails))
 
     memory = Memory(
         id="delete-check",
@@ -59,9 +65,9 @@ def test_guardrails_block_delete_without_approval() -> None:
 
     import asyncio
 
-    asyncio.run(store.store(memory))
+    run_sync(store.store(memory))
 
     with pytest.raises(PermissionError):
-    asyncio.run(store.delete(memory.id))
+        run_sync(store.delete(memory.id))
 
     assert any(request.action == "memory_delete" for request in guardrails.action_history)
