@@ -15,7 +15,7 @@ Features:
 - Result aggregation
 
 Usage:
-    from HoloLoom.spinning_wheel.batch_utils import (
+    from HoloLoom.spinningWheel.batch_utils import (
         batch_ingest_urls,
         batch_ingest_files,
         BatchConfig

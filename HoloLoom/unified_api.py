@@ -46,8 +46,8 @@ from datetime import datetime
 try:
     from HoloLoom.config import Config
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.spinning_wheel.website import WebsiteSpinnerConfig, WebsiteSpinner
-    from HoloLoom.spinning_wheel.youtube import YouTubeSpinnerConfig, YouTubeSpinner
+    from HoloLoom.spinningWheel.modalities.website import WebsiteSpinnerConfig, WebsiteSpinner
+    from HoloLoom.spinningWheel.modalities.youtube import YouTubeSpinnerConfig, YouTubeSpinner
     from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
     from HoloLoom.fabric.spacetime import Spacetime
     from HoloLoom.convergence.engine import CollapseStrategy
@@ -335,7 +335,7 @@ class HoloLoom:
 
         try:
             # Use TextSpinner to create shards
-            from HoloLoom.spinning_wheel import TextSpinnerConfig, TextSpinner
+            from HoloLoom.spinningWheel import TextSpinnerConfig, TextSpinner
 
             config = TextSpinnerConfig(chunk_size=500, chunk_by='paragraph')
             spinner = TextSpinner(config)

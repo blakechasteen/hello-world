@@ -14,7 +14,7 @@ Design Philosophy:
 - Optional enrichment for entity/motif extraction
 
 Usage:
-    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
+    from HoloLoom.spinningWheel.text import TextSpinner, TextSpinnerConfig
 
     config = TextSpinnerConfig(
         chunk_by='paragraph',  # or 'sentence', 'character', None

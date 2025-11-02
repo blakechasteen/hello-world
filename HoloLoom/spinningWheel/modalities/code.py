@@ -15,7 +15,7 @@ Design Philosophy:
 - Optional enrichment for dependency/import graph extraction
 
 Usage:
-    from HoloLoom.spinning_wheel.code import CodeSpinner, CodeSpinnerConfig
+    from HoloLoom.spinningWheel.code import CodeSpinner, CodeSpinnerConfig
 
     config = CodeSpinnerConfig(
         chunk_by='function',  # or 'class', 'file', None

@@ -711,7 +711,7 @@ Importance: {importance:.2f}"""
 
                 try:
                     # Import text spinner and protocol helpers
-                    from HoloLoom.spinning_wheel.text import spin_text
+                    from HoloLoom.spinningWheel.modalities.text import spin_text
                     from .protocol import shards_to_memories
 
                     # Spin text into shards
@@ -805,7 +805,7 @@ Importance: {importance:.2f}"""
 
                 try:
                     # Import website spinner and protocol helpers
-                    from HoloLoom.spinning_wheel.website import spin_webpage
+                    from HoloLoom.spinningWheel.modalities.website import spin_webpage
                     from .protocol import shards_to_memories
 
                     # Spin webpage into shards (will scrape content)

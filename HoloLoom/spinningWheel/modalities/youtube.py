@@ -14,7 +14,7 @@ Design Philosophy:
 - Optional enrichment for entity/motif extraction
 
 Usage:
-    from HoloLoom.spinning_wheel.youtube import YouTubeSpinner, YouTubeSpinnerConfig
+    from HoloLoom.spinningWheel.youtube import YouTubeSpinner, YouTubeSpinnerConfig
 
     config = YouTubeSpinnerConfig(
         chunk_duration=60.0,  # Segment into 60-second chunks

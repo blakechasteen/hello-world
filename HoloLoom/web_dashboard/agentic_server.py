@@ -54,6 +54,7 @@ from HoloLoom.web_dashboard.promptly_bridge import PromptlyBridge, PROMPTLY_AVAI
 # Spinners for content ingestion
 from HoloLoom.spinningWheel.youtube_spinner import YouTubeSpinner, TRANSCRIPT_API_AVAILABLE as YOUTUBE_AVAILABLE
 from HoloLoom.spinningWheel.whisper_spinner import WhisperSpinner, WHISPER_AVAILABLE
+from HoloLoom.spinningWheel.spreadsheet_spinner import SpreadsheetSpinner, PANDAS_AVAILABLE as SPREADSHEET_AVAILABLE
 
 # Create FastAPI app
 app = FastAPI(title="HoloLoom Agentic Dashboard")
@@ -73,12 +74,13 @@ promptly_bridge = None
 # Spinners for content ingestion
 youtube_spinner = None
 whisper_spinner = None
+spreadsheet_spinner = None
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize agentic orchestrator on startup"""
-    global agentic_orchestrator, orchestrator_config, conversation_manager, promptly_bridge, youtube_spinner, whisper_spinner
+    global agentic_orchestrator, orchestrator_config, conversation_manager, promptly_bridge, youtube_spinner, whisper_spinner, spreadsheet_spinner
 
     logger.info("="*60)
     logger.info("Starting HoloLoom Agentic Dashboard")
@@ -163,6 +165,16 @@ async def startup_event():
         logger.info("  - Whisper spinner: enabled (model: base)")
     else:
         logger.info("  - Whisper spinner: unavailable (install openai-whisper)")
+
+    # Spreadsheet spinner
+    if SPREADSHEET_AVAILABLE:
+        spreadsheet_spinner = SpreadsheetSpinner(
+            importance_threshold=0.2,
+            chunk_mode='sheet'  # One shard per sheet
+        )
+        logger.info("  - Spreadsheet spinner: enabled (Excel, CSV, TSV, ODS)")
+    else:
+        logger.info("  - Spreadsheet spinner: unavailable (install pandas openpyxl)")
 
     logger.info("="*60)
     logger.info("Dashboard ready at http://localhost:8002")
@@ -864,7 +876,8 @@ async def get_status():
         'alignment_enabled': True,
         'active_connections': len(active_connections),
         'youtube_available': youtube_spinner is not None,
-        'whisper_available': whisper_spinner is not None
+        'whisper_available': whisper_spinner is not None,
+        'spreadsheet_available': spreadsheet_spinner is not None
     }
 
 
@@ -919,6 +932,73 @@ async def upload_audio(file: UploadFile = File(...)):
 
     except Exception as e:
         logger.error(f"  ✗ Audio transcription failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
+
+
+@app.post("/api/upload_spreadsheet")
+async def upload_spreadsheet(file: UploadFile = File(...)):
+    """
+    Upload and parse spreadsheet file.
+    Saves raw file (wool) and creates memory shards from tables.
+
+    Supports: Excel (.xlsx, .xls), CSV, TSV, LibreOffice (.ods)
+    """
+    if not spreadsheet_spinner:
+        return JSONResponse(
+            status_code=503,
+            content={'error': 'Spreadsheet parser not available. Install: pip install pandas openpyxl'}
+        )
+
+    try:
+        # Validate file type
+        suffix = Path(file.filename).suffix.lower()
+        if suffix not in ['.xlsx', '.xls', '.csv', '.tsv', '.ods']:
+            return JSONResponse(
+                status_code=400,
+                content={'error': f'Unsupported file format: {suffix}. Supported: .xlsx, .xls, .csv, .tsv, .ods'}
+            )
+
+        # Save raw spreadsheet file (wool)
+        wool_dir = Path("./data/wool/spreadsheet")
+        wool_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save uploaded file
+        file_path = wool_dir / file.filename
+        with open(file_path, 'wb') as f:
+            content = await file.read()
+            f.write(content)
+
+        logger.info(f"Parsing spreadsheet: {file.filename}")
+
+        # Parse spreadsheet
+        result = await spreadsheet_spinner.spin(file_path)
+
+        if result.success:
+            # Add shards to orchestrator memory
+            for shard in result.shards:
+                await agentic_orchestrator.add_shard(shard)
+
+            logger.info(f"  ✓ Ingested {len(result.shards)} shards from {file.filename}")
+
+            return {
+                'success': True,
+                'filename': file.filename,
+                'shard_count': len(result.shards),
+                'file_format': result.metadata.get('file_format'),
+                'sheet_count': result.metadata.get('sheet_count'),
+                'total_rows': result.metadata.get('total_rows')
+            }
+        else:
+            return JSONResponse(
+                status_code=400,
+                content={'error': result.error_message}
+            )
+
+    except Exception as e:
+        logger.error(f"  ✗ Spreadsheet parsing failed: {e}")
         return JSONResponse(
             status_code=500,
             content={'error': str(e)}
