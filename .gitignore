@@ -52,6 +52,16 @@ qdrant_storage*/
 *.bak
 *.swp
 *~
+nul
+
+# Test databases and results
+*.db
+test_*.db
+demo_*.db
+data/test_*.db
+data/demo_*.db
+demo_test_results.json
+test_results*.json
 
 # IDE
 .vscode/settings.json
