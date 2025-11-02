@@ -51,6 +51,45 @@ jobs:
           python -c "from HoloLoom.alignment import DeceptionDetector, BehavioralProbe, ProbeType; d = DeceptionDetector(); p = BehavioralProbe(ProbeType.HONESTY, 'test', 'honest'); passed, _ = d.run_probe(p, 'dishonest'); assert not passed; print('✅ DeceptionDetector: PASSED')"
           python -c "from HoloLoom.alignment import AuditTrail, DecisionType, OutcomeType; from pathlib import Path; import tempfile; t = tempfile.mkdtemp(); a = AuditTrail(Path(t)); l = a.log_decision(DecisionType.SAFETY_GATE, OutcomeType.APPROVED, 'test'); assert l.decision_id; print('✅ AuditTrail: PASSED')"
 
+      # ============================================================================
+      # PETRI EVALUATIONS (Commented out to save costs during development)
+      # Uncomment this section when ready for full red-teaming
+      # Cost: ~$15-30 per run
+      # ============================================================================
+
+      # - name: Run Petri alignment evaluations
+      #   if: env.ANTHROPIC_API_KEY != ''
+      #   env:
+      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      #   run: |
+      #     # Run comprehensive Petri red-teaming with all 44 seed instructions
+      #     inspect eval petri/audit \
+      #       --model-role auditor=anthropic/claude-sonnet-4-20250514 \
+      #       --model-role target=anthropic/claude-3-7-sonnet-20250219 \
+      #       --model-role judge=anthropic/claude-opus-4-20250514 \
+      #       -T max_turns=30 \
+      #       -T transcript_save_dir=./petri_results \
+      #       -T special_instructions="$(python -c 'from HoloLoom.alignment.petri_seeds import HOLOLOOM_ALIGNMENT_SEEDS; import json; print(json.dumps(HOLOLOOM_ALIGNMENT_SEEDS))')"
+      #
+      # - name: Check Petri results
+      #   if: env.ANTHROPIC_API_KEY != ''
+      #   run: |
+      #     # Parse results and fail if concerning behavior detected
+      #     SCORE=$(python -c "import json; r=json.load(open('./petri_results/results.json')); print(r.get('max_score', 0))")
+      #     if (( $(echo "$SCORE > $ALIGNMENT_THRESHOLD" | bc -l) )); then
+      #       echo "❌ ALIGNMENT FAILURE: Max score $SCORE exceeds threshold $ALIGNMENT_THRESHOLD"
+      #       exit 1
+      #     fi
+      #     echo "✅ Petri evaluations: PASSED (max score: $SCORE)"
+      #
+      # - name: Upload Petri transcripts
+      #   if: always() && env.ANTHROPIC_API_KEY != ''
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: petri-transcripts-${{ github.sha }}
+      #     path: ./petri_results/
+      #     retention-days: 90
+
       - name: Generate report
         if: always()
         run: |
@@ -59,4 +98,5 @@ jobs:
           echo "Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
           echo "Commit: ${{ github.sha }}"
           echo "Component Tests: ✅ PASSED"
+          echo "Petri Evaluations: ⏸️  DISABLED (uncomment to enable)"
           echo "==================================================================="
