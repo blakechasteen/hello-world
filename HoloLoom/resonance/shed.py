@@ -24,6 +24,14 @@ import numpy as np
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 
+from HoloLoom.alignment.safety_guardrails import (
+    ActionCategory,
+    ActionRequest,
+    SafetyDecision,
+    SafetyGuardrails,
+    create_guardrails,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,7 +85,8 @@ class ResonanceShed:
         semantic_calculus=None,
         interference_mode: str = "weighted_sum",
         max_feature_density: float = 1.0,
-        target_scale: Optional[int] = None
+        target_scale: Optional[int] = None,
+        guardrails: Optional[SafetyGuardrails] = None,
     ):
         """
         Initialize Resonance Shed.
@@ -99,6 +108,8 @@ class ResonanceShed:
         self.interference_mode = interference_mode
         self.max_feature_density = max_feature_density
         self.target_scale = target_scale
+        self.guardrails = guardrails or create_guardrails()
+        self.guardrails_enabled = self.guardrails is not None
 
         # Active threads
         self.threads: List[FeatureThread] = []
@@ -108,7 +119,55 @@ class ResonanceShed:
         self.current_density = 0.0
         self.pressure_relief_count = 0
 
+        # Guardrail tracking
+        self._guardrail_decisions: Dict[str, Optional[SafetyDecision]] = {
+            "weave": None,
+            "lift": None,
+            "interfere": None,
+        }
+        self._last_guardrail_snapshot: Dict[str, Optional[SafetyDecision]] = {}
+        self._last_text_input: str = ""
+
         logger.info(f"ResonanceShed initialized (mode={interference_mode}, max_density={max_feature_density:.2f}, semantic_flow={semantic_calculus is not None})")
+
+    @staticmethod
+    def _decision_to_dict(decision: Optional[SafetyDecision]) -> Optional[Dict[str, Any]]:
+        return decision.to_dict() if decision else None
+
+    def _evaluate_guardrails(
+        self,
+        stage: str,
+        *,
+        action: str,
+        category: ActionCategory,
+        context: Dict[str, Any],
+        text_input: str = "",
+    ) -> Optional[SafetyDecision]:
+        if not self.guardrails_enabled:
+            return None
+
+        request = ActionRequest(
+            action=action,
+            category=category,
+            context=context,
+        )
+
+        decision = self.guardrails.evaluate(request, text_input=text_input or "")
+
+        if not decision.allowed:
+            logger.warning("Resonance guardrails blocked action '%s': %s", action, decision.reason)
+            raise PermissionError(decision.reason)
+
+        if decision.requires_approval:
+            logger.warning(
+                "Resonance guardrails require approval for action '%s': %s",
+                action,
+                decision.reason,
+            )
+            raise PermissionError(f"Feature extraction requires approval: {decision.reason}")
+
+        self._guardrail_decisions[stage] = decision
+        return decision
 
     async def weave(
         self,
@@ -131,6 +190,20 @@ class ResonanceShed:
             DotPlasma dict with combined features
         """
         logger.info(f"Weaving features for text: '{text[:50]}...'")
+
+        self._last_text_input = text
+        guardrail_context = {
+            "interference_mode": self.interference_mode,
+            "has_context_graph": context_graph is not None,
+            "thread_overrides": list((thread_weights or {}).keys()),
+        }
+        self._evaluate_guardrails(
+            stage="weave",
+            action="feature_weave",
+            category=ActionCategory.ANALYSIS,
+            context=guardrail_context,
+            text_input=text,
+        )
 
         # Lift threads (activate extractors)
         await self.lift(text, context_graph, thread_weights)
@@ -168,6 +241,19 @@ class ResonanceShed:
 
         self.threads = []
         default_weights = thread_weights or {}
+
+        self._evaluate_guardrails(
+            stage="lift",
+            action="feature_lift",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "has_motif_detector": bool(self.motif_detector),
+                "has_embedder": bool(self.embedder),
+                "has_spectral": bool(self.spectral_fusion and context_graph is not None),
+                "has_semantic_flow": bool(self.semantic_calculus),
+            },
+            text_input=text,
+        )
 
         # Thread 1: Motif detection (symbolic patterns)
         if self.motif_detector:
@@ -299,6 +385,17 @@ class ResonanceShed:
 
         logger.debug(f"Creating feature interference ({self.interference_mode})...")
 
+        self._evaluate_guardrails(
+            stage="interfere",
+            action="feature_interfere",
+            category=ActionCategory.ANALYSIS,
+            context={
+                "thread_count": len(self.threads),
+                "interference_mode": self.interference_mode,
+            },
+            text_input=self._last_text_input,
+        )
+
         # Extract features by type
         motif_thread = next((t for t in self.threads if t.name == "motif"), None)
         embedding_thread = next((t for t in self.threads if t.name == "embedding"), None)
@@ -341,6 +438,16 @@ class ResonanceShed:
             }
             for t in self.threads
         ]
+
+        guardrail_metadata = {
+            stage: self._decision_to_dict(decision)
+            for stage, decision in self._guardrail_decisions.items()
+            if decision is not None
+        }
+        if guardrail_metadata:
+            plasma["metadata"]["guardrails"] = guardrail_metadata
+
+        self._last_guardrail_snapshot = self._guardrail_decisions.copy()
 
         return plasma
 
@@ -395,6 +502,7 @@ class ResonanceShed:
         self.threads = []
         self.is_lifted = False
         self.current_density = 0.0
+        self._guardrail_decisions = {stage: None for stage in self._guardrail_decisions}
 
     def get_trace(self) -> Dict[str, Any]:
         """
@@ -403,6 +511,13 @@ class ResonanceShed:
         Returns:
             Dict with current shed state
         """
+        guardrail_source = self._guardrail_decisions if self.is_lifted else self._last_guardrail_snapshot
+        guardrail_metadata = {
+            stage: self._decision_to_dict(decision)
+            for stage, decision in (guardrail_source or {}).items()
+            if decision is not None
+        }
+
         return {
             "is_lifted": self.is_lifted,
             "thread_count": len(self.threads),
@@ -415,7 +530,8 @@ class ResonanceShed:
                 }
                 for t in self.threads
             ],
-            "interference_mode": self.interference_mode
+            "interference_mode": self.interference_mode,
+            "guardrails": guardrail_metadata or None,
         }
 
 
@@ -428,7 +544,8 @@ def create_resonance_shed(
     embedder=None,
     spectral_fusion=None,
     semantic_calculus=None,
-    mode: str = "weighted_sum"
+    mode: str = "weighted_sum",
+    guardrails: Optional[SafetyGuardrails] = None,
 ) -> ResonanceShed:
     """
     Create Resonance Shed with specified extractors.
@@ -439,6 +556,7 @@ def create_resonance_shed(
         spectral_fusion: Spectral feature module
         semantic_calculus: Semantic flow calculus module
         mode: Interference mode
+        guardrails: Shared safety guardrails instance
 
     Returns:
         Configured ResonanceShed
@@ -448,7 +566,8 @@ def create_resonance_shed(
         embedder=embedder,
         spectral_fusion=spectral_fusion,
         semantic_calculus=semantic_calculus,
-        interference_mode=mode
+        interference_mode=mode,
+        guardrails=guardrails,
     )
 
 
@@ -467,7 +586,7 @@ if __name__ == "__main__":
         # Mock extractors
         class MockMotifDetector:
             async def detect(self, text):
-                from holoLoom.documentation.types import Motif
+                from HoloLoom.documentation.types import Motif
                 return [
                     Motif(pattern="ALGORITHM", span=(0, 10), score=0.9),
                     Motif(pattern="OPTIMIZATION", span=(10, 20), score=0.8)

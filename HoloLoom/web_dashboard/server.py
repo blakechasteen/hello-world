@@ -74,6 +74,17 @@ async def startup_event():
         print(f"⚠ Memory backend unavailable - running ephemeral: {e}")
         memory_backend = None
 
+    # Initialize vector embeddings (optional)
+    embedder = None
+    try:
+        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+
+        embedder = MatryoshkaEmbeddings(sizes=[384, 768])  # Multi-scale embeddings
+        print("✓ Vector embeddings initialized (MatryoshkaEmbeddings)")
+    except Exception as e:
+        print(f"⚠ Embeddings unavailable - running without semantic vectors: {e}")
+        embedder = None
+
     # Initialize awareness layer if available
     if AWARENESS_AVAILABLE:
         awareness = CompositionalAwarenessLayer()
@@ -94,18 +105,22 @@ async def startup_event():
         thread_manager = ThreadManager(
             awareness_layer=awareness,
             llm_generator=dual_stream_gen,
-            memory_backend=memory_backend
+            memory_backend=memory_backend,
+            embedder=embedder
         )
 
-        if memory_backend:
-            print("✓ Thread manager initialized with awareness + persistent memory")
+        if memory_backend and embedder:
+            print("✓ Thread manager initialized with awareness + memory + embeddings")
+        elif memory_backend:
+            print("✓ Thread manager initialized with awareness + memory (no embeddings)")
         else:
             print("✓ Thread manager initialized with awareness (ephemeral)")
     else:
         thread_manager = ThreadManager(
             awareness_layer=None,
             llm_generator=None,
-            memory_backend=memory_backend
+            memory_backend=memory_backend,
+            embedder=embedder
         )
         print("✓ Thread manager initialized (no awareness)")
 

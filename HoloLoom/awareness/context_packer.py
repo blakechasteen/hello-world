@@ -6,6 +6,7 @@ Packs awareness + memory + query into optimal LLM prompts with:
 - Hierarchical compression (summary → detail → full)
 - Temporal weighting (recent + relevant + resonant)
 - Adaptive depth based on confidence
+- Multipass memory fusion with graph traversal
 
 This is the bridge between consciousness (awareness) and generation (LLM).
 """
@@ -14,6 +15,14 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, Tuple
 from enum import Enum
 import time
+
+# Import memory fusion for advanced retrieval
+try:
+    from HoloLoom.awareness.memory_fusion import MemoryFusion, MultipassConfig, MemoryNode
+    MEMORY_FUSION_AVAILABLE = True
+except ImportError:
+    MEMORY_FUSION_AVAILABLE = False
+    print("⚠️  Memory fusion not available - using basic retrieval")
 
 
 class ContextImportance(Enum):
@@ -150,12 +159,15 @@ class SmartContextPacker:
     3. Optimize packing with token budget
     4. Apply hierarchical compression
     5. Ensure critical elements always included
+    6. Optional: Use memory fusion for multipass graph crawling
     """
     
     def __init__(
         self,
         token_budget: Optional[TokenBudget] = None,
-        min_importance_threshold: float = 0.2
+        min_importance_threshold: float = 0.2,
+        use_memory_fusion: bool = True,
+        memory_backend = None
     ):
         """
         Initialize context packer.
@@ -163,16 +175,29 @@ class SmartContextPacker:
         Args:
             token_budget: Token budget constraints
             min_importance_threshold: Minimum importance to include
+            use_memory_fusion: Enable multipass memory fusion
+            memory_backend: Backend for memory fusion (optional)
         """
         self.budget = token_budget or TokenBudget()
         self.min_importance = min_importance_threshold
+        self.use_memory_fusion = use_memory_fusion and MEMORY_FUSION_AVAILABLE
+        self.memory_backend = memory_backend
+        
+        # Initialize memory fusion if enabled
+        self.memory_fusion = None
+        if self.use_memory_fusion and memory_backend:
+            self.memory_fusion = MemoryFusion(
+                config=MultipassConfig.for_complexity("FULL"),
+                memory_backend=memory_backend
+            )
     
     async def pack_context(
         self,
         query: str,
         awareness_context,
         memory_results: Optional[List[Any]] = None,
-        max_memories: int = 10
+        max_memories: int = 10,
+        use_fusion: Optional[bool] = None
     ) -> PackedContext:
         """
         Pack context optimally for LLM generation.
@@ -180,13 +205,41 @@ class SmartContextPacker:
         Args:
             query: User query
             awareness_context: UnifiedAwarenessContext from awareness layer
-            memory_results: Optional memory retrieval results
+            memory_results: Optional memory retrieval results (or None for fusion retrieval)
             max_memories: Maximum memories to include
+            use_fusion: Override to enable/disable memory fusion for this call
             
         Returns:
             PackedContext ready for LLM
         """
         start_time = time.time()
+        
+        # Determine if using fusion
+        should_use_fusion = (
+            (use_fusion if use_fusion is not None else self.use_memory_fusion)
+            and self.memory_fusion is not None
+            and memory_results is None  # Only use fusion if no pre-retrieved results
+        )
+        
+        # If using fusion, retrieve memories with multipass crawling
+        if should_use_fusion:
+            print(f"🕷️  Using memory fusion for query: {query[:50]}...")
+            fused_nodes = await self.memory_fusion.retrieve_with_fusion(
+                query,
+                max_results=max_memories
+            )
+            # Convert MemoryNode to dict format for compatibility
+            memory_results = [
+                {
+                    'text': node.content,
+                    'score': node.composite_score,
+                    'relevance': node.relevance,
+                    'depth': node.retrieval_depth,
+                    'metadata': node.metadata
+                }
+                for node in fused_nodes
+            ]
+            print(f"  ✅ Fusion retrieved {len(memory_results)} memories with graph traversal")
         
         # 1. Collect all context elements
         elements = []

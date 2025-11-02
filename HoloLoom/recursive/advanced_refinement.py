@@ -31,7 +31,7 @@ from datetime import datetime
 from HoloLoom.documentation.types import Query
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from Promptly.promptly.recursive_loops import Scratchpad, ScratchpadEntry
+from HoloLoom.recursive.scratchpad import Scratchpad, ScratchpadEntry
 
 
 class RefinementStrategy(Enum):

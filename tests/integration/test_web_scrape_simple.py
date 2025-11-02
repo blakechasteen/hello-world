@@ -8,10 +8,21 @@ import asyncio
 import sys
 from pathlib import Path
 
-if sys.platform == 'win32':
-    import codecs
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
-    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+# Avoid reassigning sys.stdout at import time (breaks pytest capture).
+# If running as script, adjust stdout encoding safely.
+if __name__ == '__main__' and sys.platform == 'win32':
+    try:
+        # Prefer reconfigure if available
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+        else:
+            import codecs
+            sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+            sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+    except Exception:
+        # Non-fatal: leave stdout as-is for test runs
+        pass
 
 sys.path.insert(0, str(Path(__file__).parent))
 

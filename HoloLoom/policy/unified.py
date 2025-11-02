@@ -54,6 +54,13 @@ import torch.nn.functional as F
 
 # Import only from shared types and embedding (package-relative)
 from HoloLoom.documentation.types import Features, Context, ActionPlan, Decision
+from HoloLoom.alignment.safety_guardrails import (
+    ActionCategory,
+    ActionRequest,
+    SafetyDecision,
+    SafetyGuardrails,
+    create_guardrails,
+)
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -605,6 +612,7 @@ class UnifiedPolicy:
     bandit: Optional[TSBandit] = None
     bandit_strategy: BanditStrategy = BanditStrategy.EPSILON_GREEDY
     epsilon: float = 0.1  # Exploration rate for epsilon-greedy
+    guardrails: Optional[SafetyGuardrails] = None
     
     def __post_init__(self):
         if self.bandit is None:
@@ -613,6 +621,8 @@ class UnifiedPolicy:
                 strategy=self.bandit_strategy,
                 epsilon=self.epsilon
             )
+        if self.guardrails is None:
+            self.guardrails = create_guardrails()
     
     async def decide(self, features: Features, context: Context) -> ActionPlan:
         """
@@ -670,6 +680,56 @@ class UnifiedPolicy:
         # Step 5: FIXED! Use bandit strategy for tool selection
         tool_idx, bandit_debug = self.bandit.select_with_strategy(probs)
         tool = self.core.tools[tool_idx]
+
+        guardrail_decision: Optional[SafetyDecision] = None
+        if self.guardrails:
+            request_context = {
+                "tool": tool,
+                "adapter_index": adapter_idx,
+                "probability": float(probs[tool_idx]),
+                "bandit_mode": bandit_debug.get("mode"),
+                "reward_estimate": reward,
+            }
+            if context and context.metadata:
+                request_context.update({
+                    "context_relevance": context.relevance,
+                    "metadata_keys": list(context.metadata.keys()),
+                })
+
+            action_request = ActionRequest(
+                action="policy_select_tool",
+                category=ActionCategory.EXECUTION,
+                context=request_context,
+                user_id=(context.metadata.get("user_id") if getattr(context, "metadata", None) else None),
+                session_id=(context.metadata.get("session_id") if getattr(context, "metadata", None) else None),
+            )
+
+            text_input = ""
+            if getattr(context, "query", None) and getattr(context.query, "text", None):
+                text_input = context.query.text
+
+            guardrail_decision = self.guardrails.evaluate(
+                action_request,
+                text_input=text_input,
+            )
+
+            if not guardrail_decision.allowed:
+                logger.warning(
+                    "Policy guardrails blocked tool '%s': %s",
+                    tool,
+                    guardrail_decision.reason,
+                )
+                raise PermissionError(guardrail_decision.reason)
+
+            if guardrail_decision.requires_approval:
+                logger.warning(
+                    "Policy guardrails require approval for tool '%s': %s",
+                    tool,
+                    guardrail_decision.reason,
+                )
+                raise PermissionError(
+                    f"Tool selection requires approval: {guardrail_decision.reason}"
+                )
         
         # Step 6: Update bandit with CORRECT arm (the one we actually used!)
         self.bandit.update(tool_idx, reward)
@@ -684,12 +744,15 @@ class UnifiedPolicy:
         action_plan = ActionPlan(
             chosen_tool=tool,
             adapter=adapter,
-            tool_probs=tool_probs
+            tool_probs=tool_probs,
         )
         
-        # Store bandit debug info (if ActionPlan has metadata field)
+        # Store bandit info and guardrail decision in metadata
         if hasattr(action_plan, 'metadata'):
-            action_plan.metadata = bandit_debug
+            action_plan.metadata = {
+                "bandit": bandit_debug,
+                "guardrails": guardrail_decision.to_dict() if guardrail_decision else None,
+            }
         
         return action_plan
     
@@ -736,11 +799,13 @@ def create_policy(
     n_layers: int = 2,
     n_heads: int = 4,
     bandit_strategy: BanditStrategy = BanditStrategy.EPSILON_GREEDY,
-    epsilon: float = 0.1
+    epsilon: float = 0.1,
+    guardrails: Optional[SafetyGuardrails] = None,
+    cfg: Optional[Any] = None,  # Config for environment-aware safety
 ) -> UnifiedPolicy:
     """
     Factory function to create a unified policy.
-    
+
     Args:
         mem_dim: Memory dimension (usually max scale)
         emb: Embeddings instance
@@ -750,10 +815,18 @@ def create_policy(
         n_heads: Number of attention heads
         bandit_strategy: Which exploration strategy to use
         epsilon: Exploration rate for epsilon-greedy (default 0.1 = 10%)
-        
+        guardrails: Pre-configured SafetyGuardrails (optional)
+        cfg: Config for environment-aware safety (optional)
+
     Returns:
         Configured UnifiedPolicy
     """
+    # Create environment-aware guardrails if cfg provided and guardrails not
+    if guardrails is None and cfg is not None:
+        guardrails = create_guardrails(
+            testing_mode=cfg.safety_testing_mode,
+            auto_approve_categories=cfg.safety_auto_approve_categories,
+        )
     if device is None:
         device = maybe_device()
     
@@ -794,7 +867,8 @@ def create_policy(
         mem_dim=mem_dim,
         emb=emb,
         bandit_strategy=bandit_strategy,
-        epsilon=epsilon
+        epsilon=epsilon,
+        guardrails=guardrails,
     )
 
 

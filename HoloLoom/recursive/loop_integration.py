@@ -35,8 +35,8 @@ from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.documentation.types import Query, MemoryShard
 from HoloLoom.config import Config
 
-# Promptly components
-from Promptly.promptly.recursive_loops import Scratchpad
+# Scratchpad components (standalone, was from Promptly)
+from HoloLoom.recursive.scratchpad import Scratchpad
 
 logger = logging.getLogger(__name__)
 

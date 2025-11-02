@@ -31,8 +31,8 @@ from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.documentation.types import Query, MemoryShard
 from HoloLoom.config import Config
 
-# Promptly components
-from Promptly.promptly.recursive_loops import (
+# Scratchpad components (standalone, was from Promptly)
+from HoloLoom.recursive.scratchpad import (
     Scratchpad,
     ScratchpadEntry,
     RecursiveEngine,

@@ -21,6 +21,7 @@ class Memory:
     timestamp: datetime
     context: Dict[str, Any]
     metadata: Dict[str, Any]
+    embedding: Optional[Any] = None  # Vector embedding (numpy array or list)
 
     @classmethod
     def from_shard(cls, shard: Any, timestamp: Optional[datetime] = None) -> 'Memory':
@@ -38,19 +39,32 @@ class Memory:
         )
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        result = {
             'id': self.id,
             'text': self.text,
             'timestamp': self.timestamp.isoformat(),
             'context': self.context,
             'metadata': self.metadata
         }
+        # Convert embedding to list for JSON serialization
+        if self.embedding is not None:
+            import numpy as np
+            if isinstance(self.embedding, np.ndarray):
+                result['embedding'] = self.embedding.tolist()
+            else:
+                result['embedding'] = self.embedding
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Memory':
         data = data.copy()
         if isinstance(data['timestamp'], str):
             data['timestamp'] = datetime.fromisoformat(data['timestamp'])
+        # Convert embedding back to numpy array
+        if 'embedding' in data and data['embedding'] is not None:
+            import numpy as np
+            if isinstance(data['embedding'], list):
+                data['embedding'] = np.array(data['embedding'])
         return cls(**data)
 
 

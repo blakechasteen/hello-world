@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learner Chat - Files & URLs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 15px 30px;
+            border-bottom: 2px solid #00d4ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #00d4ff;
+            font-size: 24px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .header button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 80%;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+
+        .message.assistant {
+            margin-right: auto;
+        }
+
+        .message.system {
+            margin: 0 auto;
+            max-width: 90%;
+        }
+
+        .message-content {
+            background: #1a1a1a;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            white-space: pre-wrap;
+        }
+
+        .message.user .message-content {
+            background: #2a5298;
+            border-color: #00d4ff;
+        }
+
+        .message.system .message-content {
+            background: #1a4d2e;
+            border-color: #00ff88;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: #111;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .input-mode-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .mode-btn:hover {
+            border-color: #00d4ff;
+            color: #e0e0e0;
+        }
+
+        .mode-btn.active {
+            background: #2a5298;
+            border-color: #00d4ff;
+            color: white;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #e0e0e0;
+            padding: 12px;
+            border-radius: 8px;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            min-height: 60px;
+        }
+
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .input-area input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-btn {
+            background: #1a4d2e;
+            border: 1px solid #00ff88;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .file-upload-btn:hover {
+            background: #2a6d3e;
+        }
+
+        .send-btn {
+            background: #2a5298;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .send-btn:hover {
+            background: #3a62a8;
+        }
+
+        .send-btn:disabled, .file-upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 8px;
+            text-align: center;
+            background: #1a1a1a;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .status.saved {
+            color: #00ff88;
+        }
+
+        .status.error {
+            color: #ff4444;
+        }
+
+        .file-preview {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-preview button {
+            background: #ff4444;
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💬 Learner Chat - Files & URLs</h1>
+        <div class="header-buttons">
+            <button onclick="checkServerStatus()">📊 Status</button>
+            <button onclick="clearChat()">🗑️ Clear Chat</button>
+        </div>
+    </div>
+
+    <div class="status" id="status">Chat persists across refreshes • File & URL ingestion enabled</div>
+
+    <div class="chat-container">
+        <div class="messages" id="messages"></div>
+    </div>
+
+    <div class="input-container">
+        <div class="input-mode-selector">
+            <button class="mode-btn active" onclick="setMode('text')" id="mode-text">💬 Text</button>
+            <button class="mode-btn" onclick="setMode('file')" id="mode-file">📎 File</button>
+            <button class="mode-btn" onclick="setMode('url')" id="mode-url">🔗 URL</button>
+        </div>
+
+        <div class="input-area">
+            <textarea
+                id="messageInput"
+                placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+                rows="2"
+            ></textarea>
+            <input type="file" id="fileInput" accept="*/*" onchange="handleFileSelect(event)">
+            <button class="file-upload-btn" onclick="triggerFileUpload()" id="fileBtn" style="display:none;">
+                📁 Choose File
+            </button>
+            <button class="send-btn" onclick="sendMessage()" id="sendBtn">Send</button>
+        </div>
+        <div id="filePreview" style="display:none;"></div>
+    </div>
+
+    <script>
+        let currentMode = 'text';
+        let selectedFile = null;
+
+        // Load chat history from localStorage
+        function loadHistory() {
+            const history = localStorage.getItem('chat_history_files');
+            return history ? JSON.parse(history) : [];
+        }
+
+        // Save chat history
+        function saveHistory(history) {
+            localStorage.setItem('chat_history_files', JSON.stringify(history));
+            showStatus(`💾 Saved ${history.length} messages`);
+        }
+
+        // Show status message
+        function showStatus(msg, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = msg;
+            status.className = isError ? 'status error' : 'status saved';
+            setTimeout(() => {
+                status.textContent = 'Chat persists across refreshes • File & URL ingestion enabled';
+                status.className = 'status';
+            }, 3000);
+        }
+
+        // Render messages
+        function renderMessages() {
+            const messagesDiv = document.getElementById('messages');
+            const history = loadHistory();
+
+            messagesDiv.innerHTML = history.map(msg => `
+                <div class="message ${msg.role}">
+                    <div class="message-content">${escapeHtml(msg.content)}</div>
+                </div>
+            `).join('');
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+
+        // Add message
+        function addMessage(role, content) {
+            const history = loadHistory();
+            history.push({ role, content, timestamp: new Date().toISOString() });
+            saveHistory(history);
+            renderMessages();
+        }
+
+        // Set input mode
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`mode-${mode}`).classList.add('active');
+
+            const input = document.getElementById('messageInput');
+            const fileBtn = document.getElementById('fileBtn');
+            const sendBtn = document.getElementById('sendBtn');
+
+            if (mode === 'text') {
+                input.placeholder = 'Type your message...';
+                fileBtn.style.display = 'none';
+                input.style.display = 'block';
+                sendBtn.textContent = 'Send';
+            } else if (mode === 'file') {
+                input.style.display = 'none';
+                fileBtn.style.display = 'block';
+                sendBtn.textContent = 'Upload & Ingest';
+            } else if (mode === 'url') {
+                input.placeholder = 'Enter URL (webpage, YouTube, etc.)...';
+                fileBtn.style.display = 'none';
+                input.style.display = 'block';
+                sendBtn.textContent = 'Ingest URL';
+            }
+        }
+
+        // Trigger file upload
+        function triggerFileUpload() {
+            document.getElementById('fileInput').click();
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                document.getElementById('filePreview').innerHTML = `
+                    <div class="file-preview">
+                        <span>📎 ${selectedFile.name} (${(selectedFile.size / 1024).toFixed(1)} KB)</span>
+                        <button onclick="clearFile()">✕</button>
+                    </div>
+                `;
+                document.getElementById('filePreview').style.display = 'block';
+            }
+        }
+
+        // Clear file
+        function clearFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePreview').style.display = 'none';
+        }
+
+        // Send message (handles all modes)
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+
+            if (currentMode === 'text') {
+                await sendTextMessage();
+            } else if (currentMode === 'file') {
+                await ingestFile();
+            } else if (currentMode === 'url') {
+                await ingestURL();
+            }
+        }
+
+        // Send text message
+        async function sendTextMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage('user', message);
+            input.value = '';
+
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Thinking...';
+
+            try {
+                const formData = new FormData();
+                formData.append('message', message);
+
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessage('assistant', data.content);
+                } else {
+                    throw new Error(data.error || 'Chat failed');
+                }
+            } catch (error) {
+                addMessage('system', `Error: ${error.message}`);
+                showStatus(`Error: ${error.message}`, true);
+            }
+
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Send';
+            input.focus();
+        }
+
+        // Ingest file
+        async function ingestFile() {
+            if (!selectedFile) {
+                showStatus('Please select a file first', true);
+                return;
+            }
+
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Ingesting...';
+
+            addMessage('user', `📎 Uploading: ${selectedFile.name}`);
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                const response = await fetch('/api/ingest/file', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessage('system', `✓ ${data.summary}\n\n${data.content}`);
+                    clearFile();
+                } else {
+                    throw new Error(data.error || 'Ingestion failed');
+                }
+            } catch (error) {
+                addMessage('system', `✗ Error: ${error.message}`);
+                showStatus(`Error: ${error.message}`, true);
+            }
+
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Upload & Ingest';
+        }
+
+        // Ingest URL
+        async function ingestURL() {
+            const input = document.getElementById('messageInput');
+            const url = input.value.trim();
+            if (!url) return;
+
+            input.value = '';
+
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Ingesting...';
+
+            addMessage('user', `🔗 Ingesting URL: ${url}`);
+
+            try {
+                const formData = new FormData();
+                formData.append('url', url);
+
+                const response = await fetch('/api/ingest/url', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessage('system', `✓ ${data.summary}\n\n${data.content}`);
+                } else {
+                    throw new Error(data.error || 'URL ingestion failed');
+                }
+            } catch (error) {
+                addMessage('system', `✗ Error: ${error.message}`);
+                showStatus(`Error: ${error.message}`, true);
+            }
+
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Ingest URL';
+            input.focus();
+        }
+
+        // Check server status
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                const features = Object.entries(data.features)
+                    .map(([name, enabled]) => `${enabled ? '✓' : '✗'} ${name}`)
+                    .join('\n');
+
+                addMessage('system', `Server Status:\n\n${features}\n\nMessages in history: ${loadHistory().length}`);
+            } catch (error) {
+                showStatus(`Status check failed: ${error.message}`, true);
+            }
+        }
+
+        // Clear chat
+        function clearChat() {
+            if (confirm('Clear all chat history? This cannot be undone.')) {
+                localStorage.removeItem('chat_history_files');
+                renderMessages();
+                showStatus('🗑️ Chat cleared');
+            }
+        }
+
+        // Handle Enter key
+        document.getElementById('messageInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Load messages on page load
+        renderMessages();
+
+        console.log('💾 Chat persistence enabled via localStorage');
+        console.log(`📂 Loaded ${loadHistory().length} messages from history`);
+        console.log('📎 File & URL ingestion ready');
+    </script>
+</body>
+</html>

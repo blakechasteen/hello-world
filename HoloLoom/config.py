@@ -42,6 +42,19 @@ class MemoryBackend(Enum):
     HYPERSPACE = "hyperspace"
 
 
+class Environment(Enum):
+    """
+    Deployment environment - controls safety, logging, and performance settings.
+
+    - DEVELOPMENT: Local dev, auto-approve all, verbose logging, no persistence
+    - STAGING: Pre-prod testing, selective approval, moderate logging
+    - PRODUCTION: Live deployment, require approval for high-risk, minimal logging
+    """
+    DEVELOPMENT = "development"
+    STAGING = "staging"
+    PRODUCTION = "production"
+
+
 class ExecutionMode(Enum):
     """
     Execution modes for HoloLoom.
@@ -192,6 +205,34 @@ class Config:
     prefilter_similarity_threshold: float = 0.3  # Min syntactic similarity for pre-filter
     prefilter_keep_ratio: float = 0.7  # Keep top 70% of candidates after linguistic filter
 
+    # Beta Wave Context Packing (optional - requires MultiWaveMemoryEngine)
+    enable_beta_wave_packing: bool = False  # Enable physics-based context optimization
+    packing_token_budget: int = 4000  # Total token budget for packed context
+    packing_query_reserve: int = 400  # Tokens reserved for query
+    packing_response_reserve: int = 1000  # Tokens reserved for LLM response
+    packing_activation_threshold: float = 0.3  # Min activation to include (low filtered out)
+    packing_compression_threshold: float = 0.7  # Activation threshold for compression vs full content
+
+    # Layer 6: Self-Modification (LOCKED - requires research environment)
+    # See README_SAFETY.md for unlock instructions
+    # Requires BOTH environment variable AND this flag:
+    #   export HOLOLOOM_LAYER6_UNLOCK=research
+    #   config.layer6_enabled = True
+    layer6_enabled: bool = False  # DO NOT enable without proper research infrastructure
+
+    # Deployment Environment (controls safety, logging, performance)
+    # Set via: config.environment = Environment.DEVELOPMENT (or STAGING, PRODUCTION)
+    # Or via env var: HOLOLOOM_ENV=development (default if not set)
+    environment: Environment = Environment.DEVELOPMENT
+
+    # Layer 6 Safety Guardrails (environment-aware)
+    # These properties automatically adjust based on environment:
+    # - DEVELOPMENT: Auto-approve all, verbose logging
+    # - STAGING: Auto-approve safe actions, require approval for risky
+    # - PRODUCTION: Require approval for all high-risk actions
+    enable_safety_guardrails: bool = True  # Master switch for safety system
+    safety_log_all_decisions: bool = True  # Log every safety decision (for audit)
+
     # Memory management
     working_memory_size: int = 100  # Cache size for recent queries
     episodic_buffer_size: int = 100  # Size of recent interaction buffer
@@ -236,7 +277,68 @@ class Config:
                     f"hyperspace_thresholds length ({len(self.hyperspace_thresholds)}) "
                     f"should match hyperspace_depth ({self.hyperspace_depth})"
                 )
-    
+
+    # ============================================================================
+    # Smart Properties (Environment-Aware)
+    # ============================================================================
+
+    @property
+    def safety_testing_mode(self) -> bool:
+        """
+        Whether to bypass approval requirements (testing mode).
+
+        Auto-determined by environment:
+        - DEVELOPMENT: True (auto-approve everything)
+        - STAGING: False (require approval for high-risk)
+        - PRODUCTION: False (require approval for high-risk)
+
+        Returns:
+            True if in development mode
+        """
+        return self.environment == Environment.DEVELOPMENT
+
+    @property
+    def safety_auto_approve_categories(self) -> set:
+        """
+        Action categories to auto-approve without human intervention.
+
+        Environment-specific:
+        - DEVELOPMENT: All categories (full auto-approve)
+        - STAGING: Read-only categories (query, retrieval, analysis)
+        - PRODUCTION: None (require approval for all)
+
+        Returns:
+            Set of ActionCategory names to auto-approve
+        """
+        if self.environment == Environment.DEVELOPMENT:
+            # Development: Auto-approve EVERYTHING for fast iteration
+            return {"query", "retrieval", "analysis", "storage", "modification", "execution", "external"}
+        elif self.environment == Environment.STAGING:
+            # Staging: Auto-approve safe read-only operations
+            return {"query", "retrieval", "analysis"}
+        else:  # PRODUCTION
+            # Production: Require approval for ALL high-risk actions
+            return set()
+
+    @property
+    def logging_level(self) -> str:
+        """
+        Logging verbosity level based on environment.
+
+        - DEVELOPMENT: DEBUG (show everything)
+        - STAGING: INFO (moderate detail)
+        - PRODUCTION: WARNING (errors and warnings only)
+
+        Returns:
+            Logging level string
+        """
+        if self.environment == Environment.DEVELOPMENT:
+            return "DEBUG"
+        elif self.environment == Environment.STAGING:
+            return "INFO"
+        else:  # PRODUCTION
+            return "WARNING"
+
     @classmethod
     def bare(cls) -> 'Config':
         """Create a bare-mode configuration (fastest)."""

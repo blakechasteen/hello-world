@@ -1,0 +1,87 @@
+{
+  "name": "squad",
+  "displayName": "Squad - AI Coding Assistant",
+  "description": "Agentic coding assistant powered by HoloLoom",
+  "version": "0.1.0",
+  "publisher": "hololoom",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning"
+  ],
+  "keywords": ["ai", "assistant", "coding", "agent", "hololoom"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "squad.ask",
+        "title": "Squad: Ask Question",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "squad.explainSelection",
+        "title": "Squad: Explain Selection"
+      },
+      {
+        "command": "squad.suggestFix",
+        "title": "Squad: Suggest Fix"
+      },
+      {
+        "command": "squad.refactor",
+        "title": "Squad: Refactor Code"
+      },
+      {
+        "command": "squad.refactorAndVerify",
+        "title": "Squad: Refactor and Verify",
+        "icon": "$(check)"
+      },
+      {
+        "command": "squad.generateTests",
+        "title": "Squad: Generate Tests"
+      },
+      {
+        "command": "squad.openPanel",
+        "title": "Squad: Open Agent Panel"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "squad.ask",
+        "key": "ctrl+shift+q",
+        "mac": "cmd+shift+q"
+      }
+    ],
+    "configuration": {
+      "title": "Squad",
+      "properties": {
+        "squad.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "HoloLoom server URL"
+        },
+        "squad.reasoningMode": {
+          "type": "string",
+          "enum": ["direct", "verify", "research", "plan_execute"],
+          "default": "verify",
+          "description": "Default reasoning mode"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}

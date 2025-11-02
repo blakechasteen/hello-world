@@ -146,35 +146,40 @@ class ThreadManager:
     - Thread merging and relationships
     """
 
-    def __init__(self, awareness_layer=None, llm_generator=None, memory_backend=None):
+    def __init__(self, awareness_layer=None, llm_generator=None, memory_backend=None,
+                 embedder=None, user_id: str = "chat_user"):
         """
         Initialize thread manager.
 
         Args:
-            awareness_layer: CompositionalAwarenessLayer instance
-            llm_generator: LLM for response generation
-            memory_backend: Optional persistent memory backend (KGStore)
+            awareness_layer: CompositionalAwarenessLayer instance (optional)
+            llm_generator: LLM for response generation (optional)
+            memory_backend: Persistent memory backend following MemoryStore protocol (optional)
+            embedder: MatryoshkaEmbeddings instance for vector generation (optional)
+            user_id: User identifier for memory storage (default: "chat_user")
         """
+        # Session state (ephemeral)
         self.threads: Dict[str, ConversationThread] = {}
         self.active_thread_id: Optional[str] = None
+        self.semantic_index: Dict[str, np.ndarray] = {}  # thread_id → embedding
 
-        # Awareness integration
+        # Integrations (optional dependencies)
         self.awareness = awareness_layer
         self.llm = llm_generator
-
-        # Persistent memory integration
         self.memory = memory_backend
-        self.enable_persistence = memory_backend is not None
+        self.embedder = embedder
 
-        # Semantic index for thread detection
-        self.semantic_index: Dict[str, np.ndarray] = {}  # thread_id → embedding
+        # Configuration
+        self.user_id = user_id
+        self.enable_persistence = memory_backend is not None
+        self.enable_embeddings = embedder is not None
 
         # Statistics
         self.total_messages = 0
         self.thread_count = 0
 
-        # Background task tracking
-        self._background_tasks = set()
+        # Background task tracking (lifecycle management)
+        self._background_tasks: set = set()
 
     async def process_message(
         self,
@@ -483,49 +488,105 @@ class ThreadManager:
         task.add_done_callback(self._background_tasks.discard)
 
     async def _do_archive(self, message: Message, thread: ConversationThread):
-        """Actually perform the archiving (runs in background)"""
-        try:
-            # Import here to avoid circular dependency
-            from HoloLoom.memory.protocol import Memory
-            import uuid
+        """
+        Archive message to persistent memory with semantic embeddings.
 
-            # Create Memory object (protocol type, not MemoryShard)
+        Runs in background (non-blocking) to avoid delaying chat responses.
+        Generates 768d vector embeddings for semantic similarity search.
+        Gracefully handles all failures - chat always continues.
+
+        Args:
+            message: Chat message to archive
+            thread: Parent conversation thread
+
+        Returns:
+            bool: True if archiving succeeded, False if failed
+
+        Process:
+            1. Validate message content
+            2. Generate semantic embedding (MatryoshkaEmbeddings)
+            3. Build context with thread metadata
+            4. Create Memory object with embedding
+            5. Store in backend (Neo4j + Qdrant)
+            6. Store thread entity (first message only)
+
+        Notes:
+            - Non-blocking: Runs as background AsyncIO task
+            - Fault-tolerant: Partial failures allowed, logs all errors
+            - Embedding optional: Falls back gracefully if unavailable
+        """
+        from HoloLoom.memory.protocol import Memory
+        import logging
+
+        # ============================================================
+        # Validation
+        # ============================================================
+        if not message or not message.content:
+            logging.warning(f"⚠ Cannot archive: message has no content")
+            return False
+
+        # ============================================================
+        # Embedding Generation (non-fatal if fails)
+        # ============================================================
+        embedding = None
+        try:
+            embedding = self._generate_message_embedding(message, logging)
+        except Exception as e:
+            logging.warning(f"⚠ Embedding generation error (continuing): {e}")
+            # Continue without embedding
+
+        # ============================================================
+        # Context Building
+        # ============================================================
+        try:
+            context = self._build_memory_context(message, thread, embedding)
+        except Exception as e:
+            logging.warning(f"⚠ Context building error: {e}")
+            # Use minimal context as fallback
+            context = {'thread_topic': thread.dominant_topic, 'has_embedding': False}
+
+        # ============================================================
+        # Memory Object Creation
+        # ============================================================
+        try:
             memory_obj = Memory(
                 id=message.id,
-                text=message.content,  # Note: protocol uses 'text', not 'content'
-                user_id="chat_user",
-                timestamp=message.timestamp.isoformat(),
-                metadata={
-                    'message_id': message.id,
-                    'thread_id': message.thread_id,
-                    'role': message.role,
-                    'depth': message.depth,
-                    'thread_topic': thread.dominant_topic,
-                    'thread_status': thread.status.value,
-                    'source': f"chat_{message.role}",
-                }
+                text=message.content,
+                timestamp=message.timestamp,
+                context=context,
+                metadata=self._build_memory_metadata(message, thread)
             )
 
-            # Store in memory backend (use protocol method)
-            if hasattr(self.memory, 'store'):
-                await self.memory.store(memory_obj, user_id="chat_user")
-
-            # Also store thread metadata as entity (first message only)
-            if message.depth == 0 and hasattr(self.memory, 'add_entity'):
-                await self.memory.add_entity(
-                    name=f"thread_{thread.id[:8]}",
-                    type="conversation_thread",
-                    properties={
-                        'thread_id': thread.id,
-                        'topic': thread.dominant_topic,
-                        'created_at': thread.created_at.isoformat(),
-                        'message_count': len(thread.messages),
-                    }
-                )
+            # Attach embedding if available and supported
+            if embedding is not None and hasattr(memory_obj, 'embedding'):
+                memory_obj.embedding = embedding
 
         except Exception as e:
-            # Don't crash if memory storage fails - chat should keep working
-            print(f"Warning: Failed to archive message to memory: {e}")
+            logging.error(f"✗ Memory object creation failed: {e}")
+            return False  # Cannot continue without Memory object
+
+        # ============================================================
+        # Persistent Storage (critical - must succeed)
+        # ============================================================
+        try:
+            await self.memory.store(memory_obj, user_id=self.user_id)
+            logging.info(f"✓ Archived message {message.id[:8]}... to memory")
+
+        except Exception as e:
+            logging.error(f"✗ Memory storage failed: {e}")
+            return False  # Storage failure - archiving failed
+
+        # ============================================================
+        # Thread Entity Storage (first message only, non-critical)
+        # ============================================================
+        if message.depth == 0:
+            try:
+                await self._maybe_store_thread_entity(thread)
+            except Exception as e:
+                logging.warning(f"⚠ Thread entity storage failed (non-critical): {e}")
+                # Not fatal - message is archived even if thread entity fails
+
+        return True  # Archiving succeeded
 
     async def retrieve_past_threads(self, query: str = None, limit: int = 10) -> List[ConversationThread]:
         """
@@ -575,3 +636,133 @@ class ThreadManager:
         if self._background_tasks:
             await asyncio.gather(*self._background_tasks, return_exceptions=True)
         self._background_tasks.clear()
+
+    # ============================================================================
+    # HELPER METHODS (Clarity & Simplicity)
+    # ============================================================================
+
+    def _generate_message_embedding(self, message: Message, logging) -> Optional[Any]:
+        """
+        Generate semantic embedding for message content.
+
+        Uses MatryoshkaEmbeddings (768d) for multi-scale semantic similarity.
+        Falls back gracefully if embedding generation fails.
+
+        Args:
+            message: Message to embed
+            logging: Logger for warnings
+
+        Returns:
+            Optional[np.ndarray]: 768d embedding vector or None if unavailable
+
+        Raises:
+            ValueError: If message content is empty (validation)
+        """
+        # Validation: Check if embeddings are enabled
+        if not self.enable_embeddings:
+            return None
+
+        # Validation: Ensure message has content
+        if not message.content or not message.content.strip():
+            logging.warning(f"⚠ Cannot generate embedding: message content is empty")
+            return None
+
+        try:
+            embeddings = self.embedder.encode([message.content])
+            embedding = embeddings[0] if len(embeddings) > 0 else None
+
+            # Validation: Check embedding was actually generated
+            if embedding is not None:
+                import numpy as np
+                # Validate embedding is proper numpy array or list
+                if isinstance(embedding, np.ndarray):
+                    if len(embedding) < 100:  # Sanity check: should be at least 100d
+                        logging.warning(f"⚠ Embedding too small ({len(embedding)}d), expected ≥100d")
+                        return None
+                logging.info(f"✓ Generated embedding ({len(embedding)}d)")
+
+            return embedding
+        except Exception as e:
+            logging.warning(f"⚠ Embedding generation failed (non-fatal): {e}")
+            return None
+
+    def _build_memory_context(
+        self,
+        message: Message,
+        thread: ConversationThread,
+        embedding: Optional[Any]
+    ) -> Dict[str, Any]:
+        """
+        Build context dictionary for memory storage.
+
+        Includes thread metadata for better semantic retrieval.
+
+        Args:
+            message: Message being archived
+            thread: Parent conversation thread
+            embedding: Generated embedding (if available)
+
+        Returns:
+            Dict: Context with thread info and embedding status
+        """
+        return {
+            'thread_topic': thread.dominant_topic,
+            'thread_depth': message.depth,
+            'message_count': len(thread.messages),
+            'has_embedding': embedding is not None,
+        }
+
+    def _build_memory_metadata(self, message: Message, thread: ConversationThread) -> Dict[str, Any]:
+        """
+        Build metadata for memory storage (single source of truth).
+
+        Args:
+            message: Message being archived
+            thread: Parent conversation thread
+
+        Returns:
+            Dict: Metadata with thread context, message role, and user identifier
+        """
+        return {
+            'thread_id': message.thread_id,
+            'role': message.role,
+            'depth': message.depth,
+            'thread_topic': thread.dominant_topic,
+            'thread_status': thread.status.value,
+            'source': f"chat_{message.role}",
+            'user_id': self.user_id,  # Configurable user identifier
+        }
+
+    async def _maybe_store_thread_entity(self, thread: ConversationThread):
+        """
+        Store thread as entity in knowledge graph (if backend supports it).
+
+        Creates a graph entity for the conversation thread, enabling
+        thread-level queries and relationships.
+
+        Args:
+            thread: Conversation thread to store as entity
+
+        Notes:
+            - Optional feature: Silently skips if backend doesn't support add_entity()
+            - Non-blocking: Errors logged but not raised
+        """
+        import logging
+
+        if not hasattr(self.memory, 'add_entity'):
+            return  # Backend doesn't support entity storage
+
+        try:
+            await self.memory.add_entity(
+                name=f"thread_{thread.id[:8]}",
+                type="conversation_thread",
+                properties={
+                    'thread_id': thread.id,
+                    'topic': thread.dominant_topic,
+                    'created_at': thread.created_at.isoformat(),
+                    'message_count': len(thread.messages),
+                }
+            )
+            logging.info(f"✓ Stored thread entity {thread.id[:8]}...")
+        except Exception as e:
+            logging.warning(f"⚠ Thread entity storage failed (non-critical): {e}")

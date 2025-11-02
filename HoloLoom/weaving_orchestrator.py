@@ -59,6 +59,7 @@ from HoloLoom.motif.base import create_motif_detector
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
 from HoloLoom.memory.base import create_retriever
 from HoloLoom.policy.unified import create_policy
+from HoloLoom.alignment.safety_guardrails import create_guardrails, SafetyGuardrails
 
 # Performance optimizations
 from HoloLoom.performance.cache import QueryCache
@@ -84,9 +85,20 @@ class ToolExecutor:
     In production, this would call actual APIs, databases, etc.
     """
 
-    def __init__(self):
+    def __init__(self, llm: Optional['OllamaLLM'] = None):
         self.tools = ["answer", "search", "notion_write", "calc"]
         self.logger = logging.getLogger(__name__)
+
+        # Initialize LLM (lazy loading)
+        self.llm = llm
+        if self.llm is None:
+            try:
+                from HoloLoom.awareness.llm_integration import OllamaLLM
+                self.llm = OllamaLLM(model="llama3.2:3b")
+                self.logger.info("Initialized Ollama LLM (llama3.2:3b)")
+            except Exception as e:
+                self.logger.warning(f"LLM unavailable, using fallback: {e}")
+                self.llm = None
 
     async def execute(self, tool: str, query: Query, context: Context) -> Dict:
         """
@@ -115,11 +127,86 @@ class ToolExecutor:
 
     async def _handle_answer(self, query: Query, context: Context) -> Dict:
         """Generate an answer based on context."""
+        # Use packed context if available (beta wave optimization)
+        packed_ctx = context.metadata.get('packed_context') if context and hasattr(context, 'metadata') else None
+
+        if packed_ctx:
+            # Use optimized physics-based packed context
+            # Format: query section + awareness section + memory section
+            llm_context = packed_ctx.format_for_llm(include_metadata=False)
+            context_tokens = packed_ctx.total_tokens
+            packing_stats = {
+                'using_packed_context': True,
+                'elements_included': packed_ctx.elements_included,
+                'elements_compressed': packed_ctx.elements_compressed,
+                'elements_excluded': packed_ctx.elements_excluded,
+                'avg_activation': packed_ctx.avg_activation,
+                'token_budget_used': f"{packed_ctx.total_tokens}/{context.metadata.get('packing_stats', {}).get('budget_available', 'N/A')}"
+            }
+            self.logger.debug(
+                f"Using packed context: {packed_ctx.elements_included} elements, "
+                f"{context_tokens} tokens (avg_activation={packed_ctx.avg_activation:.3f})"
+            )
+        else:
+            # Use raw shard texts (legacy behavior)
+            shard_texts = context.shard_texts[:5] if context and hasattr(context, 'shard_texts') else []
+            llm_context = "\n\n".join(shard_texts)
+            context_tokens = len(llm_context) // 4  # Rough token estimate
+            packing_stats = {
+                'using_packed_context': False,
+                'raw_shards_count': len(shard_texts)
+            }
+            self.logger.debug(f"Using raw context: {len(shard_texts)} shards")
+
+        # Build LLM prompt
+        system_prompt = (
+            "You are a helpful AI assistant. "
+            "Answer based on the provided context. "
+            "Be concise and accurate."
+        )
+
+        user_prompt = f"""Context:
+{llm_context}
+
+Question: {query.text}
+
+Answer:"""
+
+        # Call LLM if available
+        if self.llm and hasattr(self.llm, 'is_available') and self.llm.is_available():
+            try:
+                response = await self.llm.generate(
+                    prompt=user_prompt,
+                    system_prompt=system_prompt,
+                    max_tokens=500,
+                    temperature=0.7
+                )
+
+                return {
+                    "tool": "answer",
+                    "result": response.content,  # ✅ Actual LLM response!
+                    "confidence": 0.85,
+                    "sources": len(context.shards) if context and hasattr(context, 'shards') else 0,
+                    "llm_provider": response.provider.value if hasattr(response, 'provider') else "ollama",
+                    "llm_model": response.model if hasattr(response, 'model') else "unknown",
+                    "usage": response.usage if hasattr(response, 'usage') else {},
+                    "context_tokens": context_tokens,
+                    "packing_stats": packing_stats
+                }
+            except Exception as e:
+                self.logger.error(f"LLM generation failed: {e}")
+                # Fall through to fallback
+
+        # Fallback (LLM unavailable)
+        self.logger.warning("Using fallback response (LLM unavailable)")
         return {
             "tool": "answer",
-            "result": f"Generated answer for: {query.text}",
-            "confidence": 0.85,
-            "sources": len(context.shards) if context and hasattr(context, 'shards') else 0
+            "result": f"[Fallback] Generated answer for: {query.text}\n\nContext: {llm_context[:300]}...",
+            "confidence": 0.5,
+            "sources": len(context.shards) if context and hasattr(context, 'shards') else 0,
+            "context_preview": llm_context[:200] + "..." if len(llm_context) > 200 else llm_context,
+            "context_tokens": context_tokens,
+            "packing_stats": packing_stats
         }
 
     async def _handle_search(self, query: Query, context: Context) -> Dict:
@@ -338,6 +425,14 @@ class WeavingOrchestrator:
         }
         self.logger.info(f"mythRL protocol system enabled (auto_detect={enable_complexity_auto_detect})")
 
+        # Create a single shared SafetyGuardrails instance used across components
+        try:
+            self.guardrails: SafetyGuardrails = create_guardrails()
+            self.logger.info("Shared SafetyGuardrails instance created and will be threaded to components")
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize shared guardrails: {e}. Falling back to local guardrails where needed.")
+            self.guardrails = None
+
         # Determine pattern card from config or preference
         if pattern_preference:
             self.default_pattern = pattern_preference
@@ -391,7 +486,8 @@ class WeavingOrchestrator:
         # 1. Loom Command - Pattern selection
         self.loom_command = LoomCommand(
             default_pattern=self.default_pattern,
-            auto_select=True
+            auto_select=True,
+            guardrails=self.guardrails,
         )
 
         # 2. Yarn Graph / Memory Backend - Thread storage
@@ -1013,6 +1109,9 @@ class WeavingOrchestrator:
                 # Phase 5: Ensure embeddings match policy's expected dimension
                 # ResonanceShed will call encode_scales() with this target
                 target_scale=max(pattern_spec.scales)
+                ,
+                guardrails=self.guardrails,
+                cfg=self.cfg,  # Environment-aware safety configuration
             )
 
             # Extract features through Resonance Shed
@@ -1087,6 +1186,102 @@ class WeavingOrchestrator:
             stage_timings['retrieval'] = (time.time() - step_start) * 1000
 
             # ================================================================
+            # STEP 6.5: Beta Wave Context Packing (OPTIONAL)
+            # ================================================================
+            # Physics-based context optimization using activation spreading
+            # Requires: MultiWaveMemoryEngine with spring_engine
+            # Benefit: 50% token reduction, <1ms overhead
+
+            if (self.cfg.enable_beta_wave_packing and
+                self.memory and
+                hasattr(self.memory, 'spring_engine')):
+
+                step_start = time.time()
+
+                try:
+                    from HoloLoom.awareness.beta_wave_packer import (
+                        BetaWaveContextPacker, TokenBudget
+                    )
+
+                    # Create token budget from config
+                    packing_budget = TokenBudget(
+                        total=self.cfg.packing_token_budget,
+                        reserved_for_query=self.cfg.packing_query_reserve,
+                        reserved_for_response=self.cfg.packing_response_reserve
+                    )
+
+                    # Create beta wave context packer
+                    packer = BetaWaveContextPacker(
+                        spring_engine=self.memory.spring_engine,
+                        token_budget=packing_budget,
+                        activation_threshold=self.cfg.packing_activation_threshold,
+                        compression_threshold=self.cfg.packing_compression_threshold
+                    )
+
+                    # Get query embedding from DotPlasma
+                    psi_raw = dot_plasma.get('psi', [])
+                    if isinstance(psi_raw, dict):
+                        # Extract at highest scale
+                        query_embedding = psi_raw[max(psi_raw.keys())]
+                    else:
+                        query_embedding = psi_raw
+
+                    # Convert to numpy if needed
+                    import numpy as np
+                    if not isinstance(query_embedding, np.ndarray):
+                        query_embedding = np.array(query_embedding, dtype=np.float32)
+
+                    # Pack context using physics-based activation spreading
+                    packed = await packer.pack_context(
+                        query_text=query.text,
+                        query_embedding=query_embedding,
+                        awareness_context=None,  # Could integrate awareness here
+                        top_k=len(shards)
+                    )
+
+                    # Store packed context in metadata
+                    context.metadata['packed_context'] = packed
+                    context.metadata['packing_stats'] = {
+                        'elements_included': packed.elements_included,
+                        'elements_compressed': packed.elements_compressed,
+                        'elements_excluded': packed.elements_excluded,
+                        'total_tokens': packed.total_tokens,
+                        'budget_available': packing_budget.available_for_context,
+                        'avg_activation': packed.avg_activation,
+                        'min_activation': packed.min_activation,
+                        'max_activation': packed.max_activation,
+                        'activation_distribution': packed.activation_stats.get('activation_distribution', {})
+                    }
+
+                    self.logger.info(
+                        f"  [6.5] Beta wave packing: {packed.elements_included} included, "
+                        f"{packed.elements_compressed} compressed, "
+                        f"{packed.elements_excluded} excluded "
+                        f"({packed.total_tokens}/{packing_budget.available_for_context} tokens, "
+                        f"avg_activation={packed.avg_activation:.3f})"
+                    )
+                    stage_timings['context_packing'] = (time.time() - step_start) * 1000
+
+                except Exception as e:
+                    # Graceful fallback on packing errors
+                    self.logger.warning(
+                        f"  [6.5] Beta wave packing failed: {e}. "
+                        f"Falling back to raw shards."
+                    )
+                    context.metadata['packed_context'] = None
+                    context.metadata['packing_error'] = str(e)
+            else:
+                # Beta wave packing disabled or unavailable
+                context.metadata['packed_context'] = None
+                if self.cfg.enable_beta_wave_packing:
+                    reason = "memory backend lacks spring_engine"
+                    self.logger.info(
+                        f"  [6.5] Beta wave packing: DISABLED ({reason}, using raw shards)"
+                    )
+                else:
+                    self.logger.debug("  [6.5] Beta wave packing: DISABLED (config flag off)")
+
+            # ================================================================
             # STEP 7: Convergence Engine collapses to discrete tool selection
             # ================================================================
             step_start = time.time()
@@ -1106,6 +1301,9 @@ class WeavingOrchestrator:
                 n_heads=pattern_spec.n_attention_heads,
                 bandit_strategy=self.cfg.bandit_strategy,
                 epsilon=self.cfg.epsilon
+                ,
+                guardrails=self.guardrails,
+                cfg=self.cfg,  # Environment-aware safety configuration
             )
 
             # Convert dot_plasma to Features object for policy

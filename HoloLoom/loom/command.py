@@ -26,6 +26,14 @@ from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
 
+from HoloLoom.alignment.safety_guardrails import (
+    ActionCategory,
+    ActionRequest,
+    SafetyDecision,
+    SafetyGuardrails,
+    create_guardrails,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -111,8 +119,8 @@ class PatternSpec:
 BARE_PATTERN = PatternSpec(
     name="Bare Threading",
     card=PatternCard.BARE,
-    scales=[96],
-    fusion_weights={96: 1.0},
+    scales=[768],  # Use full scale for compatibility with nomic-embed-text-v1.5
+    fusion_weights={768: 1.0},
     enable_motifs=True,
     motif_mode="regex",
     enable_spectral=False,
@@ -223,7 +231,8 @@ class LoomCommand:
     def __init__(
         self,
         default_pattern: PatternCard = PatternCard.FAST,
-        auto_select: bool = True
+        auto_select: bool = True,
+        guardrails: Optional[SafetyGuardrails] = None,
     ):
         """
         Initialize Loom Command.
@@ -234,6 +243,9 @@ class LoomCommand:
         """
         self.default_pattern = default_pattern
         self.auto_select = auto_select
+
+        # Safety guardrails for pattern selection
+        self.guardrails = guardrails or create_guardrails()
 
         # Pattern card registry
         self.patterns = {
@@ -276,6 +288,39 @@ class LoomCommand:
         """
         selected_card = None
         selection_reason = None
+        safety_decision: Optional[SafetyDecision] = None
+
+        # Run safety guardrails before selection to block adversarial input
+        if self.guardrails:
+            action_request = ActionRequest(
+                action="select_pattern",
+                category=ActionCategory.ANALYSIS,
+                context={
+                    "user_preference": user_preference,
+                    "resource_constraints": resource_constraints,
+                    "query_length": len(query_text) if query_text else 0,
+                },
+            )
+            safety_decision = self.guardrails.evaluate(
+                action_request,
+                text_input=query_text or "",
+            )
+
+            if not safety_decision.allowed:
+                logger.warning(
+                    "Pattern selection blocked by guardrails: %s",
+                    safety_decision.reason,
+                )
+                raise PermissionError(safety_decision.reason)
+
+            if safety_decision.requires_approval:
+                logger.warning(
+                    "Pattern selection requires manual approval: %s",
+                    safety_decision.reason,
+                )
+                raise PermissionError(
+                    f"Pattern selection requires approval: {safety_decision.reason}"
+                )
 
         # Priority 1: User preference
         if user_preference:
@@ -309,7 +354,8 @@ class LoomCommand:
         self.selection_history.append({
             "pattern": selected_card.value,
             "reason": selection_reason,
-            "query_length": len(query_text) if query_text else 0
+            "query_length": len(query_text) if query_text else 0,
+            "safety": safety_decision.to_dict() if safety_decision else None,
         })
 
         logger.info(f"Selected pattern: {selected_card.value} ({selection_reason})")
@@ -425,7 +471,8 @@ class LoomCommand:
 
 def create_loom_command(
     default: str = "fast",
-    auto_select: bool = True
+    auto_select: bool = True,
+    guardrails: Optional[SafetyGuardrails] = None,
 ) -> LoomCommand:
     """
     Create Loom Command with default pattern.
@@ -438,7 +485,11 @@ def create_loom_command(
         Configured LoomCommand
     """
     pattern = PatternCard(default.lower())
-    return LoomCommand(default_pattern=pattern, auto_select=auto_select)
+    return LoomCommand(
+        default_pattern=pattern,
+        auto_select=auto_select,
+        guardrails=guardrails,
+    )
 
 
 # ============================================================================
@@ -451,7 +502,10 @@ if __name__ == "__main__":
     print("="*80 + "\n")
 
     # Create loom command
-    loom = LoomCommand(default_pattern=PatternCard.FAST, auto_select=True)
+    loom = LoomCommand(
+        default_pattern=PatternCard.FAST,
+        auto_select=True,
+    )
 
     # Test different selection modes
     test_cases = [

@@ -667,7 +667,10 @@ class SpringDynamicsEngine:
                 new_activation[node_id] *= 0.9
 
             # Check convergence
-            max_change = max(abs(new_activation[nid] - activation[nid]) for nid in activation.keys())
+            if activation:  # Guard against empty activation
+                max_change = max(abs(new_activation[nid] - activation[nid]) for nid in activation.keys())
+            else:
+                max_change = 0.0
             activation = new_activation
 
             if max_change < 0.001:

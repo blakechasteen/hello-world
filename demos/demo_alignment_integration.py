@@ -162,9 +162,8 @@ class AlignedHoloLoomSystem:
         # Step 1: Safety Guardrails Check
         print("\n1️⃣  Safety Guardrails Check...")
         safety_request = ActionRequest(
-            action_id=f"query_{hash(query_text)}",
+            action=query_text,
             category=ActionCategory[action_category],
-            description=query_text,
         )
         safety_decision = self.guardrails.evaluate(safety_request, text_input=query_text)
 
@@ -220,8 +219,7 @@ class AlignedHoloLoomSystem:
 
         # Step 4: Record Action Observation
         action_obs = ActionObservation(
-            action_id=f"action_{hash(query_text)}",
-            description=f"Processed query: {query_text[:50]}",
+            action=f"Processed query: {query_text[:50]}",
             goal_id="helpful",
         )
         self.detector.goal_tracker.observe_action(action_obs)

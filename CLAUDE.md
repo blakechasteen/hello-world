@@ -392,7 +392,48 @@ HoloLoom/
 │   ├── conversational.py     # (moved from root)
 │   └── ROADMAP.md            # ChatOps + Semantic Learning plan
 │
+├── agentic/                   # Agentic reasoning system (Nov 2025)
+│   ├── core.py               # Multi-query reasoning engine
+│   └── embedding_integrity.py # Embedding consistency checks
+│
+├── alignment/                 # Alignment framework v1.0 (Nov 2025)
+│   ├── safety_guardrails.py  # Risk-based action gating
+│   ├── deception_detection.py # Goal transparency
+│   ├── instrumental_convergence.py # Power-seeking detection
+│   ├── audit_trail.py        # Complete provenance
+│   ├── monitoring.py         # Live monitoring
+│   └── tests/                # 46 tests + 13 benchmarks
+│
+├── server/                    # FastAPI server (Nov 2025)
+│   ├── agentic_api.py        # Main API server
+│   └── agentic_api_integrated.py # Full integration
+│
+├── interpretability/          # Explainability (future)
+│
 └── [other feature dirs...]    # loom/, warp/, resonance/, etc.
+```
+
+**Repository Root:**
+```
+mythRL/
+├── HoloLoom/                  # Main package
+├── demos/                     # Demo scripts
+├── tests/                     # Root-level integration tests
+├── experiments/               # Automated experiment framework (Oct 2025)
+│   ├── run_experiments.py    # Run all experiments
+│   ├── results/              # JSON + Markdown reports
+│   └── EXPERIMENTS_GUIDE.md
+│
+├── archive/                   # Archived code (safety net)
+│   ├── old_dev/
+│   ├── old_projects/         # apps/, Promptly/, crm_app/
+│   ├── session_docs/         # PHASE_*, SESSION_* docs
+│   └── old_demos/
+│
+├── squad/                     # VS Code extension (TypeScript)
+├── ui/                        # Web UI components
+├── alignment_logs/            # Alignment framework logs
+└── CLAUDE.md                  # This file
 ```
 
 **Key Changes:**
@@ -994,6 +1035,352 @@ python demos/demo_multipass_simple.py
 
 # Full 5-phase system (requires HoloLoom integration)
 PYTHONPATH=. python demos/demo_full_recursive_learning.py
+```
+
+## Alignment Framework
+
+**Status**: ✅ Production Ready (v1.0.0 - November 2025)
+**Location**: `HoloLoom/alignment/`
+**Performance**: 0.103 ms overhead (29x faster than target)
+**Test Coverage**: 46 functional tests + 13 performance benchmarks
+
+The Alignment Framework provides comprehensive safety mechanisms for HoloLoom's agentic reasoning system, implementing industry best practices from Anthropic, OpenAI, and DeepMind research.
+
+### Core Philosophy
+
+> **"Safe by default, transparent by design"**
+
+Every decision is gated by safety checks, monitored for deception, bound by resource limits, and logged with complete provenance - all with **negligible performance impact** (<0.11 ms per query).
+
+### 4 Core Modules
+
+1. **Safety Guardrails** (`safety_guardrails.py`) - 0.039 ms
+   - Risk-based action gating (LOW/MEDIUM/HIGH/CRITICAL)
+   - Adversarial pattern detection
+   - Human-in-the-loop escalation for high-risk actions
+
+2. **Deception Detection** (`deception_detection.py`) - 0.034 ms
+   - Goal transparency tracking
+   - Behavioral probe system
+   - Hidden goal detection
+
+3. **Instrumental Convergence Prevention** (`instrumental_convergence.py`) - 0.015 ms
+   - Power-seeking detection
+   - Resource acquisition monitoring
+   - Self-preservation behavior detection
+
+4. **Audit Trail** (`audit_trail.py`) - 0.015 ms
+   - Complete decision provenance
+   - Searchable logs with temporal queries
+   - Export for compliance/debugging
+
+### Quick Start
+
+```python
+from HoloLoom.alignment import SafetyGuardrails, AuditTrail
+from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+
+# Enable alignment framework
+config = Config.fused()
+config.enable_alignment = True
+
+# Create guardrails and audit trail
+guardrails = SafetyGuardrails(enable_human_in_loop=True)
+audit_trail = AuditTrail()
+
+async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
+    # Gate action through safety check
+    action = "execute_code"
+    context = {"code": "import os; os.system('ls')"}
+
+    gate_result = await guardrails.gate_action(action, context)
+
+    if gate_result.allowed:
+        spacetime = await orchestrator.weave(query)
+
+        # Log decision
+        await audit_trail.log_decision(
+            query=query.text,
+            action=action,
+            outcome="success",
+            safety_score=gate_result.safety_score
+        )
+    else:
+        print(f"Action blocked: {gate_result.reason}")
+```
+
+### Production Deployment
+
+```python
+from HoloLoom.alignment import create_aligned_orchestrator
+
+# One-liner: orchestrator with full alignment
+async with create_aligned_orchestrator(
+    config=Config.fused(),
+    enable_monitoring=True,
+    enable_human_in_loop=True
+) as orchestrator:
+    spacetime = await orchestrator.weave(query)
+```
+
+### Documentation
+
+- **README.md**: Complete framework overview
+- **API_REFERENCE.md**: API documentation
+- **PRODUCTION_DEPLOYMENT.md**: Production setup guide
+- **PRODUCTION_MONITORING.md**: Monitoring and alerting
+- **QUICK_START.md**: Quick start guide
+
+### Running Tests
+
+```bash
+# All alignment tests
+pytest HoloLoom/alignment/tests/ -v
+
+# Performance benchmarks
+pytest HoloLoom/alignment/tests/test_performance.py -v
+```
+
+## Agentic Reasoning System
+
+**Status**: ✅ Complete (November 2025)
+**Location**: `HoloLoom/agentic/`
+**Integration**: VS Code extension, FastAPI server
+
+The Agentic Reasoning System enables multi-query reasoning with automatic verification, plan-execute workflows, and research-style exploration.
+
+### 4 Reasoning Modes
+
+| Mode | Description | Latency | Use Case |
+|------|-------------|---------|----------|
+| **DIRECT** | Single-pass answer | ~150ms | Simple factual queries |
+| **VERIFY** | Answer + verification | ~600ms | Claims needing verification |
+| **RESEARCH** | Multi-query exploration | ~900ms | Open-ended research |
+| **PLAN_EXECUTE** | Goal decomposition | ~750ms | Multi-step tasks |
+
+### Usage
+
+```python
+from HoloLoom.agentic import AgenticOrchestrator, ReasoningMode
+
+async with AgenticOrchestrator(cfg=config, shards=shards) as orchestrator:
+    # Research mode: explores topic from multiple angles
+    result = await orchestrator.reason(
+        query="What are the tradeoffs of Thompson Sampling?",
+        mode=ReasoningMode.RESEARCH,
+        max_steps=5
+    )
+
+    print(result.response)  # Final synthesized answer
+    print(result.confidence)  # 0.0-1.0
+    print(result.steps_taken)  # List of sub-queries
+    print(result.verification)  # Verification results (if mode=VERIFY)
+```
+
+### Integration with Alignment
+
+The agentic system automatically integrates with the alignment framework:
+
+```python
+from HoloLoom.agentic import create_safe_agentic_orchestrator
+
+# Orchestrator with alignment checks
+async with create_safe_agentic_orchestrator(
+    config=Config.fused(),
+    enable_alignment=True
+) as orchestrator:
+    # All reasoning steps are gated by safety guardrails
+    result = await orchestrator.reason(query, mode=ReasoningMode.RESEARCH)
+```
+
+### Key Features
+
+- **Automatic Verification**: VERIFY mode checks claims for contradictions
+- **Goal Decomposition**: PLAN_EXECUTE breaks complex tasks into steps
+- **Multi-Query Research**: RESEARCH mode explores topics from multiple angles
+- **Embedding Integrity**: Ensures embedding consistency across reasoning steps
+- **Complete Audit Trail**: Full provenance of all reasoning steps
+
+## FastAPI Server
+
+**Status**: ✅ Production Ready (November 2025)
+**Location**: `HoloLoom/server/`
+**Port**: 8000 (default)
+
+FastAPI server exposing HoloLoom's agentic intelligence to external clients (VS Code Squad extension, web apps, etc).
+
+### Quick Start
+
+```bash
+# Development mode (with auto-reload)
+PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --reload --port 8000
+
+# Production mode
+PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --host 0.0.0.0 --port 8000 --workers 4
+```
+
+### Main Endpoints
+
+**Health Check**:
+```bash
+GET http://localhost:8000/health
+```
+
+**Query** (main endpoint):
+```bash
+POST http://localhost:8000/query
+Content-Type: application/json
+
+{
+  "text": "Explain this TypeScript code",
+  "context": {
+    "languageId": "typescript",
+    "fileName": "example.ts",
+    "selection": "function foo() { return 42; }"
+  },
+  "mode": "verify",
+  "max_steps": 5
+}
+```
+
+**Statistics**:
+```bash
+GET http://localhost:8000/stats
+```
+
+**Audit Trail**:
+```bash
+GET http://localhost:8000/audit-trail?limit=10
+```
+
+### VS Code Integration
+
+The server is designed to work with the Squad VS Code extension:
+
+```typescript
+// squad/src/HoloLoomBridge.ts
+const bridge = new HoloLoomBridge('http://localhost:8000');
+
+const result = await bridge.query(
+  "Explain this code",
+  codeContext,
+  'verify',
+  5
+);
+
+console.log(result.response);
+console.log(result.verification.verified);
+```
+
+### Architecture
+
+```
+VS Code Extension (TypeScript)
+    ↓ HTTP
+FastAPI Server (Python)
+    ↓
+AgenticOrchestrator
+    ├─ FullLearningEngine
+    ├─ AuditTrail
+    └─ ReasoningModes (DIRECT/VERIFY/RESEARCH/PLAN_EXECUTE)
+```
+
+## Experiments Framework
+
+**Status**: ✅ Complete (October 2025)
+**Location**: `experiments/`
+**Runtime**: ~1 second for all experiments
+
+Automated testing framework that systematically compares fusion, complexity, budgets, and memory limits across 16 configurations.
+
+### Running Experiments
+
+```bash
+# Run all experiments
+python experiments/run_experiments.py
+
+# Output: experiments/results/all_experiments.json
+#         experiments/results/experiment_report.md
+```
+
+### What Gets Tested
+
+**Experiment 1: Fusion Impact** (2 runs)
+- Tests multipass graph crawling ON vs OFF
+- Measures depth, quality, time overhead
+- Answers: Is connected knowledge discovery worth +1-2ms?
+
+**Experiment 2: Complexity Scaling** (4 runs)
+- Tests LITE → FAST → FULL → RESEARCH progression
+- Measures passes, depth, memories, time
+- Answers: How does complexity scale?
+
+**Experiment 3: Budget Constraints** (5 runs)
+- Tests query budgets from 1 to unlimited
+- Measures depth, quality, stopping behavior
+- Answers: Do budgets prevent runaway queries?
+
+**Experiment 4: Memory Limits** (5 runs)
+- Tests memory limits from 10 to unlimited
+- Measures retrieval effectiveness, degradation
+- Answers: How many memories are "enough"?
+
+### Example Output
+
+```json
+{
+  "fusion_impact": {
+    "fusion_on": {"depth": 3, "quality": 0.92, "time_ms": 156},
+    "fusion_off": {"depth": 1, "quality": 0.78, "time_ms": 142}
+  },
+  "complexity_scaling": {
+    "LITE": {"passes": 1, "time_ms": 45},
+    "FAST": {"passes": 2, "time_ms": 98},
+    "FULL": {"passes": 3, "time_ms": 187},
+    "RESEARCH": {"passes": 5, "time_ms": 342}
+  }
+}
+```
+
+### Documentation
+
+- **EXPERIMENTS_GUIDE.md**: Complete guide
+- **EXPERIMENTS_QUICK_REF.md**: Quick reference
+
+## Archive Structure
+
+**Location**: `archive/`
+**Purpose**: Safety net for old code and documentation
+
+Old code and documentation are archived (not deleted) to maintain project history and enable recovery if needed.
+
+### Archive Organization
+
+```
+archive/
+├── old_dev/           # Old development scripts
+├── old_projects/      # Deprecated sub-projects (apps/, Promptly/, etc.)
+├── session_docs/      # Old session documentation (PHASE_*, SESSION_*, etc.)
+├── old_demos/         # Deprecated demos
+├── old_tests/         # Legacy test files
+└── legacy/            # Other legacy code
+```
+
+### Archived Projects
+
+- **Promptly/**: Prompt management CLI (superseded by alignment framework)
+- **apps/**: Domain-specific apps (beekeeping, food_e, darkTrace, mythy)
+  - Now integrated into main HoloLoom via spinners
+- **crm_app/**: CRM demo (superseded by unified memory system)
+
+### Accessing Archived Code
+
+```bash
+# View archived projects
+ls archive/old_projects/
+
+# Recover a file if needed
+cp archive/old_projects/Promptly/promptly.py ./
 ```
 
 ## Common Workflows

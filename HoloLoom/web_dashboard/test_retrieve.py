@@ -42,11 +42,15 @@ async def test_retrieval():
         query = MemoryQuery(
             text=search_term,
             user_id="chat_user",
-            k=10
+            limit=10
         )
 
-        print("[METHOD] Using protocol retrieve() method...")
-        results = await memory.retrieve(query)
+        print("[METHOD] Using protocol recall() method...")
+        result = await memory.recall(query, limit=10)
+
+        # recall() returns a RetrievalResult with memories and scores
+        results = result.memories
+        scores = result.scores
         print(f"[RESULTS] Found {len(results)} results\n")
 
         # Display results
@@ -55,20 +59,17 @@ async def test_retrieval():
             print(f"  PERSISTENCE VERIFIED!")
             print(f"{'='*60}\n")
 
-            for i, result in enumerate(results, 1):
+            for i, mem in enumerate(results, 1):
                 print(f"Result {i}:")
 
-                # RetrievalResult has: memory, score, explanation
-                if hasattr(result, 'memory'):
-                    mem = result.memory
-                    print(f"  Score: {result.score:.3f}")
-                    print(f"  Content: {mem.text[:200]}...")
-                    if hasattr(mem, 'metadata') and mem.metadata:
-                        print(f"  Thread ID: {mem.metadata.get('thread_id', 'N/A')}")
-                        print(f"  Role: {mem.metadata.get('role', 'N/A')}")
-                        print(f"  Topic: {mem.metadata.get('thread_topic', 'N/A')}")
-                else:
-                    print(f"  {str(result)[:200]}...")
+                # Memory object has: id, text, metadata
+                score = scores[i-1] if i-1 < len(scores) else 0.0
+                print(f"  Score: {score:.3f}")
+                print(f"  Content: {mem.text[:200]}...")
+                if hasattr(mem, 'metadata') and mem.metadata:
+                    print(f"  Thread ID: {mem.metadata.get('thread_id', 'N/A')}")
+                    print(f"  Role: {mem.metadata.get('role', 'N/A')}")
+                    print(f"  Topic: {mem.metadata.get('thread_topic', 'N/A')}")
                 print()
 
             print("[SUCCESS] Messages survived server restart!")

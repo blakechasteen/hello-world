@@ -180,10 +180,22 @@ class SafetyPolicy:
     Defines safety policies for different action categories.
 
     Configurable risk thresholds and approval requirements.
+
+    Supports environment-aware testing mode where approvals can be bypassed
+    for development environments while maintaining full logging.
     """
 
-    def __init__(self):
-        """Initialize with default policies."""
+    def __init__(self, testing_mode: bool = False, auto_approve_categories: Optional[Set[str]] = None):
+        """
+        Initialize with default policies.
+
+        Args:
+            testing_mode: If True, bypass approval requirements (for development)
+            auto_approve_categories: Set of category names to auto-approve (overrides testing_mode)
+        """
+        self.testing_mode = testing_mode
+        self.auto_approve_categories = auto_approve_categories or set()
+
         # Default risk levels by action category
         self.default_risk_levels = {
             ActionCategory.QUERY: RiskLevel.SAFE,
@@ -197,11 +209,16 @@ class SafetyPolicy:
             ActionCategory.EXTERNAL: RiskLevel.HIGH,
         }
 
-        # Actions that always require approval
-        self.approval_required: Set[ActionCategory] = {
-            ActionCategory.DELETION,
-            ActionCategory.SYSTEM,
-        }
+        # Actions that always require approval (unless testing_mode or auto_approve)
+        if testing_mode:
+            # Testing mode: Don't require approval for anything
+            self.approval_required: Set[ActionCategory] = set()
+        else:
+            # Production: Require approval for critical actions
+            self.approval_required: Set[ActionCategory] = {
+                ActionCategory.DELETION,
+                ActionCategory.SYSTEM,
+            }
 
         # Custom risk evaluators (can be registered)
         self.custom_evaluators: List[Callable[[ActionRequest], Optional[RiskLevel]]] = []
@@ -229,6 +246,9 @@ class SafetyPolicy:
         """
         Determine if action requires human approval.
 
+        Checks testing_mode and auto_approve_categories before applying
+        standard approval rules.
+
         Args:
             request: Action request
             risk_level: Assessed risk level
@@ -236,6 +256,14 @@ class SafetyPolicy:
         Returns:
             True if approval required
         """
+        # Check testing mode - bypass all approvals in development
+        if self.testing_mode:
+            return False
+
+        # Check auto-approve categories (environment-specific)
+        if request.category.value in self.auto_approve_categories:
+            return False
+
         # Always require approval for certain categories
         if request.category in self.approval_required:
             return True
@@ -288,6 +316,8 @@ class SafetyGuardrails:
         self,
         policy: Optional[SafetyPolicy] = None,
         enable_adversarial_detection: bool = True,
+        testing_mode: bool = False,
+        auto_approve_categories: Optional[Set[str]] = None,
     ):
         """
         Initialize safety guardrails.
@@ -295,8 +325,14 @@ class SafetyGuardrails:
         Args:
             policy: Safety policy (uses default if None)
             enable_adversarial_detection: Whether to detect adversarial inputs
+            testing_mode: If True, bypass approval requirements (for development)
+            auto_approve_categories: Set of category names to auto-approve
         """
-        self.policy = policy or SafetyPolicy()
+        self.testing_mode = testing_mode
+        self.policy = policy or SafetyPolicy(
+            testing_mode=testing_mode,
+            auto_approve_categories=auto_approve_categories
+        )
         self.adversarial_detector = AdversarialDetector() if enable_adversarial_detection else None
         self.action_history: List[ActionRequest] = []
         self._setup_logging()
@@ -466,7 +502,9 @@ class SafetyGuardrails:
 # Convenience function
 def create_guardrails(
     enable_adversarial_detection: bool = True,
-    custom_policy: Optional[SafetyPolicy] = None
+    custom_policy: Optional[SafetyPolicy] = None,
+    testing_mode: bool = False,
+    auto_approve_categories: Optional[Set[str]] = None,
 ) -> SafetyGuardrails:
     """
     Create safety guardrails with optional configuration.
@@ -474,11 +512,15 @@ def create_guardrails(
     Args:
         enable_adversarial_detection: Whether to detect adversarial inputs
         custom_policy: Optional custom safety policy
+        testing_mode: If True, bypass approval requirements (for development)
+        auto_approve_categories: Set of category names to auto-approve
 
     Returns:
         Configured SafetyGuardrails instance
     """
     return SafetyGuardrails(
         policy=custom_policy,
-        enable_adversarial_detection=enable_adversarial_detection
+        enable_adversarial_detection=enable_adversarial_detection,
+        testing_mode=testing_mode,
+        auto_approve_categories=auto_approve_categories,
     )

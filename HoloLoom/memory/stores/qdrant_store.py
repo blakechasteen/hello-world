@@ -115,58 +115,110 @@ class QdrantMemoryStore:
                 )
                 self.logger.info(f"Created collection {collection_name}")
     
-    async def store(self, memory: Memory) -> str:
+    async def store(self, memory: Memory, user_id: str = "default") -> str:
         """
-        Store memory with multi-scale embeddings.
-        
+        Store memory with multi-scale vector embeddings.
+
+        Stores a single memory across multiple embedding scales (96d, 192d, 384d)
+        for flexible speed/accuracy tradeoffs during retrieval.
+
+        Args:
+            memory: Memory object with text and optional pre-computed embedding
+            user_id: User identifier for filtering (stored in metadata)
+
+        Returns:
+            str: Memory ID (original string format)
+
+        Raises:
+            ValueError: If memory validation fails
+            RuntimeError: If Qdrant storage fails
+
         Process:
-        1. Generate full embedding (384d)
-        2. Truncate to each scale (96d, 192d, 384d)
-        3. Store in each collection with same ID
+            1. Validate memory and generate ID
+            2. Get or generate 768d embedding vector
+            3. Convert string ID to integer (Qdrant requirement)
+            4. Store at each scale with truncated vectors
         """
-        # Generate ID
+        # ============================================================
+        # Validation
+        # ============================================================
+        if not memory or not memory.text:
+            raise ValueError("Memory must have non-empty text")
+
+        # ============================================================
+        # ID Generation
+        # ============================================================
         mem_id = memory.id or self._generate_id(memory.text, memory.timestamp)
-        
-        # Generate embedding
-        full_embedding = self.embedder.encode(memory.text).tolist()
-        
-        # Store in each scale
+        qdrant_id = self._convert_to_qdrant_id(mem_id)
+
+        # ============================================================
+        # Embedding Extraction (with validation)
+        # ============================================================
+        try:
+            full_embedding = self._get_or_generate_embedding(memory)
+        except Exception as e:
+            self.logger.error(f"✗ Embedding extraction failed: {e}")
+            raise
+
+        # ============================================================
+        # Multi-Scale Storage
+        # ============================================================
+        scales_stored = 0
         for scale in self.scales:
-            collection_name = f"{self.collection_prefix}_{scale}"
-            
-            # Truncate embedding to scale
-            vector = full_embedding[:scale]
-            
-            # Prepare payload
-            payload = {
-                'text': memory.text,
-                'timestamp': memory.timestamp.isoformat(),
-                'user_id': memory.metadata.get('user_id', 'default'),
-                **memory.context,
-                **memory.metadata
-            }
-            
-            # Upsert point
-            self.client.upsert(
-                collection_name=collection_name,
-                points=[
-                    PointStruct(
-                        id=mem_id,
-                        vector=vector,
-                        payload=payload
-                    )
-                ]
-            )
-        
-        self.logger.info(f"Stored memory {mem_id} at {len(self.scales)} scales")
+            try:
+                collection_name = f"{self.collection_prefix}_{scale}"
+                vector = full_embedding[:scale]
+                payload = self._build_point_payload(mem_id, memory, user_id)
+
+                self.client.upsert(
+                    collection_name=collection_name,
+                    points=[PointStruct(id=qdrant_id, vector=vector, payload=payload)]
+                )
+                scales_stored += 1
+
+            except Exception as e:
+                self.logger.warning(
+                    f"⚠ Failed to store at scale {scale}d: {e}"
+                )
+                # Continue with other scales (partial success is okay)
+
+        # ============================================================
+        # Final Validation
+        # ============================================================
+        if scales_stored == 0:
+            raise RuntimeError(f"Failed to store memory at any scale")
+
+        self.logger.info(
+            f"✓ Stored {mem_id[:8]}... at {scales_stored}/{len(self.scales)} scales"
+        )
         return mem_id
 
-    async def store_many(self, memories: List[Memory]) -> List[str]:
-        """Store multiple memories (batch operation)."""
+    async def store_many(self, memories: List[Memory], user_id: str = "default") -> List[str]:
+        """
+        Store multiple memories in batch.
+
+        Args:
+            memories: List of Memory objects to store
+            user_id: User identifier for all memories
+
+        Returns:
+            List[str]: List of memory IDs (successful stores)
+        """
         memory_ids = []
-        for memory in memories:
-            memory_id = await self.store(memory)
-            memory_ids.append(memory_id)
+        failures = 0
+
+        for i, memory in enumerate(memories, 1):
+            try:
+                mem_id = await self.store(memory, user_id=user_id)
+                memory_ids.append(mem_id)
+            except Exception as e:
+                failures += 1
+                self.logger.warning(f"⚠ Batch store {i}/{len(memories)} failed: {e}")
+
+        self.logger.info(
+            f"✓ Batch complete: {len(memory_ids)}/{len(memories)} stored "
+            f"({failures} failures)"
+        )
         return memory_ids
 
     async def get_by_id(self, memory_id: str) -> Optional[Memory]:
@@ -336,7 +388,7 @@ class QdrantMemoryStore:
         for item in sorted_results:
             result = item['result']
             mem = Memory(
-                id=str(result.id),
+                id=result.payload.get('memory_id', str(result.id)),  # Use original memory_id
                 text=result.payload.get('text', ''),
                 timestamp=self._parse_timestamp(result.payload.get('timestamp')),
                 context={k: v for k, v in result.payload.items() if k in ['place', 'time', 'people', 'topics']},
@@ -428,7 +480,109 @@ class QdrantMemoryStore:
                 'backend': 'qdrant',
                 'error': str(e)
             }
-    
+
+    async def recall(self, query: MemoryQuery, limit: int = 10) -> RetrievalResult:
+        """
+        Recall memories (alias for retrieve with FUSED strategy).
+
+        This method provides compatibility with the MemoryStore protocol.
+        """
+        query.limit = limit
+        return await self.retrieve(query, strategy=Strategy.FUSED)
+
+    # ============================================================
+    # Helper Methods
+    # ============================================================
+
+    def _get_or_generate_embedding(self, memory: Memory) -> List[float]:
+        """
+        Extract embedding from Memory or generate if missing.
+
+        Prefers pre-computed embeddings (e.g., from MatryoshkaEmbeddings)
+        to avoid duplicate computation. Validates embedding dimensions.
+
+        Args:
+            memory: Memory object with optional embedding field
+
+        Returns:
+            List[float]: Embedding vector (validated dimensions)
+
+        Raises:
+            ValueError: If embedding dimensions are invalid
+        """
+        if hasattr(memory, 'embedding') and memory.embedding is not None:
+            import numpy as np
+            # Convert numpy array to list
+            if isinstance(memory.embedding, np.ndarray):
+                embedding = memory.embedding.tolist()
+            else:
+                embedding = memory.embedding
+
+            # Validate embedding dimensions
+            if not isinstance(embedding, list) or len(embedding) == 0:
+                raise ValueError(f"Invalid embedding: expected non-empty list, got {type(embedding)}")
+
+            # Ensure sufficient dimensions for all scales
+            max_scale = max(self.scales)
+            if len(embedding) < max_scale:
+                self.logger.warning(
+                    f"⚠ Embedding too small ({len(embedding)}d < {max_scale}d), "
+                    f"padding with zeros"
+                )
+                embedding = embedding + [0.0] * (max_scale - len(embedding))
+
+            self.logger.info(f"✓ Using provided embedding (dim={len(embedding)})")
+            return embedding
+        else:
+            # Fallback: generate embedding
+            if not memory.text or not memory.text.strip():
+                raise ValueError("Cannot generate embedding: memory text is empty")
+
+            embedding = self.embedder.encode(memory.text).tolist()
+            self.logger.info(f"⚠ Generated embedding (dim={len(embedding)})")
+            return embedding
+
+    def _convert_to_qdrant_id(self, string_id: str) -> int:
+        """
+        Convert string ID to integer for Qdrant.
+
+        Qdrant requires integer or UUID IDs. We use MD5 hash truncated
+        to 15 hex chars (60 bits) to fit in Python int.
+
+        Args:
+            string_id: Original memory ID (string format)
+
+        Returns:
+            int: Qdrant-compatible integer ID
+        """
+        return int(hashlib.md5(string_id.encode()).hexdigest()[:15], 16)
+
+    def _build_point_payload(
+        self,
+        mem_id: str,
+        memory: Memory,
+        user_id: str
+    ) -> Dict[str, Any]:
+        """
+        Build Qdrant point payload with metadata.
+
+        Args:
+            mem_id: Original memory ID (stored for retrieval)
+            memory: Memory object with text, context, metadata
+            user_id: User identifier for filtering
+
+        Returns:
+            Dict: Payload for Qdrant point
+        """
+        return {
+            'memory_id': mem_id,  # Original string ID
+            'text': memory.text,
+            'timestamp': memory.timestamp.isoformat(),
+            'user_id': memory.metadata.get('user_id', user_id),
+            **memory.context,
+            **memory.metadata
+        }
+
     def _generate_id(self, text: str, timestamp: datetime) -> str:
         """Generate deterministic ID from text and timestamp."""
         content = f"{text}_{timestamp.isoformat()}"

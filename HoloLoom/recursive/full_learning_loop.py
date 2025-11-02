@@ -26,7 +26,7 @@ from HoloLoom.documentation.types import Query, MemoryShard
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.config import Config
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from Promptly.promptly.recursive_loops import Scratchpad
+from HoloLoom.recursive.scratchpad import Scratchpad
 
 from .loop_integration import (
     LearningLoopEngine,
@@ -333,12 +333,11 @@ class FullLearningEngine:
             hot_config=HotPatternConfig(
                 enable_tracking=True,
                 enable_adaptive_retrieval=True,
-                heat_threshold=5.0,
                 decay_rate=0.95
             ),
-            learning_config=LearningLoopConfig(
-                enable_pattern_learning=True,
-                enable_auto_pruning=True
+            loop_config=LearningLoopConfig(
+                enable_learning=True,
+                auto_prune=True
             )
         )
         await self.hot_pattern_engine.__aenter__()

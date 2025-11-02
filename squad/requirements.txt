@@ -1,0 +1,15 @@
+# Squad VS Code Extension - Python Dependencies
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.4.2
+
+# HoloLoom Dependencies
+# (These should already be installed if HoloLoom is set up)
+einops>=0.7.0  # Required for nomic embedder
+sentence-transformers>=2.2.2
+torch>=2.1.0
+
+# Optional but recommended
+python-multipart>=0.0.6  # For file uploads (future)
