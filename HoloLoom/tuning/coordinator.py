@@ -19,6 +19,7 @@ from HoloLoom.tuning.threshold_tuner import ThresholdTuner
 from HoloLoom.tuning.memory_tuner import MemoryTuner
 from HoloLoom.tuning.complexity_tuner import ComplexityTuner
 from HoloLoom.tuning.policy_tuner import PolicyTuner
+from HoloLoom.tuning.physics_tuner import PhysicsTuner
 
 logger = logging.getLogger(__name__)
 
@@ -75,8 +76,8 @@ class MasterTuningCoordinator:
         # Agent 6: PolicyTuner
         self.agents['policy'] = PolicyTuner()
 
-        # Future agents:
-        # self.agents['physics'] = PhysicsTuner()
+        # Agent 7: PhysicsTuner (THE FINAL AGENT!)
+        self.agents['physics'] = PhysicsTuner()
 
         # Create meta-bandit (one arm per agent)
         self.meta_bandit = ThompsonBandit(n_arms=len(self.agents))
