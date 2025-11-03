@@ -23,6 +23,7 @@ from typing import List, Dict, Optional, Protocol, Set
 import json
 from pathlib import Path
 
+import numpy as np
 import networkx as nx
 
 from HoloLoom.utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
@@ -392,7 +393,150 @@ class KG:
             "avg_degree": sum(dict(self.G.degree()).values()) / max(1, self.G.number_of_nodes()),
             "is_connected": nx.is_weakly_connected(self.G) if self.G.number_of_nodes() > 0 else False,
         }
-    
+
+    # ========================================================================
+    # Spectral Methods - Diffusion Maps & Clustering
+    # ========================================================================
+
+    def compute_diffusion_map(
+        self,
+        n_dims: int = 32,
+        t: float = 1.0,
+        cache: bool = True
+    ) -> np.ndarray:
+        """
+        Compute diffusion map for dimensionality reduction.
+
+        Diffusion maps reveal intrinsic geometry via random walk distances.
+        This is useful for:
+        - Clustering similar entities
+        - Dimensionality reduction for large graphs
+        - Semantic similarity beyond local structure
+
+        Args:
+            n_dims: Target embedding dimension
+            t: Diffusion time (larger = more global structure)
+            cache: If True, cache result for repeated queries
+
+        Returns:
+            Embedding matrix (n_nodes × n_dims)
+        """
+        # Check cache
+        cache_key = f'diffusion_{n_dims}_{t}'
+        if cache and hasattr(self, '_diffusion_cache') and cache_key in self._diffusion_cache:
+            return self._diffusion_cache[cache_key]
+
+        if self.G.number_of_nodes() <= n_dims:
+            # Graph too small for dimensionality reduction
+            import warnings
+            warnings.warn(f"Graph has {self.G.number_of_nodes()} nodes, less than n_dims={n_dims}. Returning identity.")
+            return np.eye(self.G.number_of_nodes())
+
+        try:
+            from HoloLoom.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
+
+            # Compute diffusion map
+            laplacian = GraphLaplacian(self, laplacian_type=LaplacianType.RANDOM_WALK)
+            diffusion = DiffusionMap(
+                laplacian=laplacian,
+                t=t,
+                n_components=min(n_dims, self.G.number_of_nodes() - 1)
+            )
+
+            embedding = diffusion.compute_embedding()
+
+            # Cache result
+            if cache:
+                if not hasattr(self, '_diffusion_cache'):
+                    self._diffusion_cache = {}
+                self._diffusion_cache[cache_key] = embedding
+
+            return embedding
+
+        except ImportError:
+            import warnings
+            warnings.warn("scipy not available - diffusion maps require scipy. Returning identity.")
+            return np.eye(min(n_dims, self.G.number_of_nodes()))
+
+    def get_diffusion_coordinates(self, entity: str, n_dims: int = 32) -> Optional[np.ndarray]:
+        """
+        Get diffusion map coordinates for a specific entity.
+
+        Args:
+            entity: Entity name
+            n_dims: Diffusion embedding dimension
+
+        Returns:
+            Coordinates in diffusion space (length n_dims), or None if entity not found
+        """
+        if entity not in self.G:
+            return None
+
+        # Compute diffusion map (uses cache if available)
+        embedding = self.compute_diffusion_map(n_dims=n_dims)
+
+        # Find entity index
+        nodes = list(self.G.nodes())
+        if entity not in nodes:
+            return None
+
+        idx = nodes.index(entity)
+        return embedding[idx]
+
+    def spectral_cluster(
+        self,
+        n_clusters: int,
+        method: str = 'spectral'
+    ) -> Dict[str, int]:
+        """
+        Cluster graph nodes using spectral methods.
+
+        Uses the Fiedler vector (2nd smallest eigenvector) to partition
+        the graph into communities.
+
+        Args:
+            n_clusters: Number of clusters
+            method: Clustering method ('spectral' or 'fiedler')
+
+        Returns:
+            Dict mapping entity → cluster_id
+        """
+        if self.G.number_of_nodes() == 0:
+            return {}
+
+        try:
+            from HoloLoom.warp.spectral_methods import GraphLaplacian, spectral_clustering, LaplacianType
+
+            # Compute spectral clustering
+            laplacian = GraphLaplacian(self, laplacian_type=LaplacianType.NORMALIZED)
+
+            if method == 'fiedler' and n_clusters == 2:
+                # Simple bisection using Fiedler vector
+                _, eigenvectors = laplacian.compute_spectrum(k=2)
+                fiedler_vector = eigenvectors[:, 1]
+
+                # Bisect at median
+                median = np.median(fiedler_vector)
+                labels = (fiedler_vector >= median).astype(int)
+
+            else:
+                # Full spectral clustering
+                labels = spectral_clustering(laplacian, n_clusters=n_clusters)
+
+            # Map to entity names
+            nodes = list(self.G.nodes())
+            return {node: int(label) for node, label in zip(nodes, labels)}
+
+        except ImportError as e:
+            import warnings
+            warnings.warn(f"Spectral clustering requires scipy and sklearn: {e}")
+            return {}
+
+    def clear_spectral_cache(self):
+        """Clear cached diffusion maps and spectral computations."""
+        if hasattr(self, '_diffusion_cache'):
+            self._diffusion_cache.clear()
+
     # ========================================================================
     # Persistence
     # ========================================================================
@@ -616,6 +760,110 @@ class KG:
             strategy_used="graph_entity_overlap",
             metadata={'query_entities': query_entities, 'total_memories': len(memory_nodes)}
         )
+
+    def select_threads(
+        self,
+        temporal_window,
+        query
+    ):
+        """
+        Select threads (memory shards) from Yarn Graph based on temporal window and query.
+
+        This method implements the core "Yarn Graph thread selection" step in the
+        weaving metaphor. It filters graph nodes by temporal bounds, ranks by
+        relevance to the query, and returns them as MemoryShard objects.
+
+        Strategy:
+        1. Filter memory nodes by temporal window (if timestamps available)
+        2. Expand to neighboring entities (1-hop subgraph for context)
+        3. Score by relevance to query (entity overlap + recency)
+        4. Return top-k as MemoryShards
+
+        Args:
+            temporal_window: TemporalWindow object with time bounds and recency bias
+            query: Query object with text field
+
+        Returns:
+            List[MemoryShard]: Selected threads from the graph
+        """
+        from HoloLoom.documentation.types import MemoryShard
+        from datetime import datetime
+
+        query_text = query.text if hasattr(query, 'text') else str(query)
+
+        # Extract entities from query for relevance scoring
+        query_entities = extract_entities_simple(query_text)
+
+        # Find all memory nodes
+        memory_nodes = [
+            node for node, data in self.G.nodes(data=True)
+            if data.get('node_type') == 'memory'
+        ]
+
+        # If no memory nodes, return empty list
+        if not memory_nodes:
+            return []
+
+        # Score and filter memories
+        scored_memories = []
+
+        for mem_id in memory_nodes:
+            mem_data = self.G.nodes[mem_id]
+
+            # Parse timestamp if available
+            timestamp = None
+            if 'timestamp' in mem_data:
+                try:
+                    timestamp = datetime.fromisoformat(mem_data['timestamp'])
+                except (ValueError, TypeError):
+                    pass
+
+            # Apply temporal filter
+            temporal_score = 1.0
+            if timestamp and temporal_window:
+                if not temporal_window.contains(timestamp):
+                    # Outside temporal window - skip
+                    continue
+                # Apply recency weighting
+                temporal_score = temporal_window.recency_weight(timestamp)
+
+            # Get entities this memory mentions
+            mem_entities = set()
+            for _, dst in self.G.out_edges(mem_id):
+                if dst in self.G and self.G.nodes.get(dst, {}).get('node_type') != 'memory':
+                    mem_entities.add(dst)
+
+            # Calculate relevance score (entity overlap)
+            if query_entities:
+                overlap = len(set(query_entities) & mem_entities)
+                relevance_score = overlap / len(query_entities)
+            else:
+                # No entities extracted - use neutral score
+                relevance_score = 0.5
+
+            # Combined score: relevance × temporal
+            combined_score = relevance_score * temporal_score
+
+            # Convert to MemoryShard
+            shard = MemoryShard(
+                id=mem_id,
+                text=mem_data.get('text', ''),
+                episode=mem_data.get('metadata', {}).get('episode', 'default'),
+                entities=list(mem_entities),
+                motifs=mem_data.get('metadata', {}).get('motifs', []),
+                metadata=mem_data.get('metadata', {})
+            )
+
+            scored_memories.append((shard, combined_score))
+
+        # Sort by score (highest first)
+        scored_memories.sort(key=lambda x: x[1], reverse=True)
+
+        # Return all shards (orchestrator will limit via retrieval_k)
+        # This ensures thread selection is comprehensive
+        threads = [shard for shard, _ in scored_memories]
+
+        return threads
 
 
 # ============================================================================
