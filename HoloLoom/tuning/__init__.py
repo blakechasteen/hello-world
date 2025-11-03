@@ -23,6 +23,7 @@ Usage:
 from HoloLoom.tuning.base import TuningAgent, ThompsonBandit
 from HoloLoom.tuning.coordinator import MasterTuningCoordinator
 from HoloLoom.tuning.timeout_tuner import TimeoutTuner
+from HoloLoom.tuning.cache_tuner import CacheTuner
 from HoloLoom.tuning.persistence import TuningStateManager
 
 __all__ = [
@@ -30,5 +31,6 @@ __all__ = [
     'ThompsonBandit',
     'MasterTuningCoordinator',
     'TimeoutTuner',
+    'CacheTuner',
     'TuningStateManager',
 ]

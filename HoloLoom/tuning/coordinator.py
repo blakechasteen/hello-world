@@ -14,6 +14,7 @@ import time
 from HoloLoom.tuning.base import TuningAgent, ThompsonBandit
 from HoloLoom.tuning.persistence import TuningStateManager
 from HoloLoom.tuning.timeout_tuner import TimeoutTuner
+from HoloLoom.tuning.cache_tuner import CacheTuner
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +56,10 @@ class MasterTuningCoordinator:
         # Agent 1: TimeoutTuner
         self.agents['timeout'] = TimeoutTuner()
 
+        # Agent 2: CacheTuner
+        self.agents['cache'] = CacheTuner()
+
         # Future agents:
-        # self.agents['cache'] = CacheTuner()
         # self.agents['threshold'] = ThresholdTuner()
         # self.agents['memory'] = MemoryTuner()
         # self.agents['complexity'] = ComplexityTuner()
