@@ -239,7 +239,7 @@ class Config:
     
     # Timeouts (seconds)
     pipeline_timeout: float = 5.0  # Max time for full pipeline
-    retrieval_timeout: float = 2.0  # Max time for retrieval
+    retrieval_timeout: float = 0.2  # Max time for retrieval (200ms - reduced from 2s)
     
     def __post_init__(self):
         """Validate configuration."""
@@ -364,7 +364,11 @@ class Config:
             n_attention_heads=4,
             enable_semantic_calculus=False,  # Disabled by default (user can enable)
             semantic_dimensions=8,  # Fewer dimensions if enabled
-            semantic_ethics=False  # Skip ethics for speed
+            semantic_ethics=False,  # Skip ethics for speed
+            # Phase 5: Enable compositional cache (10-300× speedup)
+            enable_linguistic_gate=True,
+            linguistic_mode="both",
+            use_compositional_cache=True
         )
 
     @classmethod
@@ -379,7 +383,11 @@ class Config:
             n_attention_heads=4,
             enable_semantic_calculus=False,  # Disabled by default (user can enable)
             semantic_dimensions=16,  # Full dimensions if enabled
-            semantic_ethics=True  # Full ethics if enabled
+            semantic_ethics=True,  # Full ethics if enabled
+            # Phase 5: Enable compositional cache (10-300× speedup)
+            enable_linguistic_gate=True,
+            linguistic_mode="both",
+            use_compositional_cache=True
         )
     
     def to_dict(self) -> Dict:

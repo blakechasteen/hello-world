@@ -61,6 +61,7 @@ from HoloLoom.config import Config, ExecutionMode
 from HoloLoom.motif.base import create_motif_detector
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
 from HoloLoom.memory.base import create_retriever
+from HoloLoom.memory.graph import KG  # Yarn Graph for thread storage
 from HoloLoom.policy.unified import create_policy
 from HoloLoom.alignment.safety_guardrails import create_guardrails, SafetyGuardrails
 
@@ -347,6 +348,7 @@ class WeavingOrchestrator:
         cfg: Config,
         shards: Optional[List[MemoryShard]] = None,
         memory=None,  # Unified memory backend
+        yarn_graph: Optional['KG'] = None,  # Yarn Graph (KG) for thread storage
         pattern_preference: Optional[PatternCard] = None,
         enable_reflection: bool = True,
         reflection_capacity: int = 1000,
@@ -359,8 +361,9 @@ class WeavingOrchestrator:
 
         Args:
             cfg: Configuration object
-            shards: List of memory shards (optional if memory is provided)
-            memory: Unified memory backend (optional, overrides shards)
+            shards: List of memory shards (DEPRECATED - use yarn_graph instead)
+            memory: Unified memory backend (optional, overrides shards and yarn_graph)
+            yarn_graph: KG instance for thread storage (preferred over shards)
             pattern_preference: Optional pattern card preference (overrides config)
             enable_reflection: Enable reflection loop for learning
             reflection_capacity: Maximum episodes to store in reflection buffer
@@ -369,8 +372,12 @@ class WeavingOrchestrator:
             enable_dashboards: Enable automatic dashboard generation (default False)
 
         Note:
-            Either shards OR memory must be provided. If memory is provided,
-            it will be used for dynamic queries instead of static shards.
+            Memory sources (priority order):
+            1. memory (unified backend) - highest priority
+            2. yarn_graph (KG instance) - preferred for new code
+            3. shards (list) - deprecated, backward compatibility only
+
+            If none provided, raises ValueError.
         """
         self.cfg = cfg
         self.logger = logging.getLogger(__name__)
@@ -378,10 +385,22 @@ class WeavingOrchestrator:
         self.enable_dashboards = enable_dashboards
 
         # Validate memory configuration
-        if memory is None and shards is None:
-            raise ValueError("Either 'shards' or 'memory' must be provided")
+        if memory is None and yarn_graph is None and shards is None:
+            raise ValueError("Either 'memory', 'yarn_graph', or 'shards' must be provided")
+
+        # Deprecation warning for shards parameter
+        if shards is not None and yarn_graph is None and memory is None:
+            import warnings
+            warnings.warn(
+                "Using 'shards' parameter is deprecated. "
+                "Please use 'yarn_graph' (KG instance) for full metaphor support. "
+                "Example: yarn_graph=KG() with memories added via yarn_graph.store().",
+                DeprecationWarning,
+                stacklevel=2
+            )
 
         self.memory = memory  # Backend memory store
+        self.yarn_graph_param = yarn_graph  # User-provided Yarn Graph (KG)
         self.shards = shards or []  # Static shards (backward compatibility)
         
         # mythRL Protocol-based architecture
@@ -504,6 +523,7 @@ class WeavingOrchestrator:
         )
 
         # 2. Yarn Graph / Memory Backend - Thread storage
+        # Priority: memory > yarn_graph > shards (for backward compatibility)
         if self.memory:
             # Use persistent memory backend (UnifiedMemory, etc.)
             from HoloLoom.memory.weaving_adapter import WeavingMemoryAdapter
@@ -513,10 +533,14 @@ class WeavingOrchestrator:
                 # Wrap raw memory in adapter (use "factory" type for protocol backends)
                 self.yarn_graph = WeavingMemoryAdapter(backend=self.memory, backend_type="factory")
             self.logger.info("Using persistent memory backend")
+        elif self.yarn_graph_param:
+            # Use KG instance directly (preferred modern API)
+            self.yarn_graph = self.yarn_graph_param
+            self.logger.info(f"Using Yarn Graph (KG) with {self.yarn_graph.G.number_of_nodes()} nodes")
         else:
-            # Use in-memory YarnGraph with shards
+            # Use in-memory YarnGraph with shards (backward compatibility)
             self.yarn_graph = YarnGraph(self.shards)
-            self.logger.info(f"Using in-memory YarnGraph with {len(self.shards)} shards")
+            self.logger.info(f"Using in-memory YarnGraph (legacy) with {len(self.shards)} shards")
 
         # 3. Component factories (will be instantiated per-query with pattern spec)
         self.embedder = MatryoshkaEmbeddings(
@@ -541,15 +565,25 @@ class WeavingOrchestrator:
         self.tool_executor = ToolExecutor()
 
         # 5. Retriever (for context)
-        # Only create traditional retriever if using shards
+        # Only create traditional retriever if using shards (legacy path)
         if self.shards:
-            self.retriever = create_retriever(
-                shards=list(self.yarn_graph.shards.values()),
-                emb=self.embedder,
-                fusion_weights=self.cfg.fusion_weights
-            )
+            # Legacy YarnGraph has .shards dict
+            if hasattr(self.yarn_graph, 'shards'):
+                self.retriever = create_retriever(
+                    shards=list(self.yarn_graph.shards.values()),
+                    emb=self.embedder,
+                    fusion_weights=self.cfg.fusion_weights
+                )
+            else:
+                # Direct shards list (shouldn't happen with new API)
+                self.retriever = create_retriever(
+                    shards=self.shards,
+                    emb=self.embedder,
+                    fusion_weights=self.cfg.fusion_weights
+                )
         else:
-            # Using dynamic memory backend - retriever not needed
+            # Using KG or dynamic memory backend - retriever not needed
+            # Thread selection happens via yarn_graph.select_threads()
             self.retriever = None
 
         self.logger.debug("All weaving components initialized")
@@ -1066,10 +1100,20 @@ class WeavingOrchestrator:
             stage_timings['thread_selection'] = (time.time() - step_start) * 1000
 
             # ================================================================
-            # STEP 4: Resonance Shed lifts feature threads, creates DotPlasma
+            # STEPS 4-6: PARALLELIZED - Feature Extraction, Warp Tensioning, and Memory Retrieval
             # ================================================================
-            step_start = time.time()
+            # OPTIMIZATION: These three steps are independent and can run in parallel
+            # Expected speedup: 40-120ms (steps run concurrently instead of sequentially)
+            parallel_start = time.time()
 
+            # Track individual stage start times for accurate timing
+            step4_start = time.time()
+            step5_start = time.time()
+            step6_start = time.time()
+
+            # =================================================================
+            # STEP 4 SETUP: Prepare components for Resonance Shed (synchronous)
+            # =================================================================
             # Create components based on pattern spec
             motif_detector = create_motif_detector(mode=pattern_spec.motif_mode)
             spectral_fusion = SpectralFusion() if pattern_spec.enable_spectral else None
@@ -1126,21 +1170,9 @@ class WeavingOrchestrator:
                 guardrails=self.guardrails,
             )
 
-            # Extract features through Resonance Shed
-            dot_plasma = await resonance_shed.weave(
-                text=query.text,
-                context_graph=None  # Could add KG here
-            )
-
-            thread_count = len(dot_plasma.get('threads', []))
-            self.logger.info(f"  [4] DotPlasma created with {thread_count} feature threads")
-            stage_timings['feature_extraction'] = (time.time() - step_start) * 1000
-
-            # ================================================================
-            # STEP 5: Warp Space tensions threads into continuous manifold
-            # ================================================================
-            step_start = time.time()
-
+            # =================================================================
+            # STEP 5 SETUP: Prepare WarpSpace (synchronous)
+            # =================================================================
             warp_space = WarpSpace(
                 embedder=self.embedder,
                 scales=pattern_spec.scales,
@@ -1148,45 +1180,101 @@ class WeavingOrchestrator:
                 guardrails=self.guardrails,
             )
 
-            # Tension threads from Yarn Graph
-            await warp_space.tension(thread_texts, thread_ids=thread_ids)
-            warp_operations = [(datetime.now().isoformat(), "tension", len(thread_ids))]
-
-            self.logger.info(f"  [5] Warp Space tensioned with {len(thread_ids)} threads")
-            stage_timings['warp_tensioning'] = (time.time() - step_start) * 1000
-
-            # ================================================================
-            # STEP 6: Retrieve context with multipass memory crawling
-            # ================================================================
-            step_start = time.time()
-
-            # Use multipass memory crawling for intelligent retrieval
-            if self.memory:
-                # NEW: Multipass crawling with gated retrieval and graph traversal
-                shards = await self._multipass_memory_crawl(query, complexity, trace)
-                shard_texts = [shard.text for shard in shards]
-                # Create hits format for compatibility
-                hits = [(shard, 1.0) for shard in shards]
-                self.logger.info(f"  [6] Multipass crawl retrieved {len(shards)} shards")
-                
-            elif self.retriever:
-                # Fallback: Traditional static shard retrieval (legacy path)
-                hits = await self.retriever.search(
-                    query=query.text,
-                    k=pattern_spec.retrieval_k,
-                    fast=(pattern_spec.retrieval_mode == "fast")
+            # =================================================================
+            # PARALLEL EXECUTION: Define async tasks for Steps 4, 5, 6
+            # =================================================================
+            async def step4_feature_extraction():
+                """Step 4: Extract features through Resonance Shed"""
+                start = time.time()
+                dot_plasma = await resonance_shed.weave(
+                    text=query.text,
+                    context_graph=None  # Could add KG here
                 )
-                shards = [shard for shard, _ in hits]
-                shard_texts = [shard.text for shard in shards]
-                self.logger.info(f"  [6] Legacy retriever fetched {len(shards)} shards")
+                duration = (time.time() - start) * 1000
+                thread_count = len(dot_plasma.get('threads', []))
+                self.logger.info(f"  [4] DotPlasma created with {thread_count} feature threads")
+                return dot_plasma, duration
 
-            else:
-                # No memory source available
-                self.logger.warning("No memory source available (no shards or memory backend)")
-                shards = []
-                shard_texts = []
-                hits = []
+            async def step5_warp_tensioning():
+                """Step 5: Tension threads into continuous manifold"""
+                start = time.time()
+                await warp_space.tension(thread_texts, thread_ids=thread_ids)
+                duration = (time.time() - start) * 1000
+                warp_operations = [(datetime.now().isoformat(), "tension", len(thread_ids))]
+                self.logger.info(f"  [5] Warp Space tensioned with {len(thread_ids)} threads")
+                return warp_operations, duration
 
+            async def step6_memory_retrieval():
+                """Step 6: Retrieve context with multipass memory crawling"""
+                start = time.time()
+
+                # Use multipass memory crawling for intelligent retrieval
+                if self.memory:
+                    # NEW: Multipass crawling with gated retrieval and graph traversal
+                    shards = await self._multipass_memory_crawl(query, complexity, provenance)
+                    shard_texts = [shard.text for shard in shards]
+                    # Create hits format for compatibility
+                    hits = [(shard, 1.0) for shard in shards]
+                    self.logger.info(f"  [6] Multipass crawl retrieved {len(shards)} shards")
+
+                elif self.retriever:
+                    # Fallback: Traditional static shard retrieval (legacy path)
+                    hits = await self.retriever.search(
+                        query=query.text,
+                        k=pattern_spec.retrieval_k,
+                        fast=(pattern_spec.retrieval_mode == "fast")
+                    )
+                    shards = [shard for shard, _ in hits]
+                    shard_texts = [shard.text for shard in shards]
+                    self.logger.info(f"  [6] Legacy retriever fetched {len(shards)} shards")
+
+                else:
+                    # No memory source available
+                    self.logger.warning("No memory source available (no shards or memory backend)")
+                    shards = []
+                    shard_texts = []
+                    hits = []
+
+                duration = (time.time() - start) * 1000
+                self.logger.info(f"  [6] Retrieved {len(hits)} context shards")
+                return shards, shard_texts, hits, duration
+
+            # Execute all three steps in parallel using asyncio.gather
+            self.logger.info("  [PARALLEL] Executing Steps 4-6 concurrently...")
+
+            try:
+                (dot_plasma, t4), (warp_operations, t5), (shards, shard_texts, hits, t6) = await asyncio.gather(
+                    step4_feature_extraction(),
+                    step5_warp_tensioning(),
+                    step6_memory_retrieval(),
+                    return_exceptions=False  # Propagate exceptions
+                )
+
+                # Record individual stage timings (actual parallel execution times)
+                stage_timings['feature_extraction'] = t4
+                stage_timings['warp_tensioning'] = t5
+                stage_timings['retrieval'] = t6
+
+                # Calculate parallel execution time and speedup
+                parallel_duration = (time.time() - parallel_start) * 1000
+                sequential_duration = t4 + t5 + t6
+                speedup = sequential_duration / parallel_duration if parallel_duration > 0 else 1.0
+
+                stage_timings['parallel_execution_wall_time'] = parallel_duration
+                stage_timings['parallel_speedup'] = speedup
+
+                self.logger.info(
+                    f"  [PARALLEL] Steps 4-6 completed in {parallel_duration:.1f}ms "
+                    f"(sequential would be {sequential_duration:.1f}ms, speedup: {speedup:.2f}x)"
+                )
+
+            except Exception as e:
+                self.logger.error(f"  [PARALLEL] Parallel execution failed: {e}", exc_info=True)
+                raise  # Re-raise to trigger error handling below
+
+            # =================================================================
+            # POST-PARALLEL: Assemble context from retrieval results
+            # =================================================================
             context = Context(
                 shards=shards,
                 hits=hits,
@@ -1195,8 +1283,8 @@ class WeavingOrchestrator:
                 features=None  # Will be set from dot_plasma
             )
 
-            self.logger.info(f"  [6] Retrieved {len(hits)} context shards")
-            stage_timings['retrieval'] = (time.time() - step_start) * 1000
+            thread_count = len(dot_plasma.get('threads', []))
+            self.logger.debug(f"  [POST-PARALLEL] Context assembled with {len(hits)} shards, {thread_count} threads")
 
             # ================================================================
             # STEP 6.5: Beta Wave Context Packing (OPTIONAL)
@@ -1351,10 +1439,10 @@ class WeavingOrchestrator:
             try:
                 action_plan = await asyncio.wait_for(
                     policy.decide(features=features, context=context),
-                    timeout=2.0
+                    timeout=0.2  # 200ms - reduced from 2s per bottleneck analysis
                 )
             except asyncio.TimeoutError:
-                self.logger.error("Policy decision timed out after 2.0s, using safe default")
+                self.logger.error("Policy decision timed out after 200ms, using safe default")
                 # Create safe default action plan
                 from HoloLoom.documentation.types import ActionPlan
                 action_plan = ActionPlan(
