@@ -274,7 +274,7 @@ class CacheTuner(TuningAgent):
             'bandit_stats': self.get_bandit_stats(),
         }
 
-    def _calculate_impact(self, baseline: Dict[str, Any], new: Dict[str, Any]) -> Dict[str, float]:
+    def _calculate_impact(self, baseline: Dict[str, Any], new: Dict[str, Any]) -> float:
         """
         Calculate impact of tuning changes.
 
@@ -283,32 +283,18 @@ class CacheTuner(TuningAgent):
             new: New metrics after tuning
 
         Returns:
-            Dict with impact metrics
+            Scalar impact score (average quality improvement)
         """
-        impacts = {}
+        quality_deltas = []
 
         for cache_type in ['query', 'parse', 'merge']:
             baseline_quality = baseline.get(cache_type, {}).get('quality', 0.0)
             new_quality = new.get(cache_type, {}).get('quality', 0.0)
 
-            baseline_hit_rate = baseline.get(cache_type, {}).get('hit_rate', 0.0)
-            new_hit_rate = new.get(cache_type, {}).get('hit_rate', 0.0)
-
-            baseline_size = baseline.get(cache_type, {}).get('current_size', 0.0)
-            new_size = new.get(cache_type, {}).get('current_size', 0.0)
-
-            impacts[cache_type] = {
-                'quality_delta': new_quality - baseline_quality,
-                'hit_rate_delta': new_hit_rate - baseline_hit_rate,
-                'size_delta': new_size - baseline_size,
-                'size_delta_percent': ((new_size - baseline_size) / baseline_size * 100) if baseline_size > 0 else 0.0,
-            }
+            quality_deltas.append(new_quality - baseline_quality)
 
         # Overall impact (average quality improvement)
-        avg_quality_delta = np.mean([impacts[ct]['quality_delta'] for ct in ['query', 'parse', 'merge']])
-        impacts['overall'] = avg_quality_delta
-
-        return impacts
+        return float(np.mean(quality_deltas)) if quality_deltas else 0.0
 
     def get_bandit_stats(self) -> Dict[str, Any]:
         """

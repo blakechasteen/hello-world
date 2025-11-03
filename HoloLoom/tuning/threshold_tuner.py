@@ -150,6 +150,18 @@ class ThresholdTuner(TuningAgent):
         self.threshold_names = list(BASELINE_THRESHOLDS.keys())
         self.current_tuning_index = 0
 
+    def get_adaptive_threshold(self, threshold_name: str) -> float:
+        """
+        Get current threshold value.
+
+        Args:
+            threshold_name: Name of threshold parameter
+
+        Returns:
+            Current threshold value
+        """
+        return self.safe_params[threshold_name].current_value
+
     async def measure_performance(self) -> Dict[str, Any]:
         """
         Measure threshold performance metrics.
@@ -297,7 +309,7 @@ class ThresholdTuner(TuningAgent):
             'bandit_stats': self.get_bandit_stats(),
         }
 
-    def _calculate_impact(self, baseline: Dict[str, Any], new: Dict[str, Any]) -> Dict[str, float]:
+    def _calculate_impact(self, baseline: Dict[str, Any], new: Dict[str, Any]) -> float:
         """
         Calculate impact of tuning changes.
 
@@ -306,32 +318,18 @@ class ThresholdTuner(TuningAgent):
             new: New metrics after tuning
 
         Returns:
-            Dict with impact metrics
+            Scalar impact score (average quality improvement)
         """
-        impacts = {}
+        quality_deltas = []
 
         for threshold_name in self.threshold_names:
             baseline_quality = baseline.get(threshold_name, {}).get('quality', 0.0)
             new_quality = new.get(threshold_name, {}).get('quality', 0.0)
 
-            baseline_f1 = baseline.get(threshold_name, {}).get('f1_score', 0.0)
-            new_f1 = new.get(threshold_name, {}).get('f1_score', 0.0)
-
-            baseline_value = baseline.get(threshold_name, {}).get('current_value', 0.0)
-            new_value = new.get(threshold_name, {}).get('current_value', 0.0)
-
-            impacts[threshold_name] = {
-                'quality_delta': new_quality - baseline_quality,
-                'f1_delta': new_f1 - baseline_f1,
-                'value_delta': new_value - baseline_value,
-                'value_delta_percent': ((new_value - baseline_value) / baseline_value * 100) if baseline_value > 0 else 0.0,
-            }
+            quality_deltas.append(new_quality - baseline_quality)
 
         # Overall impact (average quality improvement)
-        avg_quality_delta = np.mean([impacts[name]['quality_delta'] for name in self.threshold_names])
-        impacts['overall'] = avg_quality_delta
-
-        return impacts
+        return float(np.mean(quality_deltas)) if quality_deltas else 0.0
 
     def get_bandit_stats(self) -> Dict[str, Any]:
         """
