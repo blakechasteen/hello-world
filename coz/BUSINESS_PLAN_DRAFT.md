@@ -1,0 +1,277 @@
+---
+title: "Business Plan Draft"
+author: "Blake Chasteen"
+organization: "Farm & Kitchen Cooperative"
+version: "v1.0.0"
+status: "Living Document"
+created: "2025-11-02"
+last_updated: "2025-11-02"
+description: >
+  Integrated plan for farm, kitchen, apothecary, and regenerative projects.
+  Balances short-term cashflow with long-term sustainability.
+---
+
+# Business Plan Draft
+
+## Purpose
+This document organizes all current business ideas, farm and non-farm, into a cohesive plan.  
+Goal: balance **short-term cashflow** with **long-term sustainability**, while avoiding burnout and building reusable systems.
+
+---
+
+## 1. Overview
+
+We are building a self-sustaining ecosystem that integrates food production, value-added goods, farm operations, and digital tools.  
+Each project is categorized as **Short-Term**, **Mid-Term**, or **Long-Term**, depending on time to profit and labor intensity.
+
+---
+
+## 2. Short-Term Projects (Immediate Cashflow)
+
+### Bread & Baking
+- Source bulk flour (Costco initially; upgrade quality later).
+- Bake and sell loaves, rolls, flatbreads.
+- Target: repeat weekly sales for steady income.
+
+### Meal Prep & Side Dishes
+- Soups, roasted vegetables, small casseroles, breads as sides.
+- Focus on ready-to-eat, high-quality options.
+
+### Condiments, Pickles, Jams, Sauces
+- Utilize seasonal produce.
+- Branded jars as add-ons to meals.
+- Early steps toward eventual sandwich shop / kitchen line.
+
+### Micro-Brewing
+- Start small batch, low-cost brews.
+- Gradual scaling toward $1,000+ monthly.
+- Possible crossover with farm brand.
+
+### The GOAT — To-Go Oatmeal Drink
+**Concept:**  
+A ready-to-drink, lightly sweetened oat-based breakfast blend.  
+Locally milled oats + honey + fruit purees + optional spices (cinnamon, cardamom, nutmeg).  
+Farm’s signature portable breakfast — nutritious, quick, and story-rich.
+
+**Production Notes:**  
+- Rolled oats, filtered water, honey, fruit.  
+- Pasteurized or cold-pressed depending on scale.  
+- Shelf life 7–10 days refrigerated; explore shelf-stable version later.  
+- Simple bottles with branding: “The GOAT — Grown Oats And Time.”
+
+**Sales Channels:**  
+Farmers markets, local stores, gym fridges, meal-prep subscriptions.  
+Pairs naturally with baked goods and soups.
+
+**Position in Cycle:**  
+Short-term startup with long-term brand potential.
+
+---
+
+## 3. Mid-Term Projects (6–18 Month Builders)
+
+### Bee Products
+- Honey, wax, propolis, and queen sales.
+- Build consistent bee line for future brand inclusion.
+
+### Nursery Operations
+- Tree boxes, native plants, vegetable starts.
+- Landrace vegetables and native perennials for seasonal income.
+
+### Herbal Parasite Cleanse
+**Concept:**  
+Seasonal detox blend with farm-grown and wild-harvested herbs (black walnut hulls, wormwood, clove, garlic, ginger, pumpkin seed, fennel, yarrow).
+
+**Formats:**  
+Tincture, capsule, or loose-leaf tea.  
+Paired with honey drinks or “The GOAT.”
+
+**Position in Cycle:**  
+Mid-term: develop recipes, labeling, and safety compliance.  
+Long-term: evolve into full “Farm Apothecary” line.
+
+---
+
+## 4. Farm Apothecary & Body Care
+
+### Face Cleansing Honey
+**Concept:**  
+Raw honey-based cleanser/mask infused with herbs or essential oils.  
+Naturally antibacterial and moisturizing.
+
+**Production Notes:**  
+- Base: raw honey, optional hydrosol (calendula, yarrow, or rose).  
+- Add-ins: clay, herbs, or essential oils.  
+- Shelf-stable and reusable packaging.
+
+**Sales Channels:**  
+Farmstand, online bundles, wellness kits.
+
+---
+
+### Natural Deodorant
+**Concept:**  
+All-natural deodorant with beeswax, coconut oil, shea butter, and essential oils.  
+Aligns with bee and herbal brand identity.
+
+**Production Notes:**  
+- Add absorbents: arrowroot, clay, baking soda (optional).  
+- Scents: lavender, mint, lemon, cedar.  
+- Test texture seasonally.
+
+**Sales Channels:**  
+Local markets, apothecary line, online bundles.
+
+---
+
+### Synergy Notes
+- Shares inputs with bee products and hydrosols.  
+- Extends the brand into holistic “farm-to-body” self-care.
+
+---
+
+## 5. Soil & Regeneration Products
+
+### Inoculated Biochar
+**Concept:**  
+Locally produced biochar inoculated with compost extract or worm tea for soil enrichment.  
+Regenerative product that educates and sustains long-term soil fertility.
+
+**Production Notes:**  
+- Biochar made from farm waste wood.  
+- Charged with compost extract, EM (Effective Microorganisms), or worm leachate.  
+- Packaged in 1–5 lb compostable or reusable bags.
+
+**Sales Channels:**  
+Farmstand, online, educational workshops.  
+Partnership with gardening groups and permaculture communities.
+
+---
+
+### Compost Extract Kits
+**Concept:**  
+DIY kits for making microbial-rich compost tea/extract at home.  
+Include measured compost, simple strainer, and microbe-activating ingredients.
+
+**Production Notes:**  
+- Focus on ease and education.  
+- Add optional upgrades: “Farm Soil Starter,” “Biochar Booster.”
+
+**Position in Cycle:**  
+Mid-term: initial kits sold locally.  
+Long-term: full line of soil regeneration products.
+
+---
+
+## 6. Long-Term Projects (1–5 Year Growth)
+
+### Tree Nursery
+- Plant from seed for sustainable nursery income.  
+- Potential for native tree and fruit sales.
+
+### Mushroom Logs
+- Slow build toward continuous seasonal yields.  
+- Low daily labor once established.
+
+### Black Walnut Processing
+- Sustainable local product.  
+- Shelling and processing systems.
+
+### Hickory Coppice Polewood
+**Concept:**  
+Establish a managed hickory coppice system to produce renewable polewood, smoking chips, tool handles, and biochar feedstock.  
+Hickory is resilient, locally adapted, and regrows vigorously from cut stumps, providing a continuous timber source without replanting.
+
+**Production Notes:**  
+- Initial planting density: ~600–800 trees per acre.  
+- Cut on a 7–10 year rotation for poles and 3–5 years for fuelwood.  
+- Integrate with mushroom log and biochar production.  
+- Undergrowth seeded with shade-tolerant herbs or natives.  
+- Provides habitat, erosion control, and carbon sequestration.
+
+**Sales & Uses:**  
+- Sell small-diameter poles, handles, and craft wood.  
+- Supply smoking wood and charcoal for local food producers.  
+- Feedstock for **Inoculated Biochar** production.  
+- Educational opportunity: coppicing workshops.
+
+**Position in Cycle:**  
+Long-term regenerative project; low annual input, high ecological value.
+
+---
+
+### Cider Season
+- Seasonal event and product line.  
+- Integrate with brewing, honey, and baking brands.
+
+---
+
+## 7. Future Expansion
+
+### Sandwich Shop / Kitchen Line
+- Bread, soups, condiments become the base.  
+- Could start as meal-prep line, evolve to storefront or market stand.
+
+### Beauty & Fabric Products
+- Integrate bee products, herbal infusions, hydrosols.  
+- Extend farm value chain to lifestyle goods.
+
+---
+
+## 8. Strategy
+
+### Time & Energy Balance
+- Our time = main resource.  
+- Focus on highest hourly ROI.  
+- Track all hours → connect to profit to find real efficiency.
+
+### Cash Flow Approach
+- Short-term profits reinvested into mid/long-term infrastructure.  
+- Build recurring revenue to reduce reliance on high-labor activities.
+
+### Quality & Standards
+- SOPs for every process: production, labeling, sales.  
+- Maintain consistent quality and presentation.
+
+---
+
+## 9. Infrastructure Goals
+
+- Lean out shed.  
+- Clear basement and porch for workspace.  
+- Set up shelving for inventory and seed packaging.  
+- Standardize storage for equipment, bee gear, and tools.
+
+---
+
+## 10. Systems & Tools
+
+- **Task Management:** Kanban board (physical + digital)  
+- **Time Tracking:** Automated or hands-free tracker  
+- **Inventory Management:** simple spreadsheet or MirrorCore module  
+- **Financials:** Profit & time data merged to show efficiency and growth  
+- **Standard Operating Procedures:** living documents for every process
+
+---
+
+## 11. Next Steps
+
+1. Create Notion or CSV “Business Plan Organizer”:  
+   Columns: Project | Category | Setup Cost | Labor | Profit Potential | Timeline | Current Stage  
+2. Start with bread & meal prep as test sprint.  
+3. Track time and revenue for baseline data.  
+4. Reinvest profits into infrastructure (mushroom logs, nursery, fermenters).  
+5. Begin mapping SOPs and documenting each workflow.
+
+---
+
+## 12. Notes
+
+- Scale of lettuce = high-cash seasonal crop.  
+- Build out seed and nursery inventory as off-season sales.  
+- Organize cashflow tracker by **seasonal product windows**.  
+- Emphasize “systems that make work easier” — not harder.
+
+---
+
+*This is a living document. Each section will evolve as we test, track, and improve.*
