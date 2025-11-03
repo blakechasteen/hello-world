@@ -27,6 +27,7 @@ from HoloLoom.tuning.cache_tuner import CacheTuner
 from HoloLoom.tuning.threshold_tuner import ThresholdTuner
 from HoloLoom.tuning.memory_tuner import MemoryTuner
 from HoloLoom.tuning.complexity_tuner import ComplexityTuner
+from HoloLoom.tuning.policy_tuner import PolicyTuner
 from HoloLoom.tuning.persistence import TuningStateManager
 
 __all__ = [
@@ -38,5 +39,6 @@ __all__ = [
     'ThresholdTuner',
     'MemoryTuner',
     'ComplexityTuner',
+    'PolicyTuner',
     'TuningStateManager',
 ]
