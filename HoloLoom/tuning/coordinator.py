@@ -17,6 +17,7 @@ from HoloLoom.tuning.timeout_tuner import TimeoutTuner
 from HoloLoom.tuning.cache_tuner import CacheTuner
 from HoloLoom.tuning.threshold_tuner import ThresholdTuner
 from HoloLoom.tuning.memory_tuner import MemoryTuner
+from HoloLoom.tuning.complexity_tuner import ComplexityTuner
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,9 @@ class MasterTuningCoordinator:
 
         # Agent 4: MemoryTuner
         self.agents['memory'] = MemoryTuner()
+
+        # Agent 5: ComplexityTuner
+        self.agents['complexity'] = ComplexityTuner()
 
         # Future agents:
         # self.agents['complexity'] = ComplexityTuner()
