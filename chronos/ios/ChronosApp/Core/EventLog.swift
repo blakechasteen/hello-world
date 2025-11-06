@@ -2,7 +2,7 @@
 //  EventLog.swift
 //  Chronos
 //
-//  Append-only .jsonl event log storage
+//  Append-only .jsonl event log with async I/O
 //
 
 import Foundation
@@ -16,8 +16,10 @@ class EventLog: ObservableObject {
     private var eventCounter: Int = 0
     private let fileManager = FileManager.default
 
+    // Background actor for file operations
+    private let fileActor = FileActor()
+
     init(customPath: URL? = nil) {
-        // Default: store in app's documents directory
         if let customPath = customPath {
             self.fileURL = customPath
         } else {
@@ -28,45 +30,50 @@ class EventLog: ObservableObject {
             self.fileURL = documentsPath.appendingPathComponent("events.jsonl")
         }
 
-        loadEvents()
+        // Load events asynchronously on init
+        Task {
+            await loadEvents()
+        }
     }
 
-    // MARK: - Load Events
+    // MARK: - Load Events (Async)
 
-    /// Load all events from .jsonl file
-    private func loadEvents() {
+    func loadEvents() async {
         guard fileManager.fileExists(atPath: fileURL.path) else {
             print("No existing log file, starting fresh")
             return
         }
 
         do {
-            let content = try String(contentsOf: fileURL, encoding: .utf8)
+            // Read file on background actor
+            let content = try await fileActor.readFile(at: fileURL)
             let lines = content.components(separatedBy: .newlines)
 
-            events = lines.compactMap { line in
+            let loadedEvents = lines.compactMap { line -> ChronosEvent? in
                 guard !line.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                     return nil
                 }
                 return ChronosEvent.from(jsonLine: line)
             }
 
+            // Update on main actor
+            self.events = loadedEvents
+
             // Get last event number for ID generation
-            if let lastEvent = events.last {
+            if let lastEvent = loadedEvents.last {
                 let idString = lastEvent.id.replacingOccurrences(of: "chr_", with: "")
                 eventCounter = Int(idString) ?? 0
             }
 
-            print("Loaded \(events.count) events")
+            print("Loaded \(loadedEvents.count) events")
         } catch {
             print("Error loading events: \(error)")
         }
     }
 
-    // MARK: - Append Events
+    // MARK: - Append Events (Async)
 
-    /// Append event to log (generates ID and timestamp if missing)
-    func append(_ event: ChronosEvent) {
+    func append(_ event: ChronosEvent) async {
         var mutableEvent = event
 
         // Generate ID if not set
@@ -75,31 +82,16 @@ class EventLog: ObservableObject {
             mutableEvent.id = String(format: "chr_%04d", eventCounter)
         }
 
-        // Set timestamp if not set (zero date)
+        // Set timestamp if not set
         if mutableEvent.ts.timeIntervalSince1970 == 0 {
             mutableEvent.ts = Date()
         }
 
-        // Append to file
         do {
-            let line = mutableEvent.toJSONLine() + "\n"
-            guard let data = line.data(using: .utf8) else {
-                print("Error converting event to data")
-                return
-            }
+            // Write to file on background actor
+            try await fileActor.appendLine(mutableEvent.toJSONLine(), to: fileURL)
 
-            if fileManager.fileExists(atPath: fileURL.path) {
-                // Append to existing file
-                let fileHandle = try FileHandle(forWritingTo: fileURL)
-                fileHandle.seekToEndOfFile()
-                fileHandle.write(data)
-                fileHandle.closeFile()
-            } else {
-                // Create new file
-                try data.write(to: fileURL)
-            }
-
-            // Update in-memory list
+            // Update in-memory list on main actor
             events.append(mutableEvent)
 
             print("Appended event: \(mutableEvent.id) - \(mutableEvent.event)")
@@ -108,9 +100,8 @@ class EventLog: ObservableObject {
         }
     }
 
-    // MARK: - Query Events
+    // MARK: - Query Events (Synchronous - already in memory)
 
-    /// Get events for a specific date
     func events(for date: Date) -> [ChronosEvent] {
         let calendar = Calendar.current
         return events.filter { event in
@@ -118,41 +109,34 @@ class EventLog: ObservableObject {
         }
     }
 
-    /// Get events within a date range
     func events(from start: Date, to end: Date) -> [ChronosEvent] {
         events.filter { event in
             event.ts >= start && event.ts <= end
         }
     }
 
-    /// Find event by ID
     func event(withId id: String) -> ChronosEvent? {
         events.first { $0.id == id }
     }
 
-    /// Get events by type
     func events(ofType type: ChronosEvent.EventType) -> [ChronosEvent] {
         events.filter { $0.event == type }
     }
 
-    /// Get events for a specific task name
     func events(forTask task: String) -> [ChronosEvent] {
         events.filter { $0.task == task }
     }
 
     // MARK: - Stats
 
-    /// Total events count
     var totalEvents: Int {
         events.count
     }
 
-    /// Events today
     var eventsToday: [ChronosEvent] {
         events(for: Date())
     }
 
-    /// Total time tracked today (sum of stop/log durations)
     var totalTimeToday: TimeInterval {
         eventsToday
             .filter { $0.event == .stop || $0.event == .log }
@@ -162,21 +146,19 @@ class EventLog: ObservableObject {
 
     // MARK: - File Management
 
-    /// Export log file to share
     func exportLog() -> URL {
         fileURL
     }
 
-    /// Clear all events (dangerous - creates backup first)
-    func clearAll() {
+    func clearAll() async {
         // Create backup
         let backupURL = fileURL.deletingLastPathComponent()
             .appendingPathComponent("events_backup_\(Int(Date().timeIntervalSince1970)).jsonl")
 
-        try? fileManager.copyItem(at: fileURL, to: backupURL)
+        try? await fileActor.copyFile(from: fileURL, to: backupURL)
 
         // Clear file
-        try? "".write(to: fileURL, atomically: true, encoding: .utf8)
+        try? await fileActor.writeFile("", to: fileURL)
 
         // Clear memory
         events.removeAll()
@@ -186,13 +168,41 @@ class EventLog: ObservableObject {
     }
 }
 
-// MARK: - Merge Support (for sync)
+// MARK: - File Actor (Background File Operations)
+
+actor FileActor {
+    func readFile(at url: URL) throws -> String {
+        try String(contentsOf: url, encoding: .utf8)
+    }
+
+    func appendLine(_ line: String, to url: URL) throws {
+        let data = (line + "\n").data(using: .utf8)!
+
+        if FileManager.default.fileExists(atPath: url.path) {
+            let fileHandle = try FileHandle(forWritingTo: url)
+            fileHandle.seekToEndOfFile()
+            fileHandle.write(data)
+            try fileHandle.close()
+        } else {
+            try data.write(to: url)
+        }
+    }
+
+    func writeFile(_ content: String, to url: URL) throws {
+        try content.write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    func copyFile(from source: URL, to destination: URL) throws {
+        try FileManager.default.copyItem(at: source, to: destination)
+    }
+}
+
+// MARK: - Merge Support (Async)
 
 extension EventLog {
-    /// Merge events from another log file (for iCloud sync)
-    func merge(from otherURL: URL) {
+    func merge(from otherURL: URL) async {
         do {
-            let content = try String(contentsOf: otherURL, encoding: .utf8)
+            let content = try await fileActor.readFile(at: otherURL)
             let lines = content.components(separatedBy: .newlines)
 
             var newEvents: [ChronosEvent] = []
@@ -214,7 +224,7 @@ extension EventLog {
             newEvents.sort { $0.ts < $1.ts }
 
             for event in newEvents {
-                append(event)
+                await append(event)
             }
 
             print("Merged \(newEvents.count) new events")

@@ -3,6 +3,7 @@
 //  Chronos
 //
 //  State manager implementing the 5 verbs: start, stop, log, note, link
+//  Fully async with proper concurrency handling
 //
 
 import Foundation
@@ -23,39 +24,37 @@ class ChronosState: ObservableObject {
         self.eventLog.$events
             .assign(to: &$events)
 
-        // Find active task
-        loadActiveTask()
+        // Observe events changes to update active task
+        self.eventLog.$events
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    self?.loadActiveTask()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Active Task Management
 
-    /// Find most recent unclosed start event
     private func loadActiveTask() {
         let startEvents = events.filter { $0.event == .start }
         let stopEventStartIds = Set(events
             .filter { $0.event == .stop }
             .compactMap { $0.startId })
 
-        // Find starts without corresponding stops
         let unclosedStarts = startEvents.filter { !stopEventStartIds.contains($0.id) }
-
-        // Most recent unclosed is active
         activeTask = unclosedStarts.max(by: { $0.ts < $1.ts })
 
         if let active = activeTask {
             print("Active task: \(active.task ?? "Unknown") (started \(active.formattedTime))")
-        } else {
-            print("No active task")
         }
     }
 
-    /// Elapsed time for active task
     var activeTaskElapsed: TimeInterval? {
         guard let active = activeTask else { return nil }
         return Date().timeIntervalSince(active.ts)
     }
 
-    /// Formatted elapsed time
     var activeTaskElapsedFormatted: String? {
         guard let elapsed = activeTaskElapsed else { return nil }
 
@@ -70,29 +69,27 @@ class ChronosState: ObservableObject {
         }
     }
 
-    // MARK: - The 5 Verbs
+    // MARK: - The 5 Verbs (All Async)
 
     /// START - Begin tracking a task
     @discardableResult
-    func start(task: String, tags: [String] = []) -> String {
+    func start(task: String, tags: [String] = []) async -> String {
         // Auto-stop previous task if exists
         if activeTask != nil {
-            stop()
+            await stop()
         }
 
         let event = ChronosEvent.start(task: task, tags: tags)
-        eventLog.append(event)
-
-        // Reload to get the event with generated ID
-        loadActiveTask()
+        await eventLog.append(event)
 
         let tagsStr = tags.isEmpty ? "" : " — tagged \(tags.map { "#\($0)" }.joined(separator: " "))"
-        return "✅ Started \(task) at \(event.formattedTime)\(tagsStr)"
+        let formattedTime = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short)
+        return "✅ Started \(task) at \(formattedTime)\(tagsStr)"
     }
 
     /// STOP - End current task
     @discardableResult
-    func stop() -> String {
+    func stop() async -> String {
         guard let active = activeTask else {
             return "❌ No active task to stop"
         }
@@ -104,17 +101,16 @@ class ChronosState: ObservableObject {
             startId: active.id
         )
 
-        eventLog.append(event)
-        loadActiveTask()  // This will clear activeTask
+        await eventLog.append(event)
 
         return "✅ Stopped \(active.task ?? "Unknown") — duration \(event.formattedDuration ?? "")"
     }
 
     /// LOG - Record a completed task retroactively
     @discardableResult
-    func log(task: String, duration: TimeInterval, tags: [String] = []) -> String {
+    func log(task: String, duration: TimeInterval, tags: [String] = []) async -> String {
         let event = ChronosEvent.log(task: task, duration: duration, tags: tags)
-        eventLog.append(event)
+        await eventLog.append(event)
 
         let tagsStr = tags.isEmpty ? "" : " — tagged \(tags.map { "#\($0)" }.joined(separator: " "))"
         return "✅ Logged \(task), \(event.formattedDuration ?? "")\(tagsStr)"
@@ -122,20 +118,19 @@ class ChronosState: ObservableObject {
 
     /// NOTE - Add context to a task
     @discardableResult
-    func note(text: String, linkedTo: String? = nil) -> String {
+    func note(text: String, linkedTo: String? = nil) async -> String {
         let linkedId = linkedTo ?? activeTask?.id
 
         guard let linkedId = linkedId else {
             return "❌ No active task and no event ID specified"
         }
 
-        // Verify linked event exists
         guard let linkedEvent = eventLog.event(withId: linkedId) else {
             return "❌ Event \(linkedId) not found"
         }
 
         let event = ChronosEvent.note(text: text, linkedTo: linkedId)
-        eventLog.append(event)
+        await eventLog.append(event)
 
         let taskName = linkedEvent.task ?? linkedId
         return "✅ Note added to \(taskName)"
@@ -143,36 +138,31 @@ class ChronosState: ObservableObject {
 
     /// LINK - Connect events to external entities
     @discardableResult
-    func link(from fromId: String, to toId: String, relation: String = "related_to") -> String {
-        // Verify from event exists
+    func link(from fromId: String, to toId: String, relation: String = "related_to") async -> String {
         guard eventLog.event(withId: fromId) != nil else {
             return "❌ Event \(fromId) not found"
         }
 
         let event = ChronosEvent.link(from: fromId, to: toId, relation: relation)
-        eventLog.append(event)
+        await eventLog.append(event)
 
         return "✅ Linked \(fromId) → \(toId) (\(relation))"
     }
 
-    // MARK: - Query Helpers
+    // MARK: - Query Helpers (Synchronous - already in memory)
 
-    /// Get today's events
     var todayEvents: [ChronosEvent] {
         eventLog.eventsToday
     }
 
-    /// Get events for date
     func events(for date: Date) -> [ChronosEvent] {
         eventLog.events(for: date)
     }
 
-    /// Get total time tracked today
     var totalTimeToday: TimeInterval {
         eventLog.totalTimeToday
     }
 
-    /// Get total time tracked today (formatted)
     var totalTimeTodayFormatted: String {
         let total = totalTimeToday
         let hours = Int(total / 3600)
@@ -185,7 +175,6 @@ class ChronosState: ObservableObject {
         }
     }
 
-    /// Status message
     var statusMessage: String {
         if let active = activeTask,
            let elapsed = activeTaskElapsedFormatted {
@@ -197,31 +186,57 @@ class ChronosState: ObservableObject {
 
     // MARK: - Tasks Summary
 
-    /// Get unique task names from events
     var taskNames: [String] {
         Array(Set(events.compactMap { $0.task })).sorted()
     }
 
-    /// Get unique tags from events
     var allTags: [String] {
         let tagSets = events.compactMap { $0.tags }
         return Array(Set(tagSets.flatMap { $0 })).sorted()
     }
 
-    /// Get total time for a specific task
     func totalTime(for task: String) -> TimeInterval {
         eventLog.events(forTask: task)
             .filter { $0.event == .stop || $0.event == .log }
             .compactMap { $0.durationSec }
             .reduce(0, +)
     }
-}
 
-// MARK: - Export
+    // MARK: - Export
 
-extension ChronosState {
-    /// Export log file URL (for sharing)
     var exportURL: URL {
         eventLog.exportLog()
+    }
+}
+
+// MARK: - Convenience (Non-async wrappers for SwiftUI)
+
+extension ChronosState {
+    /// Start task (SwiftUI-friendly - fire and forget)
+    func start(task: String, tags: [String] = []) {
+        Task {
+            _ = await start(task: task, tags: tags)
+        }
+    }
+
+    /// Stop task (SwiftUI-friendly)
+    func stop() {
+        Task {
+            _ = await stop()
+        }
+    }
+
+    /// Log task (SwiftUI-friendly)
+    func log(task: String, duration: TimeInterval, tags: [String] = []) {
+        Task {
+            _ = await log(task: task, duration: duration, tags: tags)
+        }
+    }
+
+    /// Note (SwiftUI-friendly)
+    func note(text: String, linkedTo: String? = nil) {
+        Task {
+            _ = await note(text: text, linkedTo: linkedTo)
+        }
     }
 }
