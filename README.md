@@ -437,7 +437,7 @@ Inspired by:
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/mythRL/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/mythRL/discussions)
-- **Email**: your.email@example.com
+- **Email**: blakechasteen@gmail.com
 
 ---
 
