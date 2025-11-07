@@ -74,6 +74,11 @@ class TimecodeSegment:
         """Format as SRT subtitle entry"""
         return f"{index}\n{self.format_timecode('start')} --> {self.format_timecode('end')}\n{self.text}\n"
 
+    # Alias for convenience
+    def to_srt(self, index: int) -> str:
+        """Alias for to_srt_format()"""
+        return self.to_srt_format(index)
+
 
 @dataclass
 class AudioTranscription:
@@ -172,57 +177,26 @@ class WhisperSpinner(BaseSpinner):
             warnings.warn(f"Failed to load Whisper model: {e}")
             self.model = None
 
-    async def spin(self, audio_path: Path) -> SpinResult:
+    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
         """
-        Transcribe audio file.
+        Core transcription implementation.
 
         Args:
-            audio_path: Path to audio file
+            source: Path to audio file
+            **kwargs: Additional arguments (ignored)
 
         Returns:
-            SpinResult with transcription shards
+            List of transcription shards
         """
-        if not WHISPER_AVAILABLE or self.model is None:
-            return SpinResult(
-                shards=[],
-                success=False,
-                error_message="Whisper not available. Install with: pip install openai-whisper"
-            )
+        audio_path = Path(source)
 
-        try:
-            # Transcribe audio
-            transcription = await self._transcribe_file(audio_path)
+        # Transcribe audio
+        transcription = await self._transcribe_file(audio_path)
 
-            # Convert to shards
-            shards = self._transcription_to_shards(transcription)
+        # Convert to shards (base class handles filtering and wrapping)
+        shards = self._transcription_to_shards(transcription)
 
-            # Filter by importance
-            filtered_shards = [
-                s for s in shards
-                if s.metadata.get('importance_score', 0) >= self.importance_threshold
-            ]
-
-            return SpinResult(
-                shards=filtered_shards,
-                success=True,
-                processing_time_ms=0.0,  # TODO: Track time
-                shard_count=len(filtered_shards),
-                items_processed=transcription.segment_count,
-                items_filtered=transcription.segment_count - len(filtered_shards),
-                metadata={
-                    'language': transcription.language,
-                    'duration': transcription.duration,
-                    'model_size': transcription.model_size,
-                    'full_text': transcription.full_text
-                }
-            )
-
-        except Exception as e:
-            return SpinResult(
-                shards=[],
-                success=False,
-                error_message=str(e)
-            )
+        return shards
 
     async def _transcribe_file(self, audio_path: Path) -> AudioTranscription:
         """Transcribe audio file with Whisper"""
@@ -323,41 +297,51 @@ class WhisperSpinner(BaseSpinner):
 
     def _score_transcription_importance(self, transcription: AudioTranscription) -> float:
         """Score importance of full transcription"""
-        # Use importance scorer
-        score = self.importance_scorer.score(
-            transcription.full_text,
-            metadata={
-                'length': len(transcription.full_text),
-                'duration': transcription.duration,
-                'segment_count': transcription.segment_count
-            }
-        )
-
-        return score.score
+        try:
+            # Use importance scorer
+            score = self.importance_scorer.score(
+                transcription.full_text,
+                metadata={
+                    'length': len(transcription.full_text),
+                    'duration': transcription.duration,
+                    'segment_count': transcription.segment_count
+                }
+            )
+            return score.score
+        except Exception as e:
+            # Gracefully handle scoring errors (regex issues, etc.)
+            # Fall back to simple length-based scoring
+            return min(len(transcription.full_text) / 1000, 1.0)
 
     def _score_segment_importance(self, segment: TimecodeSegment, transcription: AudioTranscription) -> float:
         """Score importance of individual segment"""
-        # Base score on segment text
-        score = self.importance_scorer.score(
-            segment.text,
-            metadata={
-                'length': len(segment.text),
-                'duration': segment.duration,
-                'confidence': segment.confidence
-            }
-        )
+        try:
+            # Base score on segment text
+            score = self.importance_scorer.score(
+                segment.text,
+                metadata={
+                    'length': len(segment.text),
+                    'duration': segment.duration,
+                    'confidence': segment.confidence
+                }
+            )
 
-        # Boost important segments (questions, exclamations, keywords)
-        if '?' in segment.text:
-            score.score *= 1.2  # Questions are important
-        if '!' in segment.text:
-            score.score *= 1.1  # Exclamations are notable
+            # Boost important segments (questions, exclamations, keywords)
+            if '?' in segment.text:
+                score.score *= 1.2  # Questions are important
+            if '!' in segment.text:
+                score.score *= 1.1  # Exclamations are notable
 
-        # Penalize very short segments
-        if len(segment.text) < 20:
-            score.score *= 0.8
+            # Penalize very short segments
+            if len(segment.text) < 20:
+                score.score *= 0.8
 
-        return min(1.0, score.score)
+            return min(1.0, score.score)
+        except Exception as e:
+            # Gracefully handle scoring errors (regex issues, etc.)
+            # Fall back to simple length and confidence-based scoring
+            base_score = min(len(segment.text) / 100, 1.0)
+            return base_score * segment.confidence
 
     async def spin_stream(
         self,
@@ -396,6 +380,19 @@ class WhisperSpinner(BaseSpinner):
     def is_available(self) -> bool:
         """Check if Whisper is available"""
         return WHISPER_AVAILABLE and self.model is not None
+
+    def export_srt(self, segments: List[TimecodeSegment], output_path: Path):
+        """
+        Export segments to SRT subtitle format.
+
+        Args:
+            segments: List of TimecodeSegment objects
+            output_path: Path to output SRT file
+        """
+        with open(output_path, 'w', encoding='utf-8') as f:
+            for i, segment in enumerate(segments, start=1):
+                f.write(segment.to_srt(index=i))
+                f.write('\n')
 
 
 # =============================================================================
@@ -471,3 +468,7 @@ async def transcribe_with_timecodes(
         ],
         'srt_path': str(srt_path) if srt_path else None
     }
+
+
+# Alias for consistency with other spinners
+spin_audio = transcribe_audio

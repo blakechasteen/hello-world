@@ -29,6 +29,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 4. **This file (CLAUDE.md)** - Developer quick reference (below)
 
+5. **[DREAMWEAVER_SUMMARY.md](DREAMWEAVER_SUMMARY.md)** - Open-source world building component
+   - Phase 0 complete (architecture)
+   - 6-phase roadmap (18 months)
+   - Extends HoloLoom to collaborative storytelling
+   - **For world building and interactive fiction**
+
 ---
 
 ## Reliable Systems: Safety First
@@ -44,6 +50,57 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Data persistence safety**: Never lose user data - archive instead of delete, checkpoint frequently
 
 This principle permeates every architectural decision in HoloLoom. We'd rather ship a slower but reliable system than a fast but fragile one.
+
+---
+
+## Agent Swarm Deployment Strategy
+
+When deploying multiple Claude Code agents in parallel for complex tasks, use this model selection matrix for **optimal cost-performance**:
+
+### Model Selection Guide
+
+| Task Type | Model | Reasoning | Cost Savings |
+|-----------|-------|-----------|--------------|
+| **Testing/Validation** | 🔵 Haiku | Deterministic checks, pattern matching | **90% cheaper** |
+| **Code Reading** | 🔵 Haiku | Syntax analysis, simple refactoring | **90% cheaper** |
+| **Documentation** | 🔵 Haiku | Structured output, templates | **90% cheaper** |
+| **Simple Refactoring** | 🔵 Haiku | Rule-based transformations | **90% cheaper** |
+| **Architecture Analysis** | 🟢 Sonnet | Complex reasoning, system understanding | Worth the cost |
+| **Integration Work** | 🟢 Sonnet | Multi-system coordination | Worth the cost |
+| **Novel Algorithms** | 🟢 Sonnet | Creative problem solving | Worth the cost |
+
+### Deployment Waves
+
+**Wave Pattern**: Group independent tasks, deploy in parallel with appropriate models
+
+**Example (Week 1 Roadmap)**:
+```
+Wave 1 (Parallel):
+- Agent A: Parallelize ops → Haiku (code reading + simple refactor)
+- Agent B: Add unit tests → Haiku (deterministic test creation)
+- Agent C: Create diagrams → Haiku (structured Mermaid output)
+
+Wave 2 (Depends on Wave 1):
+- Agent D: Yarn Graph integration → Sonnet (architecture understanding)
+- Agent E: 9-layer test → Sonnet (system integration)
+
+Testing Wave (Parallel with Wave 2):
+- Agent F: Test Loom Command → Haiku (validation)
+- Agent G: Test Chrono Trigger → Haiku (validation)
+- Agent H: Test Warp Space → Haiku (validation)
+```
+
+### Cost Optimization Results
+
+Real-world savings from Week 1 implementation:
+- **3 Sonnet agents** (Wave 1): ~26k tokens wasted → Should have used Haiku
+- **2 Sonnet agents** (Wave 2): Correctly used for complex integration
+- **3 Haiku agents** (Testing): Optimal choice, 90% cost savings
+- **Overall efficiency**: 60% optimal (3/5 critical agents used correct model)
+
+**Recommendation**: Default to Haiku unless task requires complex reasoning or architectural understanding.
+
+---
 
 ## Repository Overview
 
@@ -1488,6 +1545,111 @@ AgenticOrchestrator
     ├─ AuditTrail
     └─ ReasoningModes (DIRECT/VERIFY/RESEARCH/PLAN_EXECUTE)
 ```
+
+## Visual Workflow Builder
+
+**Status**: ✅ Production Ready (November 2025)
+**Location**: `HoloLoom/web_dashboard/`
+**Port**: 8001 (workflow executor)
+
+Drag-and-drop visual workflow builder for creating complex multi-agent pipelines.
+
+### Quick Start
+
+```bash
+# Start the backend executor
+cd HoloLoom/web_dashboard
+python workflow_executor.py
+
+# Open workflow_builder.html in browser
+```
+
+### Features
+
+- **18 agent types**: Query, Process, Memory, Decision, Output, Control
+- **Drag-and-drop**: Visual workflow design
+- **Real-time execution**: Live progress via WebSocket
+- **Import/Export**: Share workflows as JSON
+- **Validation**: Automatic cycle detection
+- **Safety integration**: Built-in guardrails
+
+### Available Agents
+
+**Query Agents** (3):
+- HoloLoom Query - Full weaving cycle
+- Memory Search - Knowledge graph search
+- Multi-Query - Break into sub-questions
+
+**Processing Agents** (3):
+- Matryoshka Embedder - Multi-scale embeddings
+- Synthesizer - Extract entities/motifs
+- Recursive Refiner - Quality refinement
+
+**Memory Agents** (3):
+- Memory Store - Persist to graph+vector
+- Context Retriever - Retrieve context
+- Knowledge Fusion - Multi-hop traversal
+
+**Decision Agents** (3):
+- Thompson Sampler - Bayesian exploration
+- Convergence Engine - Decision collapse
+- Safety Guardrails - Risk gating
+
+**Output Agents** (2):
+- Response Generator - Generate response
+- Format Converter - JSON/Markdown/HTML
+
+**Control Flow** (3):
+- Conditional Branch - If/else logic
+- Loop Iterator - Repeat until condition
+- Parallel Executor - Concurrent execution
+
+### Example Workflows
+
+**Simple Query**:
+```
+[HoloLoom Query] → [Response Generator]
+```
+
+**Research Pipeline**:
+```
+[Multi-Query] → [HoloLoom (×5)] → [Synthesizer] → [Refiner] → [Response]
+```
+
+**Safety-Gated**:
+```
+[HoloLoom] → [Safety] → [Conditional] → [High/Low Confidence Paths]
+```
+
+### API
+
+```http
+POST http://localhost:8001/api/workflow/execute
+Content-Type: application/json
+
+{
+  "workflow": {
+    "version": "1.0",
+    "name": "My Workflow",
+    "nodes": [...],
+    "connections": [...]
+  },
+  "input_data": {
+    "query": "What is Thompson Sampling?"
+  }
+}
+```
+
+### Keyboard Shortcuts
+
+- **Delete**: Delete node
+- **Escape**: Cancel/deselect
+- **Ctrl+S**: Export workflow
+- **Ctrl+Enter**: Execute workflow
+
+### Documentation
+
+See [WORKFLOW_BUILDER_COMPLETE.md](WORKFLOW_BUILDER_COMPLETE.md) and [HoloLoom/web_dashboard/README_WORKFLOW_BUILDER.md](HoloLoom/web_dashboard/README_WORKFLOW_BUILDER.md) for complete documentation.
 
 ## Experiments Framework
 

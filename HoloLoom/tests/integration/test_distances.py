@@ -2,7 +2,7 @@ import sys
 sys.path.insert(0, '.')
 import numpy as np
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus, MatryoshkaScale
 
 # Create embedder and semantic calculator
 embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
@@ -21,15 +21,21 @@ for text in texts:
         async def word_stream():
             for word in text.split():
                 yield word
-        
+
         snapshot = None
         async for s in semantic.stream_analyze(word_stream()):
             snapshot = s
         return snapshot
-    
+
     import asyncio
     snapshot = asyncio.run(process())
-    position = snapshot.matryoshka_position
+    # Get position from sentence-level scale
+    if MatryoshkaScale.SENTENCE in snapshot.states_by_scale:
+        position = snapshot.states_by_scale[MatryoshkaScale.SENTENCE]['position']
+    else:
+        # Fallback to any available scale
+        available_scale = list(snapshot.states_by_scale.keys())[0]
+        position = snapshot.states_by_scale[available_scale]['position']
     positions.append(position)
     print(f"Position shape: {position.shape}, norm: {np.linalg.norm(position):.3f}")
 

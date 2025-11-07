@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Workflow Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Sidebar - Agent Palette */
+        .agent-palette {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .palette-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .agent-category {
+            margin-bottom: 25px;
+        }
+
+        .category-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .agent-template {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: grab;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .agent-template:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .agent-template:active {
+            cursor: grabbing;
+        }
+
+        .agent-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .agent-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .agent-description {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* Main Canvas */
+        .canvas-area {
+            flex: 1;
+            position: relative;
+            background:
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow: hidden;
+        }
+
+        .canvas-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .workflow-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .workflow-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .version-indicator {
+            font-size: 12px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border-left: 3px solid #667eea;
+        }
+
+        .canvas-toolbar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toolbar-btn {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toolbar-btn:hover {
+            background: #f5f5f5;
+            border-color: #667eea;
+        }
+
+        .toolbar-btn.primary {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .toolbar-btn.primary:hover {
+            background: #5568d3;
+        }
+
+        .canvas-viewport {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: auto;
+        }
+
+        .canvas {
+            min-width: 100%;
+            min-height: 100%;
+            position: relative;
+        }
+
+        /* Agent Nodes */
+        .workflow-node {
+            position: absolute;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            min-width: 200px;
+            cursor: move;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+
+        .workflow-node:hover {
+            border-color: #667eea;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .workflow-node.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .workflow-node.dragging {
+            opacity: 0.7;
+            cursor: grabbing;
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .node-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .node-title {
+            flex: 1;
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .node-delete {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .workflow-node:hover .node-delete {
+            opacity: 1;
+        }
+
+        .node-delete:hover {
+            background: #cc0000;
+        }
+
+        .node-config {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .node-config label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .node-config input,
+        .node-config select,
+        .node-config textarea {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: inherit;
+        }
+
+        .node-config textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* Connection Ports */
+        .node-port {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #667eea;
+            background: white;
+            position: absolute;
+            cursor: crosshair;
+            transition: all 0.2s;
+        }
+
+        .node-port:hover {
+            width: 16px;
+            height: 16px;
+            margin: -2px;
+            background: #667eea;
+        }
+
+        .node-port.input {
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .node-port.output {
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Connections (SVG) */
+        .connections-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .connection-line {
+            stroke: #667eea;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .connection-line:hover {
+            stroke-width: 3;
+            opacity: 1;
+        }
+
+        .connection-arrow {
+            fill: #667eea;
+        }
+
+        /* Right Sidebar - Properties Panel */
+        .properties-panel {
+            width: 320px;
+            background: rgba(255, 255, 255, 0.95);
+            border-left: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .properties-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .property-section {
+            margin-bottom: 20px;
+        }
+
+        .property-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .property-value {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .property-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .property-select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .property-textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: monospace;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .property-input:focus,
+        .property-select:focus,
+        .property-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Execution Status */
+        .execution-status {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .status-dot.running {
+            background: #4CAF50;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-dot.error {
+            background: #ff4444;
+        }
+
+        .status-dot.success {
+            background: #4CAF50;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Mini-map */
+        .minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            border-radius: 8px;
+            pointer-events: all;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .minimap-canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .minimap-node {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            opacity: 0.7;
+        }
+
+        .minimap-viewport {
+            position: absolute;
+            border: 2px solid #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #4CAF50;
+        }
+
+        .toast.error {
+            background: #ff4444;
+        }
+
+        /* Color themes for different agent types */
+        .agent-color-query { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .agent-color-process { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .agent-color-memory { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .agent-color-decision { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .agent-color-output { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .agent-color-control { background: linear-gradient(135deg, #30cfd0, #330867); }
+        .agent-color-llm { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); }
+        .agent-color-tool { background: linear-gradient(135deg, #ffa726, #fb8c00); }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: auto;
+            padding: 30px;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            margin-bottom: 15px;
+        }
+
+        /* Version History List */
+        .version-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .version-item {
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .version-item:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .version-item.active {
+            background: #f0f4ff;
+            border-color: #667eea;
+            border-left: 4px solid #667eea;
+        }
+
+        .version-number {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .version-message {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .version-time {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .version-branch {
+            display: inline-block;
+            font-size: 11px;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin-left: 8px;
+        }
+
+        /* Diff Viewer */
+        .diff-viewer {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow: auto;
+        }
+
+        .diff-added {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 4px;
+            display: block;
+            margin: 2px 0;
+        }
+
+        .diff-removed {
+            background: #ffebee;
+            color: #c62828;
+            padding: 2px 4px;
+            display: block;
+            margin: 2px 0;
+        }
+
+        .diff-unchanged {
+            padding: 2px 4px;
+            display: block;
+            margin: 2px 0;
+            color: #666;
+        }
+
+        /* Modal Buttons */
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background: #5568d3;
+        }
+
+        .modal-btn.secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #e8e8e8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Sidebar: Agent Palette -->
+        <div class="agent-palette">
+            <div class="palette-header">🎯 Agent Library</div>
+
+            <div class="agent-category">
+                <div class="category-title">Query Agents</div>
+                <div class="agent-template" draggable="true" data-type="query" data-agent="hololoom">
+                    <div class="agent-icon agent-color-query"></div>
+                    <div class="agent-name">HoloLoom Query</div>
+                    <div class="agent-description">Process queries through full weaving cycle</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="query" data-agent="search">
+                    <div class="agent-icon agent-color-query"></div>
+                    <div class="agent-name">Memory Search</div>
+                    <div class="agent-description">Search knowledge graph and vector memory</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="query" data-agent="multiquery">
+                    <div class="agent-icon agent-color-query"></div>
+                    <div class="agent-name">Multi-Query</div>
+                    <div class="agent-description">Break complex queries into sub-questions</div>
+                </div>
+            </div>
+
+            <div class="agent-category">
+                <div class="category-title">Processing Agents</div>
+                <div class="agent-template" draggable="true" data-type="process" data-agent="embedder">
+                    <div class="agent-icon agent-color-process"></div>
+                    <div class="agent-name">Matryoshka Embedder</div>
+                    <div class="agent-description">Generate multi-scale embeddings (96/192/384d)</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="process" data-agent="synthesizer">
+                    <div class="agent-icon agent-color-process"></div>
+                    <div class="agent-name">Synthesizer</div>
+                    <div class="agent-description">Extract entities, motifs, and patterns</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="process" data-agent="refiner">
+                    <div class="agent-icon agent-color-process"></div>
+                    <div class="agent-name">Recursive Refiner</div>
+                    <div class="agent-description">Multi-pass quality refinement</div>
+                </div>
+            </div>
+
+            <div class="agent-category">
+                <div class="category-title">Memory Agents</div>
+                <div class="agent-template" draggable="true" data-type="memory" data-agent="store">
+                    <div class="agent-icon agent-color-memory"></div>
+                    <div class="agent-name">Memory Store</div>
+                    <div class="agent-description">Store in graph + vector memory</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="memory" data-agent="retrieve">
+                    <div class="agent-icon agent-color-memory"></div>
+                    <div class="agent-name">Context Retriever</div>
+                    <div class="agent-description">Retrieve relevant context</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="memory" data-agent="fusion">
+                    <div class="agent-icon agent-color-memory"></div>
+                    <div class="agent-name">Knowledge Fusion</div>
+                    <div class="agent-description">Multi-hop graph traversal</div>
+                </div>
+            </div>
+
+            <div class="agent-category">
+                <div class="category-title">Decision Agents</div>
+                <div class="agent-template" draggable="true" data-type="decision" data-agent="thompson">
+                    <div class="agent-icon agent-color-decision"></div>
+                    <div class="agent-name">Thompson Sampler</div>
+                    <div class="agent-description">Bayesian exploration/exploitation</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="decision" data-agent="convergence">
+                    <div class="agent-icon agent-color-decision"></div>
+                    <div class="agent-name">Convergence Engine</div>
+                    <div class="agent-description">Collapse probability to decision</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="decision" data-agent="safety">
+                    <div class="agent-icon agent-color-decision"></div>
+                    <div class="agent-name">Safety Guardrails</div>
+                    <div class="agent-description">Risk-based action gating</div>
+                </div>
+            </div>
+
+            <div class="agent-category">
+                <div class="category-title">Output Agents</div>
+                <div class="agent-template" draggable="true" data-type="output" data-agent="response">
+                    <div class="agent-icon agent-color-output"></div>
+                    <div class="agent-name">Response Generator</div>
+                    <div class="agent-description">Generate final response</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="output" data-agent="format">
+                    <div class="agent-icon agent-color-output"></div>
+                    <div class="agent-name">Format Converter</div>
+                    <div class="agent-description">JSON, Markdown, HTML output</div>
+                </div>
+            </div>
+
+            <div class="agent-category">
+                <div class="category-title">Control Flow</div>
+                <div class="agent-template" draggable="true" data-type="control" data-agent="conditional">
+                    <div class="agent-icon agent-color-control"></div>
+                    <div class="agent-name">Conditional Branch</div>
+                    <div class="agent-description">If/else logic based on confidence</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="control" data-agent="loop">
+                    <div class="agent-icon agent-color-control"></div>
+                    <div class="agent-name">Loop Iterator</div>
+                    <div class="agent-description">Repeat until condition met</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="control" data-agent="parallel">
+                    <div class="agent-icon agent-color-control"></div>
+                    <div class="agent-name">Parallel Executor</div>
+                    <div class="agent-description">Run multiple agents concurrently</div>
+                </div>
+            </div>
+
+            <div class="agent-category">
+                <div class="category-title">LLM Agents</div>
+                <div class="agent-template" draggable="true" data-type="llm" data-agent="llm_prompt">
+                    <div class="agent-icon agent-color-llm"></div>
+                    <div class="agent-name">LLM Prompt</div>
+                    <div class="agent-description">Simple LLM prompt execution</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="llm" data-agent="structured_llm">
+                    <div class="agent-icon agent-color-llm"></div>
+                    <div class="agent-name">Structured LLM</div>
+                    <div class="agent-description">JSON output with schema validation</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="llm" data-agent="prompt_chain">
+                    <div class="agent-icon agent-color-llm"></div>
+                    <div class="agent-name">Prompt Chain</div>
+                    <div class="agent-description">Multi-step LLM reasoning</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="llm" data-agent="few_shot">
+                    <div class="agent-icon agent-color-llm"></div>
+                    <div class="agent-name">Few-Shot Learning</div>
+                    <div class="agent-description">Learn from examples</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="llm" data-agent="llm_consensus">
+                    <div class="agent-icon agent-color-llm"></div>
+                    <div class="agent-name">LLM Consensus</div>
+                    <div class="agent-description">Multi-model voting</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="llm" data-agent="rag_prompt">
+                    <div class="agent-icon agent-color-llm"></div>
+                    <div class="agent-name">RAG Prompt</div>
+                    <div class="agent-description">Retrieval + generation with citations</div>
+                </div>
+            </div>
+
+            <div class="agent-category">
+                <div class="category-title">Tools</div>
+                <div class="agent-template" draggable="true" data-type="tool" data-agent="tool_call">
+                    <div class="agent-icon agent-color-tool"></div>
+                    <div class="agent-name">Tool Call</div>
+                    <div class="agent-description">Execute external tools/functions</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="tool" data-agent="api_request">
+                    <div class="agent-icon agent-color-tool"></div>
+                    <div class="agent-name">API Request</div>
+                    <div class="agent-description">HTTP GET/POST to external APIs</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="tool" data-agent="code_executor">
+                    <div class="agent-icon agent-color-tool"></div>
+                    <div class="agent-name">Code Executor</div>
+                    <div class="agent-description">Run Python code safely</div>
+                </div>
+                <div class="agent-template" draggable="true" data-type="tool" data-agent="file_ops">
+                    <div class="agent-icon agent-color-tool"></div>
+                    <div class="agent-name">File Operations</div>
+                    <div class="agent-description">Read/write files</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Canvas Area -->
+        <div class="canvas-area">
+            <div class="canvas-header">
+                <div class="workflow-header-left">
+                    <div class="workflow-title" contenteditable="true">Untitled Workflow</div>
+                    <div class="version-indicator">Version: <span id="versionNumber">v1</span> (<span id="currentBranch">main</span>)</div>
+                </div>
+                <div class="canvas-toolbar">
+                    <button class="toolbar-btn" onclick="showTemplatesModal()">
+                        📚 Templates
+                    </button>
+                    <button class="toolbar-btn" onclick="showVersionHistoryModal()">
+                        📜 History
+                    </button>
+                    <button class="toolbar-btn" onclick="showSaveVersionModal()">
+                        💾 Save
+                    </button>
+                    <button class="toolbar-btn" onclick="showCreateBranchModal()">
+                        🔀 Branch
+                    </button>
+                    <button class="toolbar-btn" onclick="clearCanvas()">
+                        🗑️ Clear
+                    </button>
+                    <button class="toolbar-btn" onclick="exportWorkflow()">
+                        💾 Export
+                    </button>
+                    <button class="toolbar-btn" onclick="importWorkflow()">
+                        📁 Import
+                    </button>
+                    <div style="border-left: 1px solid #ddd; height: 30px; margin: 0 8px;"></div>
+                    <button class="toolbar-btn" onclick="zoomOut()" title="Zoom Out (Ctrl + -)">
+                        🔍-
+                    </button>
+                    <span id="zoomLevel" style="font-size: 12px; color: #666; min-width: 50px; text-align: center;">100%</span>
+                    <button class="toolbar-btn" onclick="zoomIn()" title="Zoom In (Ctrl + +)">
+                        🔍+
+                    </button>
+                    <button class="toolbar-btn" onclick="resetZoom()" title="Reset Zoom (Ctrl + 0)">
+                        ⊙
+                    </button>
+                    <div style="border-left: 1px solid #ddd; height: 30px; margin: 0 8px;"></div>
+                    <button class="toolbar-btn primary" onclick="executeWorkflow()">
+                        ▶️ Execute
+                    </button>
+                </div>
+            </div>
+
+            <div class="canvas-viewport" id="canvasViewport">
+                <svg class="connections-layer" id="connectionsLayer">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7"
+                                refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" class="connection-arrow" />
+                        </marker>
+                    </defs>
+                </svg>
+                <div class="canvas" id="canvas"></div>
+            </div>
+
+            <div class="minimap" id="minimap">
+                <div class="minimap-canvas" id="minimapCanvas"></div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar: Properties Panel -->
+        <div class="properties-panel">
+            <div class="properties-header">⚙️ Properties</div>
+
+            <div id="propertiesContent">
+                <div style="text-align: center; padding: 40px 20px; color: #999;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">👈</div>
+                    <div>Select an agent to view properties</div>
+                </div>
+            </div>
+
+            <div class="execution-status">
+                <div class="property-label">Execution Status</div>
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <div id="statusText">Ready</div>
+                </div>
+                <div id="executionLog" style="font-size: 11px; color: #666; margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Save Version Modal -->
+    <!-- Workflow Templates Modal -->
+    <div class="modal" id="templatesModal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">📚 Workflow Templates</div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                    <input type="text" class="modal-input" id="templateSearch" placeholder="Search templates..." style="flex: 1;" oninput="filterTemplates()" />
+                    <select class="modal-input" id="templateCategory" onchange="filterTemplates()" style="width: 200px;">
+                        <option value="all">All Categories</option>
+                        <option value="crm">CRM</option>
+                        <option value="llm">LLM</option>
+                        <option value="research">Research</option>
+                        <option value="automation">Automation</option>
+                        <option value="custom">My Templates</option>
+                    </select>
+                </div>
+                <div id="templatesList" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Templates will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeModal('templatesModal')">Close</button>
+                <button class="modal-btn" onclick="saveAsTemplate()">💾 Save Current as Template</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hotkeys Help Modal -->
+    <div class="modal" id="hotkeysModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">⌨️ Keyboard Shortcuts</div>
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #667eea;">Editing</h3>
+                        <table style="width: 100%; font-size: 12px;">
+                            <tr><td style="padding: 4px 0;"><code>D</code></td><td>Duplicate selected node</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Delete</code></td><td>Delete selected node</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+C</code></td><td>Copy node</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+V</code></td><td>Paste node</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+A</code></td><td>Select all</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Esc</code></td><td>Deselect / Cancel</td></tr>
+                        </table>
+
+                        <h3 style="font-size: 14px; font-weight: 600; margin: 15px 0 10px; color: #667eea;">History</h3>
+                        <table style="width: 100%; font-size: 12px;">
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+Z</code></td><td>Undo</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+Y</code></td><td>Redo</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+Shift+Z</code></td><td>Redo (alt)</td></tr>
+                        </table>
+                    </div>
+
+                    <div>
+                        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #667eea;">Workflow</h3>
+                        <table style="width: 100%; font-size: 12px;">
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+S</code></td><td>Export workflow</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+Enter</code></td><td>Execute workflow</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>F5</code></td><td>Execute workflow</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>T</code></td><td>Open templates</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+Shift+Del</code></td><td>Clear canvas</td></tr>
+                        </table>
+
+                        <h3 style="font-size: 14px; font-weight: 600; margin: 15px 0 10px; color: #667eea;">View</h3>
+                        <table style="width: 100%; font-size: 12px;">
+                            <tr><td style="padding: 4px 0;"><code>Ctrl++</code></td><td>Zoom in</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+-</code></td><td>Zoom out</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>Ctrl+0</code></td><td>Reset zoom</td></tr>
+                            <tr><td style="padding: 4px 0;"><code>?</code></td><td>Show this help</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 12px; color: #666;">
+                    <strong>💡 Pro Tips:</strong><br>
+                    • Press <code>D</code> on a selected node to quickly duplicate it<br>
+                    • Use <code>Ctrl+C</code> and <code>Ctrl+V</code> to copy nodes across workflows<br>
+                    • Press <code>T</code> to quickly access workflow templates<br>
+                    • Use undo/redo (<code>Ctrl+Z</code>/<code>Ctrl+Y</code>) to experiment safely
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn primary" onclick="closeModal('hotkeysModal')">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Version Modal -->
+    <div class="modal" id="saveVersionModal">
+        <div class="modal-content">
+            <div class="modal-header">💾 Save Workflow Version</div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" id="commitMessage" placeholder="Enter commit message (e.g., 'Add query refinement loop')" />
+                <textarea class="modal-textarea" id="commitDescription" placeholder="Optional: Detailed description of changes"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeModal('saveVersionModal')">Cancel</button>
+                <button class="modal-btn primary" onclick="saveWorkflowVersion()">Save Version</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Branch Modal -->
+    <div class="modal" id="createBranchModal">
+        <div class="modal-content">
+            <div class="modal-header">🔀 Create Branch</div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" id="branchName" placeholder="Enter branch name (e.g., 'feature/multi-query')" />
+                <div style="font-size: 12px; color: #666; margin-top: -10px; margin-bottom: 15px;">
+                    Branch will be created from current version
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeModal('createBranchModal')">Cancel</button>
+                <button class="modal-btn primary" onclick="createBranch()">Create Branch</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version History Modal -->
+    <div class="modal" id="versionHistoryModal">
+        <div class="modal-content">
+            <div class="modal-header">📜 Version History</div>
+            <div class="modal-body">
+                <ul class="version-list" id="versionList"></ul>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeModal('versionHistoryModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diff Viewer Modal -->
+    <div class="modal" id="diffModal">
+        <div class="modal-content">
+            <div class="modal-header">🔍 Compare Versions</div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">From Version</label>
+                        <select id="diffFromVersion" class="modal-input" style="margin-bottom: 0;">
+                            <option>Select version...</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">To Version</label>
+                        <select id="diffToVersion" class="modal-input" style="margin-bottom: 0;">
+                            <option>Select version...</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="modal-btn primary" onclick="compareDiff()" style="width: 100%; margin-bottom: 15px;">Compare</button>
+                <div class="diff-viewer" id="diffViewer" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeModal('diffModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="workflow_builder.js"></script>
+</body>
+</html>

@@ -77,18 +77,41 @@ class SemanticDimension:
 
         return self.axis
 
-    def project(self, vector: np.ndarray) -> float:
+    def project(self, vector: np.ndarray, manifold=None) -> float:
         """
-        Project a vector onto this dimension
+        Project a vector onto this dimension.
 
-        Returns scalar indicating position along dimension:
-        - Positive values = toward positive pole
-        - Negative values = toward negative pole
+        Supports both Euclidean and Riemannian projection:
+        - If manifold is None: Standard Euclidean dot product
+        - If manifold provided: Projects using manifold inner product
+
+        Args:
+            vector: Vector to project
+            manifold: Optional Riemannian manifold for geodesic projection
+
+        Returns:
+            Scalar indicating position along dimension:
+            - Positive values = toward positive pole
+            - Negative values = toward negative pole
         """
         if self.axis is None:
             raise ValueError(f"Dimension '{self.name}' axis not learned yet. Call learn_axis() first.")
 
-        return np.dot(vector, self.axis)
+        if manifold is not None:
+            # Manifold-aware projection
+            # Use log map to get tangent vector, then project in tangent space
+            # This gives a more accurate semantic distance along this dimension
+            try:
+                # Get tangent vector from origin to point
+                tangent = manifold.log_map(np.zeros_like(vector), vector)
+                # Project in tangent space
+                return np.dot(tangent, self.axis)
+            except Exception:
+                # Fall back to Euclidean if manifold operations fail
+                return np.dot(vector, self.axis)
+        else:
+            # Standard Euclidean projection
+            return np.dot(vector, self.axis)
 
 
 # Predefined semantic dimensions
@@ -1344,6 +1367,7 @@ class SemanticSpectrum:
         """
         self.dimensions = dimensions if dimensions is not None else STANDARD_DIMENSIONS
         self._axes_learned = False
+        self._semantic_flow = None  # Optional PDE-based flow
 
     def learn_axes(self, embed_fn: Callable[[str], np.ndarray]):
         """
@@ -1467,6 +1491,124 @@ class SemanticSpectrum:
             'dominant_force': dominant_by_force,
             'distances': distances
         }
+
+    def enable_temporal_dynamics(
+        self,
+        pde_type: str = "heat",
+        dt: float = 0.01,
+        **flow_kwargs
+    ):
+        """
+        Enable PDE-based temporal evolution of semantic space.
+
+        Args:
+            pde_type: Type of PDE ("heat", "wave", "reaction_diffusion", "hamilton_jacobi")
+            dt: Time step for integration
+            **flow_kwargs: Additional arguments for SemanticFlow
+
+        Example:
+            >>> spectrum = SemanticSpectrum()
+            >>> spectrum.learn_axes(embed_fn)
+            >>> spectrum.enable_temporal_dynamics(pde_type="heat", dt=0.01)
+            >>> evolved = spectrum.evolve(initial_projection, steps=10)
+        """
+        try:
+            from HoloLoom.semantic_calculus.flow import create_semantic_flow
+        except ImportError:
+            import warnings
+            warnings.warn(
+                "SemanticFlow not available. "
+                "Temporal dynamics disabled. "
+                "Check HoloLoom.semantic_calculus.flow"
+            )
+            return
+
+        # Create semantic flow with number of dimensions
+        n_dims = len(self.dimensions)
+        self._semantic_flow = create_semantic_flow(
+            dimensions=n_dims,
+            pde_type=pde_type,
+            dt=dt,
+            **flow_kwargs
+        )
+
+    def evolve(
+        self,
+        initial_projection: Dict[str, float],
+        steps: int = 10,
+        track_trajectory: bool = True
+    ) -> Dict[str, float]:
+        """
+        Evolve semantic projection using PDE temporal dynamics.
+
+        Args:
+            initial_projection: Initial semantic projection (output of project_vector())
+            steps: Number of evolution steps
+            track_trajectory: Whether to track full trajectory
+
+        Returns:
+            Final evolved semantic projection
+
+        Raises:
+            ValueError: If temporal dynamics not enabled
+
+        Example:
+            >>> spectrum = SemanticSpectrum()
+            >>> spectrum.learn_axes(embed_fn)
+            >>> spectrum.enable_temporal_dynamics(pde_type="heat")
+            >>>
+            >>> # Project initial state
+            >>> initial = spectrum.project_vector(embedding)
+            >>>
+            >>> # Evolve over time
+            >>> evolved = spectrum.evolve(initial, steps=10)
+            >>> print(f"Warmth: {initial['Warmth']:.3f} -> {evolved['Warmth']:.3f}")
+        """
+        if self._semantic_flow is None:
+            raise ValueError(
+                "Temporal dynamics not enabled. "
+                "Call enable_temporal_dynamics() first."
+            )
+
+        # Convert projection dict to activation array
+        activation = np.array([
+            initial_projection[dim.name]
+            for dim in self.dimensions
+        ])
+
+        # Create initial state
+        from HoloLoom.semantic_calculus.flow import SemanticFlowState
+        initial_state = SemanticFlowState(
+            activation=activation,
+            time=0.0
+        )
+
+        # Evolve using PDE
+        final_state = self._semantic_flow.evolve(
+            initial_state,
+            steps=steps,
+            track_trajectory=track_trajectory
+        )
+
+        # Convert back to projection dict
+        evolved_projection = {
+            dim.name: final_state.activation[i]
+            for i, dim in enumerate(self.dimensions)
+        }
+
+        return evolved_projection
+
+    def get_flow_trajectory(self) -> Optional[List]:
+        """
+        Get the semantic flow trajectory if temporal dynamics enabled.
+
+        Returns:
+            List of SemanticFlowState objects, or None if not tracking
+        """
+        if self._semantic_flow is None:
+            return None
+
+        return self._semantic_flow.get_trajectory()
 
 
 def visualize_semantic_spectrum(analysis: Dict, words: List[str],

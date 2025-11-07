@@ -1,0 +1,220 @@
+{
+  "version": "1.0",
+  "name": "Daily Action List Generator",
+  "description": "Generate prioritized daily action list for all active contacts",
+  "tags": ["crm", "daily_actions", "prioritization"],
+  "author": "HoloLoom CRM",
+  "created": "2025-11-04",
+  "nodes": [
+    {
+      "id": "get_active_contacts",
+      "type": "memory_search",
+      "label": "Get Active Contacts",
+      "position": {"x": 100, "y": 100},
+      "config": {
+        "query": "type:contact AND last_activity:<30days",
+        "max_results": 100,
+        "similarity_threshold": 0.5
+      }
+    },
+    {
+      "id": "process_each_contact",
+      "type": "loop_iterator",
+      "label": "Process Each Contact",
+      "position": {"x": 100, "y": 220},
+      "config": {
+        "max_iterations": 100,
+        "continue_on_error": true
+      }
+    },
+    {
+      "id": "analyze_contact",
+      "type": "multi_query",
+      "label": "Analyze Contact",
+      "position": {"x": 100, "y": 340},
+      "config": {
+        "max_subqueries": 3,
+        "mode": "research",
+        "questions": [
+          "What is this contact's engagement level?",
+          "What stage are their deals in?",
+          "When was the last interaction?"
+        ]
+      }
+    },
+    {
+      "id": "full_context",
+      "type": "hololoom_query",
+      "label": "Get Full Context",
+      "position": {"x": 100, "y": 460},
+      "config": {
+        "pattern": "fast",
+        "return_trace": false
+      }
+    },
+    {
+      "id": "calculate_priority",
+      "type": "convergence_engine",
+      "label": "Calculate Priority",
+      "position": {"x": 100, "y": 580},
+      "config": {
+        "strategy": "bayesian_blend",
+        "neural_weight": 0.6,
+        "bandit_weight": 0.4
+      }
+    },
+    {
+      "id": "route_by_priority",
+      "type": "conditional_branch",
+      "label": "Route by Priority",
+      "position": {"x": 100, "y": 700},
+      "config": {
+        "condition": "${calculate_priority.score} >= 0.7"
+      }
+    },
+    {
+      "id": "high_priority_list",
+      "type": "memory_store",
+      "label": "Add to Today",
+      "position": {"x": 50, "y": 820},
+      "config": {
+        "backend": "inmemory",
+        "collection": "today_actions"
+      }
+    },
+    {
+      "id": "medium_priority_list",
+      "type": "memory_store",
+      "label": "Add to This Week",
+      "position": {"x": 250, "y": 820},
+      "config": {
+        "backend": "inmemory",
+        "collection": "week_actions"
+      }
+    },
+    {
+      "id": "low_priority_list",
+      "type": "memory_store",
+      "label": "Add to This Month",
+      "position": {"x": 450, "y": 820},
+      "config": {
+        "backend": "inmemory",
+        "collection": "month_actions"
+      }
+    },
+    {
+      "id": "aggregate_results",
+      "type": "knowledge_fusion",
+      "label": "Aggregate & Sort",
+      "position": {"x": 250, "y": 940},
+      "config": {
+        "max_depth": 1,
+        "min_importance": 0.3,
+        "sort_by": "priority"
+      }
+    },
+    {
+      "id": "format_output",
+      "type": "response_generator",
+      "label": "Format Action List",
+      "position": {"x": 250, "y": 1060},
+      "config": {
+        "template": "# Daily Action List\n\n## High Priority (Do Today)\n${today_actions}\n\n## Medium Priority (This Week)\n${week_actions}\n\n## Low Priority (This Month)\n${month_actions}",
+        "format": "markdown"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1",
+      "from": "get_active_contacts",
+      "to": "process_each_contact"
+    },
+    {
+      "id": "conn_2",
+      "from": "process_each_contact",
+      "to": "analyze_contact"
+    },
+    {
+      "id": "conn_3",
+      "from": "analyze_contact",
+      "to": "full_context"
+    },
+    {
+      "id": "conn_4",
+      "from": "full_context",
+      "to": "calculate_priority"
+    },
+    {
+      "id": "conn_5",
+      "from": "calculate_priority",
+      "to": "route_by_priority"
+    },
+    {
+      "id": "conn_6",
+      "from": "route_by_priority",
+      "to": "high_priority_list",
+      "from_port": "true",
+      "condition": "${priority} >= 0.7"
+    },
+    {
+      "id": "conn_7",
+      "from": "route_by_priority",
+      "to": "medium_priority_list",
+      "from_port": "false",
+      "condition": "${priority} >= 0.4 && ${priority} < 0.7"
+    },
+    {
+      "id": "conn_8",
+      "from": "route_by_priority",
+      "to": "low_priority_list",
+      "from_port": "false",
+      "condition": "${priority} < 0.4"
+    },
+    {
+      "id": "conn_9",
+      "from": "high_priority_list",
+      "to": "aggregate_results"
+    },
+    {
+      "id": "conn_10",
+      "from": "medium_priority_list",
+      "to": "aggregate_results"
+    },
+    {
+      "id": "conn_11",
+      "from": "low_priority_list",
+      "to": "aggregate_results"
+    },
+    {
+      "id": "conn_12",
+      "from": "aggregate_results",
+      "to": "format_output"
+    }
+  ],
+  "input_schema": {
+    "days_lookback": {
+      "type": "number",
+      "default": 30,
+      "description": "How many days to look back for 'active' contacts"
+    }
+  },
+  "output_schema": {
+    "today_actions": {
+      "type": "array",
+      "description": "High priority actions for today"
+    },
+    "week_actions": {
+      "type": "array",
+      "description": "Medium priority actions for this week"
+    },
+    "month_actions": {
+      "type": "array",
+      "description": "Low priority actions for this month"
+    },
+    "formatted_output": {
+      "type": "string",
+      "description": "Markdown formatted action list"
+    }
+  }
+}

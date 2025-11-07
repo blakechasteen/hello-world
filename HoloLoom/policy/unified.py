@@ -436,6 +436,8 @@ class BanditStrategy(Enum):
     EPSILON_GREEDY = "epsilon_greedy"  # Explore with probability epsilon
     BAYESIAN_BLEND = "bayesian_blend"  # Blend neural and bandit priors
     PURE_THOMPSON = "pure_thompson"    # Use Thompson Sampling exclusively
+    GP_THOMPSON = "gp_thompson"        # Gaussian Process Thompson Sampling (continuous)
+    GP_UCB = "gp_ucb"                  # Gaussian Process Upper Confidence Bound (continuous)
 
 
 class TSBandit:
@@ -593,12 +595,17 @@ class UnifiedPolicy:
     - Thompson Sampling bandit for exploration
     - Motif-based control signal generation
     - Adapter selection based on execution mode
-    
-    Now with THREE bandit strategies:
-    1. Epsilon-Greedy: Explore 10% of time with Thompson Sampling
-    2. Bayesian Blend: Mix neural (70%) + bandit priors (30%)
-    3. Pure Thompson: Use only Thompson Sampling (ignore neural net)
-    
+
+    Now with FIVE bandit strategies:
+    1. Epsilon-Greedy: Explore 10% of time with Thompson Sampling (discrete)
+    2. Bayesian Blend: Mix neural (70%) + bandit priors (30%) (discrete)
+    3. Pure Thompson: Use only Thompson Sampling (discrete)
+    4. GP Thompson: Gaussian Process Thompson Sampling (continuous) - NEW!
+    5. GP UCB: Gaussian Process Upper Confidence Bound (continuous) - NEW!
+
+    Note: GP strategies (4-5) are implemented via GPPolicy wrapper.
+    Use create_gp_policy() instead of create_policy() for GP-based optimization.
+
     This is the main policy used by the orchestrator.
     """
     
@@ -802,6 +809,10 @@ def create_policy(
     epsilon: float = 0.1,
     guardrails: Optional[SafetyGuardrails] = None,
     cfg: Optional[Any] = None,  # Config for environment-aware safety
+    use_bayesian: bool = False,  # Enable Bayesian uncertainty quantification
+    bayesian_samples: int = 10,  # MC samples for uncertainty estimation
+    bayesian_kl_weight: float = 1.0,  # KL term weight in ELBO
+    bayesian_prior_std: float = 1.0,  # Prior weight standard deviation
 ) -> UnifiedPolicy:
     """
     Factory function to create a unified policy.
@@ -817,9 +828,13 @@ def create_policy(
         epsilon: Exploration rate for epsilon-greedy (default 0.1 = 10%)
         guardrails: Pre-configured SafetyGuardrails (optional)
         cfg: Config for environment-aware safety (optional)
+        use_bayesian: Enable Bayesian uncertainty quantification (default: False)
+        bayesian_samples: MC samples for uncertainty (default: 10)
+        bayesian_kl_weight: KL term weight in ELBO (default: 1.0)
+        bayesian_prior_std: Prior weight standard deviation (default: 1.0)
 
     Returns:
-        Configured UnifiedPolicy
+        Configured UnifiedPolicy or BayesianUnifiedPolicy
     """
     # Create environment-aware guardrails if cfg provided and guardrails not
     if guardrails is None and cfg is not None:
@@ -858,7 +873,8 @@ def create_policy(
         3: "mirrorcore"
     }
     
-    return UnifiedPolicy(
+    # Create base policy
+    base_policy = UnifiedPolicy(
         core=core,
         psi_proj=psi_proj,
         device=device,
@@ -870,6 +886,35 @@ def create_policy(
         epsilon=epsilon,
         guardrails=guardrails,
     )
+
+    # Upgrade to Bayesian if requested
+    if use_bayesian:
+        try:
+            from HoloLoom.policy.bayesian_policy import create_bayesian_policy
+
+            bayesian_policy = create_bayesian_policy(
+                base_policy=base_policy,
+                n_samples=bayesian_samples,
+                kl_weight=bayesian_kl_weight,
+                prior_std=bayesian_prior_std
+            )
+
+            logger.info(
+                f"Created Bayesian policy with {bayesian_samples} MC samples, "
+                f"KL weight={bayesian_kl_weight}, prior_std={bayesian_prior_std}"
+            )
+
+            return bayesian_policy
+        except ImportError as e:
+            warnings.warn(
+                f"Bayesian policy requested but unavailable (use_bayesian=True): {e}. "
+                "Falling back to deterministic policy. "
+                "Install requirements: pip install torch numpy",
+                RuntimeWarning
+            )
+            return base_policy
+
+    return base_policy
 
 
 # ============================================================================

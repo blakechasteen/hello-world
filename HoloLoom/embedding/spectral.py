@@ -29,6 +29,22 @@ import networkx as nx
 # Use the project's shared types module (avoid shadowing stdlib `types`)
 from HoloLoom.documentation.types import Vector
 
+# Import Riemannian geometry for geodesic distance support
+try:
+    from HoloLoom.warp.riemannian_geometry import (
+        ProductManifold, ManifoldConfig, ManifoldType
+    )
+    _HAVE_RIEMANNIAN = True
+except ImportError:
+    ProductManifold = None
+    ManifoldConfig = None
+    ManifoldType = None
+    _HAVE_RIEMANNIAN = False
+    warnings.warn(
+        "Riemannian geometry module not available. "
+        "RiemannianMatryoshka will fall back to Euclidean distances."
+    )
+
 # Optional dependencies
 try:
     from sentence_transformers import SentenceTransformer
@@ -297,25 +313,44 @@ class MatryoshkaEmbeddings:
 class SpectralFusion:
     """
     Generates spectral features from knowledge graphs and text embeddings.
-    
+
     Spectral features capture:
     1. Graph structure (via Laplacian eigenvalues)
        - Fiedler value (2nd smallest eigenvalue) measures connectivity
        - Spectrum reveals community structure
-    
+
     2. Semantic coherence (via SVD of embeddings)
        - Topic variance from singular values
        - Semantic diversity in retrieved content
-    
+
+    3. Multi-scale wavelets (optional, enabled via config)
+       - Heat kernel wavelets for smooth diffusion patterns
+       - Mexican hat wavelets for edge detection
+       - Multiple scales for coarse-to-fine analysis
+
+    4. Diffusion geometry (optional, enabled via config)
+       - Diffusion maps for nonlinear dimensionality reduction
+       - Captures intrinsic graph geometry
+
     Combined, these form the Ψ (psi) vector that feeds into policy decisions.
-    
-    Output: 6-dimensional feature vector
-    - [0:4]: Spectral features from graph Laplacian
-    - [4:6]: Topic features from embedding SVD
+
+    Output: Variable-dimensional feature vector
+    - [0:4]: Spectral features from graph Laplacian (always included)
+    - [4:6]: Topic features from embedding SVD (always included)
+    - [6:6+n_wavelet_scales*2]: Wavelet features (if use_wavelets=True)
+    - [6+n*2:6+n*2+diffusion_dims]: Diffusion map coords (if use_diffusion_maps=True)
     """
-    
+
     k_eigen: int = 4  # Number of eigenvalues to compute
     svd_components: int = 2  # Number of SVD components for topic features
+
+    # Wavelet configuration
+    use_wavelets: bool = False  # Enable multi-scale wavelet features
+    wavelet_scales: List[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])
+
+    # Diffusion map configuration
+    use_diffusion_maps: bool = False  # Enable diffusion geometry
+    diffusion_map_dims: int = 32  # Diffusion embedding dimension
     
     async def features(
         self,
@@ -325,35 +360,127 @@ class SpectralFusion:
     ) -> Tuple[Vector, Dict[str, float]]:
         """
         Extract spectral features from graph and text.
-        
+
         Args:
             kg_sub: Knowledge graph subgraph
             shard_texts: Retrieved text shards
             emb: Embeddings instance for encoding texts
-            
+
         Returns:
             Tuple of (psi_vector, metrics_dict)
-            - psi_vector: 6-dimensional feature vector
-            - metrics_dict: Interpretable metrics (fiedler, topic_var, coherence)
+            - psi_vector: Variable-dimensional feature vector
+            - metrics_dict: Interpretable metrics (fiedler, topic_var, coherence, etc.)
         """
-        # Part 1: Graph spectral features
+        # Part 1: Graph spectral features (always included)
         spec, fiedler = self._graph_spectrum(kg_sub)
-        
-        # Part 2: Topic features from embeddings
+
+        # Part 2: Topic features from embeddings (always included)
         topic, topic_var = self._topic_features(shard_texts, emb)
-        
+
+        # Start with base features
+        feature_parts = [spec, topic]
+
+        # Part 3: Wavelet features (optional)
+        wavelet_energy = 0.0
+        if self.use_wavelets and kg_sub.number_of_nodes() > 1:
+            try:
+                # Import spectral methods
+                from HoloLoom.warp.spectral_methods import GraphLaplacian, SpectralWavelet, LaplacianType
+
+                # Create temporary KG wrapper for spectral methods
+                # We need to wrap the NetworkX graph in a KG-like object
+                class _TempKG:
+                    def __init__(self, G):
+                        self.G = G
+
+                temp_kg = _TempKG(kg_sub)
+                laplacian = GraphLaplacian(temp_kg, laplacian_type=LaplacianType.NORMALIZED)
+
+                # Compute multi-scale wavelets
+                wavelet = SpectralWavelet(
+                    laplacian=laplacian,
+                    n_scales=len(self.wavelet_scales),
+                    scale_min=min(self.wavelet_scales),
+                    scale_max=max(self.wavelet_scales)
+                )
+
+                # Create uniform signal for heat diffusion
+                n_nodes = kg_sub.number_of_nodes()
+                signal = np.ones(n_nodes) / n_nodes
+
+                # Compute heat kernel wavelets
+                heat_coeffs = wavelet.transform(signal, kernel='heat')
+
+                # Compute Mexican hat wavelets
+                mhat_coeffs = wavelet.transform(signal, kernel='mexican_hat')
+
+                # Extract features: mean energy at each scale
+                wavelet_features = []
+                for scale in wavelet.scales:
+                    heat_energy = np.mean(np.abs(heat_coeffs[scale]))
+                    mhat_energy = np.mean(np.abs(mhat_coeffs[scale]))
+                    wavelet_features.extend([heat_energy, mhat_energy])
+
+                wavelet_energy = np.mean(wavelet_features)
+                feature_parts.append(np.array(wavelet_features))
+
+            except Exception as e:
+                # Graceful fallback: wavelets disabled but system continues
+                warnings.warn(f"Wavelet computation failed: {e}. Continuing without wavelets.")
+
+        # Part 4: Diffusion map features (optional)
+        diffusion_variance = 0.0
+        if self.use_diffusion_maps and kg_sub.number_of_nodes() > self.diffusion_map_dims:
+            try:
+                from HoloLoom.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
+
+                class _TempKG:
+                    def __init__(self, G):
+                        self.G = G
+
+                temp_kg = _TempKG(kg_sub)
+                laplacian = GraphLaplacian(temp_kg, laplacian_type=LaplacianType.RANDOM_WALK)
+
+                # Compute diffusion map
+                diffusion = DiffusionMap(
+                    laplacian=laplacian,
+                    t=1.0,  # Diffusion time
+                    n_components=min(self.diffusion_map_dims, kg_sub.number_of_nodes() - 1)
+                )
+
+                embedding = diffusion.compute_embedding()
+
+                # Extract features: mean coordinates across nodes
+                diffusion_features = np.mean(embedding, axis=0)
+
+                # Pad if necessary
+                if len(diffusion_features) < self.diffusion_map_dims:
+                    diffusion_features = np.pad(
+                        diffusion_features,
+                        (0, self.diffusion_map_dims - len(diffusion_features))
+                    )
+
+                diffusion_variance = float(np.var(diffusion_features))
+                feature_parts.append(diffusion_features)
+
+            except Exception as e:
+                warnings.warn(f"Diffusion map computation failed: {e}. Continuing without diffusion maps.")
+
         # Combine into Ψ vector
-        psi = np.concatenate([spec, topic])
-        
+        psi = np.concatenate(feature_parts)
+
         # Compute coherence score
         coherence = (1.0 if fiedler > 1e-6 else 0.0) + topic_var
-        
+
         metrics = {
             "fiedler": fiedler,
             "topic_var": topic_var,
-            "coherence": coherence
+            "coherence": coherence,
+            "wavelet_energy": wavelet_energy,
+            "diffusion_variance": diffusion_variance,
+            "feature_dim": len(psi)
         }
-        
+
         return psi, metrics
     
     def _graph_spectrum(self, kg_sub: nx.MultiDiGraph) -> Tuple[np.ndarray, float]:

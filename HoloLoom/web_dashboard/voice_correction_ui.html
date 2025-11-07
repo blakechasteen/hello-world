@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Correction UI - HoloLoom</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .voice-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .voice-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .voice-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
+        }
+
+        .voice-button.recording {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .voice-button.processing {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .mic-icon {
+            width: 50px;
+            height: 50px;
+            fill: white;
+        }
+
+        .status-text {
+            text-align: center;
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .status-text.recording {
+            color: #f5576c;
+            font-weight: bold;
+        }
+
+        .status-text.processing {
+            color: #00f2fe;
+            font-weight: bold;
+        }
+
+        .transcript {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 80px;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .transcript.empty {
+            color: #999;
+            font-style: italic;
+        }
+
+        .intent-display {
+            background: #e8f4f8;
+            border-left: 4px solid #4facfe;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .intent-display.active {
+            display: block;
+        }
+
+        .intent-type {
+            font-weight: bold;
+            color: #4facfe;
+            margin-bottom: 5px;
+        }
+
+        .intent-details {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .pattern-learned {
+            background: #e8f8e8;
+            border-left: 4px solid #4caf50;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .pattern-learned.active {
+            display: block;
+        }
+
+        .pattern-learned h3 {
+            color: #4caf50;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .pattern-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .pattern-confidence {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+
+        .suggestions {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .suggestions.active {
+            display: block;
+        }
+
+        .suggestions h3 {
+            color: #f57c00;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .suggestion-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: #fff3e0;
+            transform: translateX(5px);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .examples {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .example-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-item:hover {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .connection-status.connected {
+            background: #4caf50;
+            color: white;
+        }
+
+        .connection-status.disconnected {
+            background: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status disconnected" id="connectionStatus">
+        Disconnected
+    </div>
+
+    <div class="container">
+        <h1>🎤 Voice Correction Interface</h1>
+        <p class="subtitle">Speak naturally to correct and improve extractions</p>
+
+        <!-- Voice Input Section -->
+        <div class="voice-section">
+            <button class="voice-button" id="voiceButton">
+                <svg class="mic-icon" viewBox="0 0 24 24">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                </svg>
+            </button>
+
+            <div class="status-text" id="statusText">
+                Click microphone to start
+            </div>
+
+            <div class="transcript empty" id="transcript">
+                Your voice command will appear here...
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-secondary" id="clearBtn">Clear</button>
+                <button class="btn btn-primary" id="applyBtn" style="display: none;">Apply Correction</button>
+            </div>
+        </div>
+
+        <!-- Intent Display -->
+        <div class="intent-display" id="intentDisplay">
+            <div class="intent-type" id="intentType"></div>
+            <div class="intent-details" id="intentDetails"></div>
+        </div>
+
+        <!-- Pattern Learned -->
+        <div class="pattern-learned" id="patternLearned">
+            <h3>✓ Pattern Learned</h3>
+            <div id="patternList"></div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="suggestions" id="suggestions">
+            <h3>💡 Suggestions</h3>
+            <div id="suggestionList"></div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="correctionsCount">0</div>
+                <div class="stat-label">Corrections</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="patternsCount">0</div>
+                <div class="stat-label">Patterns Learned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="accuracyRate">0%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+        </div>
+
+        <!-- Examples -->
+        <div class="examples">
+            <h3>Example Commands</h3>
+            <div class="example-item" data-command="the merchant is Whole Foods Market">
+                "the merchant is Whole Foods Market"
+            </div>
+            <div class="example-item" data-command="total should be 45.99">
+                "total should be 45.99"
+            </div>
+            <div class="example-item" data-command="map amt to total">
+                "map amt to total"
+            </div>
+            <div class="example-item" data-command="add tip field">
+                "add tip field"
+            </div>
+            <div class="example-item" data-command="category grocery">
+                "category grocery"
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let isRecording = false;
+        let isProcessing = false;
+        let recognition = null;
+        let currentTransformationId = null;
+        let ws = null;
+
+        // DOM Elements
+        const voiceButton = document.getElementById('voiceButton');
+        const statusText = document.getElementById('statusText');
+        const transcript = document.getElementById('transcript');
+        const intentDisplay = document.getElementById('intentDisplay');
+        const patternLearned = document.getElementById('patternLearned');
+        const suggestions = document.getElementById('suggestions');
+        const applyBtn = document.getElementById('applyBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const connectionStatus = document.getElementById('connectionStatus');
+
+        // Initialize Speech Recognition
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => {
+                    isRecording = true;
+                    voiceButton.classList.add('recording');
+                    statusText.classList.add('recording');
+                    statusText.textContent = 'Listening...';
+                };
+
+                recognition.onresult = (event) => {
+                    let finalTranscript = '';
+                    let interimTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const result = event.results[i];
+                        if (result.isFinal) {
+                            finalTranscript += result[0].transcript;
+                        } else {
+                            interimTranscript += result[0].transcript;
+                        }
+                    }
+
+                    if (finalTranscript) {
+                        transcript.textContent = finalTranscript;
+                        transcript.classList.remove('empty');
+                        processVoiceCommand(finalTranscript);
+                    } else {
+                        transcript.textContent = interimTranscript;
+                        transcript.classList.remove('empty');
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    stopRecording();
+                    statusText.textContent = 'Error: ' + event.error;
+                };
+
+                recognition.onend = () => {
+                    stopRecording();
+                };
+            } else {
+                console.warn('Speech recognition not supported');
+                statusText.textContent = 'Speech recognition not supported in this browser';
+            }
+        }
+
+        // WebSocket Connection
+        function connectWebSocket() {
+            ws = new WebSocket('ws://localhost:8001/ws/voice');
+
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                connectionStatus.textContent = 'Connected';
+                connectionStatus.classList.remove('disconnected');
+                connectionStatus.classList.add('connected');
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                connectionStatus.textContent = 'Disconnected';
+                connectionStatus.classList.remove('connected');
+                connectionStatus.classList.add('disconnected');
+
+                // Reconnect after 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleServerResponse(data);
+            };
+        }
+
+        // Process Voice Command
+        async function processVoiceCommand(command) {
+            isProcessing = true;
+            voiceButton.classList.remove('recording');
+            voiceButton.classList.add('processing');
+            statusText.classList.remove('recording');
+            statusText.classList.add('processing');
+            statusText.textContent = 'Processing...';
+
+            // Send to server
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'voice_command',
+                    command: command,
+                    transformation_id: currentTransformationId
+                }));
+            } else {
+                // Fallback: local processing
+                await processLocally(command);
+            }
+        }
+
+        // Handle Server Response
+        function handleServerResponse(data) {
+            isProcessing = false;
+            voiceButton.classList.remove('processing');
+            statusText.classList.remove('processing');
+            statusText.textContent = 'Click microphone to start';
+
+            if (data.type === 'intent') {
+                displayIntent(data.intent);
+            }
+
+            if (data.type === 'pattern_learned') {
+                displayPattern(data.pattern);
+                updateStats(data.stats);
+            }
+
+            if (data.type === 'suggestions') {
+                displaySuggestions(data.suggestions);
+            }
+
+            applyBtn.style.display = 'inline-block';
+        }
+
+        // Local Processing (fallback)
+        async function processLocally(command) {
+            // Simple rule-based intent parsing
+            const intent = parseIntent(command);
+            displayIntent(intent);
+
+            // Simulate pattern learning
+            setTimeout(() => {
+                displayPattern({
+                    source_pattern: 'Example',
+                    target_action: 'Corrected',
+                    confidence: 0.85
+                });
+
+                isProcessing = false;
+                voiceButton.classList.remove('processing');
+                statusText.classList.remove('processing');
+                statusText.textContent = 'Click microphone to start';
+                applyBtn.style.display = 'inline-block';
+            }, 1000);
+        }
+
+        // Parse Intent (simple rules)
+        function parseIntent(command) {
+            const lower = command.toLowerCase();
+
+            if (/the (\w+) is (.+)/i.test(lower)) {
+                const match = command.match(/the (\w+) is (.+)/i);
+                return {
+                    type: 'field_correction',
+                    field: match[1],
+                    value: match[2],
+                    confidence: 0.9
+                };
+            }
+
+            if (/(\w+) should be (.+)/i.test(lower)) {
+                const match = command.match(/(\w+) should be (.+)/i);
+                return {
+                    type: 'field_correction',
+                    field: match[1],
+                    value: match[2],
+                    confidence: 0.9
+                };
+            }
+
+            if (/map ['"']?(\w+)['"']? to ['"']?(\w+)['"']?/i.test(lower)) {
+                const match = command.match(/map ['"']?(\w+)['"']? to ['"']?(\w+)['"']?/i);
+                return {
+                    type: 'field_mapping',
+                    source_field: match[1],
+                    target_field: match[2],
+                    confidence: 0.9
+                };
+            }
+
+            if (/add (?:a )?['"']?(\w+)['"']? field/i.test(lower)) {
+                const match = command.match(/add (?:a )?['"']?(\w+)['"']? field/i);
+                return {
+                    type: 'schema_evolution',
+                    field_name: match[1],
+                    confidence: 0.8
+                };
+            }
+
+            if (/category ['"']?(\w+)['"']?/i.test(lower)) {
+                const match = command.match(/category ['"']?(\w+)['"']?/i);
+                return {
+                    type: 'category_addition',
+                    category: match[1],
+                    confidence: 0.9
+                };
+            }
+
+            return {
+                type: 'unknown',
+                confidence: 0.0
+            };
+        }
+
+        // Display Intent
+        function displayIntent(intent) {
+            if (intent.type === 'unknown') {
+                intentDisplay.classList.remove('active');
+                return;
+            }
+
+            let details = '';
+
+            if (intent.type === 'field_correction') {
+                details = `Field: <strong>${intent.field}</strong> → <strong>${intent.value}</strong>`;
+            } else if (intent.type === 'field_mapping') {
+                details = `Map: <strong>${intent.source_field}</strong> → <strong>${intent.target_field}</strong>`;
+            } else if (intent.type === 'schema_evolution') {
+                details = `Add field: <strong>${intent.field_name}</strong>`;
+            } else if (intent.type === 'category_addition') {
+                details = `Category: <strong>${intent.category}</strong>`;
+            }
+
+            document.getElementById('intentType').textContent =
+                intent.type.replace(/_/g, ' ').toUpperCase();
+            document.getElementById('intentDetails').innerHTML = details;
+            intentDisplay.classList.add('active');
+        }
+
+        // Display Pattern
+        function displayPattern(pattern) {
+            const patternList = document.getElementById('patternList');
+            const confidencePercent = (pattern.confidence * 100).toFixed(0);
+
+            patternList.innerHTML = `
+                <div class="pattern-item">
+                    <strong>${pattern.source_pattern}</strong> → <strong>${pattern.target_action}</strong>
+                    <span class="pattern-confidence">${confidencePercent}% confidence</span>
+                </div>
+            `;
+
+            patternLearned.classList.add('active');
+        }
+
+        // Display Suggestions
+        function displaySuggestions(suggestionsList) {
+            if (!suggestionsList || suggestionsList.length === 0) {
+                suggestions.classList.remove('active');
+                return;
+            }
+
+            const suggestionList = document.getElementById('suggestionList');
+            suggestionList.innerHTML = suggestionsList.map(s => `
+                <div class="suggestion-item">${s}</div>
+            `).join('');
+
+            suggestions.classList.add('active');
+        }
+
+        // Update Stats
+        function updateStats(stats) {
+            if (stats) {
+                document.getElementById('correctionsCount').textContent = stats.corrections || 0;
+                document.getElementById('patternsCount').textContent = stats.patterns || 0;
+                document.getElementById('accuracyRate').textContent =
+                    ((stats.accuracy || 0) * 100).toFixed(0) + '%';
+            }
+        }
+
+        // Event Handlers
+        voiceButton.addEventListener('click', () => {
+            if (isRecording) {
+                recognition.stop();
+            } else if (!isProcessing) {
+                recognition.start();
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            transcript.textContent = 'Your voice command will appear here...';
+            transcript.classList.add('empty');
+            intentDisplay.classList.remove('active');
+            patternLearned.classList.remove('active');
+            suggestions.classList.remove('active');
+            applyBtn.style.display = 'none';
+        });
+
+        applyBtn.addEventListener('click', () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'apply_correction',
+                    command: transcript.textContent,
+                    transformation_id: currentTransformationId
+                }));
+            }
+
+            // Clear after apply
+            clearBtn.click();
+        });
+
+        // Example items
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const command = item.getAttribute('data-command');
+                transcript.textContent = command;
+                transcript.classList.remove('empty');
+                processVoiceCommand(command);
+            });
+        });
+
+        function stopRecording() {
+            isRecording = false;
+            voiceButton.classList.remove('recording');
+            statusText.classList.remove('recording');
+            if (!isProcessing) {
+                statusText.textContent = 'Click microphone to start';
+            }
+        }
+
+        // Initialize
+        initSpeechRecognition();
+        connectWebSocket();
+
+        // Listen for transformation events
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'transformation_complete') {
+                currentTransformationId = event.data.transformation_id;
+            }
+        });
+    </script>
+</body>
+</html>

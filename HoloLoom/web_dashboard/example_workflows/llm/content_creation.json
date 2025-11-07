@@ -1,0 +1,95 @@
+{
+  "version": "1.0",
+  "name": "Blog Post Creation Pipeline",
+  "description": "Automated blog post creation: outline → draft → SEO optimization → meta description",
+  "nodes": [
+    {
+      "id": "node_1",
+      "type": "llm_prompt",
+      "label": "Generate Outline",
+      "position": {"x": 100, "y": 100},
+      "config": {
+        "provider": "openai",
+        "model": "gpt-4",
+        "temperature": 0.8,
+        "max_tokens": 1000,
+        "system_prompt": "You are an expert content strategist. Create detailed, well-structured blog post outlines.",
+        "user_prompt_template": "Create a detailed outline for a blog post about: ${input.topic}\n\nTarget audience: ${input.audience}\nTone: ${input.tone}\n\nInclude:\n1. Compelling headline\n2. 3-5 main sections with subsections\n3. Key points for each section\n4. Call-to-action ideas"
+      }
+    },
+    {
+      "id": "node_2",
+      "type": "prompt_chain",
+      "label": "Draft Blog Post",
+      "position": {"x": 100, "y": 250},
+      "config": {
+        "provider": "openai",
+        "model": "gpt-4-turbo",
+        "temperature": 0.7,
+        "chain_steps": [
+          {
+            "name": "intro",
+            "prompt": "Write an engaging introduction for this blog post outline:\n\n${node_1.response}\n\nMake it hook the reader in the first sentence.",
+            "temperature": 0.9
+          },
+          {
+            "name": "body",
+            "prompt": "Write the main body sections based on this outline:\n\n${node_1.response}\n\nExpand each section with examples, data, and practical insights.",
+            "temperature": 0.7
+          },
+          {
+            "name": "conclusion",
+            "prompt": "Write a strong conclusion that ties together these sections:\n\n${body.output}\n\nInclude a compelling call-to-action.",
+            "temperature": 0.8
+          }
+        ],
+        "preserve_all_steps": true
+      }
+    },
+    {
+      "id": "node_3",
+      "type": "structured_llm",
+      "label": "Extract SEO Keywords",
+      "position": {"x": 100, "y": 400},
+      "config": {
+        "provider": "openai",
+        "model": "gpt-4",
+        "temperature": 0.3,
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "primary_keyword": {"type": "string"},
+            "secondary_keywords": {"type": "array", "items": {"type": "string"}},
+            "long_tail_keywords": {"type": "array", "items": {"type": "string"}},
+            "search_intent": {"type": "string", "enum": ["informational", "transactional", "navigational", "commercial"]},
+            "suggested_title": {"type": "string"},
+            "meta_description": {"type": "string"}
+          },
+          "required": ["primary_keyword", "secondary_keywords", "suggested_title", "meta_description"]
+        },
+        "enforce_schema": true,
+        "retry_on_invalid": true,
+        "max_retries": 3
+      }
+    },
+    {
+      "id": "node_4",
+      "type": "response",
+      "label": "Format Final Post",
+      "position": {"x": 100, "y": 550},
+      "config": {
+        "format": "markdown"
+      }
+    }
+  ],
+  "connections": [
+    {"from": "node_1", "to": "node_2"},
+    {"from": "node_2", "to": "node_3"},
+    {"from": "node_3", "to": "node_4"}
+  ],
+  "input_schema": {
+    "topic": "The topic for the blog post",
+    "audience": "Target audience (e.g., 'developers', 'marketers')",
+    "tone": "Writing tone (e.g., 'professional', 'casual', 'technical')"
+  }
+}

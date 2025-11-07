@@ -501,55 +501,25 @@ class SpreadsheetSpinner(BaseSpinner):
         # Initialize importance scorer
         self.importance_scorer = ImportanceScorer()
 
-    async def spin(self, file_path: Path) -> SpinResult:
+    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
         """
-        Ingest spreadsheet file.
+        Core spreadsheet ingestion implementation.
 
         Args:
-            file_path: Path to spreadsheet file
+            source: Path to spreadsheet file
 
         Returns:
-            SpinResult with table shards
+            List of MemoryShard objects (base class handles filtering and wrapping)
         """
-        if not PANDAS_AVAILABLE:
-            return SpinResult(
-                shards=[],
-                success=False,
-                error_message="pandas not available. Install with: pip install pandas openpyxl"
-            )
+        file_path = Path(source)
 
-        try:
-            # Parse spreadsheet
-            spreadsheet = await self._parse_file(file_path)
+        # Parse spreadsheet
+        spreadsheet = await self._parse_file(file_path)
 
-            # Convert to shards
-            shards = self._spreadsheet_to_shards(spreadsheet)
+        # Convert to shards (base class handles filtering and wrapping)
+        shards = self._spreadsheet_to_shards(spreadsheet)
 
-            # Filter by importance
-            filtered_shards = [
-                s for s in shards
-                if s.metadata.get('importance_score', 0) >= self.importance_threshold
-            ]
-
-            return SpinResult(
-                shards=filtered_shards,
-                success=True,
-                shard_count=len(filtered_shards),
-                items_processed=sum(sheet.row_count for sheet in spreadsheet.sheets),
-                items_filtered=len(shards) - len(filtered_shards),
-                metadata={
-                    'file_format': spreadsheet.file_format,
-                    'sheet_count': spreadsheet.sheet_count,
-                    'total_rows': sum(sheet.row_count for sheet in spreadsheet.sheets)
-                }
-            )
-
-        except Exception as e:
-            return SpinResult(
-                shards=[],
-                success=False,
-                error_message=str(e)
-            )
+        return shards
 
     async def _parse_file(self, file_path: Path) -> Spreadsheet:
         """Parse file in thread pool"""

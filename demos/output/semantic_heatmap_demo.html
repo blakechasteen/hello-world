@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HoloLoom Performance Dashboard - Answer: Explain Thompson Sampling">
     <title>Answer: Explain Thompson Sampling - HoloLoom Dashboard</title>
-
-    <!-- Tailwind CSS (CDN, no build step) -->
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Plotly.js (interactive charts) -->
     <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
@@ -14,197 +12,1759 @@
     <!-- D3.js (force-directed graphs) -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
+    <!-- Modern CSS System (Phases 1-7) -->
     <style>
-        /* Edward Tufte-inspired typography */
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: #1f2937;
-            line-height: 1.6;
-        }
+/**
+ * HoloLoom Modern Dashboard Styles
+ * =================================
+ * Modern CSS architecture with:
+ * - CSS Custom Properties (Phase 1)
+ * - Modern Selectors (Phase 2)
+ * - Accessibility (Phase 3)
+ * - Container Queries (Phase 4)
+ * - View Transitions (Phase 5)
+ * - OKLCH Colors (Phase 6)
+ * - Performance (Phase 7)
+ *
+ * Author: Claude Code with HoloLoom architecture
+ * Date: October 29, 2025
+ */
 
-        /* Minimal chrome, maximum data-ink ratio */
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+/* ========================================================================
+   Phase 1: CSS Custom Properties - Design Token System
+   ======================================================================== */
 
-        /* Smooth transitions */
-        .panel {
-            transition: box-shadow 0.2s ease;
-        }
+:root {
+  /* OKLCH Color System (Phase 6) - Perceptually uniform colors */
+  /* Neutrals */
+  --color-neutral-50: oklch(98% 0 0);
+  --color-neutral-100: oklch(96% 0.002 270);
+  --color-neutral-200: oklch(92% 0.004 270);
+  --color-neutral-300: oklch(85% 0.006 270);
+  --color-neutral-400: oklch(71% 0.008 270);
+  --color-neutral-500: oklch(58% 0.01 270);
+  --color-neutral-600: oklch(47% 0.008 270);
+  --color-neutral-700: oklch(37% 0.006 270);
+  --color-neutral-800: oklch(27% 0.004 270);
+  --color-neutral-900: oklch(17% 0.002 270);
+  --color-neutral-950: oklch(10% 0 0);
 
-        .panel:hover {
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
+  /* Semantic colors - OKLCH for better gradients */
+  --color-blue-50: oklch(95% 0.04 250);
+  --color-blue-500: oklch(65% 0.15 250);
+  --color-blue-600: oklch(55% 0.15 250);
+  --color-blue-700: oklch(45% 0.13 250);
 
-        /* Panel state management */
-        .panel-content.collapsed {
-            max-height: 0;
-            overflow: hidden;
-        }
+  --color-green-50: oklch(95% 0.06 145);
+  --color-green-500: oklch(70% 0.16 145);
+  --color-green-600: oklch(60% 0.16 145);
+  --color-green-700: oklch(50% 0.14 145);
 
-        .panel.expanded {
-            border-color: #6366f1;
-            border-width: 2px;
-        }
+  --color-red-50: oklch(95% 0.06 25);
+  --color-red-500: oklch(65% 0.18 25);
+  --color-red-600: oklch(55% 0.18 25);
+  --color-red-700: oklch(45% 0.16 25);
 
-        /* Dark theme support - Comprehensive overrides */
-        .dark-theme {
-            background: #111827 !important;
-            color: #f3f4f6 !important;
-        }
+  --color-yellow-50: oklch(95% 0.08 90);
+  --color-yellow-500: oklch(75% 0.15 90);
+  --color-yellow-600: oklch(65% 0.15 90);
+  --color-yellow-700: oklch(55% 0.13 90);
 
-        /* Background colors */
-        .dark-theme .bg-gray-50 {
-            background: #111827 !important;
-        }
+  --color-purple-50: oklch(95% 0.05 300);
+  --color-purple-500: oklch(65% 0.14 300);
+  --color-purple-600: oklch(55% 0.14 300);
+  --color-purple-700: oklch(45% 0.12 300);
 
-        .dark-theme .bg-white {
-            background: #1f2937 !important;
-            color: #f3f4f6 !important;
-        }
+  --color-indigo-50: oklch(95% 0.04 270);
+  --color-indigo-500: oklch(60% 0.14 270);
+  --color-indigo-600: oklch(50% 0.14 270);
+  --color-indigo-700: oklch(40% 0.12 270);
 
-        .dark-theme .bg-gray-100 {
-            background: #1f2937 !important;
-        }
+  --color-orange-50: oklch(95% 0.08 50);
+  --color-orange-500: oklch(70% 0.16 50);
+  --color-orange-600: oklch(60% 0.16 50);
+  --color-orange-700: oklch(50% 0.14 50);
 
-        /* Colored panel backgrounds */
-        .dark-theme .bg-green-50 {
-            background: #064e3b !important;
-        }
+  /* Semantic tokens - Light theme */
+  --color-bg-primary: var(--color-neutral-50);
+  --color-bg-secondary: var(--color-neutral-100);
+  --color-bg-tertiary: white;
+  --color-bg-elevated: white;
 
-        .dark-theme .bg-blue-50 {
-            background: #1e3a8a !important;
-        }
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-500);
 
-        .dark-theme .bg-yellow-50 {
-            background: #78350f !important;
-        }
+  --color-border-subtle: var(--color-neutral-200);
+  --color-border-default: var(--color-neutral-300);
+  --color-border-strong: var(--color-neutral-400);
 
-        .dark-theme .bg-red-50 {
-            background: #7f1d1d !important;
-        }
+  --color-surface-hover: var(--color-neutral-50);
+  --color-surface-active: var(--color-neutral-100);
 
-        .dark-theme .bg-purple-50 {
-            background: #581c87 !important;
-        }
+  --color-accent-primary: var(--color-indigo-600);
+  --color-accent-hover: var(--color-indigo-700);
 
-        .dark-theme .bg-indigo-50 {
-            background: #312e81 !important;
-        }
+  /* Spacing scale (based on 4px grid) */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
 
-        /* Text colors */
-        .dark-theme .text-gray-900 {
-            color: #f9fafb !important;
-        }
+  /* Visual Enhancement - Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-glow: 0 0 20px -5px currentColor;
 
-        .dark-theme .text-gray-800 {
-            color: #f3f4f6 !important;
-        }
+  /* Visual Enhancement - Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-indigo-600) 100%);
+  --gradient-success: linear-gradient(135deg, var(--color-green-500) 0%, oklch(65% 0.14 170) 100%);
+  --gradient-warning: linear-gradient(135deg, var(--color-orange-500) 0%, var(--color-yellow-500) 100%);
+  --gradient-danger: linear-gradient(135deg, var(--color-red-500) 0%, oklch(60% 0.16 15) 100%);
+  --gradient-mesh:
+    radial-gradient(at 40% 20%, var(--color-indigo-50) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, var(--color-blue-50) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, var(--color-purple-50) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, var(--color-indigo-50) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, var(--color-blue-50) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, var(--color-purple-50) 0px, transparent 50%);
 
-        .dark-theme .text-gray-700 {
-            color: #e5e7eb !important;
-        }
+  /* Glass morphism - with fallbacks for browser compatibility */
+  --glass-bg: rgba(255, 255, 255, 0.8); /* Fallback */
+  --glass-bg: oklch(from var(--color-bg-elevated) l c h / 0.8);
+  --glass-blur: blur(16px);
+  --glass-border: rgba(0, 0, 0, 0.1); /* Fallback */
+  --glass-border: oklch(from var(--color-border-default) l c h / 0.3);
 
-        .dark-theme .text-gray-600 {
-            color: #d1d5db !important;
-        }
+  /* Shimmer effect for premium feel */
+  --shimmer-gradient: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
 
-        .dark-theme .text-gray-500 {
-            color: #9ca3af !important;
-        }
+  /* Smooth easing curves */
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-        /* Borders */
-        .dark-theme .border-gray-200 {
-            border-color: #374151 !important;
-        }
+  /* Fluid typography scale (responsive) - ULTRA READABLE! */
+  --font-size-xs: clamp(1rem, 0.9rem + 0.4vw, 1.125rem);          /* 16-18px - BIGGER! */
+  --font-size-sm: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);        /* 18-22px - BIGGER! */
+  --font-size-base: clamp(1.25rem, 1.125rem + 0.6vw, 1.625rem);   /* 20-26px - MUCH BIGGER! */
+  --font-size-lg: clamp(1.75rem, 1.5rem + 1vw, 2.5rem);           /* 28-40px - BIGGER! */
+  --font-size-xl: clamp(2.25rem, 2rem + 1.25vw, 3rem);            /* 36-48px - BIGGER! */
+  --font-size-2xl: clamp(3rem, 2.5rem + 2vw, 4rem);               /* 48-64px - MASSIVE! */
+  --font-size-3xl: clamp(4rem, 3.5rem + 2.5vw, 6rem);             /* 64-96px - HUGE! */
+  --font-size-4xl: clamp(5rem, 4.5rem + 3vw, 8rem);               /* 80-128px - ENORMOUS! */
 
-        .dark-theme .border-gray-300 {
-            border-color: #4b5563 !important;
-        }
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 
-        /* Shadows - reduce in dark mode */
-        .dark-theme .shadow-sm {
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5) !important;
-        }
+  /* Line heights - ENHANCED FOR READABILITY */
+  --line-height-tight: 1.3;      /* 1.3 (was 1.2) - better for headings */
+  --line-height-normal: 1.6;     /* 1.6 (was 1.5) - easier to read */
+  --line-height-relaxed: 1.8;    /* 1.8 (was 1.75) - maximum readability */
 
-        .dark-theme .shadow-lg {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7) !important;
-        }
+  /* Border radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
 
-        .dark-theme .shadow-xl {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7) !important;
-        }
+  /* Shadows (elevation system) */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
-        /* Interactive elements */
-        .dark-theme .hover\:bg-gray-50:hover {
-            background: #374151 !important;
-        }
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 
-        .dark-theme .hover\:bg-red-50:hover {
-            background: #991b1b !important;
-        }
+  /* Z-index scale */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-modal: 1200;
+  --z-toast: 1300;
+  --z-tooltip: 1400;
+}
 
-        /* Preferences button stays visible */
-        .dark-theme button[aria-label="Dashboard preferences"] {
-            background: #4f46e5 !important;
-        }
+/* Dark theme - Just swap semantic tokens! */
+[data-theme="dark"] {
+  --color-bg-primary: var(--color-neutral-950);
+  --color-bg-secondary: var(--color-neutral-900);
+  --color-bg-tertiary: var(--color-neutral-800);
+  --color-bg-elevated: var(--color-neutral-800);
 
-        .dark-theme button[aria-label="Dashboard preferences"]:hover {
-            background: #4338ca !important;
-        }
+  --color-text-primary: var(--color-neutral-50);
+  --color-text-secondary: var(--color-neutral-400);
+  --color-text-tertiary: var(--color-neutral-500);
+
+  --color-border-subtle: var(--color-neutral-800);
+  --color-border-default: var(--color-neutral-700);
+  --color-border-strong: var(--color-neutral-600);
+
+  --color-surface-hover: var(--color-neutral-800);
+  --color-surface-active: var(--color-neutral-700);
+
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.7), 0 1px 2px -1px rgb(0 0 0 / 0.7);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.7), 0 2px 4px -2px rgb(0 0 0 / 0.7);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.7), 0 4px 6px -4px rgb(0 0 0 / 0.7);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.7);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+
+  /* Dark theme gradients - deeper, richer */
+  --gradient-mesh:
+    radial-gradient(at 40% 20%, oklch(20% 0.08 270) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, oklch(18% 0.06 250) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, oklch(16% 0.05 300) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, oklch(18% 0.06 270) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, oklch(16% 0.06 250) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, oklch(18% 0.05 300) 0px, transparent 50%);
+
+  /* Dark theme glass - with fallbacks */
+  --glass-bg: rgba(31, 41, 55, 0.8); /* Fallback */
+  --glass-bg: oklch(from var(--color-bg-elevated) l c h / 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1); /* Fallback */
+  --glass-border: oklch(from var(--color-border-default) l c h / 0.3);
+}
+
+/* ========================================================================
+   Phase 3: Accessibility - Motion & Color Preferences
+   ======================================================================== */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Respect user's contrast preferences */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border-default: var(--color-neutral-900);
+    --color-border-strong: var(--color-neutral-950);
+  }
+
+  [data-theme="dark"] {
+    --color-border-default: var(--color-neutral-50);
+    --color-border-strong: var(--color-neutral-100);
+  }
+}
+
+/* ========================================================================
+   Phase 5: View Transitions API
+   ======================================================================== */
+
+/* Smooth transitions between light/dark themes */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--transition-slow);
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: fade-in;
+}
+
+@keyframes fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+/* ========================================================================
+   Base Styles
+   ======================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+               'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+/* ========================================================================
+   Phase 4: Container Queries - Dashboard Layout
+   ======================================================================== */
+
+.dashboard-container {
+  container-type: inline-size;
+  container-name: dashboard;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-8);
+}
+
+.dashboard-grid {
+  container-type: inline-size;
+  container-name: grid;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: var(--space-6);
+}
+
+/* Container query breakpoints */
+@container dashboard (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container dashboard (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Layout variants */
+.dashboard-grid[data-layout="metric"] {
+  grid-template-columns: 1fr;
+}
+
+.dashboard-grid[data-layout="flow"] {
+  grid-template-columns: repeat(12, 1fr); /* Use 12-column grid for panel sizing */
+}
+
+@container dashboard (min-width: 768px) {
+  .dashboard-grid[data-layout="flow"] {
+    grid-template-columns: repeat(12, 1fr); /* Keep 12 columns at all sizes */
+  }
+}
+
+.dashboard-grid[data-layout="research"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr));
+}
+
+@container dashboard (min-width: 1200px) {
+  .dashboard-grid[data-layout="research"] {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ========================================================================
+   Phase 2 & 7: Modern Selectors + Performance
+   ======================================================================== */
+
+/* Enhanced Dashboard Background - Gradient Mesh */
+.dashboard-container,
+.dashboard {
+  background: var(--gradient-mesh), var(--color-bg-primary);
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: var(--space-8);
+}
+
+/* Panel base styles with visual enhancements - COMPATIBLE VERSION */
+:where(.panel) {
+  /* Glass morphism effect with fallback */
+  background: rgba(255, 255, 255, 0.9); /* Fallback for older browsers */
+  background: var(--glass-bg);
+
+  /* Backdrop blur - fallback gracefully if not supported */
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+
+  /* Enhanced borders */
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Fallback */
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8); /* 2rem (32px) - was 1.5rem (24px) for more breathing room */
+
+  /* Layered shadows for depth - simplified for compatibility */
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+
+  /* Smooth transitions */
+  transition:
+    box-shadow var(--transition-base),
+    border-color var(--transition-base),
+    transform var(--transition-fast);
+
+  /* Phase 7: Performance optimizations */
+  contain: layout style paint;
+  content-visibility: auto;
+
+  /* Subtle translate for 3D effect */
+  transform-style: preserve-3d;
+
+  /* Prevent content from escaping panel boundaries */
+  overflow: hidden;
+}
+
+.panel:hover {
+  /* Lift on hover with enhanced shadow */
+  box-shadow:
+    var(--shadow-xl),
+    0 0 40px -10px rgba(99, 102, 241, 0.2), /* Fallback indigo glow */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.3); /* Fallback indigo */
+}
+
+/* Dark theme panels */
+[data-theme="dark"] .panel {
+  background: rgba(31, 41, 55, 0.9); /* Fallback */
+  background: var(--glass-bg);
+  border-color: rgba(255, 255, 255, 0.1); /* Fallback */
+  border-color: var(--glass-border);
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .panel:hover {
+  box-shadow:
+    var(--shadow-xl),
+    0 0 40px -10px rgba(139, 92, 246, 0.3), /* Purple glow */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+/* Phase 3: Accessibility - Focus management */
+.panel:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 4px;
+  border-color: var(--color-accent-primary);
+}
+
+/* Phase 2: Modern selectors - Conditional styling */
+.panel:has(.bottleneck-warning) {
+  border-left: 4px solid var(--color-red-500);
+  background: var(--color-red-50);
+}
+
+[data-theme="dark"] .panel:has(.bottleneck-warning) {
+  background: oklch(from var(--color-red-500) calc(l - 40%) c h / 0.15);
+}
+
+.panel:has(.success-indicator) {
+  border-left: 4px solid var(--color-green-500);
+}
+
+/* Highlight when a panel is expanded */
+.dashboard:has(.panel[data-expanded="true"]) .panel:not([data-expanded="true"]) {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Panel size variants - SIMPLIFIED for browser compatibility */
+
+/* Use a 12-column grid for flexible sizing */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-6);
+}
+
+/* Mobile first - all panels stack */
+.panel[data-size="tiny"],
+.panel[data-size="compact"],
+.panel[data-size="small"],
+.panel[data-size="medium"],
+.panel[data-size="large"],
+.panel[data-size="two-thirds"],
+.panel[data-size="three-quarters"] {
+  grid-column: span 12;
+}
+
+.panel[data-size="full-width"],
+.panel[data-size="hero"] {
+  grid-column: 1 / -1;
+}
+
+/* Hero panel titles should be larger but not MASSIVE */
+.panel[data-size="hero"] .panel-title {
+  font-size: var(--font-size-xl); /* 36-48px instead of 48-64px */
+  max-width: 100%;
+}
+
+.panel[data-size="hero"] .panel-subtitle {
+  font-size: var(--font-size-sm); /* 18-22px - keep subtitle small */
+  max-width: 100%;
+}
+
+/* Tablet breakpoint (600px+) */
+@media (min-width: 600px) {
+  .panel[data-size="tiny"] {
+    grid-column: span 4; /* 3 per row (12/4 = 3) */
+  }
+
+  .panel[data-size="compact"] {
+    grid-column: span 6; /* 2 per row (12/6 = 2) */
+  }
+
+  .panel[data-size="small"] {
+    grid-column: span 6; /* 2 per row */
+  }
+
+  .panel[data-size="medium"] {
+    grid-column: span 12; /* Full width on tablet */
+  }
+
+  .panel[data-size="large"],
+  .panel[data-size="two-thirds"] {
+    grid-column: span 12;
+  }
+
+  .panel[data-size="three-quarters"] {
+    grid-column: span 12;
+  }
+}
+
+/* Desktop breakpoint (900px+) */
+@media (min-width: 900px) {
+  .panel[data-size="tiny"] {
+    grid-column: span 2; /* 6 per row (12/2 = 6) */
+  }
+
+  .panel[data-size="compact"] {
+    grid-column: span 3; /* 4 per row (12/3 = 4) */
+  }
+
+  .panel[data-size="small"] {
+    grid-column: span 4; /* 3 per row (12/4 = 3) */
+  }
+
+  .panel[data-size="medium"] {
+    grid-column: span 6; /* 2 per row (12/6 = 2) */
+  }
+
+  .panel[data-size="large"],
+  .panel[data-size="two-thirds"] {
+    grid-column: span 8; /* 2/3 width (8/12) */
+  }
+
+  .panel[data-size="three-quarters"] {
+    grid-column: span 9; /* 3/4 width (9/12) */
+  }
+
+  .panel[data-size="hero"] {
+    padding: var(--space-12);
+  }
+}
+
+/* Compact panel styling - reduce padding */
+.panel[data-size="tiny"] {
+  padding: var(--space-3);
+}
+
+.panel[data-size="compact"] {
+  padding: var(--space-4);
+}
+
+/* Tiny panel special styling */
+.panel[data-size="tiny"] .metric-value {
+  font-size: var(--font-size-2xl); /* 36-48px (was xl 28-36px) - still big! */
+}
+
+.panel[data-size="tiny"] .metric-label {
+  font-size: var(--font-size-xs); /* 13-15px (was 10px) - more readable */
+}
+
+.panel[data-size="tiny"] .panel-title {
+  font-size: var(--font-size-xl); /* 28-36px (smaller than default 2xl) */
+}
+
+/* Feature panel (highlighted with accent) */
+.panel[data-feature="true"] {
+  border: 2px solid var(--color-accent-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.panel[data-feature="true"]::before {
+  content: '⭐';
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  font-size: var(--font-size-lg);
+  opacity: 0.3;
+}
+
+/* ========================================================================
+   Panel Components
+   ======================================================================== */
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: var(--space-4);
+}
+
+.panel-title {
+  font-size: var(--font-size-2xl); /* 48-64px - MASSIVE! */
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-6) 0; /* 24px bottom margin - MORE SPACE! */
+  letter-spacing: -0.02em; /* Tighter tracking for modern look */
+  line-height: var(--line-height-tight);
+  word-wrap: break-word; /* Prevent cutoff */
+  overflow-wrap: break-word; /* Fallback */
+  white-space: normal; /* Allow wrapping */
+  max-width: 100%; /* Don't overflow container */
+}
+
+.panel-subtitle {
+  font-size: var(--font-size-base); /* 20-26px - BIGGER! */
+  color: var(--color-text-secondary);
+  margin-top: var(--space-3); /* 12px top spacing */
+  margin-bottom: var(--space-8); /* 32px bottom margin - LOTS OF SPACE! */
+  font-weight: var(--font-weight-medium);
+  opacity: 0.9;
+  line-height: var(--line-height-normal);
+  word-wrap: break-word; /* Prevent cutoff */
+  overflow-wrap: break-word; /* Fallback */
+  white-space: normal; /* Allow wrapping */
+  max-width: 100%; /* Don't overflow container */
+}
+
+/* Panel entrance animation */
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel {
+  animation: panelFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+/* Stagger panel animations for visual flow */
+.panel:nth-child(1) { animation-delay: 0.05s; }
+.panel:nth-child(2) { animation-delay: 0.1s; }
+.panel:nth-child(3) { animation-delay: 0.15s; }
+.panel:nth-child(4) { animation-delay: 0.2s; }
+.panel:nth-child(5) { animation-delay: 0.25s; }
+.panel:nth-child(6) { animation-delay: 0.3s; }
+.panel:nth-child(n+7) { animation-delay: 0.35s; }
+
+.panel-content {
+  min-height: 0; /* Allow content to shrink */
+  font-size: var(--font-size-base); /* 17-20px - bigger body text! */
+  line-height: var(--line-height-relaxed); /* 1.8 for excellent readability */
+  color: var(--color-text-primary);
+}
+
+/* Make text-sm class also bigger */
+.text-sm {
+  font-size: var(--font-size-sm) !important; /* 15-17px (was smaller) */
+  line-height: var(--line-height-normal);
+}
+
+/* Enhanced Metric panels with gradients */
+.metric-value {
+  font-size: var(--font-size-4xl); /* 64-96px (was 48-72px) - MASSIVE! */
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  margin: var(--space-4) 0; /* More vertical space (was space-2) */
+  line-height: 1;
+
+  /* Add subtle text shadow for depth */
+  text-shadow: 0 2px 4px oklch(from currentColor l c h / 0.1);
+
+  /* Smooth color transitions */
+  transition: color var(--transition-base), text-shadow var(--transition-base);
+}
+
+.metric-value:hover {
+  /* Enhance on hover */
+  text-shadow: 0 4px 8px oklch(from currentColor l c h / 0.2);
+}
+
+.metric-label {
+  font-size: var(--font-size-base); /* 17-20px (was 15-17px) - BIGGER! */
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.9; /* Slightly more visible (was 0.8) */
+  transition: opacity var(--transition-fast);
+  margin-bottom: var(--space-2); /* Add bottom margin */
+}
+
+.panel:hover .metric-label {
+  opacity: 1;
+}
+
+/* Enhanced metric colors with gradient support */
+.metric-value[data-color="green"] {
+  background: var(--gradient-success);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="blue"] {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="red"] {
+  background: var(--gradient-danger);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="yellow"] {
+  background: var(--gradient-warning);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="purple"] {
+  background: linear-gradient(135deg, var(--color-purple-500) 0%, oklch(60% 0.16 320) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metric-value[data-color="orange"] {
+  background: linear-gradient(135deg, var(--color-orange-500) 0%, oklch(65% 0.18 40) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced colored panel backgrounds with gradient overlays - COMPATIBLE */
+.panel[data-color="green"] {
+  background:
+    linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.panel[data-color="blue"] {
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.panel[data-color="red"] {
+  background:
+    linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.panel[data-color="yellow"] {
+  background:
+    linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(234, 179, 8, 0.3);
+}
+
+.panel[data-color="purple"] {
+  background:
+    linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.panel[data-color="orange"] {
+  background:
+    linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, transparent 100%),
+    var(--glass-bg);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+/* Dark theme colored panels - deeper, glowing effect - COMPATIBLE */
+[data-theme="dark"] .panel[data-color="green"] {
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(34, 197, 94, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="blue"] {
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="red"] {
+  background:
+    radial-gradient(circle at top left, rgba(239, 68, 68, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(239, 68, 68, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(239, 68, 68, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="yellow"] {
+  background:
+    radial-gradient(circle at top left, rgba(234, 179, 8, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(234, 179, 8, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(234, 179, 8, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(234, 179, 8, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="purple"] {
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(168, 85, 247, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(168, 85, 247, 0.3);
+}
+
+[data-theme="dark"] .panel[data-color="orange"] {
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.15) 0%, transparent 70%),
+    rgba(31, 41, 55, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.15) 0%, transparent 70%),
+    var(--glass-bg);
+  border-color: rgba(249, 115, 22, 0.4);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px -10px rgba(249, 115, 22, 0.3);
+}
+
+/* Sparklines */
+.sparkline-container {
+  margin-top: var(--space-2);
+}
+
+.sparkline-svg {
+  display: inline-block;
+  vertical-align: middle;
+  /* Phase 7: Performance hint */
+  will-change: transform;
+}
+
+/* Trend indicators */
+.trend-indicator {
+  font-size: var(--font-size-xs);
+  margin-left: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+}
+
+.trend-up { color: var(--color-green-600); }
+.trend-down { color: var(--color-red-600); }
+.trend-flat { color: var(--color-neutral-400); }
+
+/* ========================================================================
+   Alert/Warning Banners
+   ======================================================================== */
+
+.alert {
+  display: flex;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+  margin-bottom: var(--space-4);
+}
+
+.alert-warning {
+  background: var(--color-orange-50);
+  border-color: var(--color-orange-500);
+  color: var(--color-orange-700);
+}
+
+.alert-error {
+  background: var(--color-red-50);
+  border-color: var(--color-red-500);
+  color: var(--color-red-700);
+}
+
+.alert-info {
+  background: var(--color-blue-50);
+  border-color: var(--color-blue-500);
+  color: var(--color-blue-700);
+}
+
+.alert-success {
+  background: var(--color-green-50);
+  border-color: var(--color-green-500);
+  color: var(--color-green-700);
+}
+
+[data-theme="dark"] .alert-warning {
+  background: oklch(from var(--color-orange-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-orange-500);
+}
+
+[data-theme="dark"] .alert-error {
+  background: oklch(from var(--color-red-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-red-500);
+}
+
+[data-theme="dark"] .alert-info {
+  background: oklch(from var(--color-blue-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-blue-500);
+}
+
+[data-theme="dark"] .alert-success {
+  background: oklch(from var(--color-green-500) calc(l - 40%) c h / 0.2);
+  color: var(--color-green-500);
+}
+
+.alert-icon {
+  flex-shrink: 0;
+  font-size: var(--font-size-2xl);
+}
+
+.alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-1);
+}
+
+.alert-message {
+  font-size: var(--font-size-xs);
+  opacity: 0.9;
+}
+
+/* ========================================================================
+   Dashboard Header
+   ======================================================================== */
+
+.dashboard-header {
+  margin-bottom: var(--space-8);
+}
+
+.dashboard-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.dashboard-title-accent {
+  display: block;
+  height: 4px;
+  width: 6rem;
+  background: var(--color-accent-primary);
+  border-radius: var(--radius-full);
+  margin-top: var(--space-2);
+}
+
+/* ========================================================================
+   Footer/Metadata
+   ======================================================================== */
+
+.dashboard-footer {
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+/* ========================================================================
+   Utility Classes
+   ======================================================================== */
+
+/* Screen reader only (Phase 3: Accessibility) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to main content link (Phase 3: Accessibility) */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-accent-primary);
+  color: white;
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  z-index: var(--z-tooltip);
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+  left: var(--space-2);
+}
+
+/* Monospace numbers */
+.numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ========================================================================
+   COOL ENHANCEMENTS - Slick Modern Effects
+   ======================================================================== */
+
+/* Animated gradient background */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.dashboard-container {
+  background-size: 200% 200%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+/* Shimmer effect on hover */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--shimmer-gradient);
+  transform: translateX(-100%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1;
+}
+
+.panel:hover::before {
+  opacity: 1;
+  animation: shimmer 1.5s ease-in-out;
+}
+
+/* Make sure panel content is above shimmer */
+.panel-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Metric value pop animation on hover */
+.metric-value {
+  transition: all 0.3s var(--ease-bounce);
+}
+
+.panel:hover .metric-value {
+  transform: scale(1.05);
+}
+
+/* Floating animation for hero panel */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.panel[data-size="hero"] {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Pulse animation for important metrics */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow:
+      var(--shadow-md),
+      0 0 0 0 rgba(99, 102, 241, 0);
+  }
+  50% {
+    box-shadow:
+      var(--shadow-lg),
+      0 0 20px 5px rgba(99, 102, 241, 0.3);
+  }
+}
+
+.metric-value[data-color="blue"] {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Smooth scroll reveal */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.panel {
+  animation: reveal-up 0.6s var(--ease-in-out) backwards;
+  will-change: opacity, transform;
+}
+
+/* Stagger delays - smoother cascade */
+.panel:nth-child(1) { animation-delay: 0.05s; }
+.panel:nth-child(2) { animation-delay: 0.08s; }
+.panel:nth-child(3) { animation-delay: 0.11s; }
+.panel:nth-child(4) { animation-delay: 0.14s; }
+.panel:nth-child(5) { animation-delay: 0.17s; }
+.panel:nth-child(6) { animation-delay: 0.20s; }
+.panel:nth-child(7) { animation-delay: 0.23s; }
+.panel:nth-child(8) { animation-delay: 0.26s; }
+.panel:nth-child(9) { animation-delay: 0.29s; }
+.panel:nth-child(10) { animation-delay: 0.32s; }
+.panel:nth-child(n+11) { animation-delay: 0.35s; }
+
+/* 3D tilt effect on hover */
+.panel {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  transition: transform 0.3s var(--ease-smooth);
+}
+
+.panel:hover {
+  transform: translateY(-4px) rotateX(2deg);
+}
+
+/* Sparkline animate in */
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.sparkline-svg polyline {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw-line 1s ease-out forwards;
+}
+
+/* Panel title underline effect */
+.panel-title::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-accent-primary), transparent);
+  transition: width 0.4s var(--ease-smooth);
+  margin-top: 0.25rem;
+}
+
+.panel:hover .panel-title::after {
+  width: 60%;
+}
+
+/* Ripple effect on click */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.panel::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+}
+
+.panel:active::after {
+  animation: ripple 0.6s ease-out;
+}
+
+/* Gradient borders that animate */
+.panel[data-color] {
+  position: relative;
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+.panel[data-color]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  padding: 2px;
+  background: var(--gradient-primary);
+  border-radius: inherit;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 0;
+}
+
+.panel[data-color]:hover::before {
+  opacity: 1;
+}
+
+/* Number counter animation (for metrics) */
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.metric-value.numeric {
+  animation: count-up 0.8s var(--ease-bounce) backwards;
+}
+
+/* Glowing text effect for primary metrics */
+@keyframes glow-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 10px rgba(99, 102, 241, 0.3),
+      0 0 20px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(99, 102, 241, 0.5),
+      0 0 30px rgba(99, 102, 241, 0.3);
+  }
+}
+
+.panel:hover .metric-value[data-color="blue"] {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Smooth color transitions on theme change */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: var(--ease-smooth);
+}
+
+/* Disable transitions for animations */
+*:where(.panel, .metric-value, [class*="fade"], [class*="reveal"]) {
+  transition-property: none;
+}
+
+/* Print styles */
+@media print {
+  .dashboard-container {
+    max-width: 100%;
+    animation: none !important;
+  }
+
+  .panel {
+    break-inside: avoid;
+    box-shadow: none;
+    animation: none !important;
+  }
+
+  .panel::before,
+  .panel::after {
+    display: none;
+  }
+}
+
+/* ========================================
+   ADVANCED EFFECTS - Next Level
+   ======================================== */
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  background: var(--color-bg-default);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,
+    var(--color-accent-primary),
+    var(--color-indigo-700));
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg,
+    var(--color-indigo-600),
+    var(--color-indigo-800));
+  background-clip: padding-box;
+}
+
+/* Enhanced scroll reveal states */
+.panel.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.panel.revealing {
+  opacity: 0.5;
+  transform: translateY(10px);
+}
+
+/* Magnetic cursor effect (applied via JS) */
+.panel.magnetic {
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Enhanced focus states with pulse */
+.panel:focus-visible {
+  outline: 3px solid var(--color-accent-primary);
+  outline-offset: 2px;
+  animation: focus-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes focus-pulse {
+  0%, 100% {
+    outline-color: var(--color-accent-primary);
+  }
+  50% {
+    outline-color: var(--color-indigo-400);
+  }
+}
+
+/* Skeleton loading animation */
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.panel.loading .panel-content {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+/* Button press micro-interactions */
+button,
+.interactive-element {
+  transition: transform 0.1s var(--ease-smooth);
+}
+
+button:active,
+.interactive-element:active {
+  transform: scale(0.95);
+}
+
+/* Enhanced metric number styling */
+.metric-value {
+  font-feature-settings: "tnum" 1; /* Tabular numbers */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Sparkline enhancements */
+svg.sparkline {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: filter 0.3s var(--ease-smooth);
+}
+
+.panel:hover svg.sparkline {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* Status indicator pulses */
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+.status-indicator.success {
+  background: var(--color-green-500);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+}
+
+.status-indicator.warning {
+  background: var(--color-yellow-500);
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.4);
+}
+
+.status-indicator.error {
+  background: var(--color-red-500);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+/* Enhanced data visualization */
+.chart-container {
+  position: relative;
+  contain: layout style paint;
+  will-change: opacity;
+}
+
+.chart-container::before {
+  content: '';
+  display: block;
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg,
+    var(--color-accent-primary),
+    var(--color-purple-500));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-smooth);
+  pointer-events: none;
+}
+
+.panel:hover .chart-container::before {
+  opacity: 0.3;
+}
+
+/* Panel divider animation */
+.panel-divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-border-default) 50%,
+    transparent 100%);
+  margin: var(--space-4) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-divider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-accent-primary) 50%,
+    transparent 100%);
+  animation: divider-sweep 3s ease-in-out infinite;
+}
+
+@keyframes divider-sweep {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Loading spinner for async operations */
+@keyframes spinner-rotate {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--color-accent-primary);
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+/* Tooltip enhancements */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]::before,
+[data-tooltip]::after {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease-smooth);
+}
+
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(0, 0, 0, 0.9);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: var(--shadow-xl);
+}
+
+[data-tooltip]::after {
+  content: '';
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--color-bg-elevated);
+  z-index: 1000;
+}
+
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* Performance optimization */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
+    <!-- Skip to main content (Accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <div class="dashboard-container">
-        <!-- Dashboard Title (Tufte: Clear hierarchy) -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Answer: Explain Thompson Sampling</h1>
-            <div class="h-1 w-24 bg-indigo-600 rounded"></div>
-        </div>
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <h1 class="dashboard-title">Answer: Explain Thompson Sampling</h1>
+            <div class="dashboard-title-accent"></div>
+        </header>
 
-        <!-- Dashboard Grid (Responsive layout) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Main Dashboard Grid -->
+        <main id="main-content" role="main">
+            <div class="dashboard-grid" data-layout="flow">
 
-        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-green-50">
-            <div class="text-sm font-medium text-gray-600 mb-2">Confidence</div>
-            <div class="flex items-baseline">
-                <div class="text-4xl font-bold text-green-600">0.91%</div>
+        <article class="panel"
+                 data-panel-id="metric_confidence"
+                 data-panel-type="metric"
+                 data-size="small"
+                 data-color="green"
+                 role="article"
+                 aria-labelledby="panel-metric_confidence-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric_confidence-title">Confidence</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="green" aria-live="polite">
+                        0.91%
+                    </div>
+                    
+                </div>
                 
+                <div class="panel-subtitle">91%</div>
             </div>
-            
-            <div class="text-xs text-gray-500 mt-2">91%</div>
-        </div>
+        </article>
         
 
-        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-yellow-50">
-            <div class="text-sm font-medium text-gray-600 mb-2">Duration</div>
-            <div class="flex items-baseline">
-                <div class="text-4xl font-bold text-yellow-600">100.00ms</div>
+        <article class="panel"
+                 data-panel-id="metric_trace_duration_ms"
+                 data-panel-type="metric"
+                 data-size="small"
+                 data-color="yellow"
+                 role="article"
+                 aria-labelledby="panel-metric_trace_duration_ms-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <div class="metric-label" id="panel-metric_trace_duration_ms-title">Duration</div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+                    <div class="metric-value numeric" data-color="yellow" aria-live="polite">
+                        100.00ms
+                    </div>
+                    
+                </div>
                 
+                <div class="panel-subtitle">100ms</div>
             </div>
-            
-            <div class="text-xs text-gray-500 mt-2">100ms</div>
-        </div>
+        </article>
         
 
-        <div class="md:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
-            <div class="text-lg font-semibold text-gray-800 mb-1">Query</div>
-            <div class="text-sm text-gray-600 mb-4">Explain Thompson Sampling</div>
-            <div class="text-sm text-gray-700 whitespace-pre-wrap font-mono bg-gray-50 p-3 rounded border border-gray-200">
+        <article class="panel"
+                 data-panel-id="text_query_text"
+                 data-panel-type="text"
+                 data-size="small"
+                 role="article"
+                 aria-labelledby="panel-text_query_text-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-text_query_text-title">Query</h3>
+                <div class="panel-subtitle">Explain Thompson Sampling</div>
+                <div class="text-sm" style="color: var(--color-text-primary); line-height: 1.6;">
 Explain Thompson Sampling
+                </div>
             </div>
-            <div class="text-xs text-gray-500 mt-2">25 characters</div>
-        </div>
+        </article>
         
 
-        <div class="md:col-span-2 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
-            <div class="text-lg font-semibold text-gray-800 mb-1">Timeline</div>
-            <div class="text-sm text-gray-600 mb-4">Execution stages</div>
-            
-            <div id="plot_timeline_trace_stage_durations" style="height: 300px;"></div>
-        </div>
+        <article class="panel"
+                 data-panel-id="timeline_trace_stage_durations"
+                 data-panel-type="timeline"
+                 data-size="large"
+                 role="article"
+                 aria-labelledby="panel-timeline_trace_stage_durations-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-timeline_trace_stage_durations-title">Timeline</h3>
+                <div class="panel-subtitle">Execution stages</div>
+                
+                <div id="plot_timeline_trace_stage_durations" style="height: 450px;"></div>
+            </div>
+        </article>
         <script>
         (function() {
             var data = [{
@@ -220,33 +1780,77 @@ Explain Thompson Sampling
                 hovertemplate: '%{y}<br>%{x:.1f}ms (%{text})<extra></extra>'
             }];
 
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',        // Dark elevated background
+                        bgSecondary: '#111827', // Dark secondary
+                        text: '#f3f4f6',      // Light text
+                        grid: '#374151'       // Dark grid
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',        // White background
+                        bgSecondary: '#f9fafb', // Light gray
+                        text: '#1f2937',      // Dark text
+                        grid: '#e5e7eb'       // Light grid
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
             var layout = {
                 margin: { l: 120, r: 20, t: 20, b: 40 },
                 xaxis: {
                     title: 'Duration (ms)',
                     showgrid: true,
-                    gridcolor: '#f0f0f0'
+                    gridcolor: colors.grid,
+                    color: colors.text
                 },
                 yaxis: {
                     autorange: 'reversed',
-                    showgrid: false
+                    showgrid: false,
+                    color: colors.text
                 },
-                paper_bgcolor: 'white',
-                plot_bgcolor: 'white',
-                font: { family: 'system-ui, -apple-system, sans-serif', size: 12 },
+                paper_bgcolor: colors.bg,
+                plot_bgcolor: colors.bg,
+                font: { family: 'system-ui, -apple-system, sans-serif', size: 12, color: colors.text },
                 showlegend: false
             };
 
             var config = { responsive: true, displayModeBar: false };
             Plotly.newPlot('plot_timeline_trace_stage_durations', data, layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_timeline_trace_stage_durations', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bg,
+                    'xaxis.gridcolor': newColors.grid,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
         })();
         </script>
         
 
-        <div class="md:col-span-1 lg:col-span-1 p-6 rounded-lg shadow-sm border border-gray-200 bg-white">
-            <div class="text-lg font-semibold text-gray-800 mb-1">Semantic Profile</div>
-            <div class="text-sm text-gray-600 mb-2">244D meaning projection</div>
-            
+        <article class="panel"
+                 data-panel-id="heatmap_semantic_dimensions"
+                 data-panel-type="heatmap"
+                 data-size="medium"
+                 role="article"
+                 aria-labelledby="panel-heatmap_semantic_dimensions-title"
+                 tabindex="0">
+            <div class="panel-content">
+                <h3 class="panel-title" id="panel-heatmap_semantic_dimensions-title">Semantic Profile</h3>
+                <div class="panel-subtitle">244D meaning projection</div>
+                
         <div class="flex items-center justify-between mb-3 text-xs text-gray-600">
             <div>
                 <span class="font-semibold">20 / 8</span> dimensions shown
@@ -257,8 +1861,9 @@ Explain Thompson Sampling
             </div>
         </div>
         
-            <div id="plot_heatmap_semantic_dimensions" style="height: 400px;"></div>
-        </div>
+                <div id="plot_heatmap_semantic_dimensions" style="height: 550px;"></div>
+            </div>
+        </article>
         <script>
         (function() {
             var data = [{
@@ -278,41 +1883,898 @@ Explain Thompson Sampling
                 hovertemplate: '%{x}<br>Score: %{z:.3f}<extra></extra>'
             }];
 
+            // Get theme-aware colors (Plotly-compatible RGB/hex)
+            const getThemeColors = () => {
+                const theme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (theme === 'dark') {
+                    return {
+                        bg: '#1f2937',
+                        text: '#f3f4f6',
+                        grid: '#374151'
+                    };
+                } else {
+                    return {
+                        bg: '#ffffff',
+                        text: '#1f2937',
+                        grid: '#e5e7eb'
+                    };
+                }
+            };
+
+            const colors = getThemeColors();
+
             var layout = {
                 margin: { l: 80, r: 80, t: 10, b: 120 },
                 xaxis: {
                     tickangle: -45,
                     tickfont: { size: 10 },
-                    showgrid: false
+                    showgrid: false,
+                    color: colors.text
                 },
                 yaxis: {
                     tickfont: { size: 12 },
-                    showgrid: false
+                    showgrid: false,
+                    color: colors.text
                 },
-                paper_bgcolor: 'white',
-                plot_bgcolor: 'white',
-                font: { family: 'system-ui, -apple-system, sans-serif' },
+                paper_bgcolor: colors.bg,
+                plot_bgcolor: colors.bg,
+                font: { family: 'system-ui, -apple-system, sans-serif', color: colors.text },
                 showlegend: false
             };
 
             var config = { responsive: true, displayModeBar: false };
             Plotly.newPlot('plot_heatmap_semantic_dimensions', data, layout, config);
+
+            // Redraw on theme change
+            window.addEventListener('themechange', () => {
+                const newColors = getThemeColors();
+                Plotly.relayout('plot_heatmap_semantic_dimensions', {
+                    'paper_bgcolor': newColors.bg,
+                    'plot_bgcolor': newColors.bg,
+                    'xaxis.color': newColors.text,
+                    'yaxis.color': newColors.text,
+                    'font.color': newColors.text
+                });
+            });
         })();
         </script>
         
-        </div>
+            </div>
+        </main>
 
         <!-- Metadata Footer -->
+        <footer class="dashboard-footer" role="contentinfo">
 
         <div class="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-500 text-center">
             Complexity: FAST | Panels: 5 | Cache: 0% hits (0/0)
             <br>
-            Generated: 2025-10-29T01:54:40
+            Generated: 2025-11-04T09:39:52
         </div>
         
+        </footer>
     </div>
 
-    <!-- Dashboard Interactivity -->
+    <!-- Modern JavaScript (Phases 3 & 5) -->
+    <script>
+/**
+ * HoloLoom Modern Dashboard Interactivity
+ * ========================================
+ * Modern JavaScript features:
+ * - View Transitions API (Phase 5)
+ * - Theme Management
+ * - Accessibility Features (Phase 3)
+ * - Progressive Enhancement
+ *
+ * Author: Claude Code with HoloLoom architecture
+ * Date: October 29, 2025
+ */
+
+(function() {
+  'use strict';
+
+  // ========================================================================
+  // Phase 5: Theme Management with View Transitions API
+  // ========================================================================
+
+  class ThemeManager {
+    constructor() {
+      this.root = document.documentElement;
+      this.storageKey = 'hololoom-theme';
+      this.init();
+    }
+
+    init() {
+      // Load saved theme or detect system preference
+      const savedTheme = localStorage.getItem(this.storageKey);
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+      this.setTheme(initialTheme, false); // No transition on initial load
+
+      // Listen for system preference changes
+      window.matchMedia('(prefers-color-scheme: dark)')
+        .addEventListener('change', (e) => {
+          if (!localStorage.getItem(this.storageKey)) {
+            this.setTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+
+      // Create theme toggle button
+      this.createThemeToggle();
+    }
+
+    setTheme(theme, useTransition = true) {
+      // Phase 5: Use View Transitions API if available
+      if (useTransition && document.startViewTransition) {
+        document.startViewTransition(() => {
+          this._applyTheme(theme);
+        });
+      } else {
+        this._applyTheme(theme);
+      }
+
+      localStorage.setItem(this.storageKey, theme);
+
+      // Dispatch custom event for other components
+      window.dispatchEvent(new CustomEvent('themechange', {
+        detail: { theme }
+      }));
+    }
+
+    _applyTheme(theme) {
+      this.root.setAttribute('data-theme', theme);
+    }
+
+    toggle() {
+      const currentTheme = this.root.getAttribute('data-theme') || 'light';
+      this.setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    }
+
+    createThemeToggle() {
+      const button = document.createElement('button');
+      button.className = 'theme-toggle';
+      button.setAttribute('aria-label', 'Toggle dark mode');
+      button.setAttribute('title', 'Toggle dark mode');
+      button.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path class="sun-icon" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+          <path class="moon-icon" style="display: none;" d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+        </svg>
+      `;
+
+      // Style the button
+      Object.assign(button.style, {
+        position: 'fixed',
+        bottom: '2rem',
+        right: '2rem',
+        width: '48px',
+        height: '48px',
+        borderRadius: '50%',
+        border: '1px solid var(--color-border-default)',
+        background: 'var(--color-accent-primary)',
+        color: 'white',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: 'var(--shadow-lg)',
+        transition: 'transform var(--transition-fast), box-shadow var(--transition-fast)',
+        zIndex: 'var(--z-sticky)'
+      });
+
+      button.addEventListener('click', () => this.toggle());
+
+      button.addEventListener('mouseenter', () => {
+        button.style.transform = 'scale(1.1)';
+        button.style.boxShadow = 'var(--shadow-xl)';
+      });
+
+      button.addEventListener('mouseleave', () => {
+        button.style.transform = 'scale(1)';
+        button.style.boxShadow = 'var(--shadow-lg)';
+      });
+
+      // Update icon based on theme
+      const updateIcon = () => {
+        const theme = this.root.getAttribute('data-theme');
+        const sunIcon = button.querySelector('.sun-icon');
+        const moonIcon = button.querySelector('.moon-icon');
+
+        if (theme === 'dark') {
+          sunIcon.style.display = 'block';
+          moonIcon.style.display = 'none';
+          button.setAttribute('aria-label', 'Switch to light mode');
+        } else {
+          sunIcon.style.display = 'none';
+          moonIcon.style.display = 'block';
+          button.setAttribute('aria-label', 'Switch to dark mode');
+        }
+      };
+
+      updateIcon();
+      window.addEventListener('themechange', updateIcon);
+
+      document.body.appendChild(button);
+    }
+  }
+
+  // ========================================================================
+  // Phase 3: Accessibility - Keyboard Navigation
+  // ========================================================================
+
+  class KeyboardNavigationManager {
+    constructor() {
+      this.focusableSelector = '.panel, button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      this.init();
+    }
+
+    init() {
+      // Add keyboard shortcuts
+      document.addEventListener('keydown', this.handleKeydown.bind(this));
+
+      // Add focus indicators to panels
+      this.enhancePanelFocus();
+    }
+
+    handleKeydown(e) {
+      // T key: Toggle theme
+      if (e.key === 't' && !this.isTyping(e)) {
+        e.preventDefault();
+        window.themeManager?.toggle();
+      }
+
+      // Escape: Close expanded panels
+      if (e.key === 'Escape') {
+        this.closeExpandedPanels();
+      }
+
+      // Arrow keys: Navigate between panels
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        if (document.activeElement.classList.contains('panel')) {
+          e.preventDefault();
+          this.navigatePanels(e.key);
+        }
+      }
+    }
+
+    isTyping(e) {
+      const target = e.target;
+      return target.tagName === 'INPUT' ||
+             target.tagName === 'TEXTAREA' ||
+             target.isContentEditable;
+    }
+
+    navigatePanels(direction) {
+      const panels = Array.from(document.querySelectorAll('.panel'));
+      const currentIndex = panels.indexOf(document.activeElement);
+
+      if (currentIndex === -1) return;
+
+      let nextIndex;
+      if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+        nextIndex = (currentIndex + 1) % panels.length;
+      } else {
+        nextIndex = (currentIndex - 1 + panels.length) % panels.length;
+      }
+
+      panels[nextIndex].focus();
+    }
+
+    enhancePanelFocus() {
+      document.querySelectorAll('.panel').forEach(panel => {
+        // Make panels keyboard focusable
+        if (!panel.hasAttribute('tabindex')) {
+          panel.setAttribute('tabindex', '0');
+        }
+
+        // Add ARIA labels if missing
+        if (!panel.getAttribute('aria-label')) {
+          const title = panel.querySelector('.panel-title')?.textContent;
+          if (title) {
+            panel.setAttribute('aria-label', title);
+          }
+        }
+      });
+    }
+
+    closeExpandedPanels() {
+      document.querySelectorAll('.panel[data-expanded="true"]').forEach(panel => {
+        panel.setAttribute('data-expanded', 'false');
+      });
+    }
+  }
+
+  // ========================================================================
+  // Panel Interactivity
+  // ========================================================================
+
+  class PanelManager {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      document.querySelectorAll('.panel').forEach(panel => {
+        this.enhancePanel(panel);
+      });
+    }
+
+    enhancePanel(panel) {
+      // Click to expand (optional)
+      const expandable = panel.hasAttribute('data-expandable');
+
+      if (expandable) {
+        panel.style.cursor = 'pointer';
+
+        panel.addEventListener('click', (e) => {
+          // Don't expand if clicking interactive elements
+          if (e.target.closest('button, a, input, select')) return;
+
+          this.togglePanel(panel);
+        });
+
+        // Enter key to expand
+        panel.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.togglePanel(panel);
+          }
+        });
+      }
+
+      // Hover effects are handled by CSS
+    }
+
+    togglePanel(panel) {
+      const isExpanded = panel.getAttribute('data-expanded') === 'true';
+      panel.setAttribute('data-expanded', !isExpanded);
+
+      // Announce to screen readers
+      const message = isExpanded ? 'Panel collapsed' : 'Panel expanded';
+      this.announceToScreenReader(message);
+    }
+
+    announceToScreenReader(message) {
+      const announcement = document.createElement('div');
+      announcement.className = 'sr-only';
+      announcement.setAttribute('role', 'status');
+      announcement.setAttribute('aria-live', 'polite');
+      announcement.textContent = message;
+
+      document.body.appendChild(announcement);
+      setTimeout(() => announcement.remove(), 1000);
+    }
+  }
+
+  // ========================================================================
+  // Performance Monitoring
+  // ========================================================================
+
+  class PerformanceMonitor {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Monitor paint performance
+      if ('PerformanceObserver' in window) {
+        try {
+          const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              console.log(`[HoloLoom] ${entry.name}: ${entry.duration.toFixed(2)}ms`);
+            }
+          });
+
+          observer.observe({ entryTypes: ['measure', 'paint'] });
+        } catch (e) {
+          // PerformanceObserver not fully supported
+        }
+      }
+
+      // Log page load metrics
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          if (perfData) {
+            console.log('[HoloLoom] Page Load Metrics:', {
+              domContentLoaded: `${perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart}ms`,
+              loadComplete: `${perfData.loadEventEnd - perfData.loadEventStart}ms`,
+              domInteractive: `${perfData.domInteractive - perfData.fetchStart}ms`
+            });
+          }
+        }, 0);
+      });
+    }
+  }
+
+  // ========================================================================
+  // Initialize All Managers
+  // ========================================================================
+
+  function init() {
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+      return;
+    }
+
+    console.log('[HoloLoom] Initializing modern dashboard features...');
+
+    // Initialize managers
+    window.themeManager = new ThemeManager();
+    window.keyboardNav = new KeyboardNavigationManager();
+    window.panelManager = new PanelManager();
+
+    // Performance monitoring (only in development)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window.perfMonitor = new PerformanceMonitor();
+    }
+
+    // Add keyboard shortcuts help
+    createKeyboardShortcutsHelp();
+
+    console.log('[HoloLoom] Dashboard ready! Press "?" for keyboard shortcuts.');
+  }
+
+  // ========================================================================
+  // Keyboard Shortcuts Help Modal
+  // ========================================================================
+
+  function createKeyboardShortcutsHelp() {
+    let helpVisible = false;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '?' && !window.keyboardNav.isTyping(e)) {
+        e.preventDefault();
+        toggleHelp();
+      }
+    });
+
+    function toggleHelp() {
+      if (helpVisible) {
+        document.getElementById('keyboard-help-modal')?.remove();
+        helpVisible = false;
+      } else {
+        showHelp();
+        helpVisible = true;
+      }
+    }
+
+    function showHelp() {
+      const modal = document.createElement('div');
+      modal.id = 'keyboard-help-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-labelledby', 'keyboard-help-title');
+      modal.setAttribute('aria-modal', 'true');
+
+      modal.innerHTML = `
+        <div style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: var(--z-modal);
+          padding: var(--space-4);
+        " id="help-backdrop">
+          <div style="
+            background: var(--color-bg-elevated);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+            max-width: 500px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--color-border-default);
+          ">
+            <h2 id="keyboard-help-title" style="
+              margin: 0 0 var(--space-4) 0;
+              font-size: var(--font-size-xl);
+              color: var(--color-text-primary);
+            ">Keyboard Shortcuts</h2>
+
+            <dl style="margin: 0; display: grid; gap: var(--space-3);">
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">T</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Toggle dark mode</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">Arrow Keys</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Navigate panels</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">Enter / Space</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Expand panel</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">Esc</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Close expanded panels</dd>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; gap: var(--space-4);">
+                <dt style="font-weight: var(--font-weight-semibold); color: var(--color-text-primary);">
+                  <kbd style="
+                    background: var(--color-bg-secondary);
+                    padding: var(--space-1) var(--space-2);
+                    border-radius: var(--radius-sm);
+                    font-family: monospace;
+                    border: 1px solid var(--color-border-default);
+                  ">?</kbd>
+                </dt>
+                <dd style="margin: 0; color: var(--color-text-secondary);">Show this help</dd>
+              </div>
+            </dl>
+
+            <button style="
+              margin-top: var(--space-6);
+              width: 100%;
+              padding: var(--space-3);
+              background: var(--color-accent-primary);
+              color: white;
+              border: none;
+              border-radius: var(--radius-md);
+              font-weight: var(--font-weight-medium);
+              cursor: pointer;
+            " id="close-help-btn">Close</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Close on button click
+      document.getElementById('close-help-btn').addEventListener('click', toggleHelp);
+
+      // Close on backdrop click
+      document.getElementById('help-backdrop').addEventListener('click', (e) => {
+        if (e.target.id === 'help-backdrop') {
+          toggleHelp();
+        }
+      });
+
+      // Close on Escape
+      const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+          toggleHelp();
+          document.removeEventListener('keydown', escapeHandler);
+        }
+      };
+      document.addEventListener('keydown', escapeHandler);
+
+      // Focus the close button
+      setTimeout(() => {
+        document.getElementById('close-help-btn').focus();
+      }, 100);
+    }
+  }
+
+  // ========================================================================
+  // NEXT LEVEL: Advanced Interactive Effects
+  // ========================================================================
+
+  class ParallaxEffect {
+    constructor() {
+      this.panels = document.querySelectorAll('.panel');
+      this.enabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (this.enabled) this.init();
+    }
+
+    init() {
+      document.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+
+        this.panels.forEach((panel, index) => {
+          const speed = (index % 3 + 1) * 0.5; // Different speeds for depth
+          const x = (mouseX - 0.5) * speed * 10;
+          const y = (mouseY - 0.5) * speed * 10;
+
+          panel.style.transform = `translate(${x}px, ${y}px)`;
+        });
+      });
+
+      // Reset on mouse leave
+      document.addEventListener('mouseleave', () => {
+        this.panels.forEach(panel => {
+          panel.style.transform = '';
+        });
+      });
+    }
+  }
+
+  class CursorTrail {
+    constructor() {
+      this.trail = [];
+      this.maxTrail = 20;
+      this.enabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (this.enabled) this.init();
+    }
+
+    init() {
+      document.addEventListener('mousemove', (e) => {
+        this.createParticle(e.clientX, e.clientY);
+      });
+    }
+
+    createParticle(x, y) {
+      const particle = document.createElement('div');
+      particle.className = 'cursor-particle';
+      particle.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        width: 4px;
+        height: 4px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.8), transparent);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        animation: particle-fade 0.8s ease-out forwards;
+      `;
+      document.body.appendChild(particle);
+
+      // Add CSS animation if not exists
+      if (!document.getElementById('particle-style')) {
+        const style = document.createElement('style');
+        style.id = 'particle-style';
+        style.textContent = `
+          @keyframes particle-fade {
+            from {
+              opacity: 0.8;
+              transform: scale(1);
+            }
+            to {
+              opacity: 0;
+              transform: scale(0.3);
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      setTimeout(() => particle.remove(), 800);
+    }
+  }
+
+  class DataAnimator {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Animate metric numbers on scroll into view
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            this.animateNumber(entry.target);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      document.querySelectorAll('.metric-value.numeric').forEach(el => {
+        observer.observe(el);
+      });
+    }
+
+    animateNumber(element) {
+      const text = element.textContent.trim();
+      const number = parseFloat(text.replace(/[^0-9.]/g, ''));
+
+      if (isNaN(number)) return;
+
+      const suffix = text.replace(/[0-9.,]/g, '');
+      const duration = 1000;
+      const start = performance.now();
+
+      const animate = (currentTime) => {
+        const elapsed = currentTime - start;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Ease out cubic
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        const current = number * easeProgress;
+
+        // Format based on original format
+        let formatted;
+        if (text.includes('K')) {
+          // Value is already in thousands, don't divide again!
+          formatted = current.toFixed(1) + 'K';
+        } else if (text.includes('%')) {
+          formatted = current.toFixed(1) + '%';
+        } else if (text.includes('GB')) {
+          formatted = current.toFixed(1) + 'GB';
+        } else if (text.includes('ms')) {
+          formatted = current.toFixed(1) + 'ms';
+        } else {
+          formatted = Math.floor(current).toString();
+        }
+
+        element.textContent = formatted;
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }
+  }
+
+  class PanelMagnetism {
+    constructor() {
+      this.panels = document.querySelectorAll('.panel');
+      this.enabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (this.enabled) this.init();
+    }
+
+    init() {
+      this.panels.forEach(panel => {
+        panel.addEventListener('mouseenter', (e) => {
+          const rect = panel.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          panel.addEventListener('mousemove', this.handleMouseMove.bind(this, panel, centerX, centerY));
+        });
+
+        panel.addEventListener('mouseleave', () => {
+          panel.style.transform = '';
+        });
+      });
+    }
+
+    handleMouseMove(panel, centerX, centerY, e) {
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+
+      const deltaX = (mouseX - centerX) / 20;
+      const deltaY = (mouseY - centerY) / 20;
+
+      panel.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.02)`;
+    }
+  }
+
+  class SmoothScroll {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Add smooth scroll behavior
+      document.documentElement.style.scrollBehavior = 'smooth';
+
+      // Add scroll reveal for panels
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '-50px'
+      });
+
+      document.querySelectorAll('.panel').forEach(panel => {
+        observer.observe(panel);
+      });
+    }
+  }
+
+  class HoverSound {
+    constructor() {
+      this.enabled = false; // Disabled by default, can be enabled
+      if (this.enabled) this.init();
+    }
+
+    init() {
+      // Create audio context
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      document.querySelectorAll('.panel').forEach(panel => {
+        panel.addEventListener('mouseenter', () => this.playHoverSound());
+      });
+    }
+
+    playHoverSound() {
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + 0.1);
+    }
+  }
+
+  class DynamicColorShift {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Shift panel colors based on time of day
+      const hour = new Date().getHours();
+      const isDaytime = hour >= 6 && hour < 18;
+
+      if (!isDaytime && document.documentElement.getAttribute('data-theme') === 'light') {
+        // Subtle hint that dark mode might be nice
+        document.querySelectorAll('.panel').forEach(panel => {
+          panel.style.filter = 'brightness(0.95)';
+        });
+      }
+    }
+  }
+
+  // Initialize advanced effects
+  function initAdvancedEffects() {
+    // new ParallaxEffect(); // Uncomment for mouse parallax
+    new CursorTrail();
+    new DataAnimator();
+    // new PanelMagnetism(); // Uncomment for magnetic panels
+    new SmoothScroll();
+    // new HoverSound(); // Uncomment for sound effects (disabled by default)
+    new DynamicColorShift();
+
+    console.log('🎨 HoloLoom Advanced Effects Loaded');
+  }
+
+  // Start initialization
+  init();
+
+  // Initialize advanced effects after short delay
+  setTimeout(initAdvancedEffects, 100);
+
+})();
+
+    </script>
+
+    <!-- Legacy Interactivity (backward compatibility) -->
     <script>
 /**
  * HoloLoom Dashboard Interactivity

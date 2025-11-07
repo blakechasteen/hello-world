@@ -269,6 +269,32 @@ class FullLearningEngine:
     """
     Complete self-improving orchestrator with full learning loop.
 
+    **INTEGRATION NOTE** (November 2025):
+    This standalone wrapper is now OPTIONAL. Recursive learning has been
+    integrated directly into WeavingOrchestrator via config flags.
+
+    **Recommended (Integrated)**:
+    ```python
+    config = Config.fast()
+    config.enable_recursive_learning = True
+
+    async with WeavingOrchestrator(cfg=config, shards=shards) as orch:
+        spacetime = await orch.weave(query)  # Automatically uses learning!
+        stats = orch.get_recursive_learning_stats()
+    ```
+
+    **Legacy (Explicit Wrapper)**:
+    ```python
+    async with FullLearningEngine(cfg=config, shards=shards) as engine:
+        spacetime = await engine.weave(query)
+        stats = engine.get_learning_statistics()
+    ```
+
+    Both approaches work, but the integrated approach is preferred for:
+    - Less boilerplate code
+    - Consistent API with standard orchestrator
+    - Automatic lifecycle management
+
     This is the ultimate integration:
     - Phase 1: Scratchpad provenance tracking
     - Phase 2: Pattern learning from successful queries
@@ -322,7 +348,8 @@ class FullLearningEngine:
         # Initialize orchestrator
         self.orchestrator = WeavingOrchestrator(
             cfg=self.cfg,
-            shards=self.shards
+            shards=self.shards,
+            enable_semantic_cache=False  # Disabled for dashboard speed
         )
         await self.orchestrator.__aenter__()
 

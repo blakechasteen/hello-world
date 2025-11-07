@@ -215,18 +215,8 @@ class MatryoshkaGate:
         Returns:
             Embeddings array (n_texts, scale)
         """
-        # Get full embeddings
-        full_embeds = self.embedder.encode(texts)
-
-        # Project to target scale
-        if scale == self.embedder.base_dim:
-            return full_embeds
-        elif scale in self.embedder.proj:
-            # Use projection matrix
-            return full_embeds @ self.embedder.proj[scale]
-        else:
-            # Truncate
-            return full_embeds[:, :scale]
+        # Delegate to embedder's scale-aware API to avoid shape mismatches
+        return self.embedder.encode_scales(texts, size=scale)
 
     def _compute_similarity(
         self,

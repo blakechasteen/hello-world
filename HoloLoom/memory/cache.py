@@ -162,7 +162,7 @@ class RetrieverMS:
             }
         
         # Initialize BM25 if available
-        if _HAVE_BM25:
+        if _HAVE_BM25 and len(self.texts) > 0:
             tokenized = [t.lower().split() for t in self.texts]
             self.bm25 = BM25Okapi(tokenized)
         else:

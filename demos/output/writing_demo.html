@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Narrative Content</title>
+
+    <style>
+        /* Tufte-inspired CSS */
+        body {
+            font-family: "ET Book", Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua", Georgia, serif;
+            font-size: 15px;
+            line-height: 2;
+            color: #111;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 5% 12%;
+            background-color: #fffff8;
+        }
+
+        article {
+            position: relative;
+        }
+
+        h1 {
+            font-weight: 400;
+            margin-top: 4rem;
+            margin-bottom: 1.5rem;
+            font-size: 3.2rem;
+            line-height: 1;
+        }
+
+        h2 {
+            font-style: italic;
+            font-weight: 400;
+            margin-top: 2.1rem;
+            margin-bottom: 1.4rem;
+            font-size: 2.2rem;
+            line-height: 1;
+        }
+
+        h3 {
+            font-style: italic;
+            font-weight: 400;
+            font-size: 1.7rem;
+            margin-top: 2rem;
+            margin-bottom: 1.4rem;
+            line-height: 1;
+        }
+
+        p {
+            margin-top: 1.4rem;
+            margin-bottom: 1.4rem;
+            padding-right: 0;
+            vertical-align: baseline;
+        }
+
+        /* Quality sidebar */
+        .quality-sidebar {
+            float: right;
+            clear: right;
+            margin-right: -60%;
+            width: 50%;
+            margin-top: 0;
+            margin-bottom: 0;
+            font-size: 1.1rem;
+            line-height: 1.3;
+            vertical-align: baseline;
+            position: relative;
+            padding: 1rem;
+            background: #f5f5f0;
+            border-left: 3px solid #ccc;
+        }
+
+        .quality-sidebar h4 {
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+
+        .quality-metric {
+            margin: 0.5rem 0;
+        }
+
+        .quality-bar {
+            height: 4px;
+            background: #ddd;
+            margin-top: 2px;
+        }
+
+        .quality-bar-fill {
+            height: 100%;
+            background: #2c5282;
+        }
+
+        /* Code blocks */
+        pre, code {
+            font-family: "Fira Code", Consolas, Monaco, monospace;
+            font-size: 0.9rem;
+            line-height: 1.42;
+        }
+
+        pre {
+            overflow-x: auto;
+            padding: 1rem;
+            background: #f5f5f0;
+            border-left: 3px solid #2c5282;
+        }
+
+        /* Links */
+        a {
+            color: #2c5282;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Lists */
+        ul, ol {
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin: 0.5rem 0;
+        }
+
+        /* Blockquotes */
+        blockquote {
+            font-style: italic;
+            margin-left: 1.5rem;
+            padding-left: 1rem;
+            border-left: 3px solid #ccc;
+        }
+
+        /* Responsive */
+        @media (max-width: 760px) {
+            .quality-sidebar {
+                float: none;
+                margin-right: 0;
+                width: 100%;
+                margin-bottom: 2rem;
+            }
+
+            body {
+                padding: 5%;
+            }
+        }
+    </style>
+
+</head>
+<body>
+    <article>
+        <aside class="quality-sidebar">
+            <h4>Quality Metrics</h4>
+            <div class="quality-metric">
+                <strong>Overall Quality:</strong> 92%
+                <div class="quality-bar">
+                    <div class="quality-bar-fill" style="width: 92.0%"></div>
+                </div>
+            </div>
+            <div class="quality-metric">
+                <strong>Confidence:</strong> 89%
+                <div class="quality-bar">
+                    <div class="quality-bar-fill" style="width: 89.0%"></div>
+                </div>
+            </div>
+            <div class="quality-metric" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                <div><strong>Mode:</strong> narrative</div>
+                <div><strong>Style:</strong> tufte</div>
+            </div>
+        </aside>
+        <section id="content">
+<p>What is Thompson Sampling and how does it work?</p>
+
+<p>Thompson Sampling is a Bayesian approach to the multi-armed bandit problem. Furthermore, it balances exploration and exploitation by sampling from posterior distributions. Thompson Sampling maintains a probability distribution over the expected reward of each action. Building on this, at each timestep, it samples a reward estimate from each action's posterior distribution. The action with the highest sampled reward is selected and executed. Furthermore, after observing the reward, the posterior distribution is updated using bayes' theorem. Thompson Sampling handles the exploration-exploitation tradeoff without hyperparameters. Building on this, it has strong theoretical guarantees and empirical performance on many benchmark problems. Summary: Thompson Sampling is a Bayesian approach to the multi-armed bandit problem.</p>
+        </section>
+    </article>
+</body>
+</html>

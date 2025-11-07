@@ -250,7 +250,8 @@ class ScratchpadOrchestrator:
         self.orchestrator = WeavingOrchestrator(
             cfg=self.cfg,
             shards=self.shards,
-            memory=self.memory
+            memory=self.memory,
+            enable_semantic_cache=False  # Disabled for dashboard speed
         )
         await self.orchestrator.__aenter__()
 

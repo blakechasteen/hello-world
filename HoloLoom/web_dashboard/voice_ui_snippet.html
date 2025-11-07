@@ -1,0 +1,452 @@
+<!--
+Voice UI Controls for Agentic Dashboard
+========================================
+
+Add this snippet to agentic_dashboard.html for voice capabilities.
+
+Features:
+- Mic button for voice input (floating action button)
+- Audio playback for responses
+- Visual recording indicator
+- Auto-transcription and query submission
+- Speech button for each response
+
+Integration:
+1. Add CSS to <style> section
+2. Add HTML to input area
+3. Add JavaScript to <script> section
+-->
+
+<!-- ============================================================================ -->
+<!-- CSS: Add to <style> section -->
+<!-- ============================================================================ -->
+
+<style>
+/* Voice Button (Floating Action Button) */
+.voice-button {
+    position: fixed;
+    bottom: 90px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    border: none;
+    color: #fff;
+    font-size: 1.5em;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    transition: all 0.3s;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.voice-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+.voice-button.recording {
+    background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 8px 24px rgba(255, 68, 68, 0.8);
+    }
+}
+
+/* Recording Indicator */
+.recording-indicator {
+    position: fixed;
+    bottom: 160px;
+    right: 30px;
+    background: rgba(255, 68, 68, 0.95);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 24px;
+    font-size: 0.9em;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+    display: none;
+    align-items: center;
+    gap: 8px;
+    z-index: 999;
+}
+
+.recording-indicator.show {
+    display: flex;
+    animation: slideIn 0.3s ease-out;
+}
+
+.recording-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0.3; }
+}
+
+/* Speak Response Button (on each message) */
+.speak-button {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 4px 10px;
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    color: #667eea;
+    font-size: 0.75em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.speak-button:hover {
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+}
+
+.speak-button.playing {
+    background: rgba(102, 126, 234, 0.3);
+    color: #fff;
+}
+
+/* Audio Player (hidden, auto-plays) */
+#audioPlayer {
+    display: none;
+}
+
+/* Voice Status Indicator */
+.voice-status {
+    font-size: 0.75em;
+    color: #aaa;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.voice-status.available {
+    color: #2ecc71;
+}
+
+.voice-status.unavailable {
+    color: #e74c3c;
+}
+</style>
+
+<!-- ============================================================================ -->
+<!-- HTML: Add to body -->
+<!-- ============================================================================ -->
+
+<!-- Voice Button (Floating Action Button) -->
+<button class="voice-button" id="voiceButton" title="Click to record voice">
+    🎤
+</button>
+
+<!-- Recording Indicator -->
+<div class="recording-indicator" id="recordingIndicator">
+    <div class="recording-dot"></div>
+    <span>Recording...</span>
+</div>
+
+<!-- Hidden Audio Player -->
+<audio id="audioPlayer"></audio>
+
+<!-- ============================================================================ -->
+<!-- JavaScript: Add to <script> section -->
+<!-- ============================================================================ -->
+
+<script>
+// ============================================================================
+// Voice Integration
+// ============================================================================
+
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let voiceAvailable = false;
+let currentAudio = null;
+
+// Check voice availability on connection
+async function checkVoiceStatus() {
+    try {
+        const response = await fetch('http://localhost:8002/api/voice/status');
+        const status = await response.json();
+
+        voiceAvailable = status.tts_available && status.transcription_available;
+
+        console.log('Voice Status:', status);
+
+        // Update UI
+        if (voiceAvailable) {
+            console.log('✓ Voice enabled (TTS: ' + status.tts_backend + ', Whisper: ' + status.whisper_model + ')');
+        } else {
+            console.log('✗ Voice unavailable');
+            document.getElementById('voiceButton').style.opacity = '0.5';
+            document.getElementById('voiceButton').title = 'Voice not available (install BARK and Whisper)';
+        }
+    } catch (error) {
+        console.error('Voice status check failed:', error);
+        voiceAvailable = false;
+    }
+}
+
+// Initialize voice on page load
+checkVoiceStatus();
+
+// Voice Recording
+document.getElementById('voiceButton').addEventListener('click', async () => {
+    if (!voiceAvailable) {
+        alert('Voice input not available. Please install BARK and Whisper.');
+        return;
+    }
+
+    if (isRecording) {
+        // Stop recording
+        stopRecording();
+    } else {
+        // Start recording
+        await startRecording();
+    }
+});
+
+async function startRecording() {
+    try {
+        // Request microphone access
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // Create media recorder
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            // Create audio blob
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+
+            // Upload for transcription
+            await transcribeAudio(audioBlob);
+
+            // Stop all tracks
+            stream.getTracks().forEach(track => track.stop());
+        };
+
+        // Start recording
+        mediaRecorder.start();
+        isRecording = true;
+
+        // Update UI
+        document.getElementById('voiceButton').classList.add('recording');
+        document.getElementById('recordingIndicator').classList.add('show');
+
+        console.log('🎤 Recording started...');
+
+    } catch (error) {
+        console.error('Microphone access error:', error);
+        alert('Could not access microphone. Please grant permission.');
+    }
+}
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        isRecording = false;
+
+        // Update UI
+        document.getElementById('voiceButton').classList.remove('recording');
+        document.getElementById('recordingIndicator').classList.remove('show');
+
+        console.log('🎤 Recording stopped');
+    }
+}
+
+async function transcribeAudio(audioBlob) {
+    try {
+        console.log('Transcribing audio...');
+
+        // Show typing indicator
+        showTypingIndicator();
+
+        // Create form data
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.wav');
+
+        // Upload for transcription
+        const response = await fetch('http://localhost:8002/api/voice/transcribe', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        removeTypingIndicator();
+
+        if (data.success) {
+            const transcript = data.transcript;
+            console.log('✓ Transcript:', transcript);
+
+            // Fill input field with transcript
+            document.getElementById('messageInput').value = transcript;
+            autoResize(document.getElementById('messageInput'));
+
+            // Auto-submit query
+            sendMessage();
+        } else {
+            alert('Transcription failed: ' + (data.error || 'Unknown error'));
+        }
+
+    } catch (error) {
+        removeTypingIndicator();
+        console.error('Transcription error:', error);
+        alert('Transcription failed: ' + error.message);
+    }
+}
+
+// Speak Response
+async function speakResponse(responseText, confidence, mode) {
+    try {
+        console.log('Generating speech...');
+
+        // Create form data
+        const formData = new FormData();
+        formData.append('response', responseText);
+        formData.append('confidence', confidence.toString());
+        formData.append('mode', mode);
+
+        // Generate speech
+        const response = await fetch('http://localhost:8002/api/voice/speak_response', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            console.error('Speech generation failed:', response.statusText);
+            return;
+        }
+
+        // Get audio blob
+        const audioBlob = await response.blob();
+
+        // Play audio
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = document.getElementById('audioPlayer');
+        audio.src = audioUrl;
+        audio.play();
+
+        console.log('🔊 Playing speech...');
+
+    } catch (error) {
+        console.error('Speech generation error:', error);
+    }
+}
+
+// Add speak button to assistant messages
+function addSpeakButton(messageDiv, responseText, confidence, mode) {
+    if (!voiceAvailable) return;
+
+    const metaDiv = messageDiv.querySelector('.message-meta');
+    if (!metaDiv) return;
+
+    const speakBtn = document.createElement('button');
+    speakBtn.className = 'speak-button';
+    speakBtn.textContent = '🔊 Speak';
+    speakBtn.onclick = () => {
+        speakBtn.classList.add('playing');
+        speakResponse(responseText, confidence, mode);
+
+        // Remove playing class after 3 seconds
+        setTimeout(() => speakBtn.classList.remove('playing'), 3000);
+    };
+
+    metaDiv.appendChild(speakBtn);
+}
+
+// ============================================================================
+// Enhanced Message Functions (Update existing functions)
+// ============================================================================
+
+// Update addAssistantMessage() to include speak button
+// Add this at the end of addAssistantMessage() function:
+/*
+addSpeakButton(
+    messageDiv,
+    data.response || 'No response',
+    data.confidence || 0.5,
+    data.mode || 'direct'
+);
+*/
+
+// ============================================================================
+// Auto-Speak Option (Optional)
+// ============================================================================
+
+let autoSpeak = false;  // Toggle via settings
+
+// In handleMessage() for reasoning_complete:
+/*
+if (autoSpeak && voiceAvailable) {
+    speakResponse(
+        message.data.response,
+        message.data.confidence,
+        message.data.mode
+    );
+}
+*/
+
+</script>
+
+<!-- ============================================================================ -->
+<!-- Integration Instructions -->
+<!-- ============================================================================ -->
+
+<!--
+To integrate into agentic_dashboard.html:
+
+1. Copy CSS to <style> section (around line 2156)
+2. Copy HTML buttons to body (around line 2212, before </body>)
+3. Copy JavaScript to <script> section (around line 2603, before </script>)
+4. Update addAssistantMessage() to call addSpeakButton()
+
+Example addAssistantMessage() enhancement:
+
+function addAssistantMessage(data) {
+    const chatContainer = document.getElementById('chatContainer');
+    const messageId = 'msg-' + Date.now();
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message assistant';
+    messageDiv.id = messageId;
+
+    // ... existing message HTML creation ...
+
+    chatContainer.appendChild(messageDiv);
+    scrollToBottom();
+
+    // ADD THIS: Add speak button
+    addSpeakButton(
+        messageDiv,
+        data.response || 'No response',
+        data.confidence || 0.5,
+        data.mode || 'direct'
+    );
+}
+
+That's it! Voice is now integrated.
+-->

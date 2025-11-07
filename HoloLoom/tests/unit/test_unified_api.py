@@ -80,7 +80,8 @@ class TestHoloLoomCreation:
 
             assert loom is not None
             # Should enable synthesis
-            assert hasattr(loom, '_enable_synthesis')
+            assert hasattr(loom, 'enable_synthesis')
+            assert loom.enable_synthesis == True
 
 
 class TestQueryMethod:
@@ -97,6 +98,7 @@ class TestQueryMethod:
         mock_weaver.weave = AsyncMock(return_value=Spacetime(
             response="Test response",
             query_text="Test query",
+            tool_used="test_tool",
             confidence=0.9,
             trace=None
         ))
@@ -120,6 +122,7 @@ class TestQueryMethod:
         mock_weaver.weave = AsyncMock(return_value=Spacetime(
             response="Test",
             query_text="Test",
+            tool_used="test_tool",
             confidence=0.9,
             trace=None
         ))
@@ -140,6 +143,7 @@ class TestQueryMethod:
         mock_weaver.weave = AsyncMock(return_value=Spacetime(
             response="",
             query_text="",
+            tool_used="test_tool",
             confidence=0.5,
             trace=None
         ))
@@ -164,14 +168,15 @@ class TestChatMethod:
         mock_weaver.weave = AsyncMock(return_value=Spacetime(
             response="Chat response",
             query_text="Chat query",
+            tool_used="test_tool",
             confidence=0.9,
             trace=None
         ))
 
         loom = HoloLoom(weaver=mock_weaver, enable_synthesis=False)
-        result = await loom.chat("Chat query")
+        result = await loom.chat("Chat query", return_trace=True)
 
-        # Should return Spacetime
+        # Should return Spacetime when return_trace=True
         assert result is not None
         assert isinstance(result, Spacetime)
 
@@ -185,6 +190,7 @@ class TestChatMethod:
         mock_weaver.weave = AsyncMock(return_value=Spacetime(
             response="Response",
             query_text="Query",
+            tool_used="test_tool",
             confidence=0.9,
             trace=None
         ))
@@ -329,11 +335,12 @@ class TestConfiguration:
 
     @pytest.mark.asyncio
     async def test_create_accepts_config_object(self, bare_config, mock_all_external_deps):
-        """create() should accept Config object."""
+        """create() should accept pattern corresponding to config mode."""
         from HoloLoom.unified_api import HoloLoom
 
         with patch('HoloLoom.unified_api.WeavingOrchestrator'):
-            loom = await HoloLoom.create(config=bare_config)
+            # Create with pattern matching bare_config mode
+            loom = await HoloLoom.create(pattern="bare")
 
             assert loom is not None
 

@@ -155,83 +155,37 @@ class YouTubeSpinner(BaseSpinner):
         # Initialize importance scorer
         self.importance_scorer = ImportanceScorer()
 
-    async def spin(self, url_or_id: str) -> SpinResult:
+    async def _spin_impl(self, source: Any, **kwargs) -> List[MemoryShard]:
         """
-        Ingest YouTube video transcript.
+        Core YouTube transcription implementation.
 
         Args:
-            url_or_id: YouTube URL or video ID
+            source: YouTube URL or video ID
+            **kwargs: Additional arguments (ignored)
 
         Returns:
-            SpinResult with transcript shards
+            List of transcript shards
+
+        Raises:
+            ValueError: Invalid URL or video ID
+            TranscriptsDisabled: Transcripts disabled for this video
+            NoTranscriptFound: No transcript available
+            VideoUnavailable: Video is unavailable
         """
-        if not TRANSCRIPT_API_AVAILABLE:
-            return SpinResult(
-                shards=[],
-                success=False,
-                error_message="youtube-transcript-api not available. Install with: pip install youtube-transcript-api"
-            )
+        url_or_id = str(source)
 
-        try:
-            # Extract video ID
-            video_id = self._extract_video_id(url_or_id)
-            if not video_id:
-                return SpinResult(
-                    shards=[],
-                    success=False,
-                    error_message=f"Invalid YouTube URL: {url_or_id}"
-                )
+        # Extract video ID
+        video_id = self._extract_video_id(url_or_id)
+        if not video_id:
+            raise ValueError(f"Invalid YouTube URL or video ID: {url_or_id}")
 
-            # Get transcription
-            transcription = await self._get_transcription(video_id)
+        # Get transcription
+        transcription = await self._get_transcription(video_id)
 
-            # Convert to shards
-            shards = self._transcription_to_shards(transcription)
+        # Convert to shards (base class handles filtering and wrapping)
+        shards = self._transcription_to_shards(transcription)
 
-            # Filter by importance
-            filtered_shards = [
-                s for s in shards
-                if s.metadata.get('importance_score', 0) >= self.importance_threshold
-            ]
-
-            return SpinResult(
-                shards=filtered_shards,
-                success=True,
-                shard_count=len(filtered_shards),
-                items_processed=transcription.segment_count,
-                items_filtered=transcription.segment_count - len(filtered_shards),
-                metadata={
-                    'video_id': video_id,
-                    'language': transcription.language,
-                    'duration': transcription.duration,
-                    'title': transcription.metadata.title
-                }
-            )
-
-        except TranscriptsDisabled:
-            return SpinResult(
-                shards=[],
-                success=False,
-                error_message=f"Transcripts disabled for video: {url_or_id}"
-            )
-        except NoTranscriptFound:
-            return SpinResult(
-                shards=[],
-                success=False,
-                error_message=f"No transcript found for video: {url_or_id}"
-            )
-        except VideoUnavailable:
-            return SpinResult(
-                shards=[],
-                success=False,
-                error_message=f"Video unavailable: {url_or_id}"
-            )
-        except Exception as e:
-            return SpinResult(
-                shards=[],
-                success=False,
-                error_message=str(e)
-            )
+        return shards
 
     def _extract_video_id(self, url: str) -> Optional[str]:
         """
@@ -494,11 +448,14 @@ class YouTubeSpinner(BaseSpinner):
     def get_capabilities(self) -> SpinnerCapabilities:
         """Get spinner capabilities"""
         return SpinnerCapabilities(
-            streaming=True,
+            basic_processing=True,
+            streaming=False,  # No true streaming support
             incremental=False,
-            batch=True,  # Can process multiple URLs
-            supported_formats=['youtube_url', 'youtube_id'],
-            metadata={'languages_supported': self.languages}
+            batch_processing=True,  # Can process multiple URLs
+            importance_scoring=True,  # Has importance scorer
+            entity_extraction=False,
+            motif_extraction=True,
+            supported_formats=['youtube_url', 'youtube_id']
         )
 
     def is_available(self) -> bool:
@@ -533,3 +490,7 @@ async def transcribe_youtube(
     )
 
     return await spinner.spin(url_or_id)
+
+
+# Alias for consistency with other spinners
+spin_youtube = transcribe_youtube

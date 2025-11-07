@@ -167,6 +167,25 @@ class Config:
     bandit_strategy: BanditStrategy = BanditStrategy.EPSILON_GREEDY
     epsilon: float = 0.1  # Exploration rate for epsilon-greedy (10%)
     blend_neural_weight: float = 0.7  # Neural weight in Bayesian blend (30% bandit)
+
+    # Bayesian Policy Settings (Priority 5 - Variational Inference)
+    use_bayesian: bool = False  # Enable Bayesian uncertainty quantification
+    bayesian_samples: int = 10  # MC samples for uncertainty estimation (10× overhead)
+    bayesian_kl_weight: float = 1.0  # KL divergence weight in ELBO
+    bayesian_prior_std: float = 1.0  # Prior weight standard deviation
+
+    # GP Bandit Settings (for continuous action spaces)
+    use_gp_bandits: bool = False  # Enable Gaussian Process bandits
+    gp_acquisition: str = "thompson"  # GP acquisition: "thompson" or "ucb"
+    gp_kernel_type: str = "matern"  # GP kernel: "matern" or "rbf"
+    gp_kernel_length_scale: float = 0.3  # GP kernel length scale
+    gp_kernel_variance: float = 1.0  # GP kernel variance
+    gp_matern_nu: float = 2.5  # Matérn kernel smoothness (1.5, 2.5, 5.0)
+    gp_noise_variance: float = 0.01  # GP observation noise
+    gp_ucb_beta: float = 2.0  # UCB exploration parameter
+    gp_ucb_adaptive_beta: bool = True  # Use adaptive β = √(2 log(t))
+    gp_n_candidates_per_dim: int = 5  # Discretization resolution
+    gp_update_interval: int = 10  # Retrain GP every N observations
     
     # Retrieval settings
     retrieval_k: int = 6  # Number of shards to retrieve
@@ -186,6 +205,14 @@ class Config:
     spectral_k_eigen: int = 4  # Number of Laplacian eigenvalues
     svd_components: int = 2  # Number of SVD topic components
 
+    # Advanced Spectral Methods (Priority 4 - Mathematical Moonshot)
+    use_wavelets: bool = False  # Enable multi-scale wavelet features (adds ~10-50ms, O(n³) complexity)
+    wavelet_scales: List[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])  # Coarse → Fine
+    use_diffusion_maps: bool = False  # Enable diffusion geometry (adds ~20-100ms, cached)
+    diffusion_map_dims: int = 32  # Diffusion embedding dimension
+    use_multiscale_spectral: bool = False  # Enable hierarchical spectral analysis (experimental)
+    multiscale_spectral_scales: List[int] = field(default_factory=lambda: [96, 192, 384])  # Match Matryoshka scales
+
     # Semantic Calculus (optional)
     enable_semantic_calculus: bool = False  # Enable semantic flow analysis
     semantic_dimensions: int = 16  # Number of semantic dimension pairs
@@ -194,6 +221,15 @@ class Config:
     semantic_framework: str = "compassionate"  # Ethical framework: compassionate, scientific, therapeutic
     semantic_trajectory: bool = True  # Compute velocity/acceleration/curvature
     semantic_ethics: bool = True  # Run ethical analysis
+
+    # PDE Semantic Flow (Priority 6 - Temporal Dynamics)
+    use_semantic_flow: bool = False  # Enable PDE-based temporal evolution (research mode only - expensive!)
+    pde_type: str = "heat"  # PDE type: heat (diffusion), wave (oscillation), reaction_diffusion (competition), hamilton_jacobi (optimal paths)
+    flow_dt: float = 0.01  # PDE timestep (smaller = more accurate, more expensive)
+    flow_steps: int = 10  # Evolution steps between queries
+    flow_reaction_type: str = "competitive"  # Reaction type for reaction_diffusion: logistic, competitive, cubic
+    flow_diffusion_coef: float = 1.0  # Diffusion coefficient for reaction_diffusion
+    flow_wave_speed: float = 1.0  # Wave speed for wave equation
 
     # Phase 5: Universal Grammar + Compositional Cache (optional)
     enable_linguistic_gate: bool = False  # Enable Phase 5 linguistic matryoshka gate
@@ -205,6 +241,14 @@ class Config:
     prefilter_similarity_threshold: float = 0.3  # Min syntactic similarity for pre-filter
     prefilter_keep_ratio: float = 0.7  # Keep top 70% of candidates after linguistic filter
 
+    # Priority 2: Riemannian Embeddings (Mathematical Moonshot)
+    use_riemannian: bool = False  # Enable Riemannian manifold structure for embeddings
+    riemannian_hyperbolic_dim: int = 256  # Dimension for hierarchical concepts (K < 0)
+    riemannian_spherical_dim: int = 256   # Dimension for clustered concepts (K > 0)
+    riemannian_euclidean_dim: int = 256   # Dimension for linear features (K = 0)
+    riemannian_hyperbolic_curvature: float = -1.0  # Negative curvature for hierarchies
+    riemannian_spherical_curvature: float = 1.0    # Positive curvature for clusters
+
     # Beta Wave Context Packing (optional - requires MultiWaveMemoryEngine)
     enable_beta_wave_packing: bool = False  # Enable physics-based context optimization
     packing_token_budget: int = 4000  # Total token budget for packed context
@@ -212,6 +256,15 @@ class Config:
     packing_response_reserve: int = 1000  # Tokens reserved for LLM response
     packing_activation_threshold: float = 0.3  # Min activation to include (low filtered out)
     packing_compression_threshold: float = 0.7  # Activation threshold for compression vs full content
+
+    # Recursive Learning System (Phase 1-5) - Self-Improving Intelligence
+    enable_recursive_learning: bool = False  # Enable integrated recursive learning (pattern learning, refinement, etc.)
+    recursive_learning_update_interval: float = 60.0  # Background learning update interval (seconds)
+    recursive_learning_refinement_threshold: float = 0.75  # Confidence threshold below which to trigger refinement
+    recursive_learning_max_iterations: int = 3  # Maximum refinement iterations for low-confidence queries
+    recursive_learning_enable_background: bool = True  # Enable background learning thread (Thompson Sampling, policy updates)
+    recursive_learning_enable_hot_patterns: bool = True  # Enable hot pattern tracking and adaptive retrieval
+    recursive_learning_enable_scratchpad: bool = True  # Enable provenance tracking via scratchpad
 
     # Layer 6: Self-Modification (LOCKED - requires research environment)
     # See README_SAFETY.md for unlock instructions
@@ -240,7 +293,11 @@ class Config:
     # Timeouts (seconds)
     pipeline_timeout: float = 5.0  # Max time for full pipeline
     retrieval_timeout: float = 0.2  # Max time for retrieval (200ms - reduced from 2s)
-    
+
+    # Prometheus Metrics (production monitoring)
+    enable_prometheus_metrics: bool = True  # Enable Prometheus metrics collection
+    prometheus_metrics_port: int = 8001  # Port for metrics HTTP endpoint
+
     def __post_init__(self):
         """Validate configuration."""
         # Set defaults

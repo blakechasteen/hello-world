@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Chat with RAG</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Sidebar - Repository Browser */
+        .repo-sidebar {
+            width: 300px;
+            background: rgba(26, 26, 46, 0.95);
+            border-right: 1px solid rgba(102, 126, 234, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .repo-search {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .repo-search:focus {
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .repo-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .repo-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .repo-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+
+        .repo-item.active {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .repo-name {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .repo-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 4px;
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .repo-meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .repo-tags {
+            margin-top: 6px;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .repo-tag {
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            font-size: 10px;
+            color: #aaa;
+        }
+
+        /* Main Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 15, 15, 0.8);
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: rgba(26, 26, 46, 0.95);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .active-repos {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .active-repo-chip {
+            padding: 6px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid #667eea;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .active-repo-chip .remove-btn {
+            cursor: pointer;
+            color: #ff6b6b;
+            font-weight: bold;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .active-repo-chip .remove-btn:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #00d4ff 0%, #00ff88 100%);
+        }
+
+        .message-content {
+            max-width: 70%;
+        }
+
+        .message.user .message-content {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .message-bubble {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            line-height: 1.5;
+        }
+
+        .message-meta {
+            font-size: 11px;
+            color: #666;
+            margin-top: 6px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .code-citations {
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .citation-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .citation-item {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 4px;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .citation-repo {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: rgba(26, 26, 46, 0.95);
+            border-top: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            min-height: 80px;
+            max-height: 200px;
+            padding: 12px 16px;
+            padding-right: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .input-hints {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hint {
+            padding: 4px 8px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .hint:hover {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        /* Autocomplete Dropdown */
+        .autocomplete {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.98);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .autocomplete.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .autocomplete-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .autocomplete-name {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .autocomplete-path {
+            font-size: 11px;
+            color: #888;
+            margin-left: auto;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.5);
+        }
+
+        /* Loading indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+            30% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Sidebar - Repository Browser -->
+        <div class="repo-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">📚 Repositories</div>
+                <input type="text" class="repo-search" placeholder="Search repos..." id="repoSearch">
+            </div>
+            <div class="repo-list" id="repoList">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-area">
+            <div class="chat-header">
+                <div>
+                    <h2 style="color: #667eea; margin-bottom: 8px;">Chat with Repository Context</h2>
+                    <div class="active-repos" id="activeRepos">
+                        <span style="color: #666; font-size: 12px;">No repositories attached. Click repos on the left or type [/repo_name]</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="messages" id="messages">
+                <div class="message">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            👋 Hi! I'm your repository-aware assistant.
+                            <br><br>
+                            <strong>Attach repositories by:</strong>
+                            <ul style="margin-top: 8px; padding-left: 20px;">
+                                <li>Clicking repos in the sidebar</li>
+                                <li>Typing <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">[/repo_name]</code> in your message</li>
+                            </ul>
+                            <br>
+                            Once attached, I'll use code from those repos to answer your questions!
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="autocomplete" id="autocomplete">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <textarea
+                        class="message-input"
+                        id="messageInput"
+                        placeholder="Ask a question... Type [/ to attach repositories"
+                        rows="3"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M2 10L18 2L10 18L8 11L2 10Z" fill="white" stroke="white" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-hints">
+                    <span class="hint" onclick="insertHint('[/HoloLoom] ')">📘 [/HoloLoom]</span>
+                    <span class="hint" onclick="insertHint('[/squad] ')">📗 [/squad]</span>
+                    <span class="hint" onclick="insertHint('[/cos] ')">📕 [/cos]</span>
+                    <span class="hint" onclick="insertHint('Explain this code: ')">💡 Explain code</span>
+                    <span class="hint" onclick="insertHint('How does ... work?')">🔍 How it works</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample repository data (replace with API call)
+        const repositories = [
+            {
+                id: 'HoloLoom',
+                name: 'HoloLoom',
+                description: 'Core ML system',
+                path: 'c:/Users/blake/OneDrive/Documents/mythRL/HoloLoom',
+                tags: ['python', 'ml', 'core'],
+                access: 'public',
+                fileCount: 156,
+                indexed: true
+            },
+            {
+                id: 'squad',
+                name: 'squad',
+                description: 'VS Code extension',
+                path: 'c:/Users/blake/OneDrive/Documents/mythRL/squad',
+                tags: ['typescript', 'vscode', 'frontend'],
+                access: 'public',
+                fileCount: 42,
+                indexed: true
+            },
+            {
+                id: 'cos',
+                name: 'cos',
+                description: 'Business planning',
+                path: 'c:/Users/blake/OneDrive/Documents/mythRL/cos',
+                tags: ['business', 'private'],
+                access: 'private',
+                fileCount: 18,
+                indexed: true
+            },
+            {
+                id: 'dashboard',
+                name: 'dashboard',
+                description: 'Web dashboard',
+                path: 'c:/Users/blake/OneDrive/Documents/mythRL/dashboard',
+                tags: ['react', 'frontend'],
+                access: 'public',
+                fileCount: 89,
+                indexed: false
+            }
+        ];
+
+        // State
+        let activeRepositories = new Set();
+        let autocompleteIndex = -1;
+
+        // Initialize
+        function init() {
+            renderRepositories();
+            setupEventListeners();
+        }
+
+        // Render repository list
+        function renderRepositories(filter = '') {
+            const repoList = document.getElementById('repoList');
+            const filtered = repositories.filter(repo =>
+                repo.name.toLowerCase().includes(filter.toLowerCase()) ||
+                repo.description.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            repoList.innerHTML = filtered.map(repo => `
+                <div class="repo-item ${activeRepositories.has(repo.id) ? 'active' : ''}"
+                     onclick="toggleRepository('${repo.id}')">
+                    <div class="repo-name">
+                        ${repo.name}
+                        <span class="repo-badge">${repo.access}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #aaa;">${repo.description}</div>
+                    <div class="repo-meta">
+                        ${repo.indexed ? '✓' : '○'} ${repo.fileCount} files
+                    </div>
+                    <div class="repo-tags">
+                        ${repo.tags.map(tag => `<span class="repo-tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle repository attachment
+        function toggleRepository(repoId) {
+            if (activeRepositories.has(repoId)) {
+                activeRepositories.delete(repoId);
+            } else {
+                activeRepositories.add(repoId);
+            }
+            renderRepositories();
+            updateActiveRepos();
+        }
+
+        // Update active repos display
+        function updateActiveRepos() {
+            const activeRepos = document.getElementById('activeRepos');
+            if (activeRepositories.size === 0) {
+                activeRepos.innerHTML = '<span style="color: #666; font-size: 12px;">No repositories attached</span>';
+            } else {
+                activeRepos.innerHTML = Array.from(activeRepositories).map(repoId => {
+                    const repo = repositories.find(r => r.id === repoId);
+                    return `
+                        <div class="active-repo-chip">
+                            📚 ${repo.name}
+                            <span class="remove-btn" onclick="toggleRepository('${repoId}')">×</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const searchInput = document.getElementById('repoSearch');
+
+            // Search repositories
+            searchInput.addEventListener('input', (e) => {
+                renderRepositories(e.target.value);
+            });
+
+            // Send message
+            sendBtn.addEventListener('click', sendMessage);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Autocomplete for [/repo]
+            input.addEventListener('input', handleAutocomplete);
+            input.addEventListener('keydown', handleAutocompleteNavigation);
+        }
+
+        // Handle autocomplete
+        function handleAutocomplete(e) {
+            const input = e.target;
+            const text = input.value;
+            const cursorPos = input.selectionStart;
+
+            // Find [/ pattern
+            const beforeCursor = text.substring(0, cursorPos);
+            const match = beforeCursor.match(/\[\/([^\]]*?)$/);
+
+            if (match) {
+                const query = match[1].toLowerCase();
+                const filtered = repositories.filter(repo =>
+                    repo.name.toLowerCase().includes(query)
+                );
+
+                if (filtered.length > 0) {
+                    showAutocomplete(filtered, match.index);
+                } else {
+                    hideAutocomplete();
+                }
+            } else {
+                hideAutocomplete();
+            }
+        }
+
+        // Show autocomplete dropdown
+        function showAutocomplete(repos, matchIndex) {
+            const autocomplete = document.getElementById('autocomplete');
+            autocomplete.innerHTML = repos.map((repo, index) => `
+                <div class="autocomplete-item ${index === 0 ? 'selected' : ''}"
+                     data-repo="${repo.id}"
+                     onclick="selectAutocomplete('${repo.id}')">
+                    <div class="autocomplete-icon">📚</div>
+                    <div>
+                        <div class="autocomplete-name">${repo.name}</div>
+                        <div style="font-size: 11px; color: #888;">${repo.description}</div>
+                    </div>
+                    <div class="autocomplete-path">${repo.fileCount} files</div>
+                </div>
+            `).join('');
+            autocomplete.classList.add('show');
+            autocompleteIndex = 0;
+        }
+
+        // Hide autocomplete
+        function hideAutocomplete() {
+            const autocomplete = document.getElementById('autocomplete');
+            autocomplete.classList.remove('show');
+            autocompleteIndex = -1;
+        }
+
+        // Handle autocomplete navigation
+        function handleAutocompleteNavigation(e) {
+            const autocomplete = document.getElementById('autocomplete');
+            if (!autocomplete.classList.contains('show')) return;
+
+            const items = autocomplete.querySelectorAll('.autocomplete-item');
+            if (items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                autocompleteIndex = Math.min(autocompleteIndex + 1, items.length - 1);
+                updateAutocompleteSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                autocompleteIndex = Math.max(autocompleteIndex - 1, 0);
+                updateAutocompleteSelection(items);
+            } else if (e.key === 'Enter' && autocompleteIndex >= 0) {
+                e.preventDefault();
+                const repoId = items[autocompleteIndex].dataset.repo;
+                selectAutocomplete(repoId);
+            } else if (e.key === 'Escape') {
+                hideAutocomplete();
+            }
+        }
+
+        // Update autocomplete selection
+        function updateAutocompleteSelection(items) {
+            items.forEach((item, index) => {
+                if (index === autocompleteIndex) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        // Select autocomplete item
+        function selectAutocomplete(repoId) {
+            const input = document.getElementById('messageInput');
+            const text = input.value;
+            const cursorPos = input.selectionStart;
+
+            // Find [/ pattern
+            const beforeCursor = text.substring(0, cursorPos);
+            const match = beforeCursor.match(/\[\/([^\]]*?)$/);
+
+            if (match) {
+                const newText = text.substring(0, match.index) +
+                               `[/${repoId}] ` +
+                               text.substring(cursorPos);
+                input.value = newText;
+                input.selectionStart = input.selectionEnd = match.index + repoId.length + 4;
+
+                // Attach repository
+                if (!activeRepositories.has(repoId)) {
+                    activeRepositories.add(repoId);
+                    updateActiveRepos();
+                    renderRepositories();
+                }
+            }
+
+            hideAutocomplete();
+            input.focus();
+        }
+
+        // Insert hint
+        function insertHint(hint) {
+            const input = document.getElementById('messageInput');
+            input.value += hint;
+            input.focus();
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Extract [/repo] tags
+            const repoTags = text.match(/\[\/(\w+)\]/g) || [];
+            repoTags.forEach(tag => {
+                const repoId = tag.match(/\[\/(\w+)\]/)[1];
+                if (repositories.find(r => r.id === repoId)) {
+                    activeRepositories.add(repoId);
+                }
+            });
+            updateActiveRepos();
+            renderRepositories();
+
+            // Add user message
+            addMessage('user', text, 'You');
+
+            // Clear input
+            input.value = '';
+
+            // Show typing indicator
+            const typingId = addTypingIndicator();
+
+            // Simulate API call
+            setTimeout(() => {
+                removeMessage(typingId);
+
+                const response = generateResponse(text, activeRepositories);
+                addMessage('assistant', response.text, 'AI', response.citations);
+            }, 1500);
+        }
+
+        // Add message to chat
+        function addMessage(role, content, sender, citations = []) {
+            const messages = document.getElementById('messages');
+            const messageId = `msg-${Date.now()}`;
+
+            const citationsHTML = citations.length > 0 ? `
+                <div class="code-citations">
+                    <div class="citation-title">📎 Code References</div>
+                    ${citations.map(c => `
+                        <div class="citation-item">
+                            <span class="citation-repo">${c.repo}</span>: ${c.file}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '';
+
+            const messageHTML = `
+                <div class="message ${role}" id="${messageId}">
+                    <div class="message-avatar">${sender.substring(0, 2).toUpperCase()}</div>
+                    <div class="message-content">
+                        <div class="message-bubble">${content}</div>
+                        ${citationsHTML}
+                        <div class="message-meta">
+                            <span>${new Date().toLocaleTimeString()}</span>
+                            ${activeRepositories.size > 0 ? `<span>• ${activeRepositories.size} repo${activeRepositories.size > 1 ? 's' : ''}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            messages.insertAdjacentHTML('beforeend', messageHTML);
+            messages.scrollTop = messages.scrollHeight;
+            return messageId;
+        }
+
+        // Add typing indicator
+        function addTypingIndicator() {
+            const messages = document.getElementById('messages');
+            const id = `typing-${Date.now()}`;
+            const html = `
+                <div class="message" id="${id}">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messages.insertAdjacentHTML('beforeend', html);
+            messages.scrollTop = messages.scrollHeight;
+            return id;
+        }
+
+        // Remove message
+        function removeMessage(id) {
+            const msg = document.getElementById(id);
+            if (msg) msg.remove();
+        }
+
+        // Generate response (simulated)
+        function generateResponse(query, activeRepos) {
+            const repoNames = Array.from(activeRepos).map(id =>
+                repositories.find(r => r.id === id)?.name
+            ).filter(Boolean);
+
+            if (repoNames.length === 0) {
+                return {
+                    text: "I don't have any repository context attached. Please click repos in the sidebar or type [/repo_name] to attach them!",
+                    citations: []
+                };
+            }
+
+            // Simulated response
+            const citations = repoNames.map(repo => ({
+                repo: repo,
+                file: `${repo}/example/file.py`,
+                score: 0.95
+            }));
+
+            return {
+                text: `Based on code from <strong>${repoNames.join(', ')}</strong>:<br><br>${query.includes('how') ? 'Here\'s how it works...' : 'Let me explain...'}<br><br>[Simulated response - in production, this would use the RAG system to retrieve relevant code and generate an answer]`,
+                citations: citations
+            };
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

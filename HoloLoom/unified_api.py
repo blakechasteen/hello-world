@@ -82,12 +82,19 @@ class HoloLoom:
     - Unified memory management
     - Pattern extraction and synthesis
     - Full computational traces
+    - Async context manager support for automatic resource cleanup
 
-    Example:
+    Example (with context manager - recommended):
+        async with await HoloLoom.create() as loom:
+            response = await loom.query("Your question")
+            print(response.response)
+            print(response.trace)  # Complete computational trace
+        # Automatic cleanup on exit
+
+    Example (manual cleanup):
         loom = await HoloLoom.create()
         response = await loom.query("Your question")
-        print(response.response)
-        print(response.trace)  # Complete computational trace
+        await loom.close()  # Manual cleanup
     """
 
     def __init__(
@@ -623,6 +630,15 @@ class HoloLoom:
             self.weaver.stop()
         logger.info("HoloLoom closed")
 
+    async def __aenter__(self):
+        """Async context manager entry."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - automatically cleanup resources."""
+        await self.close()
+        return False  # Don't suppress exceptions
+
 
 # ============================================================================
 # Convenience Functions
@@ -661,69 +677,67 @@ if __name__ == "__main__":
         print("HOLOLOOM UNIFIED API DEMO")
         print("="*80)
 
-        # Create HoloLoom
+        # Create HoloLoom with async context manager (automatic cleanup)
         print("\nCreating HoloLoom...")
-        loom = await HoloLoom.create(
+        async with await HoloLoom.create(
             pattern="fast",
             memory_backend="simple",
             enable_synthesis=True
-        )
+        ) as loom:
 
-        print("HoloLoom created\n")
+            print("HoloLoom created\n")
 
-        # Query mode
-        print("="*80)
-        print("QUERY MODE")
-        print("="*80)
+            # Query mode
+            print("="*80)
+            print("QUERY MODE")
+            print("="*80)
 
-        queries = [
-            "What is HoloLoom?",
-            "What is Thompson Sampling?",
-            "How does the weaving metaphor work?"
-        ]
+            queries = [
+                "What is HoloLoom?",
+                "What is Thompson Sampling?",
+                "How does the weaving metaphor work?"
+            ]
 
-        for query in queries:
-            print(f"\nQuery: {query}")
-            result = await loom.query(query, return_trace=True)
-            print(f"Response: {result.response[:100]}...")
-            print(f"Tool: {result.tool_used}")
-            print(f"Confidence: {result.confidence:.1%}")
-            if hasattr(result.trace, 'synthesis_result'):
-                syn = result.trace.synthesis_result
-                print(f"Entities: {syn.get('entities', [])[:5]}")
-                print(f"Reasoning: {syn.get('reasoning_type', 'unknown')}")
+            for query in queries:
+                print(f"\nQuery: {query}")
+                result = await loom.query(query, return_trace=True)
+                print(f"Response: {result.response[:100]}...")
+                print(f"Tool: {result.tool_used}")
+                print(f"Confidence: {result.confidence:.1%}")
+                if hasattr(result.trace, 'synthesis_result'):
+                    syn = result.trace.synthesis_result
+                    print(f"Entities: {syn.get('entities', [])[:5]}")
+                    print(f"Reasoning: {syn.get('reasoning_type', 'unknown')}")
 
-        # Chat mode
-        print("\n" + "="*80)
-        print("CHAT MODE")
-        print("="*80)
+            # Chat mode
+            print("\n" + "="*80)
+            print("CHAT MODE")
+            print("="*80)
 
-        messages = [
-            "Tell me about the weaving architecture",
-            "What are the stages?",
-            "How does synthesis work?"
-        ]
+            messages = [
+                "Tell me about the weaving architecture",
+                "What are the stages?",
+                "How does synthesis work?"
+            ]
 
-        for msg in messages:
-            print(f"\nYou: {msg}")
-            response = await loom.chat(msg)
-            print(f"HoloLoom: {response[:150]}...")
+            for msg in messages:
+                print(f"\nYou: {msg}")
+                response = await loom.chat(msg)
+                print(f"HoloLoom: {response[:150]}...")
 
-        # Statistics
-        print("\n" + "="*80)
-        print("STATISTICS")
-        print("="*80)
+            # Statistics
+            print("\n" + "="*80)
+            print("STATISTICS")
+            print("="*80)
 
-        stats = loom.get_stats()
-        print(f"  Queries: {stats['query_count']}")
-        print(f"  Chats: {stats['chat_count']}")
-        print(f"  Ingests: {stats['ingest_count']}")
-        print(f"  Pattern: {stats['pattern']}")
-        print(f"  Synthesis: {stats['synthesis_enabled']}")
+            stats = loom.get_stats()
+            print(f"  Queries: {stats['query_count']}")
+            print(f"  Chats: {stats['chat_count']}")
+            print(f"  Ingests: {stats['ingest_count']}")
+            print(f"  Pattern: {stats['pattern']}")
+            print(f"  Synthesis: {stats['synthesis_enabled']}")
 
-        # Cleanup
-        await loom.close()
-
-        print("\nDemo complete!")
+            # Cleanup happens automatically on context exit
+            print("\nDemo complete (automatic cleanup)!")
 
     asyncio.run(demo())

@@ -43,6 +43,36 @@ from .modalities.youtube import YouTubeSpinner
 from .git_spinner import GitSpinner
 from .matrix_spinner import MatrixSpinner
 
+# OCR spinners (NEW - January 2025)
+from .deepseek_ocr_spinner import DeepSeekOCRSpinner
+from .handwritten_spinner import HandwrittenSpinner
+from .receipt_spinner import ReceiptSpinner
+from .schema_aware_receipt_spinner import SchemaAwareReceiptSpinner, process_receipt_to_graph
+from .ocr_protocol import (
+    OCRProtocol,
+    OCRBackendChain,
+    OCRResult,
+    OCROutputFormat,
+    OCRQuality
+)
+
+# OCR backends (protocol-based)
+from .ocr_backends import (
+    get_best_available_backend,
+    get_all_available_backends
+)
+
+# Schema system (wool → yarn transformation)
+from .schema_registry import (
+    SchemaRegistry,
+    SchemaDefinition,
+    SchemaType,
+    FieldMapping,
+    ValidationResult,
+    create_expense_schema,
+    create_task_schema
+)
+
 __all__ = [
     # Primary API (ruthlessly simple)
     'spin',           # Ingest anything into memory
@@ -66,4 +96,29 @@ __all__ = [
     'YouTubeSpinner',
     'GitSpinner',
     'MatrixSpinner',
+
+    # OCR spinners (NEW - January 2025)
+    'DeepSeekOCRSpinner',      # General OCR (documents, PDFs)
+    'HandwrittenSpinner',      # Handwritten notes
+    'ReceiptSpinner',          # Receipt parsing
+    'SchemaAwareReceiptSpinner',  # Schema-aware receipt → graph (KILLER FEATURE)
+    'process_receipt_to_graph',   # Convenience function
+
+    # OCR protocol (for custom backends)
+    'OCRProtocol',
+    'OCRBackendChain',
+    'OCRResult',
+    'OCROutputFormat',
+    'OCRQuality',
+    'get_best_available_backend',
+    'get_all_available_backends',
+
+    # Schema system (wool → yarn transformation)
+    'SchemaRegistry',
+    'SchemaDefinition',
+    'SchemaType',
+    'FieldMapping',
+    'ValidationResult',
+    'create_expense_schema',
+    'create_task_schema',
 ]

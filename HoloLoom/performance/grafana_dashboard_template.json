@@ -1,0 +1,420 @@
+{
+  "dashboard": {
+    "title": "HoloLoom Orchestrator Metrics",
+    "description": "Comprehensive metrics dashboard for HoloLoom production monitoring",
+    "tags": [
+      "hololoom",
+      "ai",
+      "orchestrator",
+      "metrics"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Query Latency - p95",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(hololoom_weaving_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95 Latency",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Seconds",
+            "format": "s"
+          }
+        ],
+        "thresholds": "0.15",
+        "alert": {
+          "name": "High Latency Alert",
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0.15
+                ],
+                "type": "gt"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "title": "Query Latency - p50/p95/p99",
+        "type": "graph",
+        "gridPos": {
+          "x": 8,
+          "y": 0,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(hololoom_weaving_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(hololoom_weaving_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(hololoom_weaving_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p99",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Seconds",
+            "format": "s"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Cache Hit Rate",
+        "type": "stat",
+        "gridPos": {
+          "x": 16,
+          "y": 0,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(hololoom_cache_hits_total[5m]) / (rate(hololoom_cache_hits_total[5m]) + rate(hololoom_cache_misses_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "unit": "percentunit"
+        },
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      {
+        "id": 4,
+        "title": "Queries Per Second by Tool",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 8,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(hololoom_queries_total[1m])) by (tool_used)",
+            "legendFormat": "{{tool_used}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Queries/sec"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Tool Distribution",
+        "type": "piechart",
+        "gridPos": {
+          "x": 8,
+          "y": 8,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(hololoom_queries_total) by (tool_used)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Average Confidence by Tool",
+        "type": "bargauge",
+        "gridPos": {
+          "x": 16,
+          "y": 8,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "avg(hololoom_confidence_score) by (tool_used)",
+            "legendFormat": "{{tool_used}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "unit": "short",
+          "max": 1
+        }
+      },
+      {
+        "id": 7,
+        "title": "Stage Latencies (Average)",
+        "type": "bargauge",
+        "gridPos": {
+          "x": 0,
+          "y": 16,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "avg(hololoom_stage_duration_seconds) by (stage_name)",
+            "legendFormat": "{{stage_name}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "unit": "ms"
+        }
+      },
+      {
+        "id": 8,
+        "title": "Parallel Execution Speedup",
+        "type": "stat",
+        "gridPos": {
+          "x": 12,
+          "y": 16,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "avg(hololoom_parallel_speedup{stage_group=\"steps_4_6\"}) over (5m)",
+            "legendFormat": "Speedup Factor",
+            "refId": "A"
+          }
+        ],
+        "graphMode": "area"
+      },
+      {
+        "id": 9,
+        "title": "Error Rate",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 24,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(hololoom_errors_total[5m]) / rate(hololoom_queries_total[5m])",
+            "legendFormat": "Error Rate",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Errors/Query",
+            "format": "short"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Top Error Types",
+        "type": "table",
+        "gridPos": {
+          "x": 8,
+          "y": 24,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "topk(5, sum(rate(hololoom_errors_total[5m])) by (error_type))",
+            "format": "table",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Backend Status",
+        "type": "stat",
+        "gridPos": {
+          "x": 16,
+          "y": 24,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "hololoom_backend_status",
+            "legendFormat": "{{backend}}",
+            "refId": "A"
+          }
+        ],
+        "colorMode": "background"
+      },
+      {
+        "id": 12,
+        "title": "Query Volume Trend",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 32,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(hololoom_queries_total[1m])",
+            "legendFormat": "{{complexity}}/{{pattern_card}}/{{tool_used}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Queries/sec"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Complexity Distribution",
+        "type": "piechart",
+        "gridPos": {
+          "x": 8,
+          "y": 32,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(hololoom_queries_total) by (complexity)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Pattern Card Usage",
+        "type": "piechart",
+        "gridPos": {
+          "x": 16,
+          "y": 32,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(hololoom_queries_total) by (pattern_card)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Memory Shards Count",
+        "type": "stat",
+        "gridPos": {
+          "x": 0,
+          "y": 40,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "hololoom_memory_shards_count",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Active Threads",
+        "type": "bargauge",
+        "gridPos": {
+          "x": 6,
+          "y": 40,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "hololoom_active_threads",
+            "legendFormat": "{{pattern_card}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "Retrieval Context Size",
+        "type": "stat",
+        "gridPos": {
+          "x": 18,
+          "y": 40,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "hololoom_retrieval_context_size",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "Motifs Detected Trend",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 46,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(hololoom_motifs_detected_total[5m]) by (motif_type)",
+            "legendFormat": "{{motif_type}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "title": "Reflection Updates",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 46,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(hololoom_reflection_updates_total[5m]) by (signal_type)",
+            "legendFormat": "{{signal_type}}",
+            "refId": "A"
+          }
+        ]
+      }
+    ]
+  }
+}

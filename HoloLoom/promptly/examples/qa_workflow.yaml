@@ -1,0 +1,55 @@
+# Question-Answering Workflow with DSPy
+# This workflow demonstrates retrieval-augmented Q&A with verification
+
+name: QA_Pipeline
+description: Question answering with retrieval and verification
+
+steps:
+  - step_id: retrieve
+    signature: ContextRetrieval
+    inputs:
+      question: "{query}"
+    outputs:
+      - context
+    optimize: true
+    optimization_query: "context retrieval examples"
+    metadata:
+      description: "Retrieve relevant context from memory"
+      timeout: 5000
+
+  - step_id: answer
+    signature: QuestionAnswering
+    inputs:
+      question: "{query}"
+      context: "{retrieve.context}"
+    outputs:
+      - answer
+      - confidence
+    optimize: true
+    optimization_query: "question answering examples"
+    metadata:
+      description: "Answer question using retrieved context"
+      timeout: 10000
+
+  - step_id: verify
+    signature: AnswerVerification
+    inputs:
+      question: "{query}"
+      answer: "{answer.answer}"
+    outputs:
+      - verification
+      - is_accurate
+    optimize: false
+    metadata:
+      description: "Verify answer accuracy"
+      timeout: 5000
+
+metadata:
+  version: "1.0"
+  author: "HoloLoom"
+  category: "question-answering"
+  tags:
+    - qa
+    - retrieval
+    - verification
+  expected_runtime_ms: 20000

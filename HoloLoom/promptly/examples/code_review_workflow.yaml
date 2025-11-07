@@ -1,0 +1,89 @@
+# Code Review Workflow with DSPy
+# Automated code review with security, style, and best practices analysis
+
+name: Code_Review_Pipeline
+description: Automated code review with multi-aspect analysis
+
+steps:
+  - step_id: parse_code
+    signature: CodeParser
+    inputs:
+      code: "{code_snippet}"
+      language: "{language}"
+    outputs:
+      - ast
+      - complexity_score
+    optimize: false
+    metadata:
+      description: "Parse code and extract structure"
+
+  - step_id: security_analysis
+    signature: SecurityAnalyzer
+    inputs:
+      code: "{code_snippet}"
+      ast: "{parse_code.ast}"
+    outputs:
+      - vulnerabilities
+      - risk_score
+    optimize: true
+    optimization_query: "code security analysis examples"
+    metadata:
+      description: "Analyze code for security vulnerabilities"
+      critical: true
+
+  - step_id: style_check
+    signature: StyleChecker
+    inputs:
+      code: "{code_snippet}"
+      language: "{language}"
+    outputs:
+      - style_issues
+      - suggestions
+    optimize: false
+    metadata:
+      description: "Check code style and formatting"
+
+  - step_id: best_practices
+    signature: BestPracticesAnalyzer
+    inputs:
+      code: "{code_snippet}"
+      language: "{language}"
+      ast: "{parse_code.ast}"
+    outputs:
+      - recommendations
+      - patterns
+    optimize: true
+    optimization_query: "best practices analysis examples"
+    metadata:
+      description: "Check adherence to best practices"
+
+  - step_id: generate_report
+    signature: ReviewReportGenerator
+    inputs:
+      code: "{code_snippet}"
+      security: "{security_analysis.vulnerabilities}"
+      style: "{style_check.style_issues}"
+      practices: "{best_practices.recommendations}"
+      complexity: "{parse_code.complexity_score}"
+    outputs:
+      - report
+      - summary
+      - priority_issues
+    optimize: true
+    optimization_query: "code review report examples"
+    metadata:
+      description: "Generate comprehensive review report"
+
+metadata:
+  version: "1.0"
+  author: "HoloLoom"
+  category: "code-analysis"
+  tags:
+    - code-review
+    - security
+    - best-practices
+    - static-analysis
+  expected_runtime_ms: 25000
+  complexity: "high"
+  critical_steps:
+    - security_analysis

@@ -214,7 +214,11 @@ class HTMLRenderer:
             'orange': 'oklch(70% 0.16 50)',
             'purple': 'oklch(65% 0.14 300)',
         }
-        stroke_color = stroke_colors.get(color, 'oklch(58% 0.01 270)')
+        normalized_color = (color or '').strip()
+        if normalized_color.startswith('#') or normalized_color.lower().startswith('rgb') or normalized_color.startswith('var('):
+            stroke_color = normalized_color
+        else:
+            stroke_color = stroke_colors.get(normalized_color.lower(), '#1f2937')  # default to slate hex
 
         return f"""
             <svg class="sparkline-svg"

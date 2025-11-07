@@ -1,0 +1,18 @@
+{
+  "norm_merchant_5103471532309813422": {
+    "pattern_type": "value_normalization",
+    "source_pattern": "WH FOODS",
+    "target_action": "whole foods market",
+    "context": {
+      "field_name": "merchant",
+      "schema": "expenses",
+      "match_type": "exact"
+    },
+    "confidence": 0.6,
+    "usage_count": 0,
+    "success_count": 0,
+    "failure_count": 0,
+    "created_at": 1762321798.1368048,
+    "last_used": null
+  }
+}

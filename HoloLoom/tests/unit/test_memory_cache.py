@@ -211,7 +211,8 @@ class TestRetrieverSearch:
 
         if len(results) > 0:
             shard, score = results[0]
-            assert isinstance(shard, MemoryShard)
+            # Check type by name to avoid module reload issues
+            assert type(shard).__name__ == 'MemoryShard'
             assert isinstance(score, (int, float))
             assert 0.0 <= score <= 1.0
 

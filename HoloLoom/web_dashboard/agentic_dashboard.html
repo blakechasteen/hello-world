@@ -1043,6 +1043,682 @@
             font-size: 13px;
             line-height: 1.5;
         }
+
+        /* ===== COMPREHENSIVE UPLOAD PANEL ===== */
+        .upload-panel {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            width: 90%;
+            max-width: 700px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border: 1px solid #00ff88;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 900;
+            overflow: hidden;
+        }
+
+        .upload-panel.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .upload-tabs {
+            display: flex;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            padding: 0;
+        }
+
+        .upload-tab {
+            flex: 1;
+            padding: 16px 20px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .upload-tab:hover {
+            background: rgba(0, 255, 136, 0.05);
+            color: #aaa;
+        }
+
+        .upload-tab.active {
+            color: #00ff88;
+            border-bottom-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .upload-close {
+            width: 48px;
+            padding: 16px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 1px solid #333;
+        }
+
+        .upload-close:hover {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+        }
+
+        .upload-tab-content {
+            display: none;
+            padding: 24px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .upload-tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== DROPZONE ===== */
+        .upload-dropzone {
+            border: 2px dashed #444;
+            border-radius: 12px;
+            padding: 48px 24px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-dropzone:hover {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .upload-dropzone.dragover {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.15);
+            border-style: solid;
+        }
+
+        .dropzone-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .dropzone-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+
+        .dropzone-subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 16px;
+        }
+
+        .dropzone-formats {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .browse-btn {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
+            color: #0a0a0a;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+        }
+
+        .browse-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .browse-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ===== URL INPUT ===== */
+        .url-input-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: all 0.3s;
+        }
+
+        .url-input-container:focus-within {
+            border-color: #00ff88;
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+        }
+
+        .url-input-icon {
+            font-size: 24px;
+        }
+
+        .url-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+            padding: 4px 0;
+        }
+
+        .url-input::placeholder {
+            color: #666;
+        }
+
+        .url-submit-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .url-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .url-formats {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 12px;
+        }
+
+        /* ===== UPLOAD STATUS ===== */
+        .upload-status {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .upload-status.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 200px;
+            }
+        }
+
+        .upload-status.uploading {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-status.success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .upload-status.error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .status-icon {
+            font-size: 24px;
+        }
+
+        .status-text {
+            flex: 1;
+        }
+
+        .status-filename {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 4px;
+        }
+
+        .status-message {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .status-progress {
+            margin-top: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #00d4ff 100%);
+            border-radius: 3px;
+            transition: width 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* ===== UPLOAD PREVIEW ===== */
+        .upload-preview {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+            border-radius: 8px;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .upload-preview.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .preview-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #00ff88;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-content {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .preview-metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .metadata-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .metadata-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .metadata-value {
+            font-size: 13px;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        /* ===== FLOATING UPLOAD BUTTON ===== */
+        .upload-float-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
+            color: #0a0a0a;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 800;
+        }
+
+        .upload-float-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 28px rgba(0, 255, 136, 0.5);
+        }
+
+        .upload-float-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .upload-float-icon {
+            font-size: 18px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .upload-float-text {
+            font-weight: 600;
+        }
+
+        /* ========================================
+           ENHANCED VOICE INTEGRATION STYLES
+           ======================================== */
+
+
+        /* Voice Button (Floating Action Button) */
+        .voice-button {
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+        }
+
+        .voice-button::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            z-index: -1;
+            transition: all 0.3s;
+        }
+
+        /* Hover effect */
+        .voice-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .voice-button:hover::before {
+            transform: scale(1.2);
+            opacity: 0.3;
+        }
+
+        /* Active/Press effect - smooth scale down */
+        .voice-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        /* Recording state - pulsing red with ripples */
+        .voice-button.recording {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            animation: recordingPulse 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        /* Pulsing animation for recording */
+        @keyframes recordingPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 0 0 rgba(255, 0, 0, 0.7),
+                    0 4px 12px rgba(255, 0, 0, 0.4);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow:
+                    0 0 0 15px rgba(255, 0, 0, 0),
+                    0 8px 24px rgba(255, 0, 0, 0.8);
+            }
+        }
+
+        /* Recording ripple effect */
+        .voice-button.recording::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 0, 0, 0.8);
+            animation: ripple 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.8);
+                opacity: 0;
+            }
+        }
+
+        /* Recording Indicator with enhanced red light */
+        .recording-indicator {
+            position: fixed;
+            bottom: 160px;
+            right: 30px;
+            background: rgba(255, 0, 0, 0.95);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 24px;
+            font-size: 0.9em;
+            font-weight: 600;
+            box-shadow:
+                0 4px 12px rgba(255, 0, 0, 0.4),
+                0 0 20px rgba(255, 0, 0, 0.3);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            z-index: 999;
+            animation: indicatorGlow 2s ease-in-out infinite;
+        }
+
+        .recording-indicator.show {
+            display: flex;
+            animation: slideIn 0.3s ease-out, indicatorGlow 2s ease-in-out infinite 0.3s;
+        }
+
+        @keyframes indicatorGlow {
+            0%, 100% {
+                box-shadow:
+                    0 4px 12px rgba(255, 0, 0, 0.4),
+                    0 0 20px rgba(255, 0, 0, 0.3);
+            }
+            50% {
+                box-shadow:
+                    0 4px 12px rgba(255, 0, 0, 0.6),
+                    0 0 30px rgba(255, 0, 0, 0.5);
+            }
+        }
+
+        /* Pulsing red recording dot */
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow:
+                0 0 5px rgba(255, 255, 255, 0.8),
+                0 0 10px rgba(255, 255, 255, 0.4);
+            animation: redLightPulse 1s ease-in-out infinite;
+            position: relative;
+        }
+
+        /* Red light pulsing animation */
+        @keyframes redLightPulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+                box-shadow:
+                    0 0 5px rgba(255, 255, 255, 0.8),
+                    0 0 10px rgba(255, 255, 255, 0.4);
+            }
+            50% {
+                transform: scale(1.3);
+                opacity: 0.6;
+                box-shadow:
+                    0 0 10px rgba(255, 255, 255, 1),
+                    0 0 20px rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        /* Slide in animation */
+        @keyframes slideIn {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Speak Response Button */
+        .speak-button {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 4px 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            color: #667eea;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .speak-button:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .speak-button:active {
+            transform: translateY(0);
+        }
+
+        .speak-button.playing {
+            background: rgba(102, 126, 234, 0.3);
+            color: #fff;
+            animation: speakPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes speakPulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Audio Player (hidden) */
+        #audioPlayer {
+            display: none;
+        }
+
+
+
     </style>
 </head>
 <body>
@@ -1180,6 +1856,194 @@
                     <p style="font-size: 12px; color: #444;">Press <kbd style="background: #222; padding: 2px 8px; border-radius: 4px;">Ctrl+/</kbd> for keyboard shortcuts</p>
                 </div>
             </div>
+
+            <!-- ===== COMPREHENSIVE UPLOAD PANEL ===== -->
+            <div class="upload-panel" id="uploadPanel">
+                <div class="upload-tabs">
+                    <button class="upload-tab active" data-tab="audio" onclick="switchUploadTab('audio')">
+                        🎤 Audio
+                    </button>
+                    <button class="upload-tab" data-tab="youtube" onclick="switchUploadTab('youtube')">
+                        📹 YouTube
+                    </button>
+                    <button class="upload-tab" data-tab="spreadsheet" onclick="switchUploadTab('spreadsheet')">
+                        📊 Spreadsheet
+                    </button>
+                    <button class="upload-tab" data-tab="pdf" onclick="switchUploadTab('pdf')">
+                        📄 PDF
+                    </button>
+                    <button class="upload-tab" data-tab="email" onclick="switchUploadTab('email')">
+                        📧 Email
+                    </button>
+                    <button class="upload-tab" data-tab="code" onclick="switchUploadTab('code')">
+                        💻 Code
+                    </button>
+                    <button class="upload-tab" data-tab="git" onclick="switchUploadTab('git')">
+                        🔀 Git
+                    </button>
+                    <button class="upload-tab" data-tab="url" onclick="switchUploadTab('url')">
+                        🌐 URL
+                    </button>
+                    <button class="upload-close" onclick="toggleUploadPanel()">✖</button>
+                </div>
+
+                <!-- Audio Upload Tab -->
+                <div class="upload-tab-content active" id="tab-audio">
+                    <div class="upload-dropzone" id="audioDrop zone"
+                         ondrop="handleFileDrop(event, 'audio')"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <div class="dropzone-icon">🎤</div>
+                        <div class="dropzone-title">Drop audio file here</div>
+                        <div class="dropzone-subtitle">or click to browse</div>
+                        <div class="dropzone-formats">Supports: WAV, MP3, M4A, FLAC, OGG, OPUS</div>
+                        <input type="file" id="audioFileInput" accept=".wav,.mp3,.m4a,.flac,.ogg,.opus"
+                               style="display:none" onchange="handleFileSelect(event, 'audio')">
+                        <button class="browse-btn" onclick="document.getElementById('audioFileInput').click()">
+                            Browse Files
+                        </button>
+                    </div>
+                    <div class="upload-status" id="audioStatus"></div>
+                    <div class="upload-preview" id="audioPreview"></div>
+                </div>
+
+                <!-- YouTube Upload Tab -->
+                <div class="upload-tab-content" id="tab-youtube">
+                    <div class="url-input-container">
+                        <div class="url-input-icon">📹</div>
+                        <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here (e.g., https://youtube.com/watch?v=...)"
+                               class="url-input" onkeypress="handleYouTubeEnter(event)">
+                        <button class="url-submit-btn" onclick="submitYouTubeUrl()">
+                            Transcribe
+                        </button>
+                    </div>
+                    <div class="url-formats">
+                        Supports: Full URL, youtu.be, shorts, embed URLs, or direct video ID
+                    </div>
+                    <div class="upload-status" id="youtubeStatus"></div>
+                    <div class="upload-preview" id="youtubePreview"></div>
+                </div>
+
+                <!-- Spreadsheet Upload Tab -->
+                <div class="upload-tab-content" id="tab-spreadsheet">
+                    <div class="upload-dropzone" id="spreadsheetDropzone"
+                         ondrop="handleFileDrop(event, 'spreadsheet')"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <div class="dropzone-icon">📊</div>
+                        <div class="dropzone-title">Drop spreadsheet here</div>
+                        <div class="dropzone-subtitle">or click to browse</div>
+                        <div class="dropzone-formats">Supports: XLSX, XLS, CSV, TSV, ODS</div>
+                        <input type="file" id="spreadsheetFileInput" accept=".xlsx,.xls,.csv,.tsv,.ods"
+                               style="display:none" onchange="handleFileSelect(event, 'spreadsheet')">
+                        <button class="browse-btn" onclick="document.getElementById('spreadsheetFileInput').click()">
+                            Browse Files
+                        </button>
+                    </div>
+                    <div class="upload-status" id="spreadsheetStatus"></div>
+                    <div class="upload-preview" id="spreadsheetPreview"></div>
+                </div>
+
+                <!-- PDF Upload Tab -->
+                <div class="upload-tab-content" id="tab-pdf">
+                    <div class="upload-dropzone" id="pdfDropzone"
+                         ondrop="handleFileDrop(event, 'pdf')"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <div class="dropzone-icon">📄</div>
+                        <div class="dropzone-title">Drop PDF file here</div>
+                        <div class="dropzone-subtitle">or click to browse</div>
+                        <div class="dropzone-formats">Supports: PDF documents</div>
+                        <input type="file" id="pdfFileInput" accept=".pdf"
+                               style="display:none" onchange="handleFileSelect(event, 'pdf')">
+                        <button class="browse-btn" onclick="document.getElementById('pdfFileInput').click()">
+                            Browse Files
+                        </button>
+                    </div>
+                    <div class="upload-status" id="pdfStatus"></div>
+                    <div class="upload-preview" id="pdfPreview"></div>
+                </div>
+
+                <!-- Email Upload Tab -->
+                <div class="upload-tab-content" id="tab-email">
+                    <div class="upload-dropzone" id="emailDropzone"
+                         ondrop="handleFileDrop(event, 'email')"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <div class="dropzone-icon">📧</div>
+                        <div class="dropzone-title">Drop email file here</div>
+                        <div class="dropzone-subtitle">or click to browse</div>
+                        <div class="dropzone-formats">Supports: EML, MSG</div>
+                        <input type="file" id="emailFileInput" accept=".eml,.msg"
+                               style="display:none" onchange="handleFileSelect(event, 'email')">
+                        <button class="browse-btn" onclick="document.getElementById('emailFileInput').click()">
+                            Browse Files
+                        </button>
+                    </div>
+                    <div class="upload-status" id="emailStatus"></div>
+                    <div class="upload-preview" id="emailPreview"></div>
+                </div>
+
+                <!-- Code Upload Tab -->
+                <div class="upload-tab-content" id="tab-code">
+                    <div class="upload-dropzone" id="codeDropzone"
+                         ondrop="handleFileDrop(event, 'code')"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <div class="dropzone-icon">💻</div>
+                        <div class="dropzone-title">Drop code file here</div>
+                        <div class="dropzone-subtitle">or click to browse</div>
+                        <div class="dropzone-formats">Supports: Python, TypeScript, JavaScript, Java, Go, Rust, C/C++</div>
+                        <input type="file" id="codeFileInput" accept=".py,.ts,.tsx,.js,.jsx,.java,.go,.rs,.c,.cpp,.h,.hpp"
+                               style="display:none" onchange="handleFileSelect(event, 'code')">
+                        <button class="browse-btn" onclick="document.getElementById('codeFileInput').click()">
+                            Browse Files
+                        </button>
+                    </div>
+                    <div class="upload-status" id="codeStatus"></div>
+                    <div class="upload-preview" id="codePreview"></div>
+                </div>
+
+                <!-- Git Repository Tab -->
+                <div class="upload-tab-content" id="tab-git">
+                    <div class="url-input-container">
+                        <div class="url-input-icon">🔀</div>
+                        <input type="text" id="gitPath" placeholder="Enter local git repository path (e.g., C:\Users\...\repo)"
+                               class="url-input" onkeypress="handleGitEnter(event)">
+                        <button class="url-submit-btn" onclick="submitGitPath()">
+                            Ingest
+                        </button>
+                    </div>
+                    <div class="url-formats">
+                        Enter the full path to a local git repository
+                    </div>
+                    <div class="upload-status" id="gitStatus"></div>
+                    <div class="upload-preview" id="gitPreview"></div>
+                </div>
+
+                <!-- URL Web Scraping Tab -->
+                <div class="upload-tab-content" id="tab-url">
+                    <div class="url-input-container">
+                        <div class="url-input-icon">🌐</div>
+                        <input type="text" id="webUrl" placeholder="Enter web URL to scrape (e.g., https://example.com)"
+                               class="url-input" onkeypress="handleUrlEnter(event)">
+                        <button class="url-submit-btn" onclick="submitWebUrl()">
+                            Scrape
+                        </button>
+                    </div>
+                    <div class="url-formats">
+                        Scrapes text content, headings, and links from web pages
+                    </div>
+                    <div class="upload-status" id="urlStatus"></div>
+                    <div class="upload-preview" id="urlPreview"></div>
+                </div>
+            </div>
+
+            <!-- Floating Upload Button -->
+            <button class="upload-float-btn" id="uploadFloatBtn" onclick="toggleUploadPanel()" title="Upload Content">
+                <span class="upload-float-icon">📎</span>
+                <span class="upload-float-text">Upload</span>
+            </button>
 
             <div class="input-area">
                 <div class="input-wrapper" style="position: relative;">
@@ -1407,7 +2271,7 @@
 
     <script>
         // ===== GLOBAL STATE =====
-        let ws = null;
+        let socket = null;
         let currentMode = 'DIRECT';
         let currentConversationId = null;
         let conversations = [];
@@ -1496,7 +2360,7 @@
         }
 
         async function loadAvailablePrompts() {
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
                 // If no WebSocket, use sample prompts
                 availablePrompts = [
                     {name: 'debug', description: 'Debug code and find issues'},
@@ -1518,13 +2382,13 @@
                         const data = JSON.parse(event.data);
                         if (data.type === 'prompts_list') {
                             clearTimeout(timeout);
-                            ws.removeEventListener('message', handler);
+                            socket.removeEventListener('message', handler);
                             resolve(data.data.prompts || []);
                         }
                     };
 
-                    ws.addEventListener('message', handler);
-                    ws.send(JSON.stringify({action: 'list_prompts'}));
+                    socket.addEventListener('message', handler);
+                    socket.send(JSON.stringify({action: 'list_prompts'}));
                 });
 
                 availablePrompts = prompts.length > 0 ? prompts : [
@@ -1607,21 +2471,31 @@
         }
 
         // ===== WEBSOCKET CONNECTION =====
+        // socket is declared in global state above
         function connect() {
-            ws = new WebSocket('ws://localhost:8002/ws');
+            socket = new WebSocket('wss://localhost:8002/ws');
 
-            ws.onopen = () => {
+            socket.onopen = () => {
                 console.log('Connected to server');
                 document.getElementById('connectionStatus').className = 'connection-status connected';
                 document.getElementById('connectionStatus').textContent = '🟢 Connected';
                 showToast('Connected to server', 'success');
 
                 // Request initial data
-                ws.send(JSON.stringify({ action: 'list_conversations' }));
-                ws.send(JSON.stringify({ action: 'list_projects' }));
+                socket.send(JSON.stringify({ action: 'list_conversations' }));
+                socket.send(JSON.stringify({ action: 'list_projects' }));
+
+                // Reload current conversation if one was active before disconnect
+                if (currentConversationId) {
+                    console.log('Reconnected - reloading conversation:', currentConversationId);
+                    socket.send(JSON.stringify({
+                        action: 'load_conversation',
+                        conversation_id: currentConversationId
+                    }));
+                }
             };
 
-            ws.onclose = () => {
+            socket.onclose = () => {
                 console.log('Disconnected from server');
                 document.getElementById('connectionStatus').className = 'connection-status disconnected';
                 document.getElementById('connectionStatus').textContent = '🔴 Disconnected';
@@ -1629,7 +2503,7 @@
                 setTimeout(connect, 2000);
             };
 
-            ws.onmessage = (event) => {
+            socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 handleServerMessage(data);
             };
@@ -1667,7 +2541,7 @@
 
                 case 'conversation_created':
                     currentConversationId = data.data.id;
-                    ws.send(JSON.stringify({ action: 'list_conversations' }));
+                    socket.send(JSON.stringify({ action: 'list_conversations' }));
                     showToast('New conversation created', 'success');
                     break;
 
@@ -1687,8 +2561,8 @@
                 case 'conversation_moved':
                 case 'conversation_renamed':
                 case 'favorite_toggled':
-                    ws.send(JSON.stringify({ action: 'list_conversations' }));
-                    ws.send(JSON.stringify({ action: 'list_projects' }));
+                    socket.send(JSON.stringify({ action: 'list_conversations' }));
+                    socket.send(JSON.stringify({ action: 'list_projects' }));
                     showToast('Action completed successfully', 'success');
                     break;
 
@@ -1716,12 +2590,12 @@
 
                 case 'template_deleted':
                     showToast('Template deleted', 'success');
-                    ws.send(JSON.stringify({ action: 'list_templates' }));
+                    socket.send(JSON.stringify({ action: 'list_templates' }));
                     break;
 
                 case 'project_created':
                     showToast('Project created successfully', 'success');
-                    ws.send(JSON.stringify({ action: 'list_projects' }));
+                    socket.send(JSON.stringify({ action: 'list_projects' }));
                     break;
 
                 case 'analytics_data':
@@ -1805,14 +2679,14 @@
             const query = document.getElementById('searchBox').value.trim();
 
             if (query.length === 0) {
-                ws.send(JSON.stringify({ action: 'list_conversations' }));
+                socket.send(JSON.stringify({ action: 'list_conversations' }));
                 return;
             }
 
             if (query.length < 2) return;
 
             searchTimeout = setTimeout(() => {
-                ws.send(JSON.stringify({ action: 'search_conversations', query: query }));
+                socket.send(JSON.stringify({ action: 'search_conversations', query: query }));
             }, 300);
         }
 
@@ -1832,7 +2706,7 @@
 
         function newConversation() {
             showSpinner('new-chat-btn');
-            ws.send(JSON.stringify({ action: 'new_conversation' }));
+            socket.send(JSON.stringify({ action: 'new_conversation' }));
             document.getElementById('chatMessages').innerHTML = '';
             setTimeout(() => hideSpinner('new-chat-btn'), 1000);
         }
@@ -1871,7 +2745,7 @@
             addUserMessage(message);
             showSpinner('sendBtn');
 
-            ws.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 action: 'reason',
                 query: message,
                 mode: currentMode.toLowerCase(),
@@ -1885,7 +2759,7 @@
         // Helper function to fetch prompt content from Promptly
         function fetchPromptContent(promptName) {
             return new Promise((resolve, reject) => {
-                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                if (!socket || socket.readyState !== WebSocket.OPEN) {
                     reject(new Error('WebSocket not connected'));
                     return;
                 }
@@ -1895,26 +2769,26 @@
                     const data = JSON.parse(event.data);
 
                     if (data.type === 'prompt_data' && data.data.name === promptName) {
-                        ws.removeEventListener('message', handler);
+                        socket.removeEventListener('message', handler);
                         resolve(data.data.content);
                     } else if (data.type === 'error') {
-                        ws.removeEventListener('message', handler);
+                        socket.removeEventListener('message', handler);
                         reject(new Error(data.data.error));
                     }
                 };
 
                 // Add temporary listener
-                ws.addEventListener('message', handler);
+                socket.addEventListener('message', handler);
 
                 // Request the prompt
-                ws.send(JSON.stringify({
+                socket.send(JSON.stringify({
                     action: 'get_prompt',
                     name: promptName
                 }));
 
                 // Timeout after 5 seconds
                 setTimeout(() => {
-                    ws.removeEventListener('message', handler);
+                    socket.removeEventListener('message', handler);
                     reject(new Error('Timeout waiting for prompt'));
                 }, 5000);
             });
@@ -2113,21 +2987,21 @@
         }
 
         function loadConversation(id) {
-            ws.send(JSON.stringify({ action: 'load_conversation', conversation_id: id }));
+            socket.send(JSON.stringify({ action: 'load_conversation', conversation_id: id }));
         }
 
         function toggleFavorite(id) {
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
                 showToast('Not connected to server', 'error');
                 return;
             }
-            ws.send(JSON.stringify({ action: 'toggle_favorite', conversation_id: id }));
+            socket.send(JSON.stringify({ action: 'toggle_favorite', conversation_id: id }));
         }
 
         function renameConversation(id) {
             const newTitle = prompt('Enter new title:');
             if (newTitle && newTitle.trim()) {
-                ws.send(JSON.stringify({
+                socket.send(JSON.stringify({
                     action: 'rename_conversation',
                     conversation_id: id,
                     title: newTitle.trim()
@@ -2137,7 +3011,7 @@
 
         function deleteConversation(id) {
             if (confirm('Delete this conversation?')) {
-                ws.send(JSON.stringify({ action: 'delete_conversation', conversation_id: id }));
+                socket.send(JSON.stringify({ action: 'delete_conversation', conversation_id: id }));
             }
         }
 
@@ -2170,8 +3044,8 @@
                 }
 
                 // Fetch from server
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({
                         action: 'get_preview',
                         conversation_id: conversationId,
                         limit: 3
@@ -2243,12 +3117,12 @@
                 return;
             }
 
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
                 showToast('Not connected to server', 'error');
                 return;
             }
 
-            ws.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 action: 'move_to_project',
                 conversation_id: parseInt(conversationId),
                 project_id: projectId
@@ -2300,7 +3174,7 @@
         }
 
         function moveToProjectFromContext(projectId) {
-            ws.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 action: 'move_to_project',
                 conversation_id: contextMenuTarget,
                 project_id: projectId
@@ -2405,7 +3279,7 @@
 
         // ===== TEMPLATE FUNCTIONS =====
         function showTemplates() {
-            ws.send(JSON.stringify({ action: 'list_templates' }));
+            socket.send(JSON.stringify({ action: 'list_templates' }));
             showModal('templatesModal');
         }
 
@@ -2421,7 +3295,7 @@
         }
 
         function useTemplate(templateId) {
-            ws.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 action: 'load_template',
                 template_id: templateId
             }));
@@ -2447,7 +3321,7 @@
                 return;
             }
 
-            ws.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 action: 'save_as_template',
                 conversation_id: currentConversationId,
                 name: name,
@@ -2479,7 +3353,7 @@
                 return;
             }
 
-            ws.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 action: 'create_project',
                 name: name,
                 icon: icon,
@@ -2498,7 +3372,7 @@
         // ===== ANALYTICS DASHBOARD =====
         function showAnalytics() {
             // Request analytics data from server
-            ws.send(JSON.stringify({ action: 'get_analytics' }));
+            socket.send(JSON.stringify({ action: 'get_analytics' }));
             showModal('analyticsModal');
         }
 
@@ -2597,12 +3471,12 @@
         let allPrompts = [];
 
         function showPromptly() {
-            if (!ws) {
+            if (!socket) {
                 showToast('Not connected to server', 'error');
                 return;
             }
 
-            ws.send(JSON.stringify({ action: 'list_prompts' }));
+            socket.send(JSON.stringify({ action: 'list_prompts' }));
             showModal('promptlyModal');
         }
 
@@ -2625,7 +3499,7 @@
         }
 
         function loadPrompt(name) {
-            ws.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 action: 'get_prompt',
                 name: name
             }));
@@ -2650,7 +3524,7 @@
                 return;
             }
 
-            ws.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 action: 'save_prompt',
                 name: name,
                 content: content,
@@ -2668,7 +3542,7 @@
 
             // Refresh list
             setTimeout(() => {
-                ws.send(JSON.stringify({ action: 'list_prompts' }));
+                socket.send(JSON.stringify({ action: 'list_prompts' }));
             }, 500);
         }
 
@@ -2770,8 +3644,756 @@
             return date.toLocaleDateString();
         }
 
+        // ===== COMPREHENSIVE UPLOAD FUNCTIONS =====
+
+        // Toggle upload panel
+        function toggleUploadPanel() {
+            const panel = document.getElementById('uploadPanel');
+            panel.classList.toggle('active');
+        }
+
+        // Switch upload tabs
+        function switchUploadTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.upload-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.upload-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // Handle drag and drop
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.remove('dragover');
+        }
+
+        function handleFileDrop(event, type) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.remove('dragover');
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(files[0], type);
+            }
+        }
+
+        // Handle file selection from browse button
+        function handleFileSelect(event, type) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                uploadFile(files[0], type);
+            }
+        }
+
+        // Upload file
+        async function uploadFile(file, type) {
+            const statusDiv = document.getElementById(`${type}Status`);
+            const previewDiv = document.getElementById(`${type}Preview`);
+
+            // Show uploading status
+            statusDiv.className = 'upload-status uploading show';
+            statusDiv.innerHTML = `
+                <div class="status-header">
+                    <div class="status-icon">⏳</div>
+                    <div class="status-text">
+                        <div class="status-filename">${file.name}</div>
+                        <div class="status-message">Uploading and processing...</div>
+                    </div>
+                </div>
+                <div class="status-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>Processing</span>
+                        <span class="progress-percent">0%</span>
+                    </div>
+                </div>
+            `;
+
+            // Animate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                const fill = statusDiv.querySelector('.progress-fill');
+                const percent = statusDiv.querySelector('.progress-percent');
+                if (fill) fill.style.width = `${progress}%`;
+                if (percent) percent.textContent = `${Math.round(progress)}%`;
+            }, 200);
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // Map type to endpoint
+                const endpointMap = {
+                    'audio': '/api/upload_audio',
+                    'spreadsheet': '/api/upload_spreadsheet',
+                    'pdf': '/api/upload_pdf',
+                    'email': '/api/upload_email',
+                    'code': '/api/upload_code'
+                };
+                const endpoint = endpointMap[type] || '/api/upload_audio';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(progressInterval);
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    // Show success
+                    statusDiv.className = 'upload-status success show';
+                    statusDiv.innerHTML = `
+                        <div class="status-header">
+                            <div class="status-icon">✅</div>
+                            <div class="status-text">
+                                <div class="status-filename">${file.name}</div>
+                                <div class="status-message">Successfully processed! Created ${result.shard_count} memory shards.</div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Show preview
+                    showUploadPreview(type, result, file.name);
+
+                    // Show toast notification
+                    showToast('success', `${type.charAt(0).toUpperCase() + type.slice(1)} processed successfully!`);
+
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Upload failed');
+                }
+            } catch (error) {
+                clearInterval(progressInterval);
+
+                // Show error
+                statusDiv.className = 'upload-status error show';
+                statusDiv.innerHTML = `
+                    <div class="status-header">
+                        <div class="status-icon">❌</div>
+                        <div class="status-text">
+                            <div class="status-filename">${file.name}</div>
+                            <div class="status-message">Error: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+
+                showToast('error', `Failed to process ${type}: ${error.message}`);
+            }
+        }
+
+        // Handle YouTube URL submission
+        async function submitYouTubeUrl() {
+            const urlInput = document.getElementById('youtubeUrl');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                showToast('warning', 'Please enter a YouTube URL');
+                return;
+            }
+
+            const statusDiv = document.getElementById('youtubeStatus');
+            const previewDiv = document.getElementById('youtubePreview');
+
+            // Show processing status
+            statusDiv.className = 'upload-status uploading show';
+            statusDiv.innerHTML = `
+                <div class="status-header">
+                    <div class="status-icon">⏳</div>
+                    <div class="status-text">
+                        <div class="status-filename">YouTube Video</div>
+                        <div class="status-message">Fetching transcript...</div>
+                    </div>
+                </div>
+                <div class="status-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            `;
+
+            // Animate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 85) progress = 85;
+                const fill = statusDiv.querySelector('.progress-fill');
+                if (fill) fill.style.width = `${progress}%`;
+            }, 300);
+
+            try {
+                // Send via WebSocket
+                const message = {
+                    action: 'ingest_youtube',
+                    url: url
+                };
+                socket.send(JSON.stringify(message));
+
+                clearInterval(progressInterval);
+
+                // Show success (actual result will come via WebSocket)
+                statusDiv.className = 'upload-status success show';
+                statusDiv.innerHTML = `
+                    <div class="status-header">
+                        <div class="status-icon">✅</div>
+                        <div class="status-text">
+                            <div class="status-filename">YouTube Video</div>
+                            <div class="status-message">Transcript request sent! Processing in background...</div>
+                        </div>
+                    </div>
+                `;
+
+                showToast('success', 'YouTube transcript request sent!');
+                urlInput.value = '';  // Clear input
+
+            } catch (error) {
+                clearInterval(progressInterval);
+
+                statusDiv.className = 'upload-status error show';
+                statusDiv.innerHTML = `
+                    <div class="status-header">
+                        <div class="status-icon">❌</div>
+                        <div class="status-text">
+                            <div class="status-filename">YouTube Video</div>
+                            <div class="status-message">Error: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+
+                showToast('error', `Failed to process YouTube URL: ${error.message}`);
+            }
+        }
+
+        // Handle YouTube Enter key
+        function handleYouTubeEnter(event) {
+            if (event.key === 'Enter') {
+                submitYouTubeUrl();
+            }
+        }
+
+        // Handle Git repository submission
+        async function submitGitPath() {
+            const pathInput = document.getElementById('gitPath');
+            const path = pathInput.value.trim();
+
+            if (!path) {
+                showToast('warning', 'Please enter a git repository path');
+                return;
+            }
+
+            const statusDiv = document.getElementById('gitStatus');
+
+            // Show processing status
+            statusDiv.className = 'upload-status uploading show';
+            statusDiv.innerHTML = `
+                <div class="status-header">
+                    <div class="status-icon">⏳</div>
+                    <div class="status-text">
+                        <div class="status-filename">Git Repository</div>
+                        <div class="status-message">Ingesting repository history...</div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const message = {
+                    action: 'ingest_git',
+                    path: path
+                };
+                socket.send(JSON.stringify(message));
+
+                showToast('success', 'Git repository ingestion started!');
+                pathInput.value = '';  // Clear input
+
+            } catch (error) {
+                statusDiv.className = 'upload-status error show';
+                statusDiv.innerHTML = `
+                    <div class="status-header">
+                        <div class="status-icon">❌</div>
+                        <div class="status-text">
+                            <div class="status-filename">Git Repository</div>
+                            <div class="status-message">Error: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+
+                showToast('error', `Failed to ingest git repository: ${error.message}`);
+            }
+        }
+
+        // Handle Git Enter key
+        function handleGitEnter(event) {
+            if (event.key === 'Enter') {
+                submitGitPath();
+            }
+        }
+
+        // Handle web URL submission
+        async function submitWebUrl() {
+            const urlInput = document.getElementById('webUrl');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                showToast('warning', 'Please enter a web URL');
+                return;
+            }
+
+            const statusDiv = document.getElementById('urlStatus');
+
+            // Show processing status
+            statusDiv.className = 'upload-status uploading show';
+            statusDiv.innerHTML = `
+                <div class="status-header">
+                    <div class="status-icon">⏳</div>
+                    <div class="status-text">
+                        <div class="status-filename">Web Page</div>
+                        <div class="status-message">Scraping web content...</div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const message = {
+                    action: 'ingest_url',
+                    url: url
+                };
+                socket.send(JSON.stringify(message));
+
+                showToast('success', 'Web scraping started!');
+                urlInput.value = '';  // Clear input
+
+            } catch (error) {
+                statusDiv.className = 'upload-status error show';
+                statusDiv.innerHTML = `
+                    <div class="status-header">
+                        <div class="status-icon">❌</div>
+                        <div class="status-text">
+                            <div class="status-filename">Web Page</div>
+                            <div class="status-message">Error: ${error.message}</div>
+                        </div>
+                    </div>
+                `;
+
+                showToast('error', `Failed to scrape URL: ${error.message}`);
+            }
+        }
+
+        // Handle URL Enter key
+        function handleUrlEnter(event) {
+            if (event.key === 'Enter') {
+                submitWebUrl();
+            }
+        }
+
+        // Show upload preview
+        function showUploadPreview(type, result, filename) {
+            const previewDiv = document.getElementById(`${type}Preview`);
+
+            let previewHTML = '<div class="preview-header">📄 Preview</div>';
+
+            if (type === 'audio') {
+                previewHTML += `
+                    <div class="preview-metadata">
+                        <div class="metadata-item">
+                            <div class="metadata-label">Duration</div>
+                            <div class="metadata-value">${result.duration ? formatDuration(result.duration) : 'Unknown'}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Language</div>
+                            <div class="metadata-value">${result.language || 'Auto'}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Shards</div>
+                            <div class="metadata-value">${result.shard_count}</div>
+                        </div>
+                    </div>
+                `;
+                if (result.full_text) {
+                    previewHTML += `<div class="preview-content">${result.full_text}</div>`;
+                }
+            } else if (type === 'spreadsheet') {
+                previewHTML += `
+                    <div class="preview-metadata">
+                        <div class="metadata-item">
+                            <div class="metadata-label">Format</div>
+                            <div class="metadata-value">${result.file_format || 'Unknown'}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Sheets</div>
+                            <div class="metadata-value">${result.sheet_count || 1}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Shards</div>
+                            <div class="metadata-value">${result.shard_count}</div>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'pdf') {
+                previewHTML += `
+                    <div class="preview-metadata">
+                        <div class="metadata-item">
+                            <div class="metadata-label">Title</div>
+                            <div class="metadata-value">${result.title || 'Unknown'}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Author</div>
+                            <div class="metadata-value">${result.author || 'Unknown'}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Pages</div>
+                            <div class="metadata-value">${result.page_count || 0}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Shards</div>
+                            <div class="metadata-value">${result.shard_count}</div>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'email') {
+                previewHTML += `
+                    <div class="preview-metadata">
+                        <div class="metadata-item">
+                            <div class="metadata-label">Subject</div>
+                            <div class="metadata-value">${result.subject || 'Unknown'}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">From</div>
+                            <div class="metadata-value">${result.from || 'Unknown'}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Date</div>
+                            <div class="metadata-value">${result.date || 'Unknown'}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Shards</div>
+                            <div class="metadata-value">${result.shard_count}</div>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'code') {
+                previewHTML += `
+                    <div class="preview-metadata">
+                        <div class="metadata-item">
+                            <div class="metadata-label">Language</div>
+                            <div class="metadata-value">${result.language || 'Unknown'}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Lines</div>
+                            <div class="metadata-value">${result.total_lines || 0}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Classes</div>
+                            <div class="metadata-value">${result.class_count || 0}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Functions</div>
+                            <div class="metadata-value">${result.function_count || 0}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Shards</div>
+                            <div class="metadata-value">${result.shard_count}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            previewDiv.innerHTML = previewHTML;
+            previewDiv.classList.add('show');
+        }
+
+        // Format duration in seconds to HH:MM:SS
+        function formatDuration(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+
+            if (hours > 0) {
+                return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            } else {
+                return `${minutes}:${String(secs).padStart(2, '0')}`;
+            }
+        }
+
+        // Make dropzones clickable
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('audioDropzone')?.addEventListener('click', (e) => {
+                if (e.target === e.currentTarget || e.target.classList.contains('dropzone-icon') ||
+                    e.target.classList.contains('dropzone-title') || e.target.classList.contains('dropzone-subtitle') ||
+                    e.target.classList.contains('dropzone-formats')) {
+                    document.getElementById('audioFileInput').click();
+                }
+            });
+
+            document.getElementById('spreadsheetDropzone')?.addEventListener('click', (e) => {
+                if (e.target === e.currentTarget || e.target.classList.contains('dropzone-icon') ||
+                    e.target.classList.contains('dropzone-title') || e.target.classList.contains('dropzone-subtitle') ||
+                    e.target.classList.contains('dropzone-formats')) {
+                    document.getElementById('spreadsheetFileInput').click();
+                }
+            });
+
+            document.getElementById('pdfDropzone')?.addEventListener('click', (e) => {
+                if (e.target === e.currentTarget || e.target.classList.contains('dropzone-icon') ||
+                    e.target.classList.contains('dropzone-title') || e.target.classList.contains('dropzone-subtitle') ||
+                    e.target.classList.contains('dropzone-formats')) {
+                    document.getElementById('pdfFileInput').click();
+                }
+            });
+
+            document.getElementById('emailDropzone')?.addEventListener('click', (e) => {
+                if (e.target === e.currentTarget || e.target.classList.contains('dropzone-icon') ||
+                    e.target.classList.contains('dropzone-title') || e.target.classList.contains('dropzone-subtitle') ||
+                    e.target.classList.contains('dropzone-formats')) {
+                    document.getElementById('emailFileInput').click();
+                }
+            });
+
+            document.getElementById('codeDropzone')?.addEventListener('click', (e) => {
+                if (e.target === e.currentTarget || e.target.classList.contains('dropzone-icon') ||
+                    e.target.classList.contains('dropzone-title') || e.target.classList.contains('dropzone-subtitle') ||
+                    e.target.classList.contains('dropzone-formats')) {
+                    document.getElementById('codeFileInput').click();
+                }
+            });
+        });
+
         // ===== INITIALIZE =====
         connect();
     </script>
+    <script>
+// ========================================
+// VOICE INTEGRATION JAVASCRIPT
+// ========================================
+
+console.log('Loading voice integration...');
+
+let isRecording = false;
+let mediaRecorder = null;
+let audioChunks = [];
+
+// Wait for DOM to load
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing voice...');
+
+    const voiceButton = document.getElementById('voiceButton');
+    if (!voiceButton) {
+        console.error('Voice button not found!');
+        return;
+    }
+
+    // Voice Recording
+    voiceButton.addEventListener('click', async () => {
+        console.log('Voice button clicked, isRecording:', isRecording);
+        if (isRecording) {
+            stopRecording();
+        } else {
+            await startRecording();
+        }
+    });
+
+    console.log('Voice integration initialized ✓');
+});
+
+async function startRecording() {
+    console.log('Starting recording...');
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log('Microphone access granted');
+
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            console.log('Audio data available:', event.data.size, 'bytes');
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            console.log('Recording stopped, processing...');
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            console.log('Audio blob created:', audioBlob.size, 'bytes');
+            await transcribeAudio(audioBlob);
+            stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+
+        const voiceBtn = document.getElementById('voiceButton');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+
+        if (voiceBtn) voiceBtn.classList.add('recording');
+        if (recordingIndicator) recordingIndicator.classList.add('show');
+
+        console.log('Recording started ✓');
+    } catch (error) {
+        console.error('Microphone access denied:', error);
+        alert('Please allow microphone access to use voice input.\n\nClick the lock icon in the address bar and allow microphone access.');
+    }
+}
+
+function stopRecording() {
+    console.log('Stopping recording...');
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+
+        const voiceBtn = document.getElementById('voiceButton');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+
+        if (voiceBtn) voiceBtn.classList.remove('recording');
+        if (recordingIndicator) recordingIndicator.classList.remove('show');
+
+        console.log('Recording stopped ✓');
+    }
+}
+
+async function transcribeAudio(audioBlob) {
+    console.log('Transcribing audio...');
+
+    try {
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.wav');
+
+        console.log('Sending to /api/voice/transcribe...');
+        const response = await fetch('/api/voice/transcribe', {
+            method: 'POST',
+            body: formData
+        });
+
+        console.log('Transcription response:', response.status);
+        const data = await response.json();
+        console.log('Transcription data:', data);
+
+        if (data.success && data.transcript) {
+            console.log('Transcript:', data.transcript);
+
+            // Auto-submit the transcribed query
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.value = data.transcript;
+                console.log('Set message input to:', data.transcript);
+
+                // Trigger send - try multiple methods
+                const sendButton = document.getElementById('sendButton') ||
+                                   document.querySelector('.send-button') ||
+                                   document.querySelector('[onclick*="send"]');
+
+                if (sendButton) {
+                    console.log('Clicking send button');
+                    sendButton.click();
+                } else {
+                    // Fallback: try pressing Enter
+                    console.log('Send button not found, trying Enter key');
+                    const event = new KeyboardEvent('keydown', {
+                        key: 'Enter',
+                        code: 'Enter',
+                        keyCode: 13,
+                        which: 13,
+                        bubbles: true
+                    });
+                    messageInput.dispatchEvent(event);
+                }
+            } else {
+                console.error('Message input not found!');
+                alert('Could not find message input field. Transcript: ' + data.transcript);
+            }
+        } else {
+            console.error('Transcription failed:', data);
+            alert('Transcription failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('Transcription error:', error);
+        alert('Error transcribing audio: ' + error.message);
+    }
+}
+
+// Auto-speak response (conversational mode)
+async function speakResponseAuto(responseText, confidence, mode) {
+    console.log('Auto-speaking response...', {
+        text: responseText.substring(0, 50) + '...',
+        confidence,
+        mode
+    });
+
+    try {
+        const formData = new FormData();
+        formData.append('response', responseText);
+        formData.append('confidence', (confidence || 0.5).toString());
+        formData.append('mode', mode || 'direct');
+
+        console.log('Sending to /api/voice/speak_response...');
+        const response = await fetch('/api/voice/speak_response', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            console.error('Auto-speak failed:', response.status, response.statusText);
+            return;
+        }
+
+        console.log('Got audio response');
+        const audioBlob = await response.blob();
+        console.log('Audio blob size:', audioBlob.size);
+
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        const audio = document.getElementById('audioPlayer');
+        if (audio) {
+            audio.src = audioUrl;
+            console.log('Playing audio...');
+            audio.play().catch(err => {
+                console.error('Audio playback failed:', err);
+                alert('Could not play audio. Check browser console for details.');
+            });
+        } else {
+            console.error('Audio player not found!');
+        }
+    } catch (error) {
+        console.error('Auto-speak error:', error);
+    }
+}
+
+console.log('Voice integration script loaded ✓');
+
+    </script>
+
+    <!-- ========================================
+         VOICE INTEGRATION UI
+         ======================================== -->
+
+    <!-- Voice Button (Floating Action Button) -->
+    <button class="voice-button" id="voiceButton" title="Click to record voice">
+        🎤
+    </button>
+
+    <!-- Recording Indicator -->
+    <div class="recording-indicator" id="recordingIndicator">
+        <div class="recording-dot"></div>
+        <span>Recording...</span>
+    </div>
+
+    <!-- Hidden Audio Player for auto-speak -->
+    <audio id="audioPlayer"></audio>
+
 </body>
 </html>

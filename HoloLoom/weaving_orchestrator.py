@@ -384,6 +384,10 @@ class WeavingOrchestrator:
         self.enable_semantic_cache = enable_semantic_cache
         self.enable_dashboards = enable_dashboards
 
+        # Recursive Learning System Components (Phase 1-5)
+        self.enable_recursive_learning = cfg.enable_recursive_learning
+        self._recursive_components = None  # Lazy initialization
+
         # Validate memory configuration
         if memory is None and yarn_graph is None and shards is None:
             raise ValueError("Either 'memory', 'yarn_graph', or 'shards' must be provided")
@@ -511,6 +515,91 @@ class WeavingOrchestrator:
             self.logger.info("Dashboard generation disabled")
 
         self.logger.info("WeavingOrchestrator initialization complete")
+
+    def _initialize_recursive_learning(self):
+        """
+        Initialize recursive learning components (lazy initialization).
+
+        This is called on first weave() when enable_recursive_learning=True.
+        Initializes:
+        - Scratchpad for provenance tracking
+        - Pattern learner for successful query patterns
+        - Hot pattern tracker for adaptive retrieval
+        - Advanced refiner for low-confidence queries
+        - Background learner for Thompson Sampling and policy updates
+        """
+        if self._recursive_components is not None:
+            return  # Already initialized
+
+        try:
+            from HoloLoom.recursive.scratchpad import Scratchpad
+            from HoloLoom.recursive.loop_integration import PatternLearner
+            from HoloLoom.recursive.hot_patterns import HotPatternTracker
+            from HoloLoom.recursive.advanced_refinement import AdvancedRefiner
+            from HoloLoom.recursive.full_learning_loop import (
+                ThompsonPriors,
+                PolicyWeights,
+                BackgroundLearner,
+                LearningMetrics
+            )
+
+            self.logger.info("Initializing recursive learning components...")
+
+            # Components dictionary
+            components = {}
+
+            # 1. Scratchpad (Phase 1)
+            if self.cfg.recursive_learning_enable_scratchpad:
+                components['scratchpad'] = Scratchpad(capacity=1000)
+                self.logger.info("  [Phase 1] Scratchpad enabled (provenance tracking)")
+
+            # 2. Pattern Learner (Phase 2)
+            components['pattern_learner'] = PatternLearner()
+            self.logger.info("  [Phase 2] Pattern learner enabled")
+
+            # 3. Hot Pattern Tracker (Phase 3)
+            if self.cfg.recursive_learning_enable_hot_patterns:
+                components['hot_tracker'] = HotPatternTracker()
+                self.logger.info("  [Phase 3] Hot pattern tracker enabled")
+
+            # 4. Advanced Refiner (Phase 4)
+            components['refiner'] = AdvancedRefiner(
+                orchestrator=self,
+                scratchpad=components.get('scratchpad'),
+                enable_learning=True
+            )
+            self.logger.info("  [Phase 4] Advanced refiner enabled")
+
+            # 5. Background Learner (Phase 5)
+            components['thompson_priors'] = ThompsonPriors()
+            components['policy_weights'] = PolicyWeights()
+            components['metrics'] = LearningMetrics()
+
+            if self.cfg.recursive_learning_enable_background:
+                components['background_learner'] = BackgroundLearner(
+                    orchestrator=self,
+                    thompson_priors=components['thompson_priors'],
+                    policy_weights=components['policy_weights'],
+                    update_interval=self.cfg.recursive_learning_update_interval
+                )
+                self.logger.info("  [Phase 5] Background learner enabled")
+            else:
+                components['background_learner'] = None
+
+            self._recursive_components = components
+
+            # Note: Background learner.start() should be called asynchronously in weave()
+            # Cannot use await here since _initialize_recursive_learning is synchronous
+            self.logger.info("Recursive learning initialization complete")
+
+        except ImportError as e:
+            self.logger.warning(
+                f"Failed to initialize recursive learning components: {e}. "
+                f"Recursive learning will be disabled. "
+                f"Install dependencies or disable via config.enable_recursive_learning=False"
+            )
+            self.enable_recursive_learning = False
+            self._recursive_components = None
 
     def _initialize_components(self):
         """Initialize all weaving architecture components."""
@@ -1024,6 +1113,10 @@ class WeavingOrchestrator:
         warnings = []
 
         self.logger.info(f"[WEAVING] Beginning weaving cycle for query: '{query.text}'")
+
+        # Recursive Learning: Initialize components on first use (lazy init)
+        if self.enable_recursive_learning and self._recursive_components is None:
+            self._initialize_recursive_learning()
 
         # mythRL: Assess complexity level (3-5-7-9 system)
         if complexity is None:
@@ -1578,12 +1671,43 @@ class WeavingOrchestrator:
 
             # Track metrics
             if METRICS_ENABLED:
+                # Track overall query
                 metrics.track_query(
                     pattern=pattern_spec.name,
                     complexity=complexity.name if complexity else 'unknown',
-                    duration=duration_ms / 1000.0  # Convert to seconds
+                    duration=duration_ms / 1000.0,  # Convert to seconds
+                    tool_used=collapse_result.tool
                 )
-                metrics.track_pattern(pattern_spec.name)
+
+                # Track all stage durations
+                metrics.track_stage_batch(stage_timings)
+
+                # Track tool execution
+                metrics.track_tool_execution(
+                    tool_name=collapse_result.tool,
+                    duration=(stage_timings.get('tool_execution', 0)) / 1000.0
+                )
+
+                # Track parallel execution metrics
+                if 'parallel_speedup' in stage_timings and 'parallel_execution_wall_time' in stage_timings:
+                    metrics.track_parallel_execution(
+                        stage_group='steps_4_6',
+                        wall_time=stage_timings.get('parallel_execution_wall_time', 0) / 1000.0,
+                        speedup=stage_timings.get('parallel_speedup', 1.0)
+                    )
+
+                # Track confidence
+                metrics.set_confidence(collapse_result.tool, collapse_result.confidence)
+
+                # Track active threads
+                metrics.set_active_threads(pattern_spec.name, len(thread_ids))
+
+                # Track context size
+                metrics.set_retrieval_context_size(len(context.shards))
+
+                # Track motif detection
+                if features.motifs:
+                    metrics.track_motifs(len(features.motifs))
 
             # Generate dashboard if enabled (Edward Tufte Machine)
             if self.dashboard_constructor:
@@ -1594,6 +1718,16 @@ class WeavingOrchestrator:
                 except Exception as e:
                     self.logger.warning(f"[DASHBOARD] Failed to generate dashboard: {e}")
                     # Don't fail the weaving cycle if dashboard generation fails
+
+            # ================================================================
+            # Recursive Learning: Apply learning loop (if enabled)
+            # ================================================================
+            if self.enable_recursive_learning and self._recursive_components:
+                try:
+                    spacetime = await self._apply_recursive_learning(spacetime, query)
+                except Exception as e:
+                    self.logger.warning(f"Recursive learning failed: {e}. Continuing with original spacetime.")
+                    # Don't fail the weaving cycle if learning fails
 
             # Cache the result
             self.query_cache.put(query.text, spacetime)
@@ -1773,6 +1907,168 @@ class WeavingOrchestrator:
         return spacetime
 
     # ========================================================================
+    # Recursive Learning Integration (Phase 1-5)
+    # ========================================================================
+
+    async def _apply_recursive_learning(self, spacetime: Spacetime, query: Query) -> Spacetime:
+        """
+        Apply recursive learning loop to spacetime result.
+
+        This integrates all 5 phases of recursive learning:
+        - Phase 1: Scratchpad provenance tracking
+        - Phase 2: Pattern learning from successful queries
+        - Phase 3: Hot pattern tracking for adaptive retrieval
+        - Phase 4: Refinement for low-confidence results
+        - Phase 5: Thompson Sampling and policy weight updates
+
+        Args:
+            spacetime: Spacetime result from weaving
+            query: Original query
+
+        Returns:
+            Potentially refined spacetime (or original if no refinement needed)
+        """
+        if not self._recursive_components:
+            return spacetime
+
+        components = self._recursive_components
+        confidence = spacetime.trace.tool_confidence
+
+        # Phase 1: Scratchpad - Track provenance
+        if components.get('scratchpad'):
+            components['scratchpad'].add_entry(
+                thought=f"Query: {query.text[:100]}",
+                action=f"Tool: {spacetime.trace.tool_selected}, Adapter: {spacetime.trace.policy_adapter}",
+                observation=f"Confidence: {confidence:.2f}",
+                score=confidence
+            )
+
+        # Phase 2: Pattern Learning - Learn from high-confidence queries
+        if confidence >= self.cfg.recursive_learning_refinement_threshold:
+            # Learn pattern
+            components['pattern_learner'].learn_from_spacetime(spacetime)
+
+        # Phase 3: Hot Pattern Tracking - Track access frequency
+        if components.get('hot_tracker'):
+            components['hot_tracker'].record_access(spacetime)
+
+        # Phase 4: Refinement - Refine low-confidence results
+        if confidence < self.cfg.recursive_learning_refinement_threshold:
+            self.logger.info(
+                f"[LEARNING] Low confidence ({confidence:.2f}), triggering refinement"
+            )
+
+            refinement_result = await components['refiner'].refine(
+                query=query,
+                initial_spacetime=spacetime,
+                strategy=None,  # Auto-select
+                max_iterations=self.cfg.recursive_learning_max_iterations,
+                quality_threshold=0.9
+            )
+
+            spacetime = refinement_result.final_spacetime
+
+            # Log refinement to scratchpad
+            if components.get('scratchpad'):
+                components['scratchpad'].add_entry(
+                    thought=f"Refinement: {refinement_result.strategy_used.value}",
+                    action=f"Iterations: {refinement_result.iterations}",
+                    observation=refinement_result.summary(),
+                    score=refinement_result.trajectory[-1].score()
+                )
+
+        # Phase 5: Thompson Sampling and Policy Updates
+        tool = spacetime.trace.tool_selected
+        adapter = spacetime.trace.policy_adapter
+        final_confidence = spacetime.trace.tool_confidence
+
+        # Update Thompson priors
+        if final_confidence >= 0.75:
+            components['thompson_priors'].update_success(tool, final_confidence)
+        else:
+            components['thompson_priors'].update_failure(tool, final_confidence)
+
+        # Update policy weights
+        success = final_confidence >= 0.75
+        components['policy_weights'].update(adapter, success)
+
+        # Update metrics
+        components['metrics'].update(final_confidence)
+        components['metrics'].thompson_updates += 1
+        components['metrics'].policy_updates += 1
+
+        # Record for background learner
+        if components.get('background_learner'):
+            components['background_learner'].record_spacetime(spacetime)
+
+        return spacetime
+
+    def get_recursive_learning_stats(self) -> Optional[Dict[str, Any]]:
+        """
+        Get comprehensive recursive learning statistics.
+
+        Returns None if recursive learning is disabled.
+
+        Returns:
+            Dict with learning metrics, Thompson priors, policy weights, etc.
+        """
+        if not self.enable_recursive_learning or not self._recursive_components:
+            return None
+
+        components = self._recursive_components
+        stats = {
+            "enabled": True,
+            "queries_processed": components['metrics'].queries_processed,
+            "avg_confidence": components['metrics'].avg_confidence,
+            "thompson_priors": {
+                tool: {
+                    "expected_reward": components['thompson_priors'].get_expected_reward(tool),
+                    "uncertainty": components['thompson_priors'].get_uncertainty(tool),
+                    **priors
+                }
+                for tool, priors in components['thompson_priors'].tool_priors.items()
+            },
+            "policy_weights": {
+                adapter: {
+                    "weight": components['policy_weights'].get_weight(adapter),
+                    "success_rate": components['policy_weights'].get_success_rate(adapter),
+                    "total_uses": components['policy_weights'].adapter_total[adapter]
+                }
+                for adapter in components['policy_weights'].adapter_weights.keys()
+            },
+        }
+
+        # Add hot patterns if available
+        if components.get('hot_tracker'):
+            hot_patterns = components['hot_tracker'].get_hot_patterns(limit=10)
+            stats["hot_patterns"] = [
+                {
+                    "element_id": record.element_id,
+                    "heat_score": record.heat_score,
+                    "access_count": record.access_count,
+                    "success_rate": record.success_rate,
+                    "avg_confidence": record.avg_confidence
+                }
+                for record in hot_patterns
+            ]
+
+        # Add learned patterns if available
+        if components.get('pattern_learner'):
+            learned_patterns = components['pattern_learner'].get_hot_patterns()
+            stats["learned_patterns"] = [
+                {
+                    "motifs": pattern.motifs[:3],
+                    "tool": pattern.tool,
+                    "query_type": pattern.query_type,
+                    "occurrences": pattern.occurrences,
+                    "avg_confidence": pattern.avg_confidence
+                }
+                for pattern in learned_patterns[:10]
+            ]
+
+        return stats
+
+    # ========================================================================
     # Memory Backend Helpers
     # ========================================================================
 
@@ -1842,6 +2138,13 @@ class WeavingOrchestrator:
                 # Automatic cleanup on exit
         """
         self.logger.debug("WeavingOrchestrator context manager entered")
+
+        # Start background learner if recursive learning is enabled
+        if self.enable_recursive_learning:
+            # Lazy initialization happens on first weave()
+            # We don't initialize here to avoid overhead if never used
+            pass
+
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -1887,6 +2190,12 @@ class WeavingOrchestrator:
             return
 
         self.logger.info("Closing WeavingOrchestrator...")
+
+        # Stop recursive learning background learner
+        if self.enable_recursive_learning and self._recursive_components:
+            if self._recursive_components.get('background_learner'):
+                self.logger.info("Stopping background learner...")
+                await self._recursive_components['background_learner'].stop()
 
         # Cancel background tasks (with lock protection)
         async with self._bg_lock:

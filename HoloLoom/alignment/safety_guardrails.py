@@ -19,7 +19,7 @@ Following best practices from:
 import re
 import logging
 from enum import Enum
-from typing import List, Dict, Any, Optional, Set, Callable
+from typing import List, Dict, Any, Optional, Set, Callable, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -49,16 +49,23 @@ class ActionCategory(Enum):
     QUERY = "query"            # Query knowledge base
     RETRIEVAL = "retrieval"    # Retrieve information
     ANALYSIS = "analysis"      # Analyze data
+    INFORMATION_ACCESS = "information_access"  # Read-only knowledge access
+    READ = "read"              # Legacy alias for query/information access
 
     # Write operations (higher risk)
     STORAGE = "storage"        # Store new information
     MODIFICATION = "modification"  # Modify existing data
     DELETION = "deletion"      # Delete data
+    WRITE = "write"            # Legacy alias for modification
+    DELETE = "delete"          # Legacy alias for deletion
 
     # Execution operations (highest risk)
     EXECUTION = "execution"    # Execute code/tools
     SYSTEM = "system"          # System-level operations
     EXTERNAL = "external"      # External API calls
+    MODIFY_SYSTEM = "modify_system"  # Legacy alias for system operations
+    AUTONOMOUS = "autonomous"  # Fully autonomous actions
+    FINANCIAL = "financial"    # Financial transactions / payments
 
 
 @dataclass
@@ -74,6 +81,8 @@ class SafetyDecision:
     requires_approval: bool = False
     metadata: Dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
+    context: Dict[str, Any] = field(default_factory=dict)
+    alternative_action: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary."""
@@ -84,7 +93,22 @@ class SafetyDecision:
             "requires_approval": self.requires_approval,
             "metadata": self.metadata,
             "timestamp": self.timestamp.isoformat(),
+            "context": self.context,
+            "alternative_action": self.alternative_action,
         }
+
+    # ------------------------------------------------------------------
+    # Backward compatibility helpers
+    # ------------------------------------------------------------------
+    @property
+    def approved(self) -> bool:
+        """Legacy alias: decision approved when allowed."""
+        return self.allowed
+
+    @property
+    def requires_human_approval(self) -> bool:
+        """Legacy alias for requires_approval."""
+        return self.requires_approval
 
 
 @dataclass
@@ -201,12 +225,19 @@ class SafetyPolicy:
             ActionCategory.QUERY: RiskLevel.SAFE,
             ActionCategory.RETRIEVAL: RiskLevel.SAFE,
             ActionCategory.ANALYSIS: RiskLevel.LOW,
+            ActionCategory.INFORMATION_ACCESS: RiskLevel.LOW,
+            ActionCategory.READ: RiskLevel.LOW,
             ActionCategory.STORAGE: RiskLevel.LOW,
             ActionCategory.MODIFICATION: RiskLevel.MEDIUM,
             ActionCategory.DELETION: RiskLevel.HIGH,
+            ActionCategory.WRITE: RiskLevel.MEDIUM,
+            ActionCategory.DELETE: RiskLevel.HIGH,
             ActionCategory.EXECUTION: RiskLevel.HIGH,
             ActionCategory.SYSTEM: RiskLevel.CRITICAL,
             ActionCategory.EXTERNAL: RiskLevel.HIGH,
+            ActionCategory.MODIFY_SYSTEM: RiskLevel.CRITICAL,
+            ActionCategory.AUTONOMOUS: RiskLevel.CRITICAL,
+            ActionCategory.FINANCIAL: RiskLevel.CRITICAL,
         }
 
         # Actions that always require approval (unless testing_mode or auto_approve)
@@ -335,6 +366,8 @@ class SafetyGuardrails:
         )
         self.adversarial_detector = AdversarialDetector() if enable_adversarial_detection else None
         self.action_history: List[ActionRequest] = []
+        self.decisions: List[SafetyDecision] = []
+        self._decision_records: List[Tuple[ActionRequest, SafetyDecision]] = []
         self._setup_logging()
 
     def _setup_logging(self):
@@ -380,19 +413,26 @@ class SafetyGuardrails:
         # Determine if allowed
         allowed = True
         reason = f"Action category: {request.category.value}, Risk level: {risk_level.value}"
+        alternative_action: Optional[str] = None
 
         # Block critical risk by default
         if risk_level == RiskLevel.CRITICAL:
             allowed = False
+            alternative_action = "Escalate for human approval"
             reason = f"Critical risk action blocked: {request.action}"
+
+        # Require approval blocks action until approved
+        if requires_approval and allowed:
+            allowed = False
+            alternative_action = alternative_action or "Requires human approval"
+            reason = f"Approval required before executing: {request.action}"
 
         # Log the decision
         self._log_decision(request, risk_level, allowed, requires_approval)
 
         # Store in history
         self.action_history.append(request)
-
-        return SafetyDecision(
+        decision = SafetyDecision(
             allowed=allowed,
             risk_level=risk_level,
             reason=reason,
@@ -402,8 +442,13 @@ class SafetyGuardrails:
                 "category": request.category.value,
                 "user_id": request.user_id,
                 "session_id": request.session_id,
-            }
+            },
+            context=request.context,
+            alternative_action=alternative_action,
         )
+        self.decisions.append(decision)
+        self._decision_records.append((request, decision))
+        return decision
 
     def _log_decision(
         self,
@@ -426,6 +471,40 @@ class SafetyGuardrails:
         else:
             logger.info(log_msg)
 
+    # ------------------------------------------------------------------
+    # Backward-compatible API surface
+    # ------------------------------------------------------------------
+    def evaluate_action(
+        self,
+        action: str,
+        category: ActionCategory,
+        context: Optional[Dict[str, Any]] = None,
+        user_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+        text_input: Optional[str] = None,
+    ) -> SafetyDecision:
+        """Legacy wrapper used throughout tests and older integrations."""
+
+        request = ActionRequest(
+            action=action,
+            category=category,
+            context=context or {},
+            user_id=user_id,
+            session_id=session_id,
+        )
+        text_to_check = text_input if text_input is not None else action
+        return self.evaluate(request, text_input=text_to_check)
+
+    def check_action(
+        self,
+        request: ActionRequest,
+        text_input: Optional[str] = None,
+    ) -> SafetyDecision:
+        """Compatibility shim for alignment orchestrator tests."""
+
+        text_to_check = text_input if text_input is not None else request.action
+        return self.evaluate(request, text_input=text_to_check)
+
     def approve_action(self, request: ActionRequest, approver_id: str) -> SafetyDecision:
         """
         Manually approve a high-risk action.
@@ -444,7 +523,7 @@ class SafetyGuardrails:
             f"risk={risk_level.value}, approver={approver_id}"
         )
 
-        return SafetyDecision(
+        decision = SafetyDecision(
             allowed=True,
             risk_level=risk_level,
             reason=f"Manually approved by {approver_id}",
@@ -454,8 +533,12 @@ class SafetyGuardrails:
                 "approver_id": approver_id,
                 "action": request.action,
                 "category": request.category.value,
-            }
+            },
+            context=request.context,
         )
+        self.decisions.append(decision)
+        self._decision_records.append((request, decision))
+        return decision
 
     def get_action_history(
         self,
@@ -479,6 +562,16 @@ class SafetyGuardrails:
 
         return history[-limit:]
 
+    def get_recent_decisions(self, limit: int = 100) -> List[SafetyDecision]:
+        """Return the most recent safety decisions."""
+        return self.decisions[-limit:]
+
+    def clear_history(self) -> None:
+        """Reset stored requests and decisions (test compatibility)."""
+        self.action_history.clear()
+        self.decisions.clear()
+        self._decision_records.clear()
+
     def get_statistics(self) -> Dict[str, Any]:
         """
         Get safety statistics.
@@ -486,15 +579,26 @@ class SafetyGuardrails:
         Returns:
             Dictionary of statistics
         """
-        total_actions = len(self.action_history)
+        total_decisions = len(self.decisions)
+        allowed = sum(1 for decision in self.decisions if decision.allowed)
+        blocked = total_decisions - allowed
 
-        by_category = {}
+        by_risk_level = {
+            level.value: sum(1 for decision in self.decisions if decision.risk_level == level)
+            for level in RiskLevel
+        }
+
+        by_category: Dict[str, int] = {}
         for category in ActionCategory:
-            count = sum(1 for r in self.action_history if r.category == category)
-            by_category[category.value] = count
+            by_category[category.value] = sum(
+                1 for request, _ in self._decision_records if request.category == category
+            )
 
         return {
-            "total_actions": total_actions,
+            "total_decisions": total_decisions,
+            "allowed": allowed,
+            "blocked": blocked,
+            "by_risk_level": by_risk_level,
             "by_category": by_category,
         }
 

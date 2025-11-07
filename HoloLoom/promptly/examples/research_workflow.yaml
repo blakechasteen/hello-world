@@ -1,0 +1,68 @@
+# Multi-Query Research Workflow with DSPy
+# Decomposes complex research questions into sub-queries and synthesizes results
+
+name: Research_Pipeline
+description: Multi-query research with synthesis
+
+steps:
+  - step_id: decompose
+    signature: QuestionDecomposition
+    inputs:
+      research_question: "{query}"
+    outputs:
+      - sub_questions
+    optimize: true
+    optimization_query: "question decomposition examples"
+    metadata:
+      description: "Break down complex question into manageable sub-questions"
+      max_sub_questions: 5
+
+  - step_id: retrieve_context
+    signature: ContextRetrieval
+    inputs:
+      question: "{decompose.sub_questions}"
+    outputs:
+      - context
+    optimize: true
+    optimization_query: "multi-query context retrieval"
+    metadata:
+      description: "Retrieve context for each sub-question"
+      parallel: true
+
+  - step_id: answer_subquestions
+    signature: SimpleQA
+    inputs:
+      question: "{decompose.sub_questions}"
+      context: "{retrieve_context.context}"
+    outputs:
+      - answer
+    optimize: true
+    optimization_query: "simple Q&A examples"
+    metadata:
+      description: "Answer each sub-question"
+      parallel: true
+
+  - step_id: synthesize
+    signature: AnswerSynthesis
+    inputs:
+      research_question: "{query}"
+      answers: "{answer_subquestions.answer}"
+    outputs:
+      - synthesis
+      - sources
+    optimize: true
+    optimization_query: "answer synthesis examples"
+    metadata:
+      description: "Synthesize sub-answers into comprehensive response"
+      timeout: 15000
+
+metadata:
+  version: "1.0"
+  author: "HoloLoom"
+  category: "research"
+  tags:
+    - research
+    - multi-query
+    - synthesis
+  expected_runtime_ms: 30000
+  complexity: "high"

@@ -332,20 +332,28 @@ async def query_endpoint(request: QueryRequest):
     start_time = datetime.now()
 
     try:
-        # Get orchestrator
-        orchestrator = await get_orchestrator()
+        # Validate request early to surface user errors as 4xx instead of 5xx
+        text_value = (request.text or "").strip()
+        if not text_value:
+            raise HTTPException(status_code=400, detail="Query text must not be empty.")
 
-        # Map mode string to enum
         mode_map = {
             "direct": ReasoningMode.DIRECT,
             "verify": ReasoningMode.VERIFY,
             "research": ReasoningMode.RESEARCH,
             "plan_execute": ReasoningMode.PLAN_EXECUTE,
         }
-        mode = mode_map.get(request.mode, ReasoningMode.VERIFY)
+        mode_key = (request.mode or "verify").strip().lower()
+        if mode_key not in mode_map:
+            raise HTTPException(status_code=400, detail=f"Unsupported reasoning mode: {request.mode}")
+
+        # Get orchestrator lazily after validation
+        orchestrator = await get_orchestrator()
+
+        mode = mode_map[mode_key]
 
         # Create query
-        query = Query(text=request.text)
+        query = Query(text=text_value)
 
         # Add code context to metadata
         if request.context:
