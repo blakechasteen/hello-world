@@ -1,0 +1,42 @@
+{
+  "mcpServers": {
+    "hololoom-hybrid-memory": {
+      "command": "C:/Users/blake/Documents/mythRL/.venv/Scripts/python.exe",
+      "args": [
+        "c:/Users/blake/Documents/mythRL/mcp_hololoom_memory_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"
+      }
+    },
+    "expertloom": {
+      "command": "python",
+      "args": [
+        "c:\\Users\\blake\\Documents\\mythRL\\mcp_server\\expertloom_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"
+      }
+    },
+    "atlassian-jira": {
+      "command": "npx",
+      "args": [
+        "@aashari/mcp-server-atlassian-jira"
+      ],
+      "env": {
+        "JIRA_URL": "https://blakechasteen.atlassian.net",
+        "JIRA_EMAIL": "blakechasteen@gmail.com",
+        "JIRA_API_TOKEN": "YOUR_JIRA_API_TOKEN_HERE"
+      }
+    },
+    "prompty": {
+      "command": "python",
+      "args": [
+        "c:\\Users\\blake\\Documents\\mythRL\\Promptly\\promptly\\mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"
+      }
+    }
+  }
+}

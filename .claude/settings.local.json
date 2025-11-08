@@ -49,7 +49,19 @@
       "Bash(PYTHONPATH=. timeout 60 python:*)",
       "Bash(test:*)",
       "Bash(xargs:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(PYTHONPATH=\"c:/Users/blake/OneDrive/Documents/mythRL\" PYTHONIOENCODING=\"utf-8\" .venv/Scripts/python.exe:*)",
+      "Bash(.venv/Scripts/pip.exe:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(.venv/Scripts/coverage run:*)",
+      "Bash(cat:*)",
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(PYTHONPATH=\".:c:/Users/blake/OneDrive/Documents/mythRL\" PYTHONIOENCODING=\"utf-8\" .venv/Scripts/python.exe:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(.venv/Scripts/python.exe -m coverage run -m pytest:*)",
+      "Bash(docker exec:*)",
+      "Bash(.venv/Scripts/pip install:*)",
+      "Bash(PYTHONPATH=\"c:/Users/blake/OneDrive/Documents/localist/backend:c:/Users/blake/OneDrive/Documents/mythRL\" PYTHONIOENCODING=\"utf-8\" .venv/Scripts/python.exe:*)"
     ],
     "deny": [],
     "ask": []

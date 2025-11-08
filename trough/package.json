@@ -1,0 +1,103 @@
+{
+  "name": "trough",
+  "displayName": "Trough 🐷",
+  "description": "Eats slop for breakfast! Refines AI-generated code.",
+  "version": "1.0.0",
+  "publisher": "hololoom",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Linters"
+  ],
+  "keywords": ["ai", "refactor", "fix", "hallucination", "verification", "slop"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "trough.pigOut",
+        "title": "Trough: Pig Out! 🐷",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "trough.verifyCode",
+        "title": "Trough: Verify Code",
+        "icon": "$(check)"
+      },
+      {
+        "command": "trough.detectHallucinations",
+        "title": "Trough: Detect Hallucinations",
+        "icon": "$(warning)"
+      },
+      {
+        "command": "trough.ingestWorkspace",
+        "title": "Trough: Index Workspace",
+        "icon": "$(database)"
+      },
+      {
+        "command": "trough.ask",
+        "title": "Trough: Ask Question"
+      },
+      {
+        "command": "trough.explainSelection",
+        "title": "Trough: Explain Selection"
+      },
+      {
+        "command": "trough.openPanel",
+        "title": "Trough: Open Panel"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "trough.pigOut",
+        "key": "ctrl+shift+p",
+        "mac": "cmd+shift+p",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "trough.ask",
+        "key": "ctrl+shift+q",
+        "mac": "cmd+shift+q"
+      }
+    ],
+    "configuration": {
+      "title": "Trough",
+      "properties": {
+        "trough.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Trough piglet server URL"
+        },
+        "trough.reasoningMode": {
+          "type": "string",
+          "enum": ["direct", "verify", "research", "plan_execute"],
+          "default": "verify",
+          "description": "Default piglet reasoning mode"
+        },
+        "trough.maxPiglets": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Maximum number of piglets (fix iterations)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}

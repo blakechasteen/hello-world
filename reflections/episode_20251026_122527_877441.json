@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "Write this to my Notion database",
+    "response": "Generated answer for: Write this to my Notion database",
+    "tool_used": "answer",
+    "confidence": 0.2694651782512665,
+    "trace": {
+      "start_time": 

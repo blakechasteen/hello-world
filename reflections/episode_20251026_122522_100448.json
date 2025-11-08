@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "Find information about optimization",
+    "response": "Calculation completed",
+    "tool_used": "calc",
+    "confidence": 0.2868960414261806,
+    "trace": {
+      "start_time": 

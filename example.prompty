@@ -1,0 +1,19 @@
+---
+name: Simple Example
+description: A basic prompty example
+authors:
+  - Claude
+model:
+  api: chat
+  configuration:
+    type: azure_openai
+    azure_deployment: gpt-4
+inputs:
+  topic:
+    type: string
+---
+system:
+You are a helpful AI assistant.
+
+user:
+Tell me about {{topic}} in one sentence.

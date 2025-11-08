@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "Explain lifecycle management",
+    "response": "Search results based on query",
+    "tool_used": "search",
+    "confidence": 0.29379289904545397,
+    "trace": {
+      "start_time": 

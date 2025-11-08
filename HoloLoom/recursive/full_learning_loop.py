@@ -389,18 +389,22 @@ class FullLearningEngine:
 
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit"""
+    async def close(self):
+        """Cleanup resources (called by AgenticOrchestrator)."""
         # Stop background learner
         if self.background_learner:
             await self.background_learner.stop()
 
         # Cleanup components
         if self.hot_pattern_engine:
-            await self.hot_pattern_engine.__aexit__(exc_type, exc_val, exc_tb)
+            await self.hot_pattern_engine.__aexit__(None, None, None)
 
         if self.orchestrator:
-            await self.orchestrator.__aexit__(exc_type, exc_val, exc_tb)
+            await self.orchestrator.__aexit__(None, None, None)
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit"""
+        await self.close()
 
     async def weave(
         self,

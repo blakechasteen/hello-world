@@ -388,6 +388,40 @@ class WeavingOrchestrator:
         self.enable_recursive_learning = cfg.enable_recursive_learning
         self._recursive_components = None  # Lazy initialization
 
+        # Initialize configuration and memory
+        self._initialize_config_and_memory(
+            memory=memory,
+            yarn_graph=yarn_graph,
+            shards=shards,
+            pattern_preference=pattern_preference,
+            enable_complexity_auto_detect=enable_complexity_auto_detect
+        )
+
+        # Initialize weaving components
+        self._initialize_components()
+
+        # Initialize reflection, caching, and dashboards
+        self._initialize_reflection_and_caching(
+            enable_reflection=enable_reflection,
+            reflection_capacity=reflection_capacity
+        )
+
+        self.logger.info("WeavingOrchestrator initialization complete")
+
+    def _initialize_config_and_memory(
+        self,
+        memory,
+        yarn_graph,
+        shards,
+        pattern_preference,
+        enable_complexity_auto_detect
+    ):
+        """
+        Initialize memory configuration, pattern card, and protocol architecture.
+
+        Validates memory sources, sets up mythRL protocols, and configures
+        complexity detection thresholds.
+        """
         # Validate memory configuration
         if memory is None and yarn_graph is None and shards is None:
             raise ValueError("Either 'memory', 'yarn_graph', or 'shards' must be provided")
@@ -406,7 +440,7 @@ class WeavingOrchestrator:
         self.memory = memory  # Backend memory store
         self.yarn_graph_param = yarn_graph  # User-provided Yarn Graph (KG)
         self.shards = shards or []  # Static shards (backward compatibility)
-        
+
         # mythRL Protocol-based architecture
         self.enable_complexity_auto_detect = enable_complexity_auto_detect
         self._protocols: Dict[str, Any] = {}  # Registered protocol implementations
@@ -415,7 +449,7 @@ class WeavingOrchestrator:
             'lite_max_words': 2,      # Up to 2 words = LITE (greetings, simple commands)
             'fast_max_words': 20,     # 3-20 words = FAST (standard questions)
             'full_max_words': 50,     # 21-50 words = FULL (detailed queries)
-            
+
             # Intent patterns for sophisticated detection
             'greeting_patterns': ['hi', 'hello', 'hey', 'thanks', 'thank you', 'bye', 'goodbye'],
             'simple_commands': ['show', 'list', 'get', 'find', 'open'],
@@ -424,7 +458,7 @@ class WeavingOrchestrator:
             'analysis_verbs': ['analyze', 'compare', 'evaluate', 'assess', 'investigate', 'examine'],
             'research_keywords': ['research', 'deep', 'comprehensive', 'detailed', 'thorough', 'in-depth', 'extensive']
         }
-        
+
         # Multipass Memory Crawling Configuration
         # Recursive gated retrieval with Matryoshka importance gating
         self._crawl_config = {
@@ -457,8 +491,10 @@ class WeavingOrchestrator:
 
         # Create a single shared SafetyGuardrails instance used across components
         try:
-            # Check if guardrails should be disabled via config
-            testing_mode = not getattr(self.cfg, 'enable_safety_guardrails', True)
+            # Check if guardrails should be disabled via config or environment variable
+            import os
+            testing_mode = (not getattr(self.cfg, 'enable_safety_guardrails', True) or
+                           os.getenv("DISABLE_GUARDRAILS"))
             self.guardrails: SafetyGuardrails = create_guardrails(testing_mode=testing_mode)
             if testing_mode:
                 self.logger.info("Shared SafetyGuardrails created in testing mode (approval bypassed)")
@@ -471,9 +507,9 @@ class WeavingOrchestrator:
         # Determine pattern card from config or preference
         if pattern_preference:
             self.default_pattern = pattern_preference
-        elif cfg.mode == ExecutionMode.BARE:
+        elif self.cfg.mode == ExecutionMode.BARE:
             self.default_pattern = PatternCard.BARE
-        elif cfg.mode == ExecutionMode.FAST:
+        elif self.cfg.mode == ExecutionMode.FAST:
             self.default_pattern = PatternCard.FAST
         else:
             self.default_pattern = PatternCard.FUSED
@@ -485,9 +521,16 @@ class WeavingOrchestrator:
         self._bg_lock = asyncio.Lock()  # Protect concurrent access to _background_tasks
         self._closed = False
 
-        # Initialize weaving components
-        self._initialize_components()
+    def _initialize_reflection_and_caching(
+        self,
+        enable_reflection: bool,
+        reflection_capacity: int
+    ):
+        """
+        Initialize reflection loop, query cache, and dashboard constructor.
 
+        Sets up learning systems and performance optimizations.
+        """
         # Initialize reflection loop
         self.enable_reflection = enable_reflection
         if enable_reflection:
@@ -513,8 +556,6 @@ class WeavingOrchestrator:
         else:
             self.dashboard_constructor = None
             self.logger.info("Dashboard generation disabled")
-
-        self.logger.info("WeavingOrchestrator initialization complete")
 
     def _initialize_recursive_learning(self):
         """
@@ -1089,23 +1130,116 @@ class WeavingOrchestrator:
     ) -> Spacetime:
         """
         Execute the complete 9-step weaving cycle with mythRL progressive complexity.
-        
-        **Progressive Complexity (3-5-7-9):**
-        - LITE (3): Extract → Route → Execute (<50ms)
-        - FAST (5): + Pattern Selection + Temporal Windows (<150ms)  
-        - FULL (7): + Decision Engine + Synthesis Bridge (<300ms)
-        - RESEARCH (9): + Advanced WarpSpace + Full Tracing (no limit)
 
-        This is the main API - takes a query and returns a Spacetime artifact
-        with complete computational lineage.
+        This is the core API for the HoloLoom weaving orchestrator. Processes a query
+        through the complete pipeline: pattern selection, feature extraction, context
+        retrieval, decision making, and response synthesis.
+
+        **Progressive Complexity (3-5-7-9 System):**
+        - LITE (3 steps): Extract → Route → Execute
+          Performance: <50ms | Use for: Simple lookups, cached queries
+
+        - FAST (5 steps): + Pattern Selection + Temporal Windows
+          Performance: <150ms | Use for: Standard queries, real-time apps
+
+        - FULL (7 steps): + Decision Engine + Synthesis Bridge
+          Performance: <300ms | Use for: Complex queries, production systems
+
+        - RESEARCH (9 steps): + Advanced WarpSpace + Full Tracing
+          Performance: No limit | Use for: Research, debugging, quality maximization
+
+        **Weaving Cycle Steps:**
+        1. **Loom Command**: Selects pattern card (BARE/FAST/FUSED)
+        2. **Chrono Trigger**: Creates temporal window for memory filtering
+        3. **Yarn Graph**: Retrieves relevant memory threads
+        4. **Resonance Shed**: Extracts multi-modal features (DotPlasma)
+        5. **Warp Space**: Tensions threads into continuous manifold
+        6. **Convergence Engine**: Collapses to discrete tool selection
+        7. **Tool Execution**: Executes selected tool with context
+        8. **Spacetime Fabric**: Weaves results with complete provenance
+        9. **Reflection Buffer**: Learns from outcome (if enabled)
 
         Args:
-            query: User query
-            pattern_override: Optional pattern card override (BARE/FAST/FUSED)
-            complexity: Optional complexity level override (LITE/FAST/FULL/RESEARCH)
+            query: User query object with text and optional metadata
+                Example: Query(text="What is Thompson Sampling?")
+
+            pattern_override: Force specific pattern card (bypasses auto-selection)
+                - None: Auto-detect based on query complexity (default)
+                - PatternCard.BARE: Minimal processing (<50ms)
+                - PatternCard.FAST: Balanced processing (<150ms)
+                - PatternCard.FUSED: Full processing (<300ms)
+
+            complexity: Override mythRL complexity level
+                - None: Auto-assess based on query characteristics (default)
+                - ComplexityLevel.LITE: 3-step fast path
+                - ComplexityLevel.FAST: 5-step standard path
+                - ComplexityLevel.FULL: 7-step production path
+                - ComplexityLevel.RESEARCH: 9-step research path
 
         Returns:
-            Spacetime fabric with response and full trace
+            Spacetime: Complete woven fabric containing:
+                - response: Generated response text
+                - confidence: Decision confidence [0, 1]
+                - trace: Full computational lineage
+                - metadata: Tool used, pattern, complexity, timings
+                - provenance: Complete audit trail
+
+        **Performance Budgets:**
+        - Cache hit: <1ms (hash lookup)
+        - LITE mode: <50ms (3 steps)
+        - FAST mode: <150ms (5 steps)
+        - FULL mode: <300ms (7 steps)
+        - RESEARCH mode: No limit (quality over speed)
+
+        Example:
+            >>> from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+            >>> from HoloLoom.documentation.types import Query
+            >>> from HoloLoom.config import Config
+            >>>
+            >>> config = Config.fast()
+            >>> async with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:
+            ...     # Auto-complexity (recommended)
+            ...     query = Query(text="What is Thompson Sampling?")
+            ...     result = await shuttle.weave(query)
+            ...     print(result.response)
+            ...     print(f"Confidence: {result.confidence:.2f}")
+            ...
+            ...     # Force FUSED mode for highest quality
+            ...     query = Query(text="Explain the complete architecture")
+            ...     result = await shuttle.weave(
+            ...         query,
+            ...         pattern_override=PatternCard.FUSED
+            ...     )
+            ...
+            ...     # Force LITE for lowest latency
+            ...     query = Query(text="Quick lookup")
+            ...     result = await shuttle.weave(
+            ...         query,
+            ...         complexity=ComplexityLevel.LITE
+            ...     )
+
+        **Caching:**
+        Queries are automatically cached by text hash. Repeated queries return
+        cached results in <1ms. Cache is thread-safe and bounded by max_cache_size.
+
+        **Recursive Learning:**
+        If enable_recursive_learning=True, the system learns from every query:
+        - Pattern usage statistics
+        - Tool selection success rates
+        - Confidence calibration
+        - Thompson Sampling prior updates
+
+        **Error Handling:**
+        Gracefully handles errors at each stage. Returns Spacetime with error
+        metadata and fallback response. Never throws on invalid input.
+
+        Raises:
+            None: All errors caught and returned in Spacetime.metadata['errors']
+
+        See Also:
+            - weave_and_reflect(): Weave + automatic reflection
+            - experience(): Form new memories (HoloLoom.hololoom)
+            - recall(): Retrieve memories (HoloLoom.hololoom)
         """
         start_time = datetime.now()
         stage_timings = {}

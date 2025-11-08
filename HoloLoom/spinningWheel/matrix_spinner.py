@@ -281,7 +281,7 @@ class MatrixSpinner(BaseSpinner):
         """Check if Matrix dependencies are available"""
         return MATRIX_AVAILABLE
 
-    async def _ensure_client(self) -> AsyncClient:
+    async def _ensure_client(self) -> "AsyncClient":
         """Ensure Matrix client is initialized and logged in"""
         if self.client is not None:
             return self.client

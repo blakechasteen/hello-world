@@ -26,11 +26,15 @@ Design Philosophy:
 - Modality-agnostic
 """
 
-from typing import Any, List, Optional, Dict, Union
+from typing import Any, List, Optional, Dict, Union, Tuple, TYPE_CHECKING
 from pathlib import Path
 import networkx as nx
 
-from HoloLoom.config import Config
+# LAZY IMPORTS: Break circular dependency with HoloLoom/__init__.py
+# Config is imported lazily in __init__() method instead of module level
+if TYPE_CHECKING:
+    from HoloLoom.config import Config
+
 from HoloLoom.memory.protocol import Memory
 from HoloLoom.memory.awareness_graph import AwarenessGraph
 from HoloLoom.memory.awareness_types import ActivationStrategy, AwarenessMetrics
@@ -70,7 +74,7 @@ class HoloLoom:
 
     def __init__(
         self,
-        config: Optional[Config] = None,
+        config: Optional['Config'] = None,
         graph_backend: Optional[nx.MultiDiGraph] = None
     ):
         """
@@ -88,6 +92,9 @@ class HoloLoom:
             >>> from HoloLoom.config import Config
             >>> loom = HoloLoom(config=Config.fused())
         """
+        # LAZY IMPORT: Import Config here to break circular dependency
+        from HoloLoom.config import Config
+
         # Configuration
         self.config = config or Config.fast()
 
@@ -188,8 +195,9 @@ class HoloLoom:
         self,
         query: Any,
         strategy: ActivationStrategy = ActivationStrategy.BALANCED,
-        limit: Optional[int] = None
-    ) -> List[Memory]:
+        limit: Optional[int] = None,
+        include_photos: bool = False
+    ) -> Union[List[Memory], Dict[str, List]]:
         """
         Recall memories related to query.
 
@@ -206,26 +214,23 @@ class HoloLoom:
                 - EXPLORATORY: Broad exploration
                 - DEEP: Follow connections deeply
             limit: Maximum memories to return (None = no limit)
+            include_photos: If True, also search photo memories (multimodal)
 
         Returns:
-            Activated memories (sorted by relevance)
+            If include_photos=False: List[Memory] (text memories only, backward compatible)
+            If include_photos=True: Dict with 'text' and 'photos' keys
 
         Example:
-            >>> # Simple recall
+            >>> # Simple recall (text only - backward compatible)
             >>> memories = await loom.recall("What did I learn about Python?")
             >>>
-            >>> # Precise recall (narrow search)
-            >>> memories = await loom.recall(
-            ...     "Python decorators",
-            ...     strategy=ActivationStrategy.PRECISE
+            >>> # Multimodal recall (text + photos)
+            >>> results = await loom.recall(
+            ...     "Show me the architecture diagram",
+            ...     include_photos=True
             ... )
-            >>>
-            >>> # Exploratory recall (broad search)
-            >>> memories = await loom.recall(
-            ...     "programming concepts",
-            ...     strategy=ActivationStrategy.EXPLORATORY,
-            ...     limit=10
-            ... )
+            >>> text_memories = results['text']
+            >>> photo_memories = results['photos']
         """
         # Experience query (creates temporary perception)
         if isinstance(query, str):
@@ -251,7 +256,47 @@ class HoloLoom:
         if limit is not None:
             memories = memories[:limit]
 
-        return memories
+        # If not including photos, return text memories only (backward compatible)
+        if not include_photos:
+            return memories
+
+        # Multimodal search (text + photos)
+        query_text = query if isinstance(query, str) else str(query)
+
+        # Ensure photo memory initialized
+        if hasattr(self, '_photo_memory'):
+            photo_memory = self._photo_memory
+        else:
+            photo_memory = self._ensure_photo_memory()
+            await photo_memory._initialize()
+
+        # Search across text and photos
+        multimodal_results = await self._kg.search_multimodal(
+            query=query_text,
+            return_types=['text', 'photo'],
+            k=limit or 10,
+            photo_memory=photo_memory
+        )
+
+        # Separate text and photo results
+        text_results = [r for r in multimodal_results if r['type'] == 'text']
+        photo_results = [r for r in multimodal_results if r['type'] == 'photo']
+
+        # Convert photo results back to PhotoTokens
+        photos = []
+        for photo_result in photo_results:
+            photo_id = photo_result['id']
+            if photo_id in photo_memory.tokens:
+                photos.append(photo_memory.tokens[photo_id])
+
+        return {
+            'text': memories,  # Use awareness-activated memories
+            'photos': photos,
+            'scores': {
+                'text': [r['score'] for r in text_results],
+                'photos': [r['score'] for r in photo_results]
+            }
+        }
 
     async def reflect(
         self,
@@ -411,11 +456,423 @@ Shift detected: {metrics['shift_detected']}
 """
 
     # =========================================================================
+    # Multimodal Photo Memory (November 2025)
+    # =========================================================================
+
+    def _ensure_photo_memory(self):
+        """Lazy-initialize photo memory storage."""
+        if not hasattr(self, '_photo_memory'):
+            from HoloLoom.memory.photo_tokens import PhotoTokenMemory
+            from HoloLoom.memory.graph import KG
+
+            # Create photo memory storage
+            storage_path = self.config.data_dir if hasattr(self.config, 'data_dir') else "./photo_memory"
+            self._photo_memory = PhotoTokenMemory(storage_path=storage_path)
+
+            # Get KG from awareness graph
+            if hasattr(self._awareness, 'graph'):
+                self._kg = self._awareness.graph if isinstance(self._awareness.graph, KG) else KG()
+            else:
+                self._kg = KG()
+
+        return self._photo_memory
+
+    async def remember_photo(
+        self,
+        image: Union[bytes, 'np.ndarray', str, Path],
+        caption: Optional[str] = None,
+        tags: List[str] = None,
+        link_to_memory: Optional[str] = None
+    ) -> 'PhotoToken':
+        """
+        Remember a photo in multimodal memory.
+
+        Stores the photo with:
+        - CLIP embeddings for semantic image-text matching
+        - Structural features (color, brightness, layout)
+        - Automatic linking to knowledge graph entities
+        - Optional linking to existing text memories
+
+        Args:
+            image: Image as bytes, numpy array, or file path
+            caption: Optional text description
+            tags: Optional categorical labels ["diagram", "screenshot", etc.]
+            link_to_memory: Optional memory ID to link photo to
+
+        Returns:
+            PhotoToken with embeddings and metadata
+
+        Example:
+            >>> # Store a photo
+            >>> photo = await loom.remember_photo(
+            ...     "diagram.png",
+            ...     caption="System architecture diagram",
+            ...     tags=["diagram", "architecture"]
+            ... )
+            >>>
+            >>> # Link to existing memory
+            >>> text_memory = await loom.experience("We discussed the architecture")
+            >>> photo = await loom.remember_photo(
+            ...     "diagram.png",
+            ...     caption="Architecture from meeting",
+            ...     link_to_memory=text_memory.id
+            ... )
+        """
+        # Ensure photo memory initialized
+        photo_memory = self._ensure_photo_memory()
+
+        # Store photo
+        # Note: photo_memory needs to be initialized properly
+        # We'll need to call __aenter__ if not already in context manager
+        if not hasattr(photo_memory, 'clip_model'):
+            await photo_memory._initialize()
+
+        photo_token = await photo_memory.store(
+            image=image,
+            caption=caption,
+            tags=tags or [],
+            source='user'
+        )
+
+        # Add to knowledge graph
+        self._kg.add_photo_node(photo_token)
+
+        # Link to memory if specified
+        if link_to_memory:
+            self._kg.link_photo_to_memory(
+                photo_token.token_id,
+                link_to_memory,
+                edge_type='ILLUSTRATES'
+            )
+
+        return photo_token
+
+    async def find_similar_photos(
+        self,
+        query_image: Union[bytes, 'np.ndarray', str, Path],
+        k: int = 5
+    ) -> List['PhotoToken']:
+        """
+        Find visually similar photos using CLIP embeddings.
+
+        Args:
+            query_image: Query image (bytes, array, or path)
+            k: Number of similar photos to return
+
+        Returns:
+            List of similar PhotoTokens with similarity scores
+
+        Example:
+            >>> # Find photos similar to a reference image
+            >>> similar = await loom.find_similar_photos("reference.png", k=5)
+            >>> for photo in similar:
+            ...     print(f"{photo.caption} (similarity: {photo.metadata['score']:.3f})")
+        """
+        # Ensure photo memory initialized
+        photo_memory = self._ensure_photo_memory()
+        if not hasattr(photo_memory, 'clip_model'):
+            await photo_memory._initialize()
+
+        # Retrieve similar photos
+        results = await photo_memory.retrieve_by_image(query_image, k=k)
+
+        # Add scores to metadata
+        photos_with_scores = []
+        for photo_token, score in results:
+            photo_token.metadata['score'] = score
+            photos_with_scores.append(photo_token)
+
+        return photos_with_scores
+
+    async def get_photos_by_tag(self, tag: str, k: int = 10) -> List['PhotoToken']:
+        """
+        Get photos with a specific tag.
+
+        Args:
+            tag: Tag name to filter by
+            k: Maximum number of photos to return
+
+        Returns:
+            List of PhotoTokens with the tag
+
+        Example:
+            >>> # Get all diagram photos
+            >>> diagrams = await loom.get_photos_by_tag("diagram")
+        """
+        # Ensure photo memory initialized
+        photo_memory = self._ensure_photo_memory()
+        if not hasattr(photo_memory, 'clip_model'):
+            await photo_memory._initialize()
+
+        # Retrieve by tag
+        results = await photo_memory.retrieve_by_tags([tag], k=k, match_all=False)
+
+        return results
+
+    async def link_photo_to_memory(
+        self,
+        photo_id: str,
+        memory_id: str,
+        relationship: str = "ILLUSTRATES"
+    ) -> None:
+        """
+        Create semantic link between photo and text memory.
+
+        Args:
+            photo_id: Photo token ID
+            memory_id: Memory/shard ID
+            relationship: Type of relationship:
+                - ILLUSTRATES: Photo depicts/explains the memory
+                - REFERENCED_IN: Photo mentioned in text
+                - ACCOMPANIES: Photo from same event
+
+        Example:
+            >>> # Experience text
+            >>> text_mem = await loom.experience("We discussed architecture")
+            >>>
+            >>> # Store photo
+            >>> photo = await loom.remember_photo("diagram.png")
+            >>>
+            >>> # Link them
+            >>> await loom.link_photo_to_memory(
+            ...     photo.token_id,
+            ...     text_mem.id,
+            ...     relationship="ILLUSTRATES"
+            ... )
+        """
+        # Ensure KG initialized
+        if not hasattr(self, '_kg'):
+            self._ensure_photo_memory()
+
+        # Create link
+        self._kg.link_photo_to_memory(photo_id, memory_id, edge_type=relationship)
+
+    # =========================================================================
+    # Visual Compression for Context Window Expansion (November 2025)
+    # =========================================================================
+
+    async def compress_to_visual(
+        self,
+        data: Any,
+        compression_type: str = 'auto',
+        caption: Optional[str] = None,
+        tags: List[str] = None
+    ) -> Tuple['PhotoToken', 'CompressionMetrics']:
+        """
+        Compress structured data into visual representation for efficient storage.
+
+        Inspired by DeepSeek-Janus: Images convey more information per token than text.
+        Achieves 3-20× compression for structured content (graphs, tables, code).
+
+        Key Insight:
+            - Text representation: 5000 tokens
+            - Visual representation: 1000 vision tokens
+            - Information density: 5-10× higher per vision token
+            - Effective compression: 5-20× for structured data
+
+        Args:
+            data: Data to compress (NetworkX graph, DataFrame, dict, list, or code string)
+            compression_type: 'knowledge_graph', 'table', 'code', or 'auto'
+            caption: Optional caption for compressed visual
+            tags: Optional tags (defaults to ['compressed', compression_type])
+
+        Returns:
+            (photo_token, metrics) tuple:
+                - photo_token: PhotoToken with visual representation
+                - metrics: CompressionMetrics with compression stats
+
+        Example:
+            >>> # Compress large knowledge graph
+            >>> kg = build_large_graph()  # 5000 tokens as text
+            >>> photo, metrics = await loom.compress_to_visual(kg, 'knowledge_graph')
+            >>> print(f"Compression: {metrics.compression_ratio:.1f}×")
+            >>> # Output: Compression: 5.0×
+            >>>
+            >>> # Later: Retrieve compressed memory
+            >>> results = await loom.recall("architecture", include_photos=True)
+            >>> # Vision model can read diagram directly
+        """
+        from HoloLoom.memory.visual_compression import compress_to_visual, CompressionMetrics
+
+        # Compress data to visual representation
+        image, metrics = compress_to_visual(
+            data,
+            compression_type=compression_type,
+            width=600,
+            height=400
+        )
+
+        # Generate caption if not provided
+        if caption is None:
+            caption = f"Compressed {metrics.compression_type} ({metrics.compression_ratio:.1f}× compression)"
+
+        # Generate tags
+        if tags is None:
+            tags = ['compressed', metrics.compression_type, 'visual_compression']
+
+        # Store as photo token
+        photo_token = await self.remember_photo(
+            image,
+            caption=caption,
+            tags=tags
+        )
+
+        # Add compression metrics to metadata
+        photo_token.metadata.update({
+            'compression_type': metrics.compression_type,
+            'original_tokens': metrics.original_tokens,
+            'visual_tokens': metrics.visual_tokens,
+            'compression_ratio': metrics.compression_ratio,
+            'info_density': metrics.info_density,
+            'is_compressed': True
+        })
+
+        return photo_token, metrics
+
+    async def decompress_visual(
+        self,
+        photo_token: 'PhotoToken',
+        use_ocr: bool = True
+    ) -> str:
+        """
+        Decompress visual representation back to text using vision model.
+
+        Uses DeepSeek-OCR (if available) to read and interpret visual
+        representations, extracting structured information.
+
+        Args:
+            photo_token: PhotoToken with compressed visual representation
+            use_ocr: If True, use DeepSeek-OCR for decompression
+
+        Returns:
+            Extracted text/data from visual representation
+
+        Example:
+            >>> # Compress knowledge graph
+            >>> photo, metrics = await loom.compress_to_visual(kg)
+            >>>
+            >>> # Later: Decompress when needed
+            >>> extracted_data = await loom.decompress_visual(photo)
+            >>> # Vision model reads diagram and extracts structure
+        """
+        if not photo_token.metadata.get('is_compressed', False):
+            raise ValueError("PhotoToken is not a compressed visual representation")
+
+        if not use_ocr:
+            # Fallback: Return caption + metadata
+            compression_type = photo_token.metadata.get('compression_type', 'unknown')
+            ratio = photo_token.metadata.get('compression_ratio', 0)
+            return (
+                f"Compressed {compression_type} "
+                f"(Original: {photo_token.metadata.get('original_tokens')} tokens, "
+                f"Visual: {photo_token.metadata.get('visual_tokens')} tokens, "
+                f"Ratio: {ratio:.1f}×)\n\n"
+                f"Caption: {photo_token.caption}"
+            )
+
+        # Use DeepSeek-OCR for decompression
+        try:
+            from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
+
+            spinner = DeepSeekOCRSpinner()
+            extracted_text = await spinner.extract_text(photo_token.image_data)
+
+            return extracted_text
+
+        except ImportError:
+            import warnings
+            warnings.warn(
+                "DeepSeek-OCR not available for decompression. "
+                "Install deepseek-vl to enable visual decompression."
+            )
+            # Fallback to caption
+            return photo_token.caption or "No caption available"
+
+    def get_compression_stats(self) -> Dict[str, Any]:
+        """
+        Get statistics on compressed visual memories.
+
+        Returns:
+            Dictionary with compression statistics:
+                - total_compressed: Number of compressed visuals
+                - avg_compression_ratio: Average compression ratio
+                - total_tokens_saved: Total tokens saved via compression
+                - by_type: Breakdown by compression type
+
+        Example:
+            >>> stats = loom.get_compression_stats()
+            >>> print(f"Total compressed: {stats['total_compressed']}")
+            >>> print(f"Avg compression: {stats['avg_compression_ratio']:.1f}×")
+            >>> print(f"Tokens saved: {stats['total_tokens_saved']}")
+        """
+        if not hasattr(self, '_photo_memory'):
+            return {
+                'total_compressed': 0,
+                'avg_compression_ratio': 0.0,
+                'total_tokens_saved': 0,
+                'by_type': {}
+            }
+
+        # Get all compressed photos
+        compressed_photos = [
+            photo for photo in self._photo_memory.tokens.values()
+            if photo.metadata.get('is_compressed', False)
+        ]
+
+        if not compressed_photos:
+            return {
+                'total_compressed': 0,
+                'avg_compression_ratio': 0.0,
+                'total_tokens_saved': 0,
+                'by_type': {}
+            }
+
+        # Calculate statistics
+        total_compressed = len(compressed_photos)
+        total_original = sum(p.metadata.get('original_tokens', 0) for p in compressed_photos)
+        total_visual = sum(p.metadata.get('visual_tokens', 0) for p in compressed_photos)
+        avg_ratio = total_original / total_visual if total_visual > 0 else 0.0
+        tokens_saved = total_original - total_visual
+
+        # Breakdown by type
+        by_type = {}
+        for photo in compressed_photos:
+            ctype = photo.metadata.get('compression_type', 'unknown')
+            if ctype not in by_type:
+                by_type[ctype] = {
+                    'count': 0,
+                    'original_tokens': 0,
+                    'visual_tokens': 0,
+                    'tokens_saved': 0
+                }
+
+            by_type[ctype]['count'] += 1
+            by_type[ctype]['original_tokens'] += photo.metadata.get('original_tokens', 0)
+            by_type[ctype]['visual_tokens'] += photo.metadata.get('visual_tokens', 0)
+            by_type[ctype]['tokens_saved'] += (
+                photo.metadata.get('original_tokens', 0) -
+                photo.metadata.get('visual_tokens', 0)
+            )
+
+        return {
+            'total_compressed': total_compressed,
+            'avg_compression_ratio': avg_ratio,
+            'total_tokens_saved': tokens_saved,
+            'total_original_tokens': total_original,
+            'total_visual_tokens': total_visual,
+            'by_type': by_type
+        }
+
+    # =========================================================================
     # Context Manager Support
     # =========================================================================
 
     async def __aenter__(self):
         """Async context manager entry."""
+        # Initialize photo memory if needed
+        if hasattr(self, '_photo_memory'):
+            await self._photo_memory.__aenter__()
+
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -429,6 +886,10 @@ Shift detected: {metrics['shift_detected']}
             ...     memory = await loom.experience("content")
             ...     # Automatic cleanup on exit
         """
+        # Close photo memory if initialized
+        if hasattr(self, '_photo_memory'):
+            await self._photo_memory.__aexit__(exc_type, exc_val, exc_tb)
+
         # Close awareness graph (cleanup tasks, connections, etc.)
         if hasattr(self._awareness, 'close'):
             await self._awareness.close()

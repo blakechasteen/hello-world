@@ -1,0 +1,18 @@
+{
+  "app_id": "YOUR_GITHUB_APP_ID",
+  "private_key": "path/to/private-key.pem",
+  "webhook_secret": "YOUR_WEBHOOK_SECRET",
+  "oauth_client_id": "YOUR_OAUTH_CLIENT_ID",
+  "oauth_client_secret": "YOUR_OAUTH_CLIENT_SECRET",
+  "installation_id": null,
+  "comments": {
+    "setup_instructions": [
+      "1. Create a GitHub App: https://github.com/settings/apps/new",
+      "2. Set permissions: Contents (read), Pull requests (read/write), Issues (read/write), Actions (read)",
+      "3. Generate a private key and save it to config/private-key.pem",
+      "4. Subscribe to webhooks: pull_request, issues, workflow_run",
+      "5. Install the app to your repository",
+      "6. Update this file with your app_id, webhook_secret, and OAuth credentials"
+    ]
+  }
+}

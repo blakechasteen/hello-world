@@ -278,6 +278,25 @@ def event_loop():
 
 
 # =============================================================================
+# Embedding Fixtures (Session-scoped for performance)
+# =============================================================================
+
+@pytest.fixture(scope="session")
+def cached_embeddings():
+    """
+    Session-scoped embedding model to avoid loading for every test.
+
+    This fixture significantly speeds up tests that need embeddings.
+    Loading embeddings once per session instead of per test reduces
+    test time from 3.3s to <0.5s per test.
+    """
+    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+
+    # MatryoshkaEmbeddings is a dataclass with sizes parameter
+    return MatryoshkaEmbeddings(sizes=[96, 192, 384])
+
+
+# =============================================================================
 # Temporary Directory
 # =============================================================================
 

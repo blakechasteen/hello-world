@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "How many frames of brood does Hive Jodi have?",
+    "response": "Search results based on query",
+    "tool_used": "search",
+    "confidence": 0.29874294105938254,
+    "trace": {
+      "start_time": 

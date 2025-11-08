@@ -18,12 +18,19 @@ import asyncio
 import logging
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+from collections import defaultdict, deque
+from time import time
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
+# from HoloLoom.agentic.codebase_ingestion import CodebaseIndexer, Language as CodeLanguage
+# from HoloLoom.agentic.hallucination_detector import HallucinationDetector
+# from HoloLoom.agentic.code_verification import CodeVerifier
+# from HoloLoom.agentic.ai_slop_detector import AISlopDetector
+from HoloLoom.agentic.ml_logic_detector import MLLogicDetector, Language as CodeLanguage
 from HoloLoom.config import Config
 from HoloLoom.documentation.types import Query, MemoryShard
 from HoloLoom.alignment.audit_trail import AuditTrail
@@ -31,6 +38,142 @@ from HoloLoom.alignment.audit_trail import AuditTrail
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# Rate Limiting & Stats Tracking
+# ============================================================================
+
+class RateLimiter:
+    """
+    Simple in-memory rate limiter using sliding window.
+
+    Tracks requests per IP and enforces configurable limits.
+    """
+
+    def __init__(self, max_requests: int = 60, window_seconds: int = 60):
+        """
+        Initialize rate limiter.
+
+        Args:
+            max_requests: Maximum requests allowed in window
+            window_seconds: Time window in seconds
+        """
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests: Dict[str, deque] = defaultdict(deque)
+
+    async def check_rate_limit(self, client_id: str) -> bool:
+        """
+        Check if client is within rate limit.
+
+        Args:
+            client_id: Client identifier (IP address)
+
+        Returns:
+            True if within limit, False if exceeded
+        """
+        now = time()
+        cutoff = now - self.window_seconds
+
+        # Remove old requests outside window
+        while self.requests[client_id] and self.requests[client_id][0] < cutoff:
+            self.requests[client_id].popleft()
+
+        # Check if limit exceeded
+        if len(self.requests[client_id]) >= self.max_requests:
+            return False
+
+        # Record this request
+        self.requests[client_id].append(now)
+        return True
+
+    def get_remaining(self, client_id: str) -> int:
+        """Get remaining requests for client."""
+        now = time()
+        cutoff = now - self.window_seconds
+
+        # Count requests in current window
+        count = sum(1 for t in self.requests[client_id] if t >= cutoff)
+        return max(0, self.max_requests - count)
+
+
+class ServerStats:
+    """
+    Track server statistics.
+
+    Monitors uptime, query counts, latencies, and error rates.
+    """
+
+    def __init__(self):
+        self.start_time = time()
+        self.total_queries = 0
+        self.successful_queries = 0
+        self.failed_queries = 0
+        self.latencies: deque = deque(maxlen=1000)  # Last 1000 latencies
+        self.queries_by_mode: Dict[str, int] = defaultdict(int)
+        self.errors_by_type: Dict[str, int] = defaultdict(int)
+
+    def record_query(self, mode: str, latency_ms: float, success: bool):
+        """Record a query completion."""
+        self.total_queries += 1
+        self.latencies.append(latency_ms)
+        self.queries_by_mode[mode] += 1
+
+        if success:
+            self.successful_queries += 1
+        else:
+            self.failed_queries += 1
+
+    def record_error(self, error_type: str):
+        """Record an error occurrence."""
+        self.errors_by_type[error_type] += 1
+
+    def get_uptime(self) -> float:
+        """Get server uptime in seconds."""
+        return time() - self.start_time
+
+    def get_avg_latency(self) -> float:
+        """Get average latency in milliseconds."""
+        if not self.latencies:
+            return 0.0
+        return sum(self.latencies) / len(self.latencies)
+
+    def get_p95_latency(self) -> float:
+        """Get 95th percentile latency."""
+        if not self.latencies:
+            return 0.0
+        sorted_latencies = sorted(self.latencies)
+        idx = int(len(sorted_latencies) * 0.95)
+        return sorted_latencies[idx] if idx < len(sorted_latencies) else sorted_latencies[-1]
+
+    def get_success_rate(self) -> float:
+        """Get success rate as percentage."""
+        if self.total_queries == 0:
+            return 100.0
+        return (self.successful_queries / self.total_queries) * 100
+
+    def get_stats_dict(self) -> Dict[str, Any]:
+        """Get all stats as dictionary."""
+        return {
+            "uptime_seconds": self.get_uptime(),
+            "uptime_formatted": self._format_uptime(self.get_uptime()),
+            "total_queries": self.total_queries,
+            "successful_queries": self.successful_queries,
+            "failed_queries": self.failed_queries,
+            "success_rate": round(self.get_success_rate(), 2),
+            "avg_latency_ms": round(self.get_avg_latency(), 2),
+            "p95_latency_ms": round(self.get_p95_latency(), 2),
+            "queries_by_mode": dict(self.queries_by_mode),
+            "errors_by_type": dict(self.errors_by_type)
+        }
+
+    @staticmethod
+    def _format_uptime(seconds: float) -> str:
+        """Format uptime as human-readable string."""
+        hours, remainder = divmod(int(seconds), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{hours}h {minutes}m {seconds}s"
 
 
 # ============================================================================
@@ -53,6 +196,20 @@ class QueryRequest(BaseModel):
     context: Optional[CodeContext] = Field(None, description="Code context from editor")
     mode: str = Field("verify", description="Reasoning mode: direct, verify, research, plan_execute")
     max_steps: int = Field(5, description="Maximum reasoning steps")
+
+    @validator('text')
+    def validate_text_size(cls, v):
+        """Validate query text size (max 100KB)."""
+        if len(v) > 100_000:  # 100KB limit
+            raise ValueError(f"Query text too large: {len(v)} bytes (max 100KB)")
+        return v
+
+    @validator('max_steps')
+    def validate_max_steps(cls, v):
+        """Validate max_steps is reasonable."""
+        if v < 1 or v > 20:
+            raise ValueError(f"max_steps must be between 1 and 20 (got {v})")
+        return v
 
 
 class VerificationResponse(BaseModel):
@@ -112,6 +269,42 @@ app.add_middleware(
 )
 
 
+# Rate limiting middleware
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """
+    Rate limiting middleware.
+
+    Checks rate limit before processing request.
+    Returns 429 Too Many Requests if limit exceeded.
+    """
+    # Skip rate limiting for health checks
+    if request.url.path == "/health":
+        return await call_next(request)
+
+    # Get client IP
+    client_ip = request.client.host if request.client else "unknown"
+
+    # Check rate limit
+    if state.rate_limiter and not await state.rate_limiter.check_rate_limit(client_ip):
+        remaining = state.rate_limiter.get_remaining(client_ip)
+        logger.warning(f"Rate limit exceeded for {client_ip}")
+
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=429,
+            content={
+                "detail": f"Rate limit exceeded. Try again later.",
+                "remaining": remaining,
+                "retry_after": state.rate_limiter.window_seconds
+            }
+        )
+
+    # Process request
+    response = await call_next(request)
+    return response
+
+
 # ============================================================================
 # Global State
 # ============================================================================
@@ -123,6 +316,13 @@ class ServerState:
     config: Optional[Config] = None
     shards: List[MemoryShard] = []
     memory_backend: Optional[Any] = None  # Persistent memory backend
+    # codebase_indexer: Optional[CodebaseIndexer] = None  # Codebase knowledge graph
+    # hallucination_detector: Optional[HallucinationDetector] = None
+    # code_verifier: Optional[CodeVerifier] = None
+    # ai_slop_detector: Optional[AISlopDetector] = None  # Comprehensive slop detector
+    ml_logic_detector: Optional[MLLogicDetector] = None  # ML-based logic error detector
+    rate_limiter: Optional[RateLimiter] = None  # Rate limiting
+    stats: Optional[ServerStats] = None  # Server statistics
 
 
 state = ServerState()
@@ -136,6 +336,11 @@ state = ServerState()
 async def startup():
     """Initialize server with persistent memory."""
     logger.info("Starting HoloLoom Agentic API server...")
+
+    # Initialize rate limiter and stats
+    state.rate_limiter = RateLimiter(max_requests=60, window_seconds=60)
+    state.stats = ServerStats()
+    logger.info("Rate limiter: 60 requests/minute per IP")
 
     # Load config
     state.config = Config.fast()
@@ -161,6 +366,14 @@ async def startup():
         logger.warning(f"Persistent backend unavailable: {e}")
         logger.info("Falling back to in-memory storage")
         state.shards = _load_memory_shards()  # Use example shards as fallback
+
+    # Initialize ML logic detector (other detectors disabled due to import issues)
+    # state.codebase_indexer = CodebaseIndexer()
+    # state.hallucination_detector = HallucinationDetector(state.codebase_indexer)
+    # state.code_verifier = CodeVerifier()
+    # state.ai_slop_detector = AISlopDetector(state.codebase_indexer)
+    state.ml_logic_detector = MLLogicDetector()
+    logger.info("ML logic detector initialized (other detectors disabled)")
 
     # Create orchestrator (lazy init - see get_orchestrator)
     logger.info("HoloLoom server ready!")
@@ -330,6 +543,7 @@ async def query_endpoint(request: QueryRequest):
         }
     """
     start_time = datetime.now()
+    start_time_ms = time() * 1000  # For latency tracking
 
     try:
         # Validate request early to surface user errors as 4xx instead of 5xx
@@ -379,6 +593,14 @@ async def query_endpoint(request: QueryRequest):
             # Fallback: use context or generate generic response
             response_text = f"Processed query with {result.reasoning_mode.value} mode."
 
+        # Calculate latency
+        end_time_ms = time() * 1000
+        latency_ms = end_time_ms - start_time_ms
+
+        # Track stats
+        if state.stats:
+            state.stats.record_query(request.mode, latency_ms, success=True)
+
         # Format response (matches TypeScript AgenticResult interface)
         return AgenticResponse(
             response=response_text,
@@ -392,9 +614,33 @@ async def query_endpoint(request: QueryRequest):
             query_id=result.spacetime.query_id
         )
 
+    except HTTPException as e:
+        # HTTPException (4xx) - user error, track but don't retry
+        if state.stats:
+            state.stats.record_query(request.mode, 0, success=False)
+            state.stats.record_error(f"HTTP_{e.status_code}")
+        raise
+
     except Exception as e:
+        # Server error (5xx) - implement retry logic
         logger.error(f"Query failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+
+        # Track error
+        if state.stats:
+            latency_ms = (time() * 1000) - start_time_ms
+            state.stats.record_query(request.mode, latency_ms, success=False)
+            state.stats.record_error(type(e).__name__)
+
+        # Return error with retry suggestion
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": str(e),
+                "type": type(e).__name__,
+                "message": "Internal server error. Please try again.",
+                "retry_suggested": True
+            }
+        )
 
 
 @app.get("/stats")
@@ -403,19 +649,29 @@ async def get_stats():
     Get server statistics.
 
     Returns:
-        Statistics about queries processed, audit trail, etc.
+        Comprehensive statistics about server performance:
+        - Uptime and query counts
+        - Success/failure rates
+        - Latency metrics (avg, p95)
+        - Queries by mode
+        - Error breakdown
+        - Memory and orchestrator status
     """
-    stats = {
-        "server_uptime": "N/A",  # TODO: Track uptime
-        "total_queries": 0,  # TODO: Track queries
+    base_stats = {
         "orchestrator_ready": state.orchestrator is not None,
         "memory_shards": len(state.shards),
+        "rate_limiter_enabled": state.rate_limiter is not None,
     }
 
-    if state.audit_trail:
-        stats["audit_trail_entries"] = len(state.audit_trail.logs)
+    # Add comprehensive stats if available
+    if state.stats:
+        base_stats.update(state.stats.get_stats_dict())
 
-    return stats
+    # Add audit trail info
+    if state.audit_trail:
+        base_stats["audit_trail_entries"] = len(state.audit_trail.logs)
+
+    return base_stats
 
 
 @app.get("/audit-trail")
@@ -518,6 +774,548 @@ async def add_memory(memory: Dict):
 
     except Exception as e:
         logger.error(f"Failed to add memory: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ingest/workspace")
+async def ingest_workspace(
+    workspace_path: str,
+    languages: Optional[List[str]] = None,
+    exclude_patterns: Optional[List[str]] = None
+):
+    """
+    Ingest entire workspace into knowledge graph.
+
+    Args:
+        workspace_path: Path to workspace root
+        languages: Languages to index (e.g., ["python", "typescript"])
+        exclude_patterns: Glob patterns to exclude
+
+    Returns:
+        Statistics about ingestion
+
+    Example:
+        POST /ingest/workspace
+        {
+          "workspace_path": "/path/to/project",
+          "languages": ["python", "typescript"],
+          "exclude_patterns": ["**/node_modules/**", "**/.venv/**"]
+        }
+    """
+    try:
+        if not state.codebase_indexer:
+            raise HTTPException(status_code=500, detail="Codebase indexer not initialized")
+
+        # Convert language strings to Language enum
+        lang_map = {
+            "python": CodeLanguage.PYTHON,
+            "typescript": CodeLanguage.TYPESCRIPT,
+            "javascript": CodeLanguage.JAVASCRIPT,
+            "java": CodeLanguage.JAVA,
+            "cpp": CodeLanguage.CPP,
+            "rust": CodeLanguage.RUST,
+            "go": CodeLanguage.GO
+        }
+
+        parsed_languages = None
+        if languages:
+            parsed_languages = [lang_map.get(lang.lower()) for lang in languages]
+            parsed_languages = [l for l in parsed_languages if l is not None]
+
+        logger.info(f"Starting workspace ingestion: {workspace_path}")
+        stats = await state.codebase_indexer.ingest_workspace(
+            workspace_path,
+            languages=parsed_languages,
+            exclude_patterns=exclude_patterns
+        )
+
+        # Convert indexed code to memory shards for HoloLoom
+        code_shards = state.codebase_indexer.to_memory_shards()
+        logger.info(f"Created {len(code_shards)} code memory shards")
+
+        # Add to server's memory
+        state.shards.extend(code_shards)
+
+        # If persistent backend available, store shards
+        if state.memory_backend:
+            from HoloLoom.memory.protocol import Memory
+            memories = []
+            for shard in code_shards:
+                memory = Memory(
+                    id=shard.id,
+                    text=shard.text,
+                    context={
+                        "episode": shard.episode,
+                        "entities": shard.entities,
+                        "motifs": shard.motifs
+                    },
+                    metadata=shard.metadata
+                )
+                memories.append(memory)
+
+            await state.memory_backend.store(memories)
+            logger.info(f"Stored {len(memories)} code memories to persistent backend")
+
+        # Invalidate orchestrator so it gets recreated with new shards
+        if state.orchestrator:
+            await state.orchestrator.close()
+            state.orchestrator = None
+
+        return {
+            "success": True,
+            "ingestion_stats": stats,
+            "memory_shards_created": len(code_shards),
+            "message": f"Ingested {stats['files_processed']} files with {stats['entities_found']} entities"
+        }
+
+    except Exception as e:
+        logger.error(f"Workspace ingestion failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ingest/file")
+async def ingest_file(file_path: str, language: str, content: Optional[str] = None):
+    """
+    Ingest single file into knowledge graph.
+
+    Args:
+        file_path: Path to file
+        language: Programming language
+        content: File content (if None, reads from file_path)
+
+    Returns:
+        Parsed entities and statistics
+
+    Example:
+        POST /ingest/file
+        {
+          "file_path": "/path/to/file.py",
+          "language": "python",
+          "content": "def foo(): pass"
+        }
+    """
+    try:
+        if not state.codebase_indexer:
+            raise HTTPException(status_code=500, detail="Codebase indexer not initialized")
+
+        # Map language string to enum
+        lang_map = {
+            "python": CodeLanguage.PYTHON,
+            "typescript": CodeLanguage.TYPESCRIPT,
+            "javascript": CodeLanguage.JAVASCRIPT
+        }
+
+        lang_enum = lang_map.get(language.lower())
+        if not lang_enum:
+            raise HTTPException(status_code=400, detail=f"Unsupported language: {language}")
+
+        # If content provided, create temp file
+        if content:
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w', suffix=f'.{language}', delete=False) as f:
+                f.write(content)
+                temp_path = f.name
+
+            code_file = await state.codebase_indexer.ingest_file(temp_path, lang_enum)
+
+            import os
+            os.unlink(temp_path)
+        else:
+            code_file = await state.codebase_indexer.ingest_file(file_path, lang_enum)
+
+        return {
+            "success": True,
+            "file_path": file_path,
+            "language": language,
+            "entities_found": len(code_file.entities),
+            "imports_found": len(code_file.imports),
+            "entities": [
+                {
+                    "name": e.name,
+                    "type": e.entity_type.value,
+                    "line": e.line_number,
+                    "signature": e.signature
+                }
+                for e in code_file.entities
+            ]
+        }
+
+    except Exception as e:
+        logger.error(f"File ingestion failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/detect/slop")
+async def detect_ai_slop(code: str, language: str, file_path: str = "temp"):
+    """
+    Comprehensive AI slop detection (all common pitfalls).
+
+    Detects:
+    - Hallucinations (non-existent functions/classes)
+    - Missing error handling
+    - Hardcoded secrets/magic numbers
+    - Resource leaks
+    - Security issues (SQL injection, XSS, command injection)
+    - Performance anti-patterns
+    - Dead code
+    - Naming inconsistencies
+    - Missing documentation
+    - Incomplete code (TODO, pass statements)
+    - Off-by-one errors
+    - Timezone issues
+    - Copy-paste errors
+
+    Args:
+        code: Source code to analyze
+        language: Programming language
+        file_path: File path for context
+
+    Returns:
+        Comprehensive list of all detected issues with fixes
+
+    Example:
+        POST /detect/slop
+        {
+          "code": "def process(data):\\n    result = fetch_data()\\n    return result",
+          "language": "python",
+          "file_path": "process.py"
+        }
+    """
+    try:
+        if not state.ai_slop_detector:
+            raise HTTPException(status_code=500, detail="AI slop detector not initialized")
+
+        # Map language string to enum
+        lang_map = {
+            "python": CodeLanguage.PYTHON,
+            "typescript": CodeLanguage.TYPESCRIPT,
+            "javascript": CodeLanguage.JAVASCRIPT
+        }
+
+        lang_enum = lang_map.get(language.lower())
+        if not lang_enum:
+            raise HTTPException(status_code=400, detail=f"Unsupported language: {language}")
+
+        # Detect all issues
+        issues = await state.ai_slop_detector.detect_all(code, lang_enum, file_path)
+        summary = await state.ai_slop_detector.get_summary(issues)
+
+        return {
+            "success": True,
+            "language": language,
+            "total_issues": len(issues),
+            "summary": summary,
+            "issues": [
+                {
+                    "category": issue.category.value,
+                    "severity": issue.severity.value,
+                    "line": issue.line_number,
+                    "column": issue.column,
+                    "description": issue.description,
+                    "context": issue.context[:200],  # Truncate context
+                    "fix": issue.fix_suggestion,
+                    "confidence": issue.confidence
+                }
+                for issue in issues
+            ]
+        }
+
+    except Exception as e:
+        logger.error(f"AI slop detection failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/detect/logic")
+async def detect_logic_errors(code: str, language: str, file_path: str = "temp"):
+    """
+    ML-based logic error detection.
+
+    Detects subtle logic errors that pattern matching can't catch:
+    - Infinite loops (loops with no exit condition)
+    - Unreachable code (code after return/break/continue)
+    - Logic contradictions (if x and not x)
+    - Null/None dereference
+    - Division by zero
+    - Array out of bounds
+    - Missing return statements
+    - Constant conditions (always true/false)
+    - Wrong operators (= instead of ==)
+
+    Uses hybrid approach:
+    - Control flow graph analysis
+    - Abstract interpretation for value tracking
+    - Symbolic execution for proofs
+    - ML model for pattern recognition (future)
+
+    Args:
+        code: Source code to analyze
+        language: Programming language (python, typescript, javascript)
+        file_path: File path for context
+
+    Returns:
+        List of logic errors with confidence scores and proofs
+
+    Example:
+        POST /detect/logic
+        {
+          "code": "def divide(a, b):\\n    return a / b",
+          "language": "python",
+          "file_path": "math_utils.py"
+        }
+
+        Response:
+        {
+          "success": true,
+          "language": "python",
+          "total_errors": 1,
+          "summary": {
+            "total_errors": 1,
+            "by_type": {"division_by_zero": 1},
+            "high_confidence": [
+              {
+                "type": "division_by_zero",
+                "line": 2,
+                "description": "Potential division by zero - b not checked"
+              }
+            ],
+            "proven": []
+          },
+          "errors": [...]
+        }
+    """
+    try:
+        if not state.ml_logic_detector:
+            raise HTTPException(status_code=500, detail="ML logic detector not initialized")
+
+        # Map language string to enum
+        lang_map = {
+            "python": CodeLanguage.PYTHON,
+            "typescript": CodeLanguage.TYPESCRIPT,
+            "javascript": CodeLanguage.JAVASCRIPT
+        }
+
+        lang_enum = lang_map.get(language.lower())
+        if not lang_enum:
+            raise HTTPException(status_code=400, detail=f"Unsupported language: {language}")
+
+        # Detect logic errors
+        errors = await state.ml_logic_detector.detect(code, lang_enum, file_path)
+        summary = await state.ml_logic_detector.get_summary(errors)
+
+        return {
+            "success": True,
+            "language": language,
+            "total_errors": len(errors),
+            "summary": summary,
+            "errors": [
+                {
+                    "type": error.error_type.value,
+                    "line": error.line_number,
+                    "column": error.column,
+                    "description": error.description,
+                    "context": error.context[:200],  # Truncate context
+                    "confidence": error.confidence,
+                    "fix": error.fix_suggestion,
+                    "proof": error.proof
+                }
+                for error in errors
+            ]
+        }
+
+    except Exception as e:
+        logger.error(f"ML logic detection failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/detect/hallucinations")
+async def detect_hallucinations(code: str, language: str, file_path: str = "temp", strict: bool = False):
+    """
+    Detect hallucinations in AI-generated code.
+
+    Args:
+        code: Source code to analyze
+        language: Programming language
+        file_path: File path for context
+        strict: If True, flag all unrecognized references
+
+    Returns:
+        List of hallucinations with suggestions
+
+    Example:
+        POST /detect/hallucinations
+        {
+          "code": "def main():\\n    result = nonexistent_function()\\n    return result",
+          "language": "python",
+          "strict": false
+        }
+    """
+    try:
+        if not state.hallucination_detector:
+            raise HTTPException(status_code=500, detail="Hallucination detector not initialized")
+
+        # Map language string to enum
+        lang_map = {
+            "python": CodeLanguage.PYTHON,
+            "typescript": CodeLanguage.TYPESCRIPT,
+            "javascript": CodeLanguage.JAVASCRIPT
+        }
+
+        lang_enum = lang_map.get(language.lower())
+        if not lang_enum:
+            raise HTTPException(status_code=400, detail=f"Unsupported language: {language}")
+
+        result = await state.hallucination_detector.detect_and_explain(
+            code,
+            lang_enum,
+            file_path
+        )
+
+        return {
+            "success": True,
+            "language": language,
+            "hallucinations": result["hallucinations"],
+            "summary": result["summary"]
+        }
+
+    except Exception as e:
+        logger.error(f"Hallucination detection failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/codebase/stats")
+async def get_codebase_stats():
+    """
+    Get statistics about indexed codebase.
+
+    Returns:
+        Statistics about entities, files, relationships
+    """
+    if not state.codebase_indexer:
+        return {"error": "Codebase indexer not initialized"}
+
+    return state.codebase_indexer.get_statistics()
+
+
+@app.post("/verify/code")
+async def verify_code(
+    code: str,
+    language: str,
+    file_path: str = "temp",
+    check_syntax: bool = True,
+    check_types: bool = True,
+    check_lint: bool = False
+):
+    """
+    Verify code for errors using compilers and linters.
+
+    Args:
+        code: Source code to verify
+        language: Programming language
+        file_path: File path for context
+        check_syntax: Run syntax checker
+        check_types: Run type checker
+        check_lint: Run linter
+
+    Returns:
+        Comprehensive verification results
+
+    Example:
+        POST /verify/code
+        {
+          "code": "def foo():\n    return bar()",
+          "language": "python",
+          "check_syntax": true,
+          "check_types": true,
+          "check_lint": false
+        }
+    """
+    try:
+        if not state.code_verifier:
+            raise HTTPException(status_code=500, detail="Code verifier not initialized")
+
+        result = await state.code_verifier.verify_comprehensive(
+            code,
+            language,
+            file_path
+        )
+
+        return {
+            "success": True,
+            "verification": result
+        }
+
+    except Exception as e:
+        logger.error(f"Code verification failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/codebase/search")
+async def search_codebase(
+    query: str,
+    entity_type: Optional[str] = None,
+    fuzzy: bool = True,
+    limit: int = 10
+):
+    """
+    Search indexed codebase for entities.
+
+    Args:
+        query: Entity name to search for
+        entity_type: Filter by type ("function", "class", "method", etc.)
+        fuzzy: Allow fuzzy matching
+        limit: Maximum results
+
+    Returns:
+        Matching entities with metadata
+
+    Example:
+        POST /codebase/search
+        {
+          "query": "authenticate",
+          "entity_type": "function",
+          "fuzzy": true,
+          "limit": 5
+        }
+    """
+    try:
+        if not state.codebase_indexer:
+            raise HTTPException(status_code=500, detail="Codebase indexer not initialized")
+
+        # Map entity type string
+        type_map = {
+            "function": "function",
+            "class": "class",
+            "method": "method",
+            "variable": "variable",
+            "import": "import",
+            "module": "module"
+        }
+
+        entity_type_enum = None
+        if entity_type:
+            from HoloLoom.agentic.codebase_ingestion import EntityType
+            mapped_type = type_map.get(entity_type.lower())
+            if mapped_type:
+                entity_type_enum = EntityType(mapped_type)
+
+        results = await state.codebase_indexer.search_entity(
+            query,
+            entity_type=entity_type_enum,
+            fuzzy=fuzzy
+        )
+
+        # Limit results
+        results = results[:limit]
+
+        return {
+            "success": True,
+            "query": query,
+            "results_count": len(results),
+            "results": results
+        }
+
+    except Exception as e:
+        logger.error(f"Codebase search failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

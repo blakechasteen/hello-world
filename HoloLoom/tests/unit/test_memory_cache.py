@@ -442,10 +442,9 @@ class TestEmptyCollections:
     """Test behavior with empty data."""
 
     @pytest.mark.asyncio
-    async def test_search_empty_shard_list(self):
+    async def test_search_empty_shard_list(self, cached_embeddings):
         """search() with no shards should handle gracefully."""
-        emb = MatryoshkaEmbeddings(sizes=[96])
-        retriever = RetrieverMS(shards=[], emb=emb)
+        retriever = RetrieverMS(shards=[], emb=cached_embeddings)
 
         results = await retriever.search("test query", k=3)
 
@@ -465,10 +464,9 @@ class TestRetrievalQuality:
     """Test retrieval quality characteristics."""
 
     @pytest.mark.asyncio
-    async def test_relevant_results_ranked_higher(self, test_shards):
+    async def test_relevant_results_ranked_higher(self, test_shards, cached_embeddings):
         """More relevant results should have higher scores."""
-        emb = MatryoshkaEmbeddings(sizes=[96])
-        retriever = RetrieverMS(shards=test_shards, emb=emb)
+        retriever = RetrieverMS(shards=test_shards, emb=cached_embeddings)
 
         # Query matching first shard content
         results = await retriever.search("Thompson Sampling bandit", k=3)
@@ -479,10 +477,9 @@ class TestRetrievalQuality:
             assert top_score > 0.0
 
     @pytest.mark.asyncio
-    async def test_semantic_similarity_works(self, test_shards):
+    async def test_semantic_similarity_works(self, test_shards, cached_embeddings):
         """Semantically similar queries should retrieve similar shards."""
-        emb = MatryoshkaEmbeddings(sizes=[96])
-        retriever = RetrieverMS(shards=test_shards, emb=emb)
+        retriever = RetrieverMS(shards=test_shards, emb=cached_embeddings)
 
         results1 = await retriever.search("multi-armed bandit", k=3)
         results2 = await retriever.search("exploration exploitation", k=3)

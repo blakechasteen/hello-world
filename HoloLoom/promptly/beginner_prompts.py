@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-Beginner-Friendly DSPy Prompts for HoloLoom
+Beginner-Friendly DSPy Prompts for HoloLoom (Promptly)
 
 Provides chat-based DSPy optimization without touching Python or terminals.
 Based on principles from Ethan Mollick's DSPy explanation.
 
 These prompts can be used directly in ChatGPT or Claude to get DSPy-like
 optimization without any technical setup.
+
+Part of Promptly - The Universal AI Reliability Layer
+Open source (MIT License): https://github.com/yourusername/promptly
 """
 
 from typing import Dict, List
@@ -322,7 +325,9 @@ def generate_code_review_prompt() -> str:
 def main():
     """Interactive CLI for generating beginner prompts"""
     print("\n" + "="*70)
-    print("🎯 Beginner-Friendly DSPy Prompt Generator")
+    print(">>> Promptly: Beginner-Friendly DSPy Prompt Generator")
+    print("="*70)
+    print("Open Source (MIT) | https://github.com/yourusername/promptly")
     print("="*70 + "\n")
 
     print("Choose a template:")
@@ -335,7 +340,7 @@ def main():
     choice = input("Enter choice (1-4): ").strip()
 
     if choice == "1":
-        print("\n📝 Basic Task Optimization\n")
+        print("\n>> Basic Task Optimization\n")
         task = input("Describe your task: ")
 
         examples = []
@@ -348,11 +353,11 @@ def main():
         prompt = generate_basic_optimization_prompt(task, examples)
 
     elif choice == "2":
-        print("\n📝 Generating HoloLoom Q&A prompt...\n")
+        print("\n>> Generating HoloLoom Q&A prompt...\n")
         prompt = generate_hololoom_qa_prompt()
 
     elif choice == "3":
-        print("\n📝 Workflow Optimization\n")
+        print("\n>> Workflow Optimization\n")
         workflow_desc = input("Describe your workflow: ")
 
         num_steps = int(input("How many steps? "))
@@ -361,19 +366,19 @@ def main():
             steps.append(input(f"  Step {i+1} description: "))
 
         # For simplicity, just generate template
-        print("\n⚠️  For full workflow prompts, use generate_workflow_optimization_prompt() programmatically")
+        print("\n>> WARNING: For full workflow prompts, use generate_workflow_optimization_prompt() programmatically")
         prompt = "See beginner_prompts.py for workflow template"
 
     elif choice == "4":
-        print("\n📝 Generating Code Review prompt...\n")
+        print("\n>> Generating Code Review prompt...\n")
         prompt = generate_code_review_prompt()
 
     else:
-        print("❌ Invalid choice")
+        print(">> ERROR: Invalid choice")
         return
 
     print("\n" + "="*70)
-    print("✅ Generated Prompt (copy and paste into ChatGPT or Claude):")
+    print(">> SUCCESS: Generated Prompt (copy and paste into ChatGPT or Claude):")
     print("="*70 + "\n")
     print(prompt)
     print("\n" + "="*70)
@@ -382,9 +387,9 @@ def main():
     save = input("\nSave to file? (y/n): ").strip().lower()
     if save == 'y':
         filename = input("Filename (e.g., my_prompt.txt): ").strip()
-        with open(filename, 'w') as f:
+        with open(filename, 'w', encoding='utf-8') as f:
             f.write(prompt)
-        print(f"✅ Saved to {filename}")
+        print(f">> SUCCESS: Saved to {filename}")
 
 
 if __name__ == "__main__":

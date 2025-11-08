@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "What is Thompson Sampling?",
+    "response": "Generated answer for: What is Thompson Sampling?",
+    "tool_used": "answer",
+    "confidence": 0.2759803913825867,
+    "trace": {
+      "start_time": 

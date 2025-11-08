@@ -35,13 +35,27 @@ from HoloLoom.utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
 @dataclass
 class KGEdge:
     """
-    A directed edge in the knowledge graph.
-    
-    Represents a typed relationship between two entities.
+    A directed edge in the knowledge graph with bi-temporal support.
+
+    Represents a typed relationship between two entities with temporal tracking.
+
+    Bi-Temporal Model (from Graphiti research):
+    - event_time: When the event/relationship occurred in reality
+    - ingestion_time: When we learned about it
+    - valid_from: When this edge became valid (default: ingestion_time)
+    - valid_to: When this edge was invalidated (None = still valid)
+
     Examples:
     - ("Python", "programming_language", IS_A)
     - ("attention", "transformer", USES)
     - ("cause", "effect", LEADS_TO)
+
+    Temporal Edge Invalidation:
+    When info changes, we don't delete old edges. Instead:
+    1. Mark old edge as invalid (set valid_to timestamp)
+    2. Add new edge with new valid_from timestamp
+
+    This enables point-in-time queries: "What did we know on Oct 12?"
     """
     src: str                    # Source entity
     dst: str                    # Destination entity
@@ -49,10 +63,35 @@ class KGEdge:
     weight: float = 1.0         # Edge weight/confidence
     span_id: Optional[str] = None  # Optional: link to source span/shard
     metadata: Dict = field(default_factory=dict)  # Additional properties
+
+    # Bi-temporal fields (from Graphiti research)
+    event_time: Optional['datetime'] = None      # When event occurred
+    ingestion_time: Optional['datetime'] = None  # When we learned about it
+    valid_from: Optional['datetime'] = None      # When edge became valid
+    valid_to: Optional['datetime'] = None        # When edge was invalidated (None = still valid)
+
+    def __post_init__(self):
+        """Initialize temporal fields with defaults."""
+        from datetime import datetime
+
+        now = datetime.now()
+
+        # Default: if not specified, assume event happened when ingested
+        if self.ingestion_time is None:
+            self.ingestion_time = now
+
+        if self.event_time is None:
+            self.event_time = self.ingestion_time
+
+        # Default: edge is valid from when ingested
+        if self.valid_from is None:
+            self.valid_from = self.ingestion_time
+
+        # valid_to = None means edge is still valid
     
     def to_dict(self) -> Dict:
-        """Serialize edge for persistence."""
-        return {
+        """Serialize edge for persistence (includes bi-temporal fields)."""
+        result = {
             "src": self.src,
             "dst": self.dst,
             "type": self.type,
@@ -60,18 +99,85 @@ class KGEdge:
             "span_id": self.span_id,
             "metadata": self.metadata
         }
-    
+
+        # Serialize temporal fields (ISO format)
+        if self.event_time:
+            result["event_time"] = self.event_time.isoformat()
+        if self.ingestion_time:
+            result["ingestion_time"] = self.ingestion_time.isoformat()
+        if self.valid_from:
+            result["valid_from"] = self.valid_from.isoformat()
+        if self.valid_to:
+            result["valid_to"] = self.valid_to.isoformat()
+
+        return result
+
     @classmethod
     def from_dict(cls, data: Dict) -> 'KGEdge':
-        """Deserialize edge from storage."""
+        """Deserialize edge from storage (includes bi-temporal fields)."""
+        from datetime import datetime
+
+        # Parse temporal fields
+        event_time = None
+        ingestion_time = None
+        valid_from = None
+        valid_to = None
+
+        if "event_time" in data:
+            event_time = datetime.fromisoformat(data["event_time"])
+        if "ingestion_time" in data:
+            ingestion_time = datetime.fromisoformat(data["ingestion_time"])
+        if "valid_from" in data:
+            valid_from = datetime.fromisoformat(data["valid_from"])
+        if "valid_to" in data:
+            valid_to = datetime.fromisoformat(data["valid_to"])
+
         return cls(
             src=data["src"],
             dst=data["dst"],
             type=data["type"],
             weight=data.get("weight", 1.0),
             span_id=data.get("span_id"),
-            metadata=data.get("metadata", {})
+            metadata=data.get("metadata", {}),
+            event_time=event_time,
+            ingestion_time=ingestion_time,
+            valid_from=valid_from,
+            valid_to=valid_to
         )
+
+    def is_valid_at(self, timestamp: 'datetime') -> bool:
+        """
+        Check if edge is valid at given timestamp.
+
+        Use case: Point-in-time queries ("What did we know on Oct 12?")
+        """
+        # Edge is valid if:
+        # 1. valid_from <= timestamp
+        # 2. valid_to is None OR valid_to > timestamp
+        if self.valid_from and timestamp < self.valid_from:
+            return False
+
+        if self.valid_to and timestamp >= self.valid_to:
+            return False
+
+        return True
+
+    def invalidate(self, timestamp: Optional['datetime'] = None):
+        """
+        Mark edge as invalid (for temporal edge invalidation).
+
+        From Graphiti research: Instead of deleting edges when info changes,
+        we invalidate old edges and add new ones.
+
+        Args:
+            timestamp: When edge became invalid (default: now)
+        """
+        from datetime import datetime
+
+        if timestamp is None:
+            timestamp = datetime.now()
+
+        self.valid_to = timestamp
 
 
 # ============================================================================
@@ -393,6 +499,194 @@ class KG:
             "avg_degree": sum(dict(self.G.degree()).values()) / max(1, self.G.number_of_nodes()),
             "is_connected": nx.is_weakly_connected(self.G) if self.G.number_of_nodes() > 0 else False,
         }
+
+    # ========================================================================
+    # Temporal Methods - Bi-Temporal Model & Edge Invalidation
+    # ========================================================================
+
+    def invalidate_edge(
+        self,
+        src: str,
+        dst: str,
+        edge_type: str,
+        timestamp: Optional['datetime'] = None
+    ) -> bool:
+        """
+        Invalidate edge(s) matching criteria (for temporal edge invalidation).
+
+        From Graphiti research: Instead of deleting edges when info changes,
+        we mark old edges as invalid and add new ones.
+
+        Example:
+            # Original: "Blake uses Python"
+            kg.add_edge(KGEdge("Blake", "Python", "USES"))
+
+            # Update: "Blake uses Rust"
+            kg.invalidate_edge("Blake", "Python", "USES")  # Mark old edge invalid
+            kg.add_edge(KGEdge("Blake", "Rust", "USES"))  # Add new edge
+
+        Args:
+            src: Source entity
+            dst: Destination entity
+            edge_type: Edge type to invalidate
+            timestamp: When edge became invalid (default: now)
+
+        Returns:
+            True if any edges were invalidated
+        """
+        from datetime import datetime
+
+        if timestamp is None:
+            timestamp = datetime.now()
+
+        if not self.G.has_edge(src, dst):
+            return False
+
+        invalidated = False
+
+        # Find matching edges and add valid_to timestamp
+        for u, v, key, data in list(self.G.edges(src, dst, keys=True, data=True)):
+            if data.get("type") == edge_type:
+                # Only invalidate if not already invalid
+                if data.get("valid_to") is None:
+                    data["valid_to"] = timestamp.isoformat()
+                    invalidated = True
+
+        return invalidated
+
+    def get_valid_edges(
+        self,
+        src: Optional[str] = None,
+        dst: Optional[str] = None,
+        timestamp: Optional['datetime'] = None
+    ) -> List[KGEdge]:
+        """
+        Get edges valid at given timestamp.
+
+        Use case: Point-in-time queries ("What did we know on Oct 12?")
+
+        Args:
+            src: Filter by source entity (None = all)
+            dst: Filter by destination entity (None = all)
+            timestamp: Point in time to query (default: now)
+
+        Returns:
+            List of KGEdge objects valid at timestamp
+        """
+        from datetime import datetime
+
+        if timestamp is None:
+            timestamp = datetime.now()
+
+        valid_edges = []
+
+        # Determine which edges to check
+        if src and dst:
+            edges = self.G.edges(src, dst, data=True)
+        elif src:
+            edges = self.G.out_edges(src, data=True)
+        elif dst:
+            edges = self.G.in_edges(dst, data=True)
+        else:
+            edges = self.G.edges(data=True)
+
+        # Filter to valid edges
+        for u, v, data in edges:
+            # Parse temporal fields
+            valid_from_str = data.get("valid_from")
+            valid_to_str = data.get("valid_to")
+
+            # Check if valid at timestamp
+            if valid_from_str:
+                valid_from = datetime.fromisoformat(valid_from_str)
+                if timestamp < valid_from:
+                    continue  # Not yet valid
+
+            if valid_to_str:
+                valid_to = datetime.fromisoformat(valid_to_str)
+                if timestamp >= valid_to:
+                    continue  # No longer valid
+
+            # Edge is valid - reconstruct KGEdge
+            edge = KGEdge(
+                src=u,
+                dst=v,
+                type=data.get("type", "unknown"),
+                weight=data.get("weight", 1.0),
+                span_id=data.get("span_id"),
+                metadata={k: v for k, v in data.items()
+                         if k not in ["type", "weight", "span_id", "event_time", "ingestion_time", "valid_from", "valid_to"]},
+                event_time=datetime.fromisoformat(data["event_time"]) if "event_time" in data else None,
+                ingestion_time=datetime.fromisoformat(data["ingestion_time"]) if "ingestion_time" in data else None,
+                valid_from=datetime.fromisoformat(data["valid_from"]) if "valid_from" in data else None,
+                valid_to=datetime.fromisoformat(data["valid_to"]) if "valid_to" in data else None
+            )
+
+            valid_edges.append(edge)
+
+        return valid_edges
+
+    def get_edge_history(
+        self,
+        src: str,
+        dst: str,
+        edge_type: Optional[str] = None
+    ) -> List[KGEdge]:
+        """
+        Get complete history of edges between entities (including invalidated).
+
+        Use case: Audit trail, understanding how relationship evolved over time.
+
+        Example:
+            # Get history of Blake's language preferences
+            history = kg.get_edge_history("Blake", "Python", "USES")
+            # Returns:
+            # [
+            #   KGEdge(valid_from=2024-01-01, valid_to=2024-06-01),  # Old: used Python
+            #   KGEdge(valid_from=2024-06-01, valid_to=None)         # Current: still uses Python
+            # ]
+
+        Args:
+            src: Source entity
+            dst: Destination entity
+            edge_type: Optional filter by edge type
+
+        Returns:
+            List of all KGEdge objects (past and present), sorted by valid_from
+        """
+        from datetime import datetime
+
+        if not self.G.has_edge(src, dst):
+            return []
+
+        all_edges = []
+
+        for u, v, data in self.G.edges(src, dst, data=True):
+            # Filter by type if specified
+            if edge_type and data.get("type") != edge_type:
+                continue
+
+            # Reconstruct KGEdge
+            edge = KGEdge(
+                src=u,
+                dst=v,
+                type=data.get("type", "unknown"),
+                weight=data.get("weight", 1.0),
+                span_id=data.get("span_id"),
+                metadata={k: v for k, v in data.items()
+                         if k not in ["type", "weight", "span_id", "event_time", "ingestion_time", "valid_from", "valid_to"]},
+                event_time=datetime.fromisoformat(data["event_time"]) if "event_time" in data else None,
+                ingestion_time=datetime.fromisoformat(data["ingestion_time"]) if "ingestion_time" in data else None,
+                valid_from=datetime.fromisoformat(data["valid_from"]) if "valid_from" in data else None,
+                valid_to=datetime.fromisoformat(data["valid_to"]) if "valid_to" in data else None
+            )
+
+            all_edges.append(edge)
+
+        # Sort by valid_from
+        all_edges.sort(key=lambda e: e.valid_from if e.valid_from else datetime.min)
+
+        return all_edges
 
     # ========================================================================
     # Spectral Methods - Diffusion Maps & Clustering
@@ -864,6 +1158,345 @@ class KG:
         threads = [shard for shard, _ in scored_memories]
 
         return threads
+
+    # ========================================================================
+    # Multimodal Photo Support (November 2025)
+    # ========================================================================
+
+    def add_photo_node(self, photo_token) -> str:
+        """
+        Add photo as multimodal node in knowledge graph.
+
+        Creates a photo_token node with visual embeddings and metadata,
+        then automatically links it to:
+        - Entities extracted from caption (DEPICTS edges)
+        - Tags (TAGGED_AS edges)
+        - Time thread (OCCURRED_AT edge)
+
+        Args:
+            photo_token: PhotoToken object from photo_tokens.py
+
+        Returns:
+            Node ID (token_id)
+
+        Example:
+            >>> from HoloLoom.memory.photo_tokens import PhotoToken
+            >>> kg = KG()
+            >>> photo = PhotoToken(token_id="photo_abc", caption="Architecture diagram", ...)
+            >>> kg.add_photo_node(photo)
+            'photo_abc'
+        """
+        from datetime import datetime
+
+        # Convert PhotoToken to node attributes
+        node_data = photo_token.to_yarn_node()
+
+        # Add photo node
+        self.G.add_node(
+            photo_token.token_id,
+            node_type="photo_token",
+            **node_data
+        )
+
+        # Create DEPICTS edges to entities (from caption)
+        if photo_token.caption:
+            caption_entities = extract_entities_simple(photo_token.caption)
+            for entity in caption_entities[:5]:  # Limit to top 5
+                edge = KGEdge(
+                    src=photo_token.token_id,
+                    dst=entity,
+                    type="DEPICTS",
+                    weight=1.0,
+                    metadata={'extracted_from': 'caption'}
+                )
+                self.add_edge(edge)
+
+        # Create DEPICTS edges to explicit entities
+        for entity in photo_token.entities[:10]:  # Limit to 10
+            edge = KGEdge(
+                src=photo_token.token_id,
+                dst=entity,
+                type="DEPICTS",
+                weight=1.0,
+                metadata={'extracted_from': 'entities'}
+            )
+            self.add_edge(edge)
+
+        # Create TAGGED_AS edges
+        for tag in photo_token.tags:
+            edge = KGEdge(
+                src=photo_token.token_id,
+                dst=tag,
+                type="TAGGED_AS",
+                weight=1.0
+            )
+            self.add_edge(edge)
+
+        # Connect to time thread
+        if photo_token.timestamp:
+            self.connect_entity_to_time(
+                entity=photo_token.token_id,
+                timestamp=photo_token.timestamp,
+                edge_type="OCCURRED_AT"
+            )
+
+        return photo_token.token_id
+
+    def link_photo_to_memory(
+        self,
+        photo_token_id: str,
+        memory_id: str,
+        edge_type: str = "ILLUSTRATES"
+    ) -> None:
+        """
+        Link photo to text memory.
+
+        Creates a semantic relationship between a photo and a text memory.
+        Common edge types:
+        - ILLUSTRATES: Photo explains/depicts the memory
+        - REFERENCED_IN: Photo mentioned in the text
+        - ACCOMPANIES: Photo was captured during the memory event
+
+        Args:
+            photo_token_id: Photo token ID
+            memory_id: Memory/shard ID
+            edge_type: Relationship type (default: ILLUSTRATES)
+
+        Example:
+            >>> kg.link_photo_to_memory("photo_abc", "memory_123", "ILLUSTRATES")
+        """
+        edge = KGEdge(
+            src=photo_token_id,
+            dst=memory_id,
+            type=edge_type,
+            weight=1.0
+        )
+        self.add_edge(edge)
+
+    def link_similar_photos(
+        self,
+        photo_token_id_1: str,
+        photo_token_id_2: str,
+        similarity: float
+    ) -> None:
+        """
+        Link two visually similar photos.
+
+        Creates bidirectional SIMILAR_TO edges between photos based on
+        CLIP embedding similarity.
+
+        Args:
+            photo_token_id_1: First photo ID
+            photo_token_id_2: Second photo ID
+            similarity: CLIP similarity score (0-1)
+
+        Example:
+            >>> kg.link_similar_photos("photo_abc", "photo_def", 0.85)
+        """
+        # Bidirectional similarity
+        edge1 = KGEdge(
+            src=photo_token_id_1,
+            dst=photo_token_id_2,
+            type="SIMILAR_TO",
+            weight=similarity
+        )
+        edge2 = KGEdge(
+            src=photo_token_id_2,
+            dst=photo_token_id_1,
+            type="SIMILAR_TO",
+            weight=similarity
+        )
+        self.add_edge(edge1)
+        self.add_edge(edge2)
+
+    def get_photos_by_entity(
+        self,
+        entity: str,
+        edge_type: str = "DEPICTS"
+    ) -> List[str]:
+        """
+        Get all photos depicting an entity.
+
+        Args:
+            entity: Entity name
+            edge_type: Edge type to follow (default: DEPICTS)
+
+        Returns:
+            List of photo token IDs
+
+        Example:
+            >>> kg.get_photos_by_entity("architecture")
+            ['photo_abc', 'photo_def']
+        """
+        if entity not in self.G:
+            return []
+
+        photos = []
+        for src, _, data in self.G.in_edges(entity, data=True):
+            if (data.get("type") == edge_type and
+                self.G.nodes.get(src, {}).get('node_type') == 'photo_token'):
+                photos.append(src)
+
+        return photos
+
+    def get_photos_by_tag(self, tag: str) -> List[str]:
+        """
+        Get all photos with a specific tag.
+
+        Args:
+            tag: Tag name
+
+        Returns:
+            List of photo token IDs
+
+        Example:
+            >>> kg.get_photos_by_tag("diagram")
+            ['photo_abc', 'photo_xyz']
+        """
+        return self.get_photos_by_entity(tag, edge_type="TAGGED_AS")
+
+    async def search_multimodal(
+        self,
+        query: str,
+        return_types: List[str] = None,
+        k: int = 10,
+        photo_memory=None
+    ) -> List[Dict]:
+        """
+        Search across text and photo memories (multimodal retrieval).
+
+        Combines:
+        1. Graph-based text search (entity overlap)
+        2. CLIP-based photo search (semantic similarity)
+        3. Caption-based photo search (text similarity)
+
+        Args:
+            query: Text query
+            return_types: Types to return ['text', 'photo', 'both'] (default: both)
+            k: Total number of results
+            photo_memory: Optional PhotoTokenMemory for CLIP search
+
+        Returns:
+            List of dicts: {'type': 'text'|'photo', 'id': str, 'score': float, 'data': Dict}
+
+        Example:
+            >>> results = await kg.search_multimodal(
+            ...     "architecture diagram",
+            ...     return_types=['text', 'photo'],
+            ...     k=5
+            ... )
+            >>> for r in results:
+            ...     print(f"{r['type']}: {r['id']} (score: {r['score']:.3f})")
+        """
+        if return_types is None:
+            return_types = ['text', 'photo']
+
+        results = []
+        query_entities = extract_entities_simple(query)
+
+        # Text search (existing graph-based retrieval)
+        if 'text' in return_types or 'both' in return_types:
+            memory_nodes = [
+                node for node, data in self.G.nodes(data=True)
+                if data.get('node_type') == 'memory'
+            ]
+
+            for mem_id in memory_nodes:
+                mem_data = self.G.nodes[mem_id]
+
+                # Get entities this memory mentions
+                mem_entities = set()
+                for _, dst in self.G.out_edges(mem_id):
+                    if dst in self.G and self.G.nodes.get(dst, {}).get('node_type') != 'memory':
+                        mem_entities.add(dst)
+
+                # Calculate relevance score (entity overlap)
+                if query_entities:
+                    overlap = len(set(query_entities) & mem_entities)
+                    score = overlap / len(query_entities)
+                else:
+                    score = 0.3  # Low baseline for no entities
+
+                if score > 0:
+                    results.append({
+                        'type': 'text',
+                        'id': mem_id,
+                        'score': float(score),
+                        'data': mem_data
+                    })
+
+        # Photo search
+        if 'photo' in return_types or 'both' in return_types:
+            photo_nodes = [
+                (node, data) for node, data in self.G.nodes(data=True)
+                if data.get('node_type') == 'photo_token'
+            ]
+
+            if photo_memory:
+                # CLIP-based search (best quality)
+                try:
+                    clip_results = await photo_memory.retrieve_by_text(query, k=k//2)
+
+                    for photo_token, clip_score in clip_results:
+                        # Check if photo is in graph
+                        if photo_token.token_id in self.G:
+                            results.append({
+                                'type': 'photo',
+                                'id': photo_token.token_id,
+                                'score': float(clip_score),
+                                'data': self.G.nodes[photo_token.token_id]
+                            })
+                except Exception as e:
+                    import warnings
+                    warnings.warn(f"CLIP search failed: {e}. Falling back to caption search.")
+
+            # Caption-based fallback (if no CLIP or as supplement)
+            if not photo_memory or len(results) < k:
+                for node_id, node_data in photo_nodes:
+                    caption = node_data.get('caption', '')
+
+                    if not caption:
+                        continue
+
+                    # Simple keyword matching
+                    caption_lower = caption.lower()
+                    query_lower = query.lower()
+
+                    # Calculate overlap score
+                    query_words = set(query_lower.split())
+                    caption_words = set(caption_lower.split())
+
+                    if query_words:
+                        overlap = len(query_words & caption_words)
+                        score = overlap / len(query_words)
+                    else:
+                        score = 0.0
+
+                    # Also check tag overlap
+                    tags = node_data.get('tags', [])
+                    tag_score = 0.0
+                    if tags and query_entities:
+                        tag_overlap = len(set(t.lower() for t in tags) & set(e.lower() for e in query_entities))
+                        tag_score = tag_overlap / len(query_entities)
+
+                    # Combined score
+                    combined = max(score, tag_score)
+
+                    if combined > 0.1:  # Minimum threshold
+                        # Check if not already added via CLIP
+                        if not any(r['id'] == node_id for r in results):
+                            results.append({
+                                'type': 'photo',
+                                'id': node_id,
+                                'score': float(combined * 0.7),  # Scale down vs CLIP
+                                'data': node_data
+                            })
+
+        # Sort by score (descending)
+        results.sort(key=lambda x: x['score'], reverse=True)
+
+        # Return top-k
+        return results[:k]
 
 
 # ============================================================================

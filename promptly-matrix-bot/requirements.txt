@@ -1,0 +1,41 @@
+# Promptly Matrix Bot - Dependencies
+
+# Matrix SDK (async, E2E encryption support)
+matrix-nio[e2e]>=0.24.0
+
+# Async HTTP client
+aiohttp>=3.9.0
+
+# Configuration
+python-dotenv>=1.0.0
+
+# Logging
+colorlog>=6.8.0
+
+# State management
+redis>=5.0.0
+
+# DSPy (for prompt optimization)
+dspy-ai>=2.4.0
+
+# FastAPI (for REST API testing)
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# Code quality
+black>=23.0.0
+flake8>=6.1.0
+mypy>=1.7.0
+
+# HoloLoom dependencies
+networkx>=3.0
+numpy>=1.24.0
+scipy>=1.10.0
+sentence-transformers>=2.2.0
+torch>=2.0.0
+matplotlib>=3.5.0
+rank-bm25>=0.2.0

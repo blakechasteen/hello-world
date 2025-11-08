@@ -171,7 +171,7 @@ class MatryoshkaSemanticCalculus:
             self.spectrum_paragraph = SemanticSpectrum(dimensions=sentence_dims[:paragraph_dim_count])
 
         # Learn axes for each spectrum
-        print("🔧 Learning Matryoshka semantic axes...")
+        print("Learning Matryoshka semantic axes...")
         print(f"   Word-level: {len(self.spectrum_word.dimensions)}D")
 
         # Create simple embed function for word-level

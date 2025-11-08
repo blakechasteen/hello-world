@@ -23,7 +23,8 @@ Usage:
 """
 
 from typing import TypedDict, List, Dict, Optional, Any
-import numpy.typing as npt
+# Removed numpy.typing import to fix import timeout issues
+# Using List[float] instead of npt.NDArray for simplicity
 
 
 # ============================================================================
@@ -208,10 +209,10 @@ class LearningSignalDict(TypedDict, total=False):
 
     Contains everything needed to update the policy.
     """
-    state: npt.NDArray  # Input state (features)
+    state: List[float]  # Input state (features)
     action: int  # Action taken (tool index)
     reward: float  # Reward received
-    next_state: npt.NDArray  # Resulting state
+    next_state: List[float]  # Resulting state
     done: bool  # Whether episode ended
     metadata: Dict[str, Any]  # Additional context
 

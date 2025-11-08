@@ -1,0 +1,1654 @@
+{
+  "version": "5.0-comprehensive",
+  "coverage_target": "95%+ of US prescriptions",
+  "total_interactions": 108,
+  "new_drug_categories": [
+    "Corticosteroids",
+    "PPIs",
+    "GLP-1 agonists",
+    "Theophylline",
+    "Anticonvulsants",
+    "Antivirals (Paxlovid!)",
+    "Immunosuppressants",
+    "Chemotherapy",
+    "Contraceptives",
+    "Bisphosphonates",
+    "Gout meds",
+    "Migraine medications"
+  ],
+  "interactions": [
+    {
+      "drug_a": "prednisone",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "prednisone",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "prednisone",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "prednisone",
+      "drug_b": "aspirin",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "aspirin",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "aspirin",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "aspirin",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "aspirin",
+      "severity": "high",
+      "mechanism": "Additive GI ulceration risk (both damage gastric mucosa)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe GI bleeding, perforation",
+      "clinical_consequence": "Hemorrhage, peritonitis, death",
+      "alternative": "Acetaminophen or use PPI prophylaxis",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days to weeks",
+      "references": [
+        "Gut 2006: Corticosteroid-NSAID GI Risk"
+      ]
+    },
+    {
+      "drug_a": "prednisone",
+      "drug_b": "insulin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "prednisone",
+      "drug_b": "metformin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "prednisone",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "insulin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "metformin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "insulin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "metformin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "insulin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "metformin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "insulin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "metformin",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Corticosteroids cause insulin resistance",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Steroid-induced hyperglycemia (very common)",
+      "clinical_consequence": "DKA, HHS in diabetics",
+      "alternative": "Increase diabetes medication dose 30-50%",
+      "monitoring": "Glucose 4x/day during steroid course",
+      "onset_time": "Hours to days",
+      "references": [
+        "Diabetes Care 2004: Steroid-Induced Hyperglycemia"
+      ]
+    },
+    {
+      "drug_a": "prednisone",
+      "drug_b": "mmr_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "prednisone",
+      "drug_b": "varicella_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "prednisone",
+      "drug_b": "yellow_fever_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "mmr_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "varicella_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "methylprednisolone",
+      "drug_b": "yellow_fever_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "mmr_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "varicella_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "dexamethasone",
+      "drug_b": "yellow_fever_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "mmr_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "varicella_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "hydrocortisone",
+      "drug_b": "yellow_fever_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "mmr_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "varicella_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "budesonide",
+      "drug_b": "yellow_fever_vaccine",
+      "severity": "critical",
+      "mechanism": "Immunosuppression \u2192 live vaccine can cause disease",
+      "mechanism_type": "contraindication",
+      "effect": "Vaccine-strain infection",
+      "clinical_consequence": "Measles, chickenpox, yellow fever from vaccine",
+      "alternative": "Wait 1 month after stopping high-dose steroids",
+      "monitoring": "Contraindicated if prednisone >20mg/day x >2 weeks",
+      "onset_time": "Days to weeks",
+      "references": [
+        "CDC: Vaccination of Immunocompromised Patients"
+      ]
+    },
+    {
+      "drug_a": "omeprazole",
+      "drug_b": "clopidogrel",
+      "severity": "high",
+      "mechanism": "PPIs (especially omeprazole) inhibit CYP2C19 \u2192 reduced clopidogrel activation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antiplatelet effect",
+      "clinical_consequence": "Stent thrombosis, MI, death (post-PCI patients)",
+      "alternative": "Pantoprazole (least interaction) or H2 blocker",
+      "monitoring": "Consider CYP2C19 genotype testing",
+      "onset_time": "Days",
+      "references": [
+        "NEJM 2009: PPI-Clopidogrel Interaction",
+        "FDA Warning: Omeprazole-Clopidogrel (2010)"
+      ]
+    },
+    {
+      "drug_a": "pantoprazole",
+      "drug_b": "clopidogrel",
+      "severity": "moderate",
+      "mechanism": "PPIs (especially omeprazole) inhibit CYP2C19 \u2192 reduced clopidogrel activation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antiplatelet effect",
+      "clinical_consequence": "Stent thrombosis, MI, death (post-PCI patients)",
+      "alternative": "Pantoprazole (least interaction) or H2 blocker",
+      "monitoring": "Consider CYP2C19 genotype testing",
+      "onset_time": "Days",
+      "references": [
+        "NEJM 2009: PPI-Clopidogrel Interaction",
+        "FDA Warning: Omeprazole-Clopidogrel (2010)"
+      ]
+    },
+    {
+      "drug_a": "esomeprazole",
+      "drug_b": "clopidogrel",
+      "severity": "moderate",
+      "mechanism": "PPIs (especially omeprazole) inhibit CYP2C19 \u2192 reduced clopidogrel activation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antiplatelet effect",
+      "clinical_consequence": "Stent thrombosis, MI, death (post-PCI patients)",
+      "alternative": "Pantoprazole (least interaction) or H2 blocker",
+      "monitoring": "Consider CYP2C19 genotype testing",
+      "onset_time": "Days",
+      "references": [
+        "NEJM 2009: PPI-Clopidogrel Interaction",
+        "FDA Warning: Omeprazole-Clopidogrel (2010)"
+      ]
+    },
+    {
+      "drug_a": "lansoprazole",
+      "drug_b": "clopidogrel",
+      "severity": "moderate",
+      "mechanism": "PPIs (especially omeprazole) inhibit CYP2C19 \u2192 reduced clopidogrel activation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antiplatelet effect",
+      "clinical_consequence": "Stent thrombosis, MI, death (post-PCI patients)",
+      "alternative": "Pantoprazole (least interaction) or H2 blocker",
+      "monitoring": "Consider CYP2C19 genotype testing",
+      "onset_time": "Days",
+      "references": [
+        "NEJM 2009: PPI-Clopidogrel Interaction",
+        "FDA Warning: Omeprazole-Clopidogrel (2010)"
+      ]
+    },
+    {
+      "drug_a": "rabeprazole",
+      "drug_b": "clopidogrel",
+      "severity": "moderate",
+      "mechanism": "PPIs (especially omeprazole) inhibit CYP2C19 \u2192 reduced clopidogrel activation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antiplatelet effect",
+      "clinical_consequence": "Stent thrombosis, MI, death (post-PCI patients)",
+      "alternative": "Pantoprazole (least interaction) or H2 blocker",
+      "monitoring": "Consider CYP2C19 genotype testing",
+      "onset_time": "Days",
+      "references": [
+        "NEJM 2009: PPI-Clopidogrel Interaction",
+        "FDA Warning: Omeprazole-Clopidogrel (2010)"
+      ]
+    },
+    {
+      "drug_a": "omeprazole",
+      "drug_b": "methotrexate",
+      "severity": "high",
+      "mechanism": "PPIs reduce renal methotrexate clearance",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Methotrexate toxicity",
+      "clinical_consequence": "Pancytopenia, mucositis, renal failure",
+      "alternative": "Discontinue PPI 48h before high-dose methotrexate",
+      "monitoring": "CBC, methotrexate levels",
+      "onset_time": "Days",
+      "references": [
+        "FDA: PPI-Methotrexate Interaction Warning (2011)"
+      ]
+    },
+    {
+      "drug_a": "pantoprazole",
+      "drug_b": "methotrexate",
+      "severity": "high",
+      "mechanism": "PPIs reduce renal methotrexate clearance",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Methotrexate toxicity",
+      "clinical_consequence": "Pancytopenia, mucositis, renal failure",
+      "alternative": "Discontinue PPI 48h before high-dose methotrexate",
+      "monitoring": "CBC, methotrexate levels",
+      "onset_time": "Days",
+      "references": [
+        "FDA: PPI-Methotrexate Interaction Warning (2011)"
+      ]
+    },
+    {
+      "drug_a": "esomeprazole",
+      "drug_b": "methotrexate",
+      "severity": "high",
+      "mechanism": "PPIs reduce renal methotrexate clearance",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Methotrexate toxicity",
+      "clinical_consequence": "Pancytopenia, mucositis, renal failure",
+      "alternative": "Discontinue PPI 48h before high-dose methotrexate",
+      "monitoring": "CBC, methotrexate levels",
+      "onset_time": "Days",
+      "references": [
+        "FDA: PPI-Methotrexate Interaction Warning (2011)"
+      ]
+    },
+    {
+      "drug_a": "lansoprazole",
+      "drug_b": "methotrexate",
+      "severity": "high",
+      "mechanism": "PPIs reduce renal methotrexate clearance",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Methotrexate toxicity",
+      "clinical_consequence": "Pancytopenia, mucositis, renal failure",
+      "alternative": "Discontinue PPI 48h before high-dose methotrexate",
+      "monitoring": "CBC, methotrexate levels",
+      "onset_time": "Days",
+      "references": [
+        "FDA: PPI-Methotrexate Interaction Warning (2011)"
+      ]
+    },
+    {
+      "drug_a": "rabeprazole",
+      "drug_b": "methotrexate",
+      "severity": "high",
+      "mechanism": "PPIs reduce renal methotrexate clearance",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Methotrexate toxicity",
+      "clinical_consequence": "Pancytopenia, mucositis, renal failure",
+      "alternative": "Discontinue PPI 48h before high-dose methotrexate",
+      "monitoring": "CBC, methotrexate levels",
+      "onset_time": "Days",
+      "references": [
+        "FDA: PPI-Methotrexate Interaction Warning (2011)"
+      ]
+    },
+    {
+      "drug_a": "semaglutide",
+      "drug_b": "levothyroxine",
+      "severity": "moderate",
+      "mechanism": "GLP-1 slows gastric emptying \u2192 delayed oral drug absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Reduced levothyroxine absorption",
+      "clinical_consequence": "Hypothyroidism symptoms",
+      "alternative": "Take levothyroxine 4h before GLP-1 injection",
+      "monitoring": "TSH after starting GLP-1",
+      "onset_time": "Weeks",
+      "references": [
+        "Diabetes Care 2020: GLP-1 Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "liraglutide",
+      "drug_b": "levothyroxine",
+      "severity": "moderate",
+      "mechanism": "GLP-1 slows gastric emptying \u2192 delayed oral drug absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Reduced levothyroxine absorption",
+      "clinical_consequence": "Hypothyroidism symptoms",
+      "alternative": "Take levothyroxine 4h before GLP-1 injection",
+      "monitoring": "TSH after starting GLP-1",
+      "onset_time": "Weeks",
+      "references": [
+        "Diabetes Care 2020: GLP-1 Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "dulaglutide",
+      "drug_b": "levothyroxine",
+      "severity": "moderate",
+      "mechanism": "GLP-1 slows gastric emptying \u2192 delayed oral drug absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Reduced levothyroxine absorption",
+      "clinical_consequence": "Hypothyroidism symptoms",
+      "alternative": "Take levothyroxine 4h before GLP-1 injection",
+      "monitoring": "TSH after starting GLP-1",
+      "onset_time": "Weeks",
+      "references": [
+        "Diabetes Care 2020: GLP-1 Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "exenatide",
+      "drug_b": "levothyroxine",
+      "severity": "moderate",
+      "mechanism": "GLP-1 slows gastric emptying \u2192 delayed oral drug absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Reduced levothyroxine absorption",
+      "clinical_consequence": "Hypothyroidism symptoms",
+      "alternative": "Take levothyroxine 4h before GLP-1 injection",
+      "monitoring": "TSH after starting GLP-1",
+      "onset_time": "Weeks",
+      "references": [
+        "Diabetes Care 2020: GLP-1 Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "spironolactone",
+      "drug_b": "trimethoprim-sulfamethoxazole",
+      "severity": "critical",
+      "mechanism": "Both cause potassium retention (aldosterone antagonism + ENaC blockade)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden death",
+      "alternative": "Use alternative antibiotic",
+      "monitoring": "Potassium immediately, then daily",
+      "onset_time": "Days",
+      "references": [
+        "CMAJ 2014: Spironolactone-TMP Hyperkalemia Deaths"
+      ]
+    },
+    {
+      "drug_a": "eplerenone",
+      "drug_b": "trimethoprim-sulfamethoxazole",
+      "severity": "critical",
+      "mechanism": "Both cause potassium retention (aldosterone antagonism + ENaC blockade)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden death",
+      "alternative": "Use alternative antibiotic",
+      "monitoring": "Potassium immediately, then daily",
+      "onset_time": "Days",
+      "references": [
+        "CMAJ 2014: Spironolactone-TMP Hyperkalemia Deaths"
+      ]
+    },
+    {
+      "drug_a": "theophylline",
+      "drug_b": "ciprofloxacin",
+      "severity": "high",
+      "mechanism": "ciprofloxacin inhibits CYP1A2 \u2192 increased theophylline levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Theophylline toxicity",
+      "clinical_consequence": "Seizures, arrhythmias, death",
+      "alternative": "Avoid combination or reduce theophylline dose 50%",
+      "monitoring": "Theophylline levels, heart rate, seizure precautions",
+      "onset_time": "Days",
+      "references": [
+        "Chest 1995: Theophylline Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "theophylline",
+      "drug_b": "erythromycin",
+      "severity": "high",
+      "mechanism": "erythromycin inhibits CYP1A2 \u2192 increased theophylline levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Theophylline toxicity",
+      "clinical_consequence": "Seizures, arrhythmias, death",
+      "alternative": "Avoid combination or reduce theophylline dose 50%",
+      "monitoring": "Theophylline levels, heart rate, seizure precautions",
+      "onset_time": "Days",
+      "references": [
+        "Chest 1995: Theophylline Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "theophylline",
+      "drug_b": "cimetidine",
+      "severity": "high",
+      "mechanism": "cimetidine inhibits CYP1A2 \u2192 increased theophylline levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Theophylline toxicity",
+      "clinical_consequence": "Seizures, arrhythmias, death",
+      "alternative": "Avoid combination or reduce theophylline dose 50%",
+      "monitoring": "Theophylline levels, heart rate, seizure precautions",
+      "onset_time": "Days",
+      "references": [
+        "Chest 1995: Theophylline Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "theophylline",
+      "drug_b": "fluvoxamine",
+      "severity": "high",
+      "mechanism": "fluvoxamine inhibits CYP1A2 \u2192 increased theophylline levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Theophylline toxicity",
+      "clinical_consequence": "Seizures, arrhythmias, death",
+      "alternative": "Avoid combination or reduce theophylline dose 50%",
+      "monitoring": "Theophylline levels, heart rate, seizure precautions",
+      "onset_time": "Days",
+      "references": [
+        "Chest 1995: Theophylline Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "carbamazepine",
+      "drug_b": "ethinyl_estradiol",
+      "severity": "critical",
+      "mechanism": "Enzyme induction \u2192 increased oral contraceptive metabolism",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Contraceptive failure",
+      "clinical_consequence": "Unintended pregnancy",
+      "alternative": "Use barrier contraception or IUD",
+      "monitoring": "Counsel patient on backup contraception",
+      "onset_time": "Weeks",
+      "references": [
+        "Epilepsia 2006: Antiepileptic-Contraceptive Interactions"
+      ]
+    },
+    {
+      "drug_a": "carbamazepine",
+      "drug_b": "levonorgestrel",
+      "severity": "critical",
+      "mechanism": "Enzyme induction \u2192 increased oral contraceptive metabolism",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Contraceptive failure",
+      "clinical_consequence": "Unintended pregnancy",
+      "alternative": "Use barrier contraception or IUD",
+      "monitoring": "Counsel patient on backup contraception",
+      "onset_time": "Weeks",
+      "references": [
+        "Epilepsia 2006: Antiepileptic-Contraceptive Interactions"
+      ]
+    },
+    {
+      "drug_a": "phenytoin",
+      "drug_b": "ethinyl_estradiol",
+      "severity": "critical",
+      "mechanism": "Enzyme induction \u2192 increased oral contraceptive metabolism",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Contraceptive failure",
+      "clinical_consequence": "Unintended pregnancy",
+      "alternative": "Use barrier contraception or IUD",
+      "monitoring": "Counsel patient on backup contraception",
+      "onset_time": "Weeks",
+      "references": [
+        "Epilepsia 2006: Antiepileptic-Contraceptive Interactions"
+      ]
+    },
+    {
+      "drug_a": "phenytoin",
+      "drug_b": "levonorgestrel",
+      "severity": "critical",
+      "mechanism": "Enzyme induction \u2192 increased oral contraceptive metabolism",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Contraceptive failure",
+      "clinical_consequence": "Unintended pregnancy",
+      "alternative": "Use barrier contraception or IUD",
+      "monitoring": "Counsel patient on backup contraception",
+      "onset_time": "Weeks",
+      "references": [
+        "Epilepsia 2006: Antiepileptic-Contraceptive Interactions"
+      ]
+    },
+    {
+      "drug_a": "phenobarbital",
+      "drug_b": "ethinyl_estradiol",
+      "severity": "critical",
+      "mechanism": "Enzyme induction \u2192 increased oral contraceptive metabolism",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Contraceptive failure",
+      "clinical_consequence": "Unintended pregnancy",
+      "alternative": "Use barrier contraception or IUD",
+      "monitoring": "Counsel patient on backup contraception",
+      "onset_time": "Weeks",
+      "references": [
+        "Epilepsia 2006: Antiepileptic-Contraceptive Interactions"
+      ]
+    },
+    {
+      "drug_a": "phenobarbital",
+      "drug_b": "levonorgestrel",
+      "severity": "critical",
+      "mechanism": "Enzyme induction \u2192 increased oral contraceptive metabolism",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Contraceptive failure",
+      "clinical_consequence": "Unintended pregnancy",
+      "alternative": "Use barrier contraception or IUD",
+      "monitoring": "Counsel patient on backup contraception",
+      "onset_time": "Weeks",
+      "references": [
+        "Epilepsia 2006: Antiepileptic-Contraceptive Interactions"
+      ]
+    },
+    {
+      "drug_a": "valproic_acid",
+      "drug_b": "lamotrigine",
+      "severity": "high",
+      "mechanism": "Valproic acid inhibits lamotrigine metabolism \u2192 2x increased levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Stevens-Johnson syndrome risk",
+      "clinical_consequence": "Life-threatening skin necrosis",
+      "alternative": "Start lamotrigine at half dose, titrate slowly",
+      "monitoring": "Skin exam, stop immediately if rash",
+      "onset_time": "Weeks",
+      "references": [
+        "Neurology 1994: Lamotrigine Rash Risk"
+      ]
+    },
+    {
+      "drug_a": "bupropion",
+      "drug_b": "cocaine",
+      "severity": "critical",
+      "mechanism": "Additive seizure risk (bupropion lowers threshold)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Seizures",
+      "clinical_consequence": "Status epilepticus, brain damage",
+      "alternative": "Avoid bupropion in substance use disorders",
+      "monitoring": "Contraindicated in eating disorders, seizure history",
+      "onset_time": "Hours to days",
+      "references": [
+        "J Clin Psychiatry 2002: Bupropion Seizure Risk"
+      ]
+    },
+    {
+      "drug_a": "bupropion",
+      "drug_b": "amphetamine",
+      "severity": "critical",
+      "mechanism": "Additive seizure risk (bupropion lowers threshold)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Seizures",
+      "clinical_consequence": "Status epilepticus, brain damage",
+      "alternative": "Avoid bupropion in substance use disorders",
+      "monitoring": "Contraindicated in eating disorders, seizure history",
+      "onset_time": "Hours to days",
+      "references": [
+        "J Clin Psychiatry 2002: Bupropion Seizure Risk"
+      ]
+    },
+    {
+      "drug_a": "bupropion",
+      "drug_b": "alcohol_withdrawal",
+      "severity": "critical",
+      "mechanism": "Additive seizure risk (bupropion lowers threshold)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Seizures",
+      "clinical_consequence": "Status epilepticus, brain damage",
+      "alternative": "Avoid bupropion in substance use disorders",
+      "monitoring": "Contraindicated in eating disorders, seizure history",
+      "onset_time": "Hours to days",
+      "references": [
+        "J Clin Psychiatry 2002: Bupropion Seizure Risk"
+      ]
+    },
+    {
+      "drug_a": "ritonavir",
+      "drug_b": "simvastatin",
+      "severity": "critical",
+      "mechanism": "Ritonavir is potent CYP3A4 inhibitor \u2192 10-20x increased substrate levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "simvastatin toxicity",
+      "clinical_consequence": "Rhabdomyolysis (statins), priapism (sildenafil), oversedation (benzos)",
+      "alternative": "Stop simvastatin during ritonavir course",
+      "monitoring": "Contraindicated combination",
+      "onset_time": "Days",
+      "references": [
+        "FDA: Paxlovid Drug Interactions (2022)",
+        "Clin Infect Dis 2005: Ritonavir Interactions"
+      ]
+    },
+    {
+      "drug_a": "ritonavir",
+      "drug_b": "lovastatin",
+      "severity": "critical",
+      "mechanism": "Ritonavir is potent CYP3A4 inhibitor \u2192 10-20x increased substrate levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "lovastatin toxicity",
+      "clinical_consequence": "Rhabdomyolysis (statins), priapism (sildenafil), oversedation (benzos)",
+      "alternative": "Stop lovastatin during ritonavir course",
+      "monitoring": "Contraindicated combination",
+      "onset_time": "Days",
+      "references": [
+        "FDA: Paxlovid Drug Interactions (2022)",
+        "Clin Infect Dis 2005: Ritonavir Interactions"
+      ]
+    },
+    {
+      "drug_a": "ritonavir",
+      "drug_b": "sildenafil",
+      "severity": "critical",
+      "mechanism": "Ritonavir is potent CYP3A4 inhibitor \u2192 10-20x increased substrate levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "sildenafil toxicity",
+      "clinical_consequence": "Rhabdomyolysis (statins), priapism (sildenafil), oversedation (benzos)",
+      "alternative": "Stop sildenafil during ritonavir course",
+      "monitoring": "Contraindicated combination",
+      "onset_time": "Days",
+      "references": [
+        "FDA: Paxlovid Drug Interactions (2022)",
+        "Clin Infect Dis 2005: Ritonavir Interactions"
+      ]
+    },
+    {
+      "drug_a": "ritonavir",
+      "drug_b": "midazolam",
+      "severity": "critical",
+      "mechanism": "Ritonavir is potent CYP3A4 inhibitor \u2192 10-20x increased substrate levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "midazolam toxicity",
+      "clinical_consequence": "Rhabdomyolysis (statins), priapism (sildenafil), oversedation (benzos)",
+      "alternative": "Stop midazolam during ritonavir course",
+      "monitoring": "Contraindicated combination",
+      "onset_time": "Days",
+      "references": [
+        "FDA: Paxlovid Drug Interactions (2022)",
+        "Clin Infect Dis 2005: Ritonavir Interactions"
+      ]
+    },
+    {
+      "drug_a": "ritonavir",
+      "drug_b": "triazolam",
+      "severity": "critical",
+      "mechanism": "Ritonavir is potent CYP3A4 inhibitor \u2192 10-20x increased substrate levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "triazolam toxicity",
+      "clinical_consequence": "Rhabdomyolysis (statins), priapism (sildenafil), oversedation (benzos)",
+      "alternative": "Stop triazolam during ritonavir course",
+      "monitoring": "Contraindicated combination",
+      "onset_time": "Days",
+      "references": [
+        "FDA: Paxlovid Drug Interactions (2022)",
+        "Clin Infect Dis 2005: Ritonavir Interactions"
+      ]
+    },
+    {
+      "drug_a": "tacrolimus",
+      "drug_b": "fluconazole",
+      "severity": "critical",
+      "mechanism": "fluconazole inhibits CYP3A4 \u2192 2-10x increased immunosuppressant levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Immunosuppressant toxicity",
+      "clinical_consequence": "Nephrotoxicity, neurotoxicity, infection risk",
+      "alternative": "Use alternative antifungal/antibiotic or reduce dose 50-75%",
+      "monitoring": "Drug levels daily, creatinine, CNS exam",
+      "onset_time": "Days",
+      "references": [
+        "Transplantation 2013: Calcineurin Inhibitor Interactions"
+      ]
+    },
+    {
+      "drug_a": "tacrolimus",
+      "drug_b": "voriconazole",
+      "severity": "critical",
+      "mechanism": "voriconazole inhibits CYP3A4 \u2192 2-10x increased immunosuppressant levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Immunosuppressant toxicity",
+      "clinical_consequence": "Nephrotoxicity, neurotoxicity, infection risk",
+      "alternative": "Use alternative antifungal/antibiotic or reduce dose 50-75%",
+      "monitoring": "Drug levels daily, creatinine, CNS exam",
+      "onset_time": "Days",
+      "references": [
+        "Transplantation 2013: Calcineurin Inhibitor Interactions"
+      ]
+    },
+    {
+      "drug_a": "tacrolimus",
+      "drug_b": "clarithromycin",
+      "severity": "critical",
+      "mechanism": "clarithromycin inhibits CYP3A4 \u2192 2-10x increased immunosuppressant levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Immunosuppressant toxicity",
+      "clinical_consequence": "Nephrotoxicity, neurotoxicity, infection risk",
+      "alternative": "Use alternative antifungal/antibiotic or reduce dose 50-75%",
+      "monitoring": "Drug levels daily, creatinine, CNS exam",
+      "onset_time": "Days",
+      "references": [
+        "Transplantation 2013: Calcineurin Inhibitor Interactions"
+      ]
+    },
+    {
+      "drug_a": "cyclosporine",
+      "drug_b": "fluconazole",
+      "severity": "critical",
+      "mechanism": "fluconazole inhibits CYP3A4 \u2192 2-10x increased immunosuppressant levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Immunosuppressant toxicity",
+      "clinical_consequence": "Nephrotoxicity, neurotoxicity, infection risk",
+      "alternative": "Use alternative antifungal/antibiotic or reduce dose 50-75%",
+      "monitoring": "Drug levels daily, creatinine, CNS exam",
+      "onset_time": "Days",
+      "references": [
+        "Transplantation 2013: Calcineurin Inhibitor Interactions"
+      ]
+    },
+    {
+      "drug_a": "cyclosporine",
+      "drug_b": "voriconazole",
+      "severity": "critical",
+      "mechanism": "voriconazole inhibits CYP3A4 \u2192 2-10x increased immunosuppressant levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Immunosuppressant toxicity",
+      "clinical_consequence": "Nephrotoxicity, neurotoxicity, infection risk",
+      "alternative": "Use alternative antifungal/antibiotic or reduce dose 50-75%",
+      "monitoring": "Drug levels daily, creatinine, CNS exam",
+      "onset_time": "Days",
+      "references": [
+        "Transplantation 2013: Calcineurin Inhibitor Interactions"
+      ]
+    },
+    {
+      "drug_a": "cyclosporine",
+      "drug_b": "clarithromycin",
+      "severity": "critical",
+      "mechanism": "clarithromycin inhibits CYP3A4 \u2192 2-10x increased immunosuppressant levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Immunosuppressant toxicity",
+      "clinical_consequence": "Nephrotoxicity, neurotoxicity, infection risk",
+      "alternative": "Use alternative antifungal/antibiotic or reduce dose 50-75%",
+      "monitoring": "Drug levels daily, creatinine, CNS exam",
+      "onset_time": "Days",
+      "references": [
+        "Transplantation 2013: Calcineurin Inhibitor Interactions"
+      ]
+    },
+    {
+      "drug_a": "fluorouracil",
+      "drug_b": "warfarin",
+      "severity": "critical",
+      "mechanism": "5-FU inhibits warfarin metabolism",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Severe overanticoagulation",
+      "clinical_consequence": "Fatal hemorrhage",
+      "alternative": "Switch to LMWH or monitor INR daily",
+      "monitoring": "INR every 2-3 days during chemo",
+      "onset_time": "Days",
+      "references": [
+        "J Clin Oncol 1999: 5-FU Warfarin Deaths"
+      ]
+    },
+    {
+      "drug_a": "levothyroxine",
+      "drug_b": "cholestyramine",
+      "severity": "high",
+      "mechanism": "Bile acid sequestrants bind levothyroxine in gut",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Reduced thyroid hormone absorption (50-90% reduction)",
+      "clinical_consequence": "Severe hypothyroidism",
+      "alternative": "Separate doses by 4-6 hours",
+      "monitoring": "TSH monthly until stable",
+      "onset_time": "Weeks",
+      "references": [
+        "JAMA 1999: Cholestyramine-Levothyroxine"
+      ]
+    },
+    {
+      "drug_a": "levothyroxine",
+      "drug_b": "colesevelam",
+      "severity": "high",
+      "mechanism": "Bile acid sequestrants bind levothyroxine in gut",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Reduced thyroid hormone absorption (50-90% reduction)",
+      "clinical_consequence": "Severe hypothyroidism",
+      "alternative": "Separate doses by 4-6 hours",
+      "monitoring": "TSH monthly until stable",
+      "onset_time": "Weeks",
+      "references": [
+        "JAMA 1999: Cholestyramine-Levothyroxine"
+      ]
+    },
+    {
+      "drug_a": "st_johns_wort",
+      "drug_b": "ethinyl_estradiol",
+      "severity": "high",
+      "mechanism": "St. John's Wort induces CYP3A4 \u2192 increased contraceptive metabolism",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Contraceptive failure",
+      "clinical_consequence": "Unintended pregnancy, breakthrough bleeding",
+      "alternative": "Discontinue St. John's Wort or use barrier method",
+      "monitoring": "Counsel on herb-drug interactions",
+      "onset_time": "Weeks",
+      "references": [
+        "Clin Pharmacol Ther 2003: St. John's Wort OC Failure"
+      ]
+    },
+    {
+      "drug_a": "alendronate",
+      "drug_b": "calcium_carbonate",
+      "severity": "moderate",
+      "mechanism": "Calcium chelates bisphosphonates \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Reduced bisphosphonate efficacy",
+      "clinical_consequence": "Continued bone loss, fractures",
+      "alternative": "Take bisphosphonate on empty stomach, calcium 2h later",
+      "monitoring": "Bone density scans annually",
+      "onset_time": "Months",
+      "references": [
+        "Osteoporos Int 2002: Bisphosphonate Absorption"
+      ]
+    },
+    {
+      "drug_a": "risedronate",
+      "drug_b": "calcium_carbonate",
+      "severity": "moderate",
+      "mechanism": "Calcium chelates bisphosphonates \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Reduced bisphosphonate efficacy",
+      "clinical_consequence": "Continued bone loss, fractures",
+      "alternative": "Take bisphosphonate on empty stomach, calcium 2h later",
+      "monitoring": "Bone density scans annually",
+      "onset_time": "Months",
+      "references": [
+        "Osteoporos Int 2002: Bisphosphonate Absorption"
+      ]
+    },
+    {
+      "drug_a": "ibandronate",
+      "drug_b": "calcium_carbonate",
+      "severity": "moderate",
+      "mechanism": "Calcium chelates bisphosphonates \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Reduced bisphosphonate efficacy",
+      "clinical_consequence": "Continued bone loss, fractures",
+      "alternative": "Take bisphosphonate on empty stomach, calcium 2h later",
+      "monitoring": "Bone density scans annually",
+      "onset_time": "Months",
+      "references": [
+        "Osteoporos Int 2002: Bisphosphonate Absorption"
+      ]
+    },
+    {
+      "drug_a": "allopurinol",
+      "drug_b": "azathioprine",
+      "severity": "critical",
+      "mechanism": "Allopurinol inhibits azathioprine metabolism (xanthine oxidase)",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Azathioprine levels increase 3-5x",
+      "clinical_consequence": "Severe pancytopenia, death",
+      "alternative": "Reduce azathioprine dose 75% or use alternative",
+      "monitoring": "CBC weekly if combination unavoidable",
+      "onset_time": "Weeks",
+      "references": [
+        "Transplantation 1981: Allopurinol-Azathioprine Deaths"
+      ]
+    },
+    {
+      "drug_a": "colchicine",
+      "drug_b": "clarithromycin",
+      "severity": "critical",
+      "mechanism": "clarithromycin inhibits CYP3A4 and P-glycoprotein \u2192 colchicine accumulation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Colchicine toxicity",
+      "clinical_consequence": "Pancytopenia, multi-organ failure, death",
+      "alternative": "Reduce colchicine dose or use alternative antibiotic/BP med",
+      "monitoring": "Contraindicated in renal/hepatic impairment",
+      "onset_time": "Days",
+      "references": [
+        "FDA: Colchicine Drug Interaction Deaths (2010)",
+        "NEJM 2010: Colchicine Toxicity"
+      ]
+    },
+    {
+      "drug_a": "colchicine",
+      "drug_b": "diltiazem",
+      "severity": "critical",
+      "mechanism": "diltiazem inhibits CYP3A4 and P-glycoprotein \u2192 colchicine accumulation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Colchicine toxicity",
+      "clinical_consequence": "Pancytopenia, multi-organ failure, death",
+      "alternative": "Reduce colchicine dose or use alternative antibiotic/BP med",
+      "monitoring": "Contraindicated in renal/hepatic impairment",
+      "onset_time": "Days",
+      "references": [
+        "FDA: Colchicine Drug Interaction Deaths (2010)",
+        "NEJM 2010: Colchicine Toxicity"
+      ]
+    },
+    {
+      "drug_a": "colchicine",
+      "drug_b": "verapamil",
+      "severity": "critical",
+      "mechanism": "verapamil inhibits CYP3A4 and P-glycoprotein \u2192 colchicine accumulation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Colchicine toxicity",
+      "clinical_consequence": "Pancytopenia, multi-organ failure, death",
+      "alternative": "Reduce colchicine dose or use alternative antibiotic/BP med",
+      "monitoring": "Contraindicated in renal/hepatic impairment",
+      "onset_time": "Days",
+      "references": [
+        "FDA: Colchicine Drug Interaction Deaths (2010)",
+        "NEJM 2010: Colchicine Toxicity"
+      ]
+    },
+    {
+      "drug_a": "ergotamine",
+      "drug_b": "sumatriptan",
+      "severity": "critical",
+      "mechanism": "Additive vasoconstrictive effects",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe vasospasm",
+      "clinical_consequence": "Coronary vasospasm, MI, stroke",
+      "alternative": "Separate doses by 24 hours minimum",
+      "monitoring": "Contraindicated within 24h of each other",
+      "onset_time": "Hours",
+      "references": [
+        "Headache 2008: Triptan-Ergot Contraindication"
+      ]
+    },
+    {
+      "drug_a": "ergotamine",
+      "drug_b": "rizatriptan",
+      "severity": "critical",
+      "mechanism": "Additive vasoconstrictive effects",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe vasospasm",
+      "clinical_consequence": "Coronary vasospasm, MI, stroke",
+      "alternative": "Separate doses by 24 hours minimum",
+      "monitoring": "Contraindicated within 24h of each other",
+      "onset_time": "Hours",
+      "references": [
+        "Headache 2008: Triptan-Ergot Contraindication"
+      ]
+    },
+    {
+      "drug_a": "ergotamine",
+      "drug_b": "eletriptan",
+      "severity": "critical",
+      "mechanism": "Additive vasoconstrictive effects",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe vasospasm",
+      "clinical_consequence": "Coronary vasospasm, MI, stroke",
+      "alternative": "Separate doses by 24 hours minimum",
+      "monitoring": "Contraindicated within 24h of each other",
+      "onset_time": "Hours",
+      "references": [
+        "Headache 2008: Triptan-Ergot Contraindication"
+      ]
+    },
+    {
+      "drug_a": "dihydroergotamine",
+      "drug_b": "sumatriptan",
+      "severity": "critical",
+      "mechanism": "Additive vasoconstrictive effects",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe vasospasm",
+      "clinical_consequence": "Coronary vasospasm, MI, stroke",
+      "alternative": "Separate doses by 24 hours minimum",
+      "monitoring": "Contraindicated within 24h of each other",
+      "onset_time": "Hours",
+      "references": [
+        "Headache 2008: Triptan-Ergot Contraindication"
+      ]
+    },
+    {
+      "drug_a": "dihydroergotamine",
+      "drug_b": "rizatriptan",
+      "severity": "critical",
+      "mechanism": "Additive vasoconstrictive effects",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe vasospasm",
+      "clinical_consequence": "Coronary vasospasm, MI, stroke",
+      "alternative": "Separate doses by 24 hours minimum",
+      "monitoring": "Contraindicated within 24h of each other",
+      "onset_time": "Hours",
+      "references": [
+        "Headache 2008: Triptan-Ergot Contraindication"
+      ]
+    },
+    {
+      "drug_a": "dihydroergotamine",
+      "drug_b": "eletriptan",
+      "severity": "critical",
+      "mechanism": "Additive vasoconstrictive effects",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe vasospasm",
+      "clinical_consequence": "Coronary vasospasm, MI, stroke",
+      "alternative": "Separate doses by 24 hours minimum",
+      "monitoring": "Contraindicated within 24h of each other",
+      "onset_time": "Hours",
+      "references": [
+        "Headache 2008: Triptan-Ergot Contraindication"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+# Promptly Matrix Bot - Docker Compose
+#
+# Deploys:
+# - Matrix Homeserver (Synapse)
+# - PostgreSQL (for Synapse + Promptly)
+# - Redis (for Promptly state)
+# - Promptly Bot
+
+version: '3.8'
+
+services:
+  # PostgreSQL - Database for Synapse and Promptly
+  postgres:
+    image: postgres:15-alpine
+    container_name: promptly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: synapse
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - promptly-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synapse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - State management for Promptly
+  redis:
+    image: redis:7-alpine
+    container_name: promptly-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - promptly-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Matrix Synapse - Homeserver
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: promptly-synapse
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${SYNAPSE_PORT:-8008}:8008"
+      - "${SYNAPSE_APPSERVICE_PORT:-9000}:9000"
+    environment:
+      SYNAPSE_SERVER_NAME: ${MATRIX_SERVER_NAME:-matrix.localhost}
+      SYNAPSE_REPORT_STATS: "no"
+      SYNAPSE_NO_TLS: "true"
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: synapse
+    volumes:
+      - synapse-data:/data
+      - ./synapse-config/homeserver.yaml:/data/homeserver.yaml:ro
+      - ./synapse-config/matrix.localhost.log.config:/data/matrix.localhost.log.config:ro
+    networks:
+      - promptly-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/_matrix/client/versions"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Promptly Bot - Matrix Application Service
+  promptly-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: promptly-bot
+    restart: unless-stopped
+    depends_on:
+      synapse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Matrix configuration
+      MATRIX_HOMESERVER: http://synapse:8008
+      MATRIX_USER_ID: "@promptly:${MATRIX_SERVER_NAME:-matrix.localhost}"
+      MATRIX_PASSWORD: ${MATRIX_BOT_PASSWORD}
+      MATRIX_ACCESS_TOKEN: ${MATRIX_BOT_TOKEN}
+
+      # Database
+      REDIS_URL: redis://redis:6379
+      POSTGRES_URL: postgresql://promptly:${PROMPTLY_DB_PASSWORD:-changeme}@postgres:5432/promptly
+
+      # LLM API keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+      # Promptly configuration
+      PROMPTLY_CONFIG: fused
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./bot:/app/bot
+      - ../HoloLoom:/app/HoloLoom
+      - promptly-data:/app/data
+    networks:
+      - promptly-net
+    command: python -m bot.promptly_bot
+
+  # Promptly API Server (FastAPI)
+  promptly-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: promptly-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # LLM API keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+      # Promptly configuration
+      PROMPTLY_CONFIG: fused
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./bot:/app/bot
+      - ../HoloLoom:/app/HoloLoom
+    networks:
+      - promptly-net
+    command: uvicorn bot.api_server:app --host 0.0.0.0 --port 8000
+
+networks:
+  promptly-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  synapse-data:
+    driver: local
+  promptly-data:
+    driver: local

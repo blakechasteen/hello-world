@@ -48,13 +48,14 @@ import json
 
 # Type imports
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard, Spacetime
+from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.fabric.spacetime import Spacetime
 
 # Optional DSPy import with graceful degradation
 try:
     import dspy
     from dspy.signatures import Signature
-    from dspy.teleprompt import BootstrapFewShot, MIPRO
+    from dspy.teleprompt import BootstrapFewShot, MIPROv2
     DSPY_AVAILABLE = True
 except ImportError:
     DSPY_AVAILABLE = False
@@ -158,16 +159,16 @@ class DSPyHoloLoom:
 
         self.config = config or Config.fused()
 
-        # Initialize DSPy language model
+        # Initialize DSPy language model (DSPy 3.0+ uses LM class)
         if lm_model.startswith("openai/"):
             model_name = lm_model.split("/", 1)[1]
-            self.lm = dspy.OpenAI(model=model_name, api_key=lm_api_key, max_tokens=4096)
+            self.lm = dspy.LM(model=model_name, api_key=lm_api_key, max_tokens=4096)
         elif lm_model.startswith("anthropic/"):
             model_name = lm_model.split("/", 1)[1]
-            self.lm = dspy.Claude(model=model_name, api_key=lm_api_key, max_tokens=4096)
+            self.lm = dspy.LM(model=model_name, api_key=lm_api_key, max_tokens=4096)
         else:
             # Default to OpenAI
-            self.lm = dspy.OpenAI(model=lm_model, api_key=lm_api_key, max_tokens=4096)
+            self.lm = dspy.LM(model=lm_model, api_key=lm_api_key, max_tokens=4096)
 
         # Set as default LM
         dspy.settings.configure(lm=self.lm)

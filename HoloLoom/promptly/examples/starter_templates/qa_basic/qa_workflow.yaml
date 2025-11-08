@@ -1,0 +1,88 @@
+# Promptly Workflow: Question Answering (Basic)
+# Part of Promptly - The Universal AI Reliability Layer
+# Open source (MIT): https://github.com/yourusername/promptly
+
+version: "1.0"
+name: qa_basic
+description: Basic question answering with context retrieval and confidence scoring
+
+metadata:
+  author: Promptly Community
+  created: 2025-11-07
+  complexity: simple
+  estimated_time_ms: 500
+  tags: [qa, retrieval, basic, starter]
+
+# Define workflow inputs
+inputs:
+  question:
+    type: string
+    required: true
+    description: The question to answer
+
+# Define workflow steps
+steps:
+  # Step 1: Retrieve relevant context from knowledge base
+  - name: retrieve_context
+    description: Retrieve relevant context for the question
+    module: memory_retrieval
+    config:
+      retrieval_mode: semantic
+      max_results: 5
+      similarity_threshold: 0.7
+    inputs:
+      query: "{input.question}"
+    outputs:
+      - context
+      - sources
+
+  # Step 2: Generate answer using context
+  - name: generate_answer
+    description: Generate answer using retrieved context
+    module: qa_predict
+    signature:
+      instruction: "Answer technical questions accurately using the provided context. If the context doesn't contain the answer, say so."
+      inputs: [question, context]
+      outputs: [answer, confidence]
+    inputs:
+      question: "{input.question}"
+      context: "{retrieve_context.context}"
+    outputs:
+      - answer
+      - confidence
+
+# Define workflow outputs
+outputs:
+  answer:
+    source: "{generate_answer.answer}"
+    type: string
+  confidence:
+    source: "{generate_answer.confidence}"
+    type: number
+  sources:
+    source: "{retrieve_context.sources}"
+    type: array
+
+# Error handling
+error_handling:
+  on_retrieval_failure:
+    action: fallback
+    fallback_context: "No context available"
+  on_generation_failure:
+    action: retry
+    max_retries: 3
+    backoff: exponential
+
+# Metrics for evaluation
+metrics:
+  - name: accuracy
+    type: custom
+    description: Check if answer contains key information
+  - name: confidence
+    type: threshold
+    threshold: 0.7
+    description: Ensure confidence meets minimum threshold
+  - name: response_time
+    type: latency
+    max_ms: 1000
+    description: Ensure response within 1 second

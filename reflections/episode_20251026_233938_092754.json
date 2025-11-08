@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "What is Thompson Sampling?",
+    "response": "Calculation completed",
+    "tool_used": "calc",
+    "confidence": 0.2736298360338856,
+    "trace": {
+      "start_time": 

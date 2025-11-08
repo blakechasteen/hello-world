@@ -1,0 +1,57 @@
+[
+  {
+    "scenario": "Scenario 1: Warfarin + Aspirin (CRITICAL)",
+    "interactions": [
+      {
+        "drug_a": "warfarin",
+        "drug_b": "aspirin",
+        "severity": "critical",
+        "mechanism": "Both inhibit clotting - additive bleeding risk",
+        "effect": "Severe bleeding, hemorrhage, potential death",
+        "alternative": "Acetaminophen for pain (non-antiplatelet)",
+        "references": [
+          "FDA Safety Alert 2014",
+          "AHA Stroke Prevention Guidelines"
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Scenario 2: Penicillin Allergy + Amoxicillin (CRITICAL)",
+    "interactions": [
+      {
+        "drug_a": "penicillin_allergy",
+        "drug_b": "amoxicillin",
+        "severity": "critical",
+        "mechanism": "Amoxicillin IS a penicillin derivative",
+        "effect": "Anaphylaxis - airway closure, shock, death",
+        "alternative": "Azithromycin, doxycycline, or fluoroquinolone",
+        "references": [
+          "AAAAI Penicillin Allergy Guidelines",
+          "FDA Antibiotic Safety Review"
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Scenario 3: Multiple Medications (diabetic patient)",
+    "interactions": [
+      {
+        "drug_a": "metoprolol",
+        "drug_b": "insulin",
+        "severity": "critical",
+        "mechanism": "Beta-blockers mask hypoglycemia symptoms (tachycardia, tremor)",
+        "effect": "Patient can't detect low blood sugar - seizures, coma, death",
+        "alternative": "Cardioselective beta-blockers (atenolol) with close glucose monitoring",
+        "references": [
+          "ADA Diabetes Management Guidelines",
+          "JAMA 2018 - Beta-blockers in Diabetes"
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Scenario 4: Safe Combination",
+    "interactions": []
+  }
+]

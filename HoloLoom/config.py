@@ -10,12 +10,14 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional
 
+# DISABLED: Causes circular import / timeout issues
 # Import BanditStrategy from policy to avoid duplication
-try:
-    from HoloLoom.policy.unified import BanditStrategy as PolicyBanditStrategy
-    _POLICY_AVAILABLE = True
-except ImportError:
-    _POLICY_AVAILABLE = False
+# try:
+#     from HoloLoom.policy.unified import BanditStrategy as PolicyBanditStrategy
+#     _POLICY_AVAILABLE = True
+# except ImportError:
+#     _POLICY_AVAILABLE = False
+_POLICY_AVAILABLE = False  # Disabled to fix import timeout
 
 
 class KGBackend(Enum):

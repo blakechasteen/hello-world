@@ -44,6 +44,11 @@ from .core import (
     create_agentic_orchestrator,
 )
 
+from .web_research import (
+    WebResearchOrchestrator,
+    WebResearchResult,
+)
+
 from .embedding_integrity import (
     EmbeddingRun,
     VectorMeta,
@@ -60,6 +65,10 @@ __all__ = [
     "ReasoningMode",
     "VerificationResult",
     "create_agentic_orchestrator",
+
+    # Web-enhanced research
+    "WebResearchOrchestrator",
+    "WebResearchResult",
 
     # Embedding verification
     "EmbeddingRun",

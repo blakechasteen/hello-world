@@ -1,0 +1,12 @@
+# SpinningWheel Requirements
+# Core dependencies for input adapters
+
+# YouTube Spinner
+youtube-transcript-api>=0.6.0
+
+# Audio Spinner (optional)
+# Add audio-related dependencies here if needed
+
+# Enrichment (optional)
+# ollama  # For local LLM enrichment
+# neo4j   # For knowledge graph enrichment

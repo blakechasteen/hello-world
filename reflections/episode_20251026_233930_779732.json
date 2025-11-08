@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "What is lifecycle management?",
+    "response": "Successfully wrote to Notion database",
+    "tool_used": "notion_write",
+    "confidence": 0.27819386953693237,
+    "trace": {
+      "start_time": 

@@ -1,0 +1,6 @@
+# mythRL Narrative Depth Dashboard Requirements
+# Install with: pip install -r dashboard_requirements.txt
+
+streamlit>=1.28.0
+plotly>=5.17.0
+pandas>=2.0.0

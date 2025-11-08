@@ -1,0 +1,8 @@
+{
+  "spacetime": {
+    "query_text": "Explain Python programming",
+    "response": "Calculation completed",
+    "tool_used": "calc",
+    "confidence": 0.26248360853568947,
+    "trace": {
+      "start_time": 

@@ -1,0 +1,13 @@
+# Phase 5: GitHub Integration Dependencies
+
+# GitHub API
+PyGithub==2.1.1          # GitHub API client
+PyJWT==2.8.0             # JWT token generation for GitHub App
+cryptography==41.0.7     # Required for PyJWT RSA
+requests==2.31.0         # HTTP client
+
+# Already installed (from base requirements)
+# fastapi
+# uvicorn
+# python-socketio
+# matrix-nio

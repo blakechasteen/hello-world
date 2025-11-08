@@ -1,0 +1,3767 @@
+{
+  "version": "2.0-expanded",
+  "source": "FDA, NIH, Clinical Guidelines + Programmatic Expansion",
+  "total_interactions": 240,
+  "original_interactions": 147,
+  "added_interactions": 93,
+  "severity_breakdown": {
+    "CRITICAL": 80,
+    "HIGH": 135,
+    "MODERATE": 25,
+    "LOW": 0
+  },
+  "interactions": [
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "aspirin",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "prasugrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "clopidogrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "ticagrelor",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "enoxaparin",
+      "drug_b": "aspirin",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "enoxaparin",
+      "drug_b": "prasugrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "enoxaparin",
+      "drug_b": "clopidogrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "enoxaparin",
+      "drug_b": "ticagrelor",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "aspirin",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "prasugrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "clopidogrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "ticagrelor",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "heparin",
+      "drug_b": "aspirin",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "heparin",
+      "drug_b": "prasugrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "heparin",
+      "drug_b": "clopidogrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "heparin",
+      "drug_b": "ticagrelor",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "aspirin",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "prasugrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "clopidogrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "ticagrelor",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "aspirin",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "prasugrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "clopidogrel",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "ticagrelor",
+      "severity": "critical",
+      "mechanism": "Additive inhibition of hemostasis",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bleeding risk",
+      "clinical_consequence": "Intracranial hemorrhage, GI bleeding, death",
+      "alternative": "Acetaminophen for pain (no antiplatelet effect)",
+      "monitoring": "CBC, PT/INR, signs of bleeding",
+      "onset_time": "Hours to days",
+      "references": [
+        "FDA Safety Alert: Anticoagulant/Antiplatelet Combination (2014)",
+        "NEJM 2017: Dual Antiplatelet Therapy and Bleeding Risk"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "enoxaparin",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "enoxaparin",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "enoxaparin",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "enoxaparin",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "enoxaparin",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "heparin",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "heparin",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "heparin",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "heparin",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "heparin",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "NSAIDs inhibit COX-1 \u2192 platelet dysfunction + GI ulceration",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, hemorrhage",
+      "alternative": "Acetaminophen (no COX inhibition)",
+      "monitoring": "Hemoglobin, stool guaiac, abdominal pain",
+      "onset_time": "Days",
+      "references": [
+        "FDA NSAID/Anticoagulant Warning (2015)",
+        "Gastroenterology 2016: NSAID-induced GI bleeding"
+      ]
+    },
+    {
+      "drug_a": "atenolol",
+      "drug_b": "insulin",
+      "severity": "critical",
+      "mechanism": "Beta-blockers mask hypoglycemia warning signs (tachycardia, tremor)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Delayed recognition of hypoglycemia",
+      "clinical_consequence": "Seizures, coma, brain damage, death",
+      "alternative": "Cardioselective beta-blockers (atenolol, metoprolol) with glucose monitoring",
+      "monitoring": "Frequent blood glucose, patient education on non-adrenergic symptoms",
+      "onset_time": "Immediate",
+      "references": [
+        "ADA Standards of Medical Care in Diabetes (2024)",
+        "JAMA 2018: Beta-Blockers in Diabetes - Risk/Benefit"
+      ]
+    },
+    {
+      "drug_a": "atenolol",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "atenolol",
+      "drug_b": "glipizide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "atenolol",
+      "drug_b": "glimepiride",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "metoprolol",
+      "drug_b": "insulin",
+      "severity": "critical",
+      "mechanism": "Beta-blockers mask hypoglycemia warning signs (tachycardia, tremor)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Delayed recognition of hypoglycemia",
+      "clinical_consequence": "Seizures, coma, brain damage, death",
+      "alternative": "Cardioselective beta-blockers (atenolol, metoprolol) with glucose monitoring",
+      "monitoring": "Frequent blood glucose, patient education on non-adrenergic symptoms",
+      "onset_time": "Immediate",
+      "references": [
+        "ADA Standards of Medical Care in Diabetes (2024)",
+        "JAMA 2018: Beta-Blockers in Diabetes - Risk/Benefit"
+      ]
+    },
+    {
+      "drug_a": "metoprolol",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "metoprolol",
+      "drug_b": "glipizide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "metoprolol",
+      "drug_b": "glimepiride",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "carvedilol",
+      "drug_b": "insulin",
+      "severity": "critical",
+      "mechanism": "Beta-blockers mask hypoglycemia warning signs (tachycardia, tremor)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Delayed recognition of hypoglycemia",
+      "clinical_consequence": "Seizures, coma, brain damage, death",
+      "alternative": "Cardioselective beta-blockers (atenolol, metoprolol) with glucose monitoring",
+      "monitoring": "Frequent blood glucose, patient education on non-adrenergic symptoms",
+      "onset_time": "Immediate",
+      "references": [
+        "ADA Standards of Medical Care in Diabetes (2024)",
+        "JAMA 2018: Beta-Blockers in Diabetes - Risk/Benefit"
+      ]
+    },
+    {
+      "drug_a": "carvedilol",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "carvedilol",
+      "drug_b": "glipizide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "carvedilol",
+      "drug_b": "glimepiride",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "bisoprolol",
+      "drug_b": "insulin",
+      "severity": "critical",
+      "mechanism": "Beta-blockers mask hypoglycemia warning signs (tachycardia, tremor)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Delayed recognition of hypoglycemia",
+      "clinical_consequence": "Seizures, coma, brain damage, death",
+      "alternative": "Cardioselective beta-blockers (atenolol, metoprolol) with glucose monitoring",
+      "monitoring": "Frequent blood glucose, patient education on non-adrenergic symptoms",
+      "onset_time": "Immediate",
+      "references": [
+        "ADA Standards of Medical Care in Diabetes (2024)",
+        "JAMA 2018: Beta-Blockers in Diabetes - Risk/Benefit"
+      ]
+    },
+    {
+      "drug_a": "bisoprolol",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "bisoprolol",
+      "drug_b": "glipizide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "bisoprolol",
+      "drug_b": "glimepiride",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "propranolol",
+      "drug_b": "insulin",
+      "severity": "critical",
+      "mechanism": "Beta-blockers mask hypoglycemia warning signs (tachycardia, tremor)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Delayed recognition of hypoglycemia",
+      "clinical_consequence": "Seizures, coma, brain damage, death",
+      "alternative": "Cardioselective beta-blockers (atenolol, metoprolol) with glucose monitoring",
+      "monitoring": "Frequent blood glucose, patient education on non-adrenergic symptoms",
+      "onset_time": "Immediate",
+      "references": [
+        "ADA Standards of Medical Care in Diabetes (2024)",
+        "JAMA 2018: Beta-Blockers in Diabetes - Risk/Benefit"
+      ]
+    },
+    {
+      "drug_a": "propranolol",
+      "drug_b": "glyburide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "propranolol",
+      "drug_b": "glipizide",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "propranolol",
+      "drug_b": "glimepiride",
+      "severity": "high",
+      "mechanism": "Beta-blockers mask hypoglycemia + may impair glucose recovery",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Masked and prolonged hypoglycemia",
+      "clinical_consequence": "Confusion, loss of consciousness",
+      "alternative": "DPP-4 inhibitors (no hypoglycemia risk)",
+      "monitoring": "Glucose monitoring, educate on non-adrenergic symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "Diabetes Care 2020: Sulfonylureas and Hypoglycemia"
+      ]
+    },
+    {
+      "drug_a": "isocarboxazid",
+      "drug_b": "fluoxetine",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "isocarboxazid",
+      "drug_b": "paroxetine",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "isocarboxazid",
+      "drug_b": "citalopram",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "isocarboxazid",
+      "drug_b": "sertraline",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "isocarboxazid",
+      "drug_b": "escitalopram",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "phenelzine",
+      "drug_b": "fluoxetine",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "phenelzine",
+      "drug_b": "paroxetine",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "phenelzine",
+      "drug_b": "citalopram",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "phenelzine",
+      "drug_b": "sertraline",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "phenelzine",
+      "drug_b": "escitalopram",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "selegiline",
+      "drug_b": "fluoxetine",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "selegiline",
+      "drug_b": "paroxetine",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "selegiline",
+      "drug_b": "citalopram",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "selegiline",
+      "drug_b": "sertraline",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "selegiline",
+      "drug_b": "escitalopram",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "tranylcypromine",
+      "drug_b": "fluoxetine",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "tranylcypromine",
+      "drug_b": "paroxetine",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "tranylcypromine",
+      "drug_b": "citalopram",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "tranylcypromine",
+      "drug_b": "sertraline",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "tranylcypromine",
+      "drug_b": "escitalopram",
+      "severity": "critical",
+      "mechanism": "Excessive serotonin accumulation (MAO enzyme inhibition + reuptake inhibition)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, rigidity, seizures, death",
+      "alternative": "Wait 2-5 weeks washout period between MAOI and SSRI",
+      "monitoring": "Mental status, vital signs, neuromuscular exam",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Black Box Warning: MAOI/SSRI Combination",
+        "Mayo Clin Proc 2010: Serotonin Syndrome Recognition"
+      ]
+    },
+    {
+      "drug_a": "benazepril",
+      "drug_b": "potassium_chloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "benazepril",
+      "drug_b": "spironolactone",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "benazepril",
+      "drug_b": "amiloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "benazepril",
+      "drug_b": "triamterene",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "quinapril",
+      "drug_b": "potassium_chloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "quinapril",
+      "drug_b": "spironolactone",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "quinapril",
+      "drug_b": "amiloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "quinapril",
+      "drug_b": "triamterene",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "enalapril",
+      "drug_b": "potassium_chloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "enalapril",
+      "drug_b": "spironolactone",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "enalapril",
+      "drug_b": "amiloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "enalapril",
+      "drug_b": "triamterene",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "ramipril",
+      "drug_b": "potassium_chloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "ramipril",
+      "drug_b": "spironolactone",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "ramipril",
+      "drug_b": "amiloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "ramipril",
+      "drug_b": "triamterene",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "lisinopril",
+      "drug_b": "potassium_chloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "lisinopril",
+      "drug_b": "spironolactone",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "lisinopril",
+      "drug_b": "amiloride",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "lisinopril",
+      "drug_b": "triamterene",
+      "severity": "high",
+      "mechanism": "ACE inhibitors reduce aldosterone \u2192 decreased potassium excretion",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Hyperkalemia",
+      "clinical_consequence": "Cardiac arrhythmias, sudden cardiac death",
+      "alternative": "Monitor potassium closely or avoid supplements",
+      "monitoring": "Serum potassium weekly initially, then monthly",
+      "onset_time": "Days to weeks",
+      "references": [
+        "UpToDate: ACE Inhibitor Adverse Effects (2024)",
+        "NEJM 2004: Hyperkalemia with ACE Inhibitors"
+      ]
+    },
+    {
+      "drug_a": "atorvastatin",
+      "drug_b": "gemfibrozil",
+      "severity": "critical",
+      "mechanism": "Both inhibit muscle metabolism; gemfibrozil also inhibits statin glucuronidation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy and rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, acute kidney injury, death",
+      "alternative": "Fenofibrate (safer than gemfibrozil) or ezetimibe",
+      "monitoring": "CK levels, muscle pain, dark urine, renal function",
+      "onset_time": "Weeks to months",
+      "references": [
+        "FDA Statin Safety Review (2012)",
+        "ACC/AHA Cholesterol Guidelines (2018)"
+      ]
+    },
+    {
+      "drug_a": "atorvastatin",
+      "drug_b": "fenofibrate",
+      "severity": "high",
+      "mechanism": "Both inhibit muscle metabolism; gemfibrozil also inhibits statin glucuronidation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy and rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, acute kidney injury, death",
+      "alternative": "Fenofibrate (safer than gemfibrozil) or ezetimibe",
+      "monitoring": "CK levels, muscle pain, dark urine, renal function",
+      "onset_time": "Weeks to months",
+      "references": [
+        "FDA Statin Safety Review (2012)",
+        "ACC/AHA Cholesterol Guidelines (2018)"
+      ]
+    },
+    {
+      "drug_a": "rosuvastatin",
+      "drug_b": "gemfibrozil",
+      "severity": "critical",
+      "mechanism": "Both inhibit muscle metabolism; gemfibrozil also inhibits statin glucuronidation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy and rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, acute kidney injury, death",
+      "alternative": "Fenofibrate (safer than gemfibrozil) or ezetimibe",
+      "monitoring": "CK levels, muscle pain, dark urine, renal function",
+      "onset_time": "Weeks to months",
+      "references": [
+        "FDA Statin Safety Review (2012)",
+        "ACC/AHA Cholesterol Guidelines (2018)"
+      ]
+    },
+    {
+      "drug_a": "rosuvastatin",
+      "drug_b": "fenofibrate",
+      "severity": "high",
+      "mechanism": "Both inhibit muscle metabolism; gemfibrozil also inhibits statin glucuronidation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy and rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, acute kidney injury, death",
+      "alternative": "Fenofibrate (safer than gemfibrozil) or ezetimibe",
+      "monitoring": "CK levels, muscle pain, dark urine, renal function",
+      "onset_time": "Weeks to months",
+      "references": [
+        "FDA Statin Safety Review (2012)",
+        "ACC/AHA Cholesterol Guidelines (2018)"
+      ]
+    },
+    {
+      "drug_a": "simvastatin",
+      "drug_b": "gemfibrozil",
+      "severity": "critical",
+      "mechanism": "Both inhibit muscle metabolism; gemfibrozil also inhibits statin glucuronidation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy and rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, acute kidney injury, death",
+      "alternative": "Fenofibrate (safer than gemfibrozil) or ezetimibe",
+      "monitoring": "CK levels, muscle pain, dark urine, renal function",
+      "onset_time": "Weeks to months",
+      "references": [
+        "FDA Statin Safety Review (2012)",
+        "ACC/AHA Cholesterol Guidelines (2018)"
+      ]
+    },
+    {
+      "drug_a": "simvastatin",
+      "drug_b": "fenofibrate",
+      "severity": "high",
+      "mechanism": "Both inhibit muscle metabolism; gemfibrozil also inhibits statin glucuronidation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy and rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, acute kidney injury, death",
+      "alternative": "Fenofibrate (safer than gemfibrozil) or ezetimibe",
+      "monitoring": "CK levels, muscle pain, dark urine, renal function",
+      "onset_time": "Weeks to months",
+      "references": [
+        "FDA Statin Safety Review (2012)",
+        "ACC/AHA Cholesterol Guidelines (2018)"
+      ]
+    },
+    {
+      "drug_a": "pravastatin",
+      "drug_b": "gemfibrozil",
+      "severity": "critical",
+      "mechanism": "Both inhibit muscle metabolism; gemfibrozil also inhibits statin glucuronidation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy and rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, acute kidney injury, death",
+      "alternative": "Fenofibrate (safer than gemfibrozil) or ezetimibe",
+      "monitoring": "CK levels, muscle pain, dark urine, renal function",
+      "onset_time": "Weeks to months",
+      "references": [
+        "FDA Statin Safety Review (2012)",
+        "ACC/AHA Cholesterol Guidelines (2018)"
+      ]
+    },
+    {
+      "drug_a": "pravastatin",
+      "drug_b": "fenofibrate",
+      "severity": "high",
+      "mechanism": "Both inhibit muscle metabolism; gemfibrozil also inhibits statin glucuronidation",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy and rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, acute kidney injury, death",
+      "alternative": "Fenofibrate (safer than gemfibrozil) or ezetimibe",
+      "monitoring": "CK levels, muscle pain, dark urine, renal function",
+      "onset_time": "Weeks to months",
+      "references": [
+        "FDA Statin Safety Review (2012)",
+        "ACC/AHA Cholesterol Guidelines (2018)"
+      ]
+    },
+    {
+      "drug_a": "digoxin",
+      "drug_b": "amiodarone",
+      "severity": "high",
+      "mechanism": "Amiodarone inhibits P-glycoprotein \u2192 increased digoxin levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Digoxin toxicity",
+      "clinical_consequence": "Arrhythmias, nausea, visual disturbances, death",
+      "alternative": "Reduce digoxin dose by 50% when adding these drugs",
+      "monitoring": "Digoxin levels, ECG, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "Clinical Pharmacokinetics 2015: Digoxin Interactions",
+        "Circulation 2013: Digoxin Use in Heart Failure"
+      ]
+    },
+    {
+      "drug_a": "digoxin",
+      "drug_b": "verapamil",
+      "severity": "high",
+      "mechanism": "Verapamil inhibits P-glycoprotein \u2192 increased digoxin levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Digoxin toxicity",
+      "clinical_consequence": "Arrhythmias, nausea, visual disturbances, death",
+      "alternative": "Reduce digoxin dose by 50% when adding these drugs",
+      "monitoring": "Digoxin levels, ECG, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "Clinical Pharmacokinetics 2015: Digoxin Interactions",
+        "Circulation 2013: Digoxin Use in Heart Failure"
+      ]
+    },
+    {
+      "drug_a": "digoxin",
+      "drug_b": "diltiazem",
+      "severity": "high",
+      "mechanism": "Diltiazem inhibits P-glycoprotein \u2192 increased digoxin levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Digoxin toxicity",
+      "clinical_consequence": "Arrhythmias, nausea, visual disturbances, death",
+      "alternative": "Reduce digoxin dose by 50% when adding these drugs",
+      "monitoring": "Digoxin levels, ECG, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "Clinical Pharmacokinetics 2015: Digoxin Interactions",
+        "Circulation 2013: Digoxin Use in Heart Failure"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "trimethoprim-sulfamethoxazole",
+      "severity": "high",
+      "mechanism": "Antibiotics inhibit vitamin K synthesis by gut bacteria",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Increased anticoagulation (elevated INR)",
+      "clinical_consequence": "Bleeding, hemorrhage",
+      "alternative": "Monitor INR closely, adjust warfarin dose",
+      "monitoring": "INR every 2-3 days during antibiotic course",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2012: Warfarin Antibiotic Interactions",
+        "Pharmacotherapy 2008: Antibiotic-Associated INR Changes"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "metronidazole",
+      "severity": "high",
+      "mechanism": "Antibiotics inhibit vitamin K synthesis by gut bacteria",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Increased anticoagulation (elevated INR)",
+      "clinical_consequence": "Bleeding, hemorrhage",
+      "alternative": "Monitor INR closely, adjust warfarin dose",
+      "monitoring": "INR every 2-3 days during antibiotic course",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2012: Warfarin Antibiotic Interactions",
+        "Pharmacotherapy 2008: Antibiotic-Associated INR Changes"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "ciprofloxacin",
+      "severity": "high",
+      "mechanism": "Antibiotics inhibit vitamin K synthesis by gut bacteria",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Increased anticoagulation (elevated INR)",
+      "clinical_consequence": "Bleeding, hemorrhage",
+      "alternative": "Monitor INR closely, adjust warfarin dose",
+      "monitoring": "INR every 2-3 days during antibiotic course",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2012: Warfarin Antibiotic Interactions",
+        "Pharmacotherapy 2008: Antibiotic-Associated INR Changes"
+      ]
+    },
+    {
+      "drug_a": "warfarin",
+      "drug_b": "azithromycin",
+      "severity": "high",
+      "mechanism": "Antibiotics inhibit vitamin K synthesis by gut bacteria",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Increased anticoagulation (elevated INR)",
+      "clinical_consequence": "Bleeding, hemorrhage",
+      "alternative": "Monitor INR closely, adjust warfarin dose",
+      "monitoring": "INR every 2-3 days during antibiotic course",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2012: Warfarin Antibiotic Interactions",
+        "Pharmacotherapy 2008: Antibiotic-Associated INR Changes"
+      ]
+    },
+    {
+      "drug_a": "penicillin_allergy",
+      "drug_b": "penicillin",
+      "severity": "critical",
+      "mechanism": "IgE-mediated Type I hypersensitivity reaction",
+      "mechanism_type": "contraindication",
+      "effect": "Anaphylaxis",
+      "clinical_consequence": "Airway closure, cardiovascular collapse, death",
+      "alternative": "Azithromycin, doxycycline, or fluoroquinolone (no cross-reactivity)",
+      "monitoring": "Immediate: vital signs, airway, epinephrine ready",
+      "onset_time": "Minutes",
+      "references": [
+        "AAAAI Practice Parameters: Penicillin Allergy (2019)",
+        "JAMA 2018: Penicillin Allergy Evaluation"
+      ]
+    },
+    {
+      "drug_a": "penicillin_allergy",
+      "drug_b": "ampicillin",
+      "severity": "critical",
+      "mechanism": "IgE-mediated Type I hypersensitivity reaction",
+      "mechanism_type": "contraindication",
+      "effect": "Anaphylaxis",
+      "clinical_consequence": "Airway closure, cardiovascular collapse, death",
+      "alternative": "Azithromycin, doxycycline, or fluoroquinolone (no cross-reactivity)",
+      "monitoring": "Immediate: vital signs, airway, epinephrine ready",
+      "onset_time": "Minutes",
+      "references": [
+        "AAAAI Practice Parameters: Penicillin Allergy (2019)",
+        "JAMA 2018: Penicillin Allergy Evaluation"
+      ]
+    },
+    {
+      "drug_a": "penicillin_allergy",
+      "drug_b": "amoxicillin",
+      "severity": "critical",
+      "mechanism": "IgE-mediated Type I hypersensitivity reaction",
+      "mechanism_type": "contraindication",
+      "effect": "Anaphylaxis",
+      "clinical_consequence": "Airway closure, cardiovascular collapse, death",
+      "alternative": "Azithromycin, doxycycline, or fluoroquinolone (no cross-reactivity)",
+      "monitoring": "Immediate: vital signs, airway, epinephrine ready",
+      "onset_time": "Minutes",
+      "references": [
+        "AAAAI Practice Parameters: Penicillin Allergy (2019)",
+        "JAMA 2018: Penicillin Allergy Evaluation"
+      ]
+    },
+    {
+      "drug_a": "penicillin_allergy",
+      "drug_b": "penicillin_vk",
+      "severity": "critical",
+      "mechanism": "IgE-mediated Type I hypersensitivity reaction",
+      "mechanism_type": "contraindication",
+      "effect": "Anaphylaxis",
+      "clinical_consequence": "Airway closure, cardiovascular collapse, death",
+      "alternative": "Azithromycin, doxycycline, or fluoroquinolone (no cross-reactivity)",
+      "monitoring": "Immediate: vital signs, airway, epinephrine ready",
+      "onset_time": "Minutes",
+      "references": [
+        "AAAAI Practice Parameters: Penicillin Allergy (2019)",
+        "JAMA 2018: Penicillin Allergy Evaluation"
+      ]
+    },
+    {
+      "drug_a": "penicillin_allergy",
+      "drug_b": "cefuroxime",
+      "severity": "high",
+      "mechanism": "Shared beta-lactam ring structure (10% cross-reactivity)",
+      "mechanism_type": "cross_reactivity",
+      "effect": "Allergic reaction (lower risk than penicillin)",
+      "clinical_consequence": "Rash, anaphylaxis (rare)",
+      "alternative": "Azithromycin (macrolide, no cross-reactivity) or skin testing before use",
+      "monitoring": "Monitor for 30 min after first dose",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "AAAAI: Cephalosporin Use in Penicillin Allergy (2021)",
+        "Ann Allergy Asthma Immunol 2019: Cross-Reactivity Update"
+      ]
+    },
+    {
+      "drug_a": "penicillin_allergy",
+      "drug_b": "cefazolin",
+      "severity": "high",
+      "mechanism": "Shared beta-lactam ring structure (10% cross-reactivity)",
+      "mechanism_type": "cross_reactivity",
+      "effect": "Allergic reaction (lower risk than penicillin)",
+      "clinical_consequence": "Rash, anaphylaxis (rare)",
+      "alternative": "Azithromycin (macrolide, no cross-reactivity) or skin testing before use",
+      "monitoring": "Monitor for 30 min after first dose",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "AAAAI: Cephalosporin Use in Penicillin Allergy (2021)",
+        "Ann Allergy Asthma Immunol 2019: Cross-Reactivity Update"
+      ]
+    },
+    {
+      "drug_a": "penicillin_allergy",
+      "drug_b": "ceftriaxone",
+      "severity": "high",
+      "mechanism": "Shared beta-lactam ring structure (10% cross-reactivity)",
+      "mechanism_type": "cross_reactivity",
+      "effect": "Allergic reaction (lower risk than penicillin)",
+      "clinical_consequence": "Rash, anaphylaxis (rare)",
+      "alternative": "Azithromycin (macrolide, no cross-reactivity) or skin testing before use",
+      "monitoring": "Monitor for 30 min after first dose",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "AAAAI: Cephalosporin Use in Penicillin Allergy (2021)",
+        "Ann Allergy Asthma Immunol 2019: Cross-Reactivity Update"
+      ]
+    },
+    {
+      "drug_a": "penicillin_allergy",
+      "drug_b": "cephalexin",
+      "severity": "high",
+      "mechanism": "Shared beta-lactam ring structure (10% cross-reactivity)",
+      "mechanism_type": "cross_reactivity",
+      "effect": "Allergic reaction (lower risk than penicillin)",
+      "clinical_consequence": "Rash, anaphylaxis (rare)",
+      "alternative": "Azithromycin (macrolide, no cross-reactivity) or skin testing before use",
+      "monitoring": "Monitor for 30 min after first dose",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "AAAAI: Cephalosporin Use in Penicillin Allergy (2021)",
+        "Ann Allergy Asthma Immunol 2019: Cross-Reactivity Update"
+      ]
+    },
+    {
+      "drug_a": "sulfa_allergy",
+      "drug_b": "trimethoprim-sulfamethoxazole",
+      "severity": "critical",
+      "mechanism": "Sulfonamide hypersensitivity (arylamine group)",
+      "mechanism_type": "contraindication",
+      "effect": "Stevens-Johnson syndrome, anaphylaxis",
+      "clinical_consequence": "Severe skin necrosis, organ failure, death",
+      "alternative": "Non-sulfa antibiotics (doxycycline, azithromycin)",
+      "monitoring": "Skin exam daily, stop immediately if rash appears",
+      "onset_time": "Days to weeks",
+      "references": [
+        "FDA Sulfonamide Allergy Warning",
+        "Dermatol Clin 2011: Stevens-Johnson Syndrome"
+      ]
+    },
+    {
+      "drug_a": "sulfa_allergy",
+      "drug_b": "sulfasalazine",
+      "severity": "critical",
+      "mechanism": "Sulfonamide hypersensitivity (arylamine group)",
+      "mechanism_type": "contraindication",
+      "effect": "Stevens-Johnson syndrome, anaphylaxis",
+      "clinical_consequence": "Severe skin necrosis, organ failure, death",
+      "alternative": "Non-sulfa antibiotics (doxycycline, azithromycin)",
+      "monitoring": "Skin exam daily, stop immediately if rash appears",
+      "onset_time": "Days to weeks",
+      "references": [
+        "FDA Sulfonamide Allergy Warning",
+        "Dermatol Clin 2011: Stevens-Johnson Syndrome"
+      ]
+    },
+    {
+      "drug_a": "sulfa_allergy",
+      "drug_b": "sulfadiazine",
+      "severity": "critical",
+      "mechanism": "Sulfonamide hypersensitivity (arylamine group)",
+      "mechanism_type": "contraindication",
+      "effect": "Stevens-Johnson syndrome, anaphylaxis",
+      "clinical_consequence": "Severe skin necrosis, organ failure, death",
+      "alternative": "Non-sulfa antibiotics (doxycycline, azithromycin)",
+      "monitoring": "Skin exam daily, stop immediately if rash appears",
+      "onset_time": "Days to weeks",
+      "references": [
+        "FDA Sulfonamide Allergy Warning",
+        "Dermatol Clin 2011: Stevens-Johnson Syndrome"
+      ]
+    },
+    {
+      "drug_a": "levothyroxine",
+      "drug_b": "iron",
+      "severity": "moderate",
+      "mechanism": "Iron chelates thyroid hormone \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased thyroid hormone levels",
+      "clinical_consequence": "Hypothyroidism symptoms return (fatigue, weight gain)",
+      "alternative": "Separate doses by 4+ hours",
+      "monitoring": "TSH levels every 6-8 weeks",
+      "onset_time": "Weeks",
+      "references": [
+        "Thyroid 2014: Levothyroxine Drug Interactions",
+        "Endocr Pract 2013: Thyroid Medication Absorption"
+      ]
+    },
+    {
+      "drug_a": "levothyroxine",
+      "drug_b": "calcium",
+      "severity": "moderate",
+      "mechanism": "Calcium chelates thyroid hormone \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased thyroid hormone levels",
+      "clinical_consequence": "Hypothyroidism symptoms return (fatigue, weight gain)",
+      "alternative": "Separate doses by 4+ hours",
+      "monitoring": "TSH levels every 6-8 weeks",
+      "onset_time": "Weeks",
+      "references": [
+        "Thyroid 2014: Levothyroxine Drug Interactions",
+        "Endocr Pract 2013: Thyroid Medication Absorption"
+      ]
+    },
+    {
+      "drug_a": "levothyroxine",
+      "drug_b": "aluminum_antacid",
+      "severity": "moderate",
+      "mechanism": "Aluminum_antacid chelates thyroid hormone \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased thyroid hormone levels",
+      "clinical_consequence": "Hypothyroidism symptoms return (fatigue, weight gain)",
+      "alternative": "Separate doses by 4+ hours",
+      "monitoring": "TSH levels every 6-8 weeks",
+      "onset_time": "Weeks",
+      "references": [
+        "Thyroid 2014: Levothyroxine Drug Interactions",
+        "Endocr Pract 2013: Thyroid Medication Absorption"
+      ]
+    },
+    {
+      "drug_a": "grapefruit",
+      "drug_b": "amlodipine",
+      "severity": "moderate",
+      "mechanism": "Grapefruit inhibits CYP3A4 enzyme \u2192 increased drug levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Elevated amlodipine levels (up to 300%)",
+      "clinical_consequence": "Hypotension, muscle pain (statins), or excessive drug effect",
+      "alternative": "Avoid grapefruit or switch to non-CYP3A4 drug",
+      "monitoring": "Blood pressure, muscle symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Grapefruit Interaction Warning (2013)",
+        "Clin Pharmacol Ther 2008: Grapefruit-Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "grapefruit",
+      "drug_b": "simvastatin",
+      "severity": "moderate",
+      "mechanism": "Grapefruit inhibits CYP3A4 enzyme \u2192 increased drug levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Elevated simvastatin levels (up to 300%)",
+      "clinical_consequence": "Hypotension, muscle pain (statins), or excessive drug effect",
+      "alternative": "Avoid grapefruit or switch to non-CYP3A4 drug",
+      "monitoring": "Blood pressure, muscle symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Grapefruit Interaction Warning (2013)",
+        "Clin Pharmacol Ther 2008: Grapefruit-Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "grapefruit",
+      "drug_b": "atorvastatin",
+      "severity": "moderate",
+      "mechanism": "Grapefruit inhibits CYP3A4 enzyme \u2192 increased drug levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Elevated atorvastatin levels (up to 300%)",
+      "clinical_consequence": "Hypotension, muscle pain (statins), or excessive drug effect",
+      "alternative": "Avoid grapefruit or switch to non-CYP3A4 drug",
+      "monitoring": "Blood pressure, muscle symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Grapefruit Interaction Warning (2013)",
+        "Clin Pharmacol Ther 2008: Grapefruit-Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "grapefruit",
+      "drug_b": "sildenafil",
+      "severity": "moderate",
+      "mechanism": "Grapefruit inhibits CYP3A4 enzyme \u2192 increased drug levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Elevated sildenafil levels (up to 300%)",
+      "clinical_consequence": "Hypotension, muscle pain (statins), or excessive drug effect",
+      "alternative": "Avoid grapefruit or switch to non-CYP3A4 drug",
+      "monitoring": "Blood pressure, muscle symptoms",
+      "onset_time": "Hours",
+      "references": [
+        "FDA Grapefruit Interaction Warning (2013)",
+        "Clin Pharmacol Ther 2008: Grapefruit-Drug Interactions"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "apixaban",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "rivaroxaban",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "dabigatran",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "edoxaban",
+      "drug_b": "ibuprofen",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "edoxaban",
+      "drug_b": "naproxen",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "edoxaban",
+      "drug_b": "ketorolac",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "edoxaban",
+      "drug_b": "celecoxib",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "edoxaban",
+      "drug_b": "indomethacin",
+      "severity": "high",
+      "mechanism": "DOAC anticoagulation + NSAID platelet inhibition",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Increased bleeding risk",
+      "clinical_consequence": "GI bleeding, intracranial hemorrhage",
+      "alternative": "Acetaminophen for pain",
+      "monitoring": "CBC, signs of bleeding",
+      "onset_time": "Days",
+      "references": [
+        "Chest 2018: DOAC Bleeding Risks"
+      ]
+    },
+    {
+      "drug_a": "empagliflozin",
+      "drug_b": "furosemide",
+      "severity": "moderate",
+      "mechanism": "Additive volume depletion (both cause water loss)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hypotension, dizziness, acute kidney injury",
+      "clinical_consequence": "Falls, syncope, AKI",
+      "alternative": "Monitor volume status closely",
+      "monitoring": "Blood pressure, creatinine, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "ADA Diabetes Guidelines 2024"
+      ]
+    },
+    {
+      "drug_a": "empagliflozin",
+      "drug_b": "hydrochlorothiazide",
+      "severity": "moderate",
+      "mechanism": "Additive volume depletion (both cause water loss)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hypotension, dizziness, acute kidney injury",
+      "clinical_consequence": "Falls, syncope, AKI",
+      "alternative": "Monitor volume status closely",
+      "monitoring": "Blood pressure, creatinine, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "ADA Diabetes Guidelines 2024"
+      ]
+    },
+    {
+      "drug_a": "empagliflozin",
+      "drug_b": "chlorthalidone",
+      "severity": "moderate",
+      "mechanism": "Additive volume depletion (both cause water loss)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hypotension, dizziness, acute kidney injury",
+      "clinical_consequence": "Falls, syncope, AKI",
+      "alternative": "Monitor volume status closely",
+      "monitoring": "Blood pressure, creatinine, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "ADA Diabetes Guidelines 2024"
+      ]
+    },
+    {
+      "drug_a": "dapagliflozin",
+      "drug_b": "furosemide",
+      "severity": "moderate",
+      "mechanism": "Additive volume depletion (both cause water loss)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hypotension, dizziness, acute kidney injury",
+      "clinical_consequence": "Falls, syncope, AKI",
+      "alternative": "Monitor volume status closely",
+      "monitoring": "Blood pressure, creatinine, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "ADA Diabetes Guidelines 2024"
+      ]
+    },
+    {
+      "drug_a": "dapagliflozin",
+      "drug_b": "hydrochlorothiazide",
+      "severity": "moderate",
+      "mechanism": "Additive volume depletion (both cause water loss)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hypotension, dizziness, acute kidney injury",
+      "clinical_consequence": "Falls, syncope, AKI",
+      "alternative": "Monitor volume status closely",
+      "monitoring": "Blood pressure, creatinine, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "ADA Diabetes Guidelines 2024"
+      ]
+    },
+    {
+      "drug_a": "dapagliflozin",
+      "drug_b": "chlorthalidone",
+      "severity": "moderate",
+      "mechanism": "Additive volume depletion (both cause water loss)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hypotension, dizziness, acute kidney injury",
+      "clinical_consequence": "Falls, syncope, AKI",
+      "alternative": "Monitor volume status closely",
+      "monitoring": "Blood pressure, creatinine, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "ADA Diabetes Guidelines 2024"
+      ]
+    },
+    {
+      "drug_a": "canagliflozin",
+      "drug_b": "furosemide",
+      "severity": "moderate",
+      "mechanism": "Additive volume depletion (both cause water loss)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hypotension, dizziness, acute kidney injury",
+      "clinical_consequence": "Falls, syncope, AKI",
+      "alternative": "Monitor volume status closely",
+      "monitoring": "Blood pressure, creatinine, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "ADA Diabetes Guidelines 2024"
+      ]
+    },
+    {
+      "drug_a": "canagliflozin",
+      "drug_b": "hydrochlorothiazide",
+      "severity": "moderate",
+      "mechanism": "Additive volume depletion (both cause water loss)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hypotension, dizziness, acute kidney injury",
+      "clinical_consequence": "Falls, syncope, AKI",
+      "alternative": "Monitor volume status closely",
+      "monitoring": "Blood pressure, creatinine, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "ADA Diabetes Guidelines 2024"
+      ]
+    },
+    {
+      "drug_a": "canagliflozin",
+      "drug_b": "chlorthalidone",
+      "severity": "moderate",
+      "mechanism": "Additive volume depletion (both cause water loss)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hypotension, dizziness, acute kidney injury",
+      "clinical_consequence": "Falls, syncope, AKI",
+      "alternative": "Monitor volume status closely",
+      "monitoring": "Blood pressure, creatinine, electrolytes",
+      "onset_time": "Days",
+      "references": [
+        "ADA Diabetes Guidelines 2024"
+      ]
+    },
+    {
+      "drug_a": "diltiazem",
+      "drug_b": "metoprolol",
+      "severity": "high",
+      "mechanism": "Additive negative chronotropic effects (both slow heart rate)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bradycardia, heart block",
+      "clinical_consequence": "Syncope, cardiac arrest",
+      "alternative": "Use dihydropyridine CCB (amlodipine) instead",
+      "monitoring": "Heart rate, ECG, blood pressure",
+      "onset_time": "Hours to days",
+      "references": [
+        "ACC/AHA Hypertension Guidelines 2017"
+      ]
+    },
+    {
+      "drug_a": "diltiazem",
+      "drug_b": "atenolol",
+      "severity": "high",
+      "mechanism": "Additive negative chronotropic effects (both slow heart rate)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bradycardia, heart block",
+      "clinical_consequence": "Syncope, cardiac arrest",
+      "alternative": "Use dihydropyridine CCB (amlodipine) instead",
+      "monitoring": "Heart rate, ECG, blood pressure",
+      "onset_time": "Hours to days",
+      "references": [
+        "ACC/AHA Hypertension Guidelines 2017"
+      ]
+    },
+    {
+      "drug_a": "diltiazem",
+      "drug_b": "carvedilol",
+      "severity": "high",
+      "mechanism": "Additive negative chronotropic effects (both slow heart rate)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bradycardia, heart block",
+      "clinical_consequence": "Syncope, cardiac arrest",
+      "alternative": "Use dihydropyridine CCB (amlodipine) instead",
+      "monitoring": "Heart rate, ECG, blood pressure",
+      "onset_time": "Hours to days",
+      "references": [
+        "ACC/AHA Hypertension Guidelines 2017"
+      ]
+    },
+    {
+      "drug_a": "diltiazem",
+      "drug_b": "bisoprolol",
+      "severity": "high",
+      "mechanism": "Additive negative chronotropic effects (both slow heart rate)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bradycardia, heart block",
+      "clinical_consequence": "Syncope, cardiac arrest",
+      "alternative": "Use dihydropyridine CCB (amlodipine) instead",
+      "monitoring": "Heart rate, ECG, blood pressure",
+      "onset_time": "Hours to days",
+      "references": [
+        "ACC/AHA Hypertension Guidelines 2017"
+      ]
+    },
+    {
+      "drug_a": "verapamil",
+      "drug_b": "metoprolol",
+      "severity": "high",
+      "mechanism": "Additive negative chronotropic effects (both slow heart rate)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bradycardia, heart block",
+      "clinical_consequence": "Syncope, cardiac arrest",
+      "alternative": "Use dihydropyridine CCB (amlodipine) instead",
+      "monitoring": "Heart rate, ECG, blood pressure",
+      "onset_time": "Hours to days",
+      "references": [
+        "ACC/AHA Hypertension Guidelines 2017"
+      ]
+    },
+    {
+      "drug_a": "verapamil",
+      "drug_b": "atenolol",
+      "severity": "high",
+      "mechanism": "Additive negative chronotropic effects (both slow heart rate)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bradycardia, heart block",
+      "clinical_consequence": "Syncope, cardiac arrest",
+      "alternative": "Use dihydropyridine CCB (amlodipine) instead",
+      "monitoring": "Heart rate, ECG, blood pressure",
+      "onset_time": "Hours to days",
+      "references": [
+        "ACC/AHA Hypertension Guidelines 2017"
+      ]
+    },
+    {
+      "drug_a": "verapamil",
+      "drug_b": "carvedilol",
+      "severity": "high",
+      "mechanism": "Additive negative chronotropic effects (both slow heart rate)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bradycardia, heart block",
+      "clinical_consequence": "Syncope, cardiac arrest",
+      "alternative": "Use dihydropyridine CCB (amlodipine) instead",
+      "monitoring": "Heart rate, ECG, blood pressure",
+      "onset_time": "Hours to days",
+      "references": [
+        "ACC/AHA Hypertension Guidelines 2017"
+      ]
+    },
+    {
+      "drug_a": "verapamil",
+      "drug_b": "bisoprolol",
+      "severity": "high",
+      "mechanism": "Additive negative chronotropic effects (both slow heart rate)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Severe bradycardia, heart block",
+      "clinical_consequence": "Syncope, cardiac arrest",
+      "alternative": "Use dihydropyridine CCB (amlodipine) instead",
+      "monitoring": "Heart rate, ECG, blood pressure",
+      "onset_time": "Hours to days",
+      "references": [
+        "ACC/AHA Hypertension Guidelines 2017"
+      ]
+    },
+    {
+      "drug_a": "losartan",
+      "drug_b": "lisinopril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "losartan",
+      "drug_b": "enalapril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "losartan",
+      "drug_b": "ramipril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "losartan",
+      "drug_b": "benazepril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "valsartan",
+      "drug_b": "lisinopril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "valsartan",
+      "drug_b": "enalapril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "valsartan",
+      "drug_b": "ramipril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "valsartan",
+      "drug_b": "benazepril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "irbesartan",
+      "drug_b": "lisinopril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "irbesartan",
+      "drug_b": "enalapril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "irbesartan",
+      "drug_b": "ramipril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "irbesartan",
+      "drug_b": "benazepril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "candesartan",
+      "drug_b": "lisinopril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "candesartan",
+      "drug_b": "enalapril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "candesartan",
+      "drug_b": "ramipril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "candesartan",
+      "drug_b": "benazepril",
+      "severity": "high",
+      "mechanism": "Dual RAAS blockade (both block renin-angiotensin system)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Hyperkalemia, hypotension, acute kidney injury",
+      "clinical_consequence": "Renal failure, cardiac arrhythmias",
+      "alternative": "Use one or the other, not both",
+      "monitoring": "Potassium, creatinine, blood pressure",
+      "onset_time": "Days to weeks",
+      "references": [
+        "ONTARGET Trial 2008: Dual RAAS Blockade Harm"
+      ]
+    },
+    {
+      "drug_a": "alprazolam",
+      "drug_b": "oxycodone",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "alprazolam",
+      "drug_b": "hydrocodone",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "alprazolam",
+      "drug_b": "morphine",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "alprazolam",
+      "drug_b": "fentanyl",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "alprazolam",
+      "drug_b": "tramadol",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "lorazepam",
+      "drug_b": "oxycodone",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "lorazepam",
+      "drug_b": "hydrocodone",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "lorazepam",
+      "drug_b": "morphine",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "lorazepam",
+      "drug_b": "fentanyl",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "lorazepam",
+      "drug_b": "tramadol",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "clonazepam",
+      "drug_b": "oxycodone",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "clonazepam",
+      "drug_b": "hydrocodone",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "clonazepam",
+      "drug_b": "morphine",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "clonazepam",
+      "drug_b": "fentanyl",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "clonazepam",
+      "drug_b": "tramadol",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "diazepam",
+      "drug_b": "oxycodone",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "diazepam",
+      "drug_b": "hydrocodone",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "diazepam",
+      "drug_b": "morphine",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "diazepam",
+      "drug_b": "fentanyl",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "diazepam",
+      "drug_b": "tramadol",
+      "severity": "critical",
+      "mechanism": "Additive CNS depression (both depress breathing)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Respiratory depression, oversedation",
+      "clinical_consequence": "Respiratory arrest, death",
+      "alternative": "Avoid combination or use lowest doses with monitoring",
+      "monitoring": "Respiratory rate, oxygen saturation, mental status",
+      "onset_time": "Minutes to hours",
+      "references": [
+        "FDA Black Box Warning: Benzodiazepine-Opioid Combination (2016)",
+        "MMWR 2018: Benzodiazepine-Opioid Deaths"
+      ]
+    },
+    {
+      "drug_a": "fluoxetine",
+      "drug_b": "tramadol",
+      "severity": "high",
+      "mechanism": "Both increase serotonin (SSRI + tramadol serotonin activity)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, agitation, seizures",
+      "alternative": "Use non-serotonergic pain medication",
+      "monitoring": "Mental status, vital signs, reflexes",
+      "onset_time": "Hours",
+      "references": [
+        "Ann Pharmacother 2010: Tramadol-SSRI Serotonin Syndrome"
+      ]
+    },
+    {
+      "drug_a": "sertraline",
+      "drug_b": "tramadol",
+      "severity": "high",
+      "mechanism": "Both increase serotonin (SSRI + tramadol serotonin activity)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, agitation, seizures",
+      "alternative": "Use non-serotonergic pain medication",
+      "monitoring": "Mental status, vital signs, reflexes",
+      "onset_time": "Hours",
+      "references": [
+        "Ann Pharmacother 2010: Tramadol-SSRI Serotonin Syndrome"
+      ]
+    },
+    {
+      "drug_a": "paroxetine",
+      "drug_b": "tramadol",
+      "severity": "high",
+      "mechanism": "Both increase serotonin (SSRI + tramadol serotonin activity)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, agitation, seizures",
+      "alternative": "Use non-serotonergic pain medication",
+      "monitoring": "Mental status, vital signs, reflexes",
+      "onset_time": "Hours",
+      "references": [
+        "Ann Pharmacother 2010: Tramadol-SSRI Serotonin Syndrome"
+      ]
+    },
+    {
+      "drug_a": "escitalopram",
+      "drug_b": "tramadol",
+      "severity": "high",
+      "mechanism": "Both increase serotonin (SSRI + tramadol serotonin activity)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, agitation, seizures",
+      "alternative": "Use non-serotonergic pain medication",
+      "monitoring": "Mental status, vital signs, reflexes",
+      "onset_time": "Hours",
+      "references": [
+        "Ann Pharmacother 2010: Tramadol-SSRI Serotonin Syndrome"
+      ]
+    },
+    {
+      "drug_a": "citalopram",
+      "drug_b": "tramadol",
+      "severity": "high",
+      "mechanism": "Both increase serotonin (SSRI + tramadol serotonin activity)",
+      "mechanism_type": "pharmacodynamic",
+      "effect": "Serotonin syndrome",
+      "clinical_consequence": "Hyperthermia, agitation, seizures",
+      "alternative": "Use non-serotonergic pain medication",
+      "monitoring": "Mental status, vital signs, reflexes",
+      "onset_time": "Hours",
+      "references": [
+        "Ann Pharmacother 2010: Tramadol-SSRI Serotonin Syndrome"
+      ]
+    },
+    {
+      "drug_a": "ciprofloxacin",
+      "drug_b": "calcium_carbonate",
+      "severity": "moderate",
+      "mechanism": "Antacids chelate fluoroquinolones \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antibiotic levels",
+      "clinical_consequence": "Treatment failure, infection persistence",
+      "alternative": "Separate doses by 2-4 hours",
+      "monitoring": "Clinical response to infection",
+      "onset_time": "Hours",
+      "references": [
+        "Clin Pharmacokinet 2005: Fluoroquinolone Interactions"
+      ]
+    },
+    {
+      "drug_a": "ciprofloxacin",
+      "drug_b": "aluminum_hydroxide",
+      "severity": "moderate",
+      "mechanism": "Antacids chelate fluoroquinolones \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antibiotic levels",
+      "clinical_consequence": "Treatment failure, infection persistence",
+      "alternative": "Separate doses by 2-4 hours",
+      "monitoring": "Clinical response to infection",
+      "onset_time": "Hours",
+      "references": [
+        "Clin Pharmacokinet 2005: Fluoroquinolone Interactions"
+      ]
+    },
+    {
+      "drug_a": "ciprofloxacin",
+      "drug_b": "magnesium_hydroxide",
+      "severity": "moderate",
+      "mechanism": "Antacids chelate fluoroquinolones \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antibiotic levels",
+      "clinical_consequence": "Treatment failure, infection persistence",
+      "alternative": "Separate doses by 2-4 hours",
+      "monitoring": "Clinical response to infection",
+      "onset_time": "Hours",
+      "references": [
+        "Clin Pharmacokinet 2005: Fluoroquinolone Interactions"
+      ]
+    },
+    {
+      "drug_a": "levofloxacin",
+      "drug_b": "calcium_carbonate",
+      "severity": "moderate",
+      "mechanism": "Antacids chelate fluoroquinolones \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antibiotic levels",
+      "clinical_consequence": "Treatment failure, infection persistence",
+      "alternative": "Separate doses by 2-4 hours",
+      "monitoring": "Clinical response to infection",
+      "onset_time": "Hours",
+      "references": [
+        "Clin Pharmacokinet 2005: Fluoroquinolone Interactions"
+      ]
+    },
+    {
+      "drug_a": "levofloxacin",
+      "drug_b": "aluminum_hydroxide",
+      "severity": "moderate",
+      "mechanism": "Antacids chelate fluoroquinolones \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antibiotic levels",
+      "clinical_consequence": "Treatment failure, infection persistence",
+      "alternative": "Separate doses by 2-4 hours",
+      "monitoring": "Clinical response to infection",
+      "onset_time": "Hours",
+      "references": [
+        "Clin Pharmacokinet 2005: Fluoroquinolone Interactions"
+      ]
+    },
+    {
+      "drug_a": "levofloxacin",
+      "drug_b": "magnesium_hydroxide",
+      "severity": "moderate",
+      "mechanism": "Antacids chelate fluoroquinolones \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antibiotic levels",
+      "clinical_consequence": "Treatment failure, infection persistence",
+      "alternative": "Separate doses by 2-4 hours",
+      "monitoring": "Clinical response to infection",
+      "onset_time": "Hours",
+      "references": [
+        "Clin Pharmacokinet 2005: Fluoroquinolone Interactions"
+      ]
+    },
+    {
+      "drug_a": "moxifloxacin",
+      "drug_b": "calcium_carbonate",
+      "severity": "moderate",
+      "mechanism": "Antacids chelate fluoroquinolones \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antibiotic levels",
+      "clinical_consequence": "Treatment failure, infection persistence",
+      "alternative": "Separate doses by 2-4 hours",
+      "monitoring": "Clinical response to infection",
+      "onset_time": "Hours",
+      "references": [
+        "Clin Pharmacokinet 2005: Fluoroquinolone Interactions"
+      ]
+    },
+    {
+      "drug_a": "moxifloxacin",
+      "drug_b": "aluminum_hydroxide",
+      "severity": "moderate",
+      "mechanism": "Antacids chelate fluoroquinolones \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antibiotic levels",
+      "clinical_consequence": "Treatment failure, infection persistence",
+      "alternative": "Separate doses by 2-4 hours",
+      "monitoring": "Clinical response to infection",
+      "onset_time": "Hours",
+      "references": [
+        "Clin Pharmacokinet 2005: Fluoroquinolone Interactions"
+      ]
+    },
+    {
+      "drug_a": "moxifloxacin",
+      "drug_b": "magnesium_hydroxide",
+      "severity": "moderate",
+      "mechanism": "Antacids chelate fluoroquinolones \u2192 reduced absorption",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Decreased antibiotic levels",
+      "clinical_consequence": "Treatment failure, infection persistence",
+      "alternative": "Separate doses by 2-4 hours",
+      "monitoring": "Clinical response to infection",
+      "onset_time": "Hours",
+      "references": [
+        "Clin Pharmacokinet 2005: Fluoroquinolone Interactions"
+      ]
+    },
+    {
+      "drug_a": "clarithromycin",
+      "drug_b": "simvastatin",
+      "severity": "high",
+      "mechanism": "Macrolide inhibits CYP3A4 \u2192 increased statin levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy, rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, kidney failure",
+      "alternative": "Use azithromycin (no CYP3A4 inhibition) or pravastatin/rosuvastatin",
+      "monitoring": "Muscle pain, CK levels, renal function",
+      "onset_time": "Days to weeks",
+      "references": [
+        "JAMA 2013: Macrolide-Statin Myopathy Risk"
+      ]
+    },
+    {
+      "drug_a": "clarithromycin",
+      "drug_b": "atorvastatin",
+      "severity": "high",
+      "mechanism": "Macrolide inhibits CYP3A4 \u2192 increased statin levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy, rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, kidney failure",
+      "alternative": "Use azithromycin (no CYP3A4 inhibition) or pravastatin/rosuvastatin",
+      "monitoring": "Muscle pain, CK levels, renal function",
+      "onset_time": "Days to weeks",
+      "references": [
+        "JAMA 2013: Macrolide-Statin Myopathy Risk"
+      ]
+    },
+    {
+      "drug_a": "clarithromycin",
+      "drug_b": "lovastatin",
+      "severity": "high",
+      "mechanism": "Macrolide inhibits CYP3A4 \u2192 increased statin levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy, rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, kidney failure",
+      "alternative": "Use azithromycin (no CYP3A4 inhibition) or pravastatin/rosuvastatin",
+      "monitoring": "Muscle pain, CK levels, renal function",
+      "onset_time": "Days to weeks",
+      "references": [
+        "JAMA 2013: Macrolide-Statin Myopathy Risk"
+      ]
+    },
+    {
+      "drug_a": "erythromycin",
+      "drug_b": "simvastatin",
+      "severity": "high",
+      "mechanism": "Macrolide inhibits CYP3A4 \u2192 increased statin levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy, rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, kidney failure",
+      "alternative": "Use azithromycin (no CYP3A4 inhibition) or pravastatin/rosuvastatin",
+      "monitoring": "Muscle pain, CK levels, renal function",
+      "onset_time": "Days to weeks",
+      "references": [
+        "JAMA 2013: Macrolide-Statin Myopathy Risk"
+      ]
+    },
+    {
+      "drug_a": "erythromycin",
+      "drug_b": "atorvastatin",
+      "severity": "high",
+      "mechanism": "Macrolide inhibits CYP3A4 \u2192 increased statin levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy, rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, kidney failure",
+      "alternative": "Use azithromycin (no CYP3A4 inhibition) or pravastatin/rosuvastatin",
+      "monitoring": "Muscle pain, CK levels, renal function",
+      "onset_time": "Days to weeks",
+      "references": [
+        "JAMA 2013: Macrolide-Statin Myopathy Risk"
+      ]
+    },
+    {
+      "drug_a": "erythromycin",
+      "drug_b": "lovastatin",
+      "severity": "high",
+      "mechanism": "Macrolide inhibits CYP3A4 \u2192 increased statin levels",
+      "mechanism_type": "pharmacokinetic",
+      "effect": "Myopathy, rhabdomyolysis",
+      "clinical_consequence": "Muscle breakdown, kidney failure",
+      "alternative": "Use azithromycin (no CYP3A4 inhibition) or pravastatin/rosuvastatin",
+      "monitoring": "Muscle pain, CK levels, renal function",
+      "onset_time": "Days to weeks",
+      "references": [
+        "JAMA 2013: Macrolide-Statin Myopathy Risk"
+      ]
+    }
+  ]
+}
