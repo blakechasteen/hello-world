@@ -28,28 +28,95 @@ next_state: List[float]
 
 ---
 
-## ⚠️ Core Issue Identified
-
-### Circular Import in config.py
+### 2. Disabled policy import in config.py
 
 **File**: `HoloLoom/config.py` line 15
 
-**Problem**:
+**Change**:
 ```python
+# Before
 try:
     from HoloLoom.policy.unified import BanditStrategy as PolicyBanditStrategy
     _POLICY_AVAILABLE = True
 except ImportError:
     _POLICY_AVAILABLE = False
-```
 
-**Fix Applied**:
-```python
+# After
 # DISABLED: Causes circular import / timeout issues
 _POLICY_AVAILABLE = False  # Disabled to fix import timeout
 ```
 
-**Status**: ⚠️ Fixed but Config still hangs (deeper issue exists)
+**Result**: Removed circular dependency but still hangs
+
+---
+
+### 3. Made Config import lazy in hololoom.py
+
+**File**: `HoloLoom/hololoom.py` lines 29-36, 95-96
+
+**Change**:
+```python
+# Before (module level):
+from HoloLoom.config import Config
+
+# After (lazy import):
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from HoloLoom.config import Config
+
+def __init__(self, config: Optional['Config'] = None, ...):
+    from HoloLoom.config import Config  # Lazy import
+    self.config = config or Config.fast()
+```
+
+**Result**: Breaks circular dependency `__init__.py → hololoom.py → config.py`
+
+---
+
+### 4. Disabled MemoryStore import in protocols/__init__.py
+
+**File**: `HoloLoom/protocols/__init__.py` line 66
+
+**Change**:
+```python
+# Before
+from HoloLoom.memory.protocol import MemoryStore
+
+# After
+# MemoryStore is in memory.protocol - DISABLED to avoid circular imports
+# from HoloLoom.memory.protocol import MemoryStore
+```
+
+**Result**: Breaks circular dependency `protocols → memory.protocol → protocols`
+
+**Status**: ⚠️ Still investigating - protocols.types hangs despite only importing stdlib
+
+---
+
+## ⚠️ Core Issue Identified - Multiple Circular Import Chains
+
+### Circular Import Chain Discovered:
+
+```
+HoloLoom/__init__.py (line 34)
+  → from .hololoom import HoloLoom
+    → HoloLoom/hololoom.py (line 33) ✅ FIXED with lazy import
+      → from HoloLoom.config import Config
+
+HoloLoom/__init__.py (line 35)
+  → from .memory.protocol import Memory
+    → HoloLoom/memory/protocol.py (line 113)
+      → from HoloLoom.protocols import ...
+        → HoloLoom/protocols/__init__.py (line 66) ✅ FIXED
+          → from HoloLoom.memory.protocol import MemoryStore (CIRCULAR!)
+
+HoloLoom/protocols/__init__.py (line 37)
+  → from .types import ComplexityLevel
+    → HoloLoom/protocols/types.py
+      → ⚠️ HANGS despite only importing stdlib (enum, typing, dataclasses, time)
+```
+
+**Hypothesis**: The issue is not just circular imports, but **deferred import execution** combined with Python's import lock. When modules are imported through packages, Python holds an import lock that can cause timeouts even on stdlib imports if the import chain is complex enough.
 
 ---
 

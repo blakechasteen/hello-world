@@ -1,0 +1,6 @@
+{
+  "homeserver": "https://matrix.org",
+  "user": "@promptlybot:matrix.org",
+  "access_token": "mat_7vW6OndMmmSEQobafHINBkfbcUKALC_2JhmC3",
+  "auto_join_rooms": true
+}

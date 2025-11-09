@@ -5,7 +5,7 @@ Response Formatter for Promptly Matrix Bot
 Formats Promptly Core results as rich Matrix messages.
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import logging
 
 logger = logging.getLogger(__name__)

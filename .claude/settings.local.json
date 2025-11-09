@@ -61,7 +61,9 @@
       "Bash(.venv/Scripts/python.exe -m coverage run -m pytest:*)",
       "Bash(docker exec:*)",
       "Bash(.venv/Scripts/pip install:*)",
-      "Bash(PYTHONPATH=\"c:/Users/blake/OneDrive/Documents/localist/backend:c:/Users/blake/OneDrive/Documents/mythRL\" PYTHONIOENCODING=\"utf-8\" .venv/Scripts/python.exe:*)"
+      "Bash(PYTHONPATH=\"c:/Users/blake/OneDrive/Documents/localist/backend:c:/Users/blake/OneDrive/Documents/mythRL\" PYTHONIOENCODING=\"utf-8\" .venv/Scripts/python.exe:*)",
+      "Bash(PYTHONPATH=.. timeout 5 python:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []

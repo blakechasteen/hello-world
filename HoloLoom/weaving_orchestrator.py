@@ -65,6 +65,9 @@ from HoloLoom.memory.graph import KG  # Yarn Graph for thread storage
 from HoloLoom.policy.unified import create_policy
 from HoloLoom.alignment.safety_guardrails import create_guardrails, SafetyGuardrails
 
+# Physics-based routing (Phase 1: Gradient Flow)
+from HoloLoom.routing import ToolRouter, ToolConfig
+
 # Performance optimizations
 from HoloLoom.performance.cache import QueryCache
 
@@ -693,6 +696,26 @@ class WeavingOrchestrator:
 
         # 4. Tool Executor
         self.tool_executor = ToolExecutor()
+
+        # 4a. Gradient Flow Router (Phase 1: Physics-based tool selection)
+        # Uses gradient descent to route queries to optimal tools based on cost/quality/latency
+        try:
+            tool_configs = [
+                ToolConfig("answer", cost=0.3, quality=0.8, latency=100),
+                ToolConfig("search", cost=0.5, quality=0.7, latency=150),
+                ToolConfig("notion_write", cost=0.6, quality=0.75, latency=120),
+                ToolConfig("calc", cost=0.1, quality=0.9, latency=50)
+            ]
+            self.gradient_router = ToolRouter(
+                tools=tool_configs,
+                cost_weight=0.3,
+                quality_weight=0.5,  # Favor quality
+                latency_weight=0.2
+            )
+            self.logger.info("Gradient flow router initialized (Phase 1 integration)")
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize gradient flow router: {e}")
+            self.gradient_router = None
 
         # 5. Retriever (for context)
         # Only create traditional retriever if using shards (legacy path)
@@ -1685,12 +1708,34 @@ class WeavingOrchestrator:
                 for tool in self.tool_executor.tools
             ])
 
-            # Convergence Engine collapse
+            # Phase 1 Gradient Flow: Physics-based tool selection (optional enhancement)
+            gradient_decision = None
+            if self.gradient_router:
+                try:
+                    gradient_decision = await self.gradient_router.select_tool(query.text)
+                    self.logger.info(f"  [7a] Gradient flow suggests: {gradient_decision.target} (loss={gradient_decision.loss:.3f})")
+                except Exception as e:
+                    self.logger.warning(f"Gradient flow routing failed: {e}")
+
+            # Convergence Engine collapse (with optional gradient flow blending)
             convergence = ConvergenceEngine(
                 tools=self.tool_executor.tools,
                 default_strategy=self._map_bandit_to_collapse(self.cfg.bandit_strategy),
                 epsilon=self.cfg.epsilon
             )
+
+            # If gradient flow available, blend with neural predictions
+            if gradient_decision:
+                # Blend gradient flow with neural (70% neural, 30% gradient flow)
+                gradient_boost = {gradient_decision.target: 0.3}
+                for i, tool in enumerate(self.tool_executor.tools):
+                    if tool == gradient_decision.target:
+                        neural_probs[i] = 0.7 * neural_probs[i] + 0.3
+                    else:
+                        neural_probs[i] = 0.7 * neural_probs[i]
+                # Renormalize
+                neural_probs = neural_probs / neural_probs.sum()
+                self.logger.debug(f"  [7b] Blended neural + gradient flow probabilities")
 
             collapse_result = convergence.collapse(neural_probs)
 

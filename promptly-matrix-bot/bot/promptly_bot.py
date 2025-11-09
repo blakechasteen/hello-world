@@ -60,7 +60,10 @@ class PromptlyBot:
         """
         self.homeserver = homeserver
         self.user_id = user_id
-        self.client = AsyncClient(homeserver, user_id, device_id=device_id)
+
+        # Extract localpart from full user_id (@username:server -> username)
+        localpart = user_id.split(':')[0].lstrip('@')
+        self.client = AsyncClient(homeserver, localpart, device_id=device_id)
 
         if access_token:
             self.client.access_token = access_token
@@ -98,7 +101,7 @@ class PromptlyBot:
             True if login successful, False otherwise
         """
         try:
-            response = await self.client.login(password)
+            response = await self.client.login(password, device_name="Promptly Bot")
 
             if isinstance(response, LoginResponse):
                 logger.info(f"Logged in as {self.user_id}")

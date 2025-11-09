@@ -62,8 +62,9 @@ from .core import (
     PatternDetector,
 )
 
-# MemoryStore is in memory.protocol to avoid circular imports
-from HoloLoom.memory.protocol import MemoryStore
+# MemoryStore is in memory.protocol - DISABLED to avoid circular imports
+# from HoloLoom.memory.protocol import MemoryStore
+# Import lazily where needed instead
 
 # ============================================================================
 # Import Shuttle Protocols (from shuttle.py)
@@ -106,7 +107,7 @@ except ImportError:
 # ============================================================================
 
 # For backward compatibility with code expecting different names
-MemoryBackendProtocol = MemoryStore
+# MemoryBackendProtocol = MemoryStore  # Disabled to avoid circular import
 ToolExecutionProtocol = ToolExecutor
 
 
@@ -126,7 +127,7 @@ __all__ = [
     'PolicyEngine',
 
     # ===== Memory Protocols =====
-    'MemoryStore',
+    # 'MemoryStore',  # Disabled to avoid circular import - import from HoloLoom.memory.protocol directly
     'MemoryNavigator',
     'PatternDetector',
 
@@ -150,7 +151,7 @@ __all__ = [
     'SpringActivationMetadata',
 
     # ===== Compatibility Aliases =====
-    'MemoryBackendProtocol',
+    # 'MemoryBackendProtocol',  # Disabled to avoid circular import
     'ToolExecutionProtocol',
 ]
 
