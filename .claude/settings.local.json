@@ -63,7 +63,9 @@
       "Bash(.venv/Scripts/pip install:*)",
       "Bash(PYTHONPATH=\"c:/Users/blake/OneDrive/Documents/localist/backend:c:/Users/blake/OneDrive/Documents/mythRL\" PYTHONIOENCODING=\"utf-8\" .venv/Scripts/python.exe:*)",
       "Bash(PYTHONPATH=.. timeout 5 python:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(PYTHONPATH=. timeout 45 python:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []

@@ -151,8 +151,12 @@ class DSPyHoloLoom:
 
         Args:
             config: HoloLoom configuration
-            lm_model: Language model to use (OpenAI, Anthropic, etc.)
-            lm_api_key: API key (or use environment variable)
+            lm_model: Language model to use. Supported formats:
+                - "ollama/llama3.2:3b" - Local Ollama (free, private)
+                - "openai/gpt-4o-mini" - OpenAI (API key required)
+                - "anthropic/claude-3-sonnet" - Anthropic (API key required)
+            lm_api_key: API key (or use environment variable OPENAI_API_KEY/ANTHROPIC_API_KEY)
+                Not required for Ollama (uses OLLAMA_HOST env var, default: http://localhost:11434)
         """
         if not DSPY_AVAILABLE:
             raise ImportError("DSPy not available - install with: pip install dspy-ai")
@@ -160,7 +164,17 @@ class DSPyHoloLoom:
         self.config = config or Config.fused()
 
         # Initialize DSPy language model (DSPy 3.0+ uses LM class)
-        if lm_model.startswith("openai/"):
+        if lm_model.startswith("ollama/"):
+            # Ollama local inference: ollama/llama3.2:3b
+            model_name = lm_model.split("/", 1)[1]
+            ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+            self.lm = dspy.LM(
+                model=f"ollama/{model_name}",
+                api_base=ollama_host,
+                max_tokens=4096
+            )
+            logging.info(f"Using Ollama model: {model_name} at {ollama_host}")
+        elif lm_model.startswith("openai/"):
             model_name = lm_model.split("/", 1)[1]
             self.lm = dspy.LM(model=model_name, api_key=lm_api_key, max_tokens=4096)
         elif lm_model.startswith("anthropic/"):

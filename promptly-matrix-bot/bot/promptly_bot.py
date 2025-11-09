@@ -188,7 +188,7 @@ class PromptlyBot:
             event: Message event
         """
         # Ignore own messages
-        if event.sender == self.client.user_id:
+        if event.sender == self.client.user_id or event.sender == self.user_id:
             return
 
         # Ignore old messages (from before bot started)
@@ -229,8 +229,13 @@ class PromptlyBot:
         Returns:
             True if bot is mentioned, False otherwise
         """
-        # Check for @promptly mention (case insensitive)
-        return "@promptly" in message.lower()
+        # Check for @promptly, @promptlybot, or !command (case insensitive)
+        msg_lower = message.lower()
+        return (
+            "@promptly" in msg_lower or
+            "@promptlybot" in msg_lower or
+            msg_lower.startswith("!")
+        )
 
     async def handle_command(
         self,
@@ -255,10 +260,8 @@ class PromptlyBot:
         command = parser.parse(message)
 
         if not command:
-            return {
-                "body": "⚠️ Could not parse command.\n\nTry `@promptly help` for usage.",
-                "html": "<p>⚠️ Could not parse command.</p><p>Try <code>@promptly help</code> for usage.</p>"
-            }
+            # No structured command found - use conversational AI
+            return await self.cmd_chat(message, room)
 
         cmd_type = command['type']
         logger.info(f"Executing command: {cmd_type}")
@@ -349,10 +352,62 @@ Run a workflow:
         examples = command.get('examples', [])
 
         if not examples:
-            return {
-                "body": "❌ No examples provided.\n\nUsage:\n```\n@promptly optimize\nTask: Your task description\nExamples: [\n  {\"input\": \"example 1\", \"output\": \"result 1\"},\n  {\"input\": \"example 2\", \"output\": \"result 2\"}\n]\n```",
-                "html": "<p>❌ No examples provided.</p><p>See <code>@promptly help</code> for usage.</p>"
-            }
+            body = """❌ No examples provided.
+
+**Usage Format:**
+```
+@promptly optimize
+Task: Your task description here
+Examples: [
+  {"input": "example question 1", "output": "example answer 1"},
+  {"input": "example question 2", "output": "example answer 2"},
+  {"input": "example question 3", "output": "example answer 3"}
+]
+```
+
+**Example - Pitching Ouroboros:**
+```
+@promptly optimize
+Task: Write a compelling pitch for Ouroboros - Adverse Drug Events recognition software
+Examples: [
+  {"input": "What problem does it solve?", "output": "Ouroboros detects adverse drug events in clinical data using advanced NLP"},
+  {"input": "Who is it for?", "output": "Healthcare providers, pharma companies, and regulatory agencies"},
+  {"input": "What makes it unique?", "output": "Real-time monitoring with 95% accuracy and seamless EHR integration"}
+]
+```
+
+**Tips:**
+• Provide 3-5 examples for best results
+• Examples should show the style/format you want
+• Be specific in your task description
+"""
+
+            html = """<p>❌ No examples provided.</p>
+<h4>Usage Format:</h4>
+<pre><code>@promptly optimize
+Task: Your task description here
+Examples: [
+  {"input": "example question 1", "output": "example answer 1"},
+  {"input": "example question 2", "output": "example answer 2"}
+]</code></pre>
+
+<h4>Example - Pitching Ouroboros:</h4>
+<pre><code>@promptly optimize
+Task: Write a compelling pitch for Ouroboros
+Examples: [
+  {"input": "What problem does it solve?", "output": "Detects adverse drug events..."},
+  {"input": "Who is it for?", "output": "Healthcare providers..."}
+]</code></pre>
+
+<p><strong>Tips:</strong></p>
+<ul>
+<li>Provide 3-5 examples for best results</li>
+<li>Examples should show the style/format you want</li>
+<li>Be specific in your task description</li>
+</ul>
+"""
+
+            return {"body": body, "html": html}
 
         # Send progress update
         await self.send_progress(room.room_id, self.formatter.format_progress("Analyzing task", 25))
@@ -421,6 +476,48 @@ Run a workflow:
         """Handle list command"""
         prompts = self.state.list_prompts(room.room_id)
         return self.formatter.format_list_result(prompts, room.display_name or "this room")
+
+    async def cmd_chat(self, message: str, room: MatrixRoom) -> Dict[str, str]:
+        """Handle conversational chat using Ollama"""
+        import os
+        import ollama
+
+        # Remove bot mentions from message to get clean query
+        clean_message = message
+        for mention in ['@promptly', '@promptlybot']:
+            clean_message = clean_message.replace(mention, '').strip()
+
+        try:
+            # Use Ollama for conversational response
+            model = os.getenv("LM_MODEL", "ollama/llama3.2:3b").replace("ollama/", "")
+
+            response = ollama.chat(
+                model=model,
+                messages=[
+                    {
+                        'role': 'system',
+                        'content': 'You are Promptly, a helpful AI assistant integrated into Matrix chat. You help with prompt optimization, code review, and general questions. Be concise and friendly.'
+                    },
+                    {
+                        'role': 'user',
+                        'content': clean_message
+                    }
+                ]
+            )
+
+            answer = response['message']['content']
+
+            return {
+                "body": answer,
+                "html": f"<p>{answer}</p>"
+            }
+
+        except Exception as e:
+            logger.error(f"Chat error: {e}")
+            return {
+                "body": f"💬 I heard you, but I'm having trouble responding right now.\n\nTry a specific command like `@promptly help` to see what I can do!",
+                "html": "<p>💬 I heard you, but I'm having trouble responding right now.</p><p>Try <code>@promptly help</code> to see what I can do!</p>"
+            }
 
     async def send_message(
         self,

@@ -17,16 +17,25 @@ class CommandParser:
     """Parse natural language commands for Promptly bot"""
 
     # Command patterns (regex)
+    # Support both @promptly/@promptlybot mentions and ! commands
     COMMANDS = {
-        'help': r'@promptly\s+help',
-        'optimize': r'@promptly\s+optimize',
-        'run': r'@promptly\s+run\s+(\w+)\s+"([^"]+)"',
-        'code-review': r'@promptly\s+code-review',
-        'save': r'@promptly\s+save\s+(\w+)',
-        'list': r'@promptly\s+list',
-        'schema': r'@promptly\s+schema',
-        'verify': r'@promptly\s+verify\s+"([^"]+)"',
-        'refine': r'@promptly\s+refine',
+        'help': r'(?:@promptly(?:bot)?\s+help|!help)',
+        'optimize': r'(?:@promptly(?:bot)?\s+optimize|!optimize)',
+        'run': r'(?:@promptly(?:bot)?\s+run\s+(\w+)\s+"([^"]+)"|!run\s+(\w+)\s+"([^"]+)")',
+        'code-review': r'(?:@promptly(?:bot)?\s+code-review|!code-review)',
+        'save': r'(?:@promptly(?:bot)?\s+save\s+(\w+)|!save\s+(\w+))',
+        'list': r'(?:@promptly(?:bot)?\s+list|!list)',
+        'schema': r'(?:@promptly(?:bot)?\s+schema|!schema)',
+        'verify': r'(?:@promptly(?:bot)?\s+verify\s+"([^"]+)"|!verify\s+"([^"]+)")',
+        'refine': r'(?:@promptly(?:bot)?\s+refine|!refine)',
+        # Git commands
+        'git-status': r'(?:@promptly(?:bot)?\s+git\s+status|!git\s+status)',
+        'git-log': r'(?:@promptly(?:bot)?\s+git\s+log|!git\s+log)',
+        'git-diff': r'(?:@promptly(?:bot)?\s+git\s+diff|!git\s+diff)',
+        'git-branch': r'(?:@promptly(?:bot)?\s+git\s+branch|!git\s+branch)',
+        'git-commit': r'(?:@promptly(?:bot)?\s+git\s+commit\s+"([^"]+)"|!git\s+commit\s+"([^"]+)")',
+        'git-push': r'(?:@promptly(?:bot)?\s+git\s+push|!git\s+push)',
+        'git-pull': r'(?:@promptly(?:bot)?\s+git\s+pull|!git\s+pull)',
     }
 
     def parse(self, message: str) -> Optional[Dict]:
@@ -113,6 +122,33 @@ class CommandParser:
 
         elif cmd_type == 'refine':
             return self.parse_refine_command(full_message)
+
+        # Git commands
+        elif cmd_type == 'git-status':
+            return {'type': 'git-status'}
+
+        elif cmd_type == 'git-log':
+            return {'type': 'git-log'}
+
+        elif cmd_type == 'git-diff':
+            return {'type': 'git-diff'}
+
+        elif cmd_type == 'git-branch':
+            return {'type': 'git-branch'}
+
+        elif cmd_type == 'git-commit':
+            # First group or second group (depending on @promptly vs !)
+            message = groups[0] if groups[0] else groups[1]
+            return {
+                'type': 'git-commit',
+                'message': message
+            }
+
+        elif cmd_type == 'git-push':
+            return {'type': 'git-push'}
+
+        elif cmd_type == 'git-pull':
+            return {'type': 'git-pull'}
 
         else:
             return {'type': 'unknown'}

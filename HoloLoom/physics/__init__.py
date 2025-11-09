@@ -42,6 +42,17 @@ from .multi_physics_packer import (
     pack_context_multiphysics
 )
 
+# Thermodynamics (Phase 3)
+from .thermodynamics import (
+    ThermodynamicOptimizer,
+    TemperatureScheduler,
+    EnergyCalculator,
+    EntropyCalculator,
+    CoolingSchedule,
+    ThermodynamicState,
+    TemperatureState
+)
+
 __all__ = [
     # Gradient Flow
     "GradientFlowEngine",
@@ -75,4 +86,13 @@ __all__ = [
     "MultiPhysicsResult",
     "ComponentAllocation",
     "pack_context_multiphysics",
+
+    # Thermodynamics
+    "ThermodynamicOptimizer",
+    "TemperatureScheduler",
+    "EnergyCalculator",
+    "EntropyCalculator",
+    "CoolingSchedule",
+    "ThermodynamicState",
+    "TemperatureState",
 ]

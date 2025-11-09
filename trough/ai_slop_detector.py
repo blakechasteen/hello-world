@@ -172,9 +172,9 @@ class AISlopDetector:
                         severity=Severity.MEDIUM,
                         line_number=line_num,
                         column=match.start() - code.rfind('\n', 0, match.start()),
-                        description="File operation without error handling (use try/except or 'with' statement)",
-                        context=context,
-                        fix_suggestion="Wrap in try/except or use 'with open(...) as f:'"
+                        message="File operation without error handling (use try/except or 'with' statement)",
+                        code_snippet=context,
+                        suggestion="Wrap in try/except or use 'with open(...) as f:'"
                     ))
 
             # Check for network requests without error handling
@@ -189,9 +189,9 @@ class AISlopDetector:
                         severity=Severity.HIGH,
                         line_number=line_num,
                         column=match.start() - code.rfind('\n', 0, match.start()),
-                        description="Network request without error handling",
-                        context=context,
-                        fix_suggestion="Add try/except for ConnectionError, Timeout, HTTPError"
+                        message="Network request without error handling",
+                        code_snippet=context,
+                        suggestion="Add try/except for ConnectionError, Timeout, HTTPError"
                     ))
 
             # Check for dictionary access without .get()
@@ -203,9 +203,9 @@ class AISlopDetector:
                     severity=Severity.MEDIUM,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description="Dictionary access without KeyError handling",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion="Use .get(key, default) instead of [key]"
+                    message="Dictionary access without KeyError handling",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion="Use .get(key, default) instead of [key]"
                 ))
 
         elif language in [Language.TYPESCRIPT, Language.JAVASCRIPT]:
@@ -218,9 +218,9 @@ class AISlopDetector:
                     severity=Severity.HIGH,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description="fetch() without .catch() error handling",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion="Add .catch(error => console.error(error))"
+                    message="fetch() without .catch() error handling",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion="Add .catch(error => console.error(error))"
                 ))
 
             # Check for JSON.parse without try/catch
@@ -235,9 +235,9 @@ class AISlopDetector:
                         severity=Severity.MEDIUM,
                         line_number=line_num,
                         column=match.start() - code.rfind('\n', 0, match.start()),
-                        description="JSON.parse() without try/catch (can throw on invalid JSON)",
-                        context=context,
-                        fix_suggestion="Wrap in try/catch to handle SyntaxError"
+                        message="JSON.parse() without try/catch (can throw on invalid JSON)",
+                        code_snippet=context,
+                        suggestion="Wrap in try/catch to handle SyntaxError"
                     ))
 
         return issues
@@ -254,9 +254,9 @@ class AISlopDetector:
                     severity=Severity.CRITICAL,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description=f"Hardcoded {description} detected",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion="Move to environment variable (os.getenv() or process.env)"
+                    message=f"Hardcoded {description} detected",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion="Move to environment variable (os.getenv() or process.env)"
                 ))
 
         # Detect magic numbers
@@ -273,9 +273,9 @@ class AISlopDetector:
                 severity=Severity.LOW,
                 line_number=line_num,
                 column=match.start() - code.rfind('\n', 0, match.start()),
-                description=f"Magic number {number} should be a named constant",
-                context=self._get_context(code, line_num),
-                fix_suggestion=f"Define as constant: MAX_RETRIES = {number}"
+                message=f"Magic number {number} should be a named constant",
+                code_snippet=self._get_context(code, line_num),
+                suggestion=f"Define as constant: MAX_RETRIES = {number}"
             ))
 
         return issues
@@ -299,9 +299,9 @@ class AISlopDetector:
                         severity=Severity.HIGH,
                         line_number=line_num,
                         column=match.start() - code.rfind('\n', 0, match.start()),
-                        description=f"File '{var_name}' opened but never closed (use 'with' statement)",
-                        context=self._get_context(code, line_num),
-                        fix_suggestion=f"Use: with open(...) as {var_name}:"
+                        message=f"File '{var_name}' opened but never closed (use 'with' statement)",
+                        code_snippet=self._get_context(code, line_num),
+                        suggestion=f"Use: with open(...) as {var_name}:"
                     ))
 
             # Check for database connections without close()
@@ -317,9 +317,9 @@ class AISlopDetector:
                         severity=Severity.HIGH,
                         line_number=line_num,
                         column=match.start() - code.rfind('\n', 0, match.start()),
-                        description=f"Database connection '{var_name}' never closed",
-                        context=self._get_context(code, line_num),
-                        fix_suggestion=f"Add {var_name}.close() or use context manager"
+                        message=f"Database connection '{var_name}' never closed",
+                        code_snippet=self._get_context(code, line_num),
+                        suggestion=f"Add {var_name}.close() or use context manager"
                     ))
 
         return issues
@@ -342,9 +342,9 @@ class AISlopDetector:
                             severity=Severity.CRITICAL,
                             line_number=line_num,
                             column=match.start() - code.rfind('\n', 0, match.start()),
-                            description="Potential SQL injection vulnerability (use parameterized queries)",
-                            context=context,
-                            fix_suggestion="Use cursor.execute('SELECT * FROM table WHERE id = ?', (user_id,))"
+                            message="Potential SQL injection vulnerability (use parameterized queries)",
+                            code_snippet=context,
+                            suggestion="Use cursor.execute('SELECT * FROM table WHERE id = ?', (user_id,))"
                         ))
 
             # Command injection via os.system, subprocess
@@ -356,9 +356,9 @@ class AISlopDetector:
                     severity=Severity.CRITICAL,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description="Potential command injection (user input in shell command)",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion="Use subprocess with list arguments, not string interpolation"
+                    message="Potential command injection (user input in shell command)",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion="Use subprocess with list arguments, not string interpolation"
                 ))
 
         elif language in [Language.TYPESCRIPT, Language.JAVASCRIPT]:
@@ -371,9 +371,9 @@ class AISlopDetector:
                         severity=Severity.CRITICAL,
                         line_number=line_num,
                         column=match.start() - code.rfind('\n', 0, match.start()),
-                        description="Potential XSS vulnerability (unsafe HTML insertion)",
-                        context=self._get_context(code, line_num),
-                        fix_suggestion="Use textContent instead of innerHTML, or sanitize input"
+                        message="Potential XSS vulnerability (unsafe HTML insertion)",
+                        code_snippet=self._get_context(code, line_num),
+                        suggestion="Use textContent instead of innerHTML, or sanitize input"
                     ))
 
         return issues
@@ -392,9 +392,9 @@ class AISlopDetector:
                     severity=Severity.MEDIUM,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description="Potential N+1 query problem (database query inside loop)",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion="Fetch all records in one query, then iterate"
+                    message="Potential N+1 query problem (database query inside loop)",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion="Fetch all records in one query, then iterate"
                 ))
 
             # String concatenation in loops
@@ -406,9 +406,9 @@ class AISlopDetector:
                     severity=Severity.MEDIUM,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description="String concatenation in loop (inefficient for large loops)",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion="Use list.append() then ''.join(list) for better performance"
+                    message="String concatenation in loop (inefficient for large loops)",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion="Use list.append() then ''.join(list) for better performance"
                 ))
 
         return issues
@@ -448,9 +448,9 @@ class AISlopDetector:
                                 severity=Severity.LOW,
                                 line_number=line_num,
                                 column=0,
-                                description=f"Unused import '{name}'",
-                                context=line,
-                                fix_suggestion=f"Remove import statement"
+                                message=f"Unused import '{name}'",
+                                code_snippet=line,
+                                suggestion=f"Remove import statement"
                             ))
                             break
 
@@ -476,9 +476,9 @@ class AISlopDetector:
                     severity=Severity.LOW,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description=f"Variable '{var_name}' uses camelCase (Python prefers snake_case)",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion=f"Rename to '{snake_case}'"
+                    message=f"Variable '{var_name}' uses camelCase (Python prefers snake_case)",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion=f"Rename to '{snake_case}'"
                 ))
 
         elif language in [Language.TYPESCRIPT, Language.JAVASCRIPT]:
@@ -495,9 +495,9 @@ class AISlopDetector:
                     severity=Severity.LOW,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description=f"Variable '{var_name}' uses snake_case (JavaScript prefers camelCase)",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion=f"Rename to '{camel_case}'"
+                    message=f"Variable '{var_name}' uses snake_case (JavaScript prefers camelCase)",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion=f"Rename to '{camel_case}'"
                 ))
 
         return issues
@@ -526,9 +526,9 @@ class AISlopDetector:
                                 severity=Severity.LOW,
                                 line_number=node.lineno,
                                 column=node.col_offset,
-                                description=f"{'Function' if isinstance(node, ast.FunctionDef) else 'Class'} '{node.name}' missing docstring",
-                                context=self._get_context(code, node.lineno),
-                                fix_suggestion='Add docstring: """Description of function/class."""'
+                                message=f"{'Function' if isinstance(node, ast.FunctionDef) else 'Class'} '{node.name}' missing docstring",
+                                code_snippet=self._get_context(code, node.lineno),
+                                suggestion='Add docstring: """Description of function/class."""'
                             ))
 
             except SyntaxError:
@@ -549,9 +549,9 @@ class AISlopDetector:
                 severity=Severity.MEDIUM,
                 line_number=line_num,
                 column=match.start() - code.rfind('\n', 0, match.start()),
-                description=f"{match.group(1)} comment indicates incomplete code",
-                context=self._get_context(code, line_num),
-                fix_suggestion="Complete the implementation"
+                message=f"{match.group(1)} comment indicates incomplete code",
+                code_snippet=self._get_context(code, line_num),
+                suggestion="Complete the implementation"
             ))
 
         # Bare pass statements
@@ -567,9 +567,9 @@ class AISlopDetector:
                     severity=Severity.HIGH,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description="Empty function/class with only 'pass' statement",
-                    context=context,
-                    fix_suggestion="Implement the function or raise NotImplementedError"
+                    message="Empty function/class with only 'pass' statement",
+                    code_snippet=context,
+                    suggestion="Implement the function or raise NotImplementedError"
                 ))
 
         # NotImplementedError or NotImplemented
@@ -581,9 +581,9 @@ class AISlopDetector:
                 severity=Severity.MEDIUM,
                 line_number=line_num,
                 column=match.start() - code.rfind('\n', 0, match.start()),
-                description="Function raises NotImplementedError (incomplete implementation)",
-                context=self._get_context(code, line_num),
-                fix_suggestion="Complete the implementation or remove the function"
+                message="Function raises NotImplementedError (incomplete implementation)",
+                code_snippet=self._get_context(code, line_num),
+                suggestion="Complete the implementation or remove the function"
             ))
 
         return issues
@@ -602,9 +602,9 @@ class AISlopDetector:
                 severity=Severity.LOW,
                 line_number=line_num,
                 column=match.start() - code.rfind('\n', 0, match.start()),
-                description=f"Use enumerate() instead of range(len({array_var}))",
-                context=self._get_context(code, line_num),
-                fix_suggestion=f"for {idx_var}, item in enumerate({array_var}):"
+                message=f"Use enumerate() instead of range(len({array_var}))",
+                code_snippet=self._get_context(code, line_num),
+                suggestion=f"for {idx_var}, item in enumerate({array_var}):"
             ))
 
         # Array access with len() (should be len()-1)
@@ -617,9 +617,9 @@ class AISlopDetector:
                 severity=Severity.HIGH,
                 line_number=line_num,
                 column=match.start() - code.rfind('\n', 0, match.start()),
-                description=f"Array access {array_var}[len({array_var})] will cause IndexError",
-                context=self._get_context(code, line_num),
-                fix_suggestion=f"Use {array_var}[-1] to get last element"
+                message=f"Array access {array_var}[len({array_var})] will cause IndexError",
+                code_snippet=self._get_context(code, line_num),
+                suggestion=f"Use {array_var}[-1] to get last element"
             ))
 
         return issues
@@ -638,9 +638,9 @@ class AISlopDetector:
                     severity=Severity.MEDIUM,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description=f"datetime.{match.group(1)}() creates naive datetime (no timezone)",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion="Use datetime.now(timezone.utc) for timezone-aware datetime"
+                    message=f"datetime.{match.group(1)}() creates naive datetime (no timezone)",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion="Use datetime.now(timezone.utc) for timezone-aware datetime"
                 ))
 
         elif language in [Language.TYPESCRIPT, Language.JAVASCRIPT]:
@@ -653,9 +653,9 @@ class AISlopDetector:
                     severity=Severity.MEDIUM,
                     line_number=line_num,
                     column=match.start() - code.rfind('\n', 0, match.start()),
-                    description="new Date() uses local timezone (can cause bugs in distributed systems)",
-                    context=self._get_context(code, line_num),
-                    fix_suggestion="Use new Date().toISOString() or specify timezone explicitly"
+                    message="new Date() uses local timezone (can cause bugs in distributed systems)",
+                    code_snippet=self._get_context(code, line_num),
+                    suggestion="Use new Date().toISOString() or specify timezone explicitly"
                 ))
 
         return issues
@@ -682,9 +682,9 @@ class AISlopDetector:
                         severity=Severity.MEDIUM,
                         line_number=i + 1,
                         column=0,
-                        description=f"Similar code block found at line {original_line} (possible copy-paste error)",
-                        context=block[:200],
-                        fix_suggestion="Extract common logic into a function"
+                        message=f"Similar code block found at line {original_line} (possible copy-paste error)",
+                        code_snippet=block[:200],
+                        suggestion="Extract common logic into a function"
                     ))
             else:
                 blocks[signature] = (i + 1, block)

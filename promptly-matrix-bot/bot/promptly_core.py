@@ -58,21 +58,29 @@ class PromptlyCore:
 
         if HOLOLOOM_AVAILABLE:
             try:
-                # Configure DSPy
+                # Configure DSPy with Ollama or OpenAI
                 import os
+                lm_model = os.getenv("LM_MODEL", "openai/gpt-4o-mini")
                 api_key = os.getenv("OPENAI_API_KEY")
-                if api_key:
-                    lm = dspy.LM('openai/gpt-4o-mini')
+
+                if lm_model.startswith("ollama/"):
+                    # Use Ollama (local, free)
+                    lm = dspy.LM(lm_model)
                     dspy.configure(lm=lm)
-                    logger.info("✅ DSPy configured with OpenAI")
+                    logger.info(f"✅ DSPy configured with Ollama: {lm_model}")
+                elif api_key:
+                    # Use OpenAI
+                    lm = dspy.LM(lm_model)
+                    dspy.configure(lm=lm)
+                    logger.info(f"✅ DSPy configured with {lm_model}")
                 else:
-                    logger.warning("⚠️ OPENAI_API_KEY not set - optimization will fail")
+                    logger.warning("⚠️ OPENAI_API_KEY not set and not using Ollama - optimization will fail")
 
                 # Create HoloLoom config
                 self.config = Config.fused() if config_mode == "fused" else Config.fast()
 
-                # Create DSPy bridge
-                self.bridge = DSPyHoloLoom(config=self.config)
+                # Create DSPy bridge with configured model
+                self.bridge = DSPyHoloLoom(config=self.config, lm_model=lm_model, lm_api_key=api_key)
 
                 # Create metrics evaluator
                 self.metrics = MetricsEvaluator(
