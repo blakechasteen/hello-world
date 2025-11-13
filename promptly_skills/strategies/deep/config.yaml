@@ -1,0 +1,82 @@
+name: deep
+version: 1.0.0
+category: meta-prompting
+description: Deliberate Over-Instruction - Force exhaustive depth on every aspect
+
+# Strategy configuration
+config:
+  depth_requirements:
+    - fundamentals        # Cover basic principles
+    - edge_cases          # Explore boundary conditions
+    - tradeoffs           # Analyze pros/cons
+    - alternatives        # Compare different approaches
+    - examples            # Concrete demonstrations
+    - pitfalls            # Common mistakes
+    - best_practices      # Recommended patterns
+
+  # Minimum requirements
+  min_sections: 7         # Must cover at least 7 aspects
+  min_depth_per_section: 3  # At least 3 points per section
+
+  # Performance
+  timeout_seconds: 45
+
+# Auto-detection rules
+detection:
+  high_confidence_keywords:
+    - explain thoroughly
+    - comprehensive guide
+    - in depth
+    - exhaustive
+    - complete breakdown
+    - everything about
+
+  medium_confidence_keywords:
+    - explain
+    - understand
+    - learn about
+    - teach me
+    - how does
+
+  low_confidence_indicators:
+    - quick
+    - brief
+    - summary
+    - overview
+    - tldr
+
+  # Confidence calculation
+  base_confidence: 0.3
+  keyword_boost: 0.5
+  depth_indicator_boost: 0.3
+  brevity_penalty: -0.4  # Penalty if brevity keywords present
+
+# Composability
+composable_with:
+  - verify      # Deep then verify completeness
+  - teach       # Deep then show edge cases
+  - scaffold    # Deep then structure reasoning
+
+recommended_before:
+  - verify      # Ensure depth is accurate
+  - challenge   # Ensure depth reveals problems
+
+# Performance characteristics
+performance:
+  typical_duration_ms: 180
+  token_overhead: 400
+  quality_improvement: 0.55  # Average +55% depth vs baseline
+
+# Examples
+examples:
+  - query: "explain neural networks in depth"
+    confidence: 0.95
+    rationale: "High confidence - explicit depth request"
+
+  - query: "how do transformers work?"
+    confidence: 0.65
+    rationale: "Medium-high confidence - 'how' suggests depth"
+
+  - query: "quick overview of attention mechanisms"
+    confidence: 0.2
+    rationale: "Low confidence - 'quick' and 'overview' signal brevity"

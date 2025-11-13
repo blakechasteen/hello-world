@@ -170,9 +170,8 @@ class AISlopDetector:
                     issues.append(SlopIssue(
                         category=SlopCategory.ERROR_HANDLING,
                         severity=Severity.MEDIUM,
-                        line_number=line_num,
-                        column=match.start() - code.rfind('\n', 0, match.start()),
-                        message="File operation without error handling (use try/except or 'with' statement)",
+                        line_number=line_num,                        message="File operation without error handling (use try/except or 'with' statement)",
+                        file_path=file_path,
                         code_snippet=context,
                         suggestion="Wrap in try/except or use 'with open(...) as f:'"
                     ))
@@ -187,9 +186,8 @@ class AISlopDetector:
                     issues.append(SlopIssue(
                         category=SlopCategory.ERROR_HANDLING,
                         severity=Severity.HIGH,
-                        line_number=line_num,
-                        column=match.start() - code.rfind('\n', 0, match.start()),
-                        message="Network request without error handling",
+                        line_number=line_num,                        message="Network request without error handling",
+                        file_path=file_path,
                         code_snippet=context,
                         suggestion="Add try/except for ConnectionError, Timeout, HTTPError"
                     ))
@@ -201,9 +199,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.ERROR_HANDLING,
                     severity=Severity.MEDIUM,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message="Dictionary access without KeyError handling",
+                    line_number=line_num,                    message="Dictionary access without KeyError handling",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion="Use .get(key, default) instead of [key]"
                 ))
@@ -216,9 +213,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.ERROR_HANDLING,
                     severity=Severity.HIGH,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message="fetch() without .catch() error handling",
+                    line_number=line_num,                    message="fetch() without .catch() error handling",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion="Add .catch(error => console.error(error))"
                 ))
@@ -233,9 +229,8 @@ class AISlopDetector:
                     issues.append(SlopIssue(
                         category=SlopCategory.ERROR_HANDLING,
                         severity=Severity.MEDIUM,
-                        line_number=line_num,
-                        column=match.start() - code.rfind('\n', 0, match.start()),
-                        message="JSON.parse() without try/catch (can throw on invalid JSON)",
+                        line_number=line_num,                        message="JSON.parse() without try/catch (can throw on invalid JSON)",
+                        file_path=file_path,
                         code_snippet=context,
                         suggestion="Wrap in try/catch to handle SyntaxError"
                     ))
@@ -252,9 +247,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.HARDCODED_VALUES,
                     severity=Severity.CRITICAL,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message=f"Hardcoded {description} detected",
+                    line_number=line_num,                    message=f"Hardcoded {description} detected",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion="Move to environment variable (os.getenv() or process.env)"
                 ))
@@ -271,9 +265,8 @@ class AISlopDetector:
             issues.append(SlopIssue(
                 category=SlopCategory.HARDCODED_VALUES,
                 severity=Severity.LOW,
-                line_number=line_num,
-                column=match.start() - code.rfind('\n', 0, match.start()),
-                message=f"Magic number {number} should be a named constant",
+                line_number=line_num,                message=f"Magic number {number} should be a named constant",
+                file_path=file_path,
                 code_snippet=self._get_context(code, line_num),
                 suggestion=f"Define as constant: MAX_RETRIES = {number}"
             ))
@@ -297,9 +290,8 @@ class AISlopDetector:
                     issues.append(SlopIssue(
                         category=SlopCategory.RESOURCE_LEAK,
                         severity=Severity.HIGH,
-                        line_number=line_num,
-                        column=match.start() - code.rfind('\n', 0, match.start()),
-                        message=f"File '{var_name}' opened but never closed (use 'with' statement)",
+                        line_number=line_num,                        message=f"File '{var_name}' opened but never closed (use 'with' statement)",
+                        file_path=file_path,
                         code_snippet=self._get_context(code, line_num),
                         suggestion=f"Use: with open(...) as {var_name}:"
                     ))
@@ -315,9 +307,8 @@ class AISlopDetector:
                     issues.append(SlopIssue(
                         category=SlopCategory.RESOURCE_LEAK,
                         severity=Severity.HIGH,
-                        line_number=line_num,
-                        column=match.start() - code.rfind('\n', 0, match.start()),
-                        message=f"Database connection '{var_name}' never closed",
+                        line_number=line_num,                        message=f"Database connection '{var_name}' never closed",
+                        file_path=file_path,
                         code_snippet=self._get_context(code, line_num),
                         suggestion=f"Add {var_name}.close() or use context manager"
                     ))
@@ -340,9 +331,8 @@ class AISlopDetector:
                         issues.append(SlopIssue(
                             category=SlopCategory.SECURITY,
                             severity=Severity.CRITICAL,
-                            line_number=line_num,
-                            column=match.start() - code.rfind('\n', 0, match.start()),
-                            message="Potential SQL injection vulnerability (use parameterized queries)",
+                            line_number=line_num,                            message="Potential SQL injection vulnerability (use parameterized queries)",
+                            file_path=file_path,
                             code_snippet=context,
                             suggestion="Use cursor.execute('SELECT * FROM table WHERE id = ?', (user_id,))"
                         ))
@@ -354,9 +344,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.SECURITY,
                     severity=Severity.CRITICAL,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message="Potential command injection (user input in shell command)",
+                    line_number=line_num,                    message="Potential command injection (user input in shell command)",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion="Use subprocess with list arguments, not string interpolation"
                 ))
@@ -369,9 +358,8 @@ class AISlopDetector:
                     issues.append(SlopIssue(
                         category=SlopCategory.SECURITY,
                         severity=Severity.CRITICAL,
-                        line_number=line_num,
-                        column=match.start() - code.rfind('\n', 0, match.start()),
-                        message="Potential XSS vulnerability (unsafe HTML insertion)",
+                        line_number=line_num,                        message="Potential XSS vulnerability (unsafe HTML insertion)",
+                        file_path=file_path,
                         code_snippet=self._get_context(code, line_num),
                         suggestion="Use textContent instead of innerHTML, or sanitize input"
                     ))
@@ -390,9 +378,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.PERFORMANCE,
                     severity=Severity.MEDIUM,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message="Potential N+1 query problem (database query inside loop)",
+                    line_number=line_num,                    message="Potential N+1 query problem (database query inside loop)",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion="Fetch all records in one query, then iterate"
                 ))
@@ -404,9 +391,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.PERFORMANCE,
                     severity=Severity.MEDIUM,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message="String concatenation in loop (inefficient for large loops)",
+                    line_number=line_num,                    message="String concatenation in loop (inefficient for large loops)",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion="Use list.append() then ''.join(list) for better performance"
                 ))
@@ -446,9 +432,8 @@ class AISlopDetector:
                             issues.append(SlopIssue(
                                 category=SlopCategory.DEAD_CODE,
                                 severity=Severity.LOW,
-                                line_number=line_num,
-                                column=0,
-                                message=f"Unused import '{name}'",
+                                line_number=line_num,                                message=f"Unused import '{name}'",
+                                file_path=file_path,
                                 code_snippet=line,
                                 suggestion=f"Remove import statement"
                             ))
@@ -474,9 +459,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.NAMING,
                     severity=Severity.LOW,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message=f"Variable '{var_name}' uses camelCase (Python prefers snake_case)",
+                    line_number=line_num,                    message=f"Variable '{var_name}' uses camelCase (Python prefers snake_case)",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion=f"Rename to '{snake_case}'"
                 ))
@@ -493,9 +477,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.NAMING,
                     severity=Severity.LOW,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message=f"Variable '{var_name}' uses snake_case (JavaScript prefers camelCase)",
+                    line_number=line_num,                    message=f"Variable '{var_name}' uses snake_case (JavaScript prefers camelCase)",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion=f"Rename to '{camel_case}'"
                 ))
@@ -524,9 +507,8 @@ class AISlopDetector:
                             issues.append(SlopIssue(
                                 category=SlopCategory.DOCUMENTATION,
                                 severity=Severity.LOW,
-                                line_number=node.lineno,
-                                column=node.col_offset,
-                                message=f"{'Function' if isinstance(node, ast.FunctionDef) else 'Class'} '{node.name}' missing docstring",
+                                line_number=node.lineno,                                message=f"{'Function' if isinstance(node, ast.FunctionDef) else 'Class'} '{node.name}' missing docstring",
+                                file_path=file_path,
                                 code_snippet=self._get_context(code, node.lineno),
                                 suggestion='Add docstring: """Description of function/class."""'
                             ))
@@ -547,9 +529,8 @@ class AISlopDetector:
             issues.append(SlopIssue(
                 category=SlopCategory.INCOMPLETE,
                 severity=Severity.MEDIUM,
-                line_number=line_num,
-                column=match.start() - code.rfind('\n', 0, match.start()),
-                message=f"{match.group(1)} comment indicates incomplete code",
+                line_number=line_num,                message=f"{match.group(1)} comment indicates incomplete code",
+                file_path=file_path,
                 code_snippet=self._get_context(code, line_num),
                 suggestion="Complete the implementation"
             ))
@@ -565,9 +546,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.INCOMPLETE,
                     severity=Severity.HIGH,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message="Empty function/class with only 'pass' statement",
+                    line_number=line_num,                    message="Empty function/class with only 'pass' statement",
+                    file_path=file_path,
                     code_snippet=context,
                     suggestion="Implement the function or raise NotImplementedError"
                 ))
@@ -579,9 +559,8 @@ class AISlopDetector:
             issues.append(SlopIssue(
                 category=SlopCategory.INCOMPLETE,
                 severity=Severity.MEDIUM,
-                line_number=line_num,
-                column=match.start() - code.rfind('\n', 0, match.start()),
-                message="Function raises NotImplementedError (incomplete implementation)",
+                line_number=line_num,                message="Function raises NotImplementedError (incomplete implementation)",
+                file_path=file_path,
                 code_snippet=self._get_context(code, line_num),
                 suggestion="Complete the implementation or remove the function"
             ))
@@ -600,9 +579,8 @@ class AISlopDetector:
             issues.append(SlopIssue(
                 category=SlopCategory.OFF_BY_ONE,
                 severity=Severity.LOW,
-                line_number=line_num,
-                column=match.start() - code.rfind('\n', 0, match.start()),
-                message=f"Use enumerate() instead of range(len({array_var}))",
+                line_number=line_num,                message=f"Use enumerate() instead of range(len({array_var}))",
+                file_path=file_path,
                 code_snippet=self._get_context(code, line_num),
                 suggestion=f"for {idx_var}, item in enumerate({array_var}):"
             ))
@@ -615,9 +593,8 @@ class AISlopDetector:
             issues.append(SlopIssue(
                 category=SlopCategory.OFF_BY_ONE,
                 severity=Severity.HIGH,
-                line_number=line_num,
-                column=match.start() - code.rfind('\n', 0, match.start()),
-                message=f"Array access {array_var}[len({array_var})] will cause IndexError",
+                line_number=line_num,                message=f"Array access {array_var}[len({array_var})] will cause IndexError",
+                file_path=file_path,
                 code_snippet=self._get_context(code, line_num),
                 suggestion=f"Use {array_var}[-1] to get last element"
             ))
@@ -636,9 +613,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.TIMEZONE,
                     severity=Severity.MEDIUM,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message=f"datetime.{match.group(1)}() creates naive datetime (no timezone)",
+                    line_number=line_num,                    message=f"datetime.{match.group(1)}() creates naive datetime (no timezone)",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion="Use datetime.now(timezone.utc) for timezone-aware datetime"
                 ))
@@ -651,9 +627,8 @@ class AISlopDetector:
                 issues.append(SlopIssue(
                     category=SlopCategory.TIMEZONE,
                     severity=Severity.MEDIUM,
-                    line_number=line_num,
-                    column=match.start() - code.rfind('\n', 0, match.start()),
-                    message="new Date() uses local timezone (can cause bugs in distributed systems)",
+                    line_number=line_num,                    message="new Date() uses local timezone (can cause bugs in distributed systems)",
+                    file_path=file_path,
                     code_snippet=self._get_context(code, line_num),
                     suggestion="Use new Date().toISOString() or specify timezone explicitly"
                 ))
@@ -680,9 +655,8 @@ class AISlopDetector:
                     issues.append(SlopIssue(
                         category=SlopCategory.COPY_PASTE,
                         severity=Severity.MEDIUM,
-                        line_number=i + 1,
-                        column=0,
-                        message=f"Similar code block found at line {original_line} (possible copy-paste error)",
+                        line_number=i + 1,                        message=f"Similar code block found at line {original_line} (possible copy-paste error)",
+                        file_path=file_path,
                         code_snippet=block[:200],
                         suggestion="Extract common logic into a function"
                     ))

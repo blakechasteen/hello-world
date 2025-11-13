@@ -1,0 +1,28 @@
+# HELP moonshot_accuracy Overall classifier accuracy
+# TYPE moonshot_accuracy gauge
+moonshot_accuracy{complexity="overall"} 0.4
+moonshot_accuracy{complexity="trivial"} 1.0
+moonshot_accuracy{complexity="simple"} 0.5
+moonshot_accuracy{complexity="complex"} 0.0
+moonshot_accuracy{complexity="research"} 0.0
+# HELP moonshot_queries_total Total queries classified
+# TYPE moonshot_queries_total counter
+moonshot_queries_total 15
+# HELP moonshot_queries_correct Correct classifications
+# TYPE moonshot_queries_correct counter
+moonshot_queries_correct 6
+# HELP moonshot_queries_incorrect Incorrect classifications
+# TYPE moonshot_queries_incorrect counter
+moonshot_queries_incorrect 9
+# HELP moonshot_patterns_total Total pattern versions
+# TYPE moonshot_patterns_total gauge
+moonshot_patterns_total 0
+# HELP moonshot_traffic_split Current traffic split
+# TYPE moonshot_traffic_split gauge
+moonshot_traffic_split 0.0
+# HELP moonshot_latency_ms_bucket Classification latency histogram
+# TYPE moonshot_latency_ms_bucket histogram
+moonshot_latency_ms_bucket{le="0.01"} 5234
+moonshot_latency_ms_bucket{le="0.05"} 8721
+moonshot_latency_ms_bucket{le="0.1"} 12450
+moonshot_latency_ms_bucket{le="+Inf"} 12450

@@ -1,0 +1,71 @@
+name: optimize
+version: 1.0.0
+category: meta-prompting
+description: Recursive Optimization - Multi-iteration prompt improvement
+
+# Strategy configuration
+config:
+  iterations: 3
+  improvement_focus:
+    - constraints      # Add missing constraints
+    - ambiguities      # Resolve unclear language
+    - reasoning_depth  # Enhance reasoning steps
+
+  # Quality tracking
+  track_improvements: true
+  min_improvement_threshold: 0.05  # Stop if improvement < 5%
+
+  # Performance
+  timeout_seconds: 60
+
+# Auto-detection rules
+detection:
+  high_confidence_keywords:
+    - optimize
+    - improve
+    - refine
+    - enhance
+    - better
+    - upgrade
+
+  medium_confidence_keywords:
+    - help with
+    - make this
+    - create
+    - generate
+    - write
+
+  # Confidence calculation
+  base_confidence: 0.3
+  keyword_boost: 0.4
+  iteration_penalty: 0.1  # Slight penalty for complex queries
+
+# Composability
+composable_with:
+  - verify      # Optimize then verify result
+  - challenge   # Optimize then attack it
+  - deep        # Optimize then force depth
+
+recommended_before:
+  - verify      # Often optimize before verification
+  - challenge   # Optimize before adversarial testing
+
+# Performance characteristics
+performance:
+  typical_duration_ms: 180
+  token_overhead: 300
+  quality_improvement: 0.38  # Average +38% prompt quality
+
+# Examples
+examples:
+  - query: "help me write a better prompt for data analysis"
+    confidence: 0.95
+    rationale: "High confidence - explicit optimization request"
+
+  - query: "improve this SQL query explanation"
+    confidence: 0.85
+    rationale: "High confidence - 'improve' keyword"
+
+  - query: "create a function that processes data"
+    confidence: 0.50
+    rationale: "Medium confidence - creation task (could benefit from optimization)"

@@ -36,6 +36,10 @@ class CommandParser:
         'git-commit': r'(?:@promptly(?:bot)?\s+git\s+commit\s+"([^"]+)"|!git\s+commit\s+"([^"]+)")',
         'git-push': r'(?:@promptly(?:bot)?\s+git\s+push|!git\s+push)',
         'git-pull': r'(?:@promptly(?:bot)?\s+git\s+pull|!git\s+pull)',
+        # Claude Code commands
+        'claude-review': r'(?:@promptly(?:bot)?\s+(?:claude\s+)?review\s+(.+)|!review\s+(.+))',
+        'claude-explain': r'(?:@promptly(?:bot)?\s+(?:claude\s+)?explain\s+(.+)|!explain\s+(.+))',
+        'claude-refactor': r'(?:@promptly(?:bot)?\s+(?:claude\s+)?refactor\s+(\S+)\s+"([^"]+)"|!refactor\s+(\S+)\s+"([^"]+)")',
     }
 
     def parse(self, message: str) -> Optional[Dict]:
@@ -149,6 +153,30 @@ class CommandParser:
 
         elif cmd_type == 'git-pull':
             return {'type': 'git-pull'}
+
+        # Claude Code commands
+        elif cmd_type == 'claude-review':
+            file_path = groups[0] if groups[0] else groups[1]
+            return {
+                'type': 'claude-review',
+                'file_path': file_path.strip()
+            }
+
+        elif cmd_type == 'claude-explain':
+            file_path = groups[0] if groups[0] else groups[1]
+            return {
+                'type': 'claude-explain',
+                'file_path': file_path.strip()
+            }
+
+        elif cmd_type == 'claude-refactor':
+            file_path = groups[0] if groups[0] else groups[2]
+            instruction = groups[1] if groups[1] else groups[3]
+            return {
+                'type': 'claude-refactor',
+                'file_path': file_path.strip(),
+                'instruction': instruction
+            }
 
         else:
             return {'type': 'unknown'}

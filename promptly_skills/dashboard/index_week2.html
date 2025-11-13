@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promptly Performance Dashboard - Week 2</title>
+
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Socket.IO for real-time updates -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <style>
+        :root {
+            /* Light mode (default) */
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --card-bg: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --border-color: #eeeeee;
+            --header-bg: rgba(255, 255, 255, 0.2);
+            --accent-color: #667eea;
+            --accent-secondary: #764ba2;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --danger-color: #f44336;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark mode */
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: #0f3460;
+            --text-primary: #e8e8e8;
+            --text-secondary: #b8b8b8;
+            --border-color: #2a4365;
+            --header-bg: rgba(15, 52, 96, 0.3);
+            --accent-color: #8b5cf6;
+            --accent-secondary: #a78bfa;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        [data-theme="dark"] .header {
+            color: var(--text-primary);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            color: white;
+        }
+
+        .header .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            background: var(--header-bg);
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: white;
+        }
+
+        .status.connected {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .status.disconnected {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        /* Dark Mode Toggle */
+        .theme-toggle {
+            background: var(--header-bg);
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Refresh Interval Control */
+        .refresh-control {
+            background: var(--header-bg);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .refresh-control select {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .refresh-control select option {
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        /* Controls */
+        .controls {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .date-range-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-range-selector label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .date-range-selector button {
+            padding: 8px 16px;
+            border: 2px solid var(--accent-color);
+            background: var(--card-bg);
+            color: var(--accent-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .date-range-selector button:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .date-range-selector button.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Custom Date Range Picker */
+        .custom-range-picker {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .custom-range-picker input[type="date"] {
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .custom-range-picker button {
+            padding: 8px 16px;
+            border: none;
+            background: var(--accent-secondary);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Export Controls */
+        .export-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .export-controls button {
+            padding: 8px 16px;
+            border: 2px solid var(--accent-secondary);
+            background: var(--card-bg);
+            color: var(--accent-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .export-controls button:hover {
+            background: var(--accent-secondary);
+            color: white;
+        }
+
+        /* Search Filter */
+        .search-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-filter input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        .search-filter input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .search-filter button {
+            padding: 10px 16px;
+            border: none;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        .card h2 {
+            font-size: 1.3em;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .metric-value {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-value.good {
+            color: var(--success-color);
+        }
+
+        .metric-value.warning {
+            color: var(--warning-color);
+        }
+
+        .metric-value.critical {
+            color: var(--danger-color);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+
+        .strategy-list {
+            list-style: none;
+        }
+
+        .strategy-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .strategy-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .strategy-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1.1em;
+        }
+
+        .strategy-confidence {
+            font-weight: 700;
+            color: var(--accent-color);
+            font-size: 1.1em;
+        }
+
+        .strategy-bar {
+            height: 20px;
+            background: linear-gradient(90deg, var(--accent-color) 0%, var(--accent-secondary) 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .strategy-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .last-update {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .error {
+            background: var(--danger-color);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Alert Configuration Panel */
+        .alert-config {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .alert-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: var(--border-color);
+            border-radius: 8px;
+        }
+
+        .alert-item label {
+            flex: 1;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .alert-item input {
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 6px;
+            width: 150px;
+        }
+
+        .alert-item select {
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 6px;
+        }
+
+        .alert-item button {
+            padding: 8px 16px;
+            border: none;
+            background: var(--success-color);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .alert-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .alert-status.active {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .alert-status.inactive {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        /* Strategy Comparison View */
+        .comparison-view {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .comparison-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .comparison-selector select {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        .comparison-selector button {
+            padding: 10px 20px;
+            border: none;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .comparison-table th {
+            background: var(--border-color);
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--border-color);
+        }
+
+        .winner {
+            background: rgba(76, 175, 80, 0.2);
+            font-weight: 600;
+        }
+
+        /* A/B Test Setup Preview */
+        .ab-test-setup {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .ab-test-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ab-test-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .ab-test-row label {
+            min-width: 150px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .ab-test-row input,
+        .ab-test-row select {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 6px;
+        }
+
+        .ab-test-preview {
+            background: var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            color: var(--text-primary);
+        }
+
+        .ab-test-preview h4 {
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .header .status-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .date-range-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .date-range-selector button {
+                width: 100%;
+            }
+
+            .custom-range-picker {
+                flex-direction: column;
+            }
+
+            .export-controls {
+                justify-content: stretch;
+            }
+
+            .export-controls button {
+                flex: 1;
+            }
+
+            .search-filter {
+                min-width: 100%;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-selector {
+                flex-direction: column;
+            }
+
+            .ab-test-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .ab-test-row label {
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .header .subtitle {
+                font-size: 1em;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .metric-value {
+                font-size: 1.2em;
+            }
+
+            .chart-container {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Promptly Performance Dashboard</h1>
+            <div class="subtitle">Real-time metrics and analytics - Week 2</div>
+            <div class="status-bar">
+                <div class="status disconnected" id="connectionStatus">
+                    ⚫ Connecting...
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeText">Dark Mode</span>
+                </button>
+                <div class="refresh-control">
+                    <span>⏱️ Refresh:</span>
+                    <select id="refreshInterval" onchange="changeRefreshInterval()">
+                        <option value="2000">2s</option>
+                        <option value="5000">5s</option>
+                        <option value="10000" selected>10s</option>
+                        <option value="30000">30s</option>
+                        <option value="0">Manual</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="errorDisplay" style="display: none;" class="error"></div>
+
+        <!-- Alert Configuration -->
+        <div class="alert-config">
+            <h2>🔔 Alert Configuration (Preview)</h2>
+            <div class="alert-item">
+                <label>Low Confidence Alert (< threshold)</label>
+                <input type="number" id="lowConfidenceThreshold" value="0.75" step="0.01" min="0" max="1">
+                <select id="lowConfidenceChannel">
+                    <option value="slack">Slack</option>
+                    <option value="email">Email</option>
+                    <option value="webhook">Webhook</option>
+                </select>
+                <span class="alert-status active">Active</span>
+            </div>
+            <div class="alert-item">
+                <label>High Latency Alert (> threshold ms)</label>
+                <input type="number" id="highLatencyThreshold" value="200" step="10" min="0">
+                <select id="highLatencyChannel">
+                    <option value="slack">Slack</option>
+                    <option value="email">Email</option>
+                    <option value="webhook">Webhook</option>
+                </select>
+                <span class="alert-status active">Active</span>
+            </div>
+            <div class="alert-item">
+                <label>Low Cache Hit Rate Alert (< threshold)</label>
+                <input type="number" id="lowCacheThreshold" value="0.20" step="0.01" min="0" max="1">
+                <select id="lowCacheChannel">
+                    <option value="slack">Slack</option>
+                    <option value="email">Email</option>
+                    <option value="webhook">Webhook</option>
+                </select>
+                <span class="alert-status inactive">Inactive</span>
+            </div>
+            <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
+                💡 Note: This is a preview UI. Alert functionality will be implemented in the backend (Week 2 Days 3-5).
+            </p>
+        </div>
+
+        <!-- A/B Test Setup Preview -->
+        <div class="ab-test-setup">
+            <h2>🧪 A/B Test Setup (Preview)</h2>
+            <div class="ab-test-form">
+                <div class="ab-test-row">
+                    <label>Test Name:</label>
+                    <input type="text" id="testName" placeholder="e.g., Optimize vs Deep" value="Strategy Comparison Test">
+                </div>
+                <div class="ab-test-row">
+                    <label>Variant A (Control):</label>
+                    <select id="variantA">
+                        <option value="optimize">optimize</option>
+                        <option value="deep">deep</option>
+                        <option value="verify">verify</option>
+                    </select>
+                </div>
+                <div class="ab-test-row">
+                    <label>Variant B (Treatment):</label>
+                    <select id="variantB">
+                        <option value="deep" selected>deep</option>
+                        <option value="optimize">optimize</option>
+                        <option value="verify">verify</option>
+                    </select>
+                </div>
+                <div class="ab-test-row">
+                    <label>Traffic Split:</label>
+                    <input type="range" id="trafficSplit" min="0" max="100" value="50" oninput="updateSplitDisplay()">
+                    <span id="splitDisplay">50% / 50%</span>
+                </div>
+                <div class="ab-test-row">
+                    <label>Success Metric:</label>
+                    <select id="successMetric">
+                        <option value="confidence">Average Confidence</option>
+                        <option value="latency">Average Latency</option>
+                        <option value="success_rate">Success Rate</option>
+                    </select>
+                </div>
+                <div class="ab-test-row">
+                    <label>Min Sample Size:</label>
+                    <input type="number" id="minSampleSize" value="100" min="10">
+                </div>
+            </div>
+            <div class="ab-test-preview">
+                <h4>Preview Configuration:</h4>
+                <p id="abTestPreview">Loading...</p>
+            </div>
+            <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
+                💡 Note: A/B testing framework will be fully implemented in Week 3-4. This preview shows the configuration UI.
+            </p>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <!-- Date Range Selector -->
+            <div class="date-range-selector">
+                <label>📅 Quick Ranges:</label>
+                <button class="range-btn" data-range="1h">1 Hour</button>
+                <button class="range-btn active" data-range="24h">24 Hours</button>
+                <button class="range-btn" data-range="7d">7 Days</button>
+                <button class="range-btn" data-range="30d">30 Days</button>
+            </div>
+
+            <!-- Custom Date Range Picker -->
+            <div class="custom-range-picker">
+                <label>📅 Custom:</label>
+                <input type="date" id="startDate">
+                <span>to</span>
+                <input type="date" id="endDate">
+                <button onclick="applyCustomRange()">Apply</button>
+            </div>
+
+            <!-- Search Filter -->
+            <div class="search-filter">
+                <input type="text" id="searchInput" placeholder="🔍 Search queries, strategies...">
+                <button onclick="applySearch()">Search</button>
+            </div>
+
+            <!-- Export Controls -->
+            <div class="export-controls">
+                <button onclick="exportData('csv')">📄 Export CSV</button>
+                <button onclick="exportData('json')">📋 Export JSON</button>
+            </div>
+        </div>
+
+        <!-- Main Metrics Grid -->
+        <div class="grid">
+            <!-- Summary Card -->
+            <div class="card">
+                <h2>📈 Summary (<span id="summaryPeriod">Last 24h</span>)</h2>
+                <div class="metric">
+                    <span class="metric-label">Total Queries</span>
+                    <span class="metric-value" id="totalQueries">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Confidence</span>
+                    <span class="metric-value" id="avgConfidence">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Latency</span>
+                    <span class="metric-value" id="avgLatency">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Cache Hit Rate</span>
+                    <span class="metric-value" id="cacheHitRate">-</span>
+                </div>
+            </div>
+
+            <!-- Latency Percentiles -->
+            <div class="card">
+                <h2>⏱️ Latency Percentiles</h2>
+                <div class="metric">
+                    <span class="metric-label">P50 (Median)</span>
+                    <span class="metric-value" id="p50Latency">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P95</span>
+                    <span class="metric-value" id="p95Latency">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P99</span>
+                    <span class="metric-value" id="p99Latency">-</span>
+                </div>
+            </div>
+
+            <!-- Cache Performance -->
+            <div class="card">
+                <h2>💾 Cache Performance</h2>
+                <div class="metric">
+                    <span class="metric-label">Total Hits</span>
+                    <span class="metric-value good" id="cacheHits">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Misses</span>
+                    <span class="metric-value warning" id="cacheMisses">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Speedup</span>
+                    <span class="metric-value good" id="cacheSpeedup">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid">
+            <!-- Latency Trend -->
+            <div class="card">
+                <h2>📉 Latency Trend</h2>
+                <div class="chart-container">
+                    <canvas id="latencyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Confidence Trend -->
+            <div class="card">
+                <h2>📈 Confidence Trend</h2>
+                <div class="chart-container">
+                    <canvas id="confidenceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Comparison -->
+        <div class="comparison-view">
+            <h2>🔬 Strategy Comparison</h2>
+            <div class="comparison-selector">
+                <select id="strategy1">
+                    <option value="">Select Strategy 1...</option>
+                </select>
+                <span style="align-self: center; font-weight: 600; color: var(--text-secondary);">vs</span>
+                <select id="strategy2">
+                    <option value="">Select Strategy 2...</option>
+                </select>
+                <button onclick="compareStrategies()">Compare</button>
+            </div>
+            <div id="comparisonResults"></div>
+        </div>
+
+        <!-- Strategy Performance -->
+        <div class="card">
+            <h2>🏆 Top Strategies (<span id="strategiesPeriod">Last 24h</span>)</h2>
+            <ul class="strategy-list" id="strategyList">
+                <li class="loading">Loading strategies...</li>
+            </ul>
+        </div>
+
+        <!-- Last Update -->
+        <div class="last-update" id="lastUpdate">
+            Last updated: Never
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5001';
+        let UPDATE_INTERVAL = 10000; // Default 10 seconds
+        let updateIntervalId = null;
+
+        let socket;
+        let latencyChart;
+        let confidenceChart;
+        let currentRange = '24h';
+        let allStrategies = [];
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTheme();
+            initializeWebSocket();
+            initializeCharts();
+            initializeDateRangeButtons();
+            initializeCustomDatePicker();
+            updateABTestPreview();
+            fetchInitialData();
+            startPeriodicUpdate();
+        });
+
+        // Theme Management
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('dashboard-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeUI(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('dashboard-theme', newTheme);
+            updateThemeUI(newTheme);
+
+            // Update charts for dark mode
+            updateChartTheme(newTheme);
+        }
+
+        function updateThemeUI(theme) {
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            if (theme === 'dark') {
+                icon.textContent = '☀️';
+                text.textContent = 'Light Mode';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'Dark Mode';
+            }
+        }
+
+        function updateChartTheme(theme) {
+            const textColor = theme === 'dark' ? '#e8e8e8' : '#333333';
+            const gridColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+            if (latencyChart) {
+                latencyChart.options.scales.x.ticks.color = textColor;
+                latencyChart.options.scales.y.ticks.color = textColor;
+                latencyChart.options.scales.x.grid.color = gridColor;
+                latencyChart.options.scales.y.grid.color = gridColor;
+                latencyChart.update();
+            }
+
+            if (confidenceChart) {
+                confidenceChart.options.scales.x.ticks.color = textColor;
+                confidenceChart.options.scales.y.ticks.color = textColor;
+                confidenceChart.options.scales.x.grid.color = gridColor;
+                confidenceChart.options.scales.y.grid.color = gridColor;
+                confidenceChart.update();
+            }
+        }
+
+        // Refresh Interval Management
+        function changeRefreshInterval() {
+            const select = document.getElementById('refreshInterval');
+            UPDATE_INTERVAL = parseInt(select.value);
+
+            // Clear existing interval
+            if (updateIntervalId) {
+                clearInterval(updateIntervalId);
+                updateIntervalId = null;
+            }
+
+            // Start new interval if not manual
+            if (UPDATE_INTERVAL > 0) {
+                startPeriodicUpdate();
+            }
+        }
+
+        // Custom Date Range
+        function initializeCustomDatePicker() {
+            const today = new Date();
+            const endDate = today.toISOString().split('T')[0];
+            const startDate = new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+            document.getElementById('startDate').value = startDate;
+            document.getElementById('endDate').value = endDate;
+        }
+
+        function applyCustomRange() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+
+            const start = new Date(startDate).getTime() / 1000;
+            const end = new Date(endDate).getTime() / 1000;
+
+            if (start >= end) {
+                alert('Start date must be before end date');
+                return;
+            }
+
+            // Clear active preset buttons
+            document.querySelectorAll('.range-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Fetch data for custom range
+            fetchCustomRangeData(start, end);
+        }
+
+        async function fetchCustomRangeData(start, end) {
+            try {
+                // For now, approximate with closest preset
+                // TODO: Update backend API to support custom ranges
+                const duration = end - start;
+                let approximateRange = '24h';
+
+                if (duration <= 3600) approximateRange = '1h';
+                else if (duration <= 86400) approximateRange = '24h';
+                else if (duration <= 604800) approximateRange = '7d';
+                else approximateRange = '30d';
+
+                currentRange = approximateRange;
+                document.getElementById('summaryPeriod').textContent = 'Custom Range';
+                document.getElementById('strategiesPeriod').textContent = 'Custom Range';
+
+                await fetchDataForRange(approximateRange);
+
+            } catch (error) {
+                console.error('Error fetching custom range data:', error);
+                showError('Failed to load custom range data');
+            }
+        }
+
+        // A/B Test Preview
+        function updateABTestPreview() {
+            const testName = document.getElementById('testName')?.value || 'Test';
+            const variantA = document.getElementById('variantA')?.value || 'A';
+            const variantB = document.getElementById('variantB')?.value || 'B';
+            const split = document.getElementById('trafficSplit')?.value || 50;
+            const metric = document.getElementById('successMetric')?.value || 'confidence';
+            const minSample = document.getElementById('minSampleSize')?.value || 100;
+
+            const preview = `
+                <strong>${testName}</strong><br>
+                Variant A (${variantA}): ${split}% traffic<br>
+                Variant B (${variantB}): ${100 - split}% traffic<br>
+                Success Metric: ${metric}<br>
+                Minimum Sample Size: ${minSample} queries per variant<br>
+                <br>
+                <em>Test will run until statistical significance is reached (p < 0.05)</em>
+            `;
+
+            const previewEl = document.getElementById('abTestPreview');
+            if (previewEl) {
+                previewEl.innerHTML = preview;
+            }
+        }
+
+        function updateSplitDisplay() {
+            const split = document.getElementById('trafficSplit').value;
+            document.getElementById('splitDisplay').textContent = `${split}% / ${100 - split}%`;
+            updateABTestPreview();
+        }
+
+        // Date Range Buttons
+        function initializeDateRangeButtons() {
+            const buttons = document.querySelectorAll('.range-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    currentRange = btn.getAttribute('data-range');
+
+                    const periodText = {
+                        '1h': 'Last 1h',
+                        '24h': 'Last 24h',
+                        '7d': 'Last 7d',
+                        '30d': 'Last 30d'
+                    }[currentRange];
+
+                    document.getElementById('summaryPeriod').textContent = periodText;
+                    document.getElementById('strategiesPeriod').textContent = periodText;
+
+                    fetchDataForRange(currentRange);
+                });
+            });
+        }
+
+        // WebSocket Connection
+        function initializeWebSocket() {
+            socket = io(API_URL);
+
+            socket.on('connect', () => {
+                updateConnectionStatus(true);
+                socket.emit('subscribe_metrics');
+            });
+
+            socket.on('disconnect', () => {
+                updateConnectionStatus(false);
+            });
+
+            socket.on('metrics_update', (data) => {
+                updateDashboard(data);
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('WebSocket connection error:', error);
+                updateConnectionStatus(false);
+            });
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusDiv = document.getElementById('connectionStatus');
+            if (connected) {
+                statusDiv.textContent = '🟢 Connected';
+                statusDiv.className = 'status connected';
+            } else {
+                statusDiv.textContent = '🔴 Disconnected';
+                statusDiv.className = 'status disconnected';
+            }
+        }
+
+        // Charts Initialization
+        function initializeCharts() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const textColor = theme === 'dark' ? '#e8e8e8' : '#333333';
+            const gridColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+            const latencyCtx = document.getElementById('latencyChart').getContext('2d');
+            const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+
+            latencyChart = new Chart(latencyCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Latency (ms)',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: textColor },
+                            grid: { color: gridColor }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: textColor,
+                                callback: function(value) {
+                                    return value + 'ms';
+                                }
+                            },
+                            grid: { color: gridColor }
+                        }
+                    }
+                }
+            });
+
+            confidenceChart = new Chart(confidenceCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Confidence',
+                        data: [],
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: textColor },
+                            grid: { color: gridColor }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            min: 0.5,
+                            max: 1.0,
+                            ticks: {
+                                color: textColor,
+                                callback: function(value) {
+                                    return value.toFixed(2);
+                                }
+                            },
+                            grid: { color: gridColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fetch initial data
+        function fetchInitialData() {
+            fetchDataForRange(currentRange);
+        }
+
+        // Fetch data for specific range
+        async function fetchDataForRange(range) {
+            try {
+                const statsResponse = await fetch(`${API_URL}/api/stats?period=${range}`);
+                const statsData = await statsResponse.json();
+
+                const trendsLatencyResponse = await fetch(`${API_URL}/api/trends?metric=latency_ms&period=${range}&interval=60`);
+                const trendsLatencyData = await trendsLatencyResponse.json();
+
+                const trendsConfidenceResponse = await fetch(`${API_URL}/api/trends?metric=confidence&period=${range}&interval=60`);
+                const trendsConfidenceData = await trendsConfidenceResponse.json();
+
+                const strategiesResponse = await fetch(`${API_URL}/api/top_strategies?period=${range}&limit=10`);
+                const strategiesData = await strategiesResponse.json();
+
+                updateDashboard({
+                    ...statsData,
+                    latency_trend: trendsLatencyData.data || [],
+                    confidence_trend: trendsConfidenceData.data || [],
+                    top_strategies: strategiesData.strategies || []
+                });
+
+                allStrategies = strategiesData.strategies || [];
+                populateStrategySelectors();
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showError('Failed to load dashboard data. Please check if the API server is running.');
+            }
+        }
+
+        // Update dashboard
+        function updateDashboard(data) {
+            document.getElementById('totalQueries').textContent = data.total_queries || '-';
+            document.getElementById('avgConfidence').textContent = data.avg_confidence?.toFixed(3) || '-';
+            document.getElementById('avgLatency').textContent = data.avg_latency_ms ? `${data.avg_latency_ms.toFixed(1)}ms` : '-';
+            document.getElementById('cacheHitRate').textContent = data.cache_hit_rate ? `${(data.cache_hit_rate * 100).toFixed(1)}%` : '-';
+
+            document.getElementById('p50Latency').textContent = data.p50_latency_ms ? `${data.p50_latency_ms.toFixed(1)}ms` : '-';
+            document.getElementById('p95Latency').textContent = data.p95_latency_ms ? `${data.p95_latency_ms.toFixed(1)}ms` : '-';
+            document.getElementById('p99Latency').textContent = data.p99_latency_ms ? `${data.p99_latency_ms.toFixed(1)}ms` : '-';
+
+            document.getElementById('cacheHits').textContent = data.total_cache_hits || '-';
+            document.getElementById('cacheMisses').textContent = data.total_cache_misses || '-';
+
+            if (data.total_cache_hits && data.total_cache_misses) {
+                const speedup = data.total_cache_hits / (data.total_cache_hits + data.total_cache_misses) * 10;
+                document.getElementById('cacheSpeedup').textContent = `${speedup.toFixed(1)}×`;
+            }
+
+            if (data.latency_trend && data.latency_trend.length > 0) {
+                updateChart(latencyChart, data.latency_trend);
+            }
+
+            if (data.confidence_trend && data.confidence_trend.length > 0) {
+                updateChart(confidenceChart, data.confidence_trend);
+            }
+
+            if (data.top_strategies) {
+                updateStrategyList(data.top_strategies);
+            }
+
+            document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+
+        // Update chart
+        function updateChart(chart, data) {
+            chart.data.labels = data.map(point => {
+                const date = new Date(point.timestamp * 1000);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            });
+            chart.data.datasets[0].data = data.map(point => point.value);
+            chart.update('none');
+        }
+
+        // Update strategy list
+        function updateStrategyList(strategies) {
+            const listElement = document.getElementById('strategyList');
+
+            if (strategies.length === 0) {
+                listElement.innerHTML = '<li class="loading">No strategies found</li>';
+                return;
+            }
+
+            listElement.innerHTML = '';
+
+            strategies.slice(0, 10).forEach(strategy => {
+                const item = document.createElement('li');
+                item.className = 'strategy-item';
+
+                const perf = strategy.performance;
+                const width = Math.min(100, (perf.avg_confidence * 100));
+
+                item.innerHTML = `
+                    <div class="strategy-header">
+                        <span class="strategy-name">${strategy.strategy}</span>
+                        <span class="strategy-confidence">${perf.avg_confidence.toFixed(3)}</span>
+                    </div>
+                    <div style="width: 100%; background: var(--border-color); border-radius: 10px; overflow: hidden;">
+                        <div class="strategy-bar" style="width: ${width}%"></div>
+                    </div>
+                    <div class="strategy-meta">
+                        <span>Latency: ${perf.avg_latency_ms.toFixed(1)}ms</span>
+                        <span>Uses: ${perf.total_uses}</span>
+                        <span>Success: ${(perf.success_rate * 100).toFixed(0)}%</span>
+                    </div>
+                `;
+
+                listElement.appendChild(item);
+            });
+        }
+
+        // Populate strategy selectors
+        function populateStrategySelectors() {
+            const select1 = document.getElementById('strategy1');
+            const select2 = document.getElementById('strategy2');
+
+            select1.innerHTML = '<option value="">Select Strategy 1...</option>';
+            select2.innerHTML = '<option value="">Select Strategy 2...</option>';
+
+            allStrategies.forEach(strategy => {
+                const option1 = document.createElement('option');
+                option1.value = strategy.strategy;
+                option1.textContent = strategy.strategy;
+                select1.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = strategy.strategy;
+                option2.textContent = strategy.strategy;
+                select2.appendChild(option2);
+            });
+
+            // Update A/B test selectors
+            const variantA = document.getElementById('variantA');
+            const variantB = document.getElementById('variantB');
+
+            if (variantA && variantB && allStrategies.length > 0) {
+                variantA.innerHTML = '';
+                variantB.innerHTML = '';
+
+                allStrategies.forEach(strategy => {
+                    const optionA = document.createElement('option');
+                    optionA.value = strategy.strategy;
+                    optionA.textContent = strategy.strategy;
+                    variantA.appendChild(optionA);
+
+                    const optionB = document.createElement('option');
+                    optionB.value = strategy.strategy;
+                    optionB.textContent = strategy.strategy;
+                    variantB.appendChild(optionB);
+                });
+
+                updateABTestPreview();
+            }
+        }
+
+        // Compare strategies
+        function compareStrategies() {
+            const strategy1Name = document.getElementById('strategy1').value;
+            const strategy2Name = document.getElementById('strategy2').value;
+
+            if (!strategy1Name || !strategy2Name) {
+                alert('Please select two strategies to compare');
+                return;
+            }
+
+            const strategy1 = allStrategies.find(s => s.strategy === strategy1Name);
+            const strategy2 = allStrategies.find(s => s.strategy === strategy2Name);
+
+            if (!strategy1 || !strategy2) {
+                alert('Strategy not found');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('comparisonResults');
+
+            const metrics = [
+                { label: 'Avg Confidence', key: 'avg_confidence', format: v => v.toFixed(3), higher: true },
+                { label: 'Avg Latency', key: 'avg_latency_ms', format: v => v.toFixed(1) + 'ms', higher: false },
+                { label: 'Total Uses', key: 'total_uses', format: v => v, higher: true },
+                { label: 'Success Rate', key: 'success_rate', format: v => (v * 100).toFixed(0) + '%', higher: true }
+            ];
+
+            let html = '<table class="comparison-table"><thead><tr>';
+            html += '<th>Metric</th>';
+            html += `<th>${strategy1Name}</th>`;
+            html += `<th>${strategy2Name}</th>`;
+            html += '<th>Winner</th>';
+            html += '</tr></thead><tbody>';
+
+            metrics.forEach(metric => {
+                const val1 = strategy1.performance[metric.key];
+                const val2 = strategy2.performance[metric.key];
+
+                const winner = metric.higher ?
+                    (val1 > val2 ? strategy1Name : (val1 < val2 ? strategy2Name : 'Tie')) :
+                    (val1 < val2 ? strategy1Name : (val1 > val2 ? strategy2Name : 'Tie'));
+
+                html += '<tr>';
+                html += `<td><strong>${metric.label}</strong></td>`;
+                html += `<td class="${winner === strategy1Name ? 'winner' : ''}">${metric.format(val1)}</td>`;
+                html += `<td class="${winner === strategy2Name ? 'winner' : ''}">${metric.format(val2)}</td>`;
+                html += `<td>${winner}</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Search functionality
+        function applySearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            if (!searchTerm) {
+                updateStrategyList(allStrategies);
+                return;
+            }
+
+            const filteredStrategies = allStrategies.filter(strategy =>
+                strategy.strategy.toLowerCase().includes(searchTerm)
+            );
+
+            updateStrategyList(filteredStrategies);
+        }
+
+        // Export functionality
+        async function exportData(format) {
+            try {
+                const response = await fetch(`${API_URL}/api/stats?period=${currentRange}`);
+                const data = await response.json();
+
+                if (format === 'json') {
+                    const dataStr = JSON.stringify(data, null, 2);
+                    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                    const exportFileDefaultName = `promptly-metrics-${currentRange}-${Date.now()}.json`;
+
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUri);
+                    linkElement.setAttribute('download', exportFileDefaultName);
+                    linkElement.click();
+
+                } else if (format === 'csv') {
+                    let csv = 'Metric,Value\n';
+                    csv += `Total Queries,${data.total_queries}\n`;
+                    csv += `Avg Confidence,${data.avg_confidence}\n`;
+                    csv += `Avg Latency (ms),${data.avg_latency_ms}\n`;
+                    csv += `Cache Hit Rate,${data.cache_hit_rate}\n`;
+                    csv += `P50 Latency (ms),${data.p50_latency_ms}\n`;
+                    csv += `P95 Latency (ms),${data.p95_latency_ms}\n`;
+                    csv += `P99 Latency (ms),${data.p99_latency_ms}\n`;
+                    csv += '\nStrategy,Avg Confidence,Avg Latency (ms),Total Uses,Success Rate\n';
+
+                    if (data.strategy_performance) {
+                        Object.entries(data.strategy_performance).forEach(([strategy, perf]) => {
+                            csv += `${strategy},${perf.avg_confidence},${perf.avg_latency_ms},${perf.total_uses},${perf.success_rate}\n`;
+                        });
+                    }
+
+                    const dataUri = 'data:text/csv;charset=utf-8,'+ encodeURIComponent(csv);
+                    const exportFileDefaultName = `promptly-metrics-${currentRange}-${Date.now()}.csv`;
+
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUri);
+                    linkElement.setAttribute('download', exportFileDefaultName);
+                    linkElement.click();
+                }
+
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                alert('Failed to export data');
+            }
+        }
+
+        // Periodic update
+        function startPeriodicUpdate() {
+            if (UPDATE_INTERVAL > 0) {
+                updateIntervalId = setInterval(() => {
+                    if (!socket || !socket.connected) {
+                        fetchDataForRange(currentRange);
+                    }
+                }, UPDATE_INTERVAL);
+            }
+        }
+
+        // Error display
+        function showError(message) {
+            const errorDiv = document.getElementById('errorDisplay');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

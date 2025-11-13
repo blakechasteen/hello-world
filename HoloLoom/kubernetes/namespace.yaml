@@ -1,0 +1,80 @@
+# HoloLoom Namespace
+# Part 5: Production Hardening - Day 25
+#
+# Dedicated namespace for HoloLoom deployment
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hololoom
+  labels:
+    name: hololoom
+    environment: production
+    part: production-hardening
+    monitoring: enabled
+
+---
+# Resource Quota (optional)
+# Limits total resource usage in namespace
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: hololoom-quota
+  namespace: hololoom
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "20"  # 20 CPU cores total
+    requests.memory: 40Gi  # 40GB RAM total
+    limits.cpu: "40"  # 40 CPU cores max
+    limits.memory: 80Gi  # 80GB RAM max
+
+    # Object counts
+    pods: "50"
+    services: "10"
+    configmaps: "20"
+    secrets: "10"
+    persistentvolumeclaims: "10"
+
+---
+# LimitRange (optional)
+# Sets default resource limits for pods
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: hololoom-limits
+  namespace: hololoom
+spec:
+  limits:
+    # Pod limits
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+
+    # Container limits
+    - type: Container
+      default:
+        cpu: "1"
+        memory: "2Gi"
+      defaultRequest:
+        cpu: "500m"
+        memory: "1Gi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+
+    # PVC limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: "100Gi"
+      min:
+        storage: "1Gi"

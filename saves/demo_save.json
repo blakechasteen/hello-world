@@ -1,0 +1,177 @@
+{
+  "metadata": {
+    "save_version": "1.0.0",
+    "save_date": "2025-11-13T08:23:53.979154",
+    "total_playtime_minutes": 45,
+    "character_name": "Alice",
+    "character_level": 1,
+    "current_location": "school_library",
+    "quests_completed": 3
+  },
+  "player": {
+    "student_id": "demo_player",
+    "name": "Alice",
+    "grade": 7,
+    "skills": {},
+    "learning_styles": {
+      "visual": 0.5,
+      "auditory": 0.5,
+      "reading_writing": 0.5,
+      "kinesthetic": 0.5,
+      "social": 0.5,
+      "solitary": 0.5
+    },
+    "stats": {
+      "total_xp": 250.0,
+      "level": 1,
+      "quests_completed": 3,
+      "quests_attempted": 5,
+      "minigames_completed": 0,
+      "total_play_time_minutes": 0,
+      "streak_days": 0,
+      "achievements": []
+    },
+    "difficulty_preference": 0.5
+  },
+  "game_state": {
+    "current_location_id": "school_library",
+    "visited_locations": [
+      "school_library"
+    ],
+    "current_quest": null,
+    "active_npc": null,
+    "session_start_timestamp": 1763022233.9791548
+  },
+  "narrative_memory": {
+    "events": {
+      "ccd6fa58-8729-4c59-a826-adcbc89a3a80": {
+        "event_id": "ccd6fa58-8729-4c59-a826-adcbc89a3a80",
+        "event_type": "world_change",
+        "timestamp": 1763022233.979154,
+        "importance": 1,
+        "description": "Traveled from school_lobby to school_library",
+        "location_id": "school_library",
+        "npc_id": null,
+        "quest_id": null,
+        "subject": null,
+        "caused_by": [],
+        "enables": []
+      }
+    },
+    "threads": {
+      "582b4e2e-f0bf-4ef0-97a9-6eaff55a8dda": {
+        "thread_id": "582b4e2e-f0bf-4ef0-97a9-6eaff55a8dda",
+        "name": "Math Learning Journey",
+        "description": "The student's learning progression in math",
+        "subject": "math",
+        "events": [],
+        "start_timestamp": 1763022233.979154,
+        "active": true
+      },
+      "2e6b8691-f9ab-42cc-8330-2314660dae7b": {
+        "thread_id": "2e6b8691-f9ab-42cc-8330-2314660dae7b",
+        "name": "Science Learning Journey",
+        "description": "The student's learning progression in science",
+        "subject": "science",
+        "events": [],
+        "start_timestamp": 1763022233.979154,
+        "active": true
+      },
+      "4126df83-5400-4fbb-bab2-bdd4d1d21b87": {
+        "thread_id": "4126df83-5400-4fbb-bab2-bdd4d1d21b87",
+        "name": "Ela Learning Journey",
+        "description": "The student's learning progression in ela",
+        "subject": "ela",
+        "events": [],
+        "start_timestamp": 1763022233.979154,
+        "active": true
+      },
+      "73ca2dec-72e3-45bd-9f5e-f1e3830a435d": {
+        "thread_id": "73ca2dec-72e3-45bd-9f5e-f1e3830a435d",
+        "name": "Social_Studies Learning Journey",
+        "description": "The student's learning progression in social_studies",
+        "subject": "social_studies",
+        "events": [],
+        "start_timestamp": 1763022233.979154,
+        "active": true
+      },
+      "9258f38b-b04b-4bc1-b217-7d7f21a69ad1": {
+        "thread_id": "9258f38b-b04b-4bc1-b217-7d7f21a69ad1",
+        "name": "Ai_Readiness Learning Journey",
+        "description": "The student's learning progression in ai_readiness",
+        "subject": "ai_readiness",
+        "events": [],
+        "start_timestamp": 1763022233.979154,
+        "active": true
+      },
+      "eaae54a5-a2d5-499f-abb9-84a1031f245f": {
+        "thread_id": "eaae54a5-a2d5-499f-abb9-84a1031f245f",
+        "name": "Collaboration Learning Journey",
+        "description": "The student's learning progression in collaboration",
+        "subject": "collaboration",
+        "events": [],
+        "start_timestamp": 1763022233.979154,
+        "active": true
+      }
+    },
+    "events_chronological": [
+      "ccd6fa58-8729-4c59-a826-adcbc89a3a80"
+    ]
+  },
+  "subject_threads": {
+    "math": {
+      "thread_id": "582b4e2e-f0bf-4ef0-97a9-6eaff55a8dda",
+      "name": "Math Learning Journey",
+      "description": "The student's learning progression in math",
+      "subject": "math",
+      "events": [],
+      "start_timestamp": 1763022233.979154,
+      "active": true
+    },
+    "science": {
+      "thread_id": "2e6b8691-f9ab-42cc-8330-2314660dae7b",
+      "name": "Science Learning Journey",
+      "description": "The student's learning progression in science",
+      "subject": "science",
+      "events": [],
+      "start_timestamp": 1763022233.979154,
+      "active": true
+    },
+    "ela": {
+      "thread_id": "4126df83-5400-4fbb-bab2-bdd4d1d21b87",
+      "name": "Ela Learning Journey",
+      "description": "The student's learning progression in ela",
+      "subject": "ela",
+      "events": [],
+      "start_timestamp": 1763022233.979154,
+      "active": true
+    },
+    "social_studies": {
+      "thread_id": "73ca2dec-72e3-45bd-9f5e-f1e3830a435d",
+      "name": "Social_Studies Learning Journey",
+      "description": "The student's learning progression in social_studies",
+      "subject": "social_studies",
+      "events": [],
+      "start_timestamp": 1763022233.979154,
+      "active": true
+    },
+    "ai_readiness": {
+      "thread_id": "9258f38b-b04b-4bc1-b217-7d7f21a69ad1",
+      "name": "Ai_Readiness Learning Journey",
+      "description": "The student's learning progression in ai_readiness",
+      "subject": "ai_readiness",
+      "events": [],
+      "start_timestamp": 1763022233.979154,
+      "active": true
+    },
+    "collaboration": {
+      "thread_id": "eaae54a5-a2d5-499f-abb9-84a1031f245f",
+      "name": "Collaboration Learning Journey",
+      "description": "The student's learning progression in collaboration",
+      "subject": "collaboration",
+      "events": [],
+      "start_timestamp": 1763022233.979154,
+      "active": true
+    }
+  }
+}

@@ -389,6 +389,82 @@ class WarpSpace:
 
         return context
 
+    def compute(self, query_embedding: np.ndarray, compute_spectral: bool = True) -> Dict[str, Any]:
+        """
+        Perform complete tensor operations in Warp Space.
+
+        This is the main compute method that orchestrates all continuous
+        mathematical operations: spectral features, attention, and context weighting.
+
+        Lifecycle position: Called AFTER tension() and BEFORE collapse()
+
+        Args:
+            query_embedding: Query embedding vector for attention computation
+            compute_spectral: Whether to compute spectral features (default: True)
+
+        Returns:
+            Dict with computation results:
+                - spectral_features: Spectral analysis results (if enabled)
+                - attention_weights: Attention scores over threads
+                - context_vector: Weighted context embedding
+                - attention_entropy: Entropy of attention distribution
+                - metadata: Computation metadata
+        """
+        if not self.is_tensioned:
+            raise RuntimeError("Cannot compute: Warp Space not tensioned")
+
+        logger.info(f"Computing in Warp Space: {len(self.threads)} threads")
+
+        results = {}
+
+        # 1. Spectral features (optional, captures tensor field structure)
+        if compute_spectral:
+            try:
+                spectral = self.compute_spectral_features()
+                results['spectral_features'] = spectral
+                logger.debug(f"  Spectral: norm={spectral.get('field_norm', 0):.3f}, "
+                           f"entropy={spectral.get('spectral_entropy', 0):.3f}")
+            except Exception as e:
+                logger.warning(f"Spectral computation failed: {e}")
+                results['spectral_features'] = None
+
+        # 2. Apply attention (query → thread similarity)
+        try:
+            attention = self.apply_attention(query_embedding)
+            results['attention_weights'] = attention
+
+            # Compute attention entropy for monitoring
+            attention_entropy = float(-np.sum(attention * np.log(attention + 1e-10)))
+            results['attention_entropy'] = attention_entropy
+
+            logger.debug(f"  Attention: max={np.max(attention):.3f}, "
+                       f"entropy={attention_entropy:.3f}")
+        except Exception as e:
+            logger.error(f"Attention computation failed: {e}")
+            raise
+
+        # 3. Weighted context (attention-weighted sum of threads)
+        try:
+            context = self.weighted_context(attention)
+            results['context_vector'] = context
+            logger.debug(f"  Context: shape={context.shape}, norm={np.linalg.norm(context):.3f}")
+        except Exception as e:
+            logger.error(f"Context weighting failed: {e}")
+            raise
+
+        # 4. Metadata
+        results['metadata'] = {
+            'num_threads': len(self.threads),
+            'tensor_field_shape': self.tensor_field.shape,
+            'query_embedding_dim': len(query_embedding),
+            'operations_performed': len(self.operations),
+            'spectral_computed': compute_spectral and results.get('spectral_features') is not None
+        }
+
+        logger.info(f"Warp Space compute complete: {len(self.operations)} total operations")
+
+        return results
+
     def collapse(self) -> Dict[str, Any]:
         """
         Collapse Warp Space back to discrete representation.
@@ -505,21 +581,21 @@ if __name__ == "__main__":
         print(f"   Field norm: {spectral['field_norm']:.3f}")
         print(f"   Spectral entropy: {spectral.get('spectral_entropy', 0):.3f}\n")
 
-        # Apply attention
-        print("3. Applying attention from query...")
+        # Compute operations (replaces steps 3-4 with unified method)
+        print("3. Computing in Warp Space (attention + context)...")
         query_text = ["What is Thompson Sampling?"]
         query_emb = embedder.encode_scales(query_text, size=384)
-        attention = warp.apply_attention(query_emb[0])
-        print(f"   Attention: {attention}")
-        print(f"   Max attention on thread: {np.argmax(attention)}\n")
 
-        # Get weighted context
-        print("4. Computing weighted context...")
-        context = warp.weighted_context(attention)
-        print(f"   Context shape: {context.shape}\n")
+        compute_results = warp.compute(query_emb[0], compute_spectral=True)
+
+        print(f"   Attention entropy: {compute_results['attention_entropy']:.3f}")
+        print(f"   Max attention: {np.max(compute_results['attention_weights']):.3f}")
+        print(f"   Max attention on thread: {np.argmax(compute_results['attention_weights'])}")
+        print(f"   Context vector norm: {np.linalg.norm(compute_results['context_vector']):.3f}")
+        print(f"   Spectral features computed: {compute_results['metadata']['spectral_computed']}\n")
 
         # Collapse
-        print("5. Collapsing Warp Space...")
+        print("4. Collapsing Warp Space...")
         updates = warp.collapse()
         print(f"   Operations performed: {len(updates['operations'])}")
         print(f"   Threads processed: {len(updates['threads'])}\n")

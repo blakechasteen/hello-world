@@ -88,6 +88,38 @@ class PromptlyBot:
         self.approval_manager = None  # Initialize after client ready
         self.code_reviewer = get_code_reviewer()
 
+
+        # Initialize Git handler (ChatOps Phase 1)
+        git_repo_path = os.getenv("GIT_REPO_PATH")
+        try:
+            from .git_handler import GitHandler
+            self.git_handler = GitHandler(git_repo_path) if git_repo_path else None
+            if self.git_handler:
+                logger.info(f"Git handler initialized for repo: {git_repo_path}")
+        except ValueError as e:
+            logger.warning(f"Git handler init failed: {e}")
+            self.git_handler = None
+        except Exception as e:
+            logger.warning(f"Git handler init error: {e}")
+            self.git_handler = None
+
+        # Initialize Claude Code bridge (ChatOps Phase 2)
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        try:
+            from .claude_bridge import ClaudeBridge
+            self.claude_bridge = ClaudeBridge(
+                api_key=api_key,
+                repo_path=git_repo_path
+            )
+            if self.claude_bridge.is_available():
+                logger.info("Claude API available")
+            else:
+                logger.warning("Claude API not available (set ANTHROPIC_API_KEY)")
+                self.claude_bridge = None
+        except Exception as e:
+            logger.warning(f"Claude Bridge init failed: {e}")
+            self.claude_bridge = None
+
         logger.info(f"Initialized Promptly bot: {user_id}")
 
     async def login(self, password: str) -> bool:
@@ -279,6 +311,28 @@ class PromptlyBot:
             return await self.cmd_save(command, room)
         elif cmd_type == 'list':
             return await self.cmd_list(command, room)
+        # Git commands (ChatOps Phase 1)
+        elif cmd_type == 'git-status':
+            return await self.cmd_git_status(command, room)
+        elif cmd_type == 'git-log':
+            return await self.cmd_git_log(command, room)
+        elif cmd_type == 'git-diff':
+            return await self.cmd_git_diff(command, room)
+        elif cmd_type == 'git-branch':
+            return await self.cmd_git_branch(command, room)
+        elif cmd_type == 'git-commit':
+            return await self.cmd_git_commit(command, room)
+        elif cmd_type == 'git-push':
+            return await self.cmd_git_push(command, room)
+        elif cmd_type == 'git-pull':
+            return await self.cmd_git_pull(command, room)
+        # Claude Code commands (ChatOps Phase 2)
+        elif cmd_type == 'claude-review':
+            return await self.cmd_claude_review(command, room)
+        elif cmd_type == 'claude-explain':
+            return await self.cmd_claude_explain(command, room)
+        elif cmd_type == 'claude-refactor':
+            return await self.cmd_claude_refactor(command, room)
         else:
             return {
                 "body": f"❌ Unknown command: {cmd_type}",
@@ -518,6 +572,302 @@ Examples: [
                 "body": f"💬 I heard you, but I'm having trouble responding right now.\n\nTry a specific command like `@promptly help` to see what I can do!",
                 "html": "<p>💬 I heard you, but I'm having trouble responding right now.</p><p>Try <code>@promptly help</code> to see what I can do!</p>"
             }
+
+
+    # ========== Claude Code Commands (ChatOps Phase 2) ==========
+
+    async def cmd_claude_review(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle Claude Code review command"""
+        if not self.claude_bridge:
+            return {
+                "body": "Claude Code not available. Install from https://claude.ai/download",
+                "html": "<p>Claude Code not available. Install from <a href='https://claude.ai/download'>claude.ai/download</a></p>"
+            }
+
+        file_path = command.get('file_path', '')
+        if not file_path:
+            return {
+                "body": 'Usage: @promptly review <file_path>',
+                "html": '<p>Usage: <code>@promptly review &lt;file_path&gt;</code></p>'
+            }
+
+        # Show processing message
+        await self.send_message(room.room_id, f"Reviewing {file_path}...")
+
+        try:
+            result = self.claude_bridge.review(file_path)
+
+            if len(result) > 3000:
+                result = result[:3000] + "\n\n... (truncated)"
+
+            body = f"Code Review: {file_path}\n\n{result}"
+            html = f"<p><strong>Code Review:</strong> <code>{file_path}</code></p><pre>{result}</pre>"
+
+            return {"body": body, "html": html}
+
+        except Exception as e:
+            logger.error(f"Claude review error: {e}")
+            return {
+                "body": f"Review failed: {e}",
+                "html": f"<p>Review failed: <code>{e}</code></p>"
+            }
+
+    async def cmd_claude_explain(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle Claude Code explain command"""
+        if not self.claude_bridge:
+            return {
+                "body": "Claude Code not available. Install from https://claude.ai/download",
+                "html": "<p>Claude Code not available. Install from <a href='https://claude.ai/download'>claude.ai/download</a></p>"
+            }
+
+        file_path = command.get('file_path', '')
+        if not file_path:
+            return {
+                "body": 'Usage: @promptly explain <file_path>',
+                "html": '<p>Usage: <code>@promptly explain &lt;file_path&gt;</code></p>'
+            }
+
+        # Show processing message
+        await self.send_message(room.room_id, f"Explaining {file_path}...")
+
+        try:
+            result = self.claude_bridge.explain(file_path)
+
+            if len(result) > 3000:
+                result = result[:3000] + "\n\n... (truncated)"
+
+            body = f"Explanation: {file_path}\n\n{result}"
+            html = f"<p><strong>Explanation:</strong> <code>{file_path}</code></p><pre>{result}</pre>"
+
+            return {"body": body, "html": html}
+
+        except Exception as e:
+            logger.error(f"Claude explain error: {e}")
+            return {
+                "body": f"Explanation failed: {e}",
+                "html": f"<p>Explanation failed: <code>{e}</code></p>"
+            }
+
+    async def cmd_claude_refactor(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle Claude Code refactor command"""
+        if not self.claude_bridge:
+            return {
+                "body": "Claude Code not available. Install from https://claude.ai/download",
+                "html": "<p>Claude Code not available. Install from <a href='https://claude.ai/download'>claude.ai/download</a></p>"
+            }
+
+        file_path = command.get('file_path', '')
+        instruction = command.get('instruction', '')
+
+        if not file_path or not instruction:
+            return {
+                "body": 'Usage: @promptly refactor <file_path> "instruction"',
+                "html": '<p>Usage: <code>@promptly refactor &lt;file_path&gt; "instruction"</code></p>'
+            }
+
+        # Show processing message
+        await self.send_message(room.room_id, f"Refactoring {file_path}...")
+
+        try:
+            result = self.claude_bridge.refactor(file_path, instruction)
+
+            if len(result) > 3000:
+                result = result[:3000] + "\n\n... (truncated)"
+
+            body = f"Refactoring: {file_path}\n\nInstruction: {instruction}\n\n{result}"
+            html = f"<p><strong>Refactoring:</strong> <code>{file_path}</code></p><p>Instruction: <em>{instruction}</em></p><pre>{result}</pre>"
+
+            return {"body": body, "html": html}
+
+        except Exception as e:
+            logger.error(f"Claude refactor error: {e}")
+            return {
+                "body": f"Refactoring failed: {e}",
+                "html": f"<p>Refactoring failed: <code>{e}</code></p>"
+            }
+
+    # ========== Git Commands (ChatOps Phase 1) ==========
+
+async def cmd_git_status(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+    """Handle git status command"""
+    if not self.git_handler:
+        return {
+            "body": "Git not configured. Set GIT_REPO_PATH in .env",
+            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+        }
+
+    try:
+        status = self.git_handler.status(short=True)
+        branch = self.git_handler.get_current_branch()
+
+        body = f"Git Status\n\nBranch: {branch}\n\n{status}"
+        html = f"<p><strong>Git Status</strong></p><p>Branch: <code>{branch}</code></p><pre>{status}</pre>"
+
+        return {"body": body, "html": html}
+
+    except Exception as e:
+        logger.error(f"Git status error: {e}")
+        return {
+            "body": f"Git status failed: {e}",
+            "html": f"<p>Git status failed: <code>{e}</code></p>"
+        }
+
+async def cmd_git_log(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+    """Handle git log command"""
+    if not self.git_handler:
+        return {
+            "body": "Git not configured. Set GIT_REPO_PATH in .env",
+            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+        }
+
+    try:
+        log = self.git_handler.log(max_count=5, oneline=True)
+        branch = self.git_handler.get_current_branch()
+
+        body = f"Recent Commits ({branch})\n\n{log}"
+        html = f"<p><strong>Recent Commits</strong> ({branch})</p><pre>{log}</pre>"
+
+        return {"body": body, "html": html}
+
+    except Exception as e:
+        logger.error(f"Git log error: {e}")
+        return {
+            "body": f"Git log failed: {e}",
+            "html": f"<p>Git log failed: <code>{e}</code></p>"
+        }
+
+async def cmd_git_diff(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+    """Handle git diff command"""
+    if not self.git_handler:
+        return {
+            "body": "Git not configured. Set GIT_REPO_PATH in .env",
+            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+        }
+
+    try:
+        diff = self.git_handler.diff()
+
+        if not diff:
+            return {
+                "body": "No changes to show (working tree clean)",
+                "html": "<p>No changes to show (working tree clean)</p>"
+            }
+
+        if len(diff) > 2000:
+            diff = diff[:2000] + "\n\n... (truncated, too long for chat)"
+
+        body = f"Git Diff\n\n{diff}"
+        html = f"<p><strong>Git Diff</strong></p><pre>{diff}</pre>"
+
+        return {"body": body, "html": html}
+
+    except Exception as e:
+        logger.error(f"Git diff error: {e}")
+        return {
+            "body": f"Git diff failed: {e}",
+            "html": f"<p>Git diff failed: <code>{e}</code></p>"
+        }
+
+async def cmd_git_branch(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+    """Handle git branch command"""
+    if not self.git_handler:
+        return {
+            "body": "Git not configured. Set GIT_REPO_PATH in .env",
+            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+        }
+
+    try:
+        branches = self.git_handler.branch()
+
+        body = f"Git Branches\n\n{branches}"
+        html = f"<p><strong>Git Branches</strong></p><pre>{branches}</pre>"
+
+        return {"body": body, "html": html}
+
+    except Exception as e:
+        logger.error(f"Git branch error: {e}")
+        return {
+            "body": f"Git branch failed: {e}",
+            "html": f"<p>Git branch failed: <code>{e}</code></p>"
+        }
+
+async def cmd_git_commit(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+    """Handle git commit command"""
+    if not self.git_handler:
+        return {
+            "body": "Git not configured. Set GIT_REPO_PATH in .env",
+            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+        }
+
+    try:
+        message = command.get('message', '')
+        if not message:
+            return {
+                "body": 'Commit message required. Usage: @promptly git commit "your message"',
+                "html": '<p>Commit message required. Usage: <code>@promptly git commit "your message"</code></p>'
+            }
+
+        result = self.git_handler.commit(message, add_all=True)
+
+        body = f"Commit Created\n\nMessage: {message}\n\n{result}"
+        html = f"<p><strong>Commit Created</strong></p><p>Message: <code>{message}</code></p><pre>{result}</pre>"
+
+        return {"body": body, "html": html}
+
+    except Exception as e:
+        logger.error(f"Git commit error: {e}")
+        return {
+            "body": f"Git commit failed: {e}",
+            "html": f"<p>Git commit failed: <code>{e}</code></p>"
+        }
+
+async def cmd_git_push(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+    """Handle git push command"""
+    if not self.git_handler:
+        return {
+            "body": "Git not configured. Set GIT_REPO_PATH in .env",
+            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+        }
+
+    try:
+        branch = self.git_handler.get_current_branch()
+        result = self.git_handler.push(branch=branch)
+
+        body = f"Pushed to Remote\n\nBranch: {branch}\n\n{result}"
+        html = f"<p><strong>Pushed to Remote</strong></p><p>Branch: <code>{branch}</code></p><pre>{result}</pre>"
+
+        return {"body": body, "html": html}
+
+    except Exception as e:
+        logger.error(f"Git push error: {e}")
+        return {
+            "body": f"Git push failed: {e}\n\nNote: Push requires authentication",
+            "html": f"<p>Git push failed: <code>{e}</code></p><p>Note: Push requires authentication</p>"
+        }
+
+async def cmd_git_pull(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+    """Handle git pull command"""
+    if not self.git_handler:
+        return {
+            "body": "Git not configured. Set GIT_REPO_PATH in .env",
+            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+        }
+
+    try:
+        result = self.git_handler.pull()
+
+        body = f"Pulled from Remote\n\n{result}"
+        html = f"<p><strong>Pulled from Remote</strong></p><pre>{result}</pre>"
+
+        return {"body": body, "html": html}
+
+    except Exception as e:
+        logger.error(f"Git pull error: {e}")
+        return {
+            "body": f"Git pull failed: {e}",
+            "html": f"<p>Git pull failed: <code>{e}</code></p>"
+        }
+
 
     async def send_message(
         self,

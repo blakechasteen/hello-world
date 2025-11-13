@@ -281,28 +281,49 @@ class WeavingMemoryAdapter:
 
         Compatible with YarnGraph.select_threads() signature.
 
+        Implements:
+        - Temporal window filtering (start_time, end_time bounds)
+        - Recency weighting (exponential decay: 0.95^hours)
+        - Backend-agnostic retrieval
+
         Args:
             temporal_window: Time bounds for selection
             query: Query for relevance filtering
 
         Returns:
-            List of relevant memory shards
+            List of relevant memory shards (sorted by recency-weighted relevance)
         """
+        # Step 1: Retrieve from backend
         if self.backend_type == "unified" and self.backend:
-            return self._select_via_unified(query)
+            shards = self._select_via_unified(query, temporal_window)
         elif self.backend_type == "factory" and self.backend:
-            return self._select_via_factory(query)
+            shards = self._select_via_factory(query, temporal_window)
         else:
-            return self._select_via_in_memory(query)
+            shards = self._select_via_in_memory(query)
 
-    def _select_via_unified(self, query: Query) -> List[MemoryShard]:
+        # Step 2: Apply temporal filtering
+        if temporal_window:
+            shards = self._apply_temporal_filter(shards, temporal_window)
+
+        # Step 3: Apply recency weighting
+        if temporal_window and hasattr(temporal_window, 'recency_bias') and temporal_window.recency_bias > 0:
+            shards = self._apply_recency_weighting(shards, temporal_window)
+
+        return shards
+
+    def _select_via_unified(self, query: Query, temporal_window: Optional['TemporalWindow']) -> List[MemoryShard]:
         """Select threads via UnifiedMemory backend."""
         try:
+            # Determine limit from temporal window
+            limit = 20  # Default
+            if temporal_window and hasattr(temporal_window, 'max_memories'):
+                limit = temporal_window.max_memories
+
             # Use balanced strategy for best results
             memories = self.backend.recall(
                 query=query.text,
                 strategy=RecallStrategy.BALANCED,
-                limit=10
+                limit=limit
             )
 
             # Convert to MemoryShards
@@ -314,26 +335,31 @@ class WeavingMemoryAdapter:
             self.logger.error(f"UnifiedMemory recall failed: {e}")
             return []
 
-    def _select_via_factory(self, query: Query) -> List[MemoryShard]:
+    def _select_via_factory(self, query: Query, temporal_window: Optional['TemporalWindow']) -> List[MemoryShard]:
         """Select threads via backend factory."""
         try:
+            # Determine limit from temporal window
+            limit = 20  # Default
+            if temporal_window and hasattr(temporal_window, 'max_memories'):
+                limit = temporal_window.max_memories
+
             # Create query object
             query_obj = MemoryQuery(
                 text=query.text,
-                strategy=Strategy.BALANCED,
-                limit=10
+                limit=limit,
+                filters={}
             )
 
-            # Async recall - handle both running and non-running event loops
+            # Async retrieve - handle both running and non-running event loops
             try:
                 loop = asyncio.get_running_loop()
-                # Already in an event loop - use asyncio gather with timeout
+                # Already in an event loop - use ThreadPoolExecutor
                 import concurrent.futures
                 with concurrent.futures.ThreadPoolExecutor() as pool:
-                    result = pool.submit(asyncio.run, self.backend.recall(query_obj)).result(timeout=30)
+                    result = pool.submit(asyncio.run, self.backend.retrieve(query_obj, strategy=Strategy.FUSED)).result(timeout=30)
             except RuntimeError:
                 # No running loop - use asyncio.run()
-                result = asyncio.run(self.backend.recall(query_obj))
+                result = asyncio.run(self.backend.retrieve(query_obj, strategy=Strategy.FUSED))
 
             # Convert to MemoryShards
             shards = [protocol_memory_to_memoryshard(mem) for mem in result.memories]
@@ -341,7 +367,7 @@ class WeavingMemoryAdapter:
             return shards
 
         except Exception as e:
-            self.logger.error(f"Backend factory recall failed: {e}")
+            self.logger.error(f"Backend factory retrieve failed: {e}", exc_info=True)
             return []
 
     def _select_via_in_memory(self, query: Query) -> List[MemoryShard]:
@@ -351,6 +377,115 @@ class WeavingMemoryAdapter:
         shards = list(self.shards.values())
         self.logger.debug(f"Selected {len(shards)} threads from in-memory store")
         return shards
+
+    def _apply_temporal_filter(
+        self,
+        shards: List[MemoryShard],
+        temporal_window: 'TemporalWindow'
+    ) -> List[MemoryShard]:
+        """
+        Filter shards by temporal window bounds.
+
+        Args:
+            shards: Input shards
+            temporal_window: Temporal window with start, end
+
+        Returns:
+            Filtered shards within temporal window
+        """
+        if not hasattr(temporal_window, 'start') or temporal_window.start is None:
+            return shards  # No temporal filtering
+
+        filtered = []
+        for shard in shards:
+            # Check if shard has timestamp (could be in metadata)
+            timestamp = None
+            if hasattr(shard, 'timestamp') and shard.timestamp:
+                timestamp = shard.timestamp
+            elif hasattr(shard, 'metadata') and shard.metadata and 'timestamp' in shard.metadata:
+                ts_val = shard.metadata['timestamp']
+                if isinstance(ts_val, str):
+                    try:
+                        timestamp = datetime.fromisoformat(ts_val)
+                    except:
+                        timestamp = None
+                elif isinstance(ts_val, datetime):
+                    timestamp = ts_val
+
+            # Filter by temporal bounds
+            if timestamp:
+                if temporal_window.start <= timestamp <= temporal_window.end:
+                    filtered.append(shard)
+            else:
+                # Include shards without timestamps (can't filter)
+                filtered.append(shard)
+
+        self.logger.debug(
+            f"Temporal filter: {len(shards)} → {len(filtered)} shards "
+            f"(window: {temporal_window.start} to {temporal_window.end})"
+        )
+        return filtered
+
+    def _apply_recency_weighting(
+        self,
+        shards: List[MemoryShard],
+        temporal_window: 'TemporalWindow'
+    ) -> List[MemoryShard]:
+        """
+        Apply exponential decay recency weighting.
+
+        Uses decay_factor from temporal window (default 0.95^hours).
+        More recent shards get higher weight and are prioritized.
+
+        Args:
+            shards: Input shards
+            temporal_window: Config with decay_factor
+
+        Returns:
+            Shards sorted by recency-weighted score (descending)
+        """
+        now = datetime.now()
+        decay_factor = getattr(temporal_window, 'decay_factor', 0.95)  # Default: 5% decay per hour
+
+        weighted = []
+        for shard in shards:
+            # Extract timestamp
+            timestamp = None
+            if hasattr(shard, 'timestamp') and shard.timestamp:
+                timestamp = shard.timestamp
+            elif hasattr(shard, 'metadata') and shard.metadata and 'timestamp' in shard.metadata:
+                ts_val = shard.metadata['timestamp']
+                if isinstance(ts_val, str):
+                    try:
+                        timestamp = datetime.fromisoformat(ts_val)
+                    except:
+                        timestamp = None
+                elif isinstance(ts_val, datetime):
+                    timestamp = ts_val
+
+            # Calculate recency score
+            if timestamp:
+                hours_ago = (now - timestamp).total_seconds() / 3600
+                recency_score = decay_factor ** hours_ago
+            else:
+                recency_score = 0.5  # Neutral score for shards without timestamps
+
+            # Store recency score in metadata for downstream use
+            if not hasattr(shard, 'metadata') or shard.metadata is None:
+                shard.metadata = {}
+            shard.metadata['recency_score'] = recency_score
+
+            weighted.append((recency_score, shard))
+
+        # Sort by recency score (descending - most recent first)
+        weighted.sort(key=lambda x: x[0], reverse=True)
+
+        sorted_shards = [shard for score, shard in weighted]
+        self.logger.debug(
+            f"Recency weighting: top shard score={weighted[0][0]:.4f}, "
+            f"bottom shard score={weighted[-1][0]:.4f} (decay_factor={decay_factor})"
+        )
+        return sorted_shards
 
     # ========================================================================
     # Storage Operations

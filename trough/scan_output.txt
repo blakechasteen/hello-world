@@ -1,0 +1,4 @@
+  File "C:\Users\blake\OneDrive\Documents\mythRL\trough\scan_hololoom.py", line 119
+    rel_path = result['file'].replace('\', '/').split('HoloLoom/')[-1]
+                                                                ^
+SyntaxError: unterminated string literal (detected at line 119)

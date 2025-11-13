@@ -1,0 +1,2848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Control Panel</title>
+    <style>
+        /* Tufte-inspired minimal design: maximize data-ink ratio */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --bg: #ecf0f1;
+            --text: #2c3e50;
+            --border: #bdc3c7;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        /* Header */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        header .subtitle {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        nav button:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        nav button.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* Main Content */
+        main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Card Component */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px var(--shadow);
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Button Styles */
+        button.primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.primary:hover {
+            background: #2980b9;
+        }
+
+        button.secondary {
+            background: white;
+            color: var(--secondary);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button.secondary:hover {
+            background: var(--bg);
+            border-color: var(--secondary);
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* Metric Card */
+        .metric {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            margin-top: 0.25rem;
+        }
+
+        .metric-trend {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .metric-trend.up {
+            color: var(--success);
+        }
+
+        .metric-trend.down {
+            color: var(--danger);
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        th {
+            text-align: left;
+            font-weight: 600;
+            color: var(--secondary);
+            padding: 0.75rem 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: var(--bg);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.success {
+            background: #d5f4e6;
+            color: var(--success);
+        }
+
+        .badge.warning {
+            background: #fef5e7;
+            color: var(--warning);
+        }
+
+        .badge.danger {
+            background: #fadbd8;
+            color: var(--danger);
+        }
+
+        .badge.info {
+            background: #d6eaf8;
+            color: var(--accent);
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--secondary);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+            border: 4px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error State */
+        .error {
+            background: #fadbd8;
+            border: 1px solid var(--danger);
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .error-title {
+            font-weight: 600;
+            color: var(--danger);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--secondary);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            nav button {
+                padding: 0.75rem 1rem;
+                font-size: 0.8125rem;
+            }
+        }
+
+        /* Dark mode support (future) */
+        @media (prefers-color-scheme: dark) {
+            /* Will implement in Phase 2 */
+        }
+
+        /* ============================================================ */
+        /* Phase 2 Dashboard Styles */
+        /* ============================================================ */
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        /* Policy Weights */
+        .policy-weights {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .policy-weight-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .policy-label {
+            font-weight: 600;
+            min-width: 60px;
+            font-size: 0.75rem;
+            color: var(--secondary);
+        }
+
+        .policy-bar {
+            flex: 1;
+            height: 20px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .policy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            transition: width 0.5s;
+        }
+
+        .policy-value {
+            font-weight: 600;
+            min-width: 50px;
+            text-align: right;
+            font-size: 0.875rem;
+        }
+
+        /* Audit Trail Table */
+        .audit-trail-table {
+            font-size: 0.8125rem;
+        }
+
+        .audit-pagination {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--secondary);
+        }
+
+        /* Memory Results Grid */
+        .memory-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .memory-result-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .memory-result-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .result-entity {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .result-content {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .result-footer {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Ingestion Jobs */
+        .ingestion-jobs {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .job-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .job-type {
+            font-size: 0.875rem;
+            color: var(--primary);
+        }
+
+        .job-url {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            margin-bottom: 0.75rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .job-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Input Groups */
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Success Message */
+        .success-message {
+            background: #d5f4e6;
+            color: var(--success);
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--success);
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: #fef5e7;
+            color: var(--warning);
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--warning);
+        }
+
+        /* Sparkline */
+        .sparkline {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+
+        .badge.secondary {
+            background: #e8e8e8;
+            color: var(--secondary);
+        }
+
+        /* ===========================
+           Phase 3: Enhanced Monitoring
+           =========================== */
+
+        /* Orchestrator Pipeline Visualizer */
+        .stage-pipeline {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .stage-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            min-width: 140px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .stage-box.stage-active {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(52, 152, 219, 0.3);
+            transform: scale(1.05);
+        }
+
+        .stage-box.stage-complete {
+            border-color: var(--success);
+            background: #f0f8ff;
+        }
+
+        .stage-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .stage-info {
+            text-align: center;
+        }
+
+        .stage-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stage-description {
+            font-size: 0.75rem;
+            color: var(--secondary);
+        }
+
+        .stage-duration {
+            font-size: 0.75rem;
+            color: var(--accent);
+            margin-top: 0.25rem;
+        }
+
+        .stage-arrow {
+            font-size: 1.5rem;
+            color: #ccc;
+        }
+
+        .stage-pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-top: 0.5rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Phase 3.2: Bottleneck Indicators */
+        .stage-box.stage-bottleneck {
+            border-width: 3px;
+            border-color: #e74c3c !important;
+            background: #fff5f5;
+            animation: bottleneck-pulse 2s infinite;
+        }
+
+        @keyframes bottleneck-pulse {
+            0%, 100% {
+                box-shadow: 0 0 12px rgba(231, 76, 60, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+            }
+        }
+
+        .bottleneck-icon {
+            color: #e74c3c;
+            font-size: 1rem;
+            margin-left: 0.25rem;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        .stage-percentage {
+            color: var(--secondary);
+            font-size: 0.7rem;
+            margin-left: 0.25rem;
+        }
+
+        .stage-box.stage-bottleneck .stage-percentage {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        /* Phase 3.2: Enhanced Active Stage Animation */
+        .stage-box.stage-active {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(52, 152, 219, 0.3);
+            transform: scale(1.05);
+            animation: active-glow 2s infinite;
+        }
+
+        @keyframes active-glow {
+            0%, 100% {
+                box-shadow: 0 0 12px rgba(52, 152, 219, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+            }
+        }
+
+        /* Stage Waterfall */
+        .stage-waterfall {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .waterfall-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .waterfall-label {
+            min-width: 120px;
+            font-size: 0.75rem;
+            color: var(--secondary);
+        }
+
+        .waterfall-total {
+            font-weight: 600;
+            color: var(--text);
+            margin-left: 0.5rem;
+        }
+
+        .waterfall-bars {
+            flex: 1;
+            height: 20px;
+            background: var(--bg);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .waterfall-bar {
+            position: absolute;
+            height: 100%;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .waterfall-bar:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        /* Phase 3.2: Waterfall Bottleneck Indicators */
+        .waterfall-row.has-bottleneck {
+            background: #fff5f5;
+            padding: 0.25rem;
+            border-radius: 4px;
+        }
+
+        .waterfall-bar-bottleneck {
+            border: 2px solid rgba(231, 76, 60, 0.6);
+            box-shadow: 0 0 8px rgba(231, 76, 60, 0.3);
+            animation: bar-pulse 2s infinite;
+        }
+
+        @keyframes bar-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        .bottleneck-stripe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 4px,
+                rgba(255, 255, 255, 0.3) 4px,
+                rgba(255, 255, 255, 0.3) 8px
+            );
+            border-radius: 2px;
+            pointer-events: none;
+        }
+
+        .bottleneck-badge {
+            color: #e74c3c;
+            font-size: 0.875rem;
+            margin-left: 0.5rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* Policy & Bandit Monitor */
+        .exploration-balance {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .balance-gauge {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .gauge-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .gauge-bar {
+            width: 100%;
+            height: 24px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .gauge-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .balance-sparkline {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .tool-distribution {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .tool-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tool-name {
+            min-width: 100px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .tool-bar-container {
+            flex: 1;
+            height: 24px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .tool-bar-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .tool-stats {
+            min-width: 180px;
+            font-size: 0.75rem;
+            color: var(--secondary);
+        }
+
+        .current-query-card {
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+
+        .query-text {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .query-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ===========================
+           Phase 3.4: Analytics Styles
+           =========================== */
+
+        /* Query Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8125rem;
+        }
+
+        .comparison-table th {
+            text-align: left;
+            font-weight: 600;
+            color: var(--secondary);
+            padding: 0.75rem 0.5rem;
+            border-bottom: 2px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .comparison-table th:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        .comparison-table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-table tr:hover {
+            background: var(--bg);
+        }
+
+        .comparison-table .bottleneck-row {
+            background: #fff5f5;
+        }
+
+        .comparison-table .bottleneck-row:hover {
+            background: #ffe5e5;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .type-badge.type-factual {
+            background: #d6eaf8;
+            color: #2874a6;
+        }
+
+        .type-badge.type-procedural {
+            background: #d5f4e6;
+            color: #1e8449;
+        }
+
+        .type-badge.type-analytical {
+            background: #fef5e7;
+            color: #b9770e;
+        }
+
+        .type-badge.type-creative {
+            background: #ebdef0;
+            color: #7d3c98;
+        }
+
+        .type-badge.type-debugging {
+            background: #fadbd8;
+            color: #c0392b;
+        }
+
+        .marker-best {
+            color: var(--success);
+            font-size: 1rem;
+            margin-left: 0.25rem;
+        }
+
+        .marker-worst {
+            color: var(--danger);
+            font-size: 1rem;
+            margin-left: 0.25rem;
+        }
+
+        /* Tool Effectiveness Matrix */
+        .effectiveness-matrix {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8125rem;
+        }
+
+        .effectiveness-matrix th {
+            text-align: center;
+            font-weight: 600;
+            color: var(--secondary);
+            padding: 0.75rem 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .effectiveness-matrix .tool-name-cell {
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .effectiveness-matrix .matrix-cell {
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .effectiveness-matrix .matrix-cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .effectiveness-matrix .overall-cell {
+            font-weight: 700;
+            border-left: 3px solid var(--accent);
+        }
+
+        /* ===== Phase 3.9: Drag-and-Drop Dashboard Styles ===== */
+
+        /* Card Size Controls */
+        .card-size-controls {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0.25rem;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+
+        .size-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--secondary);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .size-btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .size-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Card Sizes */
+        .card-small {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .card-medium {
+            /* Default size - no specific constraints */
+        }
+
+        .card-large {
+            min-height: 500px;
+        }
+
+        /* Grid Layouts */
+        #analytics-cards-container {
+            display: grid;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .layout-auto {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+
+        .layout-1-column {
+            grid-template-columns: 1fr;
+        }
+
+        .layout-2-column {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .layout-3-column {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .layout-masonry {
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-auto-flow: dense;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .layout-3-column {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .layout-2-column,
+            .layout-3-column {
+                grid-template-columns: 1fr;
+            }
+
+            .layout-auto {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Drag-and-Drop Styles */
+        .draggable-card {
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+
+        .draggable-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .draggable-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .drag-handle {
+            cursor: move;
+            user-select: none;
+        }
+
+        .drag-handle:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        /* Snap-to-Grid Visual Feedback */
+        .snap-to-grid .draggable-card {
+            scroll-snap-align: start;
+        }
+
+        #analytics-cards-container.snap-to-grid {
+            scroll-snap-type: y mandatory;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>HoloLoom Control Panel</h1>
+        <div class="subtitle">Unified Intelligence Orchestration Platform</div>
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator" id="server-status"></div>
+                <span id="server-status-text">Server: Connecting...</span>
+            </div>
+            <div class="status-item">
+                <span id="memory-status">Memory: -- entities</span>
+            </div>
+            <div class="status-item">
+                <span id="learning-status">Learning: --% active</span>
+            </div>
+            <div class="status-item">
+                <span id="uptime">Uptime: --</span>
+            </div>
+        </div>
+    </header>
+
+    <nav id="nav-tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="query">Query Interface</button>
+        <button class="tab-btn" data-tab="workflows">Workflows</button>
+        <button class="tab-btn" data-tab="learning">Recursive Learning</button>
+        <button class="tab-btn" data-tab="memory">Memory Explorer</button>
+        <button class="tab-btn" data-tab="safety">Safety & Alignment</button>
+        <button class="tab-btn" data-tab="ingestion">Data Ingestion</button>
+        <button class="tab-btn" data-tab="monitor">System Monitor</button>
+        <button class="tab-btn" data-tab="analytics">Analytics</button>
+        <button class="tab-btn" data-tab="settings">Settings</button>
+    </nav>
+
+    <main>
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">System Health</div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="metric">
+                            <div class="metric-value" id="queries-total">0</div>
+                            <div class="metric-label">Total Queries</div>
+                            <div class="metric-trend up">+12% today</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="confidence-avg">0.00</div>
+                            <div class="metric-label">Avg Confidence</div>
+                            <div class="metric-trend up">+3.2%</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="latency-avg">0ms</div>
+                            <div class="metric-label">Avg Latency</div>
+                            <div class="metric-trend down">-8ms</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Quick Actions</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <button class="primary" onclick="navigateToTab('query')">New Query</button>
+                        <button class="secondary" onclick="navigateToTab('ingestion')">Ingest Data</button>
+                        <button class="secondary" onclick="navigateToTab('workflows')">Create Workflow</button>
+                        <button class="secondary" onclick="navigateToTab('memory')">Explore Memory</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Recent Queries</div>
+                    <button class="secondary" onclick="refreshRecentQueries()">Refresh</button>
+                </div>
+                <div id="recent-queries-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading recent queries...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Query Interface Tab -->
+        <div id="query" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Query Interface</div>
+                </div>
+                <p>Query interface will be implemented here (Phase 2)</p>
+            </div>
+        </div>
+
+        <!-- Workflows Tab -->
+        <div id="workflows" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Workflow Builder</div>
+                </div>
+                <p>Workflow builder integration will be implemented here (Phase 2)</p>
+                <p style="margin-top: 1rem; color: var(--secondary);">
+                    For now, open <a href="workflow_builder.html" target="_blank">workflow_builder.html</a> directly.
+                </p>
+            </div>
+        </div>
+
+        <!-- Learning Tab -->
+        <div id="learning" class="tab-content">
+            <div id="learning-warning-container" style="display: none;"></div>
+            <div id="learning-error-container" style="display: none;"></div>
+
+            <!-- Overview Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Learning System Overview</div>
+                    <button class="secondary" onclick="learningDashboard?.refreshData()">Refresh</button>
+                </div>
+                <div class="grid grid-2">
+                    <div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Status:</strong>
+                            <span id="learning-enabled-status" class="badge info">Loading...</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Background Learning:</strong>
+                            <span id="background-learning-status" class="badge info">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-2">
+                        <div class="metric">
+                            <div class="metric-value" id="queries-processed">0</div>
+                            <div class="metric-label">Queries Processed</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="total-refinements">0</div>
+                            <div class="metric-label">Total Refinements</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-3" style="margin-top: 1rem;">
+                    <div class="metric">
+                        <div class="metric-value" id="hot-patterns-count">0</div>
+                        <div class="metric-label">Hot Patterns</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="refinement-rate">0.0%</div>
+                        <div class="metric-label">Refinement Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <!-- Thompson Sampling Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Thompson Sampling Arms</div>
+                    </div>
+                    <div id="thompson-arms-container">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <div>Loading arm statistics...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Policy Weights Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Policy Weights</div>
+                    </div>
+                    <div id="policy-weights-container">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <div>Loading policy weights...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hot Patterns Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Hot Patterns</div>
+                </div>
+                <div id="hot-patterns-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading hot patterns...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Memory Tab -->
+        <div id="memory" class="tab-content">
+            <div id="memory-error-stats" style="display: none;"></div>
+
+            <!-- Memory Statistics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Memory System Statistics</div>
+                    <button class="secondary" id="memory-refresh-btn">Refresh</button>
+                </div>
+                <div class="grid grid-3">
+                    <div class="metric">
+                        <div class="metric-value" id="total-entities">0</div>
+                        <div class="metric-label">Total Entities</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="total-relationships">0</div>
+                        <div class="metric-label">Relationships</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="total-memories">0</div>
+                        <div class="metric-label">Memories</div>
+                    </div>
+                </div>
+                <div class="grid grid-2" style="margin-top: 1rem;">
+                    <div>
+                        <strong>Backend:</strong>
+                        <span id="memory-backend-status" class="badge info">Loading...</span>
+                    </div>
+                    <div>
+                        <strong>Health:</strong>
+                        <span id="memory-health-badge" class="badge success">Loading...</span>
+                        <span style="margin-left: 0.5rem; font-weight: 600;" id="memory-health-score">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Search Knowledge Graph</div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="memory-search-input" placeholder="Search entities, relationships, or content...">
+                    <button class="primary" id="memory-search-btn">Search</button>
+                </div>
+                <div id="memory-search-results">
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                        <div>Enter a search query above</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="memory-error-search" style="display: none;"></div>
+        </div>
+
+        <!-- Safety Tab -->
+        <div id="safety" class="tab-content">
+            <div id="safety-error-status" style="display: none;"></div>
+
+            <!-- Status Overview Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Safety System Status</div>
+                    <button class="secondary" onclick="safetyDashboard?.refreshStatus()">Refresh</button>
+                </div>
+                <div class="grid grid-3">
+                    <div>
+                        <strong>Guardrails:</strong>
+                        <span id="guardrails-status" class="badge info">Loading...</span>
+                    </div>
+                    <div>
+                        <strong>Deception Detector:</strong>
+                        <span id="deception-detector-status" class="badge info">Loading...</span>
+                    </div>
+                    <div>
+                        <strong>Audit Trail:</strong>
+                        <span id="audit-trail-status" class="badge info">Loading...</span>
+                    </div>
+                </div>
+                <div class="grid grid-3" style="margin-top: 1rem;">
+                    <div class="metric">
+                        <div class="metric-value" id="total-actions-gated">0</div>
+                        <div class="metric-label">Actions Gated</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="blocked-actions">0</div>
+                        <div class="metric-label">Blocked Actions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="block-rate">0.0%</div>
+                        <div class="metric-label">Block Rate</div>
+                        <span id="block-rate-badge" class="badge success" style="margin-top: 0.5rem;">Low</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Trail Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Audit Trail</div>
+                    <div class="card-actions">
+                        <button class="secondary" id="audit-refresh-btn">Refresh</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="audit-search-input" placeholder="Search audit trail...">
+                    <button class="primary" id="audit-search-btn">Search</button>
+                </div>
+                <div id="audit-trail-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading audit trail...</div>
+                    </div>
+                </div>
+                <button class="secondary" id="audit-load-more-btn" style="margin-top: 1rem; display: none; width: 100%;">
+                    Load More
+                </button>
+            </div>
+
+            <div id="safety-error-audit" style="display: none;"></div>
+        </div>
+
+        <!-- Ingestion Tab -->
+        <div id="ingestion" class="tab-content">
+            <div id="ingestion-message-container" style="display: none;"></div>
+
+            <!-- YouTube Ingestion Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">YouTube Video Ingestion</div>
+                </div>
+                <p style="margin-bottom: 1rem; color: var(--secondary); font-size: 0.875rem;">
+                    Paste a YouTube URL to ingest video transcript with timestamps and metadata.
+                </p>
+                <div class="input-group">
+                    <input type="text" id="youtube-url-input" placeholder="https://www.youtube.com/watch?v=...">
+                    <button class="primary" id="youtube-ingest-btn">Ingest</button>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <!-- File Upload Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">File Upload</div>
+                    </div>
+                    <p style="margin-bottom: 1rem; color: var(--secondary); font-size: 0.875rem;">
+                        Upload files (text, PDF, etc.) for ingestion.
+                    </p>
+                    <input type="file" id="file-upload-input" accept=".txt,.pdf,.md,.doc,.docx">
+                    <p style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary);">
+                        Coming in Phase 3
+                    </p>
+                </div>
+
+                <!-- Web URL Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Web URL Scraping</div>
+                    </div>
+                    <p style="margin-bottom: 1rem; color: var(--secondary); font-size: 0.875rem;">
+                        Scrape content from any web URL.
+                    </p>
+                    <div class="input-group">
+                        <input type="text" id="web-url-input" placeholder="https://example.com">
+                        <button class="primary" id="web-ingest-btn">Scrape</button>
+                    </div>
+                    <p style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary);">
+                        Coming in Phase 3
+                    </p>
+                </div>
+            </div>
+
+            <!-- Ingestion Queue Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Ingestion Queue</div>
+                    <div class="card-actions">
+                        <span id="queue-job-count" style="margin-right: 1rem; font-size: 0.875rem;">0 jobs</span>
+                        <button class="secondary" id="queue-clear-completed-btn">Clear Completed</button>
+                    </div>
+                </div>
+                <div id="ingestion-queue-container">
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V7h14v12zm-8-2h2v-4h4v-2h-4V7h-2v4H7v2h4z"/>
+                        </svg>
+                        <div>No ingestion jobs yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitor Tab (Phase 3: Enhanced Monitoring) -->
+        <div id="monitor" class="tab-content">
+            <!-- Orchestrator Pipeline Visualizer -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Orchestrator Pipeline (9-Step Weaving Cycle)</div>
+                    <button id="orchestrator-refresh-btn" class="btn">Refresh</button>
+                </div>
+
+                <!-- Status Badge -->
+                <div style="margin-bottom: 1rem;">
+                    <span id="orchestrator-status" class="badge">Idle</span>
+                </div>
+
+                <!-- Current Query -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Current Query</h3>
+                    <div id="current-query-container">
+                        <div class="empty-state">No active query</div>
+                    </div>
+                </div>
+
+                <!-- Stage Progress (Animated Pipeline) -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Pipeline Progress</h3>
+                    <div id="stage-progress-container">
+                        <div class="empty-state">Waiting for queries...</div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Avg Pipeline Latency</div>
+                        <div class="metric-value" id="avg-pipeline-latency">—</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Pipeline Throughput</div>
+                        <div class="metric-value" id="pipeline-throughput">—</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Bottleneck Stage</div>
+                        <div class="metric-value" id="bottleneck-stage">—</div>
+                        <span id="bottleneck-badge" class="badge">None</span>
+                    </div>
+                </div>
+
+                <!-- Stage Waterfall (Recent Queries) -->
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Recent Pipeline Traces</h3>
+                    <div id="stage-history-container">
+                        <div class="empty-state">No traces yet</div>
+                    </div>
+                </div>
+
+                <!-- Error Display -->
+                <div id="orchestrator-error" style="display: none; margin-top: 1rem;"></div>
+            </div>
+
+            <!-- Policy & Bandit Monitor -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Policy & Bandit Monitor</div>
+                    <div>
+                        <button id="policy-refresh-btn" class="btn">Refresh</button>
+                        <button id="policy-reset-history-btn" class="btn">Reset History</button>
+                    </div>
+                </div>
+
+                <!-- Thompson Sampling Arm Performance -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Thompson Sampling: Expected Reward Over Time</h3>
+                    <div id="thompson-chart-container">
+                        <div class="empty-state">No Thompson Sampling data yet</div>
+                    </div>
+                </div>
+
+                <!-- Policy Weight Evolution -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Policy Weight Evolution (BARE/FAST/FUSED)</h3>
+                    <div id="policy-weight-chart-container">
+                        <div class="empty-state">No policy weight data yet</div>
+                    </div>
+                </div>
+
+                <!-- Exploration vs Exploitation Balance -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Exploration vs Exploitation Balance</h3>
+                    <div id="exploration-balance-container">
+                        <div class="empty-state">No exploration data yet</div>
+                    </div>
+                </div>
+
+                <!-- Tool Selection Distribution -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Tool Selection Distribution</h3>
+                    <div id="tool-distribution-container">
+                        <div class="empty-state">No tool usage data yet</div>
+                    </div>
+                </div>
+
+                <!-- Error Display -->
+                <div id="policy-error" style="display: none; margin-top: 1rem;"></div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab (Phase 3.4: Advanced Analytics & Insights) -->
+        <div id="analytics" class="tab-content">
+            <!-- Phase 3.8: Advanced Filter Builder -->
+            <div class="card" style="background: #f0f8ff; border-left: 4px solid #5dade2;">
+                <div class="card-header">
+                    <div class="card-title">
+                        🔧 Filter Builder
+                        <span id="builder-condition-badge" style="display: none; background: #5dade2; color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; margin-left: 0.5rem;"></span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem;">
+                            <input type="checkbox" id="builder-enabled" onchange="analyticsMonitor?.setFilterBuilderEnabled(this.checked)">
+                            Enable Builder
+                        </label>
+                        <button class="secondary" onclick="openFilterBuilder()">Build Filter</button>
+                        <button class="secondary" onclick="openPresetManager()">Manage Presets</button>
+                    </div>
+                </div>
+
+                <div id="builder-conditions-summary" style="padding: 1rem; background: white; border-radius: 4px; min-height: 60px;">
+                    <div style="color: var(--secondary); font-size: 0.875rem; font-style: italic;">
+                        No conditions defined. Click "Build Filter" to start.
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem; padding: 0.75rem; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px; font-size: 0.875rem;">
+                    <strong>💡 Pro Tip:</strong> The Filter Builder supports complex logic (AND/OR/NOT), multiple conditions per field, and saved presets. Perfect for advanced analysis!
+                </div>
+            </div>
+
+            <!-- Phase 3.6: Basic Quick Filters -->
+            <div class="card" style="background: #f8f9fa; border-left: 4px solid #3498db;">
+                <div class="card-header">
+                    <div class="card-title">🔍 Quick Filters <span id="filter-count-badge" style="display: none; background: #3498db; color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; margin-left: 0.5rem;"></span></div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="primary" onclick="analyticsMonitor?.refreshAll()">Apply Filters</button>
+                        <button class="secondary" onclick="analyticsMonitor?.clearFilters(); updateFilterUI();">Clear All</button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <!-- Date Range Filter -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Date Range</label>
+                        <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                            <input type="date" id="filter-date-from" onchange="applyDateFilter()" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                            <input type="date" id="filter-date-to" onchange="applyDateFilter()" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                        </div>
+                    </div>
+
+                    <!-- Confidence Range Filter -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Confidence Range</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="number" id="filter-conf-min" min="0" max="1" step="0.1" value="0.0" onchange="applyConfidenceFilter()" style="width: 80px; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                            <span>to</span>
+                            <input type="number" id="filter-conf-max" min="0" max="1" step="0.1" value="1.0" onchange="applyConfidenceFilter()" style="width: 80px; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <input type="range" id="filter-conf-range" min="0" max="100" value="100" onchange="updateConfidenceFromSlider(this.value)" style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <!-- Tool Filter -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Tool</label>
+                        <select id="filter-tool" onchange="applyToolFilter()" multiple style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; min-height: 80px;">
+                            <option value="">All Tools</option>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Query Type Filter -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Query Type</label>
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem;">
+                            <label><input type="checkbox" class="query-type-filter" value="factual" onchange="applyQueryTypeFilter()"> Factual</label>
+                            <label><input type="checkbox" class="query-type-filter" value="procedural" onchange="applyQueryTypeFilter()"> Procedural</label>
+                            <label><input type="checkbox" class="query-type-filter" value="analytical" onchange="applyQueryTypeFilter()"> Analytical</label>
+                            <label><input type="checkbox" class="query-type-filter" value="creative" onchange="applyQueryTypeFilter()"> Creative</label>
+                            <label><input type="checkbox" class="query-type-filter" value="debugging" onchange="applyQueryTypeFilter()"> Debugging</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 3.7: Dashboard Customization -->
+            <div class="card" style="background: #fff5f7; border-left: 4px solid #e74c3c;">
+                <div class="card-header">
+                    <div class="card-title">🎨 Dashboard Customization</div>
+                    <button class="secondary" onclick="analyticsMonitor?.resetDashboard(); location.reload();">Reset to Default</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <!-- Card Visibility -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Show/Hide Cards</label>
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem;">
+                            <label><input type="checkbox" checked onchange="analyticsMonitor?.setCardVisibility('comparison', this.checked)"> Query Comparison</label>
+                            <label><input type="checkbox" checked onchange="analyticsMonitor?.setCardVisibility('confidence', this.checked)"> Confidence Tracking</label>
+                            <label><input type="checkbox" checked onchange="analyticsMonitor?.setCardVisibility('effectiveness', this.checked)"> Tool Effectiveness</label>
+                            <label><input type="checkbox" checked onchange="analyticsMonitor?.setCardVisibility('health', this.checked)"> System Health</label>
+                            <label><input type="checkbox" checked onchange="analyticsMonitor?.setCardVisibility('management', this.checked)"> Data Management</label>
+                        </div>
+                    </div>
+
+                    <!-- Theme Selector -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Theme</label>
+                        <select id="theme-selector" onchange="analyticsMonitor?.setTheme(this.value)" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+
+                    <!-- Dashboard Templates -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Templates</label>
+                        <select id="template-selector" onchange="analyticsMonitor?.applyTemplate(this.value); this.value='';" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+                            <option value="">-- Select Template --</option>
+                            <option value="default">Default (All Cards)</option>
+                            <option value="performance">Performance Focus</option>
+                            <option value="quality">Quality Focus</option>
+                            <option value="minimal">Minimal</option>
+                        </select>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary);">
+                            Apply a preset layout
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 3.9: Grid Layout & Card Sizing -->
+            <div class="card" style="background: #f0fff4; border-left: 4px solid #27ae60;">
+                <div class="card-header">
+                    <div class="card-title">📐 Grid Layout & Card Sizing</div>
+                    <button class="secondary" onclick="analyticsMonitor?.refreshAll()">Refresh Layout</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <!-- Grid Layout -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Grid Layout</label>
+                        <select id="grid-layout-selector" onchange="analyticsMonitor?.setGridLayout(this.value)" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+                            <option value="auto">Auto (Responsive)</option>
+                            <option value="1-column">1 Column (Stacked)</option>
+                            <option value="2-column">2 Columns</option>
+                            <option value="3-column">3 Columns</option>
+                            <option value="masonry">Masonry (Pinterest)</option>
+                        </select>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary);">
+                            Control how cards are arranged
+                        </div>
+                    </div>
+
+                    <!-- Grid Templates -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Grid Templates</label>
+                        <select id="grid-template-selector" onchange="analyticsMonitor?.applyGridTemplate(this.value); this.value='';" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+                            <option value="">-- Select Template --</option>
+                            <option value="compact">Compact (3-col, small)</option>
+                            <option value="balanced">Balanced (2-col, medium)</option>
+                            <option value="spacious">Spacious (1-col, large)</option>
+                            <option value="masonry">Masonry (mixed sizes)</option>
+                        </select>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary);">
+                            Quick layout presets
+                        </div>
+                    </div>
+
+                    <!-- Snap to Grid -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Options</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                            <input type="checkbox" id="snap-to-grid" checked onchange="analyticsMonitor?.setSnapToGrid(this.checked)">
+                            Snap to Grid
+                        </label>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary);">
+                            Align cards to grid when dragging
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem; padding: 0.75rem; background: #d4edda; border-left: 4px solid #27ae60; border-radius: 4px; font-size: 0.875rem;">
+                    <strong>💡 Tip:</strong> <strong>Drag cards by their headers</strong> to reorder them! Use resize buttons on each card to change size (small/medium/large).
+                </div>
+            </div>
+
+            <!-- Analytics Cards Container (Phase 3.9: Grid Layout Target) -->
+            <div id="analytics-cards-container" class="layout-auto">
+
+            <!-- Query Comparison Table -->
+            <div class="card" id="query-comparison-card">
+                <div class="card-header">
+                    <div class="card-title">Query Comparison Table</div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <!-- Phase 3.9: Card size controls -->
+                        <div class="card-size-controls">
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('comparison', 'small')" title="Small">S</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('comparison', 'medium')" title="Medium">M</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('comparison', 'large')" title="Large">L</button>
+                        </div>
+                        <button class="secondary" onclick="analyticsMonitor?.refreshQueryComparison()">Refresh</button>
+                    </div>
+                </div>
+                <div id="query-comparison-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading query comparisons...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historical Confidence Tracking -->
+            <div class="card" id="confidence-tracking-card">
+                <div class="card-header">
+                    <div class="card-title">Historical Confidence Tracking</div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <!-- Phase 3.9: Card size controls -->
+                        <div class="card-size-controls">
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('confidence', 'small')" title="Small">S</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('confidence', 'medium')" title="Medium">M</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('confidence', 'large')" title="Large">L</button>
+                        </div>
+                        <button class="secondary" onclick="analyticsMonitor?.refreshConfidenceTracking()">Refresh</button>
+                    </div>
+                </div>
+                <div id="confidence-tracking-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading confidence tracking...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool Effectiveness Matrix -->
+            <div class="card" id="tool-effectiveness-card">
+                <div class="card-header">
+                    <div class="card-title">Tool Effectiveness Matrix</div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <!-- Phase 3.9: Card size controls -->
+                        <div class="card-size-controls">
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('effectiveness', 'small')" title="Small">S</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('effectiveness', 'medium')" title="Medium">M</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('effectiveness', 'large')" title="Large">L</button>
+                        </div>
+                        <button class="secondary" onclick="analyticsMonitor?.refreshToolEffectiveness()">Refresh</button>
+                    </div>
+                </div>
+                <div id="tool-effectiveness-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading tool effectiveness...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health Dashboard -->
+            <div class="card" id="system-health-card">
+                <div class="card-header">
+                    <div class="card-title">System Health Dashboard</div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <!-- Phase 3.9: Card size controls -->
+                        <div class="card-size-controls">
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('health', 'small')" title="Small">S</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('health', 'medium')" title="Medium">M</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('health', 'large')" title="Large">L</button>
+                        </div>
+                        <button class="secondary" onclick="analyticsMonitor?.refreshSystemHealth()">Refresh</button>
+                    </div>
+                </div>
+                <div id="system-health-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading system health...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Management (Phase 3.5) -->
+            <div class="card" id="data-management-card">
+                <div class="card-header">
+                    <div class="card-title">Data Management</div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <!-- Phase 3.9: Card size controls -->
+                        <div class="card-size-controls">
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('management', 'small')" title="Small">S</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('management', 'medium')" title="Medium">M</button>
+                            <button class="size-btn" onclick="analyticsMonitor?.setCardSize('management', 'large')" title="Large">L</button>
+                        </div>
+                        <button class="secondary" onclick="refreshStorageUsage()">Refresh Usage</button>
+                    </div>
+                </div>
+
+                <!-- Storage Usage -->
+                <div id="storage-usage-container" style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 4px;">
+                    <div style="font-size: 0.875rem; color: var(--secondary); margin-bottom: 0.5rem;">Storage Usage</div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.75rem;">
+                                <span id="storage-used-text">-- KB</span>
+                                <span id="storage-percent-text">-- %</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="storage-usage-bar" class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1.5rem; margin-top: 0.75rem; font-size: 0.75rem; color: var(--secondary);">
+                        <div><strong id="query-count-text">0</strong> queries</div>
+                        <div><strong id="confidence-count-text">0</strong> confidence scores</div>
+                        <div><strong id="tool-count-text">0</strong> tools tracked</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <button class="primary" onclick="analyticsMonitor?.exportData()">
+                        📥 Export Data (JSON)
+                    </button>
+                    <button class="secondary" onclick="document.getElementById('import-file-input').click()">
+                        📤 Import Data
+                    </button>
+                    <input type="file" id="import-file-input" accept=".json" style="display: none"
+                           onchange="if (this.files[0]) analyticsMonitor?.importData(this.files[0])">
+                    <button class="secondary" onclick="analyticsMonitor?.clearData()">
+                        🗑️ Clear All Data
+                    </button>
+                </div>
+
+                <div style="margin-top: 1rem; padding: 0.75rem; background: #e8f4f8; border-left: 4px solid #3498db; border-radius: 4px; font-size: 0.875rem;">
+                    <strong>💡 Tip:</strong> Analytics data is automatically saved to your browser's LocalStorage and persists across sessions. Export your data regularly for backup.
+                </div>
+            </div>
+
+            </div> <!-- End analytics-cards-container (Phase 3.9) -->
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Settings</div>
+                </div>
+                <p>Settings panel will be implemented here (Phase 2)</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8000';
+        let eventSource = null;
+
+        // Tab Navigation
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                navigateToTab(tabId);
+            });
+        });
+
+        function navigateToTab(tabId) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Server Connection
+        async function checkServerHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+
+                document.getElementById('server-status-text').textContent =
+                    `Server: ${data.status || 'Online'}`;
+                document.getElementById('server-status').style.background = 'var(--success)';
+
+                return true;
+            } catch (error) {
+                document.getElementById('server-status-text').textContent = 'Server: Offline';
+                document.getElementById('server-status').style.background = 'var(--danger)';
+                document.getElementById('server-status').style.animation = 'none';
+
+                return false;
+            }
+        }
+
+        // Initialize SSE Connection
+        function initSSE() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventSource = new EventSource(`${API_BASE}/events`);
+
+            eventSource.addEventListener('stats', (event) => {
+                const data = JSON.parse(event.data);
+                updateStats(data);
+            });
+
+            eventSource.addEventListener('query', (event) => {
+                const data = JSON.parse(event.data);
+                updateRecentQueries(data);
+            });
+
+            eventSource.onerror = () => {
+                console.error('SSE connection error');
+                setTimeout(initSSE, 5000); // Reconnect after 5s
+            };
+        }
+
+        // Update Statistics
+        function updateStats(data) {
+            if (data.queries_total !== undefined) {
+                document.getElementById('queries-total').textContent = data.queries_total;
+            }
+            if (data.confidence_avg !== undefined) {
+                document.getElementById('confidence-avg').textContent = data.confidence_avg.toFixed(2);
+            }
+            if (data.latency_avg !== undefined) {
+                document.getElementById('latency-avg').textContent = `${Math.round(data.latency_avg)}ms`;
+            }
+            if (data.memory_entities !== undefined) {
+                document.getElementById('memory-status').textContent =
+                    `Memory: ${data.memory_entities} entities`;
+            }
+            if (data.learning_active !== undefined) {
+                document.getElementById('learning-status').textContent =
+                    `Learning: ${Math.round(data.learning_active * 100)}% active`;
+            }
+            if (data.uptime !== undefined) {
+                document.getElementById('uptime').textContent = `Uptime: ${formatUptime(data.uptime)}`;
+            }
+        }
+
+        // Format Uptime
+        function formatUptime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            }
+            return `${minutes}m`;
+        }
+
+        // Load Recent Queries
+        async function refreshRecentQueries() {
+            const container = document.getElementById('recent-queries-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading...</div></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/queries/recent?limit=10`);
+                const data = await response.json();
+
+                if (data.queries && data.queries.length > 0) {
+                    renderRecentQueries(data.queries);
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21 13v10h-6v-6h-6v6h-6v-10h-3l12-12 12 12h-3zm-13 7h2v-2h-2v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2z"/>
+                            </svg>
+                            <div>No queries yet</div>
+                            <button class="primary" style="margin-top: 1rem;" onclick="navigateToTab('query')">
+                                Run Your First Query
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="error">
+                        <div class="error-title">Failed to load recent queries</div>
+                        <div>${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Render Recent Queries
+        function renderRecentQueries(queries) {
+            const container = document.getElementById('recent-queries-container');
+
+            const html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Query</th>
+                            <th>Mode</th>
+                            <th>Confidence</th>
+                            <th>Latency</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${queries.map(q => `
+                            <tr>
+                                <td>${escapeHtml(q.text.substring(0, 60))}${q.text.length > 60 ? '...' : ''}</td>
+                                <td><span class="badge info">${q.mode || 'DIRECT'}</span></td>
+                                <td>${q.confidence ? q.confidence.toFixed(2) : '--'}</td>
+                                <td>${q.latency_ms ? Math.round(q.latency_ms) + 'ms' : '--'}</td>
+                                <td>${formatTimestamp(q.timestamp)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Update Recent Queries (from SSE)
+        function updateRecentQueries(newQuery) {
+            // Will be implemented when SSE is active
+            refreshRecentQueries();
+        }
+
+        // Utility Functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp * 1000);
+            const now = new Date();
+            const diff = (now - date) / 1000;
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check server health
+            const serverOnline = await checkServerHealth();
+
+            if (serverOnline) {
+                // Initialize SSE for real-time updates
+                initSSE();
+
+                // Load initial data
+                refreshRecentQueries();
+            } else {
+                document.getElementById('recent-queries-container').innerHTML = `
+                    <div class="error">
+                        <div class="error-title">Server Offline</div>
+                        <div>Cannot connect to HoloLoom server at ${API_BASE}</div>
+                        <div style="margin-top: 0.5rem;">Please ensure the server is running.</div>
+                    </div>
+                `;
+            }
+
+            // Check health every 30 seconds
+            setInterval(checkServerHealth, 30000);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+            // Cleanup Phase 2 dashboards
+            if (window.learningDashboard) window.learningDashboard.destroy();
+            if (window.safetyDashboard) window.safetyDashboard.destroy();
+            if (window.memoryExplorer) window.memoryExplorer.destroy();
+            if (window.ingestionUI) window.ingestionUI.destroy();
+            // Cleanup Phase 3 dashboards
+            if (window.orchestratorVisualizer) window.orchestratorVisualizer.destroy();
+            if (window.policyMonitor) window.policyMonitor.destroy();
+            // Cleanup Phase 3.4 dashboards
+            if (window.analyticsMonitor) window.analyticsMonitor.destroy?.();
+        });
+    </script>
+
+    <!-- Phase 2 Dashboard Modules -->
+    <script src="js/learning_dashboard.js"></script>
+    <script src="js/safety_dashboard.js"></script>
+    <script src="js/memory_explorer.js"></script>
+    <script src="js/ingestion_ui.js"></script>
+
+    <!-- Phase 3 Enhanced Monitoring Modules -->
+    <script src="js/orchestrator_visualizer.js"></script>
+    <script src="js/policy_monitor.js"></script>
+
+    <!-- Phase 3.4: Advanced Analytics Module -->
+    <script src="js/analytics_monitor.js"></script>
+
+    <script>
+        // Initialize Phase 2 & 3 dashboards on tab navigation
+        const originalNavigateToTab = navigateToTab;
+        navigateToTab = function(tabId) {
+            // Call original navigation
+            originalNavigateToTab(tabId);
+
+            // Initialize dashboard on first visit (lazy loading)
+            if (tabId === 'learning') {
+                if (!window.learningDashboard) {
+                    window.learningDashboard = new LearningDashboard(API_BASE);
+                }
+                if (!window.learningDashboard.intervalId) {
+                    window.learningDashboard.initialize();
+                }
+            } else if (tabId === 'safety') {
+                if (!window.safetyDashboard) {
+                    window.safetyDashboard = new SafetyDashboard(API_BASE);
+                }
+                if (!window.safetyDashboard.intervalId) {
+                    window.safetyDashboard.initialize();
+                }
+            } else if (tabId === 'memory') {
+                if (!window.memoryExplorer) {
+                    window.memoryExplorer = new MemoryExplorer(API_BASE);
+                }
+                if (!window.memoryExplorer.intervalId) {
+                    window.memoryExplorer.initialize();
+                }
+            } else if (tabId === 'ingestion') {
+                if (!window.ingestionUI) {
+                    window.ingestionUI = new IngestionUI(API_BASE);
+                }
+                if (!window.ingestionUI.intervalId) {
+                    window.ingestionUI.initialize();
+                }
+            } else if (tabId === 'monitor') {
+                // Phase 3: Enhanced Monitoring
+                if (!window.orchestratorVisualizer) {
+                    window.orchestratorVisualizer = new OrchestratorVisualizer(API_BASE);
+                }
+                if (!window.orchestratorVisualizer.intervalId) {
+                    window.orchestratorVisualizer.initialize();
+                }
+
+                if (!window.policyMonitor) {
+                    window.policyMonitor = new PolicyMonitor(API_BASE);
+                }
+                if (!window.policyMonitor.intervalId) {
+                    window.policyMonitor.initialize();
+                }
+            } else if (tabId === 'analytics') {
+                // Phase 3.4: Advanced Analytics
+                if (!window.analyticsMonitor) {
+                    window.analyticsMonitor = new AnalyticsMonitor();
+                }
+                if (!window.analyticsMonitor.intervalId) {
+                    window.analyticsMonitor.initialize();
+                }
+                // Phase 3.5: Refresh storage usage on tab load
+                setTimeout(() => refreshStorageUsage(), 100);
+            }
+        };
+
+        console.log('[OK] Phase 2, 3, & 3.4 dashboards loaded and ready');
+
+        // Phase 3.5: Storage usage refresh function
+        function refreshStorageUsage() {
+            if (!window.analyticsMonitor) return;
+
+            const usage = window.analyticsMonitor.getStorageUsage();
+            if (!usage) return;
+
+            // Update text displays
+            document.getElementById('storage-used-text').textContent = `${usage.usedKB} KB`;
+            document.getElementById('storage-percent-text').textContent = `${usage.usagePercent}%`;
+            document.getElementById('query-count-text').textContent = usage.queryCount;
+            document.getElementById('confidence-count-text').textContent = usage.confidenceCount;
+            document.getElementById('tool-count-text').textContent = usage.toolCount;
+
+            // Update progress bar
+            const progressBar = document.getElementById('storage-usage-bar');
+            progressBar.style.width = `${Math.min(usage.usagePercent, 100)}%`;
+
+            // Color code based on usage
+            if (usage.usagePercent > 80) {
+                progressBar.style.background = 'var(--danger)';
+            } else if (usage.usagePercent > 60) {
+                progressBar.style.background = 'var(--warning)';
+            } else {
+                progressBar.style.background = 'var(--success)';
+            }
+        }
+
+        // Auto-refresh storage usage every 10 seconds when on analytics tab
+        setInterval(() => {
+            const analyticsTab = document.getElementById('analytics');
+            if (analyticsTab && analyticsTab.classList.contains('active')) {
+                refreshStorageUsage();
+            }
+        }, 10000);
+
+        // ========================================================================
+        // Phase 3.6: Advanced Filtering Helper Functions
+        // ========================================================================
+
+        function applyDateFilter() {
+            if (!window.analyticsMonitor) return;
+
+            const fromDate = document.getElementById('filter-date-from').value;
+            const toDate = document.getElementById('filter-date-to').value;
+
+            window.analyticsMonitor.setDateRangeFilter(fromDate, toDate);
+            window.analyticsMonitor.refreshAll();
+            updateFilterBadge();
+        }
+
+        function applyConfidenceFilter() {
+            if (!window.analyticsMonitor) return;
+
+            const min = parseFloat(document.getElementById('filter-conf-min').value);
+            const max = parseFloat(document.getElementById('filter-conf-max').value);
+
+            window.analyticsMonitor.setConfidenceFilter(min, max);
+            window.analyticsMonitor.refreshAll();
+            updateFilterBadge();
+        }
+
+        function updateConfidenceFromSlider(value) {
+            const max = value / 100;
+            document.getElementById('filter-conf-max').value = max.toFixed(1);
+            applyConfidenceFilter();
+        }
+
+        function applyToolFilter() {
+            if (!window.analyticsMonitor) return;
+
+            const select = document.getElementById('filter-tool');
+            const selected = Array.from(select.selectedOptions).map(opt => opt.value).filter(v => v);
+
+            window.analyticsMonitor.setToolFilter(selected);
+            window.analyticsMonitor.refreshAll();
+            updateFilterBadge();
+        }
+
+        function applyQueryTypeFilter() {
+            if (!window.analyticsMonitor) return;
+
+            const checkboxes = document.querySelectorAll('.query-type-filter:checked');
+            const selected = Array.from(checkboxes).map(cb => cb.value);
+
+            window.analyticsMonitor.setQueryTypeFilter(selected);
+            window.analyticsMonitor.refreshAll();
+            updateFilterBadge();
+        }
+
+        function updateFilterBadge() {
+            if (!window.analyticsMonitor) return;
+
+            const count = window.analyticsMonitor.getActiveFilterCount();
+            const badge = document.getElementById('filter-count-badge');
+
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function updateFilterUI() {
+            if (!window.analyticsMonitor) return;
+
+            // Reset all filter UI elements
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            document.getElementById('filter-conf-min').value = '0.0';
+            document.getElementById('filter-conf-max').value = '1.0';
+            document.getElementById('filter-conf-range').value = '100';
+            document.getElementById('filter-tool').selectedIndex = -1;
+
+            document.querySelectorAll('.query-type-filter').forEach(cb => cb.checked = false);
+
+            updateFilterBadge();
+        }
+
+        // Populate tool dropdown dynamically
+        function populateToolDropdown() {
+            if (!window.analyticsMonitor) return;
+
+            const toolSelect = document.getElementById('filter-tool');
+            const tools = new Set();
+
+            window.analyticsMonitor.queryHistory.forEach(q => {
+                if (q.tool_used) tools.add(q.tool_used);
+            });
+
+            // Clear existing options except "All Tools"
+            while (toolSelect.options.length > 1) {
+                toolSelect.remove(1);
+            }
+
+            // Add tools
+            Array.from(tools).sort().forEach(tool => {
+                const option = document.createElement('option');
+                option.value = tool;
+                option.textContent = tool;
+                toolSelect.appendChild(option);
+            });
+        }
+
+        // Refresh tool dropdown when queries change
+        setInterval(populateToolDropdown, 5000);
+
+        // ========================================================================
+        // Phase 3.7: Dashboard Customization Helper Functions
+        // ========================================================================
+
+        // Card visibility checkboxes are handled inline via onchange handlers
+        // Theme selector is handled inline via onchange handler
+        // Template selector is handled inline via onchange handler
+
+        console.log('[OK] Phase 3.6 & 3.7: Filtering and customization loaded');
+
+        // ========================================================================
+        // Phase 3.8: Advanced Filter Builder Functions
+        // ========================================================================
+
+        function openFilterBuilder() {
+            const modal = document.getElementById('filter-builder-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                refreshBuilderUI();
+            }
+        }
+
+        function closeFilterBuilder() {
+            const modal = document.getElementById('filter-builder-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function refreshBuilderUI() {
+            if (!window.analyticsMonitor) return;
+
+            const conditionsList = document.getElementById('builder-conditions-list');
+            const logic = window.analyticsMonitor.filterBuilder.logic;
+            const conditions = window.analyticsMonitor.filterBuilder.conditions;
+
+            // Update logic selector
+            document.getElementById('builder-logic').value = logic;
+
+            // Render conditions
+            if (conditions.length === 0) {
+                conditionsList.innerHTML = '<div style="color: var(--secondary); font-style: italic; padding: 1rem;">No conditions yet. Click "Add Condition" to start building your filter.</div>';
+            } else {
+                let html = '';
+                conditions.forEach((condition, index) => {
+                    const summary = window.analyticsMonitor.getConditionSummary(condition);
+                    html += `
+                        <div style="padding: 0.75rem; background: ${condition.not ? '#ffebee' : 'white'}; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; ${condition.not ? 'color: #e74c3c;' : ''}">
+                                    ${condition.not ? '⚠ NOT ' : ''}Condition ${index + 1}
+                                </div>
+                                <div style="font-size: 0.875rem; color: var(--secondary); margin-top: 0.25rem;">
+                                    ${summary}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="editCondition(${condition.id})" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</button>
+                                <button onclick="window.analyticsMonitor?.toggleConditionNot(${condition.id}); refreshBuilderUI();" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">${condition.not ? 'Remove NOT' : 'Add NOT'}</button>
+                                <button onclick="window.analyticsMonitor?.removeCondition(${condition.id}); refreshBuilderUI(); refreshBuilderSummary();" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: var(--danger); color: white;">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                conditionsList.innerHTML = html;
+            }
+
+            // Update summary in main panel
+            refreshBuilderSummary();
+        }
+
+        function refreshBuilderSummary() {
+            if (!window.analyticsMonitor) return;
+
+            const summary = document.getElementById('builder-conditions-summary');
+            const badge = document.getElementById('builder-condition-badge');
+            const checkbox = document.getElementById('builder-enabled');
+            const conditions = window.analyticsMonitor.filterBuilder.conditions;
+            const logic = window.analyticsMonitor.filterBuilder.logic;
+
+            // Update checkbox
+            checkbox.checked = window.analyticsMonitor.filterBuilder.enabled;
+
+            // Update badge
+            if (conditions.length > 0) {
+                badge.textContent = conditions.length;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            // Update summary
+            if (conditions.length === 0) {
+                summary.innerHTML = '<div style="color: var(--secondary); font-size: 0.875rem; font-style: italic;">No conditions defined. Click "Build Filter" to start.</div>';
+            } else {
+                let html = `<div style="font-weight: 600; margin-bottom: 0.5rem;">Logic: ${logic}</div>`;
+                html += '<div style="font-size: 0.875rem;">';
+                conditions.forEach((condition, index) => {
+                    const condSummary = window.analyticsMonitor.getConditionSummary(condition);
+                    if (index > 0) {
+                        html += `<div style="color: var(--secondary); font-weight: 600; margin: 0.5rem 0;">${logic}</div>`;
+                    }
+                    html += `<div style="padding: 0.5rem; background: ${condition.not ? '#ffebee' : '#f8f9fa'}; border-radius: 4px; margin-bottom: 0.25rem;">${condSummary}</div>`;
+                });
+                html += '</div>';
+                summary.innerHTML = html;
+            }
+        }
+
+        function addNewCondition() {
+            const field = document.getElementById('new-condition-field').value;
+            const operator = document.getElementById('new-condition-operator').value;
+            const value = document.getElementById('new-condition-value').value;
+            const value2 = document.getElementById('new-condition-value2')?.value || null;
+
+            if (!field || !operator || !value) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            window.analyticsMonitor?.addCondition(field, operator, value, value2, false);
+            refreshBuilderUI();
+
+            // Clear form
+            document.getElementById('new-condition-value').value = '';
+            if (document.getElementById('new-condition-value2')) {
+                document.getElementById('new-condition-value2').value = '';
+            }
+        }
+
+        function updateBuilderLogic(logic) {
+            window.analyticsMonitor?.setFilterLogic(logic);
+            refreshBuilderUI();
+        }
+
+        function applyBuilderAndClose() {
+            window.analyticsMonitor?.setFilterBuilderEnabled(true);
+            window.analyticsMonitor?.refreshAll();
+            closeFilterBuilder();
+        }
+
+        function openPresetManager() {
+            const modal = document.getElementById('preset-manager-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                refreshPresetList();
+            }
+        }
+
+        function closePresetManager() {
+            const modal = document.getElementById('preset-manager-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function refreshPresetList() {
+            if (!window.analyticsMonitor) return;
+
+            const list = document.getElementById('preset-list');
+            const presets = window.analyticsMonitor.getFilterPresets();
+
+            if (presets.length === 0) {
+                list.innerHTML = '<div style="color: var(--secondary); font-style: italic; padding: 1rem;">No saved presets. Build a filter and save it as a preset.</div>';
+            } else {
+                let html = '';
+                presets.forEach(preset => {
+                    const isActive = window.analyticsMonitor.currentPreset === preset.name;
+                    html += `
+                        <div style="padding: 1rem; background: ${isActive ? '#e3f2fd' : 'white'}; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 1rem;">
+                                        ${preset.name} ${isActive ? '<span style="background: #2196f3; color: white; padding: 0.125rem 0.375rem; border-radius: 3px; font-size: 0.7rem; margin-left: 0.5rem;">ACTIVE</span>' : ''}
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--secondary); margin-top: 0.25rem;">
+                                        ${preset.description || 'No description'}
+                                    </div>
+                                    <div style="font-size: 0.7rem; color: var(--secondary); margin-top: 0.25rem;">
+                                        ${preset.conditions.length} condition(s) • Logic: ${preset.logic} • Created: ${new Date(preset.created).toLocaleDateString()}
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button onclick="loadPreset('${preset.name}')" style="padding: 0.375rem 0.75rem; font-size: 0.8rem;">Load</button>
+                                    <button onclick="exportPreset('${preset.name}')" style="padding: 0.375rem 0.75rem; font-size: 0.8rem;">Export</button>
+                                    <button onclick="deletePreset('${preset.name}')" style="padding: 0.375rem 0.75rem; font-size: 0.8rem; background: var(--danger); color: white;">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+            }
+        }
+
+        function saveCurrentAsPreset() {
+            if (!window.analyticsMonitor) return;
+
+            const name = prompt('Enter preset name:');
+            if (!name) return;
+
+            const description = prompt('Enter description (optional):');
+
+            try {
+                window.analyticsMonitor.saveFilterPreset(name, description || '');
+                refreshPresetList();
+                alert(`Preset "${name}" saved successfully!`);
+            } catch (error) {
+                alert('Error saving preset: ' + error.message);
+            }
+        }
+
+        function loadPreset(name) {
+            if (!window.analyticsMonitor) return;
+
+            try {
+                window.analyticsMonitor.loadFilterPreset(name);
+                refreshBuilderSummary();
+                refreshBuilderUI();
+                alert(`Preset "${name}" loaded successfully!`);
+            } catch (error) {
+                alert('Error loading preset: ' + error.message);
+            }
+        }
+
+        function exportPreset(name) {
+            if (!window.analyticsMonitor) return;
+
+            try {
+                window.analyticsMonitor.exportFilterPreset(name);
+            } catch (error) {
+                alert('Error exporting preset: ' + error.message);
+            }
+        }
+
+        function deletePreset(name) {
+            if (!window.analyticsMonitor) return;
+
+            if (!confirm(`Delete preset "${name}"? This cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                window.analyticsMonitor.deleteFilterPreset(name);
+                refreshPresetList();
+                alert(`Preset "${name}" deleted successfully!`);
+            } catch (error) {
+                alert('Error deleting preset: ' + error.message);
+            }
+        }
+
+        function importPresetFile() {
+            document.getElementById('import-preset-input').click();
+        }
+
+        console.log('[OK] Phase 3.8: Filter Builder loaded');
+    </script>
+
+    <!-- Phase 3.8: Filter Builder Modal -->
+    <div id="filter-builder-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow: auto;">
+        <div style="background: white; margin: 2% auto; padding: 2rem; width: 90%; max-width: 900px; border-radius: 8px; max-height: 85vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">Advanced Filter Builder</h2>
+                <button onclick="closeFilterBuilder()" style="font-size: 1.5rem; border: none; background: none; cursor: pointer;">&times;</button>
+            </div>
+
+            <!-- Logic Selector -->
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 4px;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Condition Logic:</label>
+                <select id="builder-logic" onchange="updateBuilderLogic(this.value)" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; width: 200px;">
+                    <option value="AND">AND (all must match)</option>
+                    <option value="OR">OR (any must match)</option>
+                </select>
+                <div style="font-size: 0.875rem; color: var(--secondary); margin-top: 0.5rem;">
+                    AND: Query must match ALL conditions | OR: Query must match ANY condition
+                </div>
+            </div>
+
+            <!-- Add New Condition -->
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f0f8ff; border-radius: 4px; border: 1px solid #5dade2;">
+                <h3 style="margin-top: 0;">Add Condition</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Field</label>
+                        <select id="new-condition-field" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                            <option value="date">Date</option>
+                            <option value="confidence">Confidence</option>
+                            <option value="latency">Latency (ms)</option>
+                            <option value="tool">Tool</option>
+                            <option value="queryType">Query Type</option>
+                            <option value="query">Query Text</option>
+                            <option value="cached">Cached</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Operator</label>
+                        <select id="new-condition-operator" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                            <option value="equals">=</option>
+                            <option value="notEquals">≠</option>
+                            <option value="greaterThan">></option>
+                            <option value="lessThan"><</option>
+                            <option value="greaterOrEqual">≥</option>
+                            <option value="lessOrEqual">≤</option>
+                            <option value="contains">contains</option>
+                            <option value="notContains">does not contain</option>
+                            <option value="startsWith">starts with</option>
+                            <option value="endsWith">ends with</option>
+                            <option value="before">before</option>
+                            <option value="after">after</option>
+                            <option value="between">between</option>
+                            <option value="regex">matches regex</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Value</label>
+                        <input type="text" id="new-condition-value" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Value 2 (optional)</label>
+                        <input type="text" id="new-condition-value2" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                    </div>
+                </div>
+                <button onclick="addNewCondition()" style="margin-top: 0.75rem; padding: 0.5rem 1rem; background: #5dade2; color: white; border: none; border-radius: 4px; cursor: pointer;">+ Add Condition</button>
+            </div>
+
+            <!-- Conditions List -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3>Current Conditions</h3>
+                <div id="builder-conditions-list"></div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button onclick="window.analyticsMonitor?.clearFilterBuilder(); closeFilterBuilder();" class="secondary">Clear All</button>
+                <button onclick="closeFilterBuilder()" class="secondary">Cancel</button>
+                <button onclick="applyBuilderAndClose()" class="primary">Apply & Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 3.8: Preset Manager Modal -->
+    <div id="preset-manager-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow: auto;">
+        <div style="background: white; margin: 2% auto; padding: 2rem; width: 90%; max-width: 800px; border-radius: 8px; max-height: 85vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">Filter Presets</h2>
+                <button onclick="closePresetManager()" style="font-size: 1.5rem; border: none; background: none; cursor: pointer;">&times;</button>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <button onclick="saveCurrentAsPreset()" class="primary">💾 Save Current Filter</button>
+                <button onclick="importPresetFile()" class="secondary">📤 Import Preset</button>
+                <input type="file" id="import-preset-input" accept=".json" style="display: none" onchange="if (this.files[0]) window.analyticsMonitor?.importFilterPreset(this.files[0]); refreshPresetList();">
+            </div>
+
+            <!-- Preset List -->
+            <div id="preset-list"></div>
+
+            <!-- Close -->
+            <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+                <button onclick="closePresetManager()" class="secondary">Close</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

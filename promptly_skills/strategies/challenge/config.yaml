@@ -1,0 +1,78 @@
+name: challenge
+version: 1.0.0
+category: self-correction
+description: Adversarial Prompting - Demand finding problems even if stretching
+
+# Strategy configuration
+config:
+  min_problems: 5
+  severity_levels: [LOW, MEDIUM, HIGH, CRITICAL]
+  attack_style: aggressive  # aggressive, moderate, thorough
+
+  # Quality requirements
+  require_exploitation: true  # Must explain how to exploit
+  require_mitigation: true    # Must explain how to fix
+
+  # Performance
+  timeout_seconds: 45
+
+# Auto-detection rules
+detection:
+  high_confidence_keywords:
+    - security
+    - vulnerability
+    - penetration
+    - attack
+    - exploit
+    - breach
+    - threat
+    - risk assessment
+
+  medium_confidence_keywords:
+    - review
+    - audit
+    - test
+    - validate
+    - check
+
+  context_triggers:
+    file_patterns:
+      - "**/security/**"
+      - "**/auth/**"
+      - "**/crypto/**"
+      - "**/api/**"
+      - "**/*auth*"
+      - "**/*secure*"
+
+  # Confidence calculation
+  base_confidence: 0.2
+  keyword_boost: 0.5
+  context_boost: 0.4
+
+# Composability
+composable_with:
+  - verify      # Often chain verify -> challenge
+  - deep        # Challenge then force exhaustive depth
+
+recommended_after:
+  - verify      # Verify completeness then adversarially attack
+
+# Performance characteristics
+performance:
+  typical_duration_ms: 200
+  token_overhead: 250
+  quality_improvement: 0.62  # Average +62% issue detection
+
+# Examples
+examples:
+  - query: "review this security architecture"
+    confidence: 0.95
+    rationale: "High confidence - 'security' keyword + critical context"
+
+  - query: "test this authentication system"
+    confidence: 0.70
+    rationale: "Medium confidence - 'test' + 'authentication' context"
+
+  - query: "check this code"
+    confidence: 0.40
+    rationale: "Low-medium confidence - generic 'check' keyword"

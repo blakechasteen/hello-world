@@ -1,0 +1,1285 @@
+{
+  "metadata": {
+    "title": "HoloLoom AI-Ready Data Architecture Implementation Roadmap",
+    "version": "1.0.0",
+    "created": "2025-11-09",
+    "based_on": "Salesforce 2024 Enterprise Data Survey (6000+ data leaders)",
+    "core_problem": "84% of enterprises need complete data strategy overhaul before AI works",
+    "perception_gap": "63% of executives think they're data-driven, but data isn't ready for AI",
+    "success_rate": "Only 16% successfully scaling AI (this roadmap targets that cohort)",
+    "estimated_timeline": "18-36 months full deployment (honest, not vendor promises)",
+    "philosophy": "Diagnose before deploy, build infrastructure first, be honest about timeline"
+  },
+
+  "current_state_assessment": {
+    "hololoom_strengths": [
+      {
+        "area": "Multi-backend architecture",
+        "capability": "INMEMORY (<10ms), HYBRID (~50ms), HYPERSPACE (~150ms)",
+        "value": "Performance tiers for different use cases",
+        "production_ready": true
+      },
+      {
+        "area": "Parallel execution",
+        "capability": "Asyncio.gather for Steps 4-6 (2-3× speedup)",
+        "value": "Concurrent feature extraction, retrieval, warp tensioning",
+        "production_ready": true
+      },
+      {
+        "area": "Safety guardrails",
+        "capability": "Risk-based action gating, audit trail, alignment framework",
+        "value": "AI behavior governance (not data governance)",
+        "production_ready": true
+      },
+      {
+        "area": "Protocol-based design",
+        "capability": "Type safety, clear interfaces, modular backends",
+        "value": "Architectural governance through design",
+        "production_ready": true
+      },
+      {
+        "area": "Physics-based optimization",
+        "capability": "Phases 0-5 complete (gradient flow, fluid dynamics, thermodynamics, wave mechanics, statistical mechanics)",
+        "value": "Self-optimizing intelligence with zero manual tuning",
+        "production_ready": false,
+        "note": "Research-grade, needs production hardening"
+      }
+    ],
+
+    "critical_gaps": [
+      {
+        "gap": "NO FACTUAL QUERY LAYER",
+        "severity": "P0_BLOCKER",
+        "impact": "Cannot answer 'What is inventory for product X?' in <5 seconds",
+        "current_capability": "Semantic queries only (find relevant docs)",
+        "required_capability": "Structured queries (exact entity lookups, JOINs, aggregations)",
+        "blocks": ["Principle 1: Diagnose before deploy", "Real-time agent queries"],
+        "estimated_effort": "8-12 weeks (2 engineers)"
+      },
+      {
+        "gap": "NO ZERO-COPY ARCHITECTURE",
+        "severity": "P0_BLOCKER",
+        "impact": "Still copying data into HoloLoom (shards = copies, becomes stale)",
+        "current_capability": "Ingest → MemoryShard → Store (batch copy model)",
+        "required_capability": "Federated queries to source systems (Salesforce, Jira, Stripe) at agent runtime",
+        "blocks": ["Principle 2: Zero-copy architecture", "Real-time data access"],
+        "estimated_effort": "12-16 weeks (3 engineers)"
+      },
+      {
+        "gap": "NO SEMANTIC LAYER",
+        "severity": "P0_BLOCKER",
+        "impact": "Cannot distinguish revenue_type (one-time vs recurring), leads to wrong ARR calculations",
+        "current_capability": "Unstructured metadata (Dict[str, Any]), no business ontology",
+        "required_capability": "Business ontology (ARR, MRR, churn definitions), structured schemas (Pydantic), validation",
+        "blocks": ["Principle 3: Context matters", "Correct business answers"],
+        "estimated_effort": "10-14 weeks (2 engineers + 1 business analyst)"
+      },
+      {
+        "gap": "NO DATA QUALITY MONITORING",
+        "severity": "P1_CRITICAL",
+        "impact": "Bad data silently corrupts knowledge graph, no alerts, no owner to page",
+        "current_capability": "AI behavior guardrails (not data quality)",
+        "required_capability": "Automated quality checks (completeness, freshness, consistency), severity routing (P0-P3), ownership registry",
+        "blocks": ["Principle 4: Governance enables speed", "Production reliability"],
+        "estimated_effort": "8-10 weeks (2 engineers)"
+      },
+      {
+        "gap": "NO REAL-TIME STREAMING",
+        "severity": "P1_CRITICAL",
+        "impact": "Batch ingestion only, data goes stale, cannot handle event streams",
+        "current_capability": "Manual spinner execution or scheduled batch jobs",
+        "required_capability": "CDC listeners, webhook handlers, incremental index updates (1000+ events/sec)",
+        "blocks": ["Principle 1: <5s queries", "Principle 2: Real-time access"],
+        "estimated_effort": "12-14 weeks (3 engineers)"
+      },
+      {
+        "gap": "NO DIAGNOSTIC TOOLING",
+        "severity": "P2_HIGH",
+        "impact": "Cannot assess customer readiness, no 'hololoom diagnose' command",
+        "current_capability": "Demo scripts for features (not assessment)",
+        "required_capability": "Infrastructure assessment tool, gap analysis, timeline estimation, ROI calculator",
+        "blocks": ["Principle 5: Honest timeline", "Customer qualification"],
+        "estimated_effort": "6-8 weeks (1 engineer)"
+      },
+      {
+        "gap": "NO MIGRATION PLAYBOOKS",
+        "severity": "P2_HIGH",
+        "impact": "Assumes greenfield, no coexistence strategy with Snowflake/Databricks",
+        "current_capability": "None (rip-and-replace assumption)",
+        "required_capability": "Phased migration plans, connector libraries, coexistence patterns",
+        "blocks": ["Principle 5: Honest timeline", "Enterprise adoption"],
+        "estimated_effort": "8-10 weeks (2 engineers + consulting)"
+      }
+    ]
+  },
+
+  "seven_principles_implementation": {
+    "principle_1_diagnose_before_deploy": {
+      "pain_point": "Most enterprises fail because they deploy AI before verifying data infrastructure can support <5 second queries",
+      "hololoom_gaps": [
+        "No factual query benchmarks",
+        "No complete customer view assembly",
+        "No streaming ingestion validation",
+        "No diagnostic test suite"
+      ],
+      "implementation_phases": [
+        {
+          "phase": "1A: Structured Query Engine",
+          "priority": "P0_BLOCKER",
+          "timeline_weeks": 12,
+          "team_size": 2,
+          "deliverables": [
+            {
+              "name": "StructuredQueryEngine class",
+              "file": "HoloLoom/query/structured.py",
+              "lines_of_code": 800,
+              "capabilities": [
+                "SQL-like queries over knowledge graph",
+                "Query planner with cost estimation",
+                "Neo4j Cypher backend execution",
+                "Secondary indexes on high-cardinality fields",
+                "Connection pooling"
+              ],
+              "performance_targets": {
+                "simple_select": "<100ms",
+                "two_table_join": "<500ms",
+                "four_table_join": "<2000ms",
+                "customer_view_assembly": "<5000ms"
+              }
+            },
+            {
+              "name": "Integration with WeavingOrchestrator",
+              "changes": "Add structured query path alongside semantic retrieval",
+              "backward_compatible": true
+            }
+          ],
+          "acceptance_criteria": [
+            "Can answer 'SELECT inventory FROM products WHERE product_id=X' in <100ms",
+            "Can assemble complete customer view (sales+support+billing+shipping) in <5s",
+            "100% backward compatible with existing semantic queries",
+            "Benchmarks passing in CI/CD"
+          ],
+          "risks": [
+            {
+              "risk": "Neo4j query timeout on complex JOINs",
+              "mitigation": "Pre-compute common joins as materialized views",
+              "probability": "medium"
+            },
+            {
+              "risk": "Index creation locks production database",
+              "mitigation": "Create indexes during low-traffic windows, use read replicas",
+              "probability": "low"
+            }
+          ]
+        },
+        {
+          "phase": "1B: Diagnostic Test Suite",
+          "priority": "P0_BLOCKER",
+          "timeline_weeks": 6,
+          "team_size": 1,
+          "deliverables": [
+            {
+              "name": "AIReadinessDiagnostics class",
+              "file": "HoloLoom/diagnostics/readiness.py",
+              "lines_of_code": 600,
+              "test_suite": [
+                "Test 1: Simple factual query (<5s)",
+                "Test 2: Complete customer view (<5s)",
+                "Test 3: Real-time stream ingestion (1000 events/sec)",
+                "Test 4: Cache effectiveness (>80% hit rate)",
+                "Test 5: Concurrent query handling (100 simultaneous)"
+              ]
+            },
+            {
+              "name": "CLI interface",
+              "command": "hololoom diagnose",
+              "output_formats": ["terminal", "JSON", "PDF report"]
+            }
+          ],
+          "acceptance_criteria": [
+            "All 5 tests run automatically",
+            "Pass/fail with bottleneck identification",
+            "Actionable recommendations for failures",
+            "Estimated time-to-fix for each failure"
+          ]
+        },
+        {
+          "phase": "1C: Real-Time Stream Ingestion",
+          "priority": "P1_CRITICAL",
+          "timeline_weeks": 14,
+          "team_size": 3,
+          "deliverables": [
+            {
+              "name": "StreamIngestionEngine class",
+              "file": "HoloLoom/streaming/ingestion.py",
+              "lines_of_code": 900,
+              "capabilities": [
+                "Kafka/Pulsar consumer",
+                "Database CDC (Debezium/Maxwell)",
+                "Webhook handlers",
+                "Incremental index updates (not full rebuild)",
+                "Cache invalidation on updates"
+              ],
+              "performance_targets": {
+                "throughput": "1000+ events/sec sustained",
+                "index_update_latency": "<100ms per event",
+                "query_latency_impact": "<10% degradation during ingestion"
+              }
+            }
+          ],
+          "acceptance_criteria": [
+            "Can ingest 1000 events/sec for 1 hour without degradation",
+            "Query latency remains <5s during ingestion",
+            "Zero data loss (at-least-once delivery)",
+            "Idempotent ingestion (duplicate events handled correctly)"
+          ],
+          "risks": [
+            {
+              "risk": "Incremental indexing too slow (blocks ingestion)",
+              "mitigation": "Write-optimized index (LSM trees), background compaction",
+              "probability": "medium"
+            },
+            {
+              "risk": "Cache invalidation too aggressive (thrashes cache)",
+              "mitigation": "Smart invalidation (only affected entities), batch invalidation",
+              "probability": "medium"
+            }
+          ]
+        }
+      ],
+      "total_timeline_weeks": 32,
+      "parallel_work": "Phases 1A and 1B can run in parallel (saves 6 weeks)",
+      "critical_path": "1C depends on 1A (need structured query before streaming)",
+      "total_with_parallelization": "26 weeks (6.5 months)"
+    },
+
+    "principle_2_zero_copy_architecture": {
+      "pain_point": "Traditional data warehouses copy data to central location (overnight batch), but AI agents need real-time access to authoritative sources",
+      "hololoom_gaps": [
+        "Still copying to MemoryShards (becomes stale)",
+        "No live query federation to source systems",
+        "No CDC integration",
+        "Batch ingestion mindset"
+      ],
+      "implementation_phases": [
+        {
+          "phase": "2A: Federated Query Engine",
+          "priority": "P0_BLOCKER",
+          "timeline_weeks": 16,
+          "team_size": 3,
+          "deliverables": [
+            {
+              "name": "FederatedQueryRouter class",
+              "file": "HoloLoom/federation/query_router.py",
+              "lines_of_code": 1000,
+              "capabilities": [
+                "Query source systems directly (Salesforce, Jira, Stripe, GitHub)",
+                "Smart caching with TTL (not full copy)",
+                "Parallel query execution across sources",
+                "Result merging and deduplication",
+                "Cache invalidation on TTL expiry"
+              ],
+              "performance_targets": {
+                "single_source_query": "<2000ms",
+                "federated_query_3_sources": "<5000ms",
+                "cache_hit_rate": ">80%",
+                "cache_invalidation": "<50ms"
+              }
+            },
+            {
+              "name": "Source adapters (plugins)",
+              "adapters": [
+                "SalesforceAdapter (SOQL queries)",
+                "JiraAdapter (JQL queries)",
+                "StripeAdapter (REST API)",
+                "GitHubAdapter (GraphQL)",
+                "SnowflakeAdapter (SQL)",
+                "CustomSourceAdapter (template for proprietary systems)"
+              ],
+              "files": "HoloLoom/federation/adapters/*.py"
+            },
+            {
+              "name": "Integration SDK",
+              "purpose": "Allow companies to build custom adapters for proprietary systems",
+              "includes": [
+                "BaseSourceAdapter protocol",
+                "Adapter template with examples",
+                "Testing framework",
+                "Documentation"
+              ]
+            }
+          ],
+          "acceptance_criteria": [
+            "Can query Salesforce + Jira + Stripe in <5s (federated)",
+            "Cache hit rate >80% in production workload",
+            "Custom adapter can be built in <2 days (SDK usability)",
+            "Zero data duplication for cached data (TTL-based expiry)"
+          ],
+          "risks": [
+            {
+              "risk": "External API latency (Salesforce can take 2s)",
+              "mitigation": "Aggressive caching, pre-warming, async queries",
+              "probability": "high"
+            },
+            {
+              "risk": "API rate limits (e.g., Salesforce 10000/day)",
+              "mitigation": "Request coalescing, cache sharing, backpressure",
+              "probability": "high"
+            },
+            {
+              "risk": "API authentication complexity (OAuth flows)",
+              "mitigation": "Credential manager, token refresh automation",
+              "probability": "medium"
+            }
+          ]
+        },
+        {
+          "phase": "2B: Smart Caching Layer",
+          "priority": "P0_BLOCKER",
+          "timeline_weeks": 6,
+          "team_size": 1,
+          "deliverables": [
+            {
+              "name": "FederationCache class",
+              "file": "HoloLoom/federation/cache.py",
+              "lines_of_code": 400,
+              "capabilities": [
+                "TTL-based expiry (configurable per source)",
+                "Transparent cache (metadata includes cache age)",
+                "Bypassable (force fresh query option)",
+                "Redis backend for distributed cache"
+              ],
+              "configuration": {
+                "salesforce_ttl": "600s (10 min)",
+                "jira_ttl": "60s (1 min)",
+                "stripe_ttl": "300s (5 min)",
+                "github_ttl": "120s (2 min)"
+              }
+            }
+          ],
+          "acceptance_criteria": [
+            "Cache hit latency <50ms",
+            "Cache miss triggers fresh query",
+            "TTL expiry automatic (no manual invalidation)",
+            "Metadata includes cache age (transparency)"
+          ]
+        },
+        {
+          "phase": "2C: Change Data Capture Integration",
+          "priority": "P1_CRITICAL",
+          "timeline_weeks": 10,
+          "team_size": 2,
+          "deliverables": [
+            {
+              "name": "CDCListener class",
+              "file": "HoloLoom/streaming/cdc.py",
+              "lines_of_code": 700,
+              "capabilities": [
+                "Database CDC (Debezium, Maxwell)",
+                "Webhook events (Salesforce Platform Events, Stripe webhooks)",
+                "Message queue (Kafka, Pulsar)",
+                "Incremental knowledge graph updates",
+                "Cache invalidation on changes"
+              ]
+            },
+            {
+              "name": "WebhookHandler class",
+              "file": "HoloLoom/streaming/webhooks.py",
+              "lines_of_code": 400,
+              "capabilities": [
+                "HTTP endpoint for webhook delivery",
+                "Signature verification (security)",
+                "Event normalization",
+                "Async processing"
+              ]
+            }
+          ],
+          "acceptance_criteria": [
+            "Salesforce change triggers cache invalidation in <5s",
+            "Webhook signature verification prevents spoofing",
+            "CDC lag <1 minute (database changes reflected quickly)",
+            "Zero downtime webhook endpoint (HA deployment)"
+          ],
+          "risks": [
+            {
+              "risk": "Webhook delivery failures (network issues)",
+              "mitigation": "Retry with exponential backoff, dead letter queue",
+              "probability": "medium"
+            },
+            {
+              "risk": "CDC lag during high write load",
+              "mitigation": "Parallelize CDC processing, partition by entity",
+              "probability": "medium"
+            }
+          ]
+        }
+      ],
+      "total_timeline_weeks": 32,
+      "parallel_work": "Phase 2B can overlap with 2A (saves 6 weeks)",
+      "critical_path": "2C depends on 2A+2B (need federation + caching before CDC)",
+      "total_with_parallelization": "26 weeks (6.5 months)"
+    },
+
+    "principle_3_context_matters_more_than_volume": {
+      "pain_point": "49% draw incorrect conclusions because data lacks business context (e.g., $2M revenue without 'one-time' flag gets added to ARR incorrectly)",
+      "hololoom_gaps": [
+        "No semantic layer (business ontology)",
+        "Context in text, not structured fields",
+        "No business logic layer",
+        "No canonical definitions",
+        "Metadata is untyped Dict[str, Any]"
+      ],
+      "implementation_phases": [
+        {
+          "phase": "3A: Business Ontology Layer",
+          "priority": "P0_BLOCKER",
+          "timeline_weeks": 14,
+          "team_size": "2 engineers + 1 business analyst",
+          "deliverables": [
+            {
+              "name": "BusinessOntology class",
+              "file": "HoloLoom/ontology/business.py",
+              "lines_of_code": 800,
+              "capabilities": [
+                "Define business concepts (ARR, MRR, churn, active customer)",
+                "Calculation rules (ARR = SUM(revenue WHERE type='recurring'))",
+                "Required fields per concept",
+                "Validation rules",
+                "Synonym mapping",
+                "Ownership attribution"
+              ]
+            },
+            {
+              "name": "Pre-built ontologies",
+              "files": [
+                "HoloLoom/ontology/financial.py (ARR, MRR, revenue, churn)",
+                "HoloLoom/ontology/customer.py (active, churned, LTV)",
+                "HoloLoom/ontology/sales.py (pipeline, booking, conversion)"
+              ],
+              "extensible": true,
+              "customization": "Companies add their own concepts"
+            },
+            {
+              "name": "Query resolver",
+              "capability": "Translate 'What's our ARR?' into structured query with business logic",
+              "example": {
+                "input": "What's our ARR?",
+                "concept_identified": "ARR",
+                "definition": "Annual Recurring Revenue",
+                "calculation": "SUM(revenue WHERE revenue_type='recurring' AND period='annual')",
+                "structured_query": "SELECT SUM(revenue_amount) FROM revenue WHERE revenue_type='recurring' AND period='annual'"
+              }
+            }
+          ],
+          "acceptance_criteria": [
+            "Can define 20+ core business concepts (ARR, MRR, CAC, LTV, churn, etc.)",
+            "Query 'What's our ARR?' returns CORRECT answer (excludes one-time)",
+            "Business analyst can add new concepts without code changes",
+            "Validation rules prevent incorrect data entry"
+          ],
+          "risks": [
+            {
+              "risk": "Business definitions unclear or disputed between teams",
+              "mitigation": "Governance process for approving definitions, version control",
+              "probability": "high"
+            },
+            {
+              "risk": "Calculation logic too complex for declarative syntax",
+              "mitigation": "Support both declarative (simple) and Python UDF (complex)",
+              "probability": "medium"
+            }
+          ]
+        },
+        {
+          "phase": "3B: Structured Metadata Schema",
+          "priority": "P0_BLOCKER",
+          "timeline_weeks": 8,
+          "team_size": 2,
+          "deliverables": [
+            {
+              "name": "Pydantic schemas for business entities",
+              "file": "HoloLoom/schema/business_entities.py",
+              "lines_of_code": 600,
+              "schemas": [
+                "RevenueRecord (revenue_amount, revenue_type, period, customer_id, recognized_date)",
+                "CustomerRecord (customer_id, status, signup_date, churn_date, LTV)",
+                "SupportTicket (ticket_id, customer_id, status, priority, sentiment)"
+              ],
+              "validation": "Pydantic validators enforce business rules"
+            },
+            {
+              "name": "SchemaValidator class",
+              "file": "HoloLoom/ingestion/validator.py",
+              "lines_of_code": 300,
+              "capabilities": [
+                "Validate data against schema before storage",
+                "Raise ValidationError on missing required fields",
+                "Log validation failures for governance",
+                "Auto-convert validated data to MemoryShard"
+              ]
+            }
+          ],
+          "acceptance_criteria": [
+            "RevenueRecord REQUIRES revenue_type field (no more missing context)",
+            "Validation fails if revenue_type not in ['recurring', 'one-time']",
+            "100% of ingested data validated before storage",
+            "Validation failure logged with owner notification"
+          ],
+          "risks": [
+            {
+              "risk": "Existing data doesn't conform to schema (backfill required)",
+              "mitigation": "Backfill tool, ML-based classification for missing fields",
+              "probability": "high"
+            }
+          ]
+        },
+        {
+          "phase": "3C: Semantic Layer Integration",
+          "priority": "P2_HIGH",
+          "timeline_weeks": 6,
+          "team_size": 1,
+          "deliverables": [
+            {
+              "name": "Cube.dev integration (vendor option)",
+              "file": "HoloLoom/semantic_layer/cube_integration.py",
+              "lines_of_code": 400,
+              "capabilities": [
+                "Query Cube metrics API",
+                "Get metric definitions",
+                "Apply business logic via Cube"
+              ]
+            },
+            {
+              "name": "HoloLoom semantic layer (DIY option)",
+              "file": "HoloLoom/semantic_layer/hololoom_semantic.py",
+              "lines_of_code": 500,
+              "capabilities": [
+                "Define metrics with calculation logic",
+                "Calculate metrics using knowledge graph",
+                "Cache metric results"
+              ]
+            }
+          ],
+          "acceptance_criteria": [
+            "Can query Cube metrics OR use HoloLoom semantic layer (choice)",
+            "Business definitions centralized (single source of truth)",
+            "Metric calculations correct and auditable"
+          ]
+        }
+      ],
+      "total_timeline_weeks": 28,
+      "parallel_work": "Phases 3B and 3C can overlap with 3A (saves 6 weeks)",
+      "critical_path": "3A → 3B → 3C (ontology required before schemas, schemas before semantic layer)",
+      "total_with_parallelization": "22 weeks (5.5 months)"
+    },
+
+    "principle_4_governance_enables_speed": {
+      "pain_point": "If nobody owns data quality, data will not be quality. Governance = accountability (automated), not bureaucracy (manual approvals)",
+      "hololoom_gaps": [
+        "No data quality monitoring",
+        "No ownership model",
+        "No automated remediation",
+        "No severity routing",
+        "No governance council/process"
+      ],
+      "implementation_phases": [
+        {
+          "phase": "4A: Data Quality Monitoring System",
+          "priority": "P1_CRITICAL",
+          "timeline_weeks": 10,
+          "team_size": 2,
+          "deliverables": [
+            {
+              "name": "DataQualityMonitor class",
+              "file": "HoloLoom/governance/data_quality.py",
+              "lines_of_code": 900,
+              "capabilities": [
+                "Quality dimensions (completeness, accuracy, consistency, timeliness, validity, uniqueness)",
+                "Automated checks on ingestion",
+                "Severity-based routing (P0=page on-call, P1=Slack+ticket, P2=ticket, P3=log)",
+                "Automated remediation (where possible)",
+                "Quality metrics dashboard"
+              ],
+              "quality_dimensions": [
+                "Completeness: % of records with all required fields",
+                "Accuracy: Data correctness score",
+                "Consistency: Cross-system validation",
+                "Timeliness: Data freshness (age)",
+                "Validity: % passing validation rules",
+                "Uniqueness: % duplicate records"
+              ]
+            },
+            {
+              "name": "Pre-built quality rules",
+              "file": "HoloLoom/governance/quality_rules.py",
+              "lines_of_code": 400,
+              "rules": [
+                "revenue_type_required (P0, finance_team)",
+                "customer_id_required (P1, data_team)",
+                "revenue_data_fresh (P1, finance_team, <24h)",
+                "revenue_sum_matches_bookings (P0, finance_team)",
+                "revenue_amount_positive (P0, finance_team)",
+                "no_duplicate_customers (P2, data_team)"
+              ]
+            },
+            {
+              "name": "AlertingSystem integration",
+              "capabilities": [
+                "PagerDuty for P0 (page on-call)",
+                "Slack for P1 (alert channel)",
+                "Jira for P2 (create ticket)",
+                "Log for P3"
+              ]
+            }
+          ],
+          "acceptance_criteria": [
+            "P0 violation triggers page within 60 seconds",
+            "P1 violation creates Slack alert + Jira ticket",
+            "Quality metrics visible in dashboard (real-time)",
+            "Automated remediation fixes 50%+ of P2/P3 issues"
+          ],
+          "risks": [
+            {
+              "risk": "Alert fatigue (too many alerts)",
+              "mitigation": "Tune severity thresholds, batch similar alerts",
+              "probability": "high"
+            },
+            {
+              "risk": "False positives (incorrect quality checks)",
+              "mitigation": "Quality rule validation period, feedback loop",
+              "probability": "medium"
+            }
+          ]
+        },
+        {
+          "phase": "4B: Data Ownership Registry",
+          "priority": "P1_CRITICAL",
+          "timeline_weeks": 4,
+          "team_size": 1,
+          "deliverables": [
+            {
+              "name": "DataOwnershipRegistry class",
+              "file": "HoloLoom/governance/ownership.py",
+              "lines_of_code": 400,
+              "capabilities": [
+                "Register data assets with owners",
+                "Quality SLA per asset (completeness >99%, freshness <24h)",
+                "Auto-generate quality rules from SLA",
+                "Owner lookup for alerting"
+              ]
+            },
+            {
+              "name": "Example data assets",
+              "assets": [
+                "revenue_records (owner: alice@company.com, SLA: 99% complete, 24h fresh)",
+                "customer_records (owner: bob@company.com, SLA: 98% complete, 1h fresh, 100% unique)"
+              ]
+            }
+          ],
+          "acceptance_criteria": [
+            "Every dataset has exactly one owner (accountability)",
+            "Owner receives alerts when SLA violated",
+            "SLA compliance visible in dashboard"
+          ]
+        },
+        {
+          "phase": "4C: Governance Dashboard",
+          "priority": "P2_HIGH",
+          "timeline_weeks": 6,
+          "team_size": 1,
+          "deliverables": [
+            {
+              "name": "GovernanceDashboard class",
+              "file": "HoloLoom/governance/dashboard.py",
+              "lines_of_code": 500,
+              "views": [
+                "Quality overview (overall score, critical violations)",
+                "Asset status (per dataset quality, SLA compliance)",
+                "Recent violations (last 24h)",
+                "Owner accountability (violations by owner)"
+              ]
+            },
+            {
+              "name": "Web UI",
+              "technology": "FastAPI + React",
+              "features": [
+                "Real-time quality metrics",
+                "Drill-down by dataset",
+                "Alert history",
+                "SLA compliance trends"
+              ]
+            }
+          ],
+          "acceptance_criteria": [
+            "Dashboard accessible at /governance",
+            "Real-time updates (<1 minute lag)",
+            "Mobile-responsive",
+            "Export to PDF for reports"
+          ]
+        }
+      ],
+      "total_timeline_weeks": 20,
+      "parallel_work": "Phases 4B and 4C can overlap with 4A (saves 4 weeks)",
+      "critical_path": "4A → 4B → 4C (monitoring required before ownership, ownership before dashboard)",
+      "total_with_parallelization": "16 weeks (4 months)"
+    },
+
+    "principle_5_honest_timeline": {
+      "pain_point": "Vendors promise 6 months, reality is 18-36 months. Honest timeline prevents blame cycles and sets realistic expectations",
+      "hololoom_gaps": [
+        "No migration plan for existing enterprises",
+        "No infrastructure assessment tool",
+        "No realistic ROI calculator",
+        "Documentation doesn't discuss timeline"
+      ],
+      "implementation_phases": [
+        {
+          "phase": "5A: Infrastructure Assessment Tool",
+          "priority": "P2_HIGH",
+          "timeline_weeks": 8,
+          "team_size": 1,
+          "deliverables": [
+            {
+              "name": "InfrastructureAssessment class",
+              "file": "HoloLoom/assessment/infrastructure.py",
+              "lines_of_code": 700,
+              "tests": [
+                "Query performance (<5s)",
+                "Customer view assembly (<5s)",
+                "Data freshness",
+                "Schema completeness",
+                "Governance maturity"
+              ],
+              "outputs": [
+                "Readiness score (0-100)",
+                "Gap analysis",
+                "Timeline estimate (months)",
+                "Recommendations"
+              ]
+            },
+            {
+              "name": "CLI: hololoom assess",
+              "interactive": true,
+              "output_formats": ["terminal", "JSON", "PDF"]
+            }
+          ],
+          "acceptance_criteria": [
+            "Assessment completes in <30 minutes",
+            "Timeline estimate within ±4 months of actual (80% accuracy)",
+            "Recommendations actionable and specific",
+            "PDF report presentable to executives"
+          ]
+        },
+        {
+          "phase": "5B: Migration Playbooks",
+          "priority": "P2_HIGH",
+          "timeline_weeks": 10,
+          "team_size": "2 engineers + consulting",
+          "deliverables": [
+            {
+              "name": "Migration playbook library",
+              "file": "HoloLoom/migration/playbooks.py",
+              "lines_of_code": 800,
+              "playbooks": [
+                "SnowflakeCoexistencePlaybook (15 months, 5 phases)",
+                "DatabricksCoexistencePlaybook (12 months, 4 phases)",
+                "GenericMigrationPlaybook (24 months, 6 phases)"
+              ]
+            },
+            {
+              "name": "Connector libraries",
+              "connectors": [
+                "Snowflake connector (zero-copy federation)",
+                "Databricks connector",
+                "Redshift connector",
+                "BigQuery connector"
+              ]
+            }
+          ],
+          "acceptance_criteria": [
+            "Playbook provides month-by-month plan",
+            "Success criteria for each phase",
+            "Risk identification and mitigation",
+            "Tested with at least 2 customer pilots"
+          ]
+        },
+        {
+          "phase": "5C: ROI Calculator",
+          "priority": "P3_MEDIUM",
+          "timeline_weeks": 4,
+          "team_size": 1,
+          "deliverables": [
+            {
+              "name": "ROICalculator class",
+              "file": "HoloLoom/assessment/roi.py",
+              "lines_of_code": 500,
+              "inputs": [
+                "Company profile (size, data volume, team)",
+                "Timeline estimate (from assessment)",
+                "Use cases (support automation, sales productivity)"
+              ],
+              "outputs": [
+                "3-year ROI analysis",
+                "Break-even month",
+                "Quarterly cash flow",
+                "Sensitivity analysis (best/base/worst case)"
+              ]
+            }
+          ],
+          "acceptance_criteria": [
+            "ROI calculation matches reality within ±20% (validated with pilots)",
+            "Break-even estimate within ±2 quarters",
+            "Sensitivity analysis covers 3 scenarios",
+            "Output presentable to CFO"
+          ]
+        }
+      ],
+      "total_timeline_weeks": 22,
+      "parallel_work": "All phases can run in parallel (saves 12 weeks)",
+      "total_with_parallelization": "10 weeks (2.5 months)"
+    },
+
+    "principle_6_close_perception_gap": {
+      "pain_point": "63% of executives think they're data-driven, but technical leaders know they're not. Misaligned expectations lead to blame cycles",
+      "hololoom_approach": "Assessment tool surfaces gap, honest timeline manages expectations, technical leaders educate executives",
+      "implementation": "Already covered in Principle 5 (assessment tool makes gap visible)",
+      "additional_deliverables": [
+        {
+          "name": "Executive briefing templates",
+          "purpose": "Help technical leaders communicate data readiness to business",
+          "formats": ["PowerPoint deck", "One-pager", "Video explainer"]
+        },
+        {
+          "name": "Business-technical alignment workshop",
+          "duration": "Half-day facilitated session",
+          "participants": ["CTO", "CIO", "CFO", "Chief Data Officer", "Head of AI"],
+          "outcome": "Aligned understanding of timeline, investment, and ROI"
+        }
+      ],
+      "timeline_weeks": 2,
+      "team_size": "1 product manager (create templates)"
+    },
+
+    "principle_7_strategic_choice_time_bound": {
+      "pain_point": "Data runs on a clock. 18-36 months regardless, better to start now than wait (exponential lag)",
+      "hololoom_message": "Start infrastructure work today, run pilots in parallel, scale as foundation solidifies",
+      "implementation": "Philosophy, not code. Communicate urgency in marketing, sales, onboarding",
+      "timeline_weeks": 0,
+      "team_size": 0
+    }
+  },
+
+  "consolidated_timeline": {
+    "phase_1_infrastructure_foundation": {
+      "duration_months": 6,
+      "parallel_workstreams": [
+        {
+          "workstream": "Query Infrastructure",
+          "includes": ["1A: Structured Query", "1B: Diagnostics", "2A: Federation"],
+          "team": "3 engineers",
+          "deliverables": ["Structured queries", "Diagnostic suite", "Federated queries"]
+        },
+        {
+          "workstream": "Data Quality",
+          "includes": ["3A: Ontology", "3B: Schemas", "4A: Quality Monitoring"],
+          "team": "2 engineers + 1 BA",
+          "deliverables": ["Business ontology", "Pydantic schemas", "Quality monitoring"]
+        },
+        {
+          "workstream": "Real-Time Infrastructure",
+          "includes": ["1C: Streaming", "2C: CDC"],
+          "team": "3 engineers",
+          "deliverables": ["Stream ingestion", "CDC listeners", "Webhooks"]
+        }
+      ],
+      "total_team": "8-9 engineers + 1 BA",
+      "critical_deliverables": [
+        "Structured query engine (<5s queries)",
+        "Business ontology (correct business answers)",
+        "Quality monitoring (data governance)",
+        "Streaming ingestion (real-time data)"
+      ]
+    },
+
+    "phase_2_governance_and_tooling": {
+      "duration_months": 3,
+      "parallel_workstreams": [
+        {
+          "workstream": "Governance",
+          "includes": ["4B: Ownership", "4C: Dashboard"],
+          "team": "1 engineer",
+          "deliverables": ["Ownership registry", "Governance dashboard"]
+        },
+        {
+          "workstream": "Assessment",
+          "includes": ["5A: Assessment", "5B: Migration", "5C: ROI"],
+          "team": "2 engineers + consulting",
+          "deliverables": ["Assessment tool", "Migration playbooks", "ROI calculator"]
+        },
+        {
+          "workstream": "Semantic Layer",
+          "includes": ["2B: Caching", "3C: Semantic"],
+          "team": "2 engineers",
+          "deliverables": ["Smart caching", "Semantic layer integration"]
+        }
+      ],
+      "total_team": "5 engineers",
+      "critical_deliverables": [
+        "Governance dashboard (visibility)",
+        "Assessment tool (customer qualification)",
+        "Migration playbooks (enterprise adoption)"
+      ]
+    },
+
+    "phase_3_pilot_deployment": {
+      "duration_months": "6 (per customer)",
+      "activities": [
+        "Run infrastructure assessment",
+        "Execute migration playbook (Phase 1)",
+        "Deploy single use case (e.g., customer support automation)",
+        "Shadow mode (parallel to humans)",
+        "Measure accuracy and value",
+        "Iterate based on feedback"
+      ],
+      "success_criteria": [
+        "Agent accuracy >90% on pilot use case",
+        "Query latency <5s p95",
+        "Data quality SLA >99% completeness",
+        "Positive user feedback",
+        "Measurable ROI (e.g., 30% reduction in support tickets)"
+      ]
+    },
+
+    "phase_4_production_scale": {
+      "duration_months": "12 (per customer)",
+      "activities": [
+        "Expand to 3-5 use cases",
+        "Optimize performance (<3s queries)",
+        "Automate governance",
+        "Scale team training",
+        "Monitor ROI continuously"
+      ],
+      "success_criteria": [
+        "5+ use cases deployed",
+        "Agents handling 50%+ of queries",
+        "Break-even on ROI (month 18-24)",
+        "Customer reference account (willing to advocate)"
+      ]
+    },
+
+    "total_timeline": {
+      "hololoom_development": "9 months (Phases 1+2 parallel)",
+      "customer_pilot": "6 months (Phase 3)",
+      "customer_scale": "12 months (Phase 4)",
+      "total_to_production": "27 months (2.25 years)",
+      "vendor_promise": "6 months (unrealistic)",
+      "honest_estimate": "24-30 months (realistic)"
+    }
+  },
+
+  "resource_requirements": {
+    "team_composition": {
+      "phase_1_infrastructure": [
+        {"role": "Backend Engineer (Query/Federation)", "count": 3, "months": 6},
+        {"role": "Backend Engineer (Streaming/CDC)", "count": 3, "months": 6},
+        {"role": "Backend Engineer (Quality/Governance)", "count": 2, "months": 6},
+        {"role": "Business Analyst (Ontology)", "count": 1, "months": 4}
+      ],
+      "phase_2_governance": [
+        {"role": "Backend Engineer", "count": 3, "months": 3},
+        {"role": "Frontend Engineer (Dashboard)", "count": 1, "months": 3},
+        {"role": "Solutions Architect (Migration)", "count": 1, "months": 3}
+      ],
+      "phase_3_4_customer_deployment": [
+        {"role": "Solutions Engineer", "count": 1, "per_customer": true},
+        {"role": "Data Engineer (customer team)", "count": 2, "per_customer": true},
+        {"role": "ML Engineer (customer team)", "count": 1, "per_customer": true}
+      ]
+    },
+
+    "infrastructure_costs": {
+      "development": [
+        {"item": "Compute (AWS/GCP)", "monthly": 5000, "months": 9},
+        {"item": "Neo4j Enterprise License", "monthly": 2000, "months": 9},
+        {"item": "Qdrant Cloud", "monthly": 1000, "months": 9},
+        {"item": "Development tools (GitHub, Jira, etc.)", "monthly": 1000, "months": 9}
+      ],
+      "per_customer_deployment": [
+        {"item": "Compute (production)", "monthly": 10000},
+        {"item": "Storage (1TB+)", "monthly": 2000},
+        {"item": "Neo4j Enterprise", "monthly": 5000},
+        {"item": "Monitoring (Datadog, etc.)", "monthly": 1000}
+      ]
+    },
+
+    "total_investment": {
+      "development_team": "9 engineers × 9 months × $15k/month = $1,215,000",
+      "infrastructure": "9 months × $9k/month = $81,000",
+      "total_to_production_ready": "$1,296,000",
+      "per_customer_deployment": "$200k consulting + $18k/month ongoing",
+      "note": "This is HoloLoom platform development, not customer deployment"
+    }
+  },
+
+  "success_metrics": {
+    "technical_kpis": [
+      {"metric": "Query latency p95", "target": "<5000ms", "critical": true},
+      {"metric": "Query latency p50", "target": "<2000ms", "stretch": true},
+      {"metric": "Stream ingestion throughput", "target": "1000+ events/sec", "critical": true},
+      {"metric": "Data quality completeness", "target": ">99%", "critical": true},
+      {"metric": "Cache hit rate", "target": ">80%", "critical": true},
+      {"metric": "Federated query success rate", "target": ">99%", "critical": true},
+      {"metric": "CDC lag", "target": "<60s", "critical": true}
+    ],
+
+    "business_kpis": [
+      {"metric": "Customer pilot success rate", "target": ">80%", "critical": true},
+      {"metric": "Agent accuracy on pilot use case", "target": ">90%", "critical": true},
+      {"metric": "Time to break-even ROI", "target": "<24 months", "critical": true},
+      {"metric": "Customer reference accounts", "target": "3+ in Year 1", "critical": true},
+      {"metric": "Support ticket reduction (pilot)", "target": "30%+", "critical": false},
+      {"metric": "Sales productivity uplift (pilot)", "target": "20%+", "critical": false}
+    ],
+
+    "governance_kpis": [
+      {"metric": "Data assets with owners", "target": "100%", "critical": true},
+      {"metric": "Quality violations P0 resolved", "target": "<15 minutes", "critical": true},
+      {"metric": "Quality violations P1 resolved", "target": "<4 hours", "critical": true},
+      {"metric": "SLA compliance", "target": ">95%", "critical": true}
+    ]
+  },
+
+  "risks_and_mitigation": {
+    "technical_risks": [
+      {
+        "risk": "External API latency kills <5s budget",
+        "probability": "high",
+        "impact": "critical",
+        "mitigation": [
+          "Aggressive caching (80%+ hit rate target)",
+          "Pre-warming cache during low-traffic periods",
+          "Async queries with timeout + fallback",
+          "Negotiate SLAs with API providers (Salesforce, etc.)"
+        ]
+      },
+      {
+        "risk": "Incremental indexing too slow for real-time",
+        "probability": "medium",
+        "impact": "high",
+        "mitigation": [
+          "LSM tree index structure (write-optimized)",
+          "Background compaction",
+          "Partition by entity type",
+          "Benchmark early and often"
+        ]
+      },
+      {
+        "risk": "Business definitions disputed (no consensus on 'ARR')",
+        "probability": "high",
+        "impact": "medium",
+        "mitigation": [
+          "Governance process for definition approval",
+          "Version control for ontology",
+          "Business analyst facilitates consensus",
+          "Start with uncontroversial definitions (low-hanging fruit)"
+        ]
+      },
+      {
+        "risk": "CDC lag during high write load",
+        "probability": "medium",
+        "impact": "medium",
+        "mitigation": [
+          "Parallelize CDC processing",
+          "Partition by entity type",
+          "Backpressure mechanism",
+          "Monitor lag continuously"
+        ]
+      }
+    ],
+
+    "business_risks": [
+      {
+        "risk": "Customers won't wait 24 months (vendor offers 6 months)",
+        "probability": "high",
+        "impact": "critical",
+        "mitigation": [
+          "Compete on honesty and long-term value, not timeline promises",
+          "Show pilot results early (proof of value)",
+          "Offer phased pricing (pay as you go, not upfront)",
+          "Reference accounts from successful pilots"
+        ]
+      },
+      {
+        "risk": "Customer infrastructure assessment reveals 36+ month timeline",
+        "probability": "medium",
+        "impact": "high",
+        "mitigation": [
+          "Qualify customers early (don't waste time on unprepared)",
+          "Offer infrastructure consulting (we help fix their data, then deploy HoloLoom)",
+          "Partner with systems integrators (share revenue)",
+          "Focus on 'ready' customers first (build track record)"
+        ]
+      },
+      {
+        "risk": "ROI doesn't materialize (benefits overestimated)",
+        "probability": "medium",
+        "impact": "critical",
+        "mitigation": [
+          "Conservative benefit estimates (30% support reduction, not 50%)",
+          "Measure ROI continuously (course-correct early)",
+          "Start with high-value use cases (support automation > sales productivity)",
+          "Customer success team monitors leading indicators"
+        ]
+      }
+    ],
+
+    "organizational_risks": [
+      {
+        "risk": "9-engineer team too large to hire/manage",
+        "probability": "medium",
+        "impact": "high",
+        "mitigation": [
+          "Ramp team gradually (start with 3-4, grow to 9 over 3 months)",
+          "Hire senior engineers (less management overhead)",
+          "Use contractors for non-core work (dashboard UI, etc.)",
+          "Prioritize ruthlessly (cut scope if team growth stalls)"
+        ]
+      },
+      {
+        "risk": "Key engineer leaves mid-project",
+        "probability": "medium",
+        "impact": "high",
+        "mitigation": [
+          "Documentation-first culture (knowledge not siloed)",
+          "Pair programming (cross-training)",
+          "Retention bonuses tied to milestones",
+          "Overlap new hires with existing team (handoff period)"
+        ]
+      }
+    ]
+  },
+
+  "decision_framework": {
+    "go_no_go_criteria": {
+      "go_if": [
+        "Willing to invest $1.3M over 9 months (platform development)",
+        "Can hire/assign 9 engineers + 1 BA",
+        "Accept 24-30 month timeline to customer production (honest)",
+        "Have 2-3 pilot customers willing to wait (design partners)",
+        "Executive alignment on long-term investment (not quick win)"
+      ],
+      "no_go_if": [
+        "Need revenue in <12 months (timeline mismatch)",
+        "Cannot hire engineering team (resource constraint)",
+        "Customers demand 6-month deployment (unrealistic expectations)",
+        "No pilot customers willing to wait (market validation failure)",
+        "Executive pressure for quick wins (misaligned incentives)"
+      ]
+    },
+
+    "prioritization_if_resource_constrained": {
+      "must_have_minimum_viable": [
+        "1A: Structured Query Engine (P0 blocker for <5s queries)",
+        "3A: Business Ontology (P0 blocker for correct answers)",
+        "4A: Data Quality Monitoring (P0 blocker for governance)",
+        "5A: Infrastructure Assessment (P0 blocker for customer qualification)"
+      ],
+      "nice_to_have_defer_if_needed": [
+        "2C: CDC Integration (can start with batch, add streaming later)",
+        "3C: Semantic Layer Integration (can use HoloLoom native, skip Cube)",
+        "4C: Governance Dashboard (can use logs/Slack, add UI later)",
+        "5C: ROI Calculator (can use spreadsheet, automate later)"
+      ],
+      "minimum_viable_timeline": "12 months (vs. 9 months full scope)",
+      "minimum_viable_team": "5 engineers (vs. 9 full scope)"
+    }
+  },
+
+  "next_actions": {
+    "immediate_week_1": [
+      {
+        "action": "Adversarial review of this roadmap",
+        "owner": "Technical leadership + business stakeholders",
+        "deliverable": "Approved roadmap OR scope adjustments",
+        "timeline": "2 days"
+      },
+      {
+        "action": "Go/No-Go decision",
+        "owner": "CEO + CTO + CFO",
+        "deliverable": "Commit to investment OR pivot strategy",
+        "timeline": "3 days"
+      }
+    ],
+
+    "if_go_weeks_2_4": [
+      {
+        "action": "Hire engineering team (or assign internal)",
+        "owner": "CTO",
+        "deliverable": "3 engineers onboarded, 6 more pipeline",
+        "timeline": "3 weeks"
+      },
+      {
+        "action": "Identify 2-3 pilot customers (design partners)",
+        "owner": "CEO + Sales",
+        "deliverable": "LOIs signed, pilot agreements",
+        "timeline": "4 weeks"
+      },
+      {
+        "action": "Set up infrastructure (AWS, Neo4j, Qdrant)",
+        "owner": "DevOps",
+        "deliverable": "Development environment ready",
+        "timeline": "1 week"
+      },
+      {
+        "action": "Kickoff Phase 1 (Infrastructure Foundation)",
+        "owner": "Engineering Manager",
+        "deliverable": "Sprint 1 planned, work started",
+        "timeline": "Week 4"
+      }
+    ],
+
+    "month_3_checkpoint": [
+      {
+        "action": "Review progress vs. roadmap",
+        "deliverable": "30% of Phase 1 complete (Structured Query Engine alpha)",
+        "criteria": "On-time, on-budget, team healthy"
+      },
+      {
+        "action": "Pilot customer engagement",
+        "deliverable": "Infrastructure assessment complete for 1 pilot",
+        "criteria": "Pilot customer still committed"
+      }
+    ],
+
+    "month_6_checkpoint": [
+      {
+        "action": "Phase 1 complete",
+        "deliverable": "Structured queries, diagnostics, federation, streaming, ontology, quality monitoring all production-ready",
+        "criteria": "All acceptance criteria met, pilot customer validates"
+      },
+      {
+        "action": "Begin Phase 3 (Pilot Deployment) with first customer",
+        "deliverable": "Single use case deployed in shadow mode",
+        "criteria": "Customer satisfied with infrastructure readiness"
+      }
+    ],
+
+    "month_9_checkpoint": [
+      {
+        "action": "Phase 2 complete",
+        "deliverable": "Governance dashboard, assessment tool, migration playbooks all ready",
+        "criteria": "Platform feature-complete"
+      },
+      {
+        "action": "Pilot customer results",
+        "deliverable": "Agent accuracy >90% on pilot use case, measurable ROI",
+        "criteria": "Customer willing to expand to more use cases"
+      },
+      {
+        "action": "Go-to-market decision",
+        "deliverable": "Scale to 5-10 customers OR iterate based on pilot learnings",
+        "criteria": "Product-market fit validated"
+      }
+    ]
+  }
+}

@@ -1,0 +1,488 @@
+{
+  "dashboard": {
+    "title": "HoloLoom Overview",
+    "tags": ["hololoom", "production", "overview"],
+    "timezone": "browser",
+    "editable": true,
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "ALERTS{alertname=~\"HoloLoom.*\",severity=\"critical\"}",
+          "iconColor": "red",
+          "name": "Critical Alerts",
+          "tagKeys": "alertname,pod",
+          "textFormat": "{{alertname}}: {{summary}}",
+          "titleFormat": "Alert"
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "System Status",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "up{job=\"hololoom-api\"}",
+            "legendFormat": "Status"
+          }
+        ],
+        "options": {
+          "graphMode": "none",
+          "colorMode": "background",
+          "textMode": "value_and_name",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"type": "value", "value": "0", "text": "DOWN", "color": "red"},
+              {"type": "value", "value": "1", "text": "UP", "color": "green"}
+            ],
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Queries Per Second (QPS)",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 6,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(hololoom_query_total[5m]))",
+            "legendFormat": "QPS"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "textMode": "value_and_name",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "decimals": 1,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "blue"},
+                {"value": 50, "color": "green"},
+                {"value": 100, "color": "yellow"},
+                {"value": 200, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "P95 Latency",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(hololoom_query_latency_seconds_bucket[5m])) by (le)) * 1000",
+            "legendFormat": "P95 Latency"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "textMode": "value_and_name",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms",
+            "decimals": 0,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 500, "color": "yellow"},
+                {"value": 1000, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Error Rate",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(hololoom_query_total{status=\"error\"}[5m])) / sum(rate(hololoom_query_total[5m]))",
+            "legendFormat": "Error Rate"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "textMode": "value_and_name",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "decimals": 2,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.05, "color": "yellow"},
+                {"value": 0.1, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "graph",
+        "title": "Query Rate Over Time",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(hololoom_query_total[5m]))",
+            "legendFormat": "Total QPS"
+          },
+          {
+            "expr": "sum(rate(hololoom_query_total{status=\"success\"}[5m]))",
+            "legendFormat": "Success QPS"
+          },
+          {
+            "expr": "sum(rate(hololoom_query_total{status=\"error\"}[5m]))",
+            "legendFormat": "Error QPS"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Queries per second",
+            "format": "reqps"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "graph",
+        "title": "Query Latency Percentiles",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 4
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(hololoom_query_latency_seconds_bucket[5m])) by (le)) * 1000",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(hololoom_query_latency_seconds_bucket[5m])) by (le)) * 1000",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(hololoom_query_latency_seconds_bucket[5m])) by (le)) * 1000",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Latency (ms)",
+            "format": "ms"
+          }
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [1000],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": ["A", "5m", "now"]
+              },
+              "reducer": {
+                "params": [],
+                "type": "avg"
+              },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "1m",
+          "handler": 1,
+          "name": "High P95 Latency",
+          "noDataState": "no_data",
+          "notifications": []
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "type": "gauge",
+        "title": "Cache Hit Rate",
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 0,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(hololoom_cache_hits_total[5m])) / sum(rate(hololoom_cache_requests_total[5m]))",
+            "legendFormat": "Hit Rate"
+          }
+        ],
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "decimals": 2,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.3, "color": "yellow"},
+                {"value": 0.5, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "type": "stat",
+        "title": "Active Pods",
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 8,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "count(up{job=\"hololoom-api\"} == 1)",
+            "legendFormat": "Active"
+          },
+          {
+            "expr": "count(up{job=\"hololoom-api\"})",
+            "legendFormat": "Total"
+          }
+        ],
+        "options": {
+          "graphMode": "none",
+          "colorMode": "value",
+          "textMode": "value_and_name",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "yellow"},
+                {"value": 3, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "type": "stat",
+        "title": "Total Queries (24h)",
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 16,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(hololoom_query_total[24h]))",
+            "legendFormat": "Total"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "textMode": "value_and_name",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "type": "table",
+        "title": "Circuit Breaker Status",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 18
+        },
+        "targets": [
+          {
+            "expr": "hololoom_circuit_breaker_state",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true
+              },
+              "indexByName": {
+                "backend": 0,
+                "state": 1,
+                "Value": 2
+              },
+              "renameByName": {
+                "backend": "Backend",
+                "state": "State",
+                "Value": "Active"
+              }
+            }
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "left"
+            },
+            "mappings": [
+              {"type": "value", "value": "0", "text": "CLOSED", "color": "green"},
+              {"type": "value", "value": "1", "text": "OPEN", "color": "red"},
+              {"type": "value", "value": "2", "text": "HALF_OPEN", "color": "yellow"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 11,
+        "type": "graph",
+        "title": "Memory Usage",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 18
+        },
+        "targets": [
+          {
+            "expr": "sum(container_memory_usage_bytes{pod=~\"hololoom-api-.*\"}) / 1024 / 1024",
+            "legendFormat": "Total Memory (MB)"
+          },
+          {
+            "expr": "sum(container_spec_memory_limit_bytes{pod=~\"hololoom-api-.*\"}) / 1024 / 1024",
+            "legendFormat": "Memory Limit (MB)"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Memory (MB)",
+            "format": "decmbytes"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "decmbytes"
+          }
+        }
+      }
+    ],
+    "schemaVersion": 36,
+    "version": 1
+  }
+}

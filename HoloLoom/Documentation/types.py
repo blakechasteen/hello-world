@@ -11,7 +11,29 @@ Module Philosophy:
 - Imported by everyone (orchestrator, policy, all core modules)
 """
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import List, Dict, Any, Optional, Tuple
+
+# ============================================================================
+# Policy Enums
+# ============================================================================
+
+class BanditStrategy(Enum):
+    """
+    Bandit exploration strategies for tool selection.
+
+    - EPSILON_GREEDY: Explore with probability epsilon (default 10%)
+    - BAYESIAN_BLEND: Blend neural predictions with bandit priors (70% neural, 30% bandit)
+    - PURE_THOMPSON: Use Thompson Sampling exclusively
+    - GP_THOMPSON: Gaussian Process Thompson Sampling (continuous optimization)
+    - GP_UCB: Gaussian Process Upper Confidence Bound (continuous optimization)
+    """
+    EPSILON_GREEDY = "epsilon_greedy"
+    BAYESIAN_BLEND = "bayesian_blend"
+    PURE_THOMPSON = "pure_thompson"
+    GP_THOMPSON = "gp_thompson"
+    GP_UCB = "gp_ucb"
+
 
 # ============================================================================
 # Type Aliases

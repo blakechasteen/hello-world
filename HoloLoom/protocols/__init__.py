@@ -4,7 +4,7 @@ HoloLoom Canonical Protocols
 Single source of truth for all protocol definitions in HoloLoom.
 
 This package provides:
-- Core types (ComplexityLevel, ProvenceTrace, MythRLResult)
+- Core types (ComplexityLevel, ProvenanceTrace, MythRLResult)
 - Memory protocols (MemoryStore, MemoryNavigator, PatternDetector)
 - Core feature protocols (Embedder, MotifDetector, PolicyEngine)
 - Routing protocols (RoutingStrategy, ExecutionEngine)
@@ -36,7 +36,7 @@ Date: 2025-10-27 (Phase 1 Protocol Standardization - Task 1.1)
 
 from .types import (
     ComplexityLevel,
-    ProvenceTrace,
+    ProvenanceTrace,
     MythRLResult,
 )
 
@@ -54,17 +54,23 @@ from .core_features import (
 )
 
 # ============================================================================
-# Import Memory Protocols (from core.py)
+# Import Memory Types and Protocols
 # ============================================================================
 
-from .core import (
+from .memory_types import (
+    Memory,
+    MemoryQuery,
+    MemoryRetrievalResult,
+    Strategy,
+    QueryMode,
+    shards_to_memories,
+)
+
+from .memory_protocols import (
+    MemoryStore,
     MemoryNavigator,
     PatternDetector,
 )
-
-# MemoryStore is in memory.protocol - DISABLED to avoid circular imports
-# from HoloLoom.memory.protocol import MemoryStore
-# Import lazily where needed instead
 
 # ============================================================================
 # Import Shuttle Protocols (from shuttle.py)
@@ -118,18 +124,26 @@ ToolExecutionProtocol = ToolExecutor
 __all__ = [
     # ===== Core Types =====
     'ComplexityLevel',
-    'ProvenceTrace',
+    'ProvenanceTrace',
     'MythRLResult',
+
+    # ===== Memory Types =====
+    'Memory',
+    'MemoryQuery',
+    'MemoryRetrievalResult',
+    'Strategy',
+    'QueryMode',
+    'shards_to_memories',
+
+    # ===== Memory Protocols =====
+    'MemoryStore',
+    'MemoryNavigator',
+    'PatternDetector',
 
     # ===== Core Feature Protocols =====
     'Embedder',
     'MotifDetector',
     'PolicyEngine',
-
-    # ===== Memory Protocols =====
-    # 'MemoryStore',  # Disabled to avoid circular import - import from HoloLoom.memory.protocol directly
-    'MemoryNavigator',
-    'PatternDetector',
 
     # ===== Routing Protocols =====
     'RoutingStrategy',
@@ -151,7 +165,6 @@ __all__ = [
     'SpringActivationMetadata',
 
     # ===== Compatibility Aliases =====
-    # 'MemoryBackendProtocol',  # Disabled to avoid circular import
     'ToolExecutionProtocol',
 ]
 

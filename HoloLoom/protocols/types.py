@@ -56,7 +56,7 @@ class ComplexityLevel(Enum):
 # ============================================================================
 
 @dataclass
-class ProvenceTrace:
+class ProvenanceTrace:
     """
     Full computational provenance for mythRL operations.
     
@@ -85,7 +85,7 @@ class ProvenceTrace:
         temporal_contexts: List of temporal window activations
     
     Example:
-        >>> trace = ProvenceTrace(
+        >>> trace = ProvenanceTrace(
         ...     operation_id="weave_1234567890",
         ...     complexity_level=ComplexityLevel.FULL,
         ...     start_time=time.perf_counter()
@@ -264,7 +264,7 @@ class MythRLResult:
     output: Any
     confidence: float
     complexity_level: ComplexityLevel
-    provenance: ProvenceTrace
+    provenance: ProvenanceTrace
     spacetime_coordinates: Dict
     
     def get_performance_summary(self) -> Dict:
@@ -309,6 +309,6 @@ class MythRLResult:
 
 __all__ = [
     'ComplexityLevel',
-    'ProvenceTrace',
+    'ProvenanceTrace',
     'MythRLResult',
 ]

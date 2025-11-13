@@ -1,0 +1,19 @@
+[
+  {
+    "regex": "(tell|show|give|explain) me \\w+",
+    "complexity": "simple",
+    "precision": 0.9166666666666666,
+    "recall": 0.5217391304347826,
+    "support": 12,
+    "confidence": 0.8675,
+    "f1_score": 0.6649874055415617,
+    "examples": [
+      "tell me about Python",
+      "tell me about neural networks",
+      "tell me about transformers",
+      "tell me about reinforcement learning",
+      "tell me about bandits"
+    ],
+    "created_at": 1763021027.749528
+  }
+]

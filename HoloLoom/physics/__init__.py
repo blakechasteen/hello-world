@@ -53,6 +53,37 @@ from .thermodynamics import (
     TemperatureState
 )
 
+# Wave Mechanics (Phase 4)
+from .wave_mechanics import (
+    WaveMechanicsEngine,
+    WaveField,
+    InterferenceCalculator,
+    ResonanceDetector,
+    WaveState,
+    InterferencePattern,
+    ResonancePattern
+)
+
+# Unified Physics (All Phases Integrated)
+from .unified_physics import (
+    UnifiedPhysicsEngine,
+    UnifiedPhysicsResult,
+    PhysicsMode
+)
+
+# Statistical Mechanics (Phase 5)
+from .statistical_mechanics import (
+    StatisticalMechanicsEngine,
+    CanonicalEnsemble,
+    EntropyCalculator,
+    PhaseTransitionDetector,
+    Microstate,
+    Macrostate,
+    PhaseTransition,
+    PhaseType,
+    BOLTZMANN_CONSTANT
+)
+
 __all__ = [
     # Gradient Flow
     "GradientFlowEngine",
@@ -95,4 +126,29 @@ __all__ = [
     "CoolingSchedule",
     "ThermodynamicState",
     "TemperatureState",
+
+    # Wave Mechanics
+    "WaveMechanicsEngine",
+    "WaveField",
+    "InterferenceCalculator",
+    "ResonanceDetector",
+    "WaveState",
+    "InterferencePattern",
+    "ResonancePattern",
+
+    # Unified Physics
+    "UnifiedPhysicsEngine",
+    "UnifiedPhysicsResult",
+    "PhysicsMode",
+
+    # Statistical Mechanics
+    "StatisticalMechanicsEngine",
+    "CanonicalEnsemble",
+    "EntropyCalculator",
+    "PhaseTransitionDetector",
+    "Microstate",
+    "Macrostate",
+    "PhaseTransition",
+    "PhaseType",
+    "BOLTZMANN_CONSTANT",
 ]

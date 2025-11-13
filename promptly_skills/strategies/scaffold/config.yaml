@@ -1,0 +1,77 @@
+name: scaffold
+version: 1.0.0
+category: self-correction
+description: Zero-shot CoT Structure - Template with reasoning blanks
+
+# Strategy configuration
+config:
+  reasoning_template: structured  # structured, stepwise, analytical
+
+  # Reasoning components
+  reasoning_steps:
+    - understand      # Understand the problem
+    - decompose       # Break into subproblems
+    - analyze         # Analyze each part
+    - synthesize      # Combine insights
+    - validate        # Check reasoning
+    - conclude        # Draw conclusions
+
+  # Require explicit thinking
+  require_thinking_shown: true
+  min_reasoning_steps: 5
+
+  # Performance
+  timeout_seconds: 30
+
+# Auto-detection rules
+detection:
+  high_confidence_keywords:
+    - step by step
+    - walk through
+    - show your work
+    - explain reasoning
+    - show thinking
+    - break down
+
+  medium_confidence_keywords:
+    - solve
+    - calculate
+    - analyze
+    - reasoning
+    - why
+    - how
+
+  # Confidence calculation
+  base_confidence: 0.25
+  keyword_boost: 0.6
+  problem_solving_boost: 0.2  # Boost for math/logic problems
+
+# Composability
+composable_with:
+  - verify      # Scaffold then verify reasoning
+  - deep        # Scaffold provides structure, deep provides content
+  - challenge   # Scaffold reasoning then challenge it
+
+recommended_before:
+  - verify      # Scaffold helps verification find logical gaps
+  - optimize    # Scaffold before optimization shows gaps
+
+# Performance characteristics
+performance:
+  typical_duration_ms: 140
+  token_overhead: 250
+  quality_improvement: 0.42  # Average +42% reasoning clarity
+
+# Examples
+examples:
+  - query: "solve this problem step by step"
+    confidence: 0.95
+    rationale: "High confidence - explicit step-by-step request"
+
+  - query: "how do I calculate the ROI?"
+    confidence: 0.70
+    rationale: "Medium-high confidence - calculation + 'how' suggests need for steps"
+
+  - query: "what is the capital of France?"
+    confidence: 0.25
+    rationale: "Low confidence - simple factual query doesn't need scaffolding"

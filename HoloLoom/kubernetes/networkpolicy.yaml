@@ -1,0 +1,252 @@
+# HoloLoom Network Policies
+# Part 5: Production Hardening - Day 25
+#
+# Network isolation and security:
+# - Restrict ingress/egress traffic
+# - Allow only necessary communication
+# - Defense in depth
+
+---
+# Policy 1: Allow ingress from Ingress controller only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hololoom-api-ingress
+  namespace: hololoom
+spec:
+  podSelector:
+    matchLabels:
+      app: hololoom-api
+      component: backend
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow from Ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080  # HTTP API
+
+    # Allow from Prometheus (metrics scraping)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090  # Metrics
+
+    # Allow from same namespace (pod-to-pod)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: hololoom-api
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# Policy 2: Allow egress to backends only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hololoom-api-egress
+  namespace: hololoom
+spec:
+  podSelector:
+    matchLabels:
+      app: hololoom-api
+      component: backend
+
+  policyTypes:
+    - Egress
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow to Neo4j
+    - to:
+        - podSelector:
+            matchLabels:
+              app: neo4j
+      ports:
+        - protocol: TCP
+          port: 7687  # Bolt protocol
+
+    # Allow to Qdrant
+    - to:
+        - podSelector:
+            matchLabels:
+              app: qdrant
+      ports:
+        - protocol: TCP
+          port: 6333  # HTTP API
+
+    # Allow to external APIs (if needed)
+    # Example: OpenAI, Anthropic, etc.
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS
+
+---
+# Policy 3: Neo4j ingress (allow from HoloLoom only)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: neo4j-ingress
+  namespace: hololoom
+spec:
+  podSelector:
+    matchLabels:
+      app: neo4j
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow from HoloLoom API
+    - from:
+        - podSelector:
+            matchLabels:
+              app: hololoom-api
+      ports:
+        - protocol: TCP
+          port: 7687  # Bolt
+        - protocol: TCP
+          port: 7474  # HTTP
+
+---
+# Policy 4: Qdrant ingress (allow from HoloLoom only)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: qdrant-ingress
+  namespace: hololoom
+spec:
+  podSelector:
+    matchLabels:
+      app: qdrant
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow from HoloLoom API
+    - from:
+        - podSelector:
+            matchLabels:
+              app: hololoom-api
+      ports:
+        - protocol: TCP
+          port: 6333  # HTTP API
+        - protocol: TCP
+          port: 6334  # gRPC
+
+---
+# Policy 5: Default deny all ingress (baseline security)
+# Apply this LAST after all allow policies are in place
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: hololoom
+spec:
+  podSelector: {}  # Apply to all pods in namespace
+  policyTypes:
+    - Ingress
+
+---
+# Policy 6: Default deny all egress (maximum security)
+# OPTIONAL: Only use if you want to strictly control egress
+# Requires explicit allow rules for all necessary egress traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: hololoom
+spec:
+  podSelector: {}  # Apply to all pods in namespace
+  policyTypes:
+    - Egress
+
+---
+# Example: Calico NetworkPolicy (if using Calico CNI)
+# Provides additional features like global network policies
+
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: hololoom-api-advanced
+  namespace: hololoom
+spec:
+  selector: app == "hololoom-api"
+
+  types:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow from specific CIDR ranges
+    - action: Allow
+      source:
+        nets:
+          - 10.0.0.0/8  # Internal network
+      destination:
+        ports:
+          - 8080
+
+  egress:
+    # Allow to Neo4j with rate limiting
+    - action: Allow
+      destination:
+        selector: app == "neo4j"
+        ports:
+          - 7687
+      # Optional: Add rate limiting
+      # metadata:
+      #   annotations:
+      #     projectcalico.org/rateLimit: "100"
+
+---
+# Testing network policies:
+#
+# 1. Test allowed ingress:
+#    kubectl run -it --rm debug --image=curlimages/curl --restart=Never \
+#      -n ingress-nginx -- curl http://hololoom-api.hololoom:8080/health
+#    # Should succeed
+#
+# 2. Test denied ingress:
+#    kubectl run -it --rm debug --image=curlimages/curl --restart=Never \
+#      -n default -- curl http://hololoom-api.hololoom:8080/health
+#    # Should fail (timeout)
+#
+# 3. Test allowed egress (from HoloLoom pod):
+#    kubectl exec -it <hololoom-pod> -n hololoom -- curl http://neo4j:7474
+#    # Should succeed
+#
+# 4. Test denied egress:
+#    kubectl exec -it <hololoom-pod> -n hololoom -- curl http://google.com
+#    # Should fail (if default deny egress is enabled)

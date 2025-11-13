@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promptly Performance Dashboard</title>
+
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Socket.IO for real-time updates -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .header .status {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .header .status.connected {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .header .status.disconnected {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-value.good {
+            color: #4caf50;
+        }
+
+        .metric-value.warning {
+            color: #ff9800;
+        }
+
+        .metric-value.bad {
+            color: #f44336;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 15px;
+        }
+
+        .strategy-list {
+            list-style: none;
+        }
+
+        .strategy-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .strategy-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .strategy-bar {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .strategy-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .strategy-stats {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .last-update {
+            text-align: center;
+            color: white;
+            font-size: 0.9em;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Promptly Performance Dashboard</h1>
+            <div class="subtitle">Real-time metrics and analytics</div>
+            <div class="status disconnected" id="connectionStatus">
+                ⚫ Connecting...
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="errorDisplay" style="display: none;" class="error"></div>
+
+        <!-- Main Metrics Grid -->
+        <div class="grid">
+            <!-- Summary Card -->
+            <div class="card">
+                <h2>📈 Summary (Last 24h)</h2>
+                <div class="metric">
+                    <span class="metric-label">Total Queries</span>
+                    <span class="metric-value" id="totalQueries">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Confidence</span>
+                    <span class="metric-value" id="avgConfidence">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Latency</span>
+                    <span class="metric-value" id="avgLatency">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Cache Hit Rate</span>
+                    <span class="metric-value" id="cacheHitRate">-</span>
+                </div>
+            </div>
+
+            <!-- Latency Percentiles -->
+            <div class="card">
+                <h2>⏱️ Latency Percentiles</h2>
+                <div class="metric">
+                    <span class="metric-label">P50 (Median)</span>
+                    <span class="metric-value" id="p50Latency">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P95</span>
+                    <span class="metric-value" id="p95Latency">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P99</span>
+                    <span class="metric-value" id="p99Latency">-</span>
+                </div>
+            </div>
+
+            <!-- Cache Performance -->
+            <div class="card">
+                <h2>💾 Cache Performance</h2>
+                <div class="metric">
+                    <span class="metric-label">Total Hits</span>
+                    <span class="metric-value good" id="cacheHits">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Misses</span>
+                    <span class="metric-value warning" id="cacheMisses">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Speedup</span>
+                    <span class="metric-value good" id="cacheSpeedup">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid">
+            <!-- Latency Trend -->
+            <div class="card">
+                <h2>📉 Latency Trend (Last 6 Hours)</h2>
+                <div class="chart-container">
+                    <canvas id="latencyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Confidence Trend -->
+            <div class="card">
+                <h2>📈 Confidence Trend (Last 6 Hours)</h2>
+                <div class="chart-container">
+                    <canvas id="confidenceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Performance -->
+        <div class="card">
+            <h2>🏆 Top Strategies (Last 24h)</h2>
+            <ul class="strategy-list" id="strategyList">
+                <li class="loading">Loading strategies...</li>
+            </ul>
+        </div>
+
+        <!-- Last Update -->
+        <div class="last-update" id="lastUpdate">
+            Last updated: Never
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://localhost:5001';
+        const UPDATE_INTERVAL = 10000; // 10 seconds
+
+        // Global state
+        let socket = null;
+        let latencyChart = null;
+        let confidenceChart = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            connectWebSocket();
+            fetchInitialData();
+            startPeriodicUpdates();
+        });
+
+        // ====================================================================
+        // WebSocket Connection
+        // ====================================================================
+
+        function connectWebSocket() {
+            socket = io(API_URL);
+
+            socket.on('connect', () => {
+                console.log('✓ WebSocket connected');
+                updateConnectionStatus(true);
+                socket.emit('subscribe_metrics');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('✗ WebSocket disconnected');
+                updateConnectionStatus(false);
+            });
+
+            socket.on('metrics_update', (data) => {
+                console.log('Received metrics update:', data);
+                updateMetrics(data);
+            });
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.className = 'status connected';
+                statusEl.textContent = '🟢 Connected';
+            } else {
+                statusEl.className = 'status disconnected';
+                statusEl.textContent = '🔴 Disconnected';
+            }
+        }
+
+        // ====================================================================
+        // Data Fetching
+        // ====================================================================
+
+        async function fetchInitialData() {
+            try {
+                await Promise.all([
+                    fetchStats(),
+                    fetchTrends(),
+                    fetchTopStrategies(),
+                    fetchCacheStats()
+                ]);
+                hideError();
+            } catch (error) {
+                showError(`Failed to fetch data: ${error.message}`);
+            }
+        }
+
+        async function fetchStats() {
+            const response = await fetch(`${API_URL}/api/stats?period=24h`);
+            const data = await response.json();
+
+            updateSummaryMetrics(data);
+            updateLastUpdate();
+        }
+
+        async function fetchTrends() {
+            const [latency, confidence] = await Promise.all([
+                fetch(`${API_URL}/api/trends?metric=latency_ms&period=24h&interval=60`).then(r => r.json()),
+                fetch(`${API_URL}/api/trends?metric=confidence&period=24h&interval=60`).then(r => r.json())
+            ]);
+
+            updateLatencyChart(latency.data);
+            updateConfidenceChart(confidence.data);
+        }
+
+        async function fetchTopStrategies() {
+            const response = await fetch(`${API_URL}/api/top_strategies?period=24h&limit=5`);
+            const data = await response.json();
+
+            displayTopStrategies(data.strategies);
+        }
+
+        async function fetchCacheStats() {
+            const response = await fetch(`${API_URL}/api/cache_stats?period=24h`);
+            const data = await response.json();
+
+            updateCacheMetrics(data);
+        }
+
+        // ====================================================================
+        // UI Updates
+        // ====================================================================
+
+        function updateSummaryMetrics(data) {
+            document.getElementById('totalQueries').textContent = data.total_queries.toLocaleString();
+            document.getElementById('avgConfidence').textContent = data.avg_confidence.toFixed(3);
+            document.getElementById('avgLatency').textContent = `${data.avg_latency_ms.toFixed(0)}ms`;
+            document.getElementById('cacheHitRate').textContent = `${(data.cache_hit_rate * 100).toFixed(1)}%`;
+            document.getElementById('p50Latency').textContent = `${data.p50_latency_ms.toFixed(0)}ms`;
+            document.getElementById('p95Latency').textContent = `${data.p95_latency_ms.toFixed(0)}ms`;
+            document.getElementById('p99Latency').textContent = `${data.p99_latency_ms.toFixed(0)}ms`;
+
+            // Color code confidence
+            const confEl = document.getElementById('avgConfidence');
+            if (data.avg_confidence >= 0.9) {
+                confEl.className = 'metric-value good';
+            } else if (data.avg_confidence >= 0.75) {
+                confEl.className = 'metric-value';
+            } else {
+                confEl.className = 'metric-value warning';
+            }
+        }
+
+        function updateCacheMetrics(data) {
+            document.getElementById('cacheHits').textContent = data.total_hits.toLocaleString();
+            document.getElementById('cacheMisses').textContent = data.total_misses.toLocaleString();
+            document.getElementById('cacheSpeedup').textContent = `${data.speedup.toFixed(1)}×`;
+        }
+
+        function updateMetrics(data) {
+            // Update from real-time WebSocket data
+            if (data.total_queries !== undefined) {
+                document.getElementById('totalQueries').textContent = data.total_queries.toLocaleString();
+            }
+            if (data.avg_confidence !== undefined) {
+                document.getElementById('avgConfidence').textContent = data.avg_confidence.toFixed(3);
+            }
+            if (data.avg_latency_ms !== undefined) {
+                document.getElementById('avgLatency').textContent = `${data.avg_latency_ms.toFixed(0)}ms`;
+            }
+            if (data.cache_hit_rate !== undefined) {
+                document.getElementById('cacheHitRate').textContent = `${(data.cache_hit_rate * 100).toFixed(1)}%`;
+            }
+
+            updateLastUpdate();
+        }
+
+        function displayTopStrategies(strategies) {
+            const listEl = document.getElementById('strategyList');
+
+            if (!strategies || strategies.length === 0) {
+                listEl.innerHTML = '<li class="loading">No strategies found</li>';
+                return;
+            }
+
+            // Find max for percentage bars
+            const maxUses = Math.max(...strategies.map(s => s.performance.total_uses));
+
+            listEl.innerHTML = strategies.map(s => {
+                const perf = s.performance;
+                const percentage = (perf.total_uses / maxUses) * 100;
+
+                return `
+                    <li class="strategy-item">
+                        <span class="strategy-name">${s.strategy}</span>
+                        <div class="strategy-bar">
+                            <div class="strategy-bar-fill" style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="strategy-stats">
+                            ${perf.avg_confidence.toFixed(3)} conf ·
+                            ${perf.avg_latency_ms.toFixed(0)}ms ·
+                            ${perf.total_uses} uses
+                        </span>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function updateLastUpdate() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            document.getElementById('lastUpdate').textContent = `Last updated: ${timeStr}`;
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorDisplay');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorDisplay').style.display = 'none';
+        }
+
+        // ====================================================================
+        // Charts
+        // ====================================================================
+
+        function initializeCharts() {
+            const latencyCtx = document.getElementById('latencyChart').getContext('2d');
+            latencyChart = new Chart(latencyCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Latency (ms)',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+            confidenceChart = new Chart(confidenceCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Confidence',
+                        data: [],
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 0.5,
+                            max: 1.0
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateLatencyChart(data) {
+            if (!data || data.length === 0) return;
+
+            // Get last 12 data points (6 hours with 30-min buckets)
+            const recent = data.slice(-12);
+
+            latencyChart.data.labels = recent.map(d => {
+                const date = new Date(d.timestamp * 1000);
+                return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            });
+            latencyChart.data.datasets[0].data = recent.map(d => d.value);
+            latencyChart.update('none'); // Update without animation
+        }
+
+        function updateConfidenceChart(data) {
+            if (!data || data.length === 0) return;
+
+            // Get last 12 data points
+            const recent = data.slice(-12);
+
+            confidenceChart.data.labels = recent.map(d => {
+                const date = new Date(d.timestamp * 1000);
+                return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            });
+            confidenceChart.data.datasets[0].data = recent.map(d => d.value);
+            confidenceChart.update('none');
+        }
+
+        // ====================================================================
+        // Periodic Updates
+        // ====================================================================
+
+        function startPeriodicUpdates() {
+            setInterval(() => {
+                fetchInitialData();
+            }, UPDATE_INTERVAL);
+        }
+    </script>
+</body>
+</html>

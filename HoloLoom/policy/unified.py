@@ -53,7 +53,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # Import only from shared types and embedding (package-relative)
-from HoloLoom.documentation.types import Features, Context, ActionPlan, Decision
+from HoloLoom.documentation.types import Features, Context, ActionPlan, Decision, BanditStrategy
 from HoloLoom.alignment.safety_guardrails import (
     ActionCategory,
     ActionRequest,
@@ -67,7 +67,7 @@ logger = logging.getLogger(__name__)
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Import Thompson Sampling from dedicated module (Elegance Track - Day 3)
-from HoloLoom.policy.thompson_sampling import BanditStrategy, TSBandit
+from HoloLoom.policy.thompson_sampling import TSBandit
 
 # Import canonical protocol from Phase 2 consolidation
 from HoloLoom.protocols import PolicyEngine as CanonicalPolicyEngine

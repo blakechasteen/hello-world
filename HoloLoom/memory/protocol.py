@@ -1,138 +1,42 @@
 """
 Memory Protocols - Protocol-based interfaces for memory backends.
 All backends implement MemoryStore protocol for easy extension.
+
+UPDATED (Phase 0, Task 7): This module now imports canonical types and protocols
+from HoloLoom.protocols instead of defining them locally.
+
+Import from here for backward compatibility, or import directly from HoloLoom.protocols.
 """
 
-from typing import List, Dict, Optional, Protocol, runtime_checkable, Any
-from dataclasses import dataclass
-from enum import Enum
-from datetime import datetime
+from typing import List, Dict, Optional, Any
 
+# Import canonical types and protocols
+from HoloLoom.protocols import (
+    Memory,
+    MemoryQuery,
+    MemoryRetrievalResult as RetrievalResult,  # Alias for backward compatibility
+    Strategy,
+    QueryMode,
+    MemoryStore,
+    shards_to_memories,
+)
 
-# ============================================================================
-# Data Types
-# ============================================================================
-
-@dataclass
-class Memory:
-    """Single memory unit. Compatible with MemoryShard from SpinningWheel."""
-    id: str
-    text: str
-    timestamp: datetime
-    context: Dict[str, Any]
-    metadata: Dict[str, Any]
-    embedding: Optional[Any] = None  # Vector embedding (numpy array or list)
-
-    @classmethod
-    def from_shard(cls, shard: Any, timestamp: Optional[datetime] = None) -> 'Memory':
-        """Create Memory from MemoryShard (SpinningWheel output)."""
-        return cls(
-            id=shard.id,
-            text=shard.text,
-            timestamp=timestamp or datetime.now(),
-            context={
-                'episode': getattr(shard, 'episode', None),
-                'entities': getattr(shard, 'entities', []),
-                'motifs': getattr(shard, 'motifs', []),
-            },
-            metadata=getattr(shard, 'metadata', None) or {}
-        )
-
-    def to_dict(self) -> Dict[str, Any]:
-        result = {
-            'id': self.id,
-            'text': self.text,
-            'timestamp': self.timestamp.isoformat(),
-            'context': self.context,
-            'metadata': self.metadata
-        }
-        # Convert embedding to list for JSON serialization
-        if self.embedding is not None:
-            import numpy as np
-            if isinstance(self.embedding, np.ndarray):
-                result['embedding'] = self.embedding.tolist()
-            else:
-                result['embedding'] = self.embedding
-        return result
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Memory':
-        data = data.copy()
-        if isinstance(data['timestamp'], str):
-            data['timestamp'] = datetime.fromisoformat(data['timestamp'])
-        # Convert embedding back to numpy array
-        if 'embedding' in data and data['embedding'] is not None:
-            import numpy as np
-            if isinstance(data['embedding'], list):
-                data['embedding'] = np.array(data['embedding'])
-        return cls(**data)
-
-
-@dataclass
-class MemoryQuery:
-    """Memory query."""
-    text: str
-    user_id: str = "default"
-    limit: int = 5
-    filters: Optional[Dict[str, Any]] = None
-    strategy: Optional['Strategy'] = None
-
-
-@dataclass
-class RetrievalResult:
-    """Retrieval results with scores and metadata."""
-    memories: List[Memory]
-    scores: List[float]
-    strategy_used: str
-    metadata: Dict[str, Any]
-
-
-class Strategy(Enum):
-    """Retrieval strategies."""
-    TEMPORAL = "temporal"
-    SEMANTIC = "semantic"
-    GRAPH = "graph"
-    PATTERN = "pattern"
-    FUSED = "fused"
-    BALANCED = "balanced"
-
-
-class QueryMode(Enum):
-    """Query complexity modes."""
-    FAST = "fast"
-    BALANCED = "balanced"
-    COMPREHENSIVE = "comprehensive"
-    RESEARCH = "research"
-
-
-# ============================================================================
-# Core Protocol
-# ============================================================================
-
-try:
-    from HoloLoom.protocols import MemoryStore
-except ImportError:
-    # Fallback if canonical protocol unavailable
-    @runtime_checkable
-    class MemoryStore(Protocol):
-        """Memory storage backend protocol."""
-
-        async def store(self, memory: Memory, user_id: str = "default") -> str: ...
-        async def store_many(self, memories: List[Memory], user_id: str = "default") -> List[str]: ...
-        async def get_by_id(self, memory_id: str) -> Optional[Memory]: ...
-        async def retrieve(self, query: MemoryQuery, strategy: Strategy = Strategy.FUSED) -> RetrievalResult: ...
-        async def delete(self, memory_id: str) -> bool: ...
-        async def health_check(self) -> Dict[str, Any]: ...
+# Re-export for backward compatibility
+__all__ = [
+    'Memory',
+    'MemoryQuery',
+    'RetrievalResult',
+    'Strategy',
+    'QueryMode',
+    'MemoryStore',
+    'shards_to_memories',
+    'create_unified_memory',  # Factory function below
+]
 
 
 # ============================================================================
 # Helper Functions
 # ============================================================================
-
-def shards_to_memories(shards: List[Any], timestamp: Optional[datetime] = None) -> List[Memory]:
-    """Convert SpinningWheel shards to Memory objects."""
-    return [Memory.from_shard(shard, timestamp) for shard in shards]
-
 
 async def create_unified_memory(
     user_id: str = "default",

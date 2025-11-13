@@ -53,6 +53,89 @@ This principle permeates every architectural decision in HoloLoom. We'd rather s
 
 ---
 
+## Documentation Standards
+
+**"Everything has a timestamp, everything has a story."**
+
+To maintain temporal context and enable future queries about project evolution, **always include datestamps** when documenting work.
+
+### Required Datestamps
+
+Include timestamps on:
+- ✅ **New features/implementations** - When was this built?
+- ✅ **Code changes and updates** - When was this modified?
+- ✅ **Documentation additions** - When was this documented?
+- ✅ **Architecture decisions** - When was this decided?
+- ✅ **Session summaries** - When did this work happen?
+- ✅ **Status updates** - When did status change?
+
+### Datestamp Formats
+
+Use consistent formats across the codebase:
+
+**Full Dates** (preferred for precise tracking):
+```
+YYYY-MM-DD (e.g., 2025-11-13)
+```
+
+**Month Precision** (for longer-term features):
+```
+Month YYYY (e.g., November 2025)
+```
+
+**In Code Comments**:
+```python
+# Added 2025-11-13: Zero-copy embedding optimization
+# Updated 2025-11-13: Fix cache invalidation bug
+```
+
+**In Markdown Headers**:
+```markdown
+## Zero-Copy Embeddings (November 2025)
+
+**Implemented: 2025-11-13** - High-performance embedding layer...
+```
+
+**In Section Updates**:
+```markdown
+**UPDATED (2025-11-13):** The Shuttle architecture has been integrated...
+```
+
+**In Git Commits** (automatic via commit metadata):
+```bash
+git log --format="%ai %s"
+```
+
+### Why Datestamps Matter
+
+1. **Temporal Queries**: Enable questions like "What changed in October 2025?"
+2. **Feature Evolution**: Track how systems evolved over time
+3. **Context for Future Sessions**: Help future Claude sessions understand project timeline
+4. **Historical Audit**: Complete provenance of all decisions and changes
+5. **Stale Detection**: Identify outdated documentation that needs updating
+6. **Retrospectives**: Enable temporal analysis ("How long did Phase 5 take?")
+
+### Examples from This Codebase
+
+Good datestamping practices already in use:
+
+```markdown
+✅ **Zero-Copy Embeddings** (November 2025)
+✅ **Test Organization** (Phase 1+2 Cleanup - Oct 2025)
+✅ **Alignment Framework** (v1.0.0 - November 2025)
+✅ **UPDATED (Task 1.2 - Oct 27, 2025):** The Shuttle architecture...
+```
+
+### Pro Tips
+
+- **When in doubt, datestamp it** - More temporal context is always better
+- **Update existing dates** - When revising documented features, add update dates
+- **Use ISO format for precision** - YYYY-MM-DD is sortable and unambiguous
+- **Include in commit messages** - Git already tracks this, but call it out in descriptions
+- **Mark completion dates** - "Status: ✅ Complete (November 2025)"
+
+---
+
 ## Agent Swarm Deployment Strategy
 
 When deploying multiple Claude Code agents in parallel for complex tasks, use this model selection matrix for **optimal cost-performance**:
@@ -112,6 +195,580 @@ Real-world savings from Week 1 implementation:
 - Input adapters ("SpinningWheel") for processing audio, text, and other modalities
 
 The system is designed around a "weaving" metaphor: independent "warp thread" modules are coordinated by an "orchestrator" (the shuttle) to produce responses.
+
+## RAG (Retrieval-Augmented Generation) System
+
+**Status**: ✅ Production Ready (November 2025)
+**Location**: `HoloLoom/rag/`
+**Level**: Level 4 Agentic RAG + Graph RAG
+**Performance**: <200ms latency, 24/25 tests passing
+
+### Overview
+
+HoloLoom includes a complete, production-ready RAG system that wraps its sophisticated architecture into a simple, zero-config API. Unlike basic RAG implementations, HoloLoom RAG includes:
+
+- **Level 2 Hybrid RAG**: BM25 (keyword) + semantic similarity search
+- **Level 3 Graph RAG**: Entity relationships via Yarn Graph (NetworkX MultiDiGraph)
+- **Level 4 Agentic RAG**: Multi-step reasoning (DIRECT/VERIFY/RESEARCH/PLAN_EXECUTE modes)
+- **Multimodal RAG**: Text + images with CLIP embeddings and visual compression
+- **Performance Dashboard**: Auto-constructed visualizations with anomaly detection
+
+Most RAG systems stop at Level 2. HoloLoom provides Level 4 out of the box.
+
+### Quick Start
+
+**Simple RAG (Text-Only)**:
+```python
+from HoloLoom.rag import SimpleRAG
+
+# Zero-config initialization
+async with SimpleRAG() as rag:
+    # Ingest content (any modality)
+    await rag.ingest("Thompson Sampling balances exploration/exploitation...")
+
+    # Single-line query
+    result = await rag.query("What is Thompson Sampling?")
+
+    # Structured result
+    print(result.response)      # LLM-generated answer
+    print(result.sources)       # Retrieved source texts
+    print(result.confidence)    # 0.0-1.0
+    print(result.reasoning_mode) # "verify"
+```
+
+**Multimodal RAG (Text + Images)**:
+```python
+from HoloLoom.rag import MultimodalRAG
+
+async with MultimodalRAG() as rag:
+    # Store photos with CLIP embeddings
+    photo_id = await rag.ingest_photo(
+        image="architecture.png",
+        tags=["architecture", "system_design"],
+        description="System architecture diagram"
+    )
+
+    # Query with image context (OCR + CLIP)
+    result = await rag.query_with_image(
+        question="What's in this diagram?",
+        image="architecture.png"
+    )
+
+    print(result.response)         # LLM answer
+    print(result.image_sources)    # Retrieved images
+    print(result.compression_ratio) # e.g., 12.5x token savings
+```
+
+**RAG Performance Dashboard**:
+```python
+from HoloLoom.visualization import RAGDashboard
+
+# Auto-construct dashboard from query history
+queries = [...]  # List of RAGResult objects
+dashboard = RAGDashboard.from_query_history(queries)
+dashboard.save("rag_performance.html")
+
+# 5 panels auto-generated:
+# 1. Retrieval Quality (precision/recall over time)
+# 2. Latency Waterfall (stage timing breakdown)
+# 3. Cache Effectiveness (hit rate gauge)
+# 4. Confidence Trajectory (anomaly detection)
+# 5. Source Attribution (knowledge graph)
+```
+
+### Architecture
+
+```
+SimpleRAG (Level 2-4 RAG)
+├── Text Path
+│   ├── ingest() → hololoom.experience()
+│   ├── query() → hololoom.recall() + LLM generation
+│   └── batch_query() → efficient batch processing
+│
+├── Features
+│   ├── Query caching (100x faster for repeated queries)
+│   ├── Hybrid search (BM25 + semantic)
+│   ├── Graph traversal (Yarn Graph relationships)
+│   └── Agentic reasoning (4 modes)
+│
+└── LLM Integration
+    ├── Ollama (local, default: llama3.2:3b)
+    ├── Anthropic (Claude 3.5 Sonnet)
+    └── OpenAI (GPT-4)
+
+MultimodalRAG (extends SimpleRAG)
+├── Visual Path
+│   ├── ingest_photo() → hololoom.remember_photo()
+│   ├── query_with_image() → OCR + CLIP + recall(include_photos=True)
+│   └── get_related_photos() → CLIP similarity search
+│
+├── OCR Integration
+│   ├── Primary: DeepSeek OCR (best quality)
+│   ├── Fallback: pytesseract (basic)
+│   └── Graceful degradation (returns empty if unavailable)
+│
+└── Visual Compression
+    ├── Auto-compresses when sources > 10 (configurable)
+    ├── Knowledge graph → image (5-20x token savings)
+    └── Returns PNG bytes + compression metrics
+```
+
+### Key Features
+
+#### 1. Zero-Config API
+
+No configuration required. Just instantiate and use:
+```python
+rag = SimpleRAG()  # Uses Config.fast() by default
+```
+
+Customize if needed:
+```python
+from HoloLoom.config import Config
+
+rag = SimpleRAG(
+    config=Config.fused(),           # BARE/FAST/FUSED modes
+    llm_provider="anthropic",        # ollama/anthropic/openai
+    llm_model="claude-3-5-sonnet-20241022"
+)
+```
+
+#### 2. Reasoning Modes
+
+Choose reasoning complexity based on your needs:
+
+| Mode | Latency | Accuracy | Use Case |
+|------|---------|----------|----------|
+| **direct** | ~150ms | Good | Simple factual queries |
+| **verify** | ~600ms | Better | Claims needing verification |
+| **research** | ~900ms | Best | Open-ended research |
+| **plan_execute** | ~750ms | Best | Multi-step tasks |
+
+```python
+result = await rag.query("Complex question", mode="research")
+```
+
+#### 3. Query Caching
+
+Repeated queries use cache (100x speedup):
+```python
+result1 = await rag.query("What is Thompson Sampling?")  # ~150ms (cold)
+result2 = await rag.query("What is Thompson Sampling?")  # ~1ms (cached)
+```
+
+Disable caching:
+```python
+rag = SimpleRAG(enable_caching=False)
+```
+
+#### 4. Multimodal Capabilities
+
+**Visual Q&A**: Ask questions about images
+```python
+result = await rag.query_with_image(
+    "Explain this architecture diagram",
+    "architecture.png"
+)
+```
+
+**Photo Retrieval**: Find similar images using CLIP
+```python
+# Text-based search
+photos = await rag.get_related_photos("architecture diagram", max_photos=5)
+
+# Image-based similarity
+similar = await rag.get_similar_photos("reference.png", max_photos=5)
+```
+
+**Visual Compression**: Automatic token savings for large contexts
+```python
+rag = MultimodalRAG(
+    enable_visual_compression=True,
+    compression_threshold=10  # Compress if sources > 10
+)
+
+result = await rag.query_with_image(question, image)
+if result.compressed_context:
+    print(f"Compression: {result.compression_ratio:.1f}x token savings")
+```
+
+#### 5. Performance Dashboard
+
+Auto-constructed visualizations following Edward Tufte principles:
+
+```python
+from HoloLoom.visualization import RAGDashboard
+
+# Collect query results
+results = []
+for question in questions:
+    result = await rag.query(question)
+    results.append(result)
+
+# Build dashboard (one line)
+dashboard = RAGDashboard.from_query_history(results)
+dashboard.save("performance.html")
+```
+
+**5 Panels**:
+1. **Retrieval Quality**: Sources per query with trend analysis
+2. **Latency Waterfall**: Stage timing breakdown (retrieval/generation/total)
+3. **Cache Effectiveness**: Hit rate gauge with recommendations
+4. **Confidence Trajectory**: Confidence over time with anomaly detection
+5. **Source Attribution**: Source frequency distribution
+
+**Anomaly Detection**: Automatically detects 4 types:
+- Sudden drops (confidence drops >0.2 in single step)
+- Prolonged low (confidence <threshold for 3+ consecutive queries)
+- High variance (std dev >0.15 in rolling window)
+- Cache miss clusters (3+ cache misses in rolling window)
+
+### Files & Documentation
+
+**Core Implementation**:
+- `HoloLoom/rag/simple_rag.py` (375 lines) - Main RAG wrapper
+- `HoloLoom/rag/multimodal_rag.py` (675 lines) - Multimodal extension
+- `HoloLoom/rag/visual_qa.py` (432 lines) - OCR + CLIP engine
+
+**Tests**:
+- `HoloLoom/rag/tests/test_simple_rag.py` (425 lines) - 24/25 tests passing
+- `HoloLoom/rag/tests/test_multimodal_rag.py` (581 lines) - 21/21 tests passing
+
+**Visualization**:
+- `HoloLoom/visualization/rag_dashboard.py` (612 lines) - Dashboard builder
+
+**Demos** (Progressive Complexity):
+- `demos/demo_rag_qa_simple.py` (92 lines) - **Start here!** Basic Q&A
+- `demos/demo_rag_document_ingestion.py` (136 lines) - Batch ingestion
+- `demos/demo_rag_multiquery.py` (146 lines) - Multi-query research
+- `demos/demo_rag_with_verification.py` (159 lines) - Reasoning modes
+- `demos/demo_multimodal_rag.py` (237 lines) - Text + images
+- `demos/demo_rag_dashboard.py` (175 lines) - Performance dashboard
+
+**Documentation**:
+- `HoloLoom/rag/README.md` (596 lines) - Simple RAG API reference
+- `HoloLoom/rag/MULTIMODAL_README.md` (877 lines) - Multimodal capabilities
+- `HoloLoom/visualization/RAG_DASHBOARD_README.md` (576 lines) - Dashboard guide
+- `demos/RAG_DEMOS_README.md` (455 lines) - Learning path
+
+**Total**: 6,811 lines of production code, tests, and documentation
+
+### Performance Characteristics
+
+| Operation | Latency | Notes |
+|-----------|---------|-------|
+| **Text ingestion** | ~50ms | Any modality via SpinningWheel |
+| **Text-only query (cold)** | ~150ms | FAST mode, no cache |
+| **Text-only query (warm)** | <1ms | Cache hit (100x faster) |
+| **Visual Q&A (DeepSeek OCR)** | ~1,110ms | +260ms for OCR + CLIP |
+| **Visual Q&A (basic OCR)** | ~960ms | +110ms for pytesseract |
+| **Visual compression** | +150ms | Saves 5-20x tokens |
+| **Photo ingestion** | ~200ms | CLIP encoding |
+| **Photo retrieval** | ~50ms | CLIP similarity |
+| **Dashboard generation** | ~30ms | For 15 queries |
+
+### Running the Demos
+
+```bash
+# Basic RAG (Start here!)
+PYTHONPATH=. python demos/demo_rag_qa_simple.py
+
+# Advanced demos
+PYTHONPATH=. python demos/demo_rag_document_ingestion.py
+PYTHONPATH=. python demos/demo_rag_multiquery.py
+PYTHONPATH=. python demos/demo_rag_with_verification.py
+
+# Multimodal (requires PIL, torch)
+PYTHONPATH=. python demos/demo_multimodal_rag.py
+
+# Performance dashboard
+PYTHONPATH=. python demos/demo_rag_dashboard.py
+# Output: demos/output/rag_dashboard.html
+```
+
+### Testing
+
+```bash
+# Test Simple RAG
+pytest HoloLoom/rag/tests/test_simple_rag.py -v
+# Result: 24/25 passing (96%)
+
+# Test Multimodal RAG
+pytest HoloLoom/rag/tests/test_multimodal_rag.py -v
+# Result: 21/21 passing (100%)
+
+# Test all RAG components
+pytest HoloLoom/rag/ -v
+```
+
+### Integration with HoloLoom
+
+RAG leverages HoloLoom's existing infrastructure:
+
+**Memory Systems**:
+- `hololoom.py` - experience(), recall(), reflect() API
+- `memory/cache.py` - BM25 + semantic retrieval
+- `memory/graph.py` - Yarn Graph (entity relationships)
+- `memory/photo_tokens.py` - CLIP embeddings for images
+- `memory/visual_compression.py` - Graph→image compression
+
+**LLM Integration**:
+- `weaving_orchestrator_llm.py` - Ollama/Anthropic/OpenAI integration
+- Graceful fallback to neural-only if LLM unavailable
+
+**Agentic Reasoning**:
+- `agentic/core.py` - Multi-query reasoning modes
+- `recursive/` - Self-improving learning loop
+
+**Visualization**:
+- `visualization/confidence_trajectory.py` - Confidence tracking
+- `visualization/cache_gauge.py` - Cache performance
+- `visualization/stage_waterfall.py` - Latency breakdown
+- `visualization/knowledge_graph.py` - Entity relationships
+
+### Comparison to Other RAG Systems
+
+| Feature | Basic RAG | LangChain | LlamaIndex | **HoloLoom RAG** |
+|---------|-----------|-----------|------------|------------------|
+| **Level** | 1-2 | 2-3 | 2-3 | **4 (Agentic + Graph)** |
+| **Hybrid Search** | ❌ | ✅ | ✅ | ✅ |
+| **Graph RAG** | ❌ | 🟡 | 🟡 | ✅ (Native) |
+| **Multimodal** | ❌ | 🟡 | 🟡 | ✅ (Full) |
+| **Agentic Reasoning** | ❌ | 🟡 | ❌ | ✅ (4 modes) |
+| **Visual Compression** | ❌ | ❌ | ❌ | ✅ (5-20x) |
+| **Zero-Config** | ❌ | ❌ | ❌ | ✅ |
+| **Performance Dashboard** | ❌ | ❌ | ❌ | ✅ |
+| **Setup Complexity** | Low | High | Medium | **Zero** |
+
+### When to Use HoloLoom RAG
+
+**✅ Use HoloLoom RAG when you need**:
+- Zero-config RAG with sane defaults
+- Graph-based knowledge representation (entity relationships)
+- Multimodal RAG (text + images)
+- Agentic reasoning (multi-step, verification, research modes)
+- Visual compression for large contexts (5-20x token savings)
+- Performance monitoring out of the box
+- Integration with HoloLoom's memory and learning systems
+
+**🟡 Consider alternatives when**:
+- You need a specific vector DB (Pinecone, Weaviate, etc.) - HoloLoom uses Qdrant/Neo4j
+- You have very specific chunking requirements - HoloLoom delegates to SpinningWheel
+- You need SQL database integration - HoloLoom focuses on knowledge graphs
+
+**❌ Don't use RAG (including HoloLoom) when**:
+- Base model already knows the information (check first!)
+- Data is highly volatile (stock tickers, real-time feeds)
+- You need sub-50ms latency (gaming, real-time systems)
+- Dataset is tiny (<100 documents) - not worth the overhead
+- Privacy-critical and can't store user data
+
+### Future Enhancements
+
+Roadmap for HoloLoom RAG (Phase 6+):
+
+1. **SQL/Database Integration** - Query structured databases
+2. **Multi-Hop Reasoning** - Follow relationship chains in Yarn Graph
+3. **Streaming Responses** - Stream LLM generation token-by-token
+4. **Custom Embeddings** - Plug in custom embedding models
+5. **Advanced Reranking** - Cross-encoder reranking for higher precision
+6. **Multi-Agent RAG** - Parallel query execution with consensus
+7. **Fine-Tuning Integration** - Combine RAG with fine-tuned models
+
+See [HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md](HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md) for complete roadmap.
+
+---
+
+## Phase 3: Adaptive Learning System (November 2025)
+
+**Status**: ✅ Production Ready
+**Location**: `HoloLoom/routing/learning/`
+**Documentation**: [PHASE_3_DOCUMENTATION.md](PHASE_3_DOCUMENTATION.md)
+
+Phase 3 integrates a complete **Adaptive Learning System** into HoloLoom's query routing layer, enabling automatic pattern discovery, continuous accuracy monitoring, and safe pattern deployment.
+
+### Overview
+
+The Adaptive Learning System provides:
+- **Automatic pattern discovery** from production classification logs
+- **Continuous accuracy monitoring** with hourly validation
+- **Safe pattern deployment** with A/B testing and automatic rollback
+- **Daily/weekly performance reports** with Prometheus metrics
+- **Slack/email alerts** for critical regressions
+- **Sub-millisecond overhead** (<1ms per query)
+
+### Quick Start
+
+```python
+from HoloLoom.routing.query_classifier_adaptive import AdaptiveMoonshotClassifier
+
+# Create adaptive classifier with background learning
+classifier = AdaptiveMoonshotClassifier(
+    enable_adaptive_learning=True,
+    background_learning=True,  # Automatic hourly learning
+    learning_update_interval=3600.0  # 1 hour
+)
+
+# Classify queries (automatically logged for learning)
+result = classifier.classify("What is Thompson Sampling?")
+
+print(f"Complexity: {result.complexity.value}")
+print(f"Confidence: {result.confidence:.1%}")
+
+# View learning statistics
+stats = classifier.get_learning_statistics()
+print(f"Patterns Discovered: {stats['patterns_discovered']}")
+print(f"Validation Accuracy: {stats['validation_accuracy']:.1%}")
+```
+
+### Architecture
+
+Phase 3 implements a 4-component architecture:
+
+1. **PatternMiner** ([pattern_miner.py](HoloLoom/routing/learning/pattern_miner.py:1)) - 425 lines
+   - Extracts high-quality patterns from production logs (n-gram → regex)
+   - Quality scoring: precision, recall, F1, support
+   - Configurable thresholds (min precision: 95%, min support: 10)
+
+2. **ContinuousValidator** ([continuous_validator.py](HoloLoom/routing/learning/continuous_validator.py:1)) - 469 lines
+   - Hourly/daily validation with regression detection (>2% drop)
+   - Trend analysis (7-day, 30-day moving averages)
+   - Alert generation with severity levels (WARNING, CRITICAL)
+
+3. **AdaptiveUpdater** ([adaptive_updater.py](HoloLoom/routing/learning/adaptive_updater.py:1)) - 682 lines
+   - Safe deployment strategies (SHADOW, AB_TEST, GRADUAL)
+   - Automatic rollback on regression
+   - Pattern versioning (keeps last 10 versions)
+
+4. **PerformanceReporter** ([performance_reporter.py](HoloLoom/routing/learning/performance_reporter.py:1)) - 627 lines
+   - Daily/weekly reports with recommendations
+   - Prometheus metrics export
+   - Slack/email alert formatting
+
+### Background Learning Loop
+
+The system runs a background learning cycle every hour:
+
+```python
+async def main():
+    classifier = AdaptiveMoonshotClassifier(background_learning=True)
+
+    # Start background learning
+    await classifier.start_background_learning()
+
+    # Your application runs here...
+    # System automatically:
+    # 1. Mines patterns from logs
+    # 2. Validates accuracy hourly
+    # 3. Deploys high-quality patterns
+    # 4. Generates daily/weekly reports
+
+    # Graceful shutdown
+    await classifier.stop_background_learning()
+
+asyncio.run(main())
+```
+
+### Deployment Strategies
+
+| Strategy | Traffic Split | Duration | Use Case |
+|----------|---------------|----------|----------|
+| **SHADOW** | 0% | Day 1-2 | Test patterns without production impact |
+| **AB_TEST** | 10/90 | Day 3 | Validate with small traffic |
+| **GRADUAL** | 10%→50%→100% | Day 3-7 | Incremental deployment with monitoring |
+
+### Production Integration
+
+**Prometheus Metrics** (exported every minute):
+```
+moonshot_accuracy{complexity="overall"} 0.95
+moonshot_queries_total 15234
+moonshot_latency_ms 125.5
+moonshot_patterns_deployed 42
+moonshot_regressions_detected 3
+```
+
+**Slack Alerts** (on critical regression):
+```
+🚨 Classifier Regression Detected
+
+Current accuracy: 85.3%
+Baseline accuracy: 95.0%
+Drop: 9.7% (threshold: 2.0%)
+
+Affected: complex(75.0%), research(80.0%)
+Severity: CRITICAL
+```
+
+### Testing
+
+Run comprehensive integration tests:
+
+```bash
+pytest HoloLoom/routing/learning/tests/test_adaptive_integration.py -v
+```
+
+**Test Coverage**: 13/13 integration tests passing
+- PatternMiner initialization and pattern discovery
+- ContinuousValidator hourly validation and regression detection
+- AdaptiveUpdater safe deployment and automatic rollback
+- PerformanceReporter daily/weekly reports and metrics export
+- End-to-end pipeline integration
+
+### Performance Characteristics
+
+| Operation | Overhead | Frequency |
+|-----------|----------|-----------|
+| Classification + logging | <1ms | Every query |
+| Pattern mining | ~500ms | Every hour (async) |
+| Hourly validation | ~2-5s | Every hour (async) |
+| Pattern deployment | ~100ms | When patterns available (async) |
+| Daily report | ~50ms | Once per day (async) |
+
+**Total Per-Query Overhead**: <1ms (JSONL logging only)
+**Background Learning**: ~3-6s per hour (0.08-0.17% CPU)
+**Memory Usage**: ~1-2MB typical production workload
+
+### Key Files
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| [query_classifier_adaptive.py](HoloLoom/routing/learning/query_classifier_adaptive.py:1) | 480 | Main adaptive classifier integration |
+| [pattern_miner.py](HoloLoom/routing/learning/pattern_miner.py:1) | 425 | Automatic pattern discovery |
+| [continuous_validator.py](HoloLoom/routing/learning/continuous_validator.py:1) | 469 | Hourly accuracy monitoring |
+| [adaptive_updater.py](HoloLoom/routing/learning/adaptive_updater.py:1) | 682 | Safe pattern deployment |
+| [performance_reporter.py](HoloLoom/routing/learning/performance_reporter.py:1) | 627 | Daily/weekly reports + metrics |
+| [test_adaptive_integration.py](HoloLoom/routing/learning/tests/test_adaptive_integration.py:1) | 465 | Integration test suite (13 tests) |
+
+### Documentation
+
+- **Complete Guide**: [PHASE_3_DOCUMENTATION.md](PHASE_3_DOCUMENTATION.md:1) (1000+ lines)
+  - Quick start and usage examples
+  - Configuration reference
+  - Production deployment (Prometheus, Grafana, Slack, email)
+  - Monitoring and alerting setup
+  - Performance characteristics
+  - Best practices and troubleshooting
+
+- **Progress Report**: [PHASE_3_PROGRESS.md](PHASE_3_PROGRESS.md:1)
+  - 14-day implementation timeline
+  - Component-by-component progress
+  - Test coverage and statistics
+
+### Demos
+
+```bash
+# Individual component demos
+python demos/demo_pattern_miner.py
+python demos/demo_continuous_validator.py
+python demos/demo_adaptive_updater.py
+python demos/demo_performance_reporter.py
+
+# Full integration demo
+python demos/demo_adaptive_classifier.py
+```
+
+---
 
 ## Development Commands
 
@@ -361,6 +1018,30 @@ Matryoshka embeddings at multiple scales (96, 192, 384 dimensions) with:
 - Multi-scale fusion for retrieval
 - Spectral features: graph Laplacian eigenvalues, SVD topic components
 - Optional sentence-transformers backend (degrades gracefully without it)
+
+**Zero-Copy Embeddings** (`HoloLoom/embedding/zero_copy.py`) - **November 2025**
+
+High-performance embedding layer using memory-mapped storage and view-based multi-scale access:
+
+**Performance:**
+- **37.7x faster** scale extraction (warm cache)
+- **1.4x faster** in real orchestrator workloads
+- **50% memory savings** (views share backing array)
+- **<1ms** latency per query (warm cache)
+
+**Enable via config:**
+```python
+config = Config.fast()  # Zero-copy enabled by default in FAST/FUSED
+config.enable_zero_copy_embeddings = True
+config.zero_copy_cache_path = '.cache/embeddings.mmap'
+config.zero_copy_cache_size = 10000
+```
+
+**Key Innovation:** Leverages Matryoshka "prefix property" - the first k dimensions contain the k-d representation. This enables zero-copy array slicing instead of matrix multiplication.
+
+**Documentation:** See [ZERO_COPY_ARCHITECTURE.md](HoloLoom/embedding/ZERO_COPY_ARCHITECTURE.md) for complete details.
+
+**Trade-off:** ~2-5% retrieval quality loss (no learned projections), but 37x speedup in isolated embeddings and 50% memory savings make it worth it for latency-critical applications.
 
 #### 6. SpinningWheel (`HoloLoom/spinningWheel/`)
 Input adapters that convert raw data → `MemoryShard` objects:
@@ -620,6 +1301,16 @@ HoloLoom/
 │   ├── buffer.py             # ReflectionBuffer
 │   ├── ppo_trainer.py        # PPO training
 │   └── semantic_learning.py  # Multi-task learner (6 signals)
+│
+├── routing/                   # Query routing & adaptive learning (Phase 3 - Nov 2025)
+│   └── learning/             # Adaptive learning system
+│       ├── pattern_miner.py        # Automatic pattern discovery (425 lines)
+│       ├── continuous_validator.py # Hourly accuracy monitoring (469 lines)
+│       ├── adaptive_updater.py     # Safe pattern deployment (682 lines)
+│       ├── performance_reporter.py # Daily/weekly reports (627 lines)
+│       ├── query_classifier_adaptive.py # Main integration (480 lines)
+│       └── tests/
+│           └── test_adaptive_integration.py # 13 integration tests
 │
 ├── embedding/                 # Multi-scale embeddings
 │   ├── spectral.py           # Matryoshka + spectral features

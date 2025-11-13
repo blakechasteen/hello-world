@@ -417,16 +417,17 @@ class ResonanceShed:
 
         # Apply interference (fusion)
         if self.interference_mode == "weighted_sum" and len(self.threads) > 1:
-            # Combine embeddings with weights (if multiple embedding-like features exist)
-            # For now, just use primary embedding
-            pass
+            # Weighted fusion: combine embeddings with thread weights
+            plasma = self._fuse_weighted_sum(plasma, motif_thread, embedding_thread, spectral_thread, semantic_flow_thread)
 
         elif self.interference_mode == "attention":
-            # Cross-attention between features (future enhancement)
+            # Attention-based fusion: cross-attention between modalities
+            plasma = self._fuse_attention(plasma, motif_thread, embedding_thread, spectral_thread, semantic_flow_thread)
             plasma["metadata"]["attention_applied"] = True
 
         elif self.interference_mode == "concat":
-            # Concatenate all feature vectors (future enhancement)
+            # Concatenation fusion: stack all feature vectors
+            plasma = self._fuse_concat(plasma, motif_thread, embedding_thread, spectral_thread, semantic_flow_thread)
             plasma["metadata"]["concatenated"] = True
 
         # Add thread metadata
@@ -448,6 +449,253 @@ class ResonanceShed:
             plasma["metadata"]["guardrails"] = guardrail_metadata
 
         self._last_guardrail_snapshot = self._guardrail_decisions.copy()
+
+        return plasma
+
+    def _fuse_weighted_sum(
+        self,
+        plasma: Dict[str, Any],
+        motif_thread: Optional[FeatureThread],
+        embedding_thread: Optional[FeatureThread],
+        spectral_thread: Optional[FeatureThread],
+        semantic_flow_thread: Optional[FeatureThread]
+    ) -> Dict[str, Any]:
+        """
+        Weighted sum fusion: Combine features using thread weights.
+
+        Strategy:
+        - Primary embedding is kept as-is (psi)
+        - If spectral features exist, blend with embedding using weights
+        - Semantic flow features are kept separate (trajectory data)
+        - Motifs remain symbolic (not fused into psi)
+
+        Args:
+            plasma: Base DotPlasma dict
+            motif_thread: Motif feature thread
+            embedding_thread: Embedding feature thread
+            spectral_thread: Spectral feature thread
+            semantic_flow_thread: Semantic flow feature thread
+
+        Returns:
+            Enhanced plasma with weighted fusion applied
+        """
+        # If we have both embedding and spectral, blend them
+        if embedding_thread and spectral_thread:
+            emb_features = np.array(embedding_thread.features)
+            spec_features = np.array(spectral_thread.features)
+
+            # Normalize weights
+            emb_weight = embedding_thread.weight
+            spec_weight = spectral_thread.weight
+            total_weight = emb_weight + spec_weight
+            emb_weight /= total_weight
+            spec_weight /= total_weight
+
+            # Pad spectral to match embedding dimension
+            if len(spec_features) < len(emb_features):
+                spec_features = np.pad(
+                    spec_features,
+                    (0, len(emb_features) - len(spec_features))
+                )
+            elif len(spec_features) > len(emb_features):
+                # Truncate spectral
+                spec_features = spec_features[:len(emb_features)]
+
+            # Weighted blend
+            fused_psi = emb_weight * emb_features + spec_weight * spec_features
+
+            plasma["psi"] = fused_psi.tolist()
+            plasma["metadata"]["fusion_weights"] = {
+                "embedding": float(emb_weight),
+                "spectral": float(spec_weight)
+            }
+
+        return plasma
+
+    def _fuse_attention(
+        self,
+        plasma: Dict[str, Any],
+        motif_thread: Optional[FeatureThread],
+        embedding_thread: Optional[FeatureThread],
+        spectral_thread: Optional[FeatureThread],
+        semantic_flow_thread: Optional[FeatureThread]
+    ) -> Dict[str, Any]:
+        """
+        Attention-based fusion: Cross-attention between modalities.
+
+        Strategy:
+        - Compute attention weights between embedding and other modalities
+        - Use softmax to normalize attention scores
+        - Combine features using attention-weighted sum
+        - Results in richer, context-aware representations
+
+        Formula:
+            score(query, key) = query · key / sqrt(dim)
+            attention = softmax(scores)
+            output = sum(attention[i] * value[i])
+
+        Args:
+            plasma: Base DotPlasma dict
+            motif_thread: Motif feature thread
+            embedding_thread: Embedding feature thread
+            spectral_thread: Spectral feature thread
+            semantic_flow_thread: Semantic flow feature thread
+
+        Returns:
+            Enhanced plasma with attention fusion applied
+        """
+        if not embedding_thread:
+            # Can't do attention without query (embedding)
+            return plasma
+
+        query = np.array(embedding_thread.features)
+        keys = []
+        values = []
+        modality_names = []
+
+        # Collect keys/values from available modalities
+        if spectral_thread:
+            spec_features = np.array(spectral_thread.features)
+            # Pad/truncate to match query dimension
+            if len(spec_features) < len(query):
+                spec_features = np.pad(
+                    spec_features,
+                    (0, len(query) - len(spec_features))
+                )
+            elif len(spec_features) > len(query):
+                spec_features = spec_features[:len(query)]
+
+            keys.append(spec_features)
+            values.append(spec_features)
+            modality_names.append("spectral")
+
+        if semantic_flow_thread:
+            # Extract numeric features from semantic flow
+            sem_features = semantic_flow_thread.features
+            if isinstance(sem_features, dict):
+                # Convert dict to vector
+                sem_vec = np.array([
+                    sem_features.get("avg_velocity", 0.0),
+                    sem_features.get("avg_acceleration", 0.0),
+                    sem_features.get("total_distance", 0.0),
+                    float(sem_features.get("n_states", 0))
+                ])
+
+                # Pad to match query dimension
+                if len(sem_vec) < len(query):
+                    sem_vec = np.pad(
+                        sem_vec,
+                        (0, len(query) - len(sem_vec))
+                    )
+                elif len(sem_vec) > len(query):
+                    sem_vec = sem_vec[:len(query)]
+
+                keys.append(sem_vec)
+                values.append(sem_vec)
+                modality_names.append("semantic_flow")
+
+        # Add embedding itself as a key/value
+        keys.append(query)
+        values.append(query)
+        modality_names.append("embedding")
+
+        if len(keys) <= 1:
+            # Not enough modalities for attention
+            return plasma
+
+        # Compute attention scores
+        keys_matrix = np.stack(keys)  # (n_modalities, dim)
+
+        # Scaled dot-product attention
+        scores = np.dot(keys_matrix, query) / np.sqrt(len(query))
+
+        # Softmax normalization
+        exp_scores = np.exp(scores - np.max(scores))  # Numerical stability
+        attention_weights = exp_scores / np.sum(exp_scores)
+
+        # Weighted combination
+        values_matrix = np.stack(values)
+        fused_psi = np.sum(
+            attention_weights[:, np.newaxis] * values_matrix,
+            axis=0
+        )
+
+        plasma["psi"] = fused_psi.tolist()
+        plasma["metadata"]["attention_weights"] = {
+            name: float(weight)
+            for name, weight in zip(modality_names, attention_weights)
+        }
+
+        return plasma
+
+    def _fuse_concat(
+        self,
+        plasma: Dict[str, Any],
+        motif_thread: Optional[FeatureThread],
+        embedding_thread: Optional[FeatureThread],
+        spectral_thread: Optional[FeatureThread],
+        semantic_flow_thread: Optional[FeatureThread]
+    ) -> Dict[str, Any]:
+        """
+        Concatenation fusion: Stack all feature vectors.
+
+        Strategy:
+        - Concatenate all numeric feature vectors
+        - Results in high-dimensional representation
+        - Preserves all information from each modality
+        - Higher memory/compute cost
+
+        Order: [embedding, spectral, semantic_flow_numeric]
+
+        Args:
+            plasma: Base DotPlasma dict
+            motif_thread: Motif feature thread
+            embedding_thread: Embedding feature thread
+            spectral_thread: Spectral feature thread
+            semantic_flow_thread: Semantic flow feature thread
+
+        Returns:
+            Enhanced plasma with concatenation fusion applied
+        """
+        feature_parts = []
+        dimension_map = {}
+        current_offset = 0
+
+        # Part 1: Embedding features
+        if embedding_thread:
+            emb_features = np.array(embedding_thread.features)
+            feature_parts.append(emb_features)
+            dimension_map["embedding"] = (current_offset, current_offset + len(emb_features))
+            current_offset += len(emb_features)
+
+        # Part 2: Spectral features
+        if spectral_thread:
+            spec_features = np.array(spectral_thread.features)
+            feature_parts.append(spec_features)
+            dimension_map["spectral"] = (current_offset, current_offset + len(spec_features))
+            current_offset += len(spec_features)
+
+        # Part 3: Semantic flow features (numeric only)
+        if semantic_flow_thread:
+            sem_features = semantic_flow_thread.features
+            if isinstance(sem_features, dict):
+                # Convert dict to vector
+                sem_vec = np.array([
+                    sem_features.get("avg_velocity", 0.0),
+                    sem_features.get("avg_acceleration", 0.0),
+                    sem_features.get("total_distance", 0.0),
+                    float(sem_features.get("n_states", 0))
+                ])
+                feature_parts.append(sem_vec)
+                dimension_map["semantic_flow"] = (current_offset, current_offset + len(sem_vec))
+                current_offset += len(sem_vec)
+
+        # Concatenate all parts
+        if feature_parts:
+            fused_psi = np.concatenate(feature_parts)
+            plasma["psi"] = fused_psi.tolist()
+            plasma["metadata"]["concat_dimensions"] = dimension_map
+            plasma["metadata"]["total_dim"] = len(fused_psi)
 
         return plasma
 

@@ -1,0 +1,227 @@
+[
+  {
+    "text": "hi",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "hello",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "hey",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "good morning",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "good afternoon",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "greetings",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "hi there",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "hello world",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "hey there",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "good evening",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "what is Python?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what is machine learning?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what is a neural network?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what are transformers?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what is reinforcement learning?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "tell me about Python",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "tell me about transformers",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "tell me about neural networks",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "describe machine learning",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "describe gradient descent",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "explain what a tensor is",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "explain embeddings",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "define supervised learning",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "define unsupervised learning",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "list optimization algorithms",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "how does backpropagation work?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how does attention work?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how does gradient descent work?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how does a transformer work?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how does BERT work?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "explain gradient descent",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "explain backpropagation",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "explain attention mechanisms",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "explain how transformers work",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "walk me through Q-learning",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "walk me through policy gradient",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "walk me through Adam optimizer",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "analyze Thompson Sampling vs UCB",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "compare reinforcement learning algorithms",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "compare GPT and BERT architectures",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "compare supervised and unsupervised learning",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "evaluate different optimization techniques",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "evaluate transformer vs RNN performance",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "analyze attention mechanisms in detail",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "analyze optimization landscape",
+    "complexity": "research",
+    "metadata": {}
+  }
+]

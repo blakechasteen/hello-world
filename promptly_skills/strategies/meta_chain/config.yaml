@@ -1,0 +1,58 @@
+name: meta_chain
+version: 1.0.0
+category: meta-prompting
+description: Meta-Chain Prompting - Intelligently chain multiple strategies
+
+config:
+  # Chaining rules based on query characteristics
+  chaining_rules:
+    learning_query:
+      # "explain", "understand", "learn"
+      chain: [deep, teach, verify]
+      rationale: Deep explanation + examples + verification
+
+    problem_solving:
+      # "solve", "calculate", "find"
+      chain: [scaffold, teach, verify]
+      rationale: Structured reasoning + examples + verification
+
+    quality_focus:
+      # "best", "optimal", "production"
+      chain: [prime, optimize, challenge]
+      rationale: Quality standards + refinement + adversarial testing
+
+    tradeoff_analysis:
+      # "should", "tradeoffs", "pros and cons"
+      chain: [debate, deep, prime]
+      rationale: Multi-perspective + depth + quality standards
+
+    uncertain_query:
+      # "might", "maybe", "uncertain"
+      chain: [temp_sim, scaffold, verify]
+      rationale: Confidence levels + structured reasoning + verification
+
+  max_chain_length: 3
+  timeout_seconds: 90  # Longer for multi-strategy execution
+
+detection:
+  high_confidence_keywords:
+    - chain strategies
+    - multiple approaches
+    - comprehensive analysis
+    - thorough treatment
+
+  # Auto-detect query types
+  query_type_keywords:
+    learning: [explain, understand, learn, teach me, what is, how does]
+    problem_solving: [solve, calculate, find, determine, compute]
+    quality: [best, optimal, production, professional, world class]
+    tradeoff: [should, tradeoffs, pros and cons, debate, compare]
+    uncertain: [might, maybe, uncertain, not sure, confidence]
+
+  base_confidence: 0.35
+  keyword_boost: 0.50
+
+performance:
+  typical_duration_ms: 500  # Executes multiple strategies
+  token_overhead: 800
+  quality_improvement: 0.65  # +65% through intelligent chaining

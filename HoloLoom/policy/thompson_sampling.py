@@ -10,18 +10,11 @@ Author: Claude Code
 Date: November 7, 2025 (Elegance Track - Day 3)
 """
 
-from enum import Enum
 from typing import Dict, Optional, Tuple
 import numpy as np
 
-
-class BanditStrategy(Enum):
-    """Bandit exploration strategies."""
-    EPSILON_GREEDY = "epsilon_greedy"  # Explore with probability epsilon
-    BAYESIAN_BLEND = "bayesian_blend"  # Blend neural and bandit priors
-    PURE_THOMPSON = "pure_thompson"    # Use Thompson Sampling exclusively
-    GP_THOMPSON = "gp_thompson"        # Gaussian Process Thompson Sampling (continuous)
-    GP_UCB = "gp_ucb"                  # Gaussian Process Upper Confidence Bound (continuous)
+# Import BanditStrategy from shared types (no circular dependency)
+from HoloLoom.documentation.types import BanditStrategy
 
 
 class TSBandit:

@@ -1,0 +1,66 @@
+{
+  "current_phase": "rolled_back",
+  "traffic_split": 0.0,
+  "current_version": 3,
+  "pattern_versions": [
+    {
+      "version": 0,
+      "deployed_at": 1763022034.193774,
+      "is_active": false,
+      "pattern_count": 0
+    },
+    {
+      "version": 1,
+      "deployed_at": 1763022034.193774,
+      "is_active": false,
+      "pattern_count": 0
+    },
+    {
+      "version": 2,
+      "deployed_at": 1763022034.241929,
+      "is_active": true,
+      "pattern_count": 0
+    }
+  ],
+  "metrics_history": [
+    {
+      "phase": "shadow",
+      "queries_total": 0,
+      "queries_new_patterns": 0,
+      "queries_old_patterns": 0,
+      "accuracy_new": 0.0,
+      "accuracy_old": 0.0,
+      "latency_new_ms": 0.0,
+      "latency_old_ms": 0.0,
+      "errors_new": 0,
+      "errors_old": 0,
+      "timestamp": 1763022034.193774
+    },
+    {
+      "phase": "rolled_back",
+      "queries_total": 45,
+      "queries_new_patterns": 0,
+      "queries_old_patterns": 0,
+      "accuracy_new": 0.3333333333333333,
+      "accuracy_old": 1.0,
+      "latency_new_ms": 0.0,
+      "latency_old_ms": 0.0,
+      "errors_new": 0,
+      "errors_old": 0,
+      "timestamp": 1763022034.241929
+    },
+    {
+      "phase": "rolled_back",
+      "queries_total": 45,
+      "queries_new_patterns": 0,
+      "queries_old_patterns": 0,
+      "accuracy_new": 0.3333333333333333,
+      "accuracy_old": 1.0,
+      "latency_new_ms": 0.0,
+      "latency_old_ms": 0.0,
+      "errors_new": 0,
+      "errors_old": 0,
+      "timestamp": 1763022034.289
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+name: prime
+version: 1.0.0
+category: meta-prompting
+description: Reference Class Priming - Benchmark against quality exemplars
+
+config:
+  reference_classes:
+    - world_class       # Best-in-world quality
+    - expert_level      # Professional expert
+    - academic          # Research-grade rigor
+    - production        # Production-ready code
+
+  quality_dimensions:
+    - clarity
+    - completeness
+    - accuracy
+    - elegance
+    - practicality
+
+  min_exemplars: 2      # Reference at least 2 quality examples
+  timeout_seconds: 30
+
+detection:
+  high_confidence_keywords:
+    - best practices
+    - gold standard
+    - world class
+    - expert level
+    - professional quality
+
+  medium_confidence_keywords:
+    - high quality
+    - best
+    - top tier
+    - exemplary
+    - benchmark
+
+  base_confidence: 0.3
+  keyword_boost: 0.55
+
+performance:
+  typical_duration_ms: 150
+  token_overhead: 300
+  quality_improvement: 0.48  # Average +48% quality

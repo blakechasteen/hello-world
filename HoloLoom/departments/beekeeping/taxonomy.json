@@ -1,0 +1,375 @@
+{
+  "version": "1.0.0",
+  "domain": "beekeeping",
+  "description": "Beekeeping domain taxonomy for entity extraction and validation",
+
+  "entity_types": {
+    "colony_members": {
+      "queen": {
+        "aliases": ["queen bee", "mother", "laying queen"],
+        "confidence_base": 0.95,
+        "patterns": [
+          "\\bqueen\\b",
+          "\\blaying\\s+queen\\b",
+          "\\bmother\\s+bee\\b"
+        ],
+        "context_boost": ["laying", "eggs", "marked", "clipped", "supersedure"]
+      },
+      "worker": {
+        "aliases": ["worker bee", "forager", "nurse bee"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\bworker(?:s)?\\b",
+          "\\bforager(?:s)?\\b",
+          "\\bnurse\\s+bee(?:s)?\\b"
+        ],
+        "context_boost": ["foraging", "nursing", "cleaning", "guarding"]
+      },
+      "drone": {
+        "aliases": ["drone bee", "male bee"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\bdrone(?:s)?\\b",
+          "\\bmale\\s+bee(?:s)?\\b"
+        ],
+        "context_boost": ["mating", "congregation", "eviction"]
+      }
+    },
+
+    "hive_components": {
+      "hive": {
+        "aliases": ["beehive", "colony", "hive body"],
+        "confidence_base": 0.95,
+        "patterns": [
+          "\\bhive(?:s)?\\b",
+          "\\bbeehive(?:s)?\\b",
+          "\\bcolony(?:ies)?\\b",
+          "\\bhive\\s+body(?:ies)?\\b"
+        ],
+        "context_boost": ["boxes", "supers", "entrance", "location"]
+      },
+      "frame": {
+        "aliases": ["comb", "frame of comb"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\bframe(?:s)?\\b",
+          "\\bcomb(?:s)?\\b",
+          "\\bfoundation\\b"
+        ],
+        "context_boost": ["drawn", "wax", "capped", "uncapped"]
+      },
+      "super": {
+        "aliases": ["honey super", "box"],
+        "confidence_base": 0.85,
+        "patterns": [
+          "\\bsuper(?:s)?\\b",
+          "\\bhoney\\s+super(?:s)?\\b",
+          "\\bbox(?:es)?\\b"
+        ],
+        "context_boost": ["added", "removed", "full", "empty"]
+      },
+      "foundation": {
+        "aliases": ["wax foundation", "plastic foundation"],
+        "confidence_base": 0.85,
+        "patterns": [
+          "\\bfoundation\\b",
+          "\\bwax\\s+foundation\\b",
+          "\\bplastic\\s+foundation\\b"
+        ],
+        "context_boost": ["drawn", "installed", "wired"]
+      }
+    },
+
+    "colony_products": {
+      "brood": {
+        "aliases": ["eggs", "larvae", "pupae", "capped brood"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\bbrood\\b",
+          "\\begg(?:s)?\\b",
+          "\\blarva(?:e)?\\b",
+          "\\bpupa(?:e)?\\b",
+          "\\bcapped\\s+brood\\b"
+        ],
+        "context_boost": ["laying pattern", "healthy", "diseased", "stages"]
+      },
+      "honey": {
+        "aliases": ["nectar", "capped honey", "honey stores"],
+        "confidence_base": 0.95,
+        "patterns": [
+          "\\bhoney\\b",
+          "\\bnectar\\b",
+          "\\bcapped\\s+honey\\b",
+          "\\bhoney\\s+stores\\b"
+        ],
+        "context_boost": ["harvest", "capped", "uncapped", "flow"]
+      },
+      "pollen": {
+        "aliases": ["bee bread", "pollen stores"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\bpollen\\b",
+          "\\bbee\\s+bread\\b",
+          "\\bpollen\\s+stores\\b"
+        ],
+        "context_boost": ["collected", "stored", "fresh", "protein"]
+      },
+      "propolis": {
+        "aliases": ["bee glue"],
+        "confidence_base": 0.85,
+        "patterns": [
+          "\\bpropolis\\b",
+          "\\bbee\\s+glue\\b"
+        ],
+        "context_boost": ["sealed", "antimicrobial", "collected"]
+      },
+      "wax": {
+        "aliases": ["beeswax", "comb wax"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\bwax\\b",
+          "\\bbeeswax\\b",
+          "\\bcomb\\s+wax\\b"
+        ],
+        "context_boost": ["production", "building", "cappings", "rendering"]
+      }
+    },
+
+    "colony_health": {
+      "varroa": {
+        "aliases": ["varroa mite", "varroa destructor", "mites"],
+        "confidence_base": 0.95,
+        "patterns": [
+          "\\bvarroa\\b",
+          "\\bvarroa\\s+mite(?:s)?\\b",
+          "\\bvarroa\\s+destructor\\b",
+          "\\bmite(?:s)?\\b"
+        ],
+        "context_boost": ["treatment", "count", "infestation", "monitoring"]
+      },
+      "nosema": {
+        "aliases": ["nosema disease", "nosema ceranae", "nosema apis"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\bnosema\\b",
+          "\\bnosema\\s+(?:ceranae|apis)\\b"
+        ],
+        "context_boost": ["spores", "infection", "dysentery"]
+      },
+      "afb": {
+        "aliases": ["american foulbrood", "foulbrood"],
+        "confidence_base": 0.95,
+        "patterns": [
+          "\\bafb\\b",
+          "\\bamerican\\s+foulbrood\\b",
+          "\\bfoulbrood\\b"
+        ],
+        "context_boost": ["spores", "inspection", "rope test", "burn"]
+      },
+      "efb": {
+        "aliases": ["european foulbrood"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\befb\\b",
+          "\\beuropean\\s+foulbrood\\b"
+        ],
+        "context_boost": ["twisted larvae", "sour smell"]
+      },
+      "chalkbrood": {
+        "aliases": ["chalk brood"],
+        "confidence_base": 0.85,
+        "patterns": [
+          "\\bchalkbrood\\b",
+          "\\bchalk\\s+brood\\b"
+        ],
+        "context_boost": ["mummies", "fungus", "moisture"]
+      }
+    },
+
+    "beekeeping_activities": {
+      "inspection": {
+        "aliases": ["hive inspection", "check", "examination"],
+        "confidence_base": 0.85,
+        "patterns": [
+          "\\binspection\\b",
+          "\\bhive\\s+inspection\\b",
+          "\\bcheck(?:ed)?\\b",
+          "\\bexamin(?:e|ed|ation)\\b"
+        ],
+        "context_boost": ["opened", "looked", "observed", "found"]
+      },
+      "harvest": {
+        "aliases": ["honey harvest", "extraction"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\bharvest(?:ed)?\\b",
+          "\\bhoney\\s+harvest\\b",
+          "\\bextraction\\b",
+          "\\bextract(?:ed)?\\b"
+        ],
+        "context_boost": ["supers", "capped", "uncapped", "frames"]
+      },
+      "feeding": {
+        "aliases": ["supplemental feeding", "sugar syrup"],
+        "confidence_base": 0.85,
+        "patterns": [
+          "\\bfeed(?:ing)?\\b",
+          "\\bsupplemental\\s+feeding\\b",
+          "\\bsugar\\s+syrup\\b"
+        ],
+        "context_boost": ["syrup", "fondant", "pollen patty", "supplement"]
+      },
+      "treatment": {
+        "aliases": ["varroa treatment", "medication"],
+        "confidence_base": 0.85,
+        "patterns": [
+          "\\btreatment\\b",
+          "\\bvarroa\\s+treatment\\b",
+          "\\bmedication\\b",
+          "\\btreat(?:ed)?\\b"
+        ],
+        "context_boost": ["oxalic", "formic", "apivar", "strips"]
+      },
+      "split": {
+        "aliases": ["hive split", "divide"],
+        "confidence_base": 0.80,
+        "patterns": [
+          "\\bsplit\\b",
+          "\\bhive\\s+split\\b",
+          "\\bdivid(?:e|ed)\\b"
+        ],
+        "context_boost": ["queen", "frames", "nuc", "increase"]
+      },
+      "requeen": {
+        "aliases": ["requeening", "queen replacement"],
+        "confidence_base": 0.85,
+        "patterns": [
+          "\\brequeen(?:ing)?\\b",
+          "\\bqueen\\s+replacement\\b",
+          "\\breplace(?:d)?\\s+queen\\b"
+        ],
+        "context_boost": ["introduced", "accepted", "cage", "supersedure"]
+      }
+    },
+
+    "equipment": {
+      "smoker": {
+        "aliases": ["bee smoker"],
+        "confidence_base": 0.90,
+        "patterns": [
+          "\\bsmoker\\b",
+          "\\bbee\\s+smoker\\b"
+        ],
+        "context_boost": ["lit", "smoke", "calm"]
+      },
+      "hive_tool": {
+        "aliases": ["tool", "pry tool"],
+        "confidence_base": 0.75,
+        "patterns": [
+          "\\bhive\\s+tool\\b",
+          "\\btool\\b"
+        ],
+        "context_boost": ["pry", "scrape", "lever"]
+      },
+      "extractor": {
+        "aliases": ["honey extractor", "centrifugal extractor"],
+        "confidence_base": 0.85,
+        "patterns": [
+          "\\bextractor\\b",
+          "\\bhoney\\s+extractor\\b",
+          "\\bcentrifugal\\s+extractor\\b"
+        ],
+        "context_boost": ["spin", "frames", "extract"]
+      },
+      "veil": {
+        "aliases": ["bee veil", "protective veil"],
+        "confidence_base": 0.80,
+        "patterns": [
+          "\\bveil\\b",
+          "\\bbee\\s+veil\\b",
+          "\\bprotective\\s+veil\\b"
+        ],
+        "context_boost": ["wear", "protection", "face"]
+      }
+    }
+  },
+
+  "relationship_types": {
+    "PART_OF": {
+      "description": "Component relationship (e.g., frame PART_OF hive)",
+      "confidence_multiplier": 1.0,
+      "bidirectional": false
+    },
+    "PRODUCES": {
+      "description": "Production relationship (e.g., worker PRODUCES wax)",
+      "confidence_multiplier": 0.95,
+      "bidirectional": false
+    },
+    "AFFECTS": {
+      "description": "Impact relationship (e.g., varroa AFFECTS colony_health)",
+      "confidence_multiplier": 0.90,
+      "bidirectional": false
+    },
+    "TREATS": {
+      "description": "Treatment relationship (e.g., oxalic_acid TREATS varroa)",
+      "confidence_multiplier": 0.95,
+      "bidirectional": false
+    },
+    "REQUIRES": {
+      "description": "Dependency relationship (e.g., brood REQUIRES queen)",
+      "confidence_multiplier": 0.90,
+      "bidirectional": false
+    },
+    "LOCATED_IN": {
+      "description": "Spatial relationship (e.g., brood LOCATED_IN frames)",
+      "confidence_multiplier": 0.90,
+      "bidirectional": false
+    }
+  },
+
+  "extraction_patterns": {
+    "quantity_with_entity": {
+      "pattern": "(\\d+(?:\\.\\d+)?)\\s+(frames?|boxes?|pounds?|lbs?|kg)\\s+(?:of\\s+)?(\\w+)",
+      "confidence_boost": 0.1,
+      "examples": [
+        "5 frames of brood",
+        "2 boxes of honey",
+        "10 lbs of honey"
+      ]
+    },
+    "temporal_activity": {
+      "pattern": "(today|yesterday|last\\s+week|\\d{4}-\\d{2}-\\d{2})\\s+(?:I|we)?\\s+(inspected|harvested|treated|fed)",
+      "confidence_boost": 0.15,
+      "examples": [
+        "today I inspected the hive",
+        "last week we harvested honey"
+      ]
+    },
+    "observation": {
+      "pattern": "(saw|observed|noticed|found)\\s+([\\w\\s]+?)\\s+(in|on|at)\\s+(the\\s+)?(hive|frames?|boxes?)",
+      "confidence_boost": 0.1,
+      "examples": [
+        "saw varroa mites on the frames",
+        "noticed queen cells in the hive"
+      ]
+    }
+  },
+
+  "confidence_calibration": {
+    "llm_extraction": {
+      "base_confidence": 0.85,
+      "boost_if_multiple_sources": 0.1,
+      "penalty_if_ambiguous": -0.15
+    },
+    "pattern_matching": {
+      "base_confidence": 0.75,
+      "boost_if_context_match": 0.15,
+      "penalty_if_no_context": -0.1
+    },
+    "taxonomy_validation": {
+      "known_entity": 0.0,
+      "close_match": -0.05,
+      "unknown_entity": -0.2
+    }
+  }
+}

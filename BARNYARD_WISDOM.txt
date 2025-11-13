@@ -1,0 +1,128 @@
+===============================================================================
+                    THE COMPLETE BARNYARD WISDOM COLLECTION
+                         "Pearls Before Swine" Edition
+===============================================================================
+
+🐷 WILBUR'S WISDOM (AST Auto-Fixer)
+-----------------------------------
+
+"A function extracted is better than a function duplicated!"
+"Dead code is like rotten food - throw it out!"
+"Magic numbers are like mud - best cleaned up!"
+"Some Pig wrote this code. I'm just making it prize-winning!"
+"Charlotte says: Consistency is key - even for a humble pig!"
+"Templeton says: Unused imports are garbage - recycle them!"
+"Types make code trustworthy, and pigs trustworthy make better bacon!"
+"Extract early, extract often - that's the Wilbur way!"
+"A well-named variable is a happy variable!"
+"If you can't read it, you can't fix it!"
+
+🕸️ CHARLOTTE'S WISDOM (Template Fixer)
+---------------------------------------
+
+"With great templates comes great responsibility!"
+"A template applied is worth two bugs in the trough!"
+"Some Spider spun templates - and they're RADIANT!"
+"Templeton says: Reuse patterns, not cheese!"
+"Every error needs a handler, every file needs a with statement!"
+"Context managers are like spider silk - they hold things together!"
+"Environment variables keep secrets secret!"
+"Timezone-naive code is web-unworthy code!"
+"Documentation is the web that holds understanding together!"
+"Try, except, succeed - the Charlotte way!"
+"Logging is like writing in a web - leave a trace!"
+"Templates don't just fix code, they teach patterns!"
+
+🐀 TEMPLETON'S WISDOM (Git Integration)
+---------------------------------------
+
+"Templeton commits carefully, rolls back fearlessly!"
+"Every good rat knows when to retreat!"
+"Git saves bacon - and commits!"
+"A rat without an escape plan is just a cornered pig!"
+"Commit messages are like cheese labels - detailed is better!"
+"Never push to main without permission - even rats have standards!"
+"Metadata is treasure - collect it all!"
+"Atomic commits are like cheese cubes - small, perfect, complete!"
+"Branch early, merge often, rollback if needed!"
+"The audit trail is Templeton's finest work!"
+"A commit a day keeps the chaos away!"
+"Revert with pride, push with caution!"
+
+👧 FERN'S WISDOM (Validation Pipeline)
+--------------------------------------
+
+"Fern validates everything - and so should you!"
+"Test twice, commit once!"
+"Every good fix deserves five checks!"
+"Syntax errors are like splinters - catch them early!"
+"Imports should resolve, just like good intentions!"
+"Tests are the proof that code works!"
+"Regression is when old problems return - prevent it!"
+"Fail-fast saves time, slow-fail wastes it!"
+"Validation isn't paranoia, it's prudence!"
+"A validated fix is a trustworthy fix!"
+"Check your work like Fern checks her pig!"
+"Five stages to safety - worth every millisecond!"
+
+🐷 GENERAL BARNYARD WISDOM
+--------------------------
+
+"From trough to treasure in five easy phases!"
+"Slop today, prize-winning code tomorrow!"
+"Clean code is happy code, happy code is pig-approved!"
+"The barnyard doesn't tolerate messy pens!"
+"OINK if you love clean code!"
+"May your commits be atomic and your rollbacks instant!"
+"Some Pig built a pipeline - and it's TERRIFIC!"
+"Charlotte's Web of Code Quality!"
+"Wilbur's radiant refactoring!"
+"When in doubt, ask the barnyard brigade!"
+"No pig left behind in code quality!"
+"From mud to magnificence - the Trough way!"
+
+🎪 ERROR MESSAGE WISDOM
+-----------------------
+
+When classification fails:
+"Oops! Even pigs get confused sometimes. Let's try that again!"
+
+When fixing fails:
+"Charlotte's web caught a snag! This one needs human fingers."
+
+When validation fails:
+"Fern says: Not so fast! This needs more checking."
+
+When git commit fails:
+"Templeton couldn't commit - the cheese rolled away!"
+
+When out of memory:
+"The trough is full! Need a bigger trough!"
+
+When file not found:
+"Wilbur looked everywhere, but this file is playing hide-and-seek!"
+
+When permission denied:
+"Even pigs need permission! Check your access rights."
+
+When syntax error:
+"This code speaks a language even Charlotte can't parse!"
+
+When test fails:
+"Fern found a boo-boo! Back to the drawing board!"
+
+When import fails:
+"Charlotte's web is missing a thread - import not found!"
+
+===============================================================================
+                    (*)<  COLLECTED WITH LOVE  (*)<
+                        By The Barnyard Brigade
+                  Wilbur • Charlotte • Templeton • Fern
+===============================================================================
+
+                        🐷 OINK OINK OINK! 🐷
+
+"May your slop be classified, your fixes be validated,
+ your commits be atomic, and your barnyard forever happy!"
+
+===============================================================================

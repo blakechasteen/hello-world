@@ -1,0 +1,377 @@
+[
+  {
+    "text": "hi",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "hello",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "thanks",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "thank you",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "ok",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "bye",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "goodbye",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "hey",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "yo",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "sure",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "yes",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "no",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "cool",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "nice",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "great",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "perfect",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "help",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "stop",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "wait",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "continue",
+    "complexity": "trivial",
+    "metadata": {}
+  },
+  {
+    "text": "what is Python?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what are transformers?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "define machine learning",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "who is Einstein?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "when is Christmas?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "where is Paris?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what is attention?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what are embeddings?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "define neural network",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what is backpropagation?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "who invented transformers?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "when was GPT created?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "where did AI start?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what is BERT?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "define gradient descent",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what is CNN?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what are RNNs?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "who created PyTorch?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "when was TensorFlow released?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "what is reinforcement learning?",
+    "complexity": "simple",
+    "metadata": {}
+  },
+  {
+    "text": "explain how neural networks work",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "describe attention mechanism with examples",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "why do transformers use self-attention?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how does backpropagation work in detail?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "explain gradient descent with examples",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "describe CNN architecture in detail",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how do RNNs handle sequences?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "explain LSTM and its variants",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "why is attention better than RNNs?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "describe the transformer architecture",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how does BERT work?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "explain GPT architecture",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "describe batch normalization in detail",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how does dropout prevent overfitting?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "explain Adam optimizer mechanism",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "describe Q-learning algorithm",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how does PPO work?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "explain policy gradients",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "describe actor-critic methods",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "how do GANs work?",
+    "complexity": "complex",
+    "metadata": {}
+  },
+  {
+    "text": "analyze tradeoffs between Thompson Sampling and epsilon-greedy",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "compare and contrast supervised and unsupervised learning",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "evaluate advantages and disadvantages of neural vs symbolic AI",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "analyze all attention mechanisms comprehensively",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "compare RNNs vs Transformers vs State Space Models",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "evaluate tradeoffs of different RL algorithms",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "analyze pros and cons of different optimizers",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "compare CNNs vs Vision Transformers comprehensively",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "evaluate different normalization techniques",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "analyze tradeoffs between model size and performance",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "compare supervised vs semi-supervised vs self-supervised learning",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "evaluate different attention patterns in transformers",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "analyze exploration vs exploitation tradeoffs",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "compare different tokenization strategies",
+    "complexity": "research",
+    "metadata": {}
+  },
+  {
+    "text": "evaluate efficiency vs accuracy tradeoffs in neural architecture search",
+    "complexity": "research",
+    "metadata": {}
+  }
+]

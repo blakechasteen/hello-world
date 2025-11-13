@@ -1,0 +1,172 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                 HOLOLOOM DEPARTMENTAL AGENT ARCHITECTURE                     ║
+║              Implementing Conway's Law for AI Agent Swarms                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                        CLAUDE SDK → ARCHITECTURE MAPPING                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+1. CONTEXT MANAGEMENT → Distributed Context Budgets
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Orchestration:    100k tokens  (global coordination)
+   Context:           60k tokens  (multi-pass enrichment)
+   MasterWeaver:      50k tokens  (large dataset processing)
+   Execution:         40k tokens  (complex tasks)
+   Verification:      30k tokens  (focused validation)
+   Infrastructure:    20k tokens  (system diagnostics)
+   ─────────────────────────────────────────────────
+   TOTAL:            300k tokens  (distributed)
+
+   Key: Compaction at department boundaries - pass summaries, not transcripts
+
+2. TOOL PERMISSIONS → Role-Based Access Control
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ┌─────────────┬──────┬───────┬─────────┬────────┬───────┐
+   │ Department  │ Read │ Write │ Execute │ Deploy │ Admin │
+   ├─────────────┼──────┼───────┼─────────┼────────┼───────┤
+   │MasterWeaver │  ✓   │   ✓   │    ✗    │   ✗    │   ✗   │
+   │Verification │  ✓   │   ✗   │    ✓    │   ✗    │   ✗   │
+   │Infrastr.    │  ✓   │   ✓   │    ✗    │   ✗    │   ✓   │
+   │Execution    │  ✓   │   ✗   │    ✓    │   ✗    │   ✗   │
+   │Context      │  ✓   │   ✓   │    ✗    │   ✗    │   ✗   │
+   │Orchestr.    │  ✓   │   ✗   │    ✓    │   ✗    │   ✓   │
+   └─────────────┴──────┴───────┴─────────┴────────┴───────┘
+
+   Key: HARD permissions for dangerous ops, SOFT for cross-dept queries
+
+3. ERROR HANDLING → Cross-Department Escalation
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Local Recovery:    Department retries internally
+   Cross-Dept:        Department alerts affected departments
+   Verification:      Catches errors, requests re-runs
+   Orchestration:     Coordinates recovery, manages cascades
+
+   Key: Direct re-run tool (logged) + Orchestration monitoring
+
+4. SESSION MANAGEMENT → Institutional Memory
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Active Sessions:   Each department tracks current work
+   Session Forking:   Explore uncertainty in parallel
+   Compaction:        Departments pass compact handoffs
+   Global Session:    Orchestration maintains master roadmap
+
+   Key: Hierarchical - shared CLAUDE.md + per-dept CHARTER.md
+
+5. MCP EXTENSIBILITY → Federated Communication
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    ┌─────────────────┐
+                    │  Orchestration  │
+                    │   MCP Server    │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+    ┌────▼────┐         ┌────▼────┐         ┌───▼────┐
+    │ Master  │         │  Infra  │         │  Exec  │
+    │ Weaver  │◄────────┤ struct  │────────►│ ution  │
+    │   MCP   │         │   MCP   │         │   MCP  │
+    └────┬────┘         └────┬────┘         └───┬────┘
+         │                   │                   │
+         └───────────────────┼───────────────────┘
+                             │
+                        ┌────▼────────┐
+                        │Verification │
+                        │     MCP     │
+                        └─────────────┘
+
+   Key: Stateless servers with session_id - independent evolution
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              DEPARTMENT REGISTRY                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+MasterWeaver
+  Role: Entity extraction, domain understanding, knowledge structuring
+  Tools: extract_entities, validate_entity_consistency, query_domain_ontology
+  Dependencies: Infrastructure
+
+Verification
+  Role: Quality assurance, confidence validation, alignment checking
+  Tools: validate_confidence_claim, request_rerun, cross_check_departments
+  Dependencies: MasterWeaver, Infrastructure, Execution
+
+Infrastructure
+  Role: Data systems, performance optimization, zero-copy queries
+  Tools: query_neo4j, query_qdrant, diagnose_performance
+  Dependencies: None (foundational)
+
+Execution
+  Role: Task execution, code running, deployment orchestration
+  Tools: run_claude_code_task, check_task_status
+  Dependencies: Infrastructure
+
+Context (HoloLoom)
+  Role: Multi-pass context enrichment, missing context detection
+  Tools: enrich_context, detect_missing_context
+  Dependencies: Infrastructure, MasterWeaver
+
+Orchestration
+  Role: Task routing, department coordination, session management
+  Tools: route_task, get_session_context, escalate_decision
+  Dependencies: None (top-level)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              DEPENDENCY GRAPH                                │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Orchestration (no dependencies)
+    │
+    ├─► MasterWeaver → Infrastructure
+    ├─► Verification → MasterWeaver, Infrastructure, Execution
+    ├─► Infrastructure (no dependencies)
+    ├─► Execution → Infrastructure
+    └─► Context → Infrastructure, MasterWeaver
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                            IMPLEMENTATION STATUS                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Phase 1: Foundation
+  [✓] Define department registry (mcp_department_registry.py)
+  [✓] Architecture documentation (CLAUDE_SDK_DEPARTMENTAL_MAPPING.md)
+  [ ] Department CHARTER.md templates
+  [ ] Basic MCP server framework
+  [ ] Test inter-department communication
+
+Phase 2: Core Departments (Week 2-3)
+  [ ] MasterWeaver MCP server
+  [ ] Infrastructure MCP server
+  [ ] Verification MCP server
+
+Phase 3: Integration (Week 4)
+  [ ] Orchestration coordinator
+  [ ] Session management
+  [ ] Error escalation protocols
+
+Phase 4: Production (Week 5-6)
+  [ ] OAuth/auth
+  [ ] Monitoring/observability
+  [ ] Load testing
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              THE NATURAL CONCLUSION                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+This architecture implements Conway's Law for AI agents:
+  "Agent architecture mirrors organizational structure"
+
+The Claude SDK provides technical capabilities.
+This architecture provides organizational structure.
+Together: A federated agent swarm operating like a well-structured organization.
+
+Result:
+  - Context managed like budgets (declared upfront)
+  - Permissions as organizational roles (scope enforcement)
+  - Errors escalate through channels (dept → orch → human)
+  - Sessions as institutional memory (decisions persist)
+  - MCP as connective tissue (loose coupling, independent evolution)
+
+Generated: November 9, 2025
+Files: mcp_department_registry.py, CLAUDE_SDK_DEPARTMENTAL_MAPPING.md

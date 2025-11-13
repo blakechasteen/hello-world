@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promptly Strategy Framework - Interactive Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .tagline {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .strategy-chip {
+            padding: 10px 15px;
+            background: #f8f8f8;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .strategy-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .strategy-chip.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .meta-value {
+            color: #333;
+        }
+
+        .confidence-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s;
+        }
+
+        .result-content {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .examples {
+            margin-top: 30px;
+        }
+
+        .example-chip {
+            display: inline-block;
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 20px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .example-chip:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✨ Promptly Strategy Framework</h1>
+            <p class="tagline">Simple. Elegant. Composable. Learning.</p>
+        </header>
+
+        <div class="card">
+            <div class="input-group">
+                <label for="query">Your Query</label>
+                <textarea
+                    id="query"
+                    placeholder="Enter your query here... (e.g., 'explain neural networks in depth')"
+                ></textarea>
+            </div>
+
+            <div class="input-group">
+                <label>Strategy Selection</label>
+                <div class="strategy-grid">
+                    <div class="strategy-chip" data-strategy="auto">🎯 Auto-Detect</div>
+                    <div class="strategy-chip" data-strategy="verify">✓ Verify</div>
+                    <div class="strategy-chip" data-strategy="challenge">⚔️ Challenge</div>
+                    <div class="strategy-chip" data-strategy="optimize">🔧 Optimize</div>
+                    <div class="strategy-chip" data-strategy="reverse">🔄 Reverse</div>
+                    <div class="strategy-chip" data-strategy="deep">📚 Deep</div>
+                    <div class="strategy-chip" data-strategy="scaffold">🏗️ Scaffold</div>
+                    <div class="strategy-chip" data-strategy="prime">⭐ Prime</div>
+                    <div class="strategy-chip" data-strategy="teach">👨‍🏫 Teach</div>
+                    <div class="strategy-chip" data-strategy="debate">💬 Debate</div>
+                    <div class="strategy-chip" data-strategy="temp_sim">🌡️ TempSim</div>
+                    <div class="strategy-chip" data-strategy="meta_chain">🔗 Meta-Chain</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="runStrategy()">Enhance Query</button>
+                <button class="btn-secondary" onclick="clearAll()">Clear</button>
+            </div>
+        </div>
+
+        <div class="card result-section" id="result">
+            <div class="result-header">
+                <h3>Enhanced Query Result</h3>
+                <div class="result-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Strategy:</span>
+                        <span class="meta-value" id="strategy-name">—</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Confidence:</span>
+                        <span class="meta-value" id="confidence">—</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Improvement:</span>
+                        <span class="meta-value" id="improvement">—</span>
+                    </div>
+                </div>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidence-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="result-content" id="result-content"></div>
+        </div>
+
+        <div class="card examples">
+            <h3 style="color: white; margin-bottom: 15px;">Try These Examples:</h3>
+            <div class="example-chip" onclick="loadExample('explain neural networks thoroughly')">
+                🧠 Explain neural networks
+            </div>
+            <div class="example-chip" onclick="loadExample('solve this calculus problem step by step')">
+                📐 Solve calculus problem
+            </div>
+            <div class="example-chip" onclick="loadExample('write production-ready authentication code')">
+                💻 Production code
+            </div>
+            <div class="example-chip" onclick="loadExample('review security vulnerabilities')">
+                🔒 Security review
+            </div>
+            <div class="example-chip" onclick="loadExample('pros and cons of microservices')">
+                ⚖️ Tradeoffs analysis
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedStrategy = 'auto';
+
+        // Strategy chip selection
+        document.querySelectorAll('.strategy-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.strategy-chip').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedStrategy = this.getAttribute('data-strategy');
+            });
+        });
+
+        // Auto-select first chip
+        document.querySelector('.strategy-chip').classList.add('selected');
+
+        function loadExample(query) {
+            document.getElementById('query').value = query;
+        }
+
+        function clearAll() {
+            document.getElementById('query').value = '';
+            document.getElementById('result').classList.remove('show');
+        }
+
+        async function runStrategy() {
+            const query = document.getElementById('query').value.trim();
+            if (!query) {
+                alert('Please enter a query');
+                return;
+            }
+
+            // Show loading
+            const resultSection = document.getElementById('result');
+            resultSection.classList.add('show');
+            document.getElementById('result-content').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Enhancing your query with ${selectedStrategy} strategy...</p>
+                </div>
+            `;
+
+            try {
+                // Simulate API call (in real implementation, call Python backend)
+                await simulateEnhancement(query, selectedStrategy);
+            } catch (error) {
+                document.getElementById('result-content').innerHTML = `
+                    <div style="color: red; text-align: center; padding: 20px;">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function simulateEnhancement(query, strategy) {
+            // Simulate delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Mock result (in real implementation, this would come from Python backend)
+            const mockResults = {
+                'auto': {
+                    name: 'deep (auto-detected)',
+                    confidence: 0.92,
+                    improvement: 0.55,
+                    content: `# Deliberate Over-Instruction: Exhaustive Deep Analysis
+
+Topic: ${query}
+
+## Section 1: Fundamentals
+[Comprehensive first-principles explanation...]
+
+## Section 2: Edge Cases
+[Boundary conditions and unusual scenarios...]
+
+## Section 3: Tradeoffs
+[Pros, cons, and when to use...]
+
+[... 7 sections total for exhaustive depth ...]`
+                },
+                'verify': {
+                    name: 'verify',
+                    confidence: 0.88,
+                    improvement: null,
+                    content: `# Chain of Verification
+
+Original Query: ${query}
+
+## Step 1: Generate Initial Answer
+[Provide your initial response...]
+
+## Step 2: Generate Verification Questions
+[Ask probing questions to check accuracy...]
+
+## Step 3: Answer Verification Questions
+[Answer each verification question...]
+
+## Step 4: Final Verified Response
+[Refined answer with corrections...]`
+                },
+                'deep': {
+                    name: 'deep',
+                    confidence: 0.95,
+                    improvement: 0.55,
+                    content: `# Exhaustive Deep Analysis: ${query}
+
+Covering 7 mandatory sections with 3+ points each:
+1. Fundamentals (first principles)
+2. Edge Cases (boundary conditions)
+3. Tradeoffs (pros/cons)
+4. Alternatives (comparisons)
+5. Examples (concrete demonstrations)
+6. Pitfalls (common mistakes)
+7. Best Practices (recommended patterns)
+
+[Complete exhaustive analysis...]`
+                },
+                'scaffold': {
+                    name: 'scaffold',
+                    confidence: 0.92,
+                    improvement: 0.42,
+                    content: `# Zero-shot Chain-of-Thought Scaffolding
+
+Problem: ${query}
+
+## Step 1: Understand the Problem
+[Fill in all blanks...]
+
+## Step 2: Decompose into Subproblems
+[Break down the problem...]
+
+## Step 3-6: Analyze, Synthesize, Validate, Conclude
+[Complete 6-step reasoning template...]`
+                },
+                'meta_chain': {
+                    name: 'meta_chain',
+                    confidence: 0.88,
+                    improvement: 0.65,
+                    content: `# Meta-Chain Prompting: Intelligent Strategy Chaining
+
+Query: ${query}
+
+Detected Query Type: Learning Query
+
+Recommended Chain: deep → teach → verify
+
+Rationale: Deep explanation + concrete examples + verification
+
+[Multi-strategy processing with full provenance...]`
+                }
+            };
+
+            // Get result (default to 'auto' if strategy not in mock)
+            const result = mockResults[strategy] || mockResults['auto'];
+
+            // Update UI
+            document.getElementById('strategy-name').textContent = result.name;
+            document.getElementById('confidence').textContent = (result.confidence * 100).toFixed(0) + '%';
+            document.getElementById('improvement').textContent = result.improvement
+                ? '+' + (result.improvement * 100).toFixed(0) + '%'
+                : 'N/A';
+            document.getElementById('confidence-bar').style.width = (result.confidence * 100) + '%';
+            document.getElementById('result-content').textContent = result.content;
+        }
+
+        // Note: In production, replace simulateEnhancement with actual API calls:
+        // async function runStrategy() {
+        //     const response = await fetch('/api/enhance', {
+        //         method: 'POST',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify({ query, strategy: selectedStrategy })
+        //     });
+        //     const data = await response.json();
+        //     // Update UI with real data
+        // }
+    </script>
+</body>
+</html>
