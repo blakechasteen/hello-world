@@ -48,6 +48,13 @@ Moonshot Integration:
   - Institutional memory queries
   - Health monitoring and alerting
 
+- Phase 3 (Moonshot Weeks 5-7): Orchestration Integration - COMPLETE
+  - OrchestrationBridge (cross-department scanning)
+  - Quality gates (strict/balanced/relaxed)
+  - Error escalation (notify/review/block/critical)
+  - Parallel department scanning
+  - Orchestration metrics and monitoring
+
 Usage:
     # Complete pipeline
     from xterminator import (
@@ -113,10 +120,32 @@ Usage:
     response = await qa_dept.execute(request)
     # → DepartmentResponse with statistics + confidence
 
+    # Moonshot integration (Phase 3 - Orchestration)
+    from xterminator import OrchestrationBridge, QualityGateConfig
+
+    # Create orchestration bridge
+    bridge = OrchestrationBridge(qa_department=qa_dept)
+
+    # Register quality gates
+    bridge.register_quality_gate("Infrastructure", QualityGateConfig.strict("Infrastructure"))
+
+    # Scan department output
+    result = await bridge.scan_department_output(
+        department_name="Infrastructure",
+        output_code=migration_code,
+        file_path="database_migration.py"
+    )
+
+    if result.quality_gate_passed:
+        print("✓ Quality gate passed - proceed")
+    else:
+        print("✗ Quality gate failed - blocked")
+
 Author: The Barnyard Brigade (Wilbur, Charlotte, Templeton, Fern)
 Date: November 13, 2025 - 100% Test Coverage Achieved!
 Moonshot Phase 1: November 13, 2025 - Feedback Loop Complete!
 Moonshot Phase 2: November 13, 2025 - Department Protocol Complete!
+Moonshot Phase 3: November 13, 2025 - Orchestration Integration Complete!
 """
 
 __version__ = '1.0.0-final'
@@ -203,6 +232,15 @@ from .qa_department import (
     QADepartment
 )
 
+# Moonshot Phase 3: Orchestration Integration
+from .orchestration_bridge import (
+    OrchestrationBridge,
+    QualityGateConfig,
+    QualityGateResult,
+    EscalationLevel,
+    ScanResult
+)
+
 __all__ = [
     # Types
     'RiskLevel',
@@ -270,4 +308,11 @@ __all__ = [
     'ResponseStatus',
     'negotiate_confidence',
     'QADepartment',
+
+    # Moonshot Phase 3: Orchestration Integration
+    'OrchestrationBridge',
+    'QualityGateConfig',
+    'QualityGateResult',
+    'EscalationLevel',
+    'ScanResult',
 ]
