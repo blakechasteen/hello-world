@@ -63,6 +63,14 @@ Moonshot Integration:
   - Strategy performance monitoring
   - Expected reward optimization
 
+- Phase 5 (Moonshot Weeks 11-18): Marketplace + Analytics - COMPLETE
+  - Marketplace quality enforcement (Bronze/Silver/Gold/Platinum tiers)
+  - Third-party department certification and monitoring
+  - Customer-specific policies with domain overrides
+  - Advanced analytics and reporting
+  - Performance metrics, learning trends, time-series analysis
+  - Strategy comparison and customer reports
+
 Usage:
     # Complete pipeline
     from xterminator import (
@@ -262,6 +270,28 @@ from .confidence_calibration import (
     create_confidence_calibrator
 )
 
+# Moonshot Phase 5: Marketplace + Customer Policies + Analytics
+from .marketplace import (
+    MarketplaceRegistry,
+    MarketplaceDepartment,
+    QualityTier,
+    QualityCertification,
+    create_marketplace_registry
+)
+from .customer_policies import (
+    CustomerPolicyManager,
+    CustomerPolicy,
+    CustomerPolicyOverride,
+    create_customer_policy_manager
+)
+from .analytics import (
+    AnalyticsEngine,
+    PerformanceMetrics,
+    LearningTrend,
+    ReportType,
+    create_analytics_engine
+)
+
 __all__ = [
     # Types
     'RiskLevel',
@@ -345,4 +375,20 @@ __all__ = [
     'ConfidenceCalibrator',
     'CalibrationBin',
     'create_confidence_calibrator',
+
+    # Moonshot Phase 5: Marketplace + Customer Policies + Analytics
+    'MarketplaceRegistry',
+    'MarketplaceDepartment',
+    'QualityTier',
+    'QualityCertification',
+    'create_marketplace_registry',
+    'CustomerPolicyManager',
+    'CustomerPolicy',
+    'CustomerPolicyOverride',
+    'create_customer_policy_manager',
+    'AnalyticsEngine',
+    'PerformanceMetrics',
+    'LearningTrend',
+    'ReportType',
+    'create_analytics_engine',
 ]
