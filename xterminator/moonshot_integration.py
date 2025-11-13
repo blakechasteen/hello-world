@@ -50,6 +50,8 @@ from .validator import ValidationPipeline, ValidationPipelineReport
 from .autofix_policy import AutofixPolicy, FixDecision, PolicyProfile
 from .feedback_tracker import FeedbackTracker, FixAttempt, FixOutcome
 from .xterminator_types import FixProposal, FixStrategy, RiskLevel
+from .thompson_bandit import ThompsonBandit, SelectionMode, create_thompson_bandit
+from .confidence_calibration import ConfidenceCalibrator, create_confidence_calibrator
 
 
 @dataclass
@@ -136,7 +138,10 @@ class MoonshotOrchestrator:
         policy: Optional[AutofixPolicy] = None,
         enable_feedback: bool = True,
         feedback_log: str = "./xterminator_feedback.jsonl",
-        repo_path: str = "."
+        repo_path: str = ".",
+        enable_thompson_sampling: bool = False,
+        thompson_mode: SelectionMode = SelectionMode.THOMPSON,
+        thompson_state_path: Optional[str] = None
     ):
         """
         Initialize MoonshotOrchestrator.
@@ -146,6 +151,9 @@ class MoonshotOrchestrator:
             enable_feedback: Enable feedback tracking?
             feedback_log: Path to feedback log file
             repo_path: Path to git repository
+            enable_thompson_sampling: Enable Thompson Sampling for adaptive strategy selection?
+            thompson_mode: Thompson Sampling selection mode
+            thompson_state_path: Path to save/load Thompson bandit state
         """
         # Policy
         self.policy = policy or AutofixPolicy.balanced()
@@ -163,6 +171,23 @@ class MoonshotOrchestrator:
             self.feedback_tracker = FeedbackTracker(log_file=feedback_log)
         else:
             self.feedback_tracker = None
+
+        # Thompson Sampling (Phase 4)
+        self.enable_thompson_sampling = enable_thompson_sampling
+        if enable_thompson_sampling:
+            self.thompson_bandit = create_thompson_bandit(
+                mode=thompson_mode,
+                state_path=Path(thompson_state_path) if thompson_state_path else None
+            )
+            # Confidence calibration (Phase 4)
+            calibration_path = Path(thompson_state_path).parent / "calibration.json" if thompson_state_path else None
+            self.confidence_calibrator = create_confidence_calibrator(
+                num_bins=10,
+                state_path=calibration_path
+            )
+        else:
+            self.thompson_bandit = None
+            self.confidence_calibrator = None
 
     async def process_issue(
         self,
@@ -199,6 +224,13 @@ class MoonshotOrchestrator:
         classify_start = time.time()
         proposal = await self.classifier.classify_and_propose(issue, full_code, file_path)
         classification_duration = (time.time() - classify_start) * 1000
+
+        # Step 1.5: Thompson Sampling strategy selection (Phase 4)
+        original_strategy = proposal.fix_strategy
+        if self.enable_thompson_sampling and self.thompson_bandit:
+            # Override strategy with Thompson Sampling selection
+            selected_strategy = self.thompson_bandit.select_strategy()
+            proposal.fix_strategy = selected_strategy
 
         # Step 2: Policy decision
         decision, decision_reason = self.policy.decide(
@@ -325,6 +357,33 @@ class MoonshotOrchestrator:
         if self.enable_feedback:
             await self._record_feedback(proposal, result, decision)
             result.feedback_recorded = True
+
+        # Step 8: Update Thompson Sampling (Phase 4)
+        if self.enable_thompson_sampling and self.thompson_bandit:
+            # Determine success
+            success = result.outcome == FixOutcome.SUCCESS
+            # Reward = confidence score
+            reward = result.confidence
+
+            # Update bandit
+            self.thompson_bandit.update(
+                strategy=proposal.fix_strategy,
+                success=success,
+                reward=reward,
+                metadata={
+                    'fix_id': fix_id,
+                    'issue_category': issue_category,
+                    'risk_level': result.risk_level.value,
+                    'outcome': result.outcome.value
+                }
+            )
+
+            # Update confidence calibration
+            if self.confidence_calibrator:
+                self.confidence_calibrator.add_sample(
+                    confidence=result.confidence,
+                    success=success
+                )
 
         return result
 
@@ -455,3 +514,51 @@ class MoonshotOrchestrator:
             return
 
         self.feedback_tracker.export_for_analysis(output_file)
+
+    # Thompson Sampling methods (Phase 4)
+
+    def get_thompson_performance(self) -> dict:
+        """Get Thompson Sampling performance summary"""
+        if not self.thompson_bandit:
+            return {'thompson_sampling': 'disabled'}
+
+        return self.thompson_bandit.get_performance_summary()
+
+    def get_best_strategy(self) -> tuple:
+        """Get strategy with highest expected reward"""
+        if not self.thompson_bandit:
+            return (None, 0.0)
+
+        return self.thompson_bandit.get_best_strategy()
+
+    def get_learning_curve(self, window_size: int = 50) -> List[Dict]:
+        """Get learning curve showing performance improvement"""
+        if not self.thompson_bandit:
+            return []
+
+        return self.thompson_bandit.get_learning_curve(window_size)
+
+    def detect_thompson_convergence(
+        self,
+        window_size: int = 100,
+        threshold: float = 0.05
+    ) -> tuple:
+        """Detect if Thompson Sampling has converged"""
+        if not self.thompson_bandit:
+            return (False, {'reason': 'Thompson Sampling disabled'})
+
+        return self.thompson_bandit.detect_convergence(window_size, threshold)
+
+    def get_confidence_calibration(self) -> dict:
+        """Get confidence calibration summary"""
+        if not self.confidence_calibrator:
+            return {'confidence_calibration': 'disabled'}
+
+        return self.confidence_calibrator.get_calibration_summary()
+
+    def suggest_confidence_adjustment(self, confidence: float) -> tuple:
+        """Suggest adjusted confidence based on calibration"""
+        if not self.confidence_calibrator:
+            return (confidence, 'Calibration disabled')
+
+        return self.confidence_calibrator.suggest_confidence_adjustment(confidence)

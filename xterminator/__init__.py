@@ -55,6 +55,14 @@ Moonshot Integration:
   - Parallel department scanning
   - Orchestration metrics and monitoring
 
+- Phase 4 (Moonshot Weeks 8-10): Thompson Sampling - COMPLETE
+  - Thompson Sampling bandit for adaptive strategy selection
+  - Automatic α, β parameter updates from outcomes
+  - Confidence calibration tracking (ECE)
+  - Learning curve analysis and convergence detection
+  - Strategy performance monitoring
+  - Expected reward optimization
+
 Usage:
     # Complete pipeline
     from xterminator import (
@@ -241,6 +249,19 @@ from .orchestration_bridge import (
     ScanResult
 )
 
+# Moonshot Phase 4: Thompson Sampling
+from .thompson_bandit import (
+    ThompsonBandit,
+    SelectionMode,
+    BanditArm,
+    create_thompson_bandit
+)
+from .confidence_calibration import (
+    ConfidenceCalibrator,
+    CalibrationBin,
+    create_confidence_calibrator
+)
+
 __all__ = [
     # Types
     'RiskLevel',
@@ -315,4 +336,13 @@ __all__ = [
     'QualityGateResult',
     'EscalationLevel',
     'ScanResult',
+
+    # Moonshot Phase 4: Thompson Sampling
+    'ThompsonBandit',
+    'SelectionMode',
+    'BanditArm',
+    'create_thompson_bandit',
+    'ConfidenceCalibrator',
+    'CalibrationBin',
+    'create_confidence_calibrator',
 ]
