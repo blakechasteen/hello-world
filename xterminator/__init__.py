@@ -40,6 +40,14 @@ Moonshot Integration:
   - Thompson Sampling data collection (prep for Phase 4)
   - Degradation detection (prep for Phase 7)
 
+- Phase 2 (Moonshot Weeks 3-4): Department Protocol - COMPLETE
+  - DepartmentProtocol interface (6 core methods)
+  - QADepartment class (first-class HoloLoom department)
+  - Confidence negotiation (cross-department trust)
+  - DS-STAR verification loops (verify → refine → re-verify)
+  - Institutional memory queries
+  - Health monitoring and alerting
+
 Usage:
     # Complete pipeline
     from xterminator import (
@@ -88,9 +96,27 @@ Usage:
     # View learning statistics
     stats = orchestrator.get_learning_statistics()
 
+    # Moonshot integration (Phase 2 - Department Protocol)
+    from xterminator import QADepartment, DepartmentRequest, RequestType
+
+    # Create QA Department
+    qa_dept = QADepartment(policy=AutofixPolicy.balanced(), enable_feedback=True)
+
+    # Cross-department request
+    request = DepartmentRequest(
+        request_id="req_001",
+        request_type=RequestType.GET_STATISTICS,
+        requesting_department="MasterWeaver",
+        payload={}
+    )
+
+    response = await qa_dept.execute(request)
+    # → DepartmentResponse with statistics + confidence
+
 Author: The Barnyard Brigade (Wilbur, Charlotte, Templeton, Fern)
 Date: November 13, 2025 - 100% Test Coverage Achieved!
 Moonshot Phase 1: November 13, 2025 - Feedback Loop Complete!
+Moonshot Phase 2: November 13, 2025 - Department Protocol Complete!
 """
 
 __version__ = '1.0.0-final'
@@ -162,6 +188,21 @@ from .moonshot_integration import (
     MoonshotResult
 )
 
+# Moonshot Phase 2: Department Protocol
+from .department_protocol import (
+    DepartmentProtocol,
+    DepartmentRequest,
+    DepartmentResponse,
+    VerificationResult,
+    ConfidenceNegotiation,
+    RequestType,
+    ResponseStatus,
+    negotiate_confidence
+)
+from .qa_department import (
+    QADepartment
+)
+
 __all__ = [
     # Types
     'RiskLevel',
@@ -218,4 +259,15 @@ __all__ = [
     'FixOutcome',
     'MoonshotOrchestrator',
     'MoonshotResult',
+
+    # Moonshot Phase 2: Department Protocol
+    'DepartmentProtocol',
+    'DepartmentRequest',
+    'DepartmentResponse',
+    'VerificationResult',
+    'ConfidenceNegotiation',
+    'RequestType',
+    'ResponseStatus',
+    'negotiate_confidence',
+    'QADepartment',
 ]
