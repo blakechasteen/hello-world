@@ -32,6 +32,14 @@ Phases:
   - Syntax, imports, tests, trough, regression checks
   - Fail-fast with detailed diagnostics
 
+Moonshot Integration:
+- Phase 1 (Moonshot Weeks 1-2): Auto-Fix Policy + Feedback Loop - COMPLETE
+  - Domain-specific policies (healthcare strict, beekeeping relaxed)
+  - Feedback tracking for institutional learning
+  - Complete fix pipeline with learning signals
+  - Thompson Sampling data collection (prep for Phase 4)
+  - Degradation detection (prep for Phase 7)
+
 Usage:
     # Complete pipeline
     from xterminator import (
@@ -67,8 +75,22 @@ Usage:
         applicator = GitApplicator()
         await applicator.apply_fix(file_path, fixed_code, proposal)
 
+    # Moonshot integration (Phase 1)
+    from xterminator import MoonshotOrchestrator, AutofixPolicy
+
+    # Domain-specific policy
+    policy = AutofixPolicy.conservative(domain='healthcare')
+
+    # Complete pipeline with feedback tracking
+    orchestrator = MoonshotOrchestrator(policy=policy, enable_feedback=True)
+    result = await orchestrator.process_issue(issue, full_code, file_path)
+
+    # View learning statistics
+    stats = orchestrator.get_learning_statistics()
+
 Author: The Barnyard Brigade (Wilbur, Charlotte, Templeton, Fern)
 Date: November 13, 2025 - 100% Test Coverage Achieved!
+Moonshot Phase 1: November 13, 2025 - Feedback Loop Complete!
 """
 
 __version__ = '1.0.0-final'
@@ -122,6 +144,24 @@ from .validator import (
     quick_validate
 )
 
+# Moonshot Phase 1: Auto-Fix Policy & Feedback
+from .autofix_policy import (
+    AutofixPolicy,
+    PolicyProfile,
+    FixDecision,
+    get_policy_for_domain,
+    should_autofix_with_policy
+)
+from .feedback_tracker import (
+    FeedbackTracker,
+    FixAttempt,
+    FixOutcome
+)
+from .moonshot_integration import (
+    MoonshotOrchestrator,
+    MoonshotResult
+)
+
 __all__ = [
     # Types
     'RiskLevel',
@@ -166,4 +206,16 @@ __all__ = [
     'RegressionValidator',
     'validate_fix',
     'quick_validate',
+
+    # Moonshot Phase 1: Auto-Fix Policy & Feedback
+    'AutofixPolicy',
+    'PolicyProfile',
+    'FixDecision',
+    'get_policy_for_domain',
+    'should_autofix_with_policy',
+    'FeedbackTracker',
+    'FixAttempt',
+    'FixOutcome',
+    'MoonshotOrchestrator',
+    'MoonshotResult',
 ]
