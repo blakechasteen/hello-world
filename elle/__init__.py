@@ -19,6 +19,7 @@ from elle.sop_schema import SOP, SOPStep, Ingredient, StepType, UnitType
 from elle.tracker import TaskTracker, TaskResult, TaskStatus
 from elle.voice_interface import VoiceSOPEditor
 from elle.mirrorcore import DecisionEngine, ElleKnowledge, Recommendation
+from elle.budget import BudgetBuilder, Budget, BudgetLine, BudgetCategory, BudgetPeriod
 
 __version__ = "0.1.0-alpha"
 __all__ = [
@@ -34,4 +35,9 @@ __all__ = [
     "DecisionEngine",
     "ElleKnowledge",
     "Recommendation",
+    "BudgetBuilder",
+    "Budget",
+    "BudgetLine",
+    "BudgetCategory",
+    "BudgetPeriod",
 ]
