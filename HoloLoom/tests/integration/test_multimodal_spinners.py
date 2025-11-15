@@ -11,7 +11,7 @@ from pathlib import Path
 # Add project root
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.spinningWheel.multimodal_spinner import (
+from HoloLoom.spinning_wheel.multimodal_spinner import (
     MultiModalSpinner,
     TextSpinner,
     StructuredDataSpinner,

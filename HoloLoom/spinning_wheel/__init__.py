@@ -18,6 +18,10 @@ Available Spinners:
 - CodeSpinner: Code/git diffs -> MemoryShards
 - WebsiteSpinner: Web content and browser history -> MemoryShards
 - RecursiveCrawler: Recursive web crawling with importance gating -> MemoryShards
+
+Universal API (ruthlessly elegant):
+- spin(): Ingest anything into memory automatically
+- MultiModalSpinner: Unified multi-modal processing
 """
 
 from .base import BaseSpinner, SpinnerConfig
@@ -30,6 +34,16 @@ from .browser_history import BrowserHistoryReader, BrowserVisit, get_recent_hist
 from .recursive_crawler import RecursiveCrawler, CrawlConfig, LinkInfo, crawl_recursive
 from .image_utils import ImageExtractor, ImageInfo
 from .batch_utils import batch_ingest_urls, batch_ingest_files, batch_ingest_from_list_file, BatchConfig, BatchResult
+
+# Universal API (ruthlessly elegant)
+from .auto import (
+    spin,             # THE function - ingest anything
+    spin_batch,       # Bulk ingestion
+    spin_url,         # Web crawling
+    spin_directory,   # Directory ingestion
+    spin_from_query   # Query -> memory learning
+)
+from .multimodal_spinner import MultiModalSpinner
 
 __all__ = [
     # Base
@@ -73,6 +87,13 @@ __all__ = [
     "batch_ingest_from_list_file",
     "BatchConfig",
     "BatchResult",
+    # Universal API (ruthlessly elegant)
+    "spin",
+    "spin_batch",
+    "spin_url",
+    "spin_directory",
+    "spin_from_query",
+    "MultiModalSpinner",
     # Factory
     "create_spinner"
 ]

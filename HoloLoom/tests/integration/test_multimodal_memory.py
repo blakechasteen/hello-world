@@ -21,7 +21,7 @@ from HoloLoom.memory.multimodal_memory import (
     FusionStrategy,
     create_multimodal_memory
 )
-from HoloLoom.spinningWheel.multimodal_spinner import (
+from HoloLoom.spinning_wheel.multimodal_spinner import (
     MultiModalSpinner,
     TextSpinner,
     StructuredDataSpinner,

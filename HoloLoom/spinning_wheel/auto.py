@@ -7,7 +7,7 @@ Everything is a memory operation.
 Philosophy: "If you need to configure it, we failed."
 
 Usage:
-    from HoloLoom.spinningWheel import spin
+    from HoloLoom.spinning_wheel import spin
 
     # Ingest anything into memory
     memory = await spin("My thoughts on bee survival...")

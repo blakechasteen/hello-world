@@ -661,7 +661,7 @@ async def create_multimodal_memory(
 
 async def example_usage():
     """Example of elegant multi-modal memory operations."""
-    from HoloLoom.spinningWheel.multimodal_spinner import MultiModalSpinner, CrossModalSpinner
+    from HoloLoom.spinning_wheel.multimodal_spinner import MultiModalSpinner, CrossModalSpinner
     
     # Create memory system
     memory = await create_multimodal_memory()
