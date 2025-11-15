@@ -1,0 +1,338 @@
+version: '3.8'
+
+# HoloLoom WAF + Backend Infrastructure
+# Version: 1.0.0
+# Date: 2025-11-15
+
+services:
+  # ============================================================================
+  # NGINX WAF REVERSE PROXY
+  # ============================================================================
+  nginx-waf:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.nginx
+    container_name: hololoom-waf
+    image: hololoom/nginx-waf:latest
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Test/debug port
+    volumes:
+      # Configuration (read-only for security)
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
+      - ../waf/modsecurity.conf:/etc/nginx/modsec/main.conf:ro
+      - ../waf/owasp-crs.conf:/etc/nginx/modsec/owasp-crs.conf:ro
+      - ../waf/custom-rules.conf:/etc/nginx/modsec/custom-rules.conf:ro
+      - ../waf/whitelist.conf:/etc/nginx/modsec/whitelist.conf:ro
+      - ../waf/geoip.conf:/etc/nginx/geo-ip.conf:ro
+      - ../waf/whitelist-ips.conf:/etc/nginx/whitelist-ips.conf:ro
+
+      # SSL certificates
+      - ../../certs:/etc/nginx/ssl:ro
+
+      # Logs (persistent)
+      - waf-logs:/var/log/nginx
+      - waf-modsec-logs:/var/log/modsec
+      - waf-uploads:/var/lib/modsec/uploads
+
+    environment:
+      ENVIRONMENT: production
+      MODSEC_MODE: "On"
+      MODSEC_PARANOIA_LEVEL: "1"
+      TZ: UTC
+
+    networks:
+      - hololoom
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-k", "https://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+  # ============================================================================
+  # HOLOLOOM BACKEND API
+  # ============================================================================
+  hololoom-backend:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: hololoom-api
+    image: hololoom:latest
+    ports:
+      - "8000:8000"
+
+    environment:
+      ENVIRONMENT: production
+      LOG_LEVEL: info
+      TZ: UTC
+      WORKERS: 4
+      WORKER_TIMEOUT: 30
+
+    volumes:
+      # Code (if running from source)
+      - ../../HoloLoom:/app/HoloLoom:ro
+      - ../../demos:/app/demos:ro
+
+      # Data persistence
+      - backend-data:/app/data
+      - backend-logs:/app/logs
+
+    networks:
+      - hololoom
+
+    depends_on:
+      - nginx-waf
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+  # ============================================================================
+  # OPTIONAL: PROMETHEUS MONITORING
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+    networks:
+      - hololoom
+
+    restart: unless-stopped
+
+    depends_on:
+      - nginx-waf
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ============================================================================
+  # OPTIONAL: GRAFANA DASHBOARDS
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: alexanderzobnin-zabbix-app
+      GF_USERS_ALLOW_SIGN_UP: "false"
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+
+    networks:
+      - hololoom
+
+    restart: unless-stopped
+
+    depends_on:
+      - prometheus
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================================================
+  # OPTIONAL: ELK STACK FOR LOG AGGREGATION
+  # ============================================================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+
+    ports:
+      - "9200:9200"
+
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
+    networks:
+      - hololoom
+
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.0.0
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+
+    ports:
+      - "5601:5601"
+
+    networks:
+      - hololoom
+
+    depends_on:
+      - elasticsearch
+
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.0.0
+    container_name: filebeat
+    user: root
+
+    command: filebeat -e -strict.perms=false
+
+    volumes:
+      - ../monitoring/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - waf-logs:/var/log/nginx:ro
+      - waf-modsec-logs:/var/log/modsec:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    networks:
+      - hololoom
+
+    depends_on:
+      - elasticsearch
+
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+# ============================================================================
+# NAMED VOLUMES FOR PERSISTENCE
+# ============================================================================
+volumes:
+  # WAF logs and uploads
+  waf-logs:
+    driver: local
+  waf-modsec-logs:
+    driver: local
+  waf-uploads:
+    driver: local
+
+  # Backend data
+  backend-data:
+    driver: local
+  backend-logs:
+    driver: local
+
+  # Monitoring and logging
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
+
+# ============================================================================
+# DOCKER NETWORK
+# ============================================================================
+networks:
+  hololoom:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ============================================================================
+# DOCKER COMPOSE CONFIGURATION
+# ============================================================================
+# To use this file:
+#
+# 1. Start all services:
+#    docker-compose up -d
+#
+# 2. View logs:
+#    docker-compose logs -f
+#
+# 3. Access services:
+#    - HoloLoom: https://localhost
+#    - Prometheus: http://localhost:9090
+#    - Grafana: http://localhost:3000
+#    - Kibana: http://localhost:5601
+#
+# 4. Run WAF tests:
+#    python scripts/test_waf.py --skip-ssl-verify
+#
+# 5. Stop all services:
+#    docker-compose down
+#
+# 6. Cleanup (remove volumes):
+#    docker-compose down -v
+#
+# ============================================================================
