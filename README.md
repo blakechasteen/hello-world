@@ -387,6 +387,55 @@ python test_v1_simplification.py
 **Mock Fixtures**: Neo4j, Qdrant, Ollama
 **Expected**: All tests passing ✅
 
+### Coverage Reporting (with pytest-cov)
+
+Generate detailed coverage reports to identify untested code:
+
+#### Local Coverage Reports
+
+```bash
+# Generate coverage report (HTML + Terminal)
+pytest HoloLoom/tests/ --cov=HoloLoom --cov-report=html --cov-report=term-missing
+
+# View HTML report in browser
+open htmlcov/index.html  # macOS
+start htmlcov/index.html # Windows
+xdg-open htmlcov/index.html # Linux
+
+# Generate XML report (for CI/CD integration)
+pytest HoloLoom/tests/ --cov=HoloLoom --cov-report=xml
+
+# Generate coverage badge
+coverage-badge -o coverage.svg -f
+```
+
+#### Coverage Configuration
+
+Coverage is configured in `.coveragerc`:
+- **Source**: Only HoloLoom package (excludes tests, demos)
+- **Precision**: 2 decimal places
+- **Missing lines**: Shown in term report
+- **Exclusions**: `__repr__`, abstract methods, type checking blocks
+
+#### Coverage Targets
+
+| Module | Target | Current Status |
+|--------|--------|-----------------|
+| **Core** | >85% | Memory, policy, orchestrator |
+| **Features** | >75% | Embeddings, memory backends |
+| **Utils** | >70% | Helpers, types |
+| **Tests** | Excluded | Not counted |
+| **Demos** | Excluded | Not counted |
+
+#### CI/CD Coverage
+
+Coverage reports are automatically generated on every push:
+- **GitHub Actions**: Runs tests with coverage on Python 3.10, 3.11, 3.12
+- **Codecov**: Stores historical coverage data and generates badges
+- **HTML Reports**: Available as build artifacts (30-day retention)
+
+**Status**: Coverage reporting enabled for all test runs ✅
+
 ### Code Quality (Production-Ready)
 
 Recent moonshot improvements (Nov 2025):

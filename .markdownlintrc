@@ -1,0 +1,65 @@
+{
+  "default": true,
+  "line-length": {
+    "line_length": 100,
+    "heading_line_length": 100,
+    "headers": true,
+    "headers_only": false,
+    "code_blocks": false,
+    "code_fence": false,
+    "tables": false,
+    "url": false
+  },
+  "MD003": {
+    "style": "consistent"
+  },
+  "MD004": {
+    "style": "consistent"
+  },
+  "MD005": true,
+  "MD007": {
+    "indent": 2,
+    "start_indented": false
+  },
+  "MD009": {
+    "br_spaces": 0,
+    "list_item_empty_lines": false,
+    "strict": false
+  },
+  "MD010": {
+    "code_blocks": true,
+    "ignore_code_languages": []
+  },
+  "MD013": {
+    "line_length": 100,
+    "heading_line_length": 100,
+    "headers": true,
+    "headers_only": false,
+    "code_blocks": false,
+    "code_fence": false,
+    "tables": false,
+    "url": false,
+    "ignore_code_languages": []
+  },
+  "MD024": {
+    "siblings_only": false,
+    "allow_different_nesting": false
+  },
+  "MD029": {
+    "style": "ordered"
+  },
+  "MD033": {
+    "allowed_elements": ["br", "details", "summary", "kbd"]
+  },
+  "MD037": true,
+  "MD040": true,
+  "MD041": {
+    "level": 1,
+    "front_matter_title": ""
+  },
+  "no-hard-tabs": true,
+  "whitespace": true,
+  "comments-start-with-space": true,
+  "comments-start-with-hashtag": true,
+  "comments-end-with-question": false
+}

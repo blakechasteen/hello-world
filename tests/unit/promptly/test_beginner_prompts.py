@@ -4,7 +4,7 @@ Test script for beginner prompts functionality
 Tests all 4 template types programmatically
 """
 
-from beginner_prompts import (
+from HoloLoom.promptly.beginner_prompts import (
     generate_basic_optimization_prompt,
     generate_hololoom_qa_prompt,
     generate_workflow_optimization_prompt,

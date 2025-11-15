@@ -1,0 +1,71 @@
+name: Coverage Report
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install torch numpy networkx sentence-transformers
+        pip install pytest pytest-asyncio pytest-cov
+
+    - name: Generate coverage report
+      run: |
+        pytest HoloLoom/tests/ -v --cov=HoloLoom --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true
+
+    - name: Generate coverage badge
+      run: |
+        python -c "
+import xml.etree.ElementTree as ET
+import re
+tree = ET.parse('coverage.xml')
+root = tree.getroot()
+line_rate = float(root.get('line-rate', 0)) * 100
+badge_color = 'brightgreen' if line_rate >= 80 else 'yellow' if line_rate >= 60 else 'red'
+badge_url = f'https://img.shields.io/badge/coverage-{line_rate:.0f}%25-{badge_color}'
+print(f'Coverage: {line_rate:.1f}%')
+print(f'Badge URL: {badge_url}')
+"
+
+    - name: Archive coverage report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report-py${{ matrix.python-version }}
+        path: htmlcov/
+        retention-days: 30
