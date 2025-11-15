@@ -39,6 +39,43 @@ Policy Engine outputs:
 
 ## Collapse Strategies
 
+The Convergence Engine provides 5 strategies for collapsing continuous probabilities into discrete tool selections:
+
+```mermaid
+graph TD
+    A[Policy Engine Output<br/>tool_probs: 0.65, 0.25, 0.07, 0.03] --> B{Collapse Strategy?}
+
+    B -->|ARGMAX| C1[Deterministic<br/>Choose highest]
+    C1 --> C1a[✓ Index 0<br/>65% prob]
+
+    B -->|EPSILON_GREEDY| C2[Mostly Exploit<br/>90% argmax, 10% random]
+    C2 --> C2a[90%: Index 0<br/>10%: Random]
+
+    B -->|BAYESIAN_BLEND| C3[Blend Neural + Bandit<br/>70% neural + 30% Thompson]
+    C3 --> C3a[Weighted Combination<br/>neural × 0.7 + bandit × 0.3]
+
+    B -->|PURE_THOMPSON| C4[Exploration<br/>Thompson Sampling only]
+    C4 --> C4a[Sample from<br/>Beta distributions]
+
+    B -->|MCTS| C5[Tree Search<br/>100 simulations]
+    C5 --> C5a[UCT Selection<br/>Lookahead planning]
+
+    C1a --> D[Discrete Tool Selection]
+    C2a --> D
+    C3a --> D
+    C4a --> D
+    C5a --> D
+
+    D --> E[Execute Tool]
+
+    style C1 fill:#90EE90
+    style C2 fill:#87CEEB
+    style C3 fill:#FFD700
+    style C4 fill:#FFA500
+    style C5 fill:#FFB6C1
+    style D fill:#E6FFE6
+```
+
 ### 1. ARGMAX (Deterministic)
 
 **Most Confident**: Select tool with highest probability.
@@ -397,6 +434,221 @@ import numpy as np
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Callable, Dict, Any
+```
+
+---
+
+## Quick Reference Card
+
+### Most Common Usage Patterns
+
+**1. Deterministic Collapse (ARGMAX)**
+```python
+from HoloLoom.convergence import ConvergenceEngine, CollapseStrategy
+
+engine = ConvergenceEngine(strategy=CollapseStrategy.ARGMAX)
+chosen_idx = engine.collapse(tool_probs)
+# Always chooses highest probability tool
+```
+
+**2. Exploration via Epsilon-Greedy**
+```python
+engine = ConvergenceEngine(
+    strategy=CollapseStrategy.EPSILON_GREEDY,
+    epsilon=0.1  # 10% random exploration
+)
+chosen_idx = engine.collapse(tool_probs)
+```
+
+**3. Bayesian Blend (Recommended)**
+```python
+from HoloLoom.policy.thompson_sampling import TSBandit
+
+bandit = TSBandit(n_arms=4)
+engine = ConvergenceEngine(
+    strategy=CollapseStrategy.BAYESIAN_BLEND,
+    bandit=bandit,
+    blend_weight=0.7  # 70% neural, 30% bandit
+)
+chosen_idx = engine.collapse(tool_probs)
+```
+
+### Strategy Selection Guide
+
+| Strategy | Determinism | Exploration | Latency | Use Case |
+|----------|-------------|-------------|---------|----------|
+| **ARGMAX** | 100% | 0% | <0.01ms | Production, consistency required |
+| **EPSILON_GREEDY** | 90% | 10% | <0.01ms | Online learning, some exploration |
+| **BAYESIAN_BLEND** | Adaptive | Balanced | <0.5ms | **Recommended default** |
+| **PURE_THOMPSON** | 0% | 100% | <0.5ms | Research, maximum exploration |
+| **MCTS** | Planned | Lookahead | ~50ms | Complex planning, games |
+
+### Strategy Comparison
+
+| Aspect | ARGMAX | EPSILON_GREEDY | BAYESIAN_BLEND | PURE_THOMPSON | MCTS |
+|--------|--------|----------------|----------------|---------------|------|
+| **Exploration** | None | Fixed 10% | Adaptive | Maximum | Planned |
+| **Neural Probs** | 100% | 90% | 70% | 0% | Initial |
+| **Bandit Priors** | None | None | 30% | 100% | UCT |
+| **Latency** | <0.01ms | <0.01ms | <0.5ms | <0.5ms | ~50ms |
+| **Memory** | <1KB | <1KB | <1KB | <1KB | ~10KB |
+| **Learning** | ❌ | ❌ | ✅ | ✅ | ✅ |
+
+### Collapse Formulas
+
+**ARGMAX**:
+```
+chosen_idx = argmax(tool_probs)
+```
+
+**EPSILON_GREEDY**:
+```
+if random() < epsilon:
+    chosen_idx = random_choice(n_tools)
+else:
+    chosen_idx = argmax(tool_probs)
+```
+
+**BAYESIAN_BLEND**:
+```
+neural_probs = tool_probs
+bandit_samples = [beta.sample(α_i, β_i) for i in tools]
+blended = blend_weight × neural_probs + (1 - blend_weight) × bandit_samples
+chosen_idx = argmax(blended)
+```
+
+**PURE_THOMPSON**:
+```
+samples = [beta.sample(α_i, β_i) for i in tools]
+chosen_idx = argmax(samples)
+```
+
+**MCTS**:
+```
+UCT(node) = Q(node)/N(node) + c × sqrt(log(N(parent))/N(node))
+chosen_idx = argmax([UCT(child) for child in root.children])
+```
+
+### Key Methods
+
+```python
+# Create convergence engine
+engine = ConvergenceEngine(
+    strategy=CollapseStrategy.BAYESIAN_BLEND,  # Strategy
+    epsilon=0.1,                                # For epsilon-greedy
+    bandit=TSBandit(n_arms=4),                 # For Bayesian/Thompson
+    blend_weight=0.7                            # For Bayesian blend
+)
+
+# Collapse probabilities to discrete choice
+chosen_idx = engine.collapse(
+    tool_probs=np.array([0.65, 0.25, 0.07, 0.03])
+)
+
+# Update bandit after tool execution (for learning strategies)
+reward = 0.8  # Tool success metric
+engine.bandit.update(chosen_idx, reward)
+
+# Get bandit statistics
+stats = engine.bandit.get_stats()
+# Returns: {0: {'α': 5.2, 'β': 1.5, 'mean': 0.776}, ...}
+```
+
+### MCTS Planning (Advanced)
+
+```python
+from HoloLoom.convergence.mcts_engine import MCTSEngine
+
+# Create MCTS engine
+mcts = MCTSEngine(
+    n_simulations=100,       # Rollouts per decision
+    exploration_weight=1.4,  # UCT constant
+    max_depth=5,             # Lookahead depth
+    discount_factor=0.99     # Future reward discount
+)
+
+# Define reward function
+def reward_fn(state, action):
+    # Return expected reward for action in state
+    return simulate_action_reward(state, action)
+
+# Plan with lookahead
+chosen_idx = await mcts.plan(
+    tool_probs,
+    state={'context': 'current'},
+    reward_fn=reward_fn
+)
+```
+
+### Performance Metrics
+
+| Operation | Latency | Memory | Notes |
+|-----------|---------|--------|-------|
+| **ARGMAX collapse** | <0.01ms | <1KB | np.argmax |
+| **Epsilon-greedy** | <0.01ms | <1KB | Random + argmax |
+| **Bayesian blend** | <0.5ms | <1KB | Bandit sampling |
+| **Thompson sampling** | <0.5ms | <1KB | Bandit sampling |
+| **MCTS (100 sims)** | ~50ms | ~10KB | Tree search |
+
+### Troubleshooting
+
+**Problem**: Always selecting same tool (no exploration)
+- **Cause**: ARGMAX strategy selected
+- **Solution**: Switch to EPSILON_GREEDY or BAYESIAN_BLEND
+- **Check**: Verify `strategy != CollapseStrategy.ARGMAX`
+
+**Problem**: Too much exploration, poor tool selections
+- **Cause**: Epsilon too high or using PURE_THOMPSON
+- **Solution**: Reduce epsilon to 0.05-0.1, or use BAYESIAN_BLEND
+- **Check**: Monitor selection distribution, should favor high-prob tools
+
+**Problem**: Bandit not learning from feedback
+- **Cause**: Forgetting to call `bandit.update()` after tool execution
+- **Solution**: Always update bandit with reward after tool completes
+- **Check**: Verify bandit statistics changing: `bandit.get_stats()`
+
+**Problem**: MCTS taking too long (>100ms)
+- **Cause**: Too many simulations or deep lookahead
+- **Solution**: Reduce `n_simulations` to 50, `max_depth` to 3
+- **Check**: Monitor latency, MCTS should be <50ms for most use cases
+
+**Problem**: Blended probabilities seem wrong
+- **Cause**: Blend weight too extreme (0.0 or 1.0)
+- **Solution**: Use balanced weight (0.6-0.8) for neural + bandit fusion
+- **Check**: Verify `blend_weight` in range 0.5-0.9
+
+### Integration Example
+
+```python
+from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from HoloLoom.convergence import ConvergenceEngine, CollapseStrategy
+from HoloLoom.policy.thompson_sampling import TSBandit
+
+# Create convergence engine with bandit
+bandit = TSBandit(n_arms=4)  # 4 tools
+engine = ConvergenceEngine(
+    strategy=CollapseStrategy.BAYESIAN_BLEND,
+    bandit=bandit,
+    blend_weight=0.7
+)
+
+# Orchestrator integrates convergence engine
+async with WeavingOrchestrator(
+    cfg=config,
+    convergence_engine=engine,
+    shards=shards
+) as orchestrator:
+    # During weaving:
+    # 1. Policy outputs tool_probs: [0.65, 0.25, 0.07, 0.03]
+    # 2. Convergence Engine collapses to discrete: chosen_idx = 0
+    # 3. Tool executed: "answer"
+    # 4. Bandit updated with reward
+
+    spacetime = await orchestrator.weave(query)
+
+    # Update bandit with outcome
+    reward = 1.0 if spacetime.confidence > 0.8 else 0.5
+    engine.bandit.update(chosen_idx, reward)
 ```
 
 ---

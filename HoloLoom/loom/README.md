@@ -26,6 +26,43 @@ The **Loom Command** is HoloLoom's control system that selects which execution t
 
 ### Pattern Specifications
 
+```mermaid
+graph LR
+    A[Query + Complexity] --> B{Pattern Selection}
+
+    B -->|trivial/simple| C[FAST Pattern]
+    B -->|complex| D[FUSED Pattern]
+    B -->|research| D
+    B -->|custom/override| E[BARE Pattern]
+
+    C --> C1[⚡ Balanced Threading]
+    C1 --> C2[Scales: 96, 192, 384]
+    C2 --> C3[Features: motif + metrics]
+    C3 --> C4[Retrieval: Top 10]
+    C4 --> C5[Timeout: 30s]
+
+    D --> D1[🔬 Full Threading]
+    D1 --> D2[Scales: 96, 192, 384, 768]
+    D2 --> D3[Features: all motif+embed+spectral]
+    D3 --> D4[Retrieval: Top 20]
+    D4 --> D5[Timeout: 120s]
+
+    E --> E1[⚡️ Minimal Threading]
+    E1 --> E2[Scales: 768 only]
+    E2 --> E3[Features: motif only]
+    E3 --> E4[Retrieval: Top 3]
+    E4 --> E5[Timeout: 5s]
+
+    style C fill:#90EE90
+    style D fill:#FFD700
+    style E fill:#87CEEB
+    style C5 fill:#E6F3FF
+    style D5 fill:#FFE6F0
+    style E5 fill:#F0E6FF
+```
+
+**Text Specifications:**
+
 ```python
 from HoloLoom.loom import PatternCard
 
@@ -98,7 +135,46 @@ print(pattern_spec.timeout_seconds)  # 30
 
 #### `PatternSpec`
 
-The specification returned by LoomCommand:
+The specification returned by LoomCommand configures the entire weaving cycle:
+
+```mermaid
+graph TD
+    A[LoomCommand.select_pattern] --> B[PatternSpec Created]
+
+    B --> C{Components Configure}
+
+    C --> C1[Resonance Shed]
+    C1 --> C1a[Extract features<br/>per feature_modes]
+    C1 --> C1b[Use scales<br/>for embeddings]
+
+    C --> C2[Warp Space]
+    C2 --> C2a[Tension threads<br/>per adapter]
+
+    C --> C3[Memory Retrieval]
+    C3 --> C3a[Retrieve contexts<br/>limit: retrieval_limit]
+    C3 --> C3b[Multi-pass if<br/>enable_fusion=true]
+
+    C --> C4[Convergence Engine]
+    C4 --> C4a[Select tool]
+    C4 --> C4b[Timeout enforcement<br/>timeout_seconds]
+
+    C1a --> D[Weaving Cycle Complete]
+    C1b --> D
+    C2a --> D
+    C3a --> D
+    C3b --> D
+    C4a --> D
+    C4b --> D
+
+    style B fill:#FFD700
+    style C1 fill:#E6F3FF
+    style C2 fill:#FFE6F0
+    style C3 fill:#E6FFE6
+    style C4 fill:#FFF0E6
+    style D fill:#90EE90
+```
+
+**Data Structure:**
 
 ```python
 @dataclass
@@ -303,6 +379,132 @@ from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional
+```
+
+---
+
+## Quick Reference Card
+
+### Most Common Usage Patterns
+
+**1. Basic Usage (Fixed Pattern)**
+```python
+from HoloLoom.loom import LoomCommand, PatternCard
+
+loom = LoomCommand(default_pattern=PatternCard.FAST)
+spec = loom.select_pattern(query="What is X?")
+# Returns FAST pattern every time
+```
+
+**2. Dynamic Selection (Auto-Routing)**
+```python
+loom = LoomCommand(enable_dynamic_selection=True)
+
+# Simple query → FAST
+spec = loom.select_pattern(query="what is X?", complexity="simple")
+
+# Complex query → FUSED
+spec = loom.select_pattern(query="explain X in detail", complexity="complex")
+```
+
+**3. Integration with Orchestrator**
+```python
+from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+
+loom = LoomCommand(default_pattern=PatternCard.FAST)
+orchestrator = WeavingOrchestrator(loom_command=loom, ...)
+# Pattern selected automatically during weaving
+```
+
+### Pattern Selection Guide
+
+| Complexity | Auto-Selected | Scales | Features | Retrieval | Timeout | Latency |
+|------------|---------------|--------|----------|-----------|---------|---------|
+| **trivial** | FAST | 3 | motif+metrics | 10 | 30s | ~150ms |
+| **simple** | FAST | 3 | motif+metrics | 10 | 30s | ~150ms |
+| **complex** | FUSED | 4 | all | 20 | 120s | ~300ms |
+| **research** | FUSED | 4 | all | 20 | 120s | ~300ms |
+| **custom** | BARE | 1 | motif | 3 | 5s | ~50ms |
+
+### Key Methods
+
+```python
+# Create loom command
+loom = LoomCommand(
+    default_pattern=PatternCard.FAST,
+    enable_dynamic_selection=True,
+    safety_guardrails=guardrails  # Optional
+)
+
+# Select pattern
+spec = loom.select_pattern(
+    query="query text",
+    complexity="simple",  # Optional: trivial/simple/complex/research
+    action="tool_name"    # Optional: for safety checks
+)
+
+# Access pattern spec fields
+spec.pattern            # PatternCard enum (BARE/FAST/FUSED)
+spec.scales             # List[int] - embedding dimensions
+spec.feature_modes      # List[str] - features to extract
+spec.retrieval_limit    # int - max contexts
+spec.timeout_seconds    # float - execution timeout
+spec.enable_fusion      # bool - multi-pass crawling
+spec.adapter           # str - LoRA adapter name
+```
+
+### Performance Comparison
+
+| Pattern | Avg Latency | Context Quality | Accuracy | Cost | Use When |
+|---------|-------------|-----------------|----------|------|----------|
+| **BARE** | 50ms | Basic (3 shards) | 75% | $ | Dev/testing, caching |
+| **FAST** | 150ms | Good (10 shards) | 90% | $$ | **Production default** |
+| **FUSED** | 300ms | Rich (20 shards) | 97% | $$$ | Research, complex queries |
+
+### Troubleshooting
+
+**Problem**: Pattern always returns FAST, even for complex queries
+- **Cause**: `enable_dynamic_selection=False` (default)
+- **Solution**: Set `enable_dynamic_selection=True` in LoomCommand init
+- **Check**: Verify `complexity` parameter is passed to `select_pattern()`
+
+**Problem**: Queries timing out (execution exceeds timeout)
+- **Cause**: Timeout too restrictive for query complexity
+- **Solution**: Use FUSED pattern (120s timeout) or override timeout in custom YAML
+- **Check**: Monitor `spacetime.metadata['execution_time']` vs `spec.timeout_seconds`
+
+**Problem**: Poor quality responses with BARE pattern
+- **Cause**: Minimal features (motif-only) insufficient for complex queries
+- **Solution**: Use FAST or FUSED pattern, or enable dynamic selection
+- **Check**: Compare `spec.feature_modes` - should include ["motif", "metrics"] minimum
+
+**Problem**: High latency with FUSED pattern on simple queries
+- **Cause**: Over-provisioned features for simple queries
+- **Solution**: Enable dynamic selection to auto-route to FAST
+- **Check**: Review query distribution - should be 70% FAST, 20% FUSED, 10% BARE
+
+### Custom Pattern YAML Template
+
+```yaml
+# my_patterns.yaml
+patterns:
+  my_custom:
+    scales: [96, 192, 384]
+    features: [motif, metrics, embedding]
+    retrieval_limit: 15
+    timeout: 60
+    fusion: true
+    adapter: "custom_adapter"
+    metadata:
+      description: "Balanced pattern for specific domain"
+      version: "1.0"
+```
+
+```python
+from HoloLoom.loom import load_pattern_cards
+
+patterns = load_pattern_cards("my_patterns.yaml")
+loom = LoomCommand(custom_patterns=patterns)
 ```
 
 ---

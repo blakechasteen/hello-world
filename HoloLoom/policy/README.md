@@ -56,15 +56,25 @@ HoloLoom/policy/
 #### 1. NeuralCore (Transformer-Based Decision Network)
 
 **Architecture** (`unified.py:355-431`):
-```
-Input Features → Learnable Latent Queries (16 tokens)
-    ↓
-Transformer Blocks (2 layers × 4 heads)
-    ├── Motif-Gated Multi-Head Attention
-    ├── Cross-Attention to Retrieved Context
-    └── LoRA-Style Feed-Forward (4 adapters)
-    ↓
-Readout Pooling → Tool Selection Head (4 tools)
+
+```mermaid
+graph TD
+    A[Input Features] --> B[Learnable Latent Queries<br/>16 tokens]
+    B --> C[Transformer Block 1]
+    C --> D[Transformer Block 2]
+
+    C --> C1[Motif-Gated<br/>Multi-Head Attention]
+    C --> C2[Cross-Attention<br/>to Context]
+    C --> C3[LoRA FFN<br/>4 adapters]
+
+    D --> E[Readout Pooling]
+    E --> F[Tool Selection Head<br/>4 tools: answer, search,<br/>notion_write, calc]
+
+    style A fill:#e1f5ff
+    style F fill:#ffe1e1
+    style C1 fill:#fff4e1
+    style C2 fill:#fff4e1
+    style C3 fill:#fff4e1
 ```
 
 **Key Innovations**:
@@ -86,6 +96,29 @@ core = NeuralCore(
 #### 2. Thompson Sampling Bandit
 
 **Purpose**: Bayesian exploration/exploitation using Beta distributions.
+
+```mermaid
+flowchart LR
+    A[Tool Priors<br/>Beta distributions] --> B{Sample from<br/>each Beta}
+    B --> C[θ₁ ~ Beta α₁, β₁]
+    B --> D[θ₂ ~ Beta α₂, β₂]
+    B --> E[θ₃ ~ Beta α₃, β₃]
+    B --> F[θ₄ ~ Beta α₄, β₄]
+
+    C --> G{argmax θᵢ}
+    D --> G
+    E --> G
+    F --> G
+
+    G --> H[Execute Tool]
+    H --> I[Observe Reward]
+    I --> J[Update β: β + reward]
+    J --> A
+
+    style A fill:#e1f5ff
+    style H fill:#ffe1e1
+    style I fill:#e1ffe1
+```
 
 **How It Works**:
 1. Maintain Beta(α, β) distribution per tool
@@ -112,6 +145,40 @@ Expected Reward: E[θ] = α / (α + β)
 
 Combines neural core + Thompson Sampling + safety guardrails:
 
+```mermaid
+graph TB
+    subgraph Input
+        A[Features Ψ]
+        B[Context Shards]
+    end
+
+    subgraph UnifiedPolicy
+        C[MatryoshkaEmbeddings<br/>Context Encoder]
+        D[NeuralCore<br/>Transformer]
+        E[TSBandit<br/>Thompson Sampling]
+        F[SafetyGuardrails<br/>Alignment Check]
+    end
+
+    subgraph Output
+        G[ActionPlan<br/>chosen_tool + metadata]
+    end
+
+    A --> D
+    B --> C
+    C --> D
+    D --> |Neural Probs| E
+    E --> |Tool Selection| F
+    F --> |Safety Check| G
+
+    style A fill:#e1f5ff
+    style B fill:#e1f5ff
+    style D fill:#fff4e1
+    style E fill:#ffe1f5
+    style F fill:#ffe1e1
+    style G fill:#e1ffe1
+```
+
+**Data Structure**:
 ```python
 @dataclass
 class UnifiedPolicy:
@@ -662,6 +729,63 @@ import numpy as np
 - **Bayesian Neural Networks**: Blundell et al. (2015) - "Weight Uncertainty in Neural Networks"
 - **Gaussian Process Bandits**: Srinivas et al. (2010) - "Gaussian Process Optimization in the Bandit Setting"
 - **Attention Mechanisms**: Vaswani et al. (2017) - "Attention is All You Need"
+
+---
+
+---
+
+## Quick Reference Card
+
+### 🚀 Most Common Usage
+
+```python
+# 1. Create policy (one-liner)
+from HoloLoom.policy import create_policy
+policy = create_policy(mem_dim=384, emb=embedder, scales=[96, 192, 384])
+
+# 2. Make decision
+action_plan = await policy.decide(features, context)
+tool = action_plan.chosen_tool  # "answer", "search", etc.
+
+# 3. Get bandit stats
+stats = policy.bandit.get_stats()
+```
+
+### 🎯 Strategy Selection Guide
+
+| If you want... | Use | Config |
+|----------------|-----|--------|
+| **Stable production** | Epsilon-Greedy | `strategy=BanditStrategy.EPSILON_GREEDY, epsilon=0.1` |
+| **Balanced explore/exploit** | Bayesian Blend | `strategy=BanditStrategy.BAYESIAN_BLEND, blend_weight=0.7` |
+| **Maximum exploration** | Pure Thompson | `strategy=BanditStrategy.PURE_THOMPSON` |
+| **Uncertainty estimates** | Bayesian Policy | `use_bayesian=True, bayesian_samples=10` |
+| **Hyperparameter tuning** | GP Policy | `gp_config=GPConfig(acquisition="thompson")` |
+
+### 📊 Key Methods
+
+```python
+# Decision making
+action_plan = await policy.decide(features, context)
+
+# Bandit operations
+arm = bandit.choose()                  # Thompson Sampling
+priors = bandit.get_priors()           # Get Beta distributions
+bandit.update(arm_idx, reward)         # Update after reward
+stats = bandit.get_stats()             # Get statistics
+
+# Bayesian uncertainty (if use_bayesian=True)
+uncertainty = action_plan.metadata['uncertainty']
+epistemic = uncertainty['epistemic']   # Model uncertainty
+aleatoric = uncertainty['aleatoric']   # Data uncertainty
+```
+
+### ⚡ Performance
+
+- **Deterministic**: ~1-2ms
+- **Bayesian (10 samples)**: ~10-20ms
+- **GP optimization**: ~5-10ms
+- **Semantic nudging**: +0.5ms
+- **Safety check**: +0.1ms
 
 ---
 

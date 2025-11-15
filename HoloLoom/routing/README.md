@@ -107,18 +107,27 @@ result = classifier.classify("elaborate on machine learning")
 
 **Multi-tier architecture** with progressive escalation:
 
-```
-Query → Tier 1: Pattern Cache (0.1ms, 100% accuracy, 60% queries)
-   ✗ confidence < 0.85
-        ↓
-    Tier 2: Heuristic Scoring (0.5ms, 95% accuracy, 25% queries)
-       ✗ confidence < 0.75
-            ↓
-        Tier 3: Semantic Embeddings (20ms, 98% accuracy, 10% queries)
-           ✗ confidence < 0.70
-                ↓
-            Tier 4: Conservative Escalation (fallback, 5% queries)
-                → Return COMPLEX (safe default)
+```mermaid
+graph TD
+    A[Query Input] --> B{Tier 1: Pattern Cache}
+    B -->|Match Found<br/>conf ≥ 0.85| C1[✓ Return Classification<br/>0.1ms, 60% queries]
+    B -->|No Match<br/>conf < 0.85| D{Tier 2: Heuristic Scoring}
+
+    D -->|High Confidence<br/>conf ≥ 0.75| C2[✓ Return Classification<br/>0.5ms, 25% queries]
+    D -->|Low Confidence<br/>conf < 0.75| E{Tier 3: Semantic Embeddings}
+
+    E -->|High Confidence<br/>conf ≥ 0.70| C3[✓ Return Classification<br/>20ms, 10% queries]
+    E -->|Low Confidence<br/>conf < 0.70| F[Tier 4: Conservative Escalation]
+
+    F --> C4[✓ Return COMPLEX<br/>Safe default, 5% queries]
+
+    style C1 fill:#90EE90
+    style C2 fill:#90EE90
+    style C3 fill:#FFD700
+    style C4 fill:#FFA500
+    style B fill:#E6F3FF
+    style D fill:#E6F3FF
+    style E fill:#FFE6F0
 ```
 
 **3. Adaptive Classifier** (improves over time)
@@ -143,16 +152,42 @@ classifier = AdaptiveMoonshotClassifier(
 
 ### 4-Component Architecture
 
-```
-Production Queries → JSONL Logs
-                        ↓
-1. PatternMiner     → Extract high-quality patterns (n-gram → regex)
-                        ↓
-2. ContinuousValidator → Hourly validation (regression detection)
-                        ↓
-3. AdaptiveUpdater  → Safe deployment (shadow → A/B → gradual)
-                        ↓
-4. PerformanceReporter → Daily/weekly reports + Prometheus metrics
+```mermaid
+graph TD
+    A[Production Queries] --> B[JSONL Logs<br/>Append-Only]
+    B --> C[1. PatternMiner]
+
+    C --> C1[Read Last 7 Days]
+    C1 --> C2[Extract N-Grams<br/>1-5 tokens]
+    C2 --> C3[Generalize to Regex]
+    C3 --> C4{Quality Filter}
+    C4 -->|precision ≥95%<br/>support ≥10| D[High-Quality Patterns]
+
+    D --> E[2. ContinuousValidator]
+    E --> E1[Hourly Validation<br/>100 sample queries]
+    E1 --> E2{Regression Check}
+    E2 -->|Drop >2%| E3[🚨 Alert + Rollback]
+    E2 -->|Accuracy OK| F[3. AdaptiveUpdater]
+
+    F --> F1{Deployment Strategy}
+    F1 -->|Day 1-2| F2[SHADOW Mode<br/>0% traffic]
+    F1 -->|Day 3| F3[A/B TEST<br/>10% traffic]
+    F1 -->|Day 3-7| F4[GRADUAL<br/>10→50→100%]
+
+    F2 --> G[4. PerformanceReporter]
+    F3 --> G
+    F4 --> G
+
+    G --> G1[Daily/Weekly Reports]
+    G --> G2[Prometheus Metrics<br/>Every minute]
+    G --> G3[Slack/Email Alerts]
+
+    style C fill:#E6F3FF
+    style E fill:#FFE6F0
+    style F fill:#E6FFE6
+    style G fill:#FFF0E6
+    style E3 fill:#FFB6C1
+    style D fill:#90EE90
 ```
 
 ### 1. Pattern Miner
@@ -739,6 +774,142 @@ from typing import List, Dict, Optional
 - **CLAUDE.md**: Phase 3 overview (lines 224-384)
 - **Pattern Mining**: See `pattern_miner.py` docstrings
 - **Deployment Strategies**: See `adaptive_updater.py` docstrings
+
+---
+
+## Quick Reference Card
+
+### Most Common Usage Patterns
+
+**1. Basic Classification (Static)**
+```python
+from HoloLoom.routing import MoonshotQueryClassifier
+
+classifier = MoonshotQueryClassifier()
+result = classifier.classify("What is Thompson Sampling?")
+# Returns: ClassificationResult(complexity=SIMPLE, confidence=0.95, tier_used="tier1_pattern")
+```
+
+**2. Adaptive Learning (Production)**
+```python
+from HoloLoom.routing import create_classifier
+
+# Automatic mode selection with fallback
+classifier = create_classifier(mode="adaptive")
+await classifier.start_background_learning()
+
+# Classify (auto-logged for learning)
+result = classifier.classify(query_text)
+
+# Cleanup
+await classifier.stop_background_learning()
+```
+
+**3. Integration with Orchestrator**
+```python
+from HoloLoom.config import Config
+config = Config.fast()
+config.enable_smart_routing = True
+config.routing_classifier = "moonshot"
+# Orchestrator auto-routes based on complexity
+```
+
+### Classifier Selection Guide
+
+| Classifier | Accuracy | Latency | Learning | Use Case |
+|------------|----------|---------|----------|----------|
+| **Baseline** | 88% | <1ms | ❌ | Simple apps, dev/testing |
+| **Moonshot** | 98%+ | <5ms | ❌ | Production without learning |
+| **Adaptive** | 98%+ → 99%+ | <5ms | ✅ | Production with continuous improvement |
+
+### Deployment Strategy Selection
+
+| Strategy | Traffic | Duration | Risk | Use When |
+|----------|---------|----------|------|----------|
+| **SHADOW** | 0% | 1-2 days | None | Testing new patterns |
+| **AB_TEST** | 10/90 | 1 day | Low | Small-scale validation |
+| **GRADUAL** | 10→100% | 4-5 days | Very Low | **Recommended default** |
+| **IMMEDIATE** | 100% | Instant | Medium | High-confidence patterns only |
+
+### Key Methods
+
+```python
+# Classification
+result = classifier.classify(query_text)
+# → ClassificationResult(complexity, confidence, tier_used, latency_ms)
+
+# Learning statistics
+stats = classifier.get_learning_statistics()
+# → {patterns_discovered, validation_accuracy, patterns_deployed}
+
+# Manual learning cycle
+await classifier._run_learning_cycle()
+
+# Component access (advanced)
+patterns = classifier.pattern_miner.mine_patterns(days_lookback=7)
+validation = await classifier.validator.validate_hourly(sample_size=100)
+deployment = await classifier.updater.deploy_patterns(patterns)
+report = await classifier.reporter.generate_daily_report()
+```
+
+### Performance Metrics
+
+| Metric | Target | Typical |
+|--------|--------|---------|
+| **Tier 1 Coverage** | >60% | 60% |
+| **Overall Accuracy** | >95% | 98.2% |
+| **Avg Latency** | <5ms | <5ms |
+| **P95 Latency** | <25ms | 20ms |
+| **Learning Overhead** | <1ms/query | <1ms |
+| **Patterns Deployed** | N/A | ~50/week |
+
+### Configuration Quick Guide
+
+```python
+AdaptiveMoonshotClassifier(
+    # Classification
+    enable_semantic_tier=False,        # False=faster, True=more accurate
+
+    # Learning
+    enable_adaptive_learning=True,     # Enable pattern mining
+    background_learning=True,          # Auto-learning every hour
+    learning_update_interval=3600.0,   # Learning frequency (seconds)
+
+    # Quality gates
+    min_support=10,                    # Min pattern occurrences
+    min_precision=0.95,                # Min accuracy (95%)
+    regression_threshold=0.02,         # Alert if accuracy drops >2%
+
+    # Deployment
+    deployment_strategy="gradual",     # Safest option
+    rollback_on_regression=True,       # Auto-rollback on regression
+
+    # Monitoring
+    enable_prometheus=True,            # Export metrics
+    slack_webhook_url="https://...",   # Alert channel
+)
+```
+
+### Troubleshooting
+
+**Problem**: Low Tier 1 coverage (<60%)
+- **Solution**: Run adaptive learning for 3-7 days to discover patterns
+- **Check**: `stats['patterns_discovered']` should increase daily
+
+**Problem**: Accuracy dropping over time
+- **Cause**: Pattern drift, query distribution change
+- **Solution**: Automatic rollback if `regression_threshold` exceeded
+- **Monitor**: Check Prometheus `moonshot_regressions_detected` metric
+
+**Problem**: High latency (>10ms avg)
+- **Cause**: Too many queries hitting Tier 3 (semantic embeddings)
+- **Solution**: Increase Tier 1/2 patterns via adaptive learning
+- **Check**: `result.tier_used` distribution - should be 60% tier1, 25% tier2
+
+**Problem**: Learning not improving accuracy
+- **Cause**: Insufficient production data
+- **Solution**: Need 100+ queries per complexity level
+- **Check**: JSONL logs in `data/logs/classifications.jsonl`
 
 ---
 
