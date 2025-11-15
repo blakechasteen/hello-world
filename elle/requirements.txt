@@ -1,0 +1,17 @@
+# Elle Core Requirements
+
+# Core
+python>=3.11
+
+# HoloLoom integration (full MirrorCore)
+# Install from parent directory: pip install -e ../HoloLoom
+
+# Voice processing (optional)
+pyttsx3>=2.90  # Text-to-speech
+# For speech-to-text, use HoloLoom's AudioSpinner which supports:
+# - Whisper (local)
+# - Deepgram (cloud)
+
+# Data handling
+sqlite3  # Built-in to Python
+pandas>=2.0.0  # Analytics

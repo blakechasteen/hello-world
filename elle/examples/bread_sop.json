@@ -1,0 +1,295 @@
+{
+  "sop_id": "BREAD_001",
+  "name": "Sourdough Bread Production",
+  "category": "Bakery",
+  "version": "1.0.12",
+  "created": "2025-11-15T17:01:39.253848",
+  "updated": "2025-11-15T17:01:39.254035",
+  "author": "Blake Chasteen",
+  "status": "active",
+  "description": "Classic sourdough loaves with 24-hour fermentation. Produces crusty exterior with soft, tangy interior.",
+  "ingredients": [
+    {
+      "name": "Bread Flour",
+      "amount": 25,
+      "unit": "lbs",
+      "unit_type": "weight",
+      "cost_per_unit": 0.8,
+      "supplier": "Costco",
+      "notes": null,
+      "total_cost": 20.0
+    },
+    {
+      "name": "Water",
+      "amount": 4,
+      "unit": "gallons",
+      "unit_type": "volume",
+      "cost_per_unit": 0.0,
+      "supplier": null,
+      "notes": null,
+      "total_cost": 0.0
+    },
+    {
+      "name": "Sourdough Starter",
+      "amount": 2,
+      "unit": "lbs",
+      "unit_type": "weight",
+      "cost_per_unit": 0.5,
+      "supplier": "Farm",
+      "notes": null,
+      "total_cost": 1.0
+    },
+    {
+      "name": "Sea Salt",
+      "amount": 8,
+      "unit": "oz",
+      "unit_type": "weight",
+      "cost_per_unit": 0.15,
+      "supplier": "Bulk",
+      "notes": null,
+      "total_cost": 1.2
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "prep",
+      "title": "Mix Dough",
+      "description": "Combine flour, water, and starter in large mixing bowl. Mix until shaggy dough forms.",
+      "duration_minutes": 15,
+      "temperature": null,
+      "temperature_unit": "F",
+      "safety_notes": null,
+      "quality_checkpoints": [],
+      "tools_required": [
+        "Large mixing bowl",
+        "Wooden spoon"
+      ],
+      "tips": "Water should be lukewarm (85-90\u00b0F) for optimal fermentation"
+    },
+    {
+      "step_number": 2,
+      "type": "process",
+      "title": "Autolyse",
+      "description": "Let dough rest covered for 30 minutes to develop gluten naturally.",
+      "duration_minutes": 30,
+      "temperature": null,
+      "temperature_unit": "F",
+      "safety_notes": null,
+      "quality_checkpoints": [
+        "Dough should feel more elastic after rest"
+      ],
+      "tools_required": [],
+      "tips": null
+    },
+    {
+      "step_number": 3,
+      "type": "process",
+      "title": "Add Salt and Knead",
+      "description": "Add salt and knead for 10 minutes until smooth and elastic. Dough should pass windowpane test.",
+      "duration_minutes": 15,
+      "temperature": null,
+      "temperature_unit": "F",
+      "safety_notes": null,
+      "quality_checkpoints": [
+        "Windowpane test passes",
+        "Dough springs back when poked",
+        "Surface is smooth"
+      ],
+      "tools_required": [],
+      "tips": "If dough is too sticky, add flour 1 tablespoon at a time"
+    },
+    {
+      "step_number": 4,
+      "type": "process",
+      "title": "Bulk Fermentation",
+      "description": "Place in oiled bowl, cover, ferment 24 hours at room temperature (68-72\u00b0F).",
+      "duration_minutes": 1440,
+      "temperature": 70,
+      "temperature_unit": "F",
+      "safety_notes": null,
+      "quality_checkpoints": [
+        "Dough doubles in size",
+        "Surface has bubbles"
+      ],
+      "tools_required": [],
+      "tips": null
+    },
+    {
+      "step_number": 5,
+      "type": "process",
+      "title": "Shape Loaves",
+      "description": "Divide dough into 24 pieces (about 6 oz each). Shape into tight rounds.",
+      "duration_minutes": 20,
+      "temperature": null,
+      "temperature_unit": "F",
+      "safety_notes": null,
+      "quality_checkpoints": [],
+      "tools_required": [
+        "Bench scraper",
+        "Kitchen scale"
+      ],
+      "tips": "Keep unused dough covered to prevent drying"
+    },
+    {
+      "step_number": 6,
+      "type": "process",
+      "title": "Proof",
+      "description": "Place shaped loaves on parchment-lined trays. Proof 45 minutes covered.",
+      "duration_minutes": 45,
+      "temperature": null,
+      "temperature_unit": "F",
+      "safety_notes": null,
+      "quality_checkpoints": [
+        "Loaves puff up 50%",
+        "Indent springs back slowly"
+      ],
+      "tools_required": [],
+      "tips": null
+    },
+    {
+      "step_number": 7,
+      "type": "process",
+      "title": "Score and Bake",
+      "description": "Score tops with sharp blade. Bake at 450\u00b0F for 25-30 minutes until deep golden brown.",
+      "duration_minutes": 30,
+      "temperature": 450,
+      "temperature_unit": "F",
+      "safety_notes": "Use oven mitts. Steam escapes when scoring.",
+      "quality_checkpoints": [
+        "Internal temp reaches 205\u00b0F",
+        "Crust is deep golden",
+        "Sounds hollow when tapped"
+      ],
+      "tools_required": [
+        "Lame or sharp knife",
+        "Oven"
+      ],
+      "tips": null
+    },
+    {
+      "step_number": 8,
+      "type": "cleanup",
+      "title": "Cool and Package",
+      "description": "Cool on racks 30 minutes. Package in paper bags once fully cooled.",
+      "duration_minutes": 15,
+      "temperature": null,
+      "temperature_unit": "F",
+      "safety_notes": null,
+      "quality_checkpoints": [
+        "Completely cool before packaging to prevent condensation"
+      ],
+      "tools_required": [],
+      "tips": null
+    }
+  ],
+  "batch_size": 24,
+  "batch_unit": "loaves",
+  "total_time_minutes": 150,
+  "labor_rate_per_hour": 25.0,
+  "overhead_multiplier": 1.15,
+  "selling_price": 6.0,
+  "target_margin": 0.67,
+  "quality_standards": [
+    "Crust is golden brown and crispy",
+    "Interior crumb is open with irregular holes",
+    "Tangy sourdough aroma",
+    "Loaves sound hollow when tapped",
+    "No dense or gummy texture"
+  ],
+  "safety_requirements": [
+    "Wash hands before handling dough",
+    "Ensure workspace is clean and sanitized",
+    "Use oven mitts when handling hot trays",
+    "Check internal temperature reaches 205\u00b0F for food safety"
+  ],
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "timestamp": "2025-11-15T17:01:39.253854",
+      "changes": "Added ingredient: Bread Flour",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.1",
+      "timestamp": "2025-11-15T17:01:39.253980",
+      "changes": "Added ingredient: Water",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.2",
+      "timestamp": "2025-11-15T17:01:39.253987",
+      "changes": "Added ingredient: Sourdough Starter",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.3",
+      "timestamp": "2025-11-15T17:01:39.253990",
+      "changes": "Added ingredient: Sea Salt",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.4",
+      "timestamp": "2025-11-15T17:01:39.253992",
+      "changes": "Added step 1: Mix Dough",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.5",
+      "timestamp": "2025-11-15T17:01:39.254004",
+      "changes": "Added step 2: Autolyse",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.6",
+      "timestamp": "2025-11-15T17:01:39.254008",
+      "changes": "Added step 3: Add Salt and Knead",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.7",
+      "timestamp": "2025-11-15T17:01:39.254012",
+      "changes": "Added step 4: Bulk Fermentation",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.8",
+      "timestamp": "2025-11-15T17:01:39.254018",
+      "changes": "Added step 5: Shape Loaves",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.9",
+      "timestamp": "2025-11-15T17:01:39.254023",
+      "changes": "Added step 6: Proof",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.10",
+      "timestamp": "2025-11-15T17:01:39.254026",
+      "changes": "Added step 7: Score and Bake",
+      "changed_by": "Voice Command"
+    },
+    {
+      "version": "1.0.11",
+      "timestamp": "2025-11-15T17:01:39.254030",
+      "changes": "Added step 8: Cool and Package",
+      "changed_by": "Voice Command"
+    }
+  ],
+  "tags": [
+    "bread",
+    "sourdough",
+    "bakery",
+    "high-margin"
+  ],
+  "analytics": {
+    "material_cost": 22.2,
+    "labor_cost": 62.5,
+    "total_cost": 97.405,
+    "cost_per_unit": 4.058541666666667,
+    "profit_per_batch": 46.595,
+    "profit_margin": 32.35763888888889,
+    "hourly_roi": 18.637999999999998
+  }
+}
