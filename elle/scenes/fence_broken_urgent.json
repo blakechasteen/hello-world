@@ -1,0 +1,45 @@
+{
+  "scene_id": "fence_broken_urgent_001",
+  "timestamp": "2025-11-15T16:00:00",
+  "location": "front_fence_section_b",
+  "weather": "overcast",
+  "time_of_day": "afternoon",
+  "summary": "Fence section with broken post leaning significantly. Gate alignment affected. Needs repair soon to prevent full collapse.",
+  "tags": ["urgent", "structural", "safety"],
+  "objects": [
+    {
+      "id": "obj_broken_post",
+      "name": "Fence post",
+      "category": "structure",
+      "location": "section B, third from left",
+      "condition": "cracked at ground level, leaning 20 degrees"
+    },
+    {
+      "id": "obj_gate",
+      "name": "Fence gate",
+      "category": "structure",
+      "location": "section B, right end",
+      "condition": "misaligned due to post lean"
+    },
+    {
+      "id": "obj_fence_boards",
+      "name": "Fence boards",
+      "category": "structure",
+      "location": "attached to broken post",
+      "condition": "pulling away from post",
+      "quantity": 4
+    }
+  ],
+  "relations": [
+    {
+      "subject": "obj_broken_post",
+      "predicate": "supporting",
+      "object": "obj_fence_boards"
+    },
+    {
+      "subject": "obj_broken_post",
+      "predicate": "affecting",
+      "object": "obj_gate"
+    }
+  ]
+}

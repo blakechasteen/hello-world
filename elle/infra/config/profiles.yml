@@ -1,0 +1,70 @@
+# Elle Configuration Profiles
+
+# Development profile: fast iteration, mocked services
+dev:
+  llm:
+    provider: "local"  # Use local LLM for dev
+    model: "llama2"
+    timeout: 60
+    temperature: 0.7
+  
+  memory:
+    backend: "in_memory"
+  
+  tools:
+    enabled_tools:
+      - vision_stub
+      - layout_stub
+      - task_planner
+      - scheduler
+  
+  log_level: "DEBUG"
+
+# Farm profile: production on the farm
+farm:
+  llm:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-20241022"
+    # API key from env: ANTHROPIC_API_KEY
+    timeout: 30
+    temperature: 0.7
+  
+  memory:
+    backend: "sqlite"
+    database_path: "~/.elle/farm.db"
+  
+  tools:
+    enabled_tools:
+      - vision_real
+      - layout_mc
+      - task_planner
+      - scheduler
+  
+  log_level: "INFO"
+
+# Studio profile: advanced development/research
+studio:
+  llm:
+    provider: "openai"
+    model: "gpt-4"
+    # API key from env: OPENAI_API_KEY
+    timeout: 30
+    temperature: 0.7
+    max_tokens: 2000
+  
+  memory:
+    backend: "mirrorcore"
+    connection_string: "http://localhost:8080"
+  
+  tools:
+    enabled_tools:
+      - vision_real
+      - layout_mc
+      - task_planner
+      - scheduler
+      - summarizer
+  
+  symbols_dir: "./symbols"
+  scenes_dir: "./scenes"
+  
+  log_level: "INFO"

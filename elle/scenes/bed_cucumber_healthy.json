@@ -1,0 +1,52 @@
+{
+  "scene_id": "bed_cucumber_healthy_001",
+  "timestamp": "2025-11-15T09:00:00",
+  "location": "cucumber_bed_3",
+  "weather": "sunny",
+  "time_of_day": "morning",
+  "summary": "Healthy cucumber bed with strong plant growth. Minor weed pressure on north edge, otherwise well-maintained.",
+  "tags": ["healthy", "minor_maintenance", "garden"],
+  "objects": [
+    {
+      "id": "obj_cucumber_plants",
+      "name": "Cucumber plants",
+      "category": "plant",
+      "location": "bed center",
+      "condition": "healthy, flowering",
+      "quantity": 12
+    },
+    {
+      "id": "obj_trellis",
+      "name": "Bamboo trellis",
+      "category": "structure",
+      "location": "north side of bed",
+      "condition": "sturdy"
+    },
+    {
+      "id": "obj_weeds",
+      "name": "Dandelions",
+      "category": "plant",
+      "location": "north edge of bed",
+      "quantity": 4
+    },
+    {
+      "id": "obj_mulch",
+      "name": "Wood chip mulch",
+      "category": "material",
+      "location": "covering bed surface",
+      "condition": "slightly thin in places"
+    }
+  ],
+  "relations": [
+    {
+      "subject": "obj_cucumber_plants",
+      "predicate": "growing_on",
+      "object": "obj_trellis"
+    },
+    {
+      "subject": "obj_weeds",
+      "predicate": "near",
+      "object": "obj_cucumber_plants"
+    }
+  ]
+}

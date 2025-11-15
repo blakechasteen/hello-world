@@ -1,0 +1,12 @@
+# Elle Requirements
+
+# Core dependencies
+click>=8.1.0
+pyyaml>=6.0
+
+# LLM providers (install as needed)
+anthropic>=0.34.0
+openai>=1.0.0
+
+# Optional: for local LLM
+# ollama-python>=0.1.0
