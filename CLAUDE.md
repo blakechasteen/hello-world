@@ -374,3 +374,240 @@ policy = create_policy(
     epsilon=0.15  # 15% exploration for epsilon-greedy
 )
 ```
+
+## Promptly Integration
+
+HoloLoom now includes bidirectional integration with **Promptly**, a prompt management framework with versioning, branching, and evaluation capabilities.
+
+### Integration Overview
+
+The integration enables:
+- **Promptly → HoloLoom**: Load prompts from Promptly repositories as HoloLoom MemoryShards
+- **HoloLoom → Promptly**: Use HoloLoom's neural policy to evaluate Promptly prompts
+- **Unified Configuration**: Single config file (`integration_config.yaml`) for both systems
+- **Seamless Workflow**: End-to-end prompt engineering with neural evaluation
+
+### Key Integration Files
+
+```
+HoloLoom/integrations/
+├── __init__.py
+└── promptly.py              # PromptlyLoader, PromptlyMemoryAdapter
+
+Promptly/promptly/integrations/
+├── __init__.py
+└── hololoom.py              # HoloLoomEvaluator, HoloLoomSpinner
+
+integration_config.yaml       # Unified configuration
+examples/hololoom_promptly_demo.py  # Integration demo
+INTEGRATION.md               # Complete integration guide
+```
+
+### Quick Start
+
+#### Load Promptly Prompts into HoloLoom
+
+```python
+from HoloLoom.integrations.promptly import PromptlyLoader
+
+# Initialize loader
+loader = PromptlyLoader(promptly_repo_path='/path/to/repo')
+
+# Load all prompts as HoloLoom MemoryShards
+shards = loader.prompts_to_shards(branch='main')
+
+# Filter by tags
+prompts = loader.load_prompts(
+    branch='main',
+    tags=['production', 'summarization'],
+    min_version=2
+)
+```
+
+#### Evaluate Prompts with HoloLoom Neural Policy
+
+```python
+from Promptly.promptly.integrations.hololoom import HoloLoomEvaluator
+
+# Initialize evaluator
+evaluator = HoloLoomEvaluator(config_mode='fast')
+
+# Evaluate a prompt
+result = evaluator.evaluate_prompt(
+    prompt_name='summarizer',
+    prompt_content='Summarize: {text}',
+    test_inputs={'text': 'Sample input text'}
+)
+
+print(f"Score: {result.score:.3f}")
+print(f"Tool selection: {result.tool_selection}")
+```
+
+#### Use HoloLoom Evaluator in Promptly Tests
+
+```python
+from Promptly.promptly.promptly import Promptly
+from Promptly.promptly.integrations.hololoom import create_evaluator_function
+
+promptly = Promptly()
+hololoom_eval = create_evaluator_function(config_mode='fast')
+
+test_cases = [
+    {
+        'inputs': {'text': 'Test input'},
+        'expected': 'expected output',
+        'evaluator': hololoom_eval  # Use HoloLoom for scoring
+    }
+]
+
+results = promptly.eval_prompt('my_prompt', test_cases)
+```
+
+### Integration Configuration
+
+Edit `integration_config.yaml` to customize:
+
+```yaml
+integration:
+  enabled: true
+  auto_load_prompts: false
+
+hololoom:
+  mode: fast  # bare | fast | fused
+  memory:
+    max_prompts: 100
+    extract_entities: true
+    extract_motifs: true
+  policy:
+    bandit_strategy: epsilon_greedy
+    epsilon: 0.1
+
+promptly:
+  default_branch: main
+  evaluation:
+    use_hololoom_evaluator: false
+    quality_threshold: 0.7
+
+evaluators:
+  default: promptly_default  # or hololoom_neural
+```
+
+### Running the Integration Demo
+
+```bash
+# Run all integration demos
+python examples/hololoom_promptly_demo.py
+
+# Run specific demo
+python -c "from examples.hololoom_promptly_demo import demo_2_hololoom_evaluator; demo_2_hololoom_evaluator()"
+```
+
+### Common Integration Use Cases
+
+#### 1. Prompt Quality Scoring
+
+Automatically score prompt templates using HoloLoom's neural policy:
+
+```python
+from Promptly.promptly.integrations.hololoom import HoloLoomEvaluator
+
+evaluator = HoloLoomEvaluator(config_mode='fused')
+
+variants = [
+    "Summarize: {text}",
+    "Provide a brief summary of: {text}",
+    "Extract the key points from: {text}",
+]
+
+scores = []
+for variant in variants:
+    result = evaluator.evaluate_prompt('variant', variant, {'text': 'test'})
+    scores.append((variant, result.score))
+
+best = max(scores, key=lambda x: x[1])
+print(f"Best variant: {best[0]} (score: {best[1]:.3f})")
+```
+
+#### 2. Prompt Repository as Knowledge Base
+
+Use Promptly repository as a knowledge base for HoloLoom:
+
+```python
+from HoloLoom.integrations.promptly import PromptlyLoader
+
+loader = PromptlyLoader()
+shards = loader.prompts_to_shards(branch='production')
+
+# Use shards as context for HoloLoom decisions
+# loader.load_into_memory(memory_manager, branch='production')
+```
+
+#### 3. A/B Testing with Neural Evaluation
+
+Compare prompt versions using HoloLoom:
+
+```python
+from Promptly.promptly.promptly import Promptly
+from Promptly.promptly.integrations.hololoom import HoloLoomEvaluator
+
+promptly = Promptly()
+evaluator = HoloLoomEvaluator()
+
+v1 = promptly.get('my_prompt', version=1)
+v2 = promptly.get('my_prompt', version=2)
+
+result_v1 = evaluator.evaluate_prompt(v1['name'], v1['content'], test_data)
+result_v2 = evaluator.evaluate_prompt(v2['name'], v2['content'], test_data)
+
+winner = 'v1' if result_v1.score > result_v2.score else 'v2'
+print(f"Winner: {winner}")
+```
+
+### Integration API Reference
+
+#### HoloLoom Side (`HoloLoom/integrations/promptly.py`)
+
+- **PromptlyLoader**: Loads prompts from Promptly repositories
+  - `load_prompts(branch, tags, min_version)`: Load with filtering
+  - `prompts_to_shards(prompts, branch)`: Convert to MemoryShards
+  - `load_into_memory(memory_manager, branch, tags)`: Load into HoloLoom memory
+
+- **PromptlyMemoryAdapter**: Converts Promptly prompts to MemoryShards
+  - `prompt_to_shard(prompt_data)`: Convert single prompt
+  - `prompts_to_shards(prompts)`: Convert multiple prompts
+
+#### Promptly Side (`Promptly/promptly/integrations/hololoom.py`)
+
+- **HoloLoomEvaluator**: Evaluates prompts using neural policy
+  - `evaluate_prompt(prompt_name, prompt_content, test_inputs)`: Evaluate single prompt
+  - `batch_evaluate(prompts, test_inputs)`: Evaluate multiple prompts
+
+- **HoloLoomSpinner**: Converts prompts to MemoryShards
+  - `prompt_to_shard(prompt_data)`: Convert single prompt
+  - `spin_prompts(promptly_instance, branch)`: Convert all from repo
+
+### Graceful Degradation
+
+The integration gracefully degrades when components are unavailable:
+
+```python
+from Promptly.promptly.integrations.hololoom import HOLOLOOM_AVAILABLE
+from HoloLoom.integrations.promptly import PROMPTLY_AVAILABLE
+
+if HOLOLOOM_AVAILABLE:
+    # Use HoloLoom features
+    pass
+else:
+    # Fall back to default behavior
+    pass
+```
+
+### Documentation
+
+See **INTEGRATION.md** for complete documentation including:
+- Detailed API reference
+- Configuration options
+- Performance tuning
+- Error handling
+- Advanced use cases
+- Troubleshooting guide

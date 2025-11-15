@@ -1,0 +1,215 @@
+# HoloLoom-Promptly Integration Configuration
+# =============================================
+# Unified configuration for bidirectional integration between
+# HoloLoom neural decision system and Promptly prompt management.
+
+version: "1.0"
+
+# Global Integration Settings
+integration:
+  enabled: true
+  # Auto-load prompts from Promptly into HoloLoom on startup
+  auto_load_prompts: false
+  # Auto-sync evaluation results back to Promptly
+  auto_sync_results: false
+
+# HoloLoom Configuration
+hololoom:
+  # Execution mode: bare, fast, or fused
+  # - bare: Minimal processing (fastest)
+  # - fast: Balanced (recommended for integration)
+  # - fused: Full processing (highest quality)
+  mode: fast
+
+  # Scales for Matryoshka embeddings
+  scales:
+    - 96
+    - 192
+    - 384
+
+  # Memory configuration
+  memory:
+    # Maximum number of prompts to load from Promptly
+    max_prompts: 100
+    # Whether to extract entities from prompt metadata
+    extract_entities: true
+    # Whether to extract motifs from prompt content
+    extract_motifs: true
+
+  # Policy configuration
+  policy:
+    # Bandit exploration strategy
+    # Options: epsilon_greedy, bayesian_blend, pure_thompson
+    bandit_strategy: epsilon_greedy
+    # Exploration rate for epsilon-greedy (0.0 to 1.0)
+    epsilon: 0.1
+
+  # Feature extraction
+  features:
+    # Enable motif detection
+    enable_motifs: true
+    # Enable spectral features (graph-based)
+    enable_spectral: true
+    # Enable multi-scale embeddings
+    enable_multiscale: true
+
+# Promptly Configuration
+promptly:
+  # Repository path (relative to this config file)
+  # If null, uses current directory
+  repo_path: null
+
+  # Default branch to load prompts from
+  default_branch: main
+
+  # Prompt filtering
+  filter:
+    # Only load prompts with these tags (empty = load all)
+    tags: []
+    # Minimum version number (null = no minimum)
+    min_version: null
+    # Only load prompts matching these patterns (regex)
+    name_patterns: []
+
+  # Evaluation settings
+  evaluation:
+    # Use HoloLoom neural policy for evaluation
+    use_hololoom_evaluator: false
+    # Scoring threshold for prompt quality (0.0 to 1.0)
+    quality_threshold: 0.7
+    # Store evaluation results in Promptly database
+    store_results: true
+
+  # Chain execution
+  chains:
+    # Enable HoloLoom-enhanced chain execution
+    enable_hololoom_routing: false
+
+# Prompt Source Configuration
+prompt_sources:
+  # Primary source: promptly or hololoom
+  primary: promptly
+
+  # Promptly source settings
+  promptly_source:
+    enabled: true
+    # Branches to load from
+    branches:
+      - main
+    # Auto-update interval in seconds (null = no auto-update)
+    auto_update_interval: null
+
+  # HoloLoom source settings (for loading existing HoloLoom memories as prompts)
+  hololoom_source:
+    enabled: false
+    # Episode filters
+    episodes: []
+
+# Evaluator Configuration
+evaluators:
+  # Available evaluators
+  available:
+    - hololoom_neural  # HoloLoom neural policy evaluator
+    - promptly_default  # Promptly's default evaluator
+    - custom  # Custom evaluator function
+
+  # Default evaluator to use
+  default: promptly_default
+
+  # HoloLoom neural evaluator settings
+  hololoom_neural:
+    # Config mode for evaluation
+    config_mode: fast
+    # Use cached features for repeated evaluations
+    use_cache: true
+    # Batch size for batch evaluation
+    batch_size: 10
+
+# Feature Flags
+features:
+  # Enable bidirectional sync
+  bidirectional_sync: false
+
+  # Enable prompt versioning in HoloLoom memory
+  prompt_versioning: true
+
+  # Enable automatic prompt optimization based on HoloLoom feedback
+  auto_optimize: false
+
+  # Enable chain execution with HoloLoom routing
+  hololoom_chain_routing: false
+
+# Logging and Monitoring
+logging:
+  # Log level: debug, info, warning, error
+  level: info
+
+  # Log file path (null = stdout only)
+  log_file: null
+
+  # Enable performance metrics
+  enable_metrics: true
+
+  # Metrics export path
+  metrics_path: ./logs/integration_metrics.json
+
+# Performance Tuning
+performance:
+  # Use async loading for large prompt sets
+  async_loading: true
+
+  # Cache size for loaded prompts (number of prompts)
+  cache_size: 50
+
+  # Parallel evaluation workers
+  parallel_workers: 4
+
+  # Timeout for evaluation (seconds)
+  evaluation_timeout: 30
+
+# Advanced Settings
+advanced:
+  # Custom adapter bank for HoloLoom policy
+  custom_adapters: {}
+
+  # Custom tool definitions for HoloLoom
+  custom_tools: []
+
+  # Promptly database path override
+  promptly_db_path: null
+
+  # HoloLoom memory persistence path
+  hololoom_memory_path: null
+
+# Example Configurations
+# ======================
+# Uncomment and customize these examples for specific use cases
+
+# Example 1: Evaluation-focused setup
+# integration:
+#   enabled: true
+# promptly:
+#   evaluation:
+#     use_hololoom_evaluator: true
+# evaluators:
+#   default: hololoom_neural
+
+# Example 2: Memory-focused setup (load prompts into HoloLoom)
+# integration:
+#   enabled: true
+#   auto_load_prompts: true
+# hololoom:
+#   memory:
+#     max_prompts: 500
+#     extract_entities: true
+#     extract_motifs: true
+
+# Example 3: High-performance batch evaluation
+# performance:
+#   async_loading: true
+#   parallel_workers: 8
+#   cache_size: 100
+# evaluators:
+#   hololoom_neural:
+#     batch_size: 20
+#     use_cache: true
