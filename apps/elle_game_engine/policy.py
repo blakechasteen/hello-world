@@ -55,6 +55,7 @@ class GamePolicy:
         self,
         game_state: GameStateSnapshot,
         player_intent: PlayerIntent,
+        conversation_context: Optional[str] = None,
     ) -> ElleGameAction:
         """
         Make a narrative decision based on game state and player intent.
@@ -62,6 +63,7 @@ class GamePolicy:
         Args:
             game_state: Current game state snapshot
             player_intent: What the player is doing
+            conversation_context: Optional conversation history for continuity
 
         Returns:
             Structured action for the game to execute
@@ -70,8 +72,12 @@ class GamePolicy:
             PolicyError: If decision-making fails
         """
         try:
-            # 1. Build prompt
-            user_prompt = self._build_user_prompt(game_state, player_intent)
+            # 1. Build prompt (with optional conversation history)
+            user_prompt = self._build_user_prompt(
+                game_state,
+                player_intent,
+                conversation_context=conversation_context,
+            )
 
             # 2. Call LLM
             response_text = await self.llm_client.complete(
@@ -93,12 +99,21 @@ class GamePolicy:
         self,
         game_state: GameStateSnapshot,
         player_intent: PlayerIntent,
+        conversation_context: Optional[str] = None,
     ) -> str:
         """
         Build the user prompt from game state and intent.
 
         This serializes the state into a clear, structured format
         that the LLM can easily parse.
+
+        Args:
+            game_state: Current game state
+            player_intent: Player's intent
+            conversation_context: Optional conversation history
+
+        Returns:
+            Formatted prompt string
         """
         # Serialize NPCs
         npcs_text = ""
@@ -133,6 +148,15 @@ class GamePolicy:
         if player_intent.raw_input:
             intent_text += f"\n  Player Input: {player_intent.raw_input}"
 
+        # Add conversation history if provided
+        conversation_section = ""
+        if conversation_context:
+            conversation_section = f"""
+CONVERSATION HISTORY:
+{conversation_context}
+
+"""
+
         # Build complete prompt
         prompt = f"""GAME STATE:
 
@@ -148,7 +172,7 @@ World:
 {world_text}
 
 Tags: {', '.join(game_state.tags) if game_state.tags else '(none)'}
-
+{conversation_section}
 PLAYER INTENT:
 {intent_text}
 

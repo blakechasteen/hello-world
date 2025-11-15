@@ -1,5 +1,5 @@
 """
-FastAPI service for Elle Game Engine.
+FastAPI service for Elle Game Engine with session management and production features.
 
 Provides HTTP/JSON API for game engines to get narrative intelligence
 from Elle without tight coupling.
@@ -7,6 +7,7 @@ from Elle without tight coupling.
 Endpoints:
 - POST /elle/game/action - Get action from game state + player intent
 - GET /health - Health check
+- GET /metrics - Prometheus metrics
 """
 
 from typing import Dict, Any, Optional, List
@@ -17,7 +18,7 @@ import time
 
 try:
     from fastapi import FastAPI, HTTPException, status
-    from fastapi.responses import JSONResponse
+    from fastapi.responses import JSONResponse, PlainTextResponse
 except ImportError:
     raise ImportError(
         "FastAPI not installed. Install with: pip install fastapi uvicorn"
@@ -34,6 +35,7 @@ from .models import (
 )
 from .llm_client import create_llm_client
 from .policy import GamePolicy, PolicyError
+from .session import GameSession, InMemorySessionStore, JSONSessionStore, SessionStore
 from .cache import create_cache, ResponseCache
 from .metrics import initialize_metrics, get_metrics
 from .middleware import create_rate_limiter
@@ -90,6 +92,8 @@ class GameActionRequest(BaseModel):
     """Complete request body."""
     game_state: GameStateRequest
     player_intent: PlayerIntentRequest
+    session_id: Optional[str] = None  # Optional session ID for state persistence
+    player_id: Optional[str] = None  # Optional player ID for new sessions
 
 
 class DialogueLineResponse(BaseModel):
@@ -113,6 +117,7 @@ class GameActionResponse(BaseModel):
     hint_text: Optional[str] = None
     world_reaction: Optional[WorldChangeResponse] = None
     debug_notes: Optional[str] = None
+    session_id: str  # Session ID for subsequent requests
 
 
 # ============================================================================
@@ -121,19 +126,30 @@ class GameActionResponse(BaseModel):
 
 # Global instances (initialized on startup)
 _policy: Optional[GamePolicy] = None
+_session_store: Optional[SessionStore] = None
 _cache: Optional[ResponseCache] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup/shutdown."""
-    global _policy, _cache
+    global _policy, _session_store, _cache
 
     # Initialize metrics
     initialize_metrics()
 
     # Create response cache
     _cache = create_cache()
+
+    # Startup: Create session store
+    session_backend = os.getenv("ELLE_SESSION_BACKEND", "memory").lower()
+    if session_backend == "file":
+        session_path = os.getenv("ELLE_SESSION_PATH", "./sessions")
+        _session_store = JSONSessionStore(storage_path=session_path)
+        print(f"💾 Using file-based session storage: {session_path}")
+    else:
+        _session_store = InMemorySessionStore()
+        print("💾 Using in-memory session storage (non-persistent)")
 
     # Startup: Create LLM client based on environment variables
     provider = os.getenv("ELLE_LLM_PROVIDER", "dummy").lower()
@@ -181,8 +197,13 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown: cleanup if needed
+    # Shutdown: Save sessions and cleanup
+    if _session_store is not None:
+        _session_store.save()
+        print("💾 Sessions saved")
+
     _policy = None
+    _session_store = None
     _cache = None
     print("🛑 Elle Game Engine shutting down")
 
@@ -217,8 +238,6 @@ def create_app() -> FastAPI:
         Returns:
             Plain text metrics in Prometheus format
         """
-        from fastapi.responses import PlainTextResponse
-
         metrics_collector = get_metrics()
         return PlainTextResponse(
             content=metrics_collector.to_prometheus_format(),
@@ -234,15 +253,16 @@ def create_app() -> FastAPI:
         narrative responses.
 
         Args:
-            request: Game state snapshot + player intent
+            request: Game state snapshot + player intent + optional session_id
 
         Returns:
             Structured action (dialogue, hint, world reaction, or debug notes)
+            with session_id for state continuity
 
         Raises:
             HTTPException: If policy execution fails
         """
-        if _policy is None or _cache is None:
+        if _policy is None or _session_store is None or _cache is None:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Service not initialized",
@@ -253,11 +273,23 @@ def create_app() -> FastAPI:
         provider = os.getenv("ELLE_LLM_PROVIDER", "dummy")
 
         try:
-            # Convert Pydantic models to dataclasses
+            # 1. Load or create session
+            if request.session_id:
+                session = _session_store.get_session(request.session_id)
+                if session is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Session {request.session_id} not found",
+                    )
+            else:
+                # Create new session
+                session = _session_store.create_session(player_id=request.player_id)
+
+            # 2. Convert Pydantic models to dataclasses
             game_state = _pydantic_to_game_state(request.game_state)
             player_intent = _pydantic_to_player_intent(request.player_intent)
 
-            # Check cache (skip for debug_summary intent)
+            # 3. Check cache (skip for debug_summary intent)
             skip_cache = player_intent.type == PlayerIntentType.DEBUG_SUMMARY
             cached_action = None if skip_cache else _cache.get(game_state, player_intent)
 
@@ -266,21 +298,60 @@ def create_app() -> FastAPI:
                 cache_hit = True
                 action = cached_action
             else:
-                # Cache miss - call policy
-                action = await _policy.decide(game_state, player_intent)
+                # Cache miss - get conversation context and call policy
+                conversation_context = session.get_conversation_context(max_exchanges=5)
+
+                # Get action from policy (with conversation history)
+                action = await _policy.decide(
+                    game_state,
+                    player_intent,
+                    conversation_context=conversation_context,
+                )
 
                 # Cache response
                 _cache.set(game_state, player_intent, action, skip_cache=skip_cache)
 
-            # Convert to response model
-            response = _action_to_response(action)
+            # 4. Update session with this exchange
+            player_query = player_intent.raw_input or f"{player_intent.type.value}"
+            elle_response = _extract_response_text(action)
+            session.add_exchange(
+                player_query=player_query,
+                elle_response=elle_response,
+                npc_id=player_intent.target_npc_id,
+            )
 
-            # Add metadata about cache hit
+            # 5. Update world flags if action changes world
+            if action.world_reaction and action.world_reaction.flag_changes:
+                session.update_world_flags(action.world_reaction.flag_changes)
+
+            # 6. Update NPC relationships if dialogue occurred
+            if action.has_dialogue and player_intent.target_npc_id:
+                # Simple reputation heuristic based on tone
+                tone = action.dialogue[0].tone if action.dialogue else None
+                reputation_delta = 0
+                if tone in ["warm", "grateful", "excited"]:
+                    reputation_delta = 5
+                elif tone in ["stern", "hostile", "annoyed"]:
+                    reputation_delta = -5
+
+                session.update_npc_relationship(
+                    npc_id=player_intent.target_npc_id,
+                    reputation_delta=reputation_delta,
+                    mood=tone,
+                )
+
+            # 7. Save session
+            _session_store.update_session(session)
+
+            # 8. Convert to response model (include session_id)
+            response = _action_to_response(action, session_id=session.session_id)
+
+            # Add cache hit metadata
             if not response.debug_notes:
                 response.debug_notes = ""
             response.debug_notes += f" [cache_hit={cache_hit}]"
 
-            # Record metrics
+            # 9. Record metrics
             duration_ms = (time.time() - start_time) * 1000
             metrics_collector = get_metrics()
             metrics_collector.record_request(
@@ -351,7 +422,7 @@ def _pydantic_to_player_intent(req: PlayerIntentRequest) -> PlayerIntent:
     )
 
 
-def _action_to_response(action: ElleGameAction) -> GameActionResponse:
+def _action_to_response(action: ElleGameAction, session_id: str) -> GameActionResponse:
     """Convert dataclass action to Pydantic response."""
     return GameActionResponse(
         mode=action.mode.value,
@@ -370,7 +441,22 @@ def _action_to_response(action: ElleGameAction) -> GameActionResponse:
             flag_changes=action.world_reaction.flag_changes,
         ) if action.world_reaction else None,
         debug_notes=action.debug_notes,
+        session_id=session_id,
     )
+
+
+def _extract_response_text(action: ElleGameAction) -> str:
+    """Extract response text from action for conversation history."""
+    if action.dialogue:
+        return action.dialogue[0].text
+    elif action.hint_text:
+        return action.hint_text
+    elif action.world_reaction:
+        return action.world_reaction.description
+    elif action.debug_notes:
+        return action.debug_notes
+    else:
+        return "(no response)"
 
 
 # Create app instance
@@ -387,6 +473,7 @@ if __name__ == "__main__":
     print("🎮 Starting Elle Game Engine service...")
     print("📡 API documentation: http://localhost:8000/docs")
     print("❤️  Health check: http://localhost:8000/health")
+    print("📊 Metrics: http://localhost:8000/metrics")
 
     uvicorn.run(
         "apps.elle_game_engine.service:app",
