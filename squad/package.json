@@ -1,0 +1,106 @@
+{
+  "name": "squad",
+  "displayName": "Squad - HoloLoom Agent API",
+  "description": "Agentic coding assistant powered by HoloLoom's multi-step reasoning",
+  "version": "0.1.0",
+  "publisher": "hololoom",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Education"
+  ],
+  "keywords": ["ai", "agent", "reasoning", "hololoom", "assistant"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "squad.ask",
+        "title": "Squad: Ask Question",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "squad.explainSelection",
+        "title": "Squad: Explain Selection",
+        "icon": "$(book)"
+      },
+      {
+        "command": "squad.suggestFix",
+        "title": "Squad: Suggest Fix",
+        "icon": "$(lightbulb)"
+      },
+      {
+        "command": "squad.refactor",
+        "title": "Squad: Refactor Code",
+        "icon": "$(symbol-method)"
+      },
+      {
+        "command": "squad.generateTests",
+        "title": "Squad: Generate Tests",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "squad.openPanel",
+        "title": "Squad: Open Agent Panel",
+        "icon": "$(output)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "squad.ask",
+        "key": "ctrl+shift+q",
+        "mac": "cmd+shift+q"
+      },
+      {
+        "command": "squad.explainSelection",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "Squad",
+      "properties": {
+        "squad.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Squad agent API server URL"
+        },
+        "squad.reasoningMode": {
+          "type": "string",
+          "enum": ["direct", "verify", "research", "plan_execute"],
+          "default": "verify",
+          "description": "Default reasoning mode"
+        },
+        "squad.maxSteps": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Maximum reasoning steps"
+        },
+        "squad.showReasoningSteps": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show intermediate reasoning steps"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}
