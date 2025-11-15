@@ -102,6 +102,108 @@ curl -X POST "http://localhost:8000/elle/game/action" \
 }
 ```
 
+## LLM Provider Configuration
+
+By default, Elle uses a `DummyLLMClient` for testing. To use real LLM providers, configure via environment variables:
+
+### Using Anthropic Claude (Recommended)
+
+```bash
+# Install Anthropic SDK
+pip install anthropic
+
+# Set environment variables
+export ELLE_LLM_PROVIDER=anthropic
+export ANTHROPIC_API_KEY=your-api-key-here
+export ELLE_LLM_MODEL=claude-3-5-sonnet-20241022  # optional, this is default
+
+# Start service
+python -m apps.elle_game_engine.service
+```
+
+**Models**:
+- `claude-3-5-sonnet-20241022` - Best quality, slower, more expensive
+- `claude-3-haiku-20240307` - Faster, cheaper, good quality
+
+### Using OpenAI
+
+```bash
+# Install OpenAI SDK
+pip install openai
+
+# Set environment variables
+export ELLE_LLM_PROVIDER=openai
+export OPENAI_API_KEY=your-api-key-here
+export ELLE_LLM_MODEL=gpt-4o-mini  # optional, this is default
+
+# Start service
+python -m apps.elle_game_engine.service
+```
+
+**Models**:
+- `gpt-4o-mini` - Fast, cheap, good for games
+- `gpt-4o` - Best quality, more expensive
+- `gpt-4-turbo` - Good balance
+
+### Using Local Models (Ollama)
+
+```bash
+# Install Ollama from https://ollama.ai
+# Pull a model
+ollama pull llama3.2:3b
+
+# Set environment variables (no API key needed!)
+export ELLE_LLM_PROVIDER=local
+export ELLE_LLM_MODEL=llama3.2:3b  # or any model you've pulled
+export OLLAMA_BASE_URL=http://localhost:11434  # optional, this is default
+
+# Start service
+python -m apps.elle_game_engine.service
+```
+
+**Recommended Models**:
+- `llama3.2:3b` - Fast, lightweight
+- `llama3.1:8b` - Better quality, slower
+- `mistral:7b` - Good alternative
+
+### Environment Variables Reference
+
+| Variable | Values | Default | Description |
+|----------|--------|---------|-------------|
+| `ELLE_LLM_PROVIDER` | `dummy`, `anthropic`, `openai`, `local` | `dummy` | Which LLM to use |
+| `ELLE_LLM_MODEL` | Model name | (varies) | Specific model to use |
+| `ANTHROPIC_API_KEY` | API key | - | Required for Anthropic |
+| `OPENAI_API_KEY` | API key | - | Required for OpenAI |
+| `OLLAMA_BASE_URL` | URL | `http://localhost:11434` | Ollama API endpoint |
+
+### Cost Comparison
+
+**Per 1,000 Game Interactions** (approx):
+
+| Provider | Model | Input Cost | Output Cost | Total (est) |
+|----------|-------|------------|-------------|-------------|
+| Anthropic | Claude 3.5 Sonnet | $3.00 | $15.00 | **$18.00** |
+| Anthropic | Claude 3 Haiku | $0.25 | $1.25 | **$1.50** |
+| OpenAI | GPT-4o | $2.50 | $10.00 | **$12.50** |
+| OpenAI | GPT-4o-mini | $0.15 | $0.60 | **$0.75** |
+| Ollama | Any | $0.00 | $0.00 | **Free** |
+
+*Assumes ~200 input tokens + ~150 output tokens per interaction*
+
+### Recommendations
+
+**For Production Games**:
+- Use `gpt-4o-mini` (OpenAI) or `claude-3-haiku` (Anthropic) for cost efficiency
+- ~$1-2 per 1,000 players
+
+**For Development/Testing**:
+- Use `dummy` (no cost, predictable responses)
+- Or `local` with Ollama (free, runs on your machine)
+
+**For High-Quality Narrative**:
+- Use `claude-3-5-sonnet` for best storytelling
+- Worth the cost for premium games
+
 ## API Reference
 
 ### POST /elle/game/action

@@ -12,6 +12,7 @@ Endpoints:
 from typing import Dict, Any, Optional, List
 from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field
+import os
 
 try:
     from fastapi import FastAPI, HTTPException, status
@@ -123,14 +124,44 @@ async def lifespan(app: FastAPI):
     """Lifespan context manager for startup/shutdown."""
     global _policy
 
-    # Startup: Create LLM client and policy
-    llm_client = create_llm_client("dummy")
+    # Startup: Create LLM client based on environment variables
+    provider = os.getenv("ELLE_LLM_PROVIDER", "dummy").lower()
+
+    # Configure client based on provider
+    if provider == "anthropic":
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY environment variable required for Anthropic provider")
+        model = os.getenv("ELLE_LLM_MODEL", "claude-3-5-sonnet-20241022")
+        llm_client = create_llm_client("anthropic", api_key=api_key, model=model)
+
+    elif provider == "openai":
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY environment variable required for OpenAI provider")
+        model = os.getenv("ELLE_LLM_MODEL", "gpt-4o-mini")
+        llm_client = create_llm_client("openai", api_key=api_key, model=model)
+
+    elif provider == "local":
+        base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        model = os.getenv("ELLE_LLM_MODEL", "llama3.2:3b")
+        llm_client = create_llm_client("local", base_url=base_url, model=model)
+
+    else:  # dummy (default)
+        llm_client = create_llm_client("dummy")
+
+    # Create policy
     _policy = GamePolicy(llm_client)
+
+    print(f"🎮 Elle Game Engine started with {provider} LLM provider")
+    if provider != "dummy":
+        print(f"📡 Model: {model if 'model' in locals() else 'default'}")
 
     yield
 
     # Shutdown: cleanup if needed
     _policy = None
+    print("🛑 Elle Game Engine shutting down")
 
 
 def create_app() -> FastAPI:

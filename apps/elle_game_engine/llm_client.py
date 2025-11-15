@@ -182,33 +182,192 @@ class DummyLLMClient:
         self.last_prompt = None
 
 
-# Future: Add real LLM clients
-
-class OpenAIClient:
-    """OpenAI client implementation (stub for future)."""
-
-    def __init__(self, api_key: str, model: str = "gpt-4"):
-        self.api_key = api_key
-        self.model = model
-        raise NotImplementedError("OpenAI client not yet implemented")
-
+# Real LLM Clients
 
 class AnthropicClient:
-    """Anthropic Claude client implementation (stub for future)."""
+    """
+    Anthropic Claude client implementation.
+
+    Requires: pip install anthropic
+    Environment: ANTHROPIC_API_KEY
+    """
 
     def __init__(self, api_key: str, model: str = "claude-3-5-sonnet-20241022"):
-        self.api_key = api_key
+        """
+        Initialize Anthropic client.
+
+        Args:
+            api_key: Anthropic API key
+            model: Model to use (default: claude-3-5-sonnet-20241022)
+        """
+        try:
+            import anthropic
+        except ImportError:
+            raise ImportError(
+                "anthropic package not installed. Install with: pip install anthropic"
+            )
+
+        self.client = anthropic.Anthropic(api_key=api_key)
         self.model = model
-        raise NotImplementedError("Anthropic client not yet implemented")
+
+    async def complete(
+        self,
+        prompt: str,
+        *,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+    ) -> str:
+        """
+        Generate completion using Claude.
+
+        Args:
+            prompt: User prompt
+            system_prompt: System/instruction prompt
+            max_tokens: Maximum tokens to generate
+            temperature: Sampling temperature
+
+        Returns:
+            Generated text
+        """
+        messages = [{"role": "user", "content": prompt}]
+
+        response = self.client.messages.create(
+            model=self.model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=system_prompt or "",
+            messages=messages,
+        )
+
+        return response.content[0].text
+
+
+class OpenAIClient:
+    """
+    OpenAI client implementation.
+
+    Requires: pip install openai
+    Environment: OPENAI_API_KEY
+    """
+
+    def __init__(self, api_key: str, model: str = "gpt-4o-mini"):
+        """
+        Initialize OpenAI client.
+
+        Args:
+            api_key: OpenAI API key
+            model: Model to use (default: gpt-4o-mini for cost efficiency)
+        """
+        try:
+            from openai import OpenAI
+        except ImportError:
+            raise ImportError(
+                "openai package not installed. Install with: pip install openai"
+            )
+
+        self.client = OpenAI(api_key=api_key)
+        self.model = model
+
+    async def complete(
+        self,
+        prompt: str,
+        *,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+    ) -> str:
+        """
+        Generate completion using OpenAI.
+
+        Args:
+            prompt: User prompt
+            system_prompt: System/instruction prompt
+            max_tokens: Maximum tokens to generate
+            temperature: Sampling temperature
+
+        Returns:
+            Generated text
+        """
+        messages = []
+
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+
+        messages.append({"role": "user", "content": prompt})
+
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+
+        return response.choices[0].message.content
 
 
 class LocalLLMClient:
-    """Local LLM client (Ollama, etc.) implementation (stub for future)."""
+    """
+    Local LLM client using Ollama.
+
+    Requires: Ollama running locally (ollama.ai)
+    No API key needed.
+    """
 
     def __init__(self, base_url: str = "http://localhost:11434", model: str = "llama3.2:3b"):
-        self.base_url = base_url
+        """
+        Initialize local LLM client.
+
+        Args:
+            base_url: Ollama API base URL
+            model: Model name (must be pulled via ollama pull first)
+        """
+        self.base_url = base_url.rstrip('/')
         self.model = model
-        raise NotImplementedError("Local LLM client not yet implemented")
+
+    async def complete(
+        self,
+        prompt: str,
+        *,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+    ) -> str:
+        """
+        Generate completion using local Ollama model.
+
+        Args:
+            prompt: User prompt
+            system_prompt: System/instruction prompt
+            max_tokens: Maximum tokens to generate (not all models respect this)
+            temperature: Sampling temperature
+
+        Returns:
+            Generated text
+        """
+        import httpx
+
+        full_prompt = prompt
+        if system_prompt:
+            full_prompt = f"{system_prompt}\n\n{prompt}"
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/api/generate",
+                json={
+                    "model": self.model,
+                    "prompt": full_prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": temperature,
+                        "num_predict": max_tokens,
+                    }
+                },
+                timeout=60.0,
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data["response"]
 
 
 def create_llm_client(provider: str = "dummy", **kwargs) -> BaseLLMClient:
@@ -223,16 +382,22 @@ def create_llm_client(provider: str = "dummy", **kwargs) -> BaseLLMClient:
         LLM client instance
 
     Examples:
+        >>> # Dummy client for testing
         >>> client = create_llm_client("dummy")
         >>> client = create_llm_client("dummy", response_mode="hint")
+
+        >>> # Real LLM clients
+        >>> client = create_llm_client("anthropic", api_key="sk-...")
+        >>> client = create_llm_client("openai", api_key="sk-...", model="gpt-4")
+        >>> client = create_llm_client("local", model="llama3.2:3b")
     """
     if provider == "dummy":
         return DummyLLMClient(**kwargs)
-    elif provider == "openai":
-        raise NotImplementedError("OpenAI client not yet implemented")
     elif provider == "anthropic":
-        raise NotImplementedError("Anthropic client not yet implemented")
+        return AnthropicClient(**kwargs)
+    elif provider == "openai":
+        return OpenAIClient(**kwargs)
     elif provider == "local":
-        raise NotImplementedError("Local LLM client not yet implemented")
+        return LocalLLMClient(**kwargs)
     else:
         raise ValueError(f"Unknown LLM provider: {provider}")
