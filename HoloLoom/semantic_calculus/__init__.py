@@ -52,13 +52,14 @@ Author: BearL Labs
 __version__ = "0.1.0"
 
 # === Core Calculus ===
-from .flow_calculus import (
-    SemanticState,
-    SemanticTrajectory,
-    SemanticFlowCalculus,
-    SemanticFlowVisualizer,
-    analyze_text_flow,
-)
+# TODO: flow_calculus module not yet implemented
+# from .flow_calculus import (
+#     SemanticState,
+#     SemanticTrajectory,
+#     SemanticFlowCalculus,
+#     SemanticFlowVisualizer,
+#     analyze_text_flow,
+# )
 
 # === Semantic Dimensions (The Key Projection!) ===
 from .dimensions import (

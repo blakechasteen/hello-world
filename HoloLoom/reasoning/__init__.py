@@ -40,6 +40,12 @@ from HoloLoom.reasoning.types import (
 from HoloLoom.reasoning.planner import QueryPlanner
 from HoloLoom.reasoning.chain_of_thought import ChainOfThought
 from HoloLoom.reasoning.verifier import SelfVerifier
+from HoloLoom.reasoning.backtracker import Backtracker, Contradiction, BacktrackResult
+from HoloLoom.reasoning.bandit import (
+    ReasoningModeBandit,
+    ThompsonPrior,
+    ModeStatistics,
+)
 from HoloLoom.reasoning.engine import (
     ReasoningEngine,
     reason_with_mode,
@@ -69,7 +75,15 @@ __all__ = [
     "QueryPlanner",
     "ChainOfThought",
     "SelfVerifier",
+    "Backtracker",
+    "ReasoningModeBandit",
     "ReasoningEngine",
+
+    # Phase 3 types
+    "Contradiction",
+    "BacktrackResult",
+    "ThompsonPrior",
+    "ModeStatistics",
 
     # Convenience functions
     "reason_with_mode",
@@ -83,5 +97,5 @@ __all__ = [
 
 
 # Version info
-__version__ = "1.1.0-phase1"
-__phase__ = "Phase 1: Foundation (FAST + STANDARD modes)"
+__version__ = "1.1.0-phase3"
+__phase__ = "Phase 3: DEEP Mode (Planning + Backtracking + Thompson Sampling)"

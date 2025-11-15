@@ -741,6 +741,220 @@ async with ReflectionBuffer(capacity=1000, persist_path="./reflections") as buff
     # Metrics automatically flushed on exit
 ```
 
+## Reasoning Engine (Layer 6)
+
+**Status**: ✅ Phase 4 Complete (November 15, 2025)
+**Location**: `HoloLoom/reasoning/`
+**Documentation**: `REASONING_ENGINE_GUIDE.md`
+
+The Reasoning Engine is **Layer 6** in HoloLoom's 9-layer weaving architecture, providing explicit chain-of-thought reasoning between feature extraction and decision-making.
+
+### Key Principle
+
+> **"Think before you act, verify before you commit."**
+
+### Three Reasoning Modes
+
+**FAST Mode** (<50ms overhead):
+- Single-step sanity check
+- Auto-escalates if confidence < 0.85
+- Best for simple factual queries
+
+**STANDARD Mode** (~200ms overhead):
+- 3-5 step chain-of-thought
+- Intent analysis → Evidence → Synthesis → Verification
+- Best for most queries (default)
+
+**DEEP Mode** (~500ms+ overhead):
+- Planning + multi-pass verification + backtracking
+- Query decomposition into sub-questions
+- Best for complex research queries
+
+### Quick Start
+
+```python
+from HoloLoom.reasoning.engine import ReasoningEngine, ReasoningMode
+from HoloLoom.documentation.types import Query
+
+# Create engine
+engine = ReasoningEngine(mode=ReasoningMode.STANDARD)
+
+# Run reasoning
+result = await engine.reason(query, features, context)
+
+# View results
+print(result.summary())
+for i, step in enumerate(result.chain):
+    print(f"{i+1}. [{step.confidence:.2f}] {step.thought}")
+```
+
+### Auto Mode Selection
+
+```python
+from HoloLoom.reasoning.engine import auto_reason
+
+# Automatically selects FAST/STANDARD/DEEP based on query complexity
+result = await auto_reason(query, features, context)
+print(f"Selected mode: {result.mode.value}")
+```
+
+### Visualization
+
+Tufte-style reasoning chain visualization:
+
+```python
+from HoloLoom.visualization.reasoning_chain import render_from_reasoning_result
+
+# Generate HTML visualization
+html = render_from_reasoning_result(
+    result,
+    title=f"Query: {query.text}",
+    show_metrics=True,
+    show_evidence=True,
+    show_sparklines=True
+)
+
+# Save to file
+with open('reasoning_chain.html', 'w') as f:
+    f.write(html)
+```
+
+**Visualization Features**:
+- Sequential step flow with step type icons (🧠 🔍 🔗 ✓ ↩ 📋 🔧)
+- Confidence indicators (color-coded bars)
+- Collapsible evidence sections
+- Confidence timeline sparkline
+- Summary metrics
+
+### Performance Monitoring
+
+Track reasoning performance with Prometheus-style metrics:
+
+```python
+from HoloLoom.performance.reasoning_metrics import (
+    get_reasoning_metrics,
+    track_reasoning
+)
+
+# Automatic tracking with context manager
+with track_reasoning(mode="standard") as tracker:
+    result = await engine.reason(query, features, context)
+    tracker.set_result(result)
+
+# Query metrics
+metrics = get_reasoning_metrics()
+summary = metrics.get_summary()
+print(f"Total operations: {summary['total_operations']}")
+print(f"Mode distribution: {summary['mode_distribution']}")
+print(f"Avg duration: {summary['duration_stats']['avg']:.1f}ms")
+print(f"Avg confidence: {summary['confidence_stats']['avg']:.2f}")
+```
+
+### Interactive Playground
+
+Test and compare reasoning modes interactively:
+
+```bash
+# Interactive mode
+python demos/reasoning_playground.py --interactive
+
+# Compare all modes on a query
+python demos/reasoning_playground.py --query "What is Thompson Sampling?" --compare
+
+# Run demo queries
+python demos/reasoning_playground.py --demo
+```
+
+**Interactive commands**:
+- `<query>` - Analyze query with current mode
+- `compare <query>` - Compare all modes
+- `mode <fast|standard|deep>` - Set default mode
+- `metrics` - Show performance metrics
+- `export <filename>` - Export last result to HTML
+- `quit` - Exit
+
+### Integration with WeavingOrchestrator
+
+```python
+from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from HoloLoom.config import Config
+
+# Enable reasoning in config
+config = Config.fused()
+config.enable_reasoning = True
+config.reasoning_mode = ReasoningMode.STANDARD
+config.enable_adaptive_reasoning = True
+
+# Create orchestrator
+async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
+    # Weaving now includes reasoning layer
+    spacetime = await orchestrator.weave(query)
+
+    # Reasoning chain available in metadata
+    if 'reasoning_chain' in spacetime.metadata:
+        chain = spacetime.metadata['reasoning_chain']
+        print(f"Reasoning steps: {len(chain)}")
+        print(f"Mode used: {spacetime.metadata['reasoning_mode']}")
+```
+
+### Configuration Options
+
+```python
+from HoloLoom.config import Config
+
+config = Config.fused()
+
+# Reasoning settings
+config.enable_reasoning = True
+config.reasoning_mode = ReasoningMode.STANDARD
+config.max_reasoning_steps = 5
+config.reasoning_verification_threshold = 0.75
+
+# Adaptive mode selection
+config.enable_adaptive_reasoning = True
+config.reasoning_complexity_threshold = 0.5
+
+# Performance limits
+config.max_reasoning_time_ms = 500.0
+config.reasoning_timeout_fallback = ReasoningMode.FAST
+```
+
+### Performance Characteristics
+
+| Mode | Overhead | Accuracy | When to Use |
+|------|----------|----------|-------------|
+| FAST | <50ms | 75% | High confidence, simple queries |
+| STANDARD | ~200ms | 85% | Most queries (default) |
+| DEEP | ~500ms+ | 95% | Complex, research queries |
+
+**Accuracy vs Speed Tradeoff**:
+```
+Accuracy: DEEP (95%) > STANDARD (85%) > FAST (75%)
+Speed:    FAST (50ms) > STANDARD (200ms) > DEEP (500ms+)
+
+Sweet spot: STANDARD mode with adaptive escalation
+```
+
+### Step Types
+
+| Type | Icon | Description |
+|------|------|-------------|
+| UNDERSTANDING | 🧠 | Analyze query intent |
+| EVIDENCE | 🔍 | Gather evidence from context |
+| SYNTHESIS | 🔗 | Synthesize reasoning |
+| VERIFICATION | ✓ | Self-check consistency |
+| BACKTRACK | ↩ | Revise earlier steps |
+| PLANNING | 📋 | Create sub-question plan |
+| CORRECTION | 🔧 | Correct detected error |
+
+### Documentation
+
+- **User Guide**: `REASONING_ENGINE_GUIDE.md` (800+ lines)
+- **Design Document**: `REASONING_MODEL_INTEGRATION_DESIGN.md`
+- **Visualizer**: `HoloLoom/visualization/reasoning_chain.py`
+- **Metrics**: `HoloLoom/performance/reasoning_metrics.py`
+- **Playground**: `demos/reasoning_playground.py`
+
 ## Recursive Learning System
 
 **Status**: ✅ All 5 Phases Complete (October 29, 2025)

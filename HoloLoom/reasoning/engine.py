@@ -13,7 +13,7 @@ Phase: 1 (Foundation - FAST and STANDARD modes)
 import asyncio
 import logging
 import time
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from HoloLoom.documentation.types import Query, Features, Context
 from HoloLoom.reasoning.types import (
@@ -26,6 +26,7 @@ from HoloLoom.reasoning.types import (
 from HoloLoom.reasoning.planner import QueryPlanner
 from HoloLoom.reasoning.chain_of_thought import ChainOfThought
 from HoloLoom.reasoning.verifier import SelfVerifier
+from HoloLoom.reasoning.backtracker import Backtracker
 
 # Optional scratchpad integration
 try:
@@ -79,6 +80,7 @@ class ReasoningEngine:
         self.planner = QueryPlanner()
         self.cot_generator = ChainOfThought()
         self.verifier = SelfVerifier(threshold=verification_threshold)
+        self.backtracker = Backtracker(max_revisions=3)
 
         self.logger = logging.getLogger(f"{__name__}.ReasoningEngine")
 
@@ -117,12 +119,8 @@ class ReasoningEngine:
         elif reasoning_mode == ReasoningMode.STANDARD:
             result = await self.reason_standard(query, features, context)
         elif reasoning_mode == ReasoningMode.DEEP:
-            # Phase 3 - for now, fall back to STANDARD
-            self.logger.warning(
-                "DEEP mode requested but not yet implemented (Phase 3). "
-                "Falling back to STANDARD mode."
-            )
-            result = await self.reason_standard(query, features, context)
+            # Phase 3 - full DEEP mode with planning and backtracking
+            result = await self.reason_deep(query, features, context)
         else:
             raise ValueError(f"Unknown reasoning mode: {reasoning_mode}")
 
@@ -269,6 +267,255 @@ class ReasoningEngine:
                 "verification_passed": verification.passed
             }
         )
+
+    async def reason_deep(
+        self,
+        query: Query,
+        features: Features,
+        context: Context
+    ) -> ReasoningResult:
+        """
+        Deep reasoning: Planning, multi-pass verification, backtracking.
+
+        Steps:
+        1. Create query plan (decompose into sub-questions)
+        2. Execute plan steps sequentially
+        3. Multi-pass verification (VERIFY strategy)
+        4. Detect contradictions and backtrack if needed
+        5. Synthesize final reasoning chain
+
+        Args:
+            query: Input query
+            features: Extracted features
+            context: Retrieved context
+
+        Returns:
+            ReasoningResult with comprehensive reasoning chain
+        """
+        chain = []
+
+        # Step 1: Planning
+        self.logger.info("DEEP mode: Creating query plan")
+        plan = self.planner.create_plan(query, features, context)
+        intent = self.planner.analyze_intent(query, features)
+
+        chain.append(ReasoningStep(
+            thought=f"Query plan created: {len(plan.steps)} sub-questions to answer",
+            evidence="; ".join([s.question[:60] + "..." if len(s.question) > 60 else s.question
+                              for s in plan.steps[:3]]),
+            confidence=0.9,
+            step_type=StepType.PLANNING,
+            metadata={
+                "plan_complexity": plan.estimated_complexity,
+                "num_steps": len(plan.steps),
+                "dependencies": plan.dependencies
+            }
+        ))
+
+        # Step 2: Execute plan steps
+        self.logger.info(f"DEEP mode: Executing {len(plan.steps)} plan steps")
+        for i, plan_step in enumerate(plan.steps):
+            # Execute substep
+            substep_result = await self._execute_substep(
+                plan_step,
+                context,
+                intent
+            )
+
+            chain.append(ReasoningStep(
+                thought=f"Sub-question {i+1}/{len(plan.steps)}: {substep_result['answer']}",
+                evidence=substep_result['evidence'],
+                confidence=substep_result['confidence'],
+                step_type=StepType.EVIDENCE if i < len(plan.steps) - 1 else StepType.SYNTHESIS,
+                metadata={
+                    "plan_step": i,
+                    "question": plan_step.question,
+                    "required_for": plan_step.required_for
+                }
+            ))
+
+        # Limit total chain length
+        if len(chain) > self.max_steps:
+            self.logger.warning(
+                f"Chain has {len(chain)} steps, truncating to {self.max_steps}"
+            )
+            # Keep planning step + most important substeps + synthesis
+            chain = [chain[0]] + chain[-(self.max_steps-1):]
+
+        # Step 3: Multi-pass verification
+        self.logger.info("DEEP mode: Running multi-pass verification")
+        verification = await self.verifier.verify_multipass(chain, context, num_passes=3)
+
+        # Add verification results
+        for pass_num, verify_result in enumerate(verification.passes):
+            if not verify_result.passed:
+                chain.append(ReasoningStep(
+                    thought=f"Verification pass {pass_num+1} detected issue: {verify_result.issue}",
+                    evidence=verify_result.correction or "Review recommended",
+                    confidence=verify_result.confidence,
+                    step_type=StepType.VERIFICATION,
+                    metadata={
+                        "pass_num": pass_num + 1,
+                        "severity": verify_result.severity.value
+                    }
+                ))
+
+        # Step 4: Backtracking if contradictions detected
+        if verification.has_contradictions:
+            self.logger.info(
+                f"DEEP mode: Resolving {len(verification.contradictions)} contradictions"
+            )
+
+            # Resolve contradictions
+            revised_chain = await self.backtracker.resolve_contradictions(
+                chain,
+                verification
+            )
+
+            # Add backtrack summary if revisions were made
+            if len(revised_chain) != len(chain):
+                chain = revised_chain
+                chain.append(ReasoningStep(
+                    thought=f"Backtracking complete: resolved {len(verification.contradictions)} contradictions",
+                    evidence="; ".join(verification.contradictions[:2]),
+                    confidence=0.7,
+                    step_type=StepType.BACKTRACK,
+                    metadata={
+                        "contradictions_resolved": len(verification.contradictions),
+                        "revisions_made": len(revised_chain) - len(chain)
+                    }
+                ))
+
+        # Step 5: Final synthesis
+        self.logger.info("DEEP mode: Creating final synthesis")
+        synthesis = self._synthesize_deep(chain, plan, intent)
+
+        chain.append(ReasoningStep(
+            thought=f"Final conclusion: {synthesis['conclusion']}",
+            evidence=synthesis['supporting_evidence'],
+            confidence=synthesis['confidence'],
+            step_type=StepType.SYNTHESIS,
+            metadata={
+                "synthesis_method": "deep_multipass",
+                "evidence_count": len(chain)
+            }
+        ))
+
+        # Calculate total confidence (weighted toward final steps)
+        if len(chain) > 3:
+            # Weight recent steps more heavily
+            weights = [1.0] * (len(chain) - 3) + [1.5, 1.8, 2.0]
+            weighted_conf = sum(s.confidence * w for s, w in zip(chain, weights))
+            total_confidence = weighted_conf / sum(weights)
+        else:
+            total_confidence = sum(s.confidence for s in chain) / len(chain)
+
+        # Ensure infinite loop prevention
+        if not self.backtracker.prevent_infinite_loops(chain):
+            self.logger.error("Infinite loop detected in DEEP mode reasoning")
+            # Add warning to metadata
+            total_confidence *= 0.5  # Reduce confidence due to loop
+
+        return ReasoningResult(
+            chain=chain,
+            mode=ReasoningMode.DEEP,
+            total_confidence=total_confidence,
+            metadata={
+                "intent": intent.type.value,
+                "complexity": plan.estimated_complexity,
+                "plan_steps": len(plan.steps),
+                "verification_passes": len(verification.passes),
+                "contradictions_found": len(verification.contradictions),
+                "contradictions_resolved": verification.has_contradictions
+            }
+        )
+
+    async def _execute_substep(
+        self,
+        plan_step,
+        context: Context,
+        intent
+    ) -> dict:
+        """
+        Execute a single plan substep.
+
+        Args:
+            plan_step: PlanStep to execute
+            context: Retrieved context
+            intent: Query intent
+
+        Returns:
+            Dict with answer, evidence, confidence
+        """
+        # Extract evidence relevant to this substep
+        evidence = self.cot_generator.extract_evidence(context, intent)
+
+        if not evidence:
+            return {
+                'answer': f"Unable to answer: {plan_step.question}",
+                'evidence': "No relevant evidence found",
+                'confidence': 0.3
+            }
+
+        # Synthesize answer from evidence
+        synthesis = self.cot_generator.synthesize(intent, evidence)
+
+        return {
+            'answer': synthesis.reasoning[:200],  # Limit length
+            'evidence': "; ".join(synthesis.key_points[:2]),
+            'confidence': min(0.9, synthesis.confidence * 0.9)  # Slightly conservative
+        }
+
+    def _synthesize_deep(
+        self,
+        chain: List[ReasoningStep],
+        plan,
+        intent
+    ) -> dict:
+        """
+        Synthesize final conclusion from reasoning chain.
+
+        Args:
+            chain: Complete reasoning chain
+            plan: Query plan
+            intent: Query intent
+
+        Returns:
+            Dict with conclusion, supporting_evidence, confidence
+        """
+        # Extract key insights from chain
+        evidence_steps = [s for s in chain if s.step_type == StepType.EVIDENCE]
+        synthesis_steps = [s for s in chain if s.step_type == StepType.SYNTHESIS]
+
+        # Build conclusion
+        if synthesis_steps:
+            # Use most recent synthesis as base
+            latest_synthesis = synthesis_steps[-1].thought
+            conclusion = latest_synthesis[:300]
+        else:
+            # Fallback: combine evidence
+            conclusion = "Analysis complete based on available evidence"
+
+        # Gather supporting evidence
+        supporting_evidence = "; ".join([
+            s.evidence[:100] for s in evidence_steps[:3]
+            if s.evidence and len(s.evidence) > 10
+        ])
+
+        if not supporting_evidence:
+            supporting_evidence = "Multiple reasoning steps analyzed"
+
+        # Calculate confidence (average of synthesis steps)
+        if synthesis_steps:
+            confidence = sum(s.confidence for s in synthesis_steps) / len(synthesis_steps)
+        else:
+            confidence = 0.5
+
+        return {
+            'conclusion': conclusion,
+            'supporting_evidence': supporting_evidence,
+            'confidence': min(0.95, confidence)
+        }
 
     def estimate_confidence(
         self,

@@ -11,7 +11,7 @@ Phase: 1 (Foundation)
 """
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Dict
 import re
 
 from HoloLoom.documentation.types import Query, Features, Context
@@ -99,7 +99,12 @@ class QueryPlanner:
         complexity = self._estimate_complexity(query_type, query_text, features)
 
         # Extract key concepts from motifs
-        key_concepts = features.motifs[:5] if features.motifs else []
+        if features.motifs:
+            # Motifs are Motif objects with .pattern attribute
+            key_concepts = [m.pattern if hasattr(m, 'pattern') else str(m)
+                          for m in features.motifs[:5]]
+        else:
+            key_concepts = []
 
         # Confidence in classification
         confidence = self._classification_confidence(query_type, query_text)
@@ -195,7 +200,8 @@ class QueryPlanner:
         length_factor = min(1.0, len(query_text.split()) / 20.0)
 
         # Adjust for motif count (more motifs = more complex)
-        motif_factor = min(1.0, len(features.motifs) / 5.0) if features.motifs else 0.0
+        motif_count = len(features.motifs) if features.motifs else 0
+        motif_factor = min(1.0, motif_count / 5.0)
 
         # Weighted combination
         complexity = (
@@ -246,67 +252,337 @@ class QueryPlanner:
         """
         Create execution plan for complex query (DEEP mode).
 
+        Decomposes query into sub-questions with dependency tracking.
+
         Args:
             query: Input query
             features: Extracted features
             context: Retrieved context
 
         Returns:
-            QueryPlan with sub-steps
+            QueryPlan with sub-steps and dependencies
         """
         intent = self.analyze_intent(query, features)
 
-        # For Phase 1, create simple linear plan
-        # Future: More sophisticated plan generation
+        # Phase 3: More sophisticated plan generation
         steps = []
+        dependencies = {}
 
-        # Step 1: Understand the question
-        steps.append(PlanStep(
-            question=f"What is the core question about {intent.key_concepts[0] if intent.key_concepts else 'the topic'}?",
-            required_for="Understanding scope",
-            complexity=0.3
-        ))
-
-        # Step 2: Gather evidence
-        steps.append(PlanStep(
-            question="What evidence is available in the context?",
-            required_for="Building answer foundation",
-            complexity=0.4
-        ))
-
-        # Step 3: Type-specific step
+        # Decompose based on query type
         if intent.type == QueryType.COMPARATIVE:
-            steps.append(PlanStep(
-                question="What are the key differences and similarities?",
-                required_for="Comparative analysis",
-                complexity=0.6
-            ))
+            steps = self._create_comparative_plan(intent, features, context)
         elif intent.type == QueryType.ANALYTICAL:
-            steps.append(PlanStep(
-                question="What are the causal relationships?",
-                required_for="Analytical reasoning",
-                complexity=0.7
-            ))
+            steps = self._create_analytical_plan(intent, features, context)
+        elif intent.type == QueryType.PROCEDURAL:
+            steps = self._create_procedural_plan(intent, features, context)
+        elif intent.type == QueryType.VERIFICATION:
+            steps = self._create_verification_plan(intent, features, context)
         else:
-            steps.append(PlanStep(
-                question="How do the pieces fit together?",
-                required_for="Synthesis",
-                complexity=0.5
-            ))
+            # Default: factual or creative
+            steps = self._create_default_plan(intent, features, context)
 
-        # Step 4: Verify and synthesize
-        steps.append(PlanStep(
-            question="Is the answer complete and consistent?",
-            required_for="Final verification",
-            complexity=0.3
-        ))
+        # Build dependency graph (sequential by default, can be customized)
+        dependencies = self._build_dependencies(steps, intent)
 
         return QueryPlan(
             steps=steps,
             estimated_complexity=intent.complexity,
-            dependencies={
-                1: [0],  # Step 1 depends on step 0
-                2: [1],  # Step 2 depends on step 1
-                3: [2],  # Step 3 depends on step 2
-            }
+            dependencies=dependencies
         )
+
+    def _create_comparative_plan(
+        self,
+        intent: QueryIntent,
+        features: Features,
+        context: Context
+    ) -> List[PlanStep]:
+        """Create plan for comparative queries."""
+        steps = []
+
+        # Step 1: Identify entities to compare
+        entities = intent.key_concepts[:2] if len(intent.key_concepts) >= 2 else ["A", "B"]
+        steps.append(PlanStep(
+            question=f"What are we comparing: {entities[0]} vs {entities[1]}?",
+            required_for="Identifying comparison subjects",
+            complexity=0.3
+        ))
+
+        # Step 2: Gather evidence for first entity
+        steps.append(PlanStep(
+            question=f"What are the key characteristics of {entities[0]}?",
+            required_for="Understanding first subject",
+            complexity=0.5
+        ))
+
+        # Step 3: Gather evidence for second entity
+        steps.append(PlanStep(
+            question=f"What are the key characteristics of {entities[1]}?",
+            required_for="Understanding second subject",
+            complexity=0.5
+        ))
+
+        # Step 4: Identify differences
+        steps.append(PlanStep(
+            question=f"What are the key differences between {entities[0]} and {entities[1]}?",
+            required_for="Comparative analysis",
+            complexity=0.6
+        ))
+
+        # Step 5: Identify similarities
+        steps.append(PlanStep(
+            question=f"What are the similarities between {entities[0]} and {entities[1]}?",
+            required_for="Complete comparison",
+            complexity=0.5
+        ))
+
+        # Step 6: Synthesize comparison
+        steps.append(PlanStep(
+            question="Which is better suited for different use cases?",
+            required_for="Final synthesis",
+            complexity=0.4
+        ))
+
+        return steps
+
+    def _create_analytical_plan(
+        self,
+        intent: QueryIntent,
+        features: Features,
+        context: Context
+    ) -> List[PlanStep]:
+        """Create plan for analytical queries."""
+        steps = []
+
+        concept = intent.key_concepts[0] if intent.key_concepts else "the phenomenon"
+
+        # Step 1: Understand the phenomenon
+        steps.append(PlanStep(
+            question=f"What is {concept} and why is it important?",
+            required_for="Understanding context",
+            complexity=0.4
+        ))
+
+        # Step 2: Identify potential causes
+        steps.append(PlanStep(
+            question=f"What are the potential causes or factors behind {concept}?",
+            required_for="Causal analysis",
+            complexity=0.7
+        ))
+
+        # Step 3: Gather supporting evidence
+        steps.append(PlanStep(
+            question="What evidence supports each potential cause?",
+            required_for="Evidence gathering",
+            complexity=0.6
+        ))
+
+        # Step 4: Evaluate explanations
+        steps.append(PlanStep(
+            question="Which explanations are most strongly supported?",
+            required_for="Critical evaluation",
+            complexity=0.7
+        ))
+
+        # Step 5: Consider alternative explanations
+        steps.append(PlanStep(
+            question="Are there alternative explanations we should consider?",
+            required_for="Comprehensive analysis",
+            complexity=0.6
+        ))
+
+        # Step 6: Synthesize conclusion
+        steps.append(PlanStep(
+            question=f"What is the most likely explanation for {concept}?",
+            required_for="Final conclusion",
+            complexity=0.5
+        ))
+
+        return steps
+
+    def _create_procedural_plan(
+        self,
+        intent: QueryIntent,
+        features: Features,
+        context: Context
+    ) -> List[PlanStep]:
+        """Create plan for procedural queries."""
+        steps = []
+
+        task = intent.key_concepts[0] if intent.key_concepts else "the task"
+
+        # Step 1: Understand goal
+        steps.append(PlanStep(
+            question=f"What is the desired outcome of {task}?",
+            required_for="Goal identification",
+            complexity=0.3
+        ))
+
+        # Step 2: Prerequisites
+        steps.append(PlanStep(
+            question=f"What prerequisites or materials are needed for {task}?",
+            required_for="Preparation",
+            complexity=0.4
+        ))
+
+        # Step 3: Main steps
+        steps.append(PlanStep(
+            question=f"What are the main steps to accomplish {task}?",
+            required_for="Procedure identification",
+            complexity=0.6
+        ))
+
+        # Step 4: Common pitfalls
+        steps.append(PlanStep(
+            question=f"What are common mistakes or pitfalls when doing {task}?",
+            required_for="Risk mitigation",
+            complexity=0.5
+        ))
+
+        # Step 5: Verification
+        steps.append(PlanStep(
+            question=f"How can we verify that {task} was completed successfully?",
+            required_for="Quality assurance",
+            complexity=0.4
+        ))
+
+        return steps
+
+    def _create_verification_plan(
+        self,
+        intent: QueryIntent,
+        features: Features,
+        context: Context
+    ) -> List[PlanStep]:
+        """Create plan for verification queries."""
+        steps = []
+
+        claim = intent.key_concepts[0] if intent.key_concepts else "the claim"
+
+        # Step 1: Understand the claim
+        steps.append(PlanStep(
+            question=f"What exactly is being claimed about {claim}?",
+            required_for="Claim identification",
+            complexity=0.3
+        ))
+
+        # Step 2: Find supporting evidence
+        steps.append(PlanStep(
+            question=f"What evidence supports the claim about {claim}?",
+            required_for="Support assessment",
+            complexity=0.6
+        ))
+
+        # Step 3: Find contradicting evidence
+        steps.append(PlanStep(
+            question=f"What evidence contradicts the claim about {claim}?",
+            required_for="Contradiction assessment",
+            complexity=0.6
+        ))
+
+        # Step 4: Evaluate sources
+        steps.append(PlanStep(
+            question="How reliable are the sources of evidence?",
+            required_for="Source credibility",
+            complexity=0.5
+        ))
+
+        # Step 5: Reach verdict
+        steps.append(PlanStep(
+            question=f"Is the claim about {claim} true, false, or uncertain?",
+            required_for="Final verdict",
+            complexity=0.4
+        ))
+
+        return steps
+
+    def _create_default_plan(
+        self,
+        intent: QueryIntent,
+        features: Features,
+        context: Context
+    ) -> List[PlanStep]:
+        """Create default plan for factual/creative queries."""
+        steps = []
+
+        concept = intent.key_concepts[0] if intent.key_concepts else "the topic"
+
+        # Step 1: Understand the question
+        steps.append(PlanStep(
+            question=f"What is the core question about {concept}?",
+            required_for="Understanding scope",
+            complexity=0.3
+        ))
+
+        # Step 2: Gather relevant information
+        steps.append(PlanStep(
+            question=f"What information is available about {concept}?",
+            required_for="Knowledge gathering",
+            complexity=0.5
+        ))
+
+        # Step 3: Organize information
+        steps.append(PlanStep(
+            question=f"How can we organize this information about {concept}?",
+            required_for="Structuring knowledge",
+            complexity=0.4
+        ))
+
+        # Step 4: Synthesize answer
+        steps.append(PlanStep(
+            question=f"What is the complete answer about {concept}?",
+            required_for="Final synthesis",
+            complexity=0.5
+        ))
+
+        return steps
+
+    def _build_dependencies(
+        self,
+        steps: List[PlanStep],
+        intent: QueryIntent
+    ) -> Dict[int, List[int]]:
+        """
+        Build dependency graph for plan steps.
+
+        Args:
+            steps: Plan steps
+            intent: Query intent
+
+        Returns:
+            Dependency mapping {step_idx: [prerequisite_indices]}
+        """
+        dependencies = {}
+
+        if intent.type == QueryType.COMPARATIVE:
+            # Steps 1,2,3 can be parallel
+            # Step 4 depends on 2,3
+            # Step 5 depends on 2,3
+            # Step 6 depends on 4,5
+            dependencies = {
+                1: [0],
+                2: [0],
+                3: [0],
+                4: [2, 3],
+                5: [2, 3],
+            }
+            if len(steps) > 5:
+                dependencies[5] = [4, 5]
+
+        elif intent.type == QueryType.VERIFICATION:
+            # Steps 2 and 3 can be parallel
+            # Step 4 depends on both
+            dependencies = {
+                1: [0],
+                2: [1],
+                3: [1],
+                4: [2, 3],
+            }
+            if len(steps) > 4:
+                dependencies[4] = [3]
+
+        else:
+            # Default: sequential dependencies
+            for i in range(1, len(steps)):
+                dependencies[i] = [i - 1]
+
+        return dependencies

@@ -17,6 +17,18 @@ try:
 except ImportError:
     _POLICY_AVAILABLE = False
 
+# Import ReasoningMode from reasoning engine
+try:
+    from HoloLoom.reasoning.types import ReasoningMode as EngineReasoningMode
+    _REASONING_AVAILABLE = True
+except ImportError:
+    _REASONING_AVAILABLE = False
+    # Create stub for type hints
+    class EngineReasoningMode(Enum):
+        FAST = "fast"
+        STANDARD = "standard"
+        DEEP = "deep"
+
 
 class KGBackend(Enum):
     """
@@ -85,6 +97,14 @@ else:
         EPSILON_GREEDY = "epsilon_greedy"
         BAYESIAN_BLEND = "bayesian_blend"
         PURE_THOMPSON = "pure_thompson"
+
+
+# Use ReasoningMode from reasoning engine
+# If reasoning is not available (rare edge case), use stub version
+if _REASONING_AVAILABLE:
+    ReasoningMode = EngineReasoningMode
+else:
+    ReasoningMode = EngineReasoningMode  # Already defined as stub above
 
 
 @dataclass
@@ -199,13 +219,30 @@ class Config:
     # Timeouts (seconds)
     pipeline_timeout: float = 5.0  # Max time for full pipeline
     retrieval_timeout: float = 2.0  # Max time for retrieval
-    
+
+    # Layer 6: Reasoning Engine (Phase 2)
+    enable_reasoning: bool = False  # Enable reasoning layer
+    reasoning_mode: Optional['ReasoningMode'] = None  # Set in __post_init__
+    max_reasoning_steps: int = 5  # Maximum reasoning steps
+    reasoning_verification_threshold: float = 0.75  # Min confidence for passing verification
+    enable_adaptive_reasoning: bool = True  # Auto-select reasoning mode based on complexity
+    max_reasoning_time_ms: float = 500.0  # Max time for reasoning
+    reasoning_timeout_fallback: Optional['ReasoningMode'] = None  # Fallback mode on timeout
+
     def __post_init__(self):
         """Validate configuration."""
         # Set defaults
         if self.memory_backend is None:
             # Default to HYBRID for all modes (production-ready with auto-fallback)
             self.memory_backend = MemoryBackend.HYBRID
+
+        # Set reasoning mode default
+        if self.reasoning_mode is None:
+            self.reasoning_mode = ReasoningMode.STANDARD
+
+        # Set reasoning timeout fallback default
+        if self.reasoning_timeout_fallback is None:
+            self.reasoning_timeout_fallback = ReasoningMode.FAST
 
         # Ensure scales are sorted
         if sorted(self.scales) != self.scales:
