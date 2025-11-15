@@ -36,8 +36,8 @@ Unlike ChatGPT (which forgets every conversation), **HoloLoom**:
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/mythRL.git
-cd mythRL
+git clone https://github.com/blakechasteen/hello-world.git
+cd hello-world
 
 # Create virtual environment
 python3 -m venv .venv
@@ -411,7 +411,7 @@ If you use HoloLoom in your research, please cite:
   author = {Blake Chasteen},
   year = {2025},
   version = {1.0.0},
-  url = {https://github.com/yourusername/mythRL}
+  url = {https://github.com/blakechasteen/hello-world}
 }
 ```
 
@@ -435,8 +435,8 @@ Inspired by:
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/mythRL/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/mythRL/discussions)
+- **Issues**: [GitHub Issues](https://github.com/blakechasteen/hello-world/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/blakechasteen/hello-world/discussions)
 - **Email**: blakechasteen@gmail.com
 
 ---
