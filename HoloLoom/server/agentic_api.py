@@ -777,6 +777,132 @@ async def add_memory(memory: Dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/remember")
+async def api_remember(request: Dict[str, Any]):
+    """
+    Store content to HoloLoom memory with IDE context.
+
+    Endpoint for Promptly VS Code extension to capture developer notes,
+    decisions, and code context into the knowledge graph.
+
+    Args:
+        request: Dict with 'content' and optional 'context'
+            - content (str): The content to remember
+            - context (dict): IDE context (workspace, file, timestamp, etc.)
+
+    Returns:
+        Success status and memory ID
+
+    Example:
+        POST /api/remember
+        {
+          "content": "We decided to use PostgreSQL for authentication",
+          "context": {
+            "workspace": "my-project",
+            "file": "src/auth.ts",
+            "timestamp": "2025-11-15T10:30:00Z"
+          }
+        }
+    """
+    try:
+        content = request.get("content")
+        if not content:
+            raise HTTPException(status_code=400, detail="Missing 'content' field")
+
+        context = request.get("context", {})
+
+        # Import HoloLoom unified API
+        from HoloLoom import HoloLoom
+
+        # Create HoloLoom instance with current config
+        async with HoloLoom(config=state.config) as loom:
+            # Experience the content (stores in knowledge graph)
+            memory = await loom.experience(content, context=context)
+
+            logger.info(f"Remembered via /api/remember: {content[:50]}...")
+
+            return {
+                "status": "success",
+                "message": f"Saved to HoloLoom memory",
+                "memory_id": memory.id
+            }
+
+    except Exception as e:
+        logger.error(f"Failed to remember content: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/recall")
+async def api_recall(request: Dict[str, Any]):
+    """
+    Search HoloLoom memories using semantic + keyword search.
+
+    Endpoint for Promptly VS Code extension to retrieve relevant memories
+    based on a query. Uses hybrid BM25 + semantic search for best results.
+
+    Args:
+        request: Dict with 'query' and optional 'k'
+            - query (str): Search query
+            - k (int): Number of results to return (default: 5)
+
+    Returns:
+        List of matching memories with confidence scores
+
+    Example:
+        POST /api/recall
+        {
+          "query": "What database did we choose?",
+          "k": 5
+        }
+
+        Response:
+        {
+          "memories": [
+            {
+              "content": "We decided to use PostgreSQL for authentication",
+              "confidence": 0.92,
+              "timestamp": "2025-11-15T10:30:00Z",
+              "source": "src/auth.ts"
+            },
+            ...
+          ]
+        }
+    """
+    try:
+        query = request.get("query")
+        if not query:
+            raise HTTPException(status_code=400, detail="Missing 'query' field")
+
+        k = request.get("k", 5)
+
+        # Import HoloLoom unified API
+        from HoloLoom import HoloLoom
+
+        # Create HoloLoom instance with current config
+        async with HoloLoom(config=state.config) as loom:
+            # Recall memories
+            memories = await loom.recall(query, k=k)
+
+            logger.info(f"Recalled {len(memories)} memories for: {query[:50]}...")
+
+            # Format response to match TypeScript interface
+            return {
+                "memories": [
+                    {
+                        "content": m.text,
+                        "confidence": m.metadata.get("confidence", 0.85),
+                        "timestamp": m.metadata.get("timestamp", "unknown"),
+                        "source": m.metadata.get("file", "unknown")
+                    }
+                    for m in memories
+                ]
+            }
+
+    except Exception as e:
+        logger.error(f"Failed to recall memories: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/ingest/workspace")
 async def ingest_workspace(
     workspace_path: str,

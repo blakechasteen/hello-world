@@ -3,6 +3,8 @@ import { PromptlyChatView } from './chatView';
 import { GitCommands } from './commands/gitCommands';
 import { ClaudeCommands } from './commands/claudeCommands';
 import { HoloLoomCommands } from './commands/hololoomCommands';
+import { HoloLoomSidebarProvider } from './views/sidebarProvider';
+import { HoloLoomCodeLensProvider, registerCodeLensCommands } from './providers/codeLensProvider';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Promptly extension activated');
@@ -11,6 +13,27 @@ export function activate(context: vscode.ExtensionContext) {
     const gitCommands = new GitCommands();
     const claudeCommands = new ClaudeCommands();
     const hololoomCommands = new HoloLoomCommands();
+
+    // Register HoloLoom sidebar
+    const sidebarProvider = new HoloLoomSidebarProvider(context.extensionUri);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(
+            HoloLoomSidebarProvider.viewType,
+            sidebarProvider
+        )
+    );
+
+    // Register CodeLens provider for inline suggestions
+    const codeLensProvider = new HoloLoomCodeLensProvider();
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider(
+            { scheme: 'file' }, // All file types
+            codeLensProvider
+        )
+    );
+
+    // Register CodeLens commands
+    registerCodeLensCommands(context);
 
     // Register commands
     context.subscriptions.push(
