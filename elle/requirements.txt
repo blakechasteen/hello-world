@@ -1,0 +1,10 @@
+# Elle Core - Python Dependencies
+
+# LLM Clients (install what you need)
+anthropic>=0.39.0      # For Claude
+openai>=1.54.0         # For OpenAI
+aiohttp>=3.11.0        # For Ollama
+
+# Core dependencies (minimal)
+# None! Elle Core has zero required dependencies beyond Python 3.11+
+# All LLM clients are optional - use what you have
