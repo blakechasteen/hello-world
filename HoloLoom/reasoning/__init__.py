@@ -1,82 +1,87 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-HoloLoom Reasoning Engines
+Reasoning Engine - Layer 6
+===========================
+Multi-step reasoning layer for HoloLoom 1.1.
 
-Layer 3 of Cognitive Architecture - Logical inference, explanation, transfer.
+Phase 1: FAST and STANDARD modes (Foundation)
+Phase 2: WeavingOrchestrator integration
+Phase 3: DEEP mode with planning and backtracking
 
-Provides three types of reasoning:
-- Deductive: Logical inference from known facts
-- Abductive: Best explanation for observations
-- Analogical: Transfer knowledge across domains
-
-Public API:
-    DeductiveReasoner: Forward/backward chaining
-    AbductiveReasoner: Hypothesis generation and scoring
-    AnalogicalReasoner: Structure mapping and transfer
+Author: Claude Code
+Date: 2025-11-15
 """
 
-from .deductive import (
-    Fact, Rule, Proof, Unifier, KnowledgeBase, DeductiveReasoner,
-    create_fact, create_rule
+from HoloLoom.reasoning.types import (
+    # Enums
+    ReasoningMode,
+    StepType,
+    QueryType,
+    VerificationSeverity,
+
+    # Data classes
+    QueryIntent,
+    ReasoningStep,
+    ReasoningResult,
+    VerificationResult,
+    MultiPassVerification,
+    EvidencePiece,
+    Synthesis,
+    QueryPlan,
+    PlanStep,
+
+    # Constants
+    DEFAULT_CONFIDENCE_THRESHOLDS,
+    STEP_TYPE_ICONS,
+    QUERY_TYPE_COMPLEXITY,
 )
 
-from .abductive import (
-    Hypothesis, Observation, CausalRule,
-    HypothesisGenerator, HypothesisScorer, AbductiveReasoner,
-    create_causal_rule, create_observation
+from HoloLoom.reasoning.planner import QueryPlanner
+from HoloLoom.reasoning.chain_of_thought import ChainOfThought
+from HoloLoom.reasoning.verifier import SelfVerifier
+from HoloLoom.reasoning.engine import (
+    ReasoningEngine,
+    reason_with_mode,
+    auto_reason,
 )
 
-from .analogical import (
-    Entity, Relation, Domain, AnalogicalMapping,
-    StructureMapper, KnowledgeTransferer, Case, CaseLibrary,
-    AnalogicalReasoner,
-    create_entity, create_relation, create_domain
-)
-
-from .integration import (
-    ReasoningEnhancedPlanner,
-    PlanExplanation,
-    FailureDiagnosis,
-    create_planning_knowledge_base
-)
 
 __all__ = [
-    # Deductive reasoning
-    'Fact',
-    'Rule',
-    'Proof',
-    'Unifier',
-    'KnowledgeBase',
-    'DeductiveReasoner',
-    'create_fact',
-    'create_rule',
+    # Enums
+    "ReasoningMode",
+    "StepType",
+    "QueryType",
+    "VerificationSeverity",
 
-    # Abductive reasoning
-    'Hypothesis',
-    'Observation',
-    'CausalRule',
-    'HypothesisGenerator',
-    'HypothesisScorer',
-    'AbductiveReasoner',
-    'create_causal_rule',
-    'create_observation',
+    # Data classes
+    "QueryIntent",
+    "ReasoningStep",
+    "ReasoningResult",
+    "VerificationResult",
+    "MultiPassVerification",
+    "EvidencePiece",
+    "Synthesis",
+    "QueryPlan",
+    "PlanStep",
 
-    # Analogical reasoning
-    'Entity',
-    'Relation',
-    'Domain',
-    'AnalogicalMapping',
-    'StructureMapper',
-    'KnowledgeTransferer',
-    'Case',
-    'CaseLibrary',
-    'AnalogicalReasoner',
-    'create_entity',
-    'create_relation',
-    'create_domain',
+    # Components
+    "QueryPlanner",
+    "ChainOfThought",
+    "SelfVerifier",
+    "ReasoningEngine",
 
-    # Layer 2-3 Integration
-    'ReasoningEnhancedPlanner',
-    'PlanExplanation',
-    'FailureDiagnosis',
-    'create_planning_knowledge_base',
+    # Convenience functions
+    "reason_with_mode",
+    "auto_reason",
+
+    # Constants
+    "DEFAULT_CONFIDENCE_THRESHOLDS",
+    "STEP_TYPE_ICONS",
+    "QUERY_TYPE_COMPLEXITY",
 ]
+
+
+# Version info
+__version__ = "1.1.0-phase1"
+__phase__ = "Phase 1: Foundation (FAST + STANDARD modes)"
