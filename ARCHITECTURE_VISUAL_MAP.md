@@ -203,6 +203,275 @@
 
 ---
 
+## 🎨 Mermaid Diagrams: Interactive Visual Guide
+
+### Complete 9-Layer System (Mermaid)
+
+```mermaid
+graph TD
+    START[User Query / Input Data] --> L1[Layer 1: Input Processing]
+
+    L1 --> L1a[Text Processor]
+    L1 --> L1b[Image Processor]
+    L1 --> L1c[Audio Processor]
+    L1 --> L1d[Structured Processor]
+
+    L1a --> L1m[Multi-Modal Fusion]
+    L1b --> L1m
+    L1c --> L1m
+    L1d --> L1m
+
+    L1m --> L2[Layer 2: Pattern Selection<br/>Loom Command]
+
+    L2 --> L2a{Query Complexity?}
+    L2a -->|Simple| L2b[BARE Mode<br/><50ms]
+    L2a -->|Standard| L2c[FAST Mode<br/>100-200ms]
+    L2a -->|Complex| L2d[FUSED Mode<br/>200-500ms]
+
+    L2b --> L3
+    L2c --> L3
+    L2d --> L3
+
+    L3[Layer 3: Temporal Control<br/>Chrono Trigger] --> L3a[Temporal Window]
+    L3 --> L3b[Execution Limits]
+
+    L3a --> L4
+    L3b --> L4
+
+    L4[Layer 4: Memory Retrieval<br/>Yarn Graph] --> L4a{Backend?}
+    L4a -->|Dev| L4b[INMEMORY<br/>NetworkX]
+    L4a -->|Prod| L4c[HYBRID<br/>Neo4j+Qdrant]
+    L4a -->|Research| L4d[HYPERSPACE<br/>Gated Multipass]
+
+    L4b --> L4e[Awareness Graph]
+    L4c --> L4e
+    L4d --> L4e
+
+    L4e --> L5[Layer 5: Feature Extraction<br/>Resonance Shed]
+
+    L5 --> L5a[Motif Thread<br/>Symbolic]
+    L5 --> L5b[Embedding Thread<br/>Continuous]
+    L5 --> L5c[Spectral Thread<br/>Topological]
+
+    L5a --> L5d[DotPlasma Fusion]
+    L5b --> L5d
+    L5c --> L5d
+
+    L5d --> L5e[Compositional Cache<br/>291x speedup]
+    L5e --> L6[Layer 6: Warp Space<br/>Continuous Mathematics]
+
+    L6 --> L6a[tension: discrete→continuous]
+    L6a --> L6b[compute: tensor operations]
+    L6b --> L6c[collapse: continuous→discrete]
+    L6c --> L6d[detension: back to graph]
+
+    L6d --> L7[Layer 7: Convergence Engine<br/>Decision Making]
+
+    L7 --> L7a[Neural Policy<br/>Transformer]
+    L7a --> L7b[Tool Probabilities]
+
+    L7b --> L7c{Collapse Strategy?}
+    L7c -->|ARGMAX| L7d[Exploit Best]
+    L7c -->|EPSILON_GREEDY| L7e[90% Exploit<br/>10% Explore]
+    L7c -->|BAYESIAN_BLEND| L7f[70% Neural<br/>30% Bandit]
+    L7c -->|THOMPSON| L7g[Posterior Sampling]
+
+    L7d --> L8
+    L7e --> L8
+    L7f --> L8
+    L7g --> L8
+
+    L8[Layer 8: Execution<br/>Spacetime] --> L8a[Tool Executor]
+    L8a --> L8b[Spacetime 4D Fabric<br/>3D Semantic + 1D Temporal]
+    L8b --> L8c[Complete Provenance]
+
+    L8c --> L9[Layer 9: Learning<br/>Reflection Buffer]
+
+    L9 --> L9a[Reflection Buffer<br/>Episodic Memory]
+    L9a --> L9b[Learning Systems]
+    L9b --> L9c[Semantic Learning<br/>6 signals]
+    L9b --> L9d[PPO Trainer<br/>RL updates]
+
+    L9c --> L9e[Consolidation]
+    L9d --> L9e
+    L9e --> L9f[Episodic → Semantic]
+
+    L9f --> LOOP[Loop Back to Memory]
+    LOOP --> L4
+
+    style START fill:#E6F3FF
+    style L1 fill:#FFE6F0
+    style L2 fill:#E6FFE6
+    style L3 fill:#FFF0E6
+    style L4 fill:#FFE6F0
+    style L5 fill:#E6F3FF
+    style L6 fill:#FFE6F0
+    style L7 fill:#E6FFE6
+    style L8 fill:#FFF0E6
+    style L9 fill:#FFE6F0
+    style LOOP fill:#90EE90
+
+    style L5d fill:#FFD700
+    style L7a fill:#FFD700
+    style L8b fill:#FFD700
+```
+
+---
+
+### Input Processing & Multi-Modal Fusion
+
+```mermaid
+graph LR
+    A[Raw Input] --> B{Input Type?}
+
+    B -->|Text| C[Text Processor]
+    B -->|Image| D[Image Processor]
+    B -->|Audio| E[Audio Processor]
+    B -->|Structured| F[Structured Processor]
+
+    C --> C1[Tokenization]
+    C1 --> C2[Entity Extraction]
+    C2 --> C3[Semantic Embedding]
+
+    D --> D1[CLIP Encoding]
+    D1 --> D2[OCR DeepSeek]
+    D2 --> D3[Visual Features]
+
+    E --> E1[Whisper Transcription]
+    E1 --> E2[Speaker Diarization]
+    E2 --> E3[Audio Features]
+
+    F --> F1[Schema Detection]
+    F1 --> F2[Relationship Extraction]
+    F2 --> F3[Graph Construction]
+
+    C3 --> G[Multi-Modal Fusion<br/>Attention Mechanism]
+    D3 --> G
+    E3 --> G
+    F3 --> G
+
+    G --> H[Unified Representation]
+    H --> I[ProcessedInput<br/>Ready for Weaving]
+
+    style B fill:#FFE6F0
+    style G fill:#FFD700
+    style I fill:#90EE90
+```
+
+---
+
+### Decision Making: Policy → Convergence
+
+```mermaid
+graph TD
+    A[DotPlasma Features] --> B[Neural Policy<br/>Transformer-based]
+
+    B --> B1[Multi-Head Attention<br/>16 heads]
+    B1 --> B2[Motif-Gated Attention<br/>Symbolic guidance]
+    B2 --> B3[Cross-Attention to Context<br/>Memory integration]
+    B3 --> B4[LoRA Adapters<br/>4 adapters for modes]
+
+    B4 --> C[Tool Probabilities<br/>[0.65, 0.25, 0.07, 0.03]]
+
+    C --> D{Convergence Strategy}
+
+    D -->|ARGMAX| E1[Max Probability<br/>Deterministic]
+    D -->|EPSILON_GREEDY| E2[ε=0.1<br/>Explore 10%]
+    D -->|BAYESIAN_BLEND| E3[Blend Weights<br/>70% Neural<br/>30% Bandit]
+    D -->|PURE_THOMPSON| E4[Thompson Sampling<br/>Beta(α, β)]
+
+    E1 --> F[Tool Selection]
+    E2 --> F
+    E3 --> F
+    E4 --> F
+
+    F --> G{Selected Tool?}
+    G -->|answer| H1[Generate Direct Answer]
+    G -->|research| H2[Multi-Query Research]
+    G -->|verify| H3[Claim Verification]
+    G -->|explore| H4[Graph Traversal]
+
+    H1 --> I[Tool Execution]
+    H2 --> I
+    H3 --> I
+    H4 --> I
+
+    I --> J[Result + Metadata]
+    J --> K[Spacetime Fabric<br/>With Provenance]
+
+    style B fill:#E6F3FF
+    style C fill:#FFD700
+    style E3 fill:#90EE90
+    style K fill:#E6FFE6
+```
+
+---
+
+### Learning Loop: Reflection & Adaptation
+
+```mermaid
+graph TD
+    A[Query Processed] --> B[Spacetime Result]
+    B --> C{Confidence?}
+
+    C -->|High ≥0.75| D[✓ Success]
+    C -->|Low <0.75| E[⚠ Needs Refinement]
+
+    D --> F[Reflection Buffer<br/>Store Success]
+    E --> G[Refinement Engine<br/>Multi-pass]
+
+    F --> H[Learning Signals<br/>6 types]
+    G --> I[Refinement Result]
+    I --> H
+
+    H --> H1[1. Confidence Signal]
+    H --> H2[2. Tool Success Signal]
+    H --> H3[3. Context Relevance]
+    H --> H4[4. Motif Match Signal]
+    H --> H5[5. Retrieval Quality]
+    H --> H6[6. User Feedback]
+
+    H1 --> J[Semantic Learning<br/>Multi-task]
+    H2 --> J
+    H3 --> J
+    H4 --> J
+    H5 --> J
+    H6 --> J
+
+    J --> K[PPO Trainer<br/>Policy Updates]
+
+    K --> L{Update Type}
+    L -->|Thompson| M1[Bandit Update<br/>α ← α + conf<br/>β ← β + 1-conf]
+    L -->|Policy| M2[Policy Weights<br/>Laplace Smoothing]
+    L -->|Patterns| M3[Pattern Learning<br/>motif→tool→success]
+
+    M1 --> N[Updated Priors]
+    M2 --> N
+    M3 --> N
+
+    N --> O{Quality Gate?}
+    O -->|precision ≥95%<br/>support ≥10| P[✓ Consolidate to<br/>Yarn Graph]
+    O -->|Low quality| Q[⚠ Keep in Buffer<br/>More data needed]
+
+    P --> R[Semantic Memory<br/>Long-term storage]
+    Q --> S[Episodic Memory<br/>Short-term buffer]
+
+    R --> T[Memory Enhanced]
+    S --> U[Continue Learning]
+
+    T --> V[Next Query]
+    U --> V
+
+    style C fill:#FFF0E6
+    style D fill:#90EE90
+    style E fill:#FFD700
+    style J fill:#E6F3FF
+    style K fill:#FFE6F0
+    style P fill:#90EE90
+```
+
+---
+
 ## 🔄 The Three Core Operations
 
 ```
