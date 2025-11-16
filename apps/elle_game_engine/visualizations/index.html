@@ -4,19 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BigPlay Engine - Interactive Visualizations</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="design-system.css">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Page-specific styles that extend the design system */
+        body {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            padding: var(--space-4);
+            min-height: 100vh;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            padding: 20px;
-            min-height: 100vh;
+        body.dark-mode {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
         }
 
         .container {
@@ -204,8 +210,8 @@
                     <li>Platform integrations (Unity, Godot, Unreal, Web)</li>
                     <li>Data flow visualization</li>
                 </ul>
-                <span class="badge">Interactive SVG</span>
-                <a href="architecture.html" class="viz-link">Explore Architecture →</a>
+                <span class="badge badge-success" data-tooltip="Fully interactive - click components to learn more">Interactive SVG</span>
+                <a href="architecture.html" class="viz-link btn btn-primary">Explore Architecture →</a>
             </div>
 
             <div class="viz-card" onclick="window.location.href='emotion-model.html'">
@@ -220,8 +226,8 @@
                     <li>Rotate, zoom, and click to explore</li>
                     <li>Real-time emotion state visualization</li>
                 </ul>
-                <span class="badge">3D WebGL</span>
-                <a href="emotion-model.html" class="viz-link">Explore Emotions →</a>
+                <span class="badge badge-info" data-tooltip="Requires WebGL support - works best on desktop">3D WebGL</span>
+                <a href="emotion-model.html" class="viz-link btn btn-primary">Explore Emotions →</a>
             </div>
 
             <div class="viz-card" onclick="window.location.href='performance-dashboard.html'">
@@ -237,8 +243,8 @@
                     <li>Cost breakdown and LLM usage tracking</li>
                     <li>Simulated real-time updates</li>
                 </ul>
-                <span class="badge">Live Dashboard</span>
-                <a href="performance-dashboard.html" class="viz-link">View Dashboard →</a>
+                <span class="badge badge-warning" data-tooltip="Simulated data - connect to live backend for real metrics">Live Dashboard</span>
+                <a href="performance-dashboard.html" class="viz-link btn btn-primary">View Dashboard →</a>
             </div>
 
             <div class="viz-card">
@@ -375,5 +381,8 @@
             observer.observe(card);
         });
     </script>
+
+    <!-- BigPlay UI Utilities (Dark mode, tooltips, accessibility) -->
+    <script src="bigplay-ui.js"></script>
 </body>
 </html>
