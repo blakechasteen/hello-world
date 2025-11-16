@@ -777,6 +777,280 @@ async def add_memory(memory: Dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/remember")
+async def api_remember(request: Dict[str, Any]):
+    """
+    Store content to HoloLoom memory with IDE context.
+
+    Endpoint for Promptly VS Code extension to capture developer notes,
+    decisions, and code context into the knowledge graph.
+
+    Args:
+        request: Dict with 'content' and optional 'context'
+            - content (str): The content to remember
+            - context (dict): IDE context (workspace, file, timestamp, etc.)
+
+    Returns:
+        Success status and memory ID
+
+    Example:
+        POST /api/remember
+        {
+          "content": "We decided to use PostgreSQL for authentication",
+          "context": {
+            "workspace": "my-project",
+            "file": "src/auth.ts",
+            "timestamp": "2025-11-15T10:30:00Z"
+          }
+        }
+    """
+    try:
+        content = request.get("content")
+        if not content:
+            raise HTTPException(status_code=400, detail="Missing 'content' field")
+
+        context = request.get("context", {})
+
+        # Import HoloLoom unified API
+        from HoloLoom import HoloLoom
+
+        # Create HoloLoom instance with current config
+        async with HoloLoom(config=state.config) as loom:
+            # Experience the content (stores in knowledge graph)
+            memory = await loom.experience(content, context=context)
+
+            logger.info(f"Remembered via /api/remember: {content[:50]}...")
+
+            return {
+                "status": "success",
+                "message": f"Saved to HoloLoom memory",
+                "memory_id": memory.id
+            }
+
+    except Exception as e:
+        logger.error(f"Failed to remember content: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/recall")
+async def api_recall(request: Dict[str, Any]):
+    """
+    Search HoloLoom memories using semantic + keyword search.
+
+    Endpoint for Promptly VS Code extension to retrieve relevant memories
+    based on a query. Uses hybrid BM25 + semantic search for best results.
+
+    Args:
+        request: Dict with 'query' and optional 'k'
+            - query (str): Search query
+            - k (int): Number of results to return (default: 5)
+
+    Returns:
+        List of matching memories with confidence scores
+
+    Example:
+        POST /api/recall
+        {
+          "query": "What database did we choose?",
+          "k": 5
+        }
+
+        Response:
+        {
+          "memories": [
+            {
+              "content": "We decided to use PostgreSQL for authentication",
+              "confidence": 0.92,
+              "timestamp": "2025-11-15T10:30:00Z",
+              "source": "src/auth.ts"
+            },
+            ...
+          ]
+        }
+    """
+    try:
+        query = request.get("query")
+        if not query:
+            raise HTTPException(status_code=400, detail="Missing 'query' field")
+
+        k = request.get("k", 5)
+
+        # Import HoloLoom unified API
+        from HoloLoom import HoloLoom
+
+        # Create HoloLoom instance with current config
+        async with HoloLoom(config=state.config) as loom:
+            # Recall memories
+            memories = await loom.recall(query, k=k)
+
+            logger.info(f"Recalled {len(memories)} memories for: {query[:50]}...")
+
+            # Format response to match TypeScript interface
+            return {
+                "memories": [
+                    {
+                        "content": m.text,
+                        "confidence": m.metadata.get("confidence", 0.85),
+                        "timestamp": m.metadata.get("timestamp", "unknown"),
+                        "source": m.metadata.get("file", "unknown")
+                    }
+                    for m in memories
+                ]
+            }
+
+    except Exception as e:
+        logger.error(f"Failed to recall memories: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/todos")
+async def get_todos(workspace_id: Optional[str] = None, limit: int = 50):
+    """
+    Extract all TODOs from workspace with importance scoring.
+
+    Queries HoloLoom memory for TODO/FIXME/NOTE comments and scores them
+    by importance (mention frequency, recency, context).
+
+    Args:
+        workspace_id: Optional workspace filter
+        limit: Maximum number of TODOs to return (default: 50)
+
+    Returns:
+        List of TODOs sorted by importance score
+
+    Example:
+        GET /api/todos?limit=20
+
+        Response:
+        {
+          "todos": [
+            {
+              "text": "Add rate limiting to auth endpoints",
+              "type": "TODO",
+              "priority": "HIGH",
+              "importance_score": 0.92,
+              "mention_count": 3,
+              "locations": ["auth.ts:15", "middleware.ts:42"],
+              "related_notes": ["Security review needed", "API rate limits"]
+            },
+            ...
+          ],
+          "total_count": 47
+        }
+    """
+    try:
+        from HoloLoom import HoloLoom
+        from collections import defaultdict
+        import re
+
+        # Create HoloLoom instance
+        async with HoloLoom(config=state.config) as loom:
+            # Query for TODO/FIXME/NOTE comments
+            # Search broadly for common task markers
+            all_results = []
+            for keyword in ['TODO', 'FIXME', 'NOTE', 'HACK', 'XXX']:
+                results = await loom.recall(keyword, k=100)
+                all_results.extend(results)
+
+            logger.info(f"Found {len(all_results)} potential TODO items")
+
+            # Extract and group TODOs
+            todo_groups = defaultdict(list)
+
+            for memory in all_results:
+                text = memory.text
+
+                # Extract TODO/FIXME/NOTE lines
+                todo_pattern = r'(TODO|FIXME|NOTE|HACK|XXX):\s*(.+?)(?:\n|$)'
+                matches = re.finditer(todo_pattern, text, re.IGNORECASE)
+
+                for match in matches:
+                    todo_type = match.group(1).upper()
+                    todo_text = match.group(2).strip()
+
+                    # Get location from metadata
+                    file_path = memory.metadata.get('file', 'unknown')
+
+                    # Normalize TODO text for grouping (lowercase, strip punctuation)
+                    normalized = todo_text.lower().strip('.,!?')
+
+                    # Group similar TODOs
+                    todo_groups[normalized].append({
+                        'type': todo_type,
+                        'text': todo_text,
+                        'location': file_path,
+                        'confidence': memory.metadata.get('confidence', 0.5),
+                        'timestamp': memory.metadata.get('timestamp', 'unknown')
+                    })
+
+            # Score and rank TODOs
+            scored_todos = []
+
+            for normalized_text, occurrences in todo_groups.items():
+                # Calculate importance score
+                mention_count = len(occurrences)
+                avg_confidence = sum(o['confidence'] for o in occurrences) / mention_count
+
+                # Importance factors:
+                # 1. Mention count (more mentions = more important)
+                # 2. Confidence (higher confidence = more important)
+                # 3. TODO type (FIXME > TODO > NOTE)
+                type_weights = {
+                    'FIXME': 1.0,
+                    'TODO': 0.8,
+                    'HACK': 0.7,
+                    'XXX': 0.7,
+                    'NOTE': 0.5
+                }
+
+                todo_type = occurrences[0]['type']
+                type_weight = type_weights.get(todo_type, 0.5)
+
+                # Importance score formula
+                importance_score = (
+                    (mention_count / 10) * 0.4 +  # Mention frequency (normalized)
+                    avg_confidence * 0.3 +          # Average confidence
+                    type_weight * 0.3               # Type weight
+                )
+                importance_score = min(1.0, importance_score)  # Cap at 1.0
+
+                # Determine priority
+                if importance_score >= 0.75:
+                    priority = 'HIGH'
+                elif importance_score >= 0.5:
+                    priority = 'MEDIUM'
+                else:
+                    priority = 'LOW'
+
+                # Get unique locations
+                locations = list(set(o['location'] for o in occurrences))
+
+                scored_todos.append({
+                    'text': occurrences[0]['text'],  # Use original text (not normalized)
+                    'type': todo_type,
+                    'priority': priority,
+                    'importance_score': round(importance_score, 2),
+                    'mention_count': mention_count,
+                    'locations': locations[:5],  # Limit to 5 locations
+                    'related_notes': []  # Could add related memories here
+                })
+
+            # Sort by importance score (descending)
+            scored_todos.sort(key=lambda x: x['importance_score'], reverse=True)
+
+            # Limit results
+            scored_todos = scored_todos[:limit]
+
+            return {
+                'todos': scored_todos,
+                'total_count': len(todo_groups)
+            }
+
+    except Exception as e:
+        logger.error(f"Failed to extract TODOs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/ingest/workspace")
 async def ingest_workspace(
     workspace_path: str,
@@ -801,6 +1075,70 @@ async def ingest_workspace(
           "languages": ["python", "typescript"],
           "exclude_patterns": ["**/node_modules/**", "**/.venv/**"]
         }
+    """
+    try:
+        from HoloLoom.spinningWheel.workspace import WorkspaceSpinner
+        from HoloLoom import HoloLoom
+
+        logger.info(f"Starting workspace ingestion: {workspace_path}")
+
+        # Create workspace spinner
+        spinner = WorkspaceSpinner()
+
+        # Scan workspace
+        shards = await spinner.spin_workspace(
+            workspace_path=workspace_path,
+            languages=languages,
+            exclude_patterns=exclude_patterns
+        )
+
+        logger.info(f"Created {len(shards)} shards from workspace")
+
+        # Store shards in HoloLoom
+        async with HoloLoom(config=state.config) as loom:
+            for shard in shards:
+                await loom.experience(
+                    content=shard.text,
+                    context=shard.metadata
+                )
+
+        # Also add to server's in-memory shards
+        state.shards.extend(shards)
+
+        # Calculate statistics
+        total_files = len(shards)
+        total_elements = sum(shard.metadata.get('element_count', 0) for shard in shards)
+        total_comments = sum(shard.metadata.get('comment_count', 0) for shard in shards)
+        total_todos = sum(shard.metadata.get('todo_count', 0) for shard in shards)
+
+        logger.info(f"Workspace ingestion complete: {total_files} files, {total_elements} elements, {total_todos} TODOs")
+
+        return {
+            "success": True,
+            "files_indexed": total_files,
+            "code_elements": total_elements,
+            "comments": total_comments,
+            "todos": total_todos,
+            "workspace_path": workspace_path
+        }
+
+    except Exception as e:
+        logger.error(f"Workspace ingestion failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Legacy code (commented out - replaced by WorkspaceSpinner above)
+@app.post("/ingest/workspace/legacy")
+async def ingest_workspace_legacy(
+    workspace_path: str,
+    languages: Optional[List[str]] = None,
+    exclude_patterns: Optional[List[str]] = None
+):
+    """
+    Legacy workspace ingestion using codebase indexer (if available).
+
+    This endpoint is kept for backward compatibility but the main
+    /ingest/workspace endpoint now uses WorkspaceSpinner.
     """
     try:
         if not state.codebase_indexer:
@@ -1316,6 +1654,167 @@ async def search_codebase(
 
     except Exception as e:
         logger.error(f"Codebase search failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Graph Visualization
+# ============================================================================
+
+@app.get("/api/graph/html")
+async def get_graph_html(
+    max_nodes: int = 50,
+    title: str = "HoloLoom Knowledge Graph",
+    highlight_recent: bool = True
+):
+    """
+    Get knowledge graph as interactive HTML visualization.
+
+    Args:
+        max_nodes: Maximum nodes to include (default: 50)
+        title: Graph title
+        highlight_recent: Highlight recently accessed nodes
+
+    Returns:
+        HTML document with D3.js force-directed graph
+
+    Example:
+        GET /api/graph/html?max_nodes=100&title=My%20Knowledge
+
+    Integration:
+        // In VS Code webview
+        const response = await fetch('http://localhost:8000/api/graph/html');
+        const html = await response.text();
+        webview.html = html;
+    """
+    from fastapi.responses import HTMLResponse
+    from HoloLoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
+    from HoloLoom import HoloLoom
+
+    try:
+        # Get knowledge graph from HoloLoom
+        async with HoloLoom(config=state.config) as loom:
+            # Access the knowledge graph
+            kg = loom.memory_manager.knowledge_graph
+
+            # Optional: Get recently accessed nodes for highlighting
+            highlighted_path = None
+            if highlight_recent and hasattr(loom, 'awareness_graph'):
+                # Get top 5 most recently activated nodes
+                recent_nodes = loom.awareness_graph.get_top_activated(limit=5)
+                if recent_nodes:
+                    highlighted_path = [node for node, _ in recent_nodes]
+
+            # Render to HTML
+            subtitle = f"Generated {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            html = render_knowledge_graph_from_kg(
+                kg,
+                title=title,
+                subtitle=subtitle,
+                max_nodes=max_nodes,
+                highlighted_path=highlighted_path
+            )
+
+            return HTMLResponse(content=html)
+
+    except Exception as e:
+        logger.error(f"Graph visualization failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/graph/data")
+async def get_graph_data(
+    max_nodes: int = 50,
+    include_metadata: bool = False
+):
+    """
+    Get knowledge graph as JSON data.
+
+    Args:
+        max_nodes: Maximum nodes to include
+        include_metadata: Include full node/edge metadata
+
+    Returns:
+        JSON with nodes and edges arrays
+
+    Example:
+        GET /api/graph/data?max_nodes=100
+
+        Response:
+        {
+          "nodes": [
+            {"id": "Thompson Sampling", "label": "Thompson Sampling", "degree": 5, "type": "concept"},
+            ...
+          ],
+          "edges": [
+            {"src": "Thompson Sampling", "dst": "exploration", "type": "USES", "weight": 1.0},
+            ...
+          ],
+          "metadata": {
+            "total_nodes": 47,
+            "total_edges": 128,
+            "rendered_nodes": 50,
+            "rendered_edges": 95
+          }
+        }
+    """
+    from HoloLoom import HoloLoom
+
+    try:
+        async with HoloLoom(config=state.config) as loom:
+            kg = loom.memory_manager.knowledge_graph
+
+            # Get all nodes (limit to max_nodes)
+            all_nodes = list(kg.G.nodes())[:max_nodes]
+            node_id_set = set(all_nodes)
+
+            # Build nodes array
+            nodes = []
+            for node_id in all_nodes:
+                node_data = kg.G.nodes.get(node_id, {})
+                degree = kg.G.degree(node_id)
+
+                node_obj = {
+                    "id": node_id,
+                    "label": node_id,
+                    "degree": degree,
+                    "type": node_data.get('node_type', 'default')
+                }
+
+                if include_metadata:
+                    node_obj["metadata"] = node_data
+
+                nodes.append(node_obj)
+
+            # Build edges array
+            edges = []
+            for src, dst, key, data in kg.G.edges(keys=True, data=True):
+                if src in node_id_set and dst in node_id_set:
+                    edge_obj = {
+                        "src": src,
+                        "dst": dst,
+                        "type": data.get('type', 'unknown'),
+                        "weight": data.get('weight', 1.0)
+                    }
+
+                    if include_metadata:
+                        edge_obj["metadata"] = data
+
+                    edges.append(edge_obj)
+
+            return {
+                "nodes": nodes,
+                "edges": edges,
+                "metadata": {
+                    "total_nodes": kg.G.number_of_nodes(),
+                    "total_edges": kg.G.number_of_edges(),
+                    "rendered_nodes": len(nodes),
+                    "rendered_edges": len(edges)
+                }
+            }
+
+    except Exception as e:
+        logger.error(f"Graph data export failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

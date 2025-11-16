@@ -1,8 +1,23 @@
-# Promptly VS Code Extension
+# Promptly + HoloLoom - Your IDE with Perfect Memory
 
-**Chat-native development with slash commands inside VS Code!**
+**Your IDE that remembers everything you've ever coded, decided, or learned.**
+
+Promptly integrates **HoloLoom**, a neural memory system, directly into VS Code. Capture thoughts, search past decisions, and get AI-powered insights without leaving your editor.
 
 ## ✨ Features
+
+### 🧠 **HoloLoom Sidebar** (NEW!)
+
+- **Quick Capture**: Save notes, decisions, and discoveries with one click
+- **Today's Notes**: View everything you've captured today
+- **Semantic Search**: Find relevant memories using natural language
+- **Knowledge Graph**: All notes connected by relationships
+
+### 💡 **Inline Code Intelligence (CodeLens)** (NEW!)
+
+- **Smart Annotations**: See related notes inline with `// NOTE:`, `// TODO:`, `// FIXME:` comments
+- **Auto-Linking**: Automatically finds relevant knowledge from your memory
+- **One-Click Capture**: Turn comments into persistent memories
 
 ### ⚡ Slash Commands with Smart Autocomplete
 
@@ -79,6 +94,43 @@ Settings (`Ctrl+,` → search "Promptly"):
 - **`promptly.enableAutocomplete`**: Show/hide autocomplete (default: `true`)
 
 ## 🎮 Usage
+
+### Open HoloLoom Sidebar (NEW!)
+- **Click** the 🧠 brain icon in the Activity Bar (left sidebar)
+- Or **Command Palette**: `View: Show HoloLoom`
+
+**Quick Capture**:
+1. Type your note in the "Quick Capture" box
+2. Click "💾 Remember"
+3. Done! Your note is saved to the knowledge graph
+
+**Search Memories**:
+1. Type a question in "Search Memory" box
+2. Click "Search"
+3. See results with confidence scores
+
+**Example Captures**:
+- "We decided to use PostgreSQL for authentication"
+- "React Suspense causes issues with SSR in Next.js 13"
+- "Team agreed to ship feature X by Nov 20"
+
+### Use Inline Suggestions (CodeLens) (NEW!)
+
+Add comments to your code and get automatic suggestions:
+
+```typescript
+// NOTE: Using Thompson Sampling for exploration/exploitation balance
+// ↑ CodeLens shows: 💡 3 related notes (click to view)
+
+// TODO: Add rate limiting to auth endpoints
+// ↑ CodeLens shows: 📝 Capture this TODO (click to save)
+```
+
+**Supported comment patterns**:
+- `// NOTE:`, `// TODO:`, `// FIXME:` (JavaScript, TypeScript, C, C++)
+- `# NOTE:`, `# TODO:`, `# FIXME:` (Python, Ruby, Shell)
+- `/* NOTE: ... */` (Block comments)
+- `<!-- NOTE: ... -->` (HTML, XML)
 
 ### Open Chat
 - **Keyboard**: `Ctrl+Alt+P` (Windows/Linux) or `Cmd+Alt+P` (Mac)

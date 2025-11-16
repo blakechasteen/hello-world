@@ -3,6 +3,10 @@ import { PromptlyChatView } from './chatView';
 import { GitCommands } from './commands/gitCommands';
 import { ClaudeCommands } from './commands/claudeCommands';
 import { HoloLoomCommands } from './commands/hololoomCommands';
+import { HoloLoomSidebarProvider } from './views/sidebarProvider';
+import { GraphViewProvider } from './views/graphViewProvider';
+import { HoloLoomCodeLensProvider, registerCodeLensCommands } from './providers/codeLensProvider';
+import { WorkspaceWatcher, registerWorkspaceCommands } from './watchers/workspaceWatcher';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Promptly extension activated');
@@ -11,6 +15,40 @@ export function activate(context: vscode.ExtensionContext) {
     const gitCommands = new GitCommands();
     const claudeCommands = new ClaudeCommands();
     const hololoomCommands = new HoloLoomCommands();
+
+    // Register HoloLoom sidebar
+    const sidebarProvider = new HoloLoomSidebarProvider(context.extensionUri);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(
+            HoloLoomSidebarProvider.viewType,
+            sidebarProvider
+        )
+    );
+
+    // Register knowledge graph viewer
+    const graphViewProvider = new GraphViewProvider(context);
+
+    // Register CodeLens provider for inline suggestions
+    const codeLensProvider = new HoloLoomCodeLensProvider();
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider(
+            { scheme: 'file' }, // All file types
+            codeLensProvider
+        )
+    );
+
+    // Register CodeLens commands
+    registerCodeLensCommands(context);
+
+    // Start workspace watcher (auto-indexing)
+    const workspaceWatcher = new WorkspaceWatcher();
+    workspaceWatcher.start();
+    context.subscriptions.push({
+        dispose: () => workspaceWatcher.stop()
+    });
+
+    // Register workspace commands
+    registerWorkspaceCommands(context, workspaceWatcher);
 
     // Register commands
     context.subscriptions.push(
@@ -76,6 +114,11 @@ export function activate(context: vscode.ExtensionContext) {
                 const result = await hololoomCommands.recall(query);
                 chatView.sendBotMessage(result);
             }
+        }),
+
+        // Knowledge Graph
+        vscode.commands.registerCommand('promptly.showGraph', async () => {
+            await graphViewProvider.show();
         })
     );
 

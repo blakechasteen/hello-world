@@ -11,6 +11,26 @@
   "activationEvents": ["onStartupFinished"],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "hololoom",
+          "title": "HoloLoom",
+          "icon": "$(brain)"
+        }
+      ]
+    },
+    "views": {
+      "hololoom": [
+        {
+          "type": "webview",
+          "id": "promptly.hololoomSidebar",
+          "name": "Memory",
+          "icon": "$(brain)",
+          "contextualTitle": "HoloLoom Memory"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "promptly.chat",
@@ -47,6 +67,18 @@
       {
         "command": "promptly.recall",
         "title": "Promptly: Recall (HoloLoom)"
+      },
+      {
+        "command": "promptly.indexWorkspace",
+        "title": "HoloLoom: Index Workspace"
+      },
+      {
+        "command": "promptly.indexingStatus",
+        "title": "HoloLoom: Show Indexing Status"
+      },
+      {
+        "command": "promptly.showGraph",
+        "title": "HoloLoom: Show Knowledge Graph"
       }
     ],
     "keybindings": [
