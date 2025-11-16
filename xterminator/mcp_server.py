@@ -38,6 +38,7 @@ from xterminator import (
     AutofixPolicy
 )
 from xterminator.git_integrator import GitIntegrator, GitConfig
+from xterminator.simple_llm_fixer import SimpleLLMFixer
 from trough import SlopIssue, Language, Severity, SlopCategory
 
 
@@ -68,7 +69,8 @@ class XTerminatorMCPServer:
     def __init__(
         self,
         policy: Optional[AutofixPolicy] = None,
-        git_config: Optional[GitConfig] = None
+        git_config: Optional[GitConfig] = None,
+        use_simple_fixer: bool = True
     ):
         self.info = MCPServerInfo()
         self.classifier = ClassificationEngine()
@@ -76,6 +78,13 @@ class XTerminatorMCPServer:
         self.template_fixer = TemplateFixer()
         self.validator = ValidationPipeline()
         self.policy = policy or AutofixPolicy.balanced()
+
+        # Simple LLM-enhanced fixer (Phase 4+) - handles trivial cases
+        self.use_simple_fixer = use_simple_fixer
+        if use_simple_fixer:
+            self.simple_fixer = SimpleLLMFixer(use_llm=True, llm_model="llama3.2:3b")
+        else:
+            self.simple_fixer = None
 
         # Git integration (Phase 4)
         self.git_integrator = GitIntegrator(git_config or GitConfig(
@@ -143,13 +152,28 @@ class XTerminatorMCPServer:
             proposal.fix_strategy = FixStrategy[fix_strategy.upper()]
 
         # Generate fix
-        if proposal.fix_strategy == FixStrategy.AST:
-            result = await self.ast_fixer.fix_issue(proposal, code)
-        elif proposal.fix_strategy == FixStrategy.TEMPLATE:
-            result = await self.template_fixer.fix_issue(proposal, code)
-        else:
-            # Manual fix required
-            result = None
+        result = None
+
+        # Try simple LLM fixer first for trivial cases (Phase 4+)
+        if self.use_simple_fixer and self.simple_fixer:
+            category = issue.get('category', '')
+            # Simple fixer handles: dead_code (imports), hardcoded_values, missing_docstrings
+            if category in ['dead_code', 'hardcoded_values', 'missing_docstrings']:
+                try:
+                    result = await self.simple_fixer.fix_issue(issue, code, file_path)
+                except Exception:
+                    # Simple fixer failed, fall back to AST/template
+                    result = None
+
+        # Fall back to AST/template fixers if simple fixer didn't work
+        if not result:
+            if proposal.fix_strategy == FixStrategy.AST:
+                result = await self.ast_fixer.fix_issue(proposal, code)
+            elif proposal.fix_strategy == FixStrategy.TEMPLATE:
+                result = await self.template_fixer.fix_issue(proposal, code)
+            else:
+                # Manual fix required
+                result = None
 
         if not result:
             return {
@@ -250,12 +274,12 @@ class XTerminatorMCPServer:
 
         # Extract step results
         steps = []
-        for stage in report.stages:
+        for result in report.results:
             steps.append({
-                'step': stage.name,
-                'passed': stage.passed,
-                'duration_ms': stage.duration_ms,
-                'message': stage.message
+                'step': result.stage.value,  # ValidationStage enum value
+                'passed': result.passed,
+                'duration_ms': result.duration_ms,
+                'message': result.message
             })
 
         duration_ms = (time.time() - start_time) * 1000
@@ -265,7 +289,7 @@ class XTerminatorMCPServer:
 
         return {
             'fix_id': fix_id,
-            'validation_passed': report.passed,
+            'validation_passed': report.all_passed,
             'steps': steps,
             'safe_to_apply': self.validator.should_commit(report),
             'validation_duration_ms': duration_ms
