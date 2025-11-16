@@ -37,6 +37,7 @@ from codebase_ingestion import CodebaseIngestionEngine, CodebaseMetadata
 from api_connector import APIConnector, APIMetadata
 from documentation_crawler import DocumentationCrawler
 from forum_search import ForumSearchEngine
+from hololoom_rag_integration import HoloLoomRAGIntegration
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -210,8 +211,9 @@ doc_crawler: Optional[DocumentationCrawler] = None
 forum_search: Optional[ForumSearchEngine] = None
 config: Optional[Config] = None
 audit_trail: Optional[AuditTrail] = None
+hololoom_rag: Optional[HoloLoomRAGIntegration] = None  # NEW: HoloLoom RAG integration
 
-# In-memory storage for ingested context
+# In-memory storage for ingested context (legacy, now also stored in HoloLoom)
 ingested_shards: List[MemoryShard] = []
 context_metadata: Dict[str, Any] = {
     "codebases": [],
@@ -228,9 +230,9 @@ context_metadata: Dict[str, Any] = {
 @app.on_event("startup")
 async def startup():
     """Initialize Squad server with LLM and all engines"""
-    global llm_client, code_engine, codebase_engine, api_connector, doc_crawler, forum_search, config, audit_trail
+    global llm_client, code_engine, codebase_engine, api_connector, doc_crawler, forum_search, config, audit_trail, hololoom_rag
 
-    logger.info("Starting Squad server (Enhanced with RAG)...")
+    logger.info("Starting Squad server (Enhanced with RAG + HoloLoom)...")
 
     # Initialize LLM client (auto-selects best provider)
     llm_client = LLMClient()
@@ -255,12 +257,24 @@ async def startup():
     # Create audit trail
     audit_trail = AuditTrail()
 
-    logger.info("Squad server ready with RAG! 🚀")
+    # Initialize HoloLoom RAG integration
+    hololoom_rag = HoloLoomRAGIntegration(config)
+    await hololoom_rag.initialize()
+    logger.info("HoloLoom RAG integration initialized ✨")
+
+    logger.info("Squad server ready with RAG + HoloLoom! 🚀")
 
 
 @app.on_event("shutdown")
 async def shutdown():
     """Cleanup on server shutdown"""
+    global hololoom_rag
+
+    # Cleanup HoloLoom resources
+    if hololoom_rag:
+        await hololoom_rag.cleanup()
+        logger.info("HoloLoom RAG cleaned up")
+
     logger.info("Squad server stopped")
 
 
@@ -302,6 +316,9 @@ async def generate_code(request: CodeGenerationRequest):
 
     This is the primary code generation endpoint.
     Uses LLM to create production-ready code from descriptions.
+
+    **NEW**: Now integrates HoloLoom RAG for context-aware generation!
+    Automatically retrieves relevant context from ingested code, APIs, docs, forums.
     """
     if not code_engine:
         raise HTTPException(status_code=503, detail="Code engine not initialized")
@@ -318,10 +335,29 @@ async def generate_code(request: CodeGenerationRequest):
                 workspace=request.context.workspace
             )
 
-        # Generate code
+        # NEW: Get RAG context from HoloLoom if available
+        rag_context = ""
+        if hololoom_rag:
+            try:
+                rag_context = await hololoom_rag.get_enriched_context_for_code_generation(
+                    description=request.description,
+                    language=request.language,
+                    max_context_items=5
+                )
+                if rag_context:
+                    logger.info(f"Retrieved RAG context ({len(rag_context)} chars)")
+            except Exception as e:
+                logger.warning(f"Failed to retrieve RAG context: {e}")
+
+        # Enhance description with RAG context
+        enhanced_description = request.description
+        if rag_context:
+            enhanced_description = f"{rag_context}\n\n# User Request:\n{request.description}"
+
+        # Generate code with enhanced context
         logger.info(f"Generating code: {request.description[:50]}...")
         result = await code_engine.generate_code(
-            description=request.description,
+            description=enhanced_description,  # Now includes RAG context!
             language=request.language,
             context=context
         )
@@ -669,10 +705,16 @@ async def ingest_codebase(request: CodebaseIngestRequest):
         # Convert to memory shards
         shards_data = codebase_engine.entities_to_memory_shards(entities)
 
-        # Create MemoryShard objects and add to global storage
-        for shard_data in shards_data:
-            shard = MemoryShard(**shard_data)
-            ingested_shards.append(shard)
+        # Create MemoryShard objects
+        shards = [MemoryShard(**shard_data) for shard_data in shards_data]
+
+        # Add to global storage (legacy)
+        ingested_shards.extend(shards)
+
+        # NEW: Ingest into HoloLoom for semantic search and recall
+        if hololoom_rag:
+            hololoom_count = await hololoom_rag.ingest_shards(shards, "codebase")
+            logger.info(f"Ingested {hololoom_count} shards into HoloLoom")
 
         # Store metadata
         context_metadata["codebases"].append({
@@ -717,10 +759,16 @@ async def ingest_api(request: APIConnectRequest):
         # Convert to memory shards
         shards_data = api_connector.endpoints_to_memory_shards(endpoints, metadata)
 
-        # Add to global storage
-        for shard_data in shards_data:
-            shard = MemoryShard(**shard_data)
-            ingested_shards.append(shard)
+        # Create MemoryShard objects
+        shards = [MemoryShard(**shard_data) for shard_data in shards_data]
+
+        # Add to global storage (legacy)
+        ingested_shards.extend(shards)
+
+        # NEW: Ingest into HoloLoom
+        if hololoom_rag:
+            hololoom_count = await hololoom_rag.ingest_shards(shards, "api")
+            logger.info(f"Ingested {hololoom_count} API shards into HoloLoom")
 
         # Store metadata
         context_metadata["apis"].append({
@@ -766,10 +814,16 @@ async def ingest_documentation(request: DocumentationCrawlRequest):
         # Convert to memory shards
         shards_data = doc_crawler.pages_to_memory_shards(pages)
 
-        # Add to global storage
-        for shard_data in shards_data:
-            shard = MemoryShard(**shard_data)
-            ingested_shards.append(shard)
+        # Create MemoryShard objects
+        shards = [MemoryShard(**shard_data) for shard_data in shards_data]
+
+        # Add to global storage (legacy)
+        ingested_shards.extend(shards)
+
+        # NEW: Ingest into HoloLoom
+        if hololoom_rag:
+            hololoom_count = await hololoom_rag.ingest_shards(shards, "documentation")
+            logger.info(f"Ingested {hololoom_count} documentation shards into HoloLoom")
 
         # Store metadata
         context_metadata["documentation"].append({
@@ -814,10 +868,16 @@ async def ingest_forum(request: ForumSearchRequest):
         # Convert to memory shards
         shards_data = forum_search.posts_to_memory_shards(posts)
 
-        # Add to global storage
-        for shard_data in shards_data:
-            shard = MemoryShard(**shard_data)
-            ingested_shards.append(shard)
+        # Create MemoryShard objects
+        shards = [MemoryShard(**shard_data) for shard_data in shards_data]
+
+        # Add to global storage (legacy)
+        ingested_shards.extend(shards)
+
+        # NEW: Ingest into HoloLoom
+        if hololoom_rag:
+            hololoom_count = await hololoom_rag.ingest_shards(shards, "forum")
+            logger.info(f"Ingested {hololoom_count} forum shards into HoloLoom")
 
         # Store metadata
         context_metadata["forum_posts"].append({
