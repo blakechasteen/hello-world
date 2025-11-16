@@ -29,7 +29,6 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.layout import Layout
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
-from rich.markdown import Markdown
 from rich.tree import Tree
 from rich.prompt import Prompt, Confirm
 from rich import box
