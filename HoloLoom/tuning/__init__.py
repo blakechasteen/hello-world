@@ -22,7 +22,6 @@ Usage:
 
 from HoloLoom.tuning.base import TuningAgent, ThompsonBandit
 from HoloLoom.tuning.coordinator import MasterTuningCoordinator
-from HoloLoom.tuning.timeout_tuner import TimeoutTuner
 
 __all__ = [
     'TuningAgent',
