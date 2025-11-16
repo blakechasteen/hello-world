@@ -26,7 +26,6 @@ from HoloLoom.tuning.timeout_tuner import TimeoutTuner
 from HoloLoom.tuning.cache_tuner import CacheTuner
 from HoloLoom.tuning.threshold_tuner import ThresholdTuner
 from HoloLoom.tuning.memory_tuner import MemoryTuner
-from HoloLoom.tuning.complexity_tuner import ComplexityTuner
 
 __all__ = [
     'TuningAgent',
