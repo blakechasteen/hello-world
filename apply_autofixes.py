@@ -23,12 +23,13 @@ import subprocess
 
 from trough.mcp_server import TroughMCPServer
 from xterminator.mcp_server import XTerminatorMCPServer
+from autofix_tracker import AutoFixTracker, AutoFixResult
 
 
 class AutoFixApplicator:
     """Applies auto-fixes to HoloLoom codebase."""
 
-    def __init__(self):
+    def __init__(self, enable_tracking: bool = True):
         self.trough = TroughMCPServer()
         self.xterminator = XTerminatorMCPServer()
         self.results = {
@@ -40,6 +41,11 @@ class AutoFixApplicator:
             'files_modified': [],
             'failed_fixes': []
         }
+
+        # Learning tracker (Phase 4+)
+        self.enable_tracking = enable_tracking
+        self.tracker = AutoFixTracker() if enable_tracking else None
+        self.session_id = None
 
     async def scan_hololoom(self, max_files: int = 50) -> Dict[str, Any]:
         """Scan HoloLoom directory for issues."""
@@ -310,7 +316,15 @@ class AutoFixApplicator:
 
 async def main():
     """Run auto-fix application."""
-    applicator = AutoFixApplicator()
+    applicator = AutoFixApplicator(enable_tracking=True)
+
+    # Start tracking session
+    if applicator.tracker:
+        applicator.session_id = applicator.tracker.start_session(
+            max_files=50,
+            categories=['dead_code', 'hardcoded_values', 'missing_docstrings', 'incomplete'],
+            confidence_threshold=0.85
+        )
 
     # Step 1: Scan HoloLoom
     scan_result = await applicator.scan_hololoom(max_files=50)
@@ -323,6 +337,8 @@ async def main():
 
     if not auto_fixable:
         print("No auto-fixable issues found!")
+        if applicator.tracker:
+            applicator.tracker.end_session()
         return
 
     # Show sample
@@ -340,6 +356,23 @@ async def main():
 
     # Summary
     applicator.print_summary()
+
+    # End tracking session and export results
+    if applicator.tracker:
+        applicator.tracker.end_session()
+        applicator.tracker.export_json('autofix_tracking/all_sessions.json')
+        applicator.tracker.export_learning_data('autofix_tracking/learning_data.json')
+
+        # Print recommendations
+        print("\n")
+        recs = applicator.tracker.get_recommendations()
+        if recs['categories_to_disable']:
+            print("⚠ Recommendation: Consider disabling low-performing categories:")
+            for cat in recs['categories_to_disable']:
+                print(f"  - {cat}")
+        if recs['adjust_confidence_threshold']:
+            print(f"💡 Recommendation: Adjust confidence threshold to {recs['recommended_threshold']:.2f}")
+        print()
 
 
 if __name__ == '__main__':
