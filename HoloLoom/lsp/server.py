@@ -27,13 +27,14 @@ Usage:
 import asyncio
 import logging
 import sys
+import re
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 import argparse
 from datetime import datetime
 
-from pygls.server import LanguageServer
-from pygls.lsp import (
+from pygls.lsp.server import LanguageServer
+from lsprotocol.types import (
     InitializeParams,
     InitializeResult,
     ServerCapabilities,
@@ -47,14 +48,10 @@ from pygls.lsp import (
     MarkupContent,
     MarkupKind,
     Location,
-    LocationLink,
     DefinitionParams,
     WorkspaceSymbolParams,
     SymbolInformation,
     SymbolKind,
-    PublishDiagnosticsParams,
-    Diagnostic,
-    DiagnosticSeverity,
     Range,
     Position,
 )
@@ -95,13 +92,13 @@ class HoloLoomLanguageServer(LanguageServer):
     """Extended LanguageServer with HoloLoom-specific context.
 
     Attributes:
-        hololoom_context: Optional HoloLoom orchestrator instance
+        hololoom: Optional HoloLoom instance
         config: Server configuration (port, log level, etc.)
     """
 
     def __init__(self, name: str, version: str, **kwargs):
         super().__init__(name, version, **kwargs)
-        self.hololoom_context = None
+        self.hololoom = None
         self.config: Dict[str, Any] = {}
         self.logger = logging.getLogger("hololoom-lsp")
 
@@ -113,6 +110,90 @@ server = HoloLoomLanguageServer(
 )
 
 logger = logging.getLogger("hololoom-lsp")
+
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def extract_word_at_position(line: str, character: int) -> str:
+    """Extract the word at or before the given character position.
+
+    Args:
+        line: The text line
+        character: Character position (0-indexed)
+
+    Returns:
+        The word at the position, or empty string
+    """
+    if not line or character <= 0:
+        return ""
+
+    # Extract text before cursor
+    text_before = line[:character]
+
+    # Find last word boundary (whitespace, operators, etc.)
+    # Match word characters (alphanumeric + underscore + dot)
+    match = re.search(r'([\w.]+)$', text_before)
+    if match:
+        return match.group(1)
+
+    return ""
+
+
+def extract_symbol_at_position(line: str, character: int) -> str:
+    """Extract the symbol at the given position (word on both sides of cursor).
+
+    Args:
+        line: The text line
+        character: Character position (0-indexed)
+
+    Returns:
+        The symbol at the position
+    """
+    if not line:
+        return ""
+
+    # Find word boundaries around cursor
+    # Look for word characters (alphanumeric + underscore)
+    start = character
+    end = character
+
+    # Expand left
+    while start > 0 and (line[start - 1].isalnum() or line[start - 1] == '_'):
+        start -= 1
+
+    # Expand right
+    while end < len(line) and (line[end].isalnum() or line[end] == '_'):
+        end += 1
+
+    return line[start:end]
+
+
+def format_memory_as_markdown(memory) -> str:
+    """Format a memory object as Markdown for hover/documentation.
+
+    Args:
+        memory: Memory object from HoloLoom
+
+    Returns:
+        Markdown-formatted string
+    """
+    lines = [
+        f"**Memory**: {memory.text[:100]}{'...' if len(memory.text) > 100 else ''}",
+        "",
+    ]
+
+    if hasattr(memory, 'metadata') and memory.metadata:
+        lines.append("**Metadata**:")
+        for key, value in memory.metadata.items():
+            lines.append(f"- `{key}`: {value}")
+        lines.append("")
+
+    if hasattr(memory, 'timestamp'):
+        lines.append(f"**Timestamp**: {memory.timestamp}")
+
+    return "\n".join(lines)
 
 
 # ============================================================================
@@ -174,6 +255,29 @@ async def on_initialized(params):
     Use this to start background tasks or lazy-load expensive resources.
     """
     logger.info("Client acknowledged initialization")
+
+    # Initialize HoloLoom
+    try:
+        from HoloLoom import HoloLoom
+        from HoloLoom.config import Config
+
+        logger.info("Initializing HoloLoom instance...")
+        config = Config.fast()  # Use FAST mode for balance
+        server.hololoom = HoloLoom(config=config)
+
+        # Enter async context manager
+        await server.hololoom.__aenter__()
+
+        logger.info("HoloLoom initialized successfully")
+        logger.info("  - Config mode: FAST")
+        logger.info("  - Memory backend: In-memory (NetworkX)")
+        logger.info("  - Embedding scales: %s", config.scales)
+
+    except Exception as e:
+        logger.error(f"Failed to initialize HoloLoom: {e}", exc_info=True)
+        logger.error("Server will run in degraded mode (no HoloLoom integration)")
+        server.hololoom = None
+
     logger.info("Ready to handle LSP requests")
 
 
@@ -187,13 +291,13 @@ async def shutdown(params):
     logger.info("Server shutdown requested")
 
     # Clean up HoloLoom context if initialized
-    if server.hololoom_context is not None:
+    if server.hololoom is not None:
         try:
             logger.info("Closing HoloLoom context...")
-            # await server.hololoom_context.close()
-            # (Future: implement async cleanup)
+            await server.hololoom.__aexit__(None, None, None)
+            logger.info("HoloLoom context closed")
         except Exception as e:
-            logger.error(f"Error closing context: {e}")
+            logger.error(f"Error closing HoloLoom context: {e}")
 
     logger.info("Shutdown complete")
 
@@ -215,40 +319,75 @@ async def completion(params: CompletionParams) -> CompletionList:
     Returns:
         List of completion items
     """
-    document_path = params.text_document.uri
-    line = params.position.line
+    document_uri = params.text_document.uri
+    line_num = params.position.line
     character = params.position.character
 
-    logger.debug(f"Completion requested at {document_path}:{line}:{character}")
+    logger.debug(f"Completion requested at {document_uri}:{line_num}:{character}")
 
-    # TODO: Integrate with HoloLoom
-    # - Query HoloLoom memories for relevant entities
-    # - Extract completions based on context
-    # - Return ranked results
+    # Check if HoloLoom is available
+    if not server.hololoom:
+        logger.debug("HoloLoom not available, returning empty list")
+        return CompletionList(is_incomplete=False, items=[])
 
-    items = [
-        CompletionItem(
-            label="HoloLoom.memory",
-            kind=CompletionItemKind.Module,
-            detail="Memory system (placeholder)",
-            documentation="Access HoloLoom's semantic memory",
-        ),
-        CompletionItem(
-            label="HoloLoom.weave",
-            kind=CompletionItemKind.Method,
-            detail="Main orchestration method (placeholder)",
-            documentation="Invoke the full weaving cycle",
-        ),
-        CompletionItem(
-            label="HoloLoom.recall",
-            kind=CompletionItemKind.Method,
-            detail="Memory retrieval (placeholder)",
-            documentation="Retrieve memories from knowledge graph",
-        ),
-    ]
+    try:
+        # Get document
+        doc = server.workspace.get_text_document(document_uri)
 
-    logger.debug(f"Returning {len(items)} completion items")
-    return CompletionList(is_incomplete=False, items=items)
+        # Extract context around cursor
+        if line_num >= len(doc.lines):
+            logger.debug(f"Line {line_num} out of bounds")
+            return CompletionList(is_incomplete=False, items=[])
+
+        line = doc.lines[line_num]
+
+        # Get word before cursor
+        query = extract_word_at_position(line, character)
+
+        if not query:
+            logger.debug("No query extracted, using current line as context")
+            query = line.strip()[:50]  # Use line as fallback
+
+        logger.debug(f"Completion query: '{query}'")
+
+        # Query HoloLoom for relevant memories
+        memories = await server.hololoom.recall(query, limit=10)
+
+        logger.debug(f"Retrieved {len(memories)} memories from HoloLoom")
+
+        # Convert memories to CompletionItems
+        items = []
+        for i, mem in enumerate(memories):
+            # Extract a meaningful label (first line or first 50 chars)
+            label = mem.text.split('\n')[0][:50]
+
+            # Determine kind based on content
+            kind = CompletionItemKind.Text
+            if any(keyword in mem.text.lower() for keyword in ['function', 'def', 'method']):
+                kind = CompletionItemKind.Function
+            elif any(keyword in mem.text.lower() for keyword in ['class', 'interface']):
+                kind = CompletionItemKind.Class
+            elif any(keyword in mem.text.lower() for keyword in ['import', 'module', 'package']):
+                kind = CompletionItemKind.Module
+
+            # Create completion item
+            items.append(CompletionItem(
+                label=label,
+                kind=kind,
+                detail=f"HoloLoom memory (rank {i+1})",
+                documentation=MarkupContent(
+                    kind=MarkupKind.Markdown,
+                    value=format_memory_as_markdown(mem)
+                ),
+                insert_text=mem.text[:200]  # Limit insertion length
+            ))
+
+        logger.debug(f"Returning {len(items)} completion items")
+        return CompletionList(is_incomplete=False, items=items)
+
+    except Exception as e:
+        logger.error(f"Error in completion handler: {e}", exc_info=True)
+        return CompletionList(is_incomplete=False, items=[])
 
 
 @server.feature("textDocument/hover")
@@ -264,31 +403,69 @@ async def hover(params: HoverParams) -> Optional[Hover]:
     Returns:
         Hover information or None
     """
-    document_path = params.text_document.uri
-    line = params.position.line
+    document_uri = params.text_document.uri
+    line_num = params.position.line
     character = params.position.character
 
-    logger.debug(f"Hover requested at {document_path}:{line}:{character}")
+    logger.debug(f"Hover requested at {document_uri}:{line_num}:{character}")
 
-    # TODO: Integrate with HoloLoom
-    # - Extract symbol at position
-    # - Query knowledge graph for entity information
-    # - Return rich documentation
+    # Check if HoloLoom is available
+    if not server.hololoom:
+        logger.debug("HoloLoom not available")
+        return None
 
-    # Placeholder: return sample documentation
-    content = MarkupContent(
-        kind=MarkupKind.Markdown,
-        value="**HoloLoom Entity** (placeholder)\n\n"
-               "This is a sample hover response. When integrated with HoloLoom, "
-               "this would show:\n\n"
-               "- Entity definition from knowledge graph\n"
-               "- Related entities and relationships\n"
-               "- Usage examples from semantic memory\n"
-               "- Confidence scores\n\n"
-               "`Code blocks work too`"
-    )
+    try:
+        # Get document
+        doc = server.workspace.get_text_document(document_uri)
 
-    return Hover(contents=content)
+        # Extract symbol at position
+        if line_num >= len(doc.lines):
+            logger.debug(f"Line {line_num} out of bounds")
+            return None
+
+        line = doc.lines[line_num]
+        symbol = extract_symbol_at_position(line, character)
+
+        if not symbol:
+            logger.debug("No symbol at position")
+            return None
+
+        logger.debug(f"Hover query for symbol: '{symbol}'")
+
+        # Query HoloLoom for information about this symbol
+        memories = await server.hololoom.recall(symbol, limit=5)
+
+        if not memories:
+            logger.debug("No memories found for symbol")
+            return None
+
+        # Format as Markdown
+        lines = [
+            f"# {symbol}",
+            "",
+            "## Related Information",
+            "",
+        ]
+
+        for i, mem in enumerate(memories[:3]):  # Show top 3
+            lines.append(f"### Memory {i+1}")
+            lines.append("")
+            lines.append(mem.text[:300])
+            lines.append("")
+            lines.append("---")
+            lines.append("")
+
+        content = MarkupContent(
+            kind=MarkupKind.Markdown,
+            value="\n".join(lines)
+        )
+
+        logger.debug(f"Returning hover information for '{symbol}'")
+        return Hover(contents=content)
+
+    except Exception as e:
+        logger.error(f"Error in hover handler: {e}", exc_info=True)
+        return None
 
 
 @server.feature("textDocument/definition")
@@ -304,29 +481,83 @@ async def definition(params: DefinitionParams) -> Optional[List[Location]]:
     Returns:
         List of locations or None
     """
-    document_path = params.text_document.uri
-    line = params.position.line
+    document_uri = params.text_document.uri
+    line_num = params.position.line
     character = params.position.character
 
-    logger.debug(f"Definition requested at {document_path}:{line}:{character}")
+    logger.debug(f"Definition requested at {document_uri}:{line_num}:{character}")
 
-    # TODO: Integrate with HoloLoom
-    # - Extract symbol at position
-    # - Query knowledge graph for definition
-    # - Return location(s) of definition
-    # - If multiple definitions exist, return all
+    # Check if HoloLoom is available
+    if not server.hololoom:
+        logger.debug("HoloLoom not available")
+        return None
 
-    # Placeholder: return sample location
-    location = Location(
-        uri=document_path,
-        range=Range(
-            start=Position(line=0, character=0),
-            end=Position(line=0, character=10)
-        )
-    )
+    try:
+        # Get document
+        doc = server.workspace.get_text_document(document_uri)
 
-    logger.debug(f"Returning definition at {location.uri}")
-    return [location]
+        # Extract symbol at position
+        if line_num >= len(doc.lines):
+            logger.debug(f"Line {line_num} out of bounds")
+            return None
+
+        line = doc.lines[line_num]
+        symbol = extract_symbol_at_position(line, character)
+
+        if not symbol:
+            logger.debug("No symbol at position")
+            return None
+
+        logger.debug(f"Definition query for symbol: '{symbol}'")
+
+        # Query HoloLoom for definition
+        # Look for memories that contain "def", "class", or "define" with the symbol
+        query = f"definition of {symbol}"
+        memories = await server.hololoom.recall(query, limit=5)
+
+        if not memories:
+            logger.debug("No definition found")
+            return None
+
+        # Try to extract location from memory metadata
+        locations = []
+        for mem in memories:
+            # Check if memory has file location metadata
+            if hasattr(mem, 'metadata') and mem.metadata:
+                file_path = mem.metadata.get('file_path') or mem.metadata.get('source_file')
+                line_number = mem.metadata.get('line_number') or mem.metadata.get('line', 0)
+
+                if file_path:
+                    # Convert to URI if needed
+                    if not file_path.startswith('file://'):
+                        file_path = f"file://{file_path}"
+
+                    locations.append(Location(
+                        uri=file_path,
+                        range=Range(
+                            start=Position(line=int(line_number), character=0),
+                            end=Position(line=int(line_number), character=100)
+                        )
+                    ))
+
+        if locations:
+            logger.debug(f"Found {len(locations)} definition locations")
+            return locations
+
+        # Fallback: if no metadata, return current file location
+        # (This is a placeholder - in production, we'd index the codebase)
+        logger.debug("No location metadata found, returning placeholder")
+        return [Location(
+            uri=document_uri,
+            range=Range(
+                start=Position(line=0, character=0),
+                end=Position(line=0, character=10)
+            )
+        )]
+
+    except Exception as e:
+        logger.error(f"Error in definition handler: {e}", exc_info=True)
+        return None
 
 
 @server.feature("workspace/symbol")
@@ -343,41 +574,66 @@ async def workspace_symbol(params: WorkspaceSymbolParams) -> List[SymbolInformat
         List of matching symbols
     """
     query = params.query
-    logger.debug(f"Symbol search requested: {query}")
+    logger.debug(f"Symbol search requested: '{query}'")
 
-    # TODO: Integrate with HoloLoom
-    # - Query knowledge graph for entities matching query
-    # - Return ranked results
-    # - Include location information
+    # Check if HoloLoom is available
+    if not server.hololoom:
+        logger.debug("HoloLoom not available, returning empty list")
+        return []
 
-    # Placeholder: return sample symbols
-    symbols = [
-        SymbolInformation(
-            name="HoloLoom",
-            kind=SymbolKind.Module,
-            location=Location(
-                uri="file:///HoloLoom/__init__.py",
-                range=Range(
-                    start=Position(line=0, character=0),
-                    end=Position(line=10, character=0)
+    try:
+        # Query HoloLoom for symbols
+        memories = await server.hololoom.recall(query, limit=20)
+
+        logger.debug(f"Retrieved {len(memories)} memories for symbol search")
+
+        # Convert memories to SymbolInformation
+        symbols = []
+        for mem in memories:
+            # Extract name (first word or first 30 chars)
+            name = mem.text.split()[0] if mem.text.split() else mem.text[:30]
+
+            # Determine kind based on content
+            kind = SymbolKind.Variable
+            if any(keyword in mem.text.lower() for keyword in ['function', 'def', 'method']):
+                kind = SymbolKind.Function
+            elif any(keyword in mem.text.lower() for keyword in ['class', 'interface']):
+                kind = SymbolKind.Class
+            elif any(keyword in mem.text.lower() for keyword in ['module', 'package']):
+                kind = SymbolKind.Module
+
+            # Extract location from metadata or use placeholder
+            file_uri = "file:///unknown"
+            line_number = 0
+
+            if hasattr(mem, 'metadata') and mem.metadata:
+                file_path = mem.metadata.get('file_path') or mem.metadata.get('source_file')
+                if file_path:
+                    if not file_path.startswith('file://'):
+                        file_uri = f"file://{file_path}"
+                    else:
+                        file_uri = file_path
+
+                line_number = int(mem.metadata.get('line_number', 0) or mem.metadata.get('line', 0))
+
+            symbols.append(SymbolInformation(
+                name=name,
+                kind=kind,
+                location=Location(
+                    uri=file_uri,
+                    range=Range(
+                        start=Position(line=line_number, character=0),
+                        end=Position(line=line_number, character=100)
+                    )
                 )
-            )
-        ),
-        SymbolInformation(
-            name="WeavingOrchestrator",
-            kind=SymbolKind.Class,
-            location=Location(
-                uri="file:///HoloLoom/weaving_orchestrator.py",
-                range=Range(
-                    start=Position(line=50, character=0),
-                    end=Position(line=100, character=0)
-                )
-            )
-        ),
-    ]
+            ))
 
-    logger.debug(f"Returning {len(symbols)} matching symbols")
-    return symbols
+        logger.debug(f"Returning {len(symbols)} matching symbols")
+        return symbols
+
+    except Exception as e:
+        logger.error(f"Error in workspace/symbol handler: {e}", exc_info=True)
+        return []
 
 
 # ============================================================================
@@ -441,6 +697,7 @@ Examples:
     args = parser.parse_args()
 
     # Setup logging
+    global logger
     logger = setup_logging(args.log_level)
     logger.info("=" * 70)
     logger.info("HoloLoom Language Server (LSP) v0.1.0")
