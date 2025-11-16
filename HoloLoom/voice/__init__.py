@@ -11,9 +11,11 @@ Components:
 - TurnTakingManager: Conversation turn management
 - ConversationMemory: Short and long-term conversation storage
 - PersonalityManager: Multi-persona system with voice customization (Phase 3)
+- LanguageManager: Multi-language support with auto-detection (Phase 4)
 
 Date: November 15, 2025
 Updated: November 16, 2025 (Phase 3 - Personality Framework)
+Updated: November 16, 2025 (Phase 4 - Multi-Language Support)
 """
 
 # Personality module (always available)
@@ -22,6 +24,18 @@ from .personality import (
     Personality,
     PersonalityManager,
     PersonalityType
+)
+
+# Language module (always available)
+from .language import (
+    LanguageCode,
+    LanguageProfile,
+    LanguageVariant,
+    ConversationLanguageState,
+    LanguageDetector,
+    LanguageManager,
+    create_language_manager,
+    detect_language
 )
 
 # Voice agent module (optional dependencies)
@@ -47,6 +61,16 @@ __all__ = [
     'Personality',
     'PersonalityManager',
     'PersonalityType',
+
+    # Language (Phase 4)
+    'LanguageCode',
+    'LanguageProfile',
+    'LanguageVariant',
+    'ConversationLanguageState',
+    'LanguageDetector',
+    'LanguageManager',
+    'create_language_manager',
+    'detect_language',
 ]
 
 if VOICE_AGENT_AVAILABLE:
