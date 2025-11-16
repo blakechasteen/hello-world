@@ -11,6 +11,22 @@ import { CodeContextProvider } from './CodeContextProvider';
 let bridge: HoloLoomBridge;
 let agentPanel: AgentPanel | undefined;
 let contextProvider: CodeContextProvider;
+let statusBarItem: vscode.StatusBarItem;
+
+async function updateServerStatus() {
+    const healthy = await bridge.healthCheck();
+    if (healthy) {
+        statusBarItem.text = '$(check) Squad';
+        statusBarItem.tooltip = 'Squad - Connected and ready';
+        statusBarItem.backgroundColor = undefined;
+        statusBarItem.show();
+    } else {
+        statusBarItem.text = '$(warning) Squad';
+        statusBarItem.tooltip = 'Squad - Server not responding. Click to start server.';
+        statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+        statusBarItem.show();
+    }
+}
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('Squad extension activating...');
@@ -23,29 +39,25 @@ export async function activate(context: vscode.ExtensionContext) {
 
     bridge = new HoloLoomBridge(serverUrl);
 
-    // Check server health
-    const healthy = await bridge.healthCheck();
-    if (!healthy) {
-        vscode.window.showWarningMessage(
-            'Squad server not responding. Make sure to start the server with: python squad/server.py'
-        );
-    } else {
-        vscode.window.showInformationMessage('Squad is ready! 🤖');
-    }
+    // Status bar
+    statusBarItem = vscode.window.createStatusBarItem(
+        vscode.StatusBarAlignment.Right,
+        100
+    );
+    statusBarItem.command = 'squad.openPanel';
+    context.subscriptions.push(statusBarItem);
+
+    // Check server health and update status
+    await updateServerStatus();
 
     // Register commands
     registerCommands(context);
 
-    // Status bar
-    const statusBarItem = vscode.window.createStatusBarItem(
-        vscode.StatusBarAlignment.Right,
-        100
-    );
-    statusBarItem.text = '$(robot) Squad';
-    statusBarItem.command = 'squad.openPanel';
-    statusBarItem.tooltip = 'Squad - Agentic AI Assistant';
-    statusBarItem.show();
-    context.subscriptions.push(statusBarItem);
+    // Periodic health check (every 30 seconds)
+    const healthCheckInterval = setInterval(updateServerStatus, 30000);
+    context.subscriptions.push({
+        dispose: () => clearInterval(healthCheckInterval)
+    });
 
     console.log('Squad extension activated!');
 }
@@ -201,13 +213,24 @@ async function executeQuery(
         location: vscode.ProgressLocation.Notification,
         title: `Squad: Thinking...`,
         cancellable: false
-    }, async () => {
+    }, async (progress) => {
         try {
+            // Progress: Starting
+            progress.report({ increment: 0, message: 'Connecting to server...' });
+
             const config = vscode.workspace.getConfiguration('squad');
             const maxSteps = config.get<number>('maxSteps', 5);
             const showSteps = config.get<boolean>('showReasoningSteps', true);
 
+            // Progress: Query started
+            progress.report({ increment: 20, message: `Processing query (${mode} mode)...` });
+
+            const startTime = Date.now();
             const result = await bridge.query(question, codeContext, mode, maxSteps);
+            const duration = Date.now() - startTime;
+
+            // Progress: Query complete
+            progress.report({ increment: 60, message: 'Formatting results...' });
 
             if (showSteps) {
                 if (!agentPanel) {
@@ -217,14 +240,47 @@ async function executeQuery(
                 agentPanel.displayResult(result);
             }
 
-            // Show quick notification
+            // Progress: Done
+            progress.report({ increment: 20, message: 'Complete!' });
+
+            // Show result notification with confidence indicator
             const confidenceText = `${(result.confidence * 100).toFixed(0)}%`;
+            const confidenceIcon = result.confidence >= 0.8 ? '✅' :
+                                  result.confidence >= 0.5 ? '⚠️' : '❌';
+
             vscode.window.showInformationMessage(
-                `✅ Squad: ${confidenceText} confidence (${result.reasoning_mode} mode, ${result.total_duration_ms.toFixed(0)}ms)`
+                `${confidenceIcon} Squad: ${confidenceText} confidence (${result.reasoning_mode} mode, ${duration}ms)`
             );
 
         } catch (error: any) {
-            vscode.window.showErrorMessage(`Squad error: ${error.message}`);
+            // Enhanced error handling with specific messages
+            let errorMessage = 'Squad error: ';
+
+            if (error.code === 'ECONNREFUSED') {
+                errorMessage += 'Cannot connect to server. Make sure the Squad server is running on port 8000.';
+                const action = await vscode.window.showErrorMessage(
+                    errorMessage,
+                    'Open Terminal',
+                    'Settings'
+                );
+
+                if (action === 'Open Terminal') {
+                    const terminal = vscode.window.createTerminal('Squad Server');
+                    terminal.show();
+                    terminal.sendText('cd /home/user/hello-world/squad && PYTHONPATH=/home/user/hello-world python server.py');
+                } else if (action === 'Settings') {
+                    vscode.commands.executeCommand('workbench.action.openSettings', 'squad');
+                }
+            } else if (error.response?.status === 503) {
+                errorMessage += 'Server is starting up. Please wait a moment and try again.';
+                vscode.window.showWarningMessage(errorMessage);
+            } else if (error.response?.status === 500) {
+                errorMessage += `Server error: ${error.response?.data?.detail || 'Internal server error'}`;
+                vscode.window.showErrorMessage(errorMessage);
+            } else {
+                errorMessage += error.message || 'Unknown error occurred';
+                vscode.window.showErrorMessage(errorMessage);
+            }
         }
     });
 }
