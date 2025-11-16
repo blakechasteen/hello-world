@@ -5,7 +5,6 @@ Extends Promptly with workflow-specific storage and management capabilities.
 Includes DSPy integration for systematic prompt engineering.
 """
 
-from .workflow_store import WorkflowStore
 
 # DSPy integration (optional, graceful degradation if not installed)
 try:
