@@ -1,3 +1,5 @@
+# Constants
+CONSTANT_700 = 700  # Extracted magic number
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -342,7 +344,7 @@ def generate_ultra_dashboard(
         .metric-value {{
             font-family: 'JetBrains Mono', monospace;
             font-size: 1.5rem;
-            font-weight: 700;
+            font-weight: CONSTANT_700;
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-green));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
