@@ -1,0 +1,34 @@
+[run]
+source = HoloLoom
+omit =
+    */tests/*
+    */demos/*
+    */__pycache__/*
+    */venv/*
+    */.venv/*
+    */site-packages/*
+    */.egg-info/*
+    */migrations/*
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
+    @abc.abstractmethod
+    @property
+    class .*\(Protocol\):
+    \.\.\.
+
+[html]
+directory = htmlcov
+
+[xml]
+output = coverage.xml

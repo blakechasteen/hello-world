@@ -25,7 +25,7 @@ from HoloLoom.agents.working_memory import AgentWorkingMemory
 from HoloLoom.agents.mcts_core import MCTSStateSpace, MCTSEngine, MCTSNode
 from HoloLoom.agents.types import WorkingMemoryState, AgentProfile
 from HoloLoom.memory.graph import KG
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 
 # ============================================================================

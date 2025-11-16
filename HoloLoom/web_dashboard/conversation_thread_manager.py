@@ -31,7 +31,7 @@ from HoloLoom.agents.mcts_breakthrough import (
     Breakthrough
 )
 from HoloLoom.agents.orchestrator_mcts import create_mcts_agent
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 from HoloLoom.memory.graph import KG
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 

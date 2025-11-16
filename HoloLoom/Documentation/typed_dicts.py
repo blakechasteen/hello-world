@@ -11,7 +11,7 @@ Benefits:
 - Better refactoring support
 
 Usage:
-    from HoloLoom.documentation.typed_dicts import DotPlasmaDict, ActionPlanDict
+    from HoloLoom.Documentation.typed_dicts import DotPlasmaDict, ActionPlanDict
 
     # Type-checked dictionary
     plasma: DotPlasmaDict = {

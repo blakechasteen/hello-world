@@ -27,7 +27,7 @@ import networkx as nx
 
 # Import only from shared types layer
 # Use the project's shared types module (avoid shadowing stdlib `types`)
-from HoloLoom.documentation.types import Vector
+from HoloLoom.Documentation.types import Vector
 
 # Import Riemannian geometry for geodesic distance support
 try:

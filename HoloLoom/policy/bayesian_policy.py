@@ -47,7 +47,7 @@ import torch.nn.functional as F
 from HoloLoom.warp.variational_inference import BayesianLinearLayer, GaussianVariational
 
 # Import existing policy components
-from HoloLoom.documentation.types import Features, Context, ActionPlan, BanditStrategy
+from HoloLoom.Documentation.types import Features, Context, ActionPlan, BanditStrategy
 from HoloLoom.policy.unified import (
     NeuralCore,
     UnifiedPolicy,

@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 # Import BanditStrategy from shared types (no circular dependency!)
-from HoloLoom.documentation.types import BanditStrategy
+from HoloLoom.Documentation.types import BanditStrategy
 
 
 class KGBackend(Enum):

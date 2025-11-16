@@ -26,7 +26,7 @@ from HoloLoom.departments import (
 )
 from HoloLoom.departments.context import ContextDepartment
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 # ============================================================================

@@ -27,7 +27,7 @@ from HoloLoom.memory.hybrid_retrieval import (
     create_hybrid_retriever
 )
 from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 # ============================================================================

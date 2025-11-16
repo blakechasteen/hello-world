@@ -29,7 +29,7 @@ from HoloLoom.config import Config, MemoryBackend
 from HoloLoom.memory.backend_factory import create_memory_backend
 from HoloLoom.memory.cache import MemoryShard
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 
 
 # ============================================================================

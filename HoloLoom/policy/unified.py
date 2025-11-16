@@ -53,7 +53,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # Import only from shared types and embedding (package-relative)
-from HoloLoom.documentation.types import Features, Context, ActionPlan, Decision, BanditStrategy
+from HoloLoom.Documentation.types import Features, Context, ActionPlan, Decision, BanditStrategy
 from HoloLoom.alignment.safety_guardrails import (
     ActionCategory,
     ActionRequest,

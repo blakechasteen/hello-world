@@ -34,7 +34,7 @@ from typing import List
 
 from HoloLoom.config import Config, ExecutionMode
 from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 
 # ============================================================================

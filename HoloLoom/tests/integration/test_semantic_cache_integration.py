@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from HoloLoom.config import Config
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 
 async def main():

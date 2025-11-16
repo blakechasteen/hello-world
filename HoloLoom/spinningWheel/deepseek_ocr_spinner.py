@@ -61,7 +61,7 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceSignals,
     ImportanceScore
 )
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 # ============================================================================

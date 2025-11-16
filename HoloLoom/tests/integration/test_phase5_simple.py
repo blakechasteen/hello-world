@@ -7,7 +7,7 @@ sys.path.insert(0, '.')
 import asyncio
 from HoloLoom.config import Config
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 async def test():
     # Create minimal config

@@ -22,7 +22,7 @@ from .base import BaseSpinner, SpinnerConfig
 
 # Import HoloLoom types
 try:
-    from HoloLoom.documentation.types import MemoryShard
+    from HoloLoom.Documentation.types import MemoryShard
 except ImportError:
     from dataclasses import dataclass, field
 

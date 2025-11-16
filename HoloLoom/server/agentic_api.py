@@ -32,7 +32,7 @@ from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode, Agentic
 # from HoloLoom.agentic.ai_slop_detector import AISlopDetector
 from HoloLoom.agentic.ml_logic_detector import MLLogicDetector, Language as CodeLanguage
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 from HoloLoom.alignment.audit_trail import AuditTrail
 
 

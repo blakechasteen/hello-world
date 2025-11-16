@@ -28,7 +28,7 @@ from HoloLoom.memory.spring_memory_scoring import (
     SpringMemoryScorer,
     AdaptiveSpringRetriever
 )
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 # ============================================================================

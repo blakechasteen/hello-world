@@ -9,8 +9,8 @@ import asyncio
 import sys
 import os
 
-# Add paths
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add paths - go up to repository root (tests/integration/chatops -> repo root)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from HoloLoom.chatops.matrix_bot import MatrixBot, MatrixBotConfig
 from HoloLoom.chatops.hololoom_handlers import HoloLoomMatrixHandlers

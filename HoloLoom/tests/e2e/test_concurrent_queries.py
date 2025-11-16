@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 
 class TestParallelQueryExecution:

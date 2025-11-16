@@ -22,7 +22,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
 from HoloLoom.rag.streaming import StreamToken, StreamingError, stream_from_orchestrator
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 
 logger = logging.getLogger(__name__)
 

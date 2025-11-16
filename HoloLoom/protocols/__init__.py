@@ -99,7 +99,7 @@ from .retrieval import (
 # ============================================================================
 
 try:
-    from HoloLoom.documentation.types import (
+    from HoloLoom.Documentation.types import (
         Query, Features, Context, Response, MemoryShard,
         PolicyAction, ActionPlan, ToolCall, ToolResult, Vector
     )

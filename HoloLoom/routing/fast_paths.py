@@ -13,7 +13,7 @@ Date: 2025-11-12
 
 import time
 from typing import Dict, Optional
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 
 

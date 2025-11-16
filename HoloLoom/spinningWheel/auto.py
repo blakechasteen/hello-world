@@ -93,7 +93,7 @@ async def spin(
     except Exception as e:
         print(f"[spin] Warning: Processing failed: {e}")
         # Create minimal error shard
-        from HoloLoom.documentation.types import MemoryShard
+        from HoloLoom.Documentation.types import MemoryShard
         shards = [MemoryShard(
             id=f"error_{hash(str(source)[:100])}",
             text=f"Error processing input: {str(e)}",
@@ -422,7 +422,7 @@ async def spin_from_query(
         orchestrator = WeavingOrchestrator(cfg=config)
 
     # Execute query
-    from HoloLoom.documentation.types import Query
+    from HoloLoom.Documentation.types import Query
     spacetime = await orchestrator.weave(Query(text=query_text))
 
     # Extract response as text to ingest

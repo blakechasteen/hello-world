@@ -23,7 +23,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent))
 
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 
 def create_test_embedding(text: str, dim: int = 128) -> np.ndarray:
