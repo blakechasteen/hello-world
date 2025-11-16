@@ -48,6 +48,15 @@ export interface VerificationResult {
     suggested_refinements: string[];
 }
 
+export interface CodeGenerationResult {
+    code: string;
+    explanation: string;
+    confidence: number;
+    language?: string;
+    diff?: string;
+    task_type: string;
+}
+
 export class HoloLoomBridge {
     private client: AxiosInstance;
     private serverUrl: string;
@@ -104,5 +113,87 @@ export class HoloLoomBridge {
 
     async stop(): Promise<void> {
         // Graceful shutdown if needed
+    }
+
+    // ========================================================================
+    // Code Generation Endpoints
+    // ========================================================================
+
+    async generateCode(
+        description: string,
+        language?: string,
+        context?: CodeContext
+    ): Promise<CodeGenerationResult> {
+        const response = await this.client.post('/generate', {
+            description,
+            language,
+            context
+        });
+        return response.data;
+    }
+
+    async refactorCode(
+        code: string,
+        instructions: string,
+        language?: string
+    ): Promise<CodeGenerationResult> {
+        const response = await this.client.post('/refactor', {
+            code,
+            instructions,
+            language
+        });
+        return response.data;
+    }
+
+    async fixCode(
+        code: string,
+        errorMessage?: string,
+        diagnostics?: vscode.Diagnostic[],
+        language?: string
+    ): Promise<CodeGenerationResult> {
+        const response = await this.client.post('/fix', {
+            code,
+            error_message: errorMessage,
+            diagnostics,
+            language
+        });
+        return response.data;
+    }
+
+    async generateTests(
+        code: string,
+        language?: string,
+        testFramework?: string
+    ): Promise<CodeGenerationResult> {
+        const response = await this.client.post('/tests', {
+            code,
+            language,
+            test_framework: testFramework
+        });
+        return response.data;
+    }
+
+    async reviewCode(
+        code: string,
+        language?: string
+    ): Promise<CodeGenerationResult> {
+        const response = await this.client.post('/review', {
+            code,
+            language
+        });
+        return response.data;
+    }
+
+    async explainCode(
+        code: string,
+        language?: string,
+        question?: string
+    ): Promise<CodeGenerationResult> {
+        const response = await this.client.post('/explain', {
+            code,
+            language,
+            question
+        });
+        return response.data;
     }
 }

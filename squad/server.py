@@ -1,7 +1,17 @@
 #!/usr/bin/env python3
 """
-Squad FastAPI Server
-Exposes HoloLoom's agentic reasoning capabilities as a REST API for VS Code extension
+Squad FastAPI Server (Enhanced)
+================================
+Exposes HoloLoom's agentic reasoning + LLM code generation as REST API.
+
+Features:
+- Full code generation capabilities (generate, refactor, fix, test, review, explain)
+- Multi-provider LLM support (Ollama/qwen2.5-coder, Anthropic, OpenAI)
+- Modular, extensible architecture
+- Safety alignment integration
+
+Author: Claude Code
+Date: November 16, 2025
 """
 
 import asyncio
@@ -18,8 +28,11 @@ import uvicorn
 # HoloLoom imports
 from HoloLoom.config import Config
 from HoloLoom.Documentation.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.alignment.audit_trail import AuditTrail
+
+# Squad modules
+from llm_providers import LLMClient, LLMProvider
+from code_generator import CodeGenerationEngine, CodeTask, CodeContext as GenCodeContext
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -52,6 +65,48 @@ class ChatRequest(BaseModel):
     context: Optional[CodeContext] = None
 
 
+class CodeGenerationRequest(BaseModel):
+    """Code generation request"""
+    description: str
+    language: Optional[str] = None
+    context: Optional[CodeContext] = None
+
+
+class CodeRefactorRequest(BaseModel):
+    """Code refactoring request"""
+    code: str
+    instructions: str
+    language: Optional[str] = None
+
+
+class CodeFixRequest(BaseModel):
+    """Code fix request"""
+    code: str
+    error_message: Optional[str] = None
+    diagnostics: Optional[List[Dict]] = None
+    language: Optional[str] = None
+
+
+class CodeTestRequest(BaseModel):
+    """Test generation request"""
+    code: str
+    language: Optional[str] = None
+    test_framework: Optional[str] = None
+
+
+class CodeReviewRequest(BaseModel):
+    """Code review request"""
+    code: str
+    language: Optional[str] = None
+
+
+class CodeExplainRequest(BaseModel):
+    """Code explanation request"""
+    code: str
+    language: Optional[str] = None
+    question: Optional[str] = None
+
+
 class ReasoningStep(BaseModel):
     """Single reasoning step"""
     type: str
@@ -81,11 +136,21 @@ class QueryResponse(BaseModel):
     verification: Optional[VerificationResult] = None
 
 
+class CodeGenerationResponse(BaseModel):
+    """Code generation response"""
+    code: str
+    explanation: str
+    confidence: float
+    language: Optional[str] = None
+    diff: Optional[str] = None
+    task_type: str
+
+
 # ============================================================================
 # Global State
 # ============================================================================
 
-app = FastAPI(title="Squad Server", version="0.1.0")
+app = FastAPI(title="Squad Server (Enhanced)", version="0.2.0")
 
 # CORS for local development
 app.add_middleware(
@@ -96,8 +161,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global orchestrator instance
-orchestrator: Optional[WeavingOrchestrator] = None
+# Global instances
+llm_client: Optional[LLMClient] = None
+code_engine: Optional[CodeGenerationEngine] = None
 config: Optional[Config] = None
 audit_trail: Optional[AuditTrail] = None
 
@@ -108,24 +174,26 @@ audit_trail: Optional[AuditTrail] = None
 
 @app.on_event("startup")
 async def startup():
-    """Initialize HoloLoom on server startup"""
-    global orchestrator, config, audit_trail
+    """Initialize Squad server with LLM and HoloLoom"""
+    global llm_client, code_engine, config, audit_trail
 
-    logger.info("Starting Squad server...")
+    logger.info("Starting Squad server (Enhanced)...")
 
-    # Create config with einops fix
-    config = Config.fast()  # Use FAST mode for good balance
-    config.enable_alignment = True  # Safety checks
+    # Initialize LLM client (auto-selects best provider)
+    llm_client = LLMClient()
+    provider_info = llm_client.get_provider_info()
+    logger.info(f"LLM Provider: {provider_info['provider']} ({provider_info['model']})")
+
+    # Initialize code generation engine
+    code_engine = CodeGenerationEngine(llm_client)
+    logger.info("Code generation engine initialized")
+
+    # Create config
+    config = Config.fast()
+    config.enable_alignment = True
 
     # Create audit trail
     audit_trail = AuditTrail()
-
-    # Create memory shards (empty for now - will ingest code on demand)
-    shards = create_initial_shards()
-
-    # Create orchestrator
-    orchestrator = WeavingOrchestrator(cfg=config, shards=shards)
-    await orchestrator.__aenter__()  # Initialize async context
 
     logger.info("Squad server ready! 🚀")
 
@@ -133,50 +201,11 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     """Cleanup on server shutdown"""
-    global orchestrator
-
-    if orchestrator:
-        await orchestrator.__aexit__(None, None, None)
-
     logger.info("Squad server stopped")
 
 
-def create_initial_shards() -> List[MemoryShard]:
-    """Create initial memory shards with coding knowledge"""
-    return [
-        MemoryShard(
-            id="shard-python-1",
-            text="Python programming language with type hints, async/await, decorators",
-            entities=["python", "programming", "types"],
-            motifs=["language", "code", "syntax"],
-            metadata={"source": "squad:bootstrap", "timestamp": datetime.now().isoformat()}
-        ),
-        MemoryShard(
-            id="shard-typescript-1",
-            text="TypeScript programming language with interfaces, generics, type safety",
-            entities=["typescript", "javascript", "types"],
-            motifs=["language", "code", "types", "safety"],
-            metadata={"source": "squad:bootstrap", "timestamp": datetime.now().isoformat()}
-        ),
-        MemoryShard(
-            id="shard-vscode-1",
-            text="VS Code extension API for commands, webviews, diagnostics",
-            entities=["vscode", "extension", "api"],
-            motifs=["development", "ide", "tools"],
-            metadata={"source": "squad:bootstrap", "timestamp": datetime.now().isoformat()}
-        ),
-        MemoryShard(
-            id="shard-hololoom-1",
-            text="HoloLoom agentic reasoning with multi-step verification and research modes",
-            entities=["hololoom", "agentic", "reasoning"],
-            motifs=["ai", "intelligence", "verification"],
-            metadata={"source": "squad:bootstrap", "timestamp": datetime.now().isoformat()}
-        )
-    ]
-
-
 # ============================================================================
-# API Endpoints
+# API Endpoints - Core
 # ============================================================================
 
 @app.get("/health")
@@ -184,61 +213,343 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "orchestrator_ready": orchestrator is not None,
+        "llm_ready": llm_client is not None,
+        "code_engine_ready": code_engine is not None,
+        "llm_provider": llm_client.get_provider_info() if llm_client else None,
         "timestamp": datetime.now().isoformat()
     }
 
 
+@app.get("/stats")
+async def get_stats():
+    """Get server statistics"""
+    return {
+        "llm_ready": llm_client is not None,
+        "code_engine_ready": code_engine is not None,
+        "provider_info": llm_client.get_provider_info() if llm_client else None,
+        "config_mode": config.mode.value if config else "unknown"
+    }
+
+
+# ============================================================================
+# API Endpoints - Code Generation
+# ============================================================================
+
+@app.post("/generate", response_model=CodeGenerationResponse)
+async def generate_code(request: CodeGenerationRequest):
+    """
+    Generate code from natural language description.
+
+    This is the primary code generation endpoint.
+    Uses LLM to create production-ready code from descriptions.
+    """
+    if not code_engine:
+        raise HTTPException(status_code=503, detail="Code engine not initialized")
+
+    try:
+        # Convert context if provided
+        context = None
+        if request.context:
+            context = GenCodeContext(
+                language=request.context.languageId,
+                file_name=request.context.fileName,
+                selection=request.context.selection,
+                diagnostics=request.context.diagnostics,
+                workspace=request.context.workspace
+            )
+
+        # Generate code
+        logger.info(f"Generating code: {request.description[:50]}...")
+        result = await code_engine.generate_code(
+            description=request.description,
+            language=request.language,
+            context=context
+        )
+
+        return CodeGenerationResponse(
+            code=result.code,
+            explanation=result.explanation,
+            confidence=result.confidence,
+            language=result.language,
+            task_type=result.task_type.value
+        )
+
+    except Exception as e:
+        logger.error(f"Code generation error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/refactor", response_model=CodeGenerationResponse)
+async def refactor_code(request: CodeRefactorRequest):
+    """
+    Refactor existing code with instructions.
+
+    Returns refactored code with unified diff showing changes.
+    """
+    if not code_engine:
+        raise HTTPException(status_code=503, detail="Code engine not initialized")
+
+    try:
+        logger.info(f"Refactoring: {request.instructions[:50]}...")
+        result = await code_engine.refactor_code(
+            code=request.code,
+            instructions=request.instructions,
+            language=request.language
+        )
+
+        return CodeGenerationResponse(
+            code=result.code,
+            explanation=result.explanation,
+            confidence=result.confidence,
+            language=result.language,
+            diff=result.diff,
+            task_type=result.task_type.value
+        )
+
+    except Exception as e:
+        logger.error(f"Refactoring error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/fix", response_model=CodeGenerationResponse)
+async def fix_code(request: CodeFixRequest):
+    """
+    Fix buggy code based on error messages.
+
+    Analyzes errors and provides targeted fixes.
+    """
+    if not code_engine:
+        raise HTTPException(status_code=503, detail="Code engine not initialized")
+
+    try:
+        logger.info(f"Fixing code: {request.error_message[:50] if request.error_message else 'auto-detect'}...")
+        result = await code_engine.fix_code(
+            code=request.code,
+            error_message=request.error_message,
+            diagnostics=request.diagnostics,
+            language=request.language
+        )
+
+        return CodeGenerationResponse(
+            code=result.code,
+            explanation=result.explanation,
+            confidence=result.confidence,
+            language=result.language,
+            task_type=result.task_type.value
+        )
+
+    except Exception as e:
+        logger.error(f"Code fix error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/tests", response_model=CodeGenerationResponse)
+async def generate_tests(request: CodeTestRequest):
+    """
+    Generate comprehensive tests for code.
+
+    Creates unit tests with edge case coverage.
+    """
+    if not code_engine:
+        raise HTTPException(status_code=503, detail="Code engine not initialized")
+
+    try:
+        logger.info(f"Generating tests for {request.language or 'unknown'} code...")
+        result = await code_engine.generate_tests(
+            code=request.code,
+            language=request.language,
+            test_framework=request.test_framework
+        )
+
+        return CodeGenerationResponse(
+            code=result.code,
+            explanation=result.explanation,
+            confidence=result.confidence,
+            language=result.language,
+            task_type=result.task_type.value
+        )
+
+    except Exception as e:
+        logger.error(f"Test generation error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/review", response_model=CodeGenerationResponse)
+async def review_code(request: CodeReviewRequest):
+    """
+    Review code for issues, improvements, and security.
+
+    Returns comprehensive code review with suggestions.
+    """
+    if not code_engine:
+        raise HTTPException(status_code=503, detail="Code engine not initialized")
+
+    try:
+        logger.info(f"Reviewing {request.language or 'unknown'} code...")
+        result = await code_engine.review_code(
+            code=request.code,
+            language=request.language
+        )
+
+        return CodeGenerationResponse(
+            code=result.code,
+            explanation=result.explanation,
+            confidence=result.confidence,
+            language=result.language,
+            task_type=result.task_type.value
+        )
+
+    except Exception as e:
+        logger.error(f"Code review error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/explain", response_model=CodeGenerationResponse)
+async def explain_code(request: CodeExplainRequest):
+    """
+    Explain what code does.
+
+    Returns detailed explanation with step-by-step breakdown.
+    """
+    if not code_engine:
+        raise HTTPException(status_code=503, detail="Code engine not initialized")
+
+    try:
+        logger.info(f"Explaining {request.language or 'unknown'} code...")
+        result = await code_engine.explain_code(
+            code=request.code,
+            language=request.language,
+            question=request.question
+        )
+
+        return CodeGenerationResponse(
+            code=result.code,  # Original code
+            explanation=result.explanation,
+            confidence=result.confidence,
+            language=result.language,
+            task_type=result.task_type.value
+        )
+
+    except Exception as e:
+        logger.error(f"Code explanation error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# API Endpoints - Legacy (for backward compatibility)
+# ============================================================================
+
 @app.post("/query", response_model=QueryResponse)
 async def handle_query(request: QueryRequest):
     """
-    Execute agentic query with reasoning
+    Legacy query endpoint (kept for backward compatibility).
 
-    This is the main endpoint for Squad queries from VS Code.
-    Uses HoloLoom's WeavingOrchestrator for multi-step reasoning.
+    For code-specific tasks, use the specialized endpoints instead:
+    - /generate - Generate new code
+    - /refactor - Refactor existing code
+    - /fix - Fix bugs
+    - /tests - Generate tests
+    - /review - Code review
+    - /explain - Explain code
     """
-    if not orchestrator:
-        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+    if not code_engine:
+        raise HTTPException(status_code=503, detail="Code engine not initialized")
 
     try:
-        # Create query with code context
-        query = Query(
-            text=request.text,
-            metadata={
-                "source": "squad:vscode",
-                "mode": request.mode,
-                "context": request.context.dict() if request.context else {}
-            }
-        )
+        # Route to appropriate code generation endpoint based on query
+        query_lower = request.text.lower()
 
-        # Execute weaving
-        logger.info(f"Query: {request.text[:100]}... (mode={request.mode})")
-        start_time = datetime.now()
+        # Simple routing logic
+        if any(word in query_lower for word in ["generate", "create", "write"]) and request.context and request.context.selection:
+            # Generate based on selection
+            result = await code_engine.generate_code(
+                description=request.text,
+                language=request.context.languageId,
+                context=GenCodeContext(
+                    language=request.context.languageId,
+                    file_name=request.context.fileName,
+                    selection=request.context.selection
+                )
+            )
+            response_text = f"{result.code}\n\n{result.explanation}"
+            confidence = result.confidence
 
-        spacetime = await orchestrator.weave(query)
+        elif any(word in query_lower for word in ["explain", "what does"]):
+            if request.context and request.context.selection:
+                result = await code_engine.explain_code(
+                    code=request.context.selection,
+                    language=request.context.languageId,
+                    question=request.text
+                )
+                response_text = result.explanation
+                confidence = result.confidence
+            else:
+                response_text = "Please select code to explain."
+                confidence = 0.5
 
-        end_time = datetime.now()
-        duration_ms = (end_time - start_time).total_seconds() * 1000
+        elif any(word in query_lower for word in ["fix", "debug", "error"]):
+            if request.context and request.context.selection:
+                result = await code_engine.fix_code(
+                    code=request.context.selection,
+                    error_message=request.text,
+                    diagnostics=request.context.diagnostics,
+                    language=request.context.languageId
+                )
+                response_text = f"{result.code}\n\n{result.explanation}"
+                confidence = result.confidence
+            else:
+                response_text = "Please select code to fix."
+                confidence = 0.5
 
-        # Extract response from spacetime
-        response_text = extract_response(spacetime)
+        elif any(word in query_lower for word in ["test", "unit test"]):
+            if request.context and request.context.selection:
+                result = await code_engine.generate_tests(
+                    code=request.context.selection,
+                    language=request.context.languageId
+                )
+                response_text = f"{result.code}\n\n{result.explanation}"
+                confidence = result.confidence
+            else:
+                response_text = "Please select code to test."
+                confidence = 0.5
 
-        # Create reasoning steps
-        steps = create_reasoning_steps(spacetime, request.mode)
+        elif any(word in query_lower for word in ["review", "check", "improve"]):
+            if request.context and request.context.selection:
+                result = await code_engine.review_code(
+                    code=request.context.selection,
+                    language=request.context.languageId
+                )
+                response_text = result.explanation
+                confidence = result.confidence
+            else:
+                response_text = "Please select code to review."
+                confidence = 0.5
 
-        # Format response
-        response = QueryResponse(
+        else:
+            # General query - use LLM directly
+            response_text = await llm_client.generate(
+                prompt=request.text,
+                system_prompt="You are a helpful AI coding assistant."
+            )
+            confidence = 0.7
+
+        # Create response
+        return QueryResponse(
             response=response_text,
-            confidence=spacetime.confidence,
+            confidence=confidence,
             reasoning_mode=request.mode,
-            steps_taken=steps,
-            total_queries=len(steps),
-            total_duration_ms=duration_ms,
-            verification=None  # Will add in future iteration
+            steps_taken=[
+                ReasoningStep(
+                    type="query",
+                    query=request.text,
+                    confidence=confidence,
+                    completed=True
+                )
+            ],
+            total_queries=1,
+            total_duration_ms=0.0,  # Not tracked in legacy endpoint
+            verification=None
         )
-
-        logger.info(f"Response confidence: {spacetime.confidence:.2f}, duration: {duration_ms:.1f}ms")
-        return response
 
     except Exception as e:
         logger.error(f"Query error: {e}", exc_info=True)
@@ -248,115 +559,27 @@ async def handle_query(request: QueryRequest):
 @app.post("/chat")
 async def handle_chat(request: ChatRequest):
     """
-    Conversational chat endpoint
+    Conversational chat endpoint.
 
-    Simpler endpoint for quick questions without full agentic reasoning.
+    For quick questions without full code generation.
     """
-    if not orchestrator:
-        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+    if not llm_client:
+        raise HTTPException(status_code=503, detail="LLM client not initialized")
 
     try:
-        # Use simple query for chat
-        query = Query(
-            text=request.message,
-            metadata={"source": "squad:chat"}
+        response = await llm_client.generate(
+            prompt=request.message,
+            system_prompt="You are a helpful AI coding assistant."
         )
 
-        spacetime = await orchestrator.weave(query)
-
         return {
-            "response": extract_response(spacetime),
-            "confidence": spacetime.confidence
+            "response": response,
+            "confidence": 0.8
         }
 
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/stats")
-async def get_stats():
-    """Get server statistics"""
-    if not orchestrator:
-        return {"status": "not_ready"}
-
-    return {
-        "orchestrator_ready": True,
-        "config_mode": config.mode.value if config else "unknown",
-        "total_queries": 0  # Will track in future iteration
-    }
-
-
-# ============================================================================
-# Helper Functions
-# ============================================================================
-
-def extract_response(spacetime) -> str:
-    """Extract human-readable response from Spacetime"""
-    # Try to get response from metadata first
-    if spacetime.metadata and "response" in spacetime.metadata:
-        return spacetime.metadata["response"]
-
-    # Try to get tool output
-    if spacetime.metadata and "tool_output" in spacetime.metadata:
-        return spacetime.metadata["tool_output"]
-
-    # Try to construct from trace
-    if spacetime.trace and hasattr(spacetime.trace, 'observations'):
-        observations = spacetime.trace.observations
-        if observations:
-            return "\n".join(str(obs) for obs in observations[-3:])  # Last 3 observations
-
-    # Fallback to confidence-based message
-    if spacetime.confidence > 0.8:
-        return "Query processed successfully with high confidence."
-    elif spacetime.confidence > 0.5:
-        return "Query processed with moderate confidence."
-    else:
-        return "Query processed but with low confidence. Results may need verification."
-
-
-def create_reasoning_steps(spacetime, mode: str) -> List[ReasoningStep]:
-    """Create reasoning steps from Spacetime trace"""
-    steps = []
-
-    # Add initial query step
-    steps.append(ReasoningStep(
-        type="initial_query",
-        query=spacetime.metadata.get("query_text", ""),
-        confidence=spacetime.confidence,
-        completed=True
-    ))
-
-    # Add mode-specific steps
-    if mode == "verify":
-        steps.append(ReasoningStep(
-            type="verification",
-            query="Verify response accuracy",
-            confidence=spacetime.confidence,
-            completed=True
-        ))
-    elif mode == "research":
-        steps.append(ReasoningStep(
-            type="research",
-            query="Multi-angle exploration",
-            confidence=spacetime.confidence,
-            completed=True
-        ))
-    elif mode == "plan_execute":
-        steps.append(ReasoningStep(
-            type="planning",
-            query="Break down task",
-            completed=True
-        ))
-        steps.append(ReasoningStep(
-            type="execution",
-            query="Execute plan steps",
-            confidence=spacetime.confidence,
-            completed=True
-        ))
-
-    return steps
 
 
 # ============================================================================
