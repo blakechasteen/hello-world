@@ -512,7 +512,15 @@ class XTerminatorMCPServer:
         results = []
         current_code = code
 
-        for i, issue in enumerate(issues[:max_fixes]):
+        # CRITICAL: Sort issues by line number (descending) to prevent line number shifts
+        # When we fix from bottom to top, earlier fixes don't invalidate later line numbers
+        sorted_issues = sorted(
+            issues[:max_fixes],
+            key=lambda x: x.get('line_number', 0),
+            reverse=True  # Bottom to top
+        )
+
+        for i, issue in enumerate(sorted_issues):
             # Propose fix
             proposal_result = await self.xterminator_propose_fix(
                 issue,
@@ -534,10 +542,19 @@ class XTerminatorMCPServer:
             )
 
             if not validation_result['safe_to_apply']:
+                # Include detailed validation error information
+                failed_steps = [
+                    step for step in validation_result.get('steps', [])
+                    if not step.get('passed', True)
+                ]
+                error_messages = [step.get('message', 'No details') for step in failed_steps]
+
                 results.append({
                     'issue': issue,
                     'status': 'failed_validation',
-                    'fix_id': proposal_result['fix_id']
+                    'fix_id': proposal_result['fix_id'],
+                    'error': '; '.join(error_messages) if error_messages else 'Validation failed',
+                    'failed_steps': failed_steps
                 })
                 continue
 
