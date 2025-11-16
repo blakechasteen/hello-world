@@ -1,3 +1,5 @@
+# Constants
+CONSTANT_850 = 850  # Extracted magic number
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -797,7 +799,7 @@ class WorkflowGenerator:
                 {
                     'id': 'node-4',
                     'agentType': 'response',
-                    'x': 850,
+                    'x': CONSTANT_850,
                     'y': 200,
                     'config': {'format': 'markdown'}
                 }
