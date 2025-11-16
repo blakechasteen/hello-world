@@ -36,7 +36,6 @@ except ImportError:
 
 try:
     from HoloLoom.unified_api import HoloLoom
-    from HoloLoom.config import Config
     from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel
 except ImportError as e:
     print(f"HoloLoom imports failed: {e}")
