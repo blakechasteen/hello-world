@@ -66,3 +66,4 @@ test_results*.json
 # IDE
 .vscode/settings.json
 .idea/workspace.xml
+*.bak.*
