@@ -102,7 +102,6 @@ except ImportError:
 from HoloLoom.routing import ToolRouter, ToolConfig
 
 # Smart Query Routing (November 2025 - Performance Optimization)
-from HoloLoom.routing.query_classifier import QueryClassifier, QueryComplexity
 from HoloLoom.routing.fast_paths import FastPathRouter, handle_trivial_query, handle_simple_query
 from HoloLoom.routing.classifier_factory import create_classifier, create_fast_path_router
 
