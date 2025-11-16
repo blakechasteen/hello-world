@@ -1,0 +1,205 @@
+{
+  "name": "squad",
+  "displayName": "Squad - HoloLoom Code Intelligence",
+  "description": "AI-powered code intelligence with HoloLoom: explain, search, test generation, and refactoring",
+  "version": "1.0.0",
+  "publisher": "hololoom",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Programming Languages", "Machine Learning", "Other"],
+  "keywords": ["AI", "code intelligence", "refactoring", "testing", "documentation"],
+  "icon": "assets/icon.png",
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "squad.explainCode",
+        "title": "Squad: Explain This Code",
+        "category": "Squad"
+      },
+      {
+        "command": "squad.findSimilar",
+        "title": "Squad: Find Similar Code",
+        "category": "Squad"
+      },
+      {
+        "command": "squad.generateTests",
+        "title": "Squad: Generate Unit Tests",
+        "category": "Squad"
+      },
+      {
+        "command": "squad.addDocumentation",
+        "title": "Squad: Add Documentation",
+        "category": "Squad"
+      },
+      {
+        "command": "squad.reviewChanges",
+        "title": "Squad: Review Changes",
+        "category": "Squad"
+      },
+      {
+        "command": "squad.refactorCode",
+        "title": "Squad: Suggest Refactorings",
+        "category": "Squad"
+      },
+      {
+        "command": "squad.indexWorkspace",
+        "title": "Squad: Index Workspace",
+        "category": "Squad"
+      },
+      {
+        "command": "squad.clearCache",
+        "title": "Squad: Clear Cache",
+        "category": "Squad"
+      },
+      {
+        "command": "squad.showStats",
+        "title": "Squad: Show Statistics",
+        "category": "Squad"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "squad.explainCode",
+        "key": "ctrl+alt+e",
+        "mac": "cmd+alt+e",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "squad.findSimilar",
+        "key": "ctrl+alt+f",
+        "mac": "cmd+alt+f",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "squad.generateTests",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t",
+        "when": "editorHasSelection"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorHasSelection",
+          "command": "squad.explainCode",
+          "group": "squad@1"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "squad.findSimilar",
+          "group": "squad@2"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "squad.generateTests",
+          "group": "squad@3"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "squad.addDocumentation",
+          "group": "squad@4"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "squad.refactorCode",
+          "group": "squad@5"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Squad",
+      "properties": {
+        "squad.hololoomUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "HoloLoom server URL"
+        },
+        "squad.enableCache": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable embedding cache for faster responses"
+        },
+        "squad.cacheMaxSize": {
+          "type": "number",
+          "default": 10000,
+          "description": "Maximum number of cached embeddings"
+        },
+        "squad.autoIndexWorkspace": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically index workspace on startup"
+        },
+        "squad.maxContextLines": {
+          "type": "number",
+          "default": 100,
+          "description": "Maximum lines of context to send (0 = unlimited)"
+        },
+        "squad.reasoningMode": {
+          "type": "string",
+          "enum": ["direct", "verify", "research", "plan_execute"],
+          "default": "verify",
+          "description": "Default reasoning mode for queries"
+        },
+        "squad.showInlineHints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show inline code hints and suggestions"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "squad",
+          "title": "Squad",
+          "icon": "assets/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "squad": [
+        {
+          "id": "squadExplorer",
+          "name": "Code Explorer"
+        },
+        {
+          "id": "squadSimilar",
+          "name": "Similar Code"
+        },
+        {
+          "id": "squadStats",
+          "name": "Statistics"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^20.0.0",
+    "@types/better-sqlite3": "^7.6.8",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "better-sqlite3": "^9.2.2",
+    "tree-sitter": "^0.20.4",
+    "tree-sitter-python": "^0.20.4",
+    "tree-sitter-typescript": "^0.20.3",
+    "tree-sitter-javascript": "^0.20.1",
+    "lru-cache": "^10.1.0"
+  }
+}
