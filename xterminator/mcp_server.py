@@ -32,13 +32,12 @@ from xterminator import (
     ASTFixer,
     TemplateFixer,
     ValidationPipeline,
-    GitApplicator,
-    RollbackManager,
     FixStrategy,
     RiskLevel,
     FixProposal,
     AutofixPolicy
 )
+from xterminator.git_integrator import GitIntegrator, GitConfig
 from trough import SlopIssue, Language, Severity, SlopCategory
 
 
@@ -66,15 +65,25 @@ class XTerminatorMCPServer:
     enabling cross-department quality assurance in HoloLoom.
     """
 
-    def __init__(self, policy: Optional[AutofixPolicy] = None):
+    def __init__(
+        self,
+        policy: Optional[AutofixPolicy] = None,
+        git_config: Optional[GitConfig] = None
+    ):
         self.info = MCPServerInfo()
         self.classifier = ClassificationEngine()
         self.ast_fixer = ASTFixer()
         self.template_fixer = TemplateFixer()
         self.validator = ValidationPipeline()
-        self.git_applicator = GitApplicator()
-        self.rollback_manager = RollbackManager()
         self.policy = policy or AutofixPolicy.balanced()
+
+        # Git integration (Phase 4)
+        self.git_integrator = GitIntegrator(git_config or GitConfig(
+            auto_create_branch=True,
+            auto_commit=True,
+            auto_push=False,  # Manual push by default
+            auto_pr=False  # Manual PR creation by default
+        ))
 
         # Session state
         self.session_state: Dict[str, Any] = {
@@ -176,10 +185,11 @@ class XTerminatorMCPServer:
             or safety_level == 'conservative'
         )
 
-        # Store in session
+        # Store in session (including issue for Git commit message)
         self.session_state['fixes_proposed'] += 1
         self.session_state['active_fixes'][fix_id] = {
             'proposal': proposal,
+            'issue': issue,  # Store for commit message generation
             'code': code,
             'fixed_code': fixed_code,
             'file_path': file_path
@@ -264,14 +274,16 @@ class XTerminatorMCPServer:
     async def xterminator_apply_fix(
         self,
         fix_id: str,
-        create_branch: bool = False
+        create_branch: bool = False,
+        create_pr: bool = False
     ) -> Dict[str, Any]:
         """
         Apply validated fix with Git integration.
 
         Args:
             fix_id: Fix ID from propose_fix
-            create_branch: Create feature branch for high-risk fixes
+            create_branch: Create feature branch for fixes (default from config)
+            create_pr: Create pull request after applying (default: False)
 
         Returns:
             {
@@ -279,6 +291,7 @@ class XTerminatorMCPServer:
                 'applied': bool,
                 'git_commit': str,
                 'branch': str,
+                'pr_url': str (if created),
                 'rollback_command': str,
                 'audit_trail': dict
             }
@@ -294,23 +307,32 @@ class XTerminatorMCPServer:
             }
 
         fix_data = self.session_state['active_fixes'][fix_id]
-        proposal = fix_data['proposal']
+        issue = fix_data.get('issue', {})
         fixed_code = fix_data['fixed_code']
         file_path = fix_data['file_path']
 
-        # Apply fix with Git integration
-        result = await self.git_applicator.apply_fix(
-            file_path,
-            fixed_code,
-            proposal,
-            create_branch=create_branch
+        # Build fix metadata for commit message
+        fix_metadata = {
+            'category': issue.get('category', 'code_quality'),
+            'message': issue.get('message', 'Applied auto-fix'),
+            'file_path': file_path,
+            'confidence': issue.get('confidence', 0.0),
+            'fix_id': fix_id
+        }
+
+        # Apply fix with Git integration (Phase 4)
+        result = self.git_integrator.apply_fix_with_git(
+            file_path=file_path,
+            fixed_content=fixed_code,
+            fix_metadata=fix_metadata,
+            create_pr=create_pr
         )
 
-        if not result:
+        if not result.success:
             return {
                 'fix_id': fix_id,
                 'applied': False,
-                'error': 'Git application failed'
+                'error': result.error or 'Git application failed'
             }
 
         # Update session
@@ -319,7 +341,8 @@ class XTerminatorMCPServer:
             'fix_id': fix_id,
             'file_path': file_path,
             'timestamp': time.time(),
-            'git_commit': result.commit_sha if result else None
+            'git_commit': result.commit,
+            'branch': result.branch
         })
 
         # Remove from active fixes
@@ -330,9 +353,10 @@ class XTerminatorMCPServer:
         return {
             'fix_id': fix_id,
             'applied': True,
-            'git_commit': result.commit_sha if result else None,
-            'branch': result.branch if result else 'main',
-            'rollback_command': f"git revert {result.commit_sha}" if result else None,
+            'git_commit': result.commit,
+            'branch': result.branch or 'main',
+            'pr_url': result.pr_url,
+            'rollback_command': f"git revert {result.commit}" if result.commit else None,
             'audit_trail': {
                 'timestamp': time.time(),
                 'detector': 'trough',
@@ -346,7 +370,8 @@ class XTerminatorMCPServer:
     async def xterminator_rollback_fix(
         self,
         fix_id: Optional[str] = None,
-        count: int = 1
+        count: int = 1,
+        rollback_type: str = "commit"  # "commit" or "branch"
     ) -> Dict[str, Any]:
         """
         Rollback previous fix(es).
@@ -354,15 +379,17 @@ class XTerminatorMCPServer:
         Args:
             fix_id: Specific fix to rollback (or None for last N)
             count: Number of fixes to rollback (if fix_id not specified)
+            rollback_type: "commit" (soft reset) or "branch" (delete branch)
 
         Returns:
             {
                 'rollback_count': int,
                 'fixes_rolled_back': list,
-                'git_reverts': list
+                'git_operations': list,
+                'success': bool
             }
         """
-        # Use RollbackManager
+        # Find fixes to rollback
         if fix_id:
             # Rollback specific fix
             fixes_to_rollback = [
@@ -373,14 +400,54 @@ class XTerminatorMCPServer:
             # Rollback last N fixes
             fixes_to_rollback = self.session_state['fix_history'][-count:]
 
+        if not fixes_to_rollback:
+            return {
+                'rollback_count': 0,
+                'fixes_rolled_back': [],
+                'git_operations': [],
+                'success': True,
+                'message': 'No fixes to rollback'
+            }
+
         rolled_back = []
-        git_reverts = []
+        git_operations = []
+        all_success = True
 
         for fix in fixes_to_rollback:
-            if fix['git_commit']:
-                # TODO: Implement actual Git revert
-                # For now, just track that we would revert
-                git_reverts.append(fix['git_commit'])
+            file_path = fix.get('file_path')
+
+            if rollback_type == "branch":
+                # Rollback entire branch
+                result = self.git_integrator.rollback_branch()
+                git_operations.append({
+                    'operation': 'rollback_branch',
+                    'success': result.success,
+                    'error': result.error
+                })
+                all_success = all_success and result.success
+
+            elif rollback_type == "commit" and fix.get('git_commit'):
+                # Rollback specific commit (soft reset)
+                result = self.git_integrator.rollback_commit()
+                git_operations.append({
+                    'operation': 'rollback_commit',
+                    'commit': fix['git_commit'],
+                    'success': result.success,
+                    'error': result.error
+                })
+                all_success = all_success and result.success
+
+            # Also restore from backup if available
+            if file_path:
+                restored = self.git_integrator.restore_from_backup(file_path)
+                if restored:
+                    git_operations.append({
+                        'operation': 'restore_backup',
+                        'file': file_path,
+                        'success': True
+                    })
+
+            if all_success or result.success:
                 rolled_back.append(fix['fix_id'])
 
         # Update session
@@ -389,7 +456,8 @@ class XTerminatorMCPServer:
         return {
             'rollback_count': len(rolled_back),
             'fixes_rolled_back': rolled_back,
-            'git_reverts': git_reverts
+            'git_operations': git_operations,
+            'success': all_success
         }
 
     async def xterminator_batch_fix(
