@@ -13,7 +13,6 @@ Strategy:
 - Adapt to system load (CPU usage)
 """
 
-import asyncio
 import logging
 from collections import defaultdict, deque
 from typing import Dict, Any, List, Optional
