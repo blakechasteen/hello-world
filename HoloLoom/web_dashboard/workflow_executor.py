@@ -38,7 +38,6 @@ try:
     from HoloLoom.unified_api import HoloLoom
     from HoloLoom.config import Config
     from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel
-    from HoloLoom.recursive.full_learning_loop import FullLearningEngine
 except ImportError as e:
     print(f"HoloLoom imports failed: {e}")
     print("Make sure PYTHONPATH is set to repository root")
