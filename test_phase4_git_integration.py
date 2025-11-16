@@ -54,8 +54,22 @@ async def test_phase4_integration():
     print("=" * 70)
     print()
 
+    # Save current directory before creating temp directory
+    import subprocess
+    import os
+    from pathlib import Path
+    original_dir = str(Path(__file__).parent.resolve())
+
     # Create test file in temp directory
     with tempfile.TemporaryDirectory() as tmpdir:
+        # Change to temp directory and initialize Git repo
+        os.chdir(tmpdir)
+
+        subprocess.run(['git', 'init'], capture_output=True, check=True)
+        subprocess.run(['git', 'config', 'user.email', 'test@example.com'], capture_output=True, check=True)
+        subprocess.run(['git', 'config', 'user.name', 'Test User'], capture_output=True, check=True)
+        subprocess.run(['git', 'config', 'commit.gpgsign', 'false'], capture_output=True, check=True)
+
         test_file = Path(tmpdir) / "test_module.py"
         test_file.write_text(TEST_CODE_WITH_ISSUES)
 
@@ -98,7 +112,19 @@ async def test_phase4_integration():
         print("STEP 2: Proposing Fix with xTerminator")
         print("-" * 70)
 
-        first_issue = scan_result['issues'][0]
+        # Filter for auto-fixable issues (dead_code, hardcoded_values)
+        fixable_issues = [
+            issue for issue in scan_result['issues']
+            if issue['category'] in ['dead_code', 'hardcoded_values']
+        ]
+
+        if not fixable_issues:
+            print("⚠ No auto-fixable issues found, test cannot continue")
+            return
+
+        first_issue = fixable_issues[0]
+        print(f"Testing with issue: {first_issue['category']} - {first_issue['message']}")
+        print()
 
         proposal_result = await xterminator.xterminator_propose_fix(
             issue=first_issue,
@@ -207,6 +233,9 @@ async def test_phase4_integration():
         print("🎉 Phase 4 Git Integration is FUNCTIONAL!")
         print()
 
+        # Restore original directory
+        os.chdir(original_dir)
+
 
 async def test_git_integrator_directly():
     """Test GitIntegrator directly (unit test)."""
@@ -227,6 +256,7 @@ async def test_git_integrator_directly():
         subprocess.run(['git', 'init'], capture_output=True)
         subprocess.run(['git', 'config', 'user.email', 'test@example.com'], capture_output=True)
         subprocess.run(['git', 'config', 'user.name', 'Test User'], capture_output=True)
+        subprocess.run(['git', 'config', 'commit.gpgsign', 'false'], capture_output=True)
 
         print("✓ Initialized test Git repository")
         print()

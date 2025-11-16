@@ -69,17 +69,27 @@ class GitIntegrator:
     Provides atomic file writes, branch management, commits, and PR creation.
     """
 
-    def __init__(self, config: Optional[GitConfig] = None):
+    def __init__(self, config: Optional[GitConfig] = None, repo_path: Optional[str] = None):
         """
         Initialize Git integrator.
 
         Args:
             config: Git integration configuration
+            repo_path: Path to Git repository (default: current directory)
         """
         self.config = config or GitConfig()
+        self.repo_path = Path(repo_path) if repo_path else Path.cwd()
         self.backups: Dict[str, FileBackup] = {}
         self.current_branch: Optional[str] = None
         self.original_branch: Optional[str] = None
+
+    def _safe_decode_stderr(self, stderr) -> str:
+        """Safely decode stderr from subprocess, handling both bytes and str."""
+        if stderr is None:
+            return ""
+        if isinstance(stderr, bytes):
+            return stderr.decode('utf-8', errors='replace')
+        return str(stderr)
 
     # ================================================================
     # FILE OPERATIONS
@@ -217,7 +227,7 @@ class GitIntegrator:
         """Check if current directory is a Git repository."""
         try:
             subprocess.run(
-                ['git', 'rev-parse', '--git-dir'],
+                ['git', 'rev-parse', '--git-dir'], cwd=self.repo_path,
                 capture_output=True,
                 check=True
             )
@@ -229,7 +239,7 @@ class GitIntegrator:
         """Get current Git branch name."""
         try:
             result = subprocess.run(
-                ['git', 'branch', '--show-current'],
+                ['git', 'branch', '--show-current'], cwd=self.repo_path,
                 capture_output=True,
                 text=True,
                 check=True
@@ -242,7 +252,7 @@ class GitIntegrator:
         """Check if Git working tree is clean."""
         try:
             result = subprocess.run(
-                ['git', 'status', '--porcelain'],
+                ['git', 'status', '--porcelain'], cwd=self.repo_path,
                 capture_output=True,
                 text=True,
                 check=True
@@ -287,7 +297,7 @@ class GitIntegrator:
         # Create and checkout branch
         try:
             subprocess.run(
-                ['git', 'checkout', '-b', branch_name],
+                ['git', 'checkout', '-b', branch_name], cwd=self.repo_path,
                 capture_output=True,
                 check=True
             )
@@ -319,8 +329,22 @@ class GitIntegrator:
             GitOperation result
         """
         try:
+            # Convert absolute paths to relative paths
+            relative_files = []
+            for f in files:
+                f_path = Path(f)
+                if f_path.is_absolute():
+                    try:
+                        relative_files.append(str(f_path.relative_to(self.repo_path)))
+                    except ValueError:
+                        # File is outside repo, use absolute path
+                        relative_files.append(str(f_path))
+                else:
+                    relative_files.append(str(f_path))
+
             subprocess.run(
-                ['git', 'add'] + files,
+                ['git', 'add'] + relative_files,
+                cwd=self.repo_path,
                 capture_output=True,
                 check=True
             )
@@ -387,7 +411,7 @@ class GitIntegrator:
         # Create commit
         try:
             result = subprocess.run(
-                ['git', 'commit', '-m', message],
+                ['git', 'commit', '-m', message], cwd=self.repo_path,
                 capture_output=True,
                 text=True,
                 check=True
@@ -395,7 +419,7 @@ class GitIntegrator:
 
             # Get commit SHA
             commit_sha = subprocess.run(
-                ['git', 'rev-parse', 'HEAD'],
+                ['git', 'rev-parse', 'HEAD'], cwd=self.repo_path,
                 capture_output=True,
                 text=True,
                 check=True
@@ -439,6 +463,7 @@ class GitIntegrator:
 
             subprocess.run(
                 cmd,
+                cwd=self.repo_path,
                 capture_output=True,
                 check=True
             )
@@ -495,6 +520,7 @@ class GitIntegrator:
 
             result = subprocess.run(
                 cmd,
+                cwd=self.repo_path,
                 capture_output=True,
                 text=True,
                 check=True
@@ -530,7 +556,7 @@ class GitIntegrator:
         """
         try:
             subprocess.run(
-                ['git', 'reset', '--soft', 'HEAD~1'],
+                ['git', 'reset', '--soft', 'HEAD~1'], cwd=self.repo_path,
                 capture_output=True,
                 check=True
             )
@@ -566,7 +592,7 @@ class GitIntegrator:
         try:
             # Checkout original branch
             subprocess.run(
-                ['git', 'checkout', self.original_branch],
+                ['git', 'checkout', self.original_branch], cwd=self.repo_path,
                 capture_output=True,
                 check=True
             )
@@ -574,7 +600,7 @@ class GitIntegrator:
             # Delete autofix branch
             if autofix_branch and autofix_branch != self.original_branch:
                 subprocess.run(
-                    ['git', 'branch', '-D', autofix_branch],
+                    ['git', 'branch', '-D', autofix_branch], cwd=self.repo_path,
                     capture_output=True,
                     check=True
                 )
