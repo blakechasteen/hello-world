@@ -22,7 +22,6 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import json
 import asyncio
-from typing import Dict, List
 import sys
 
 # Add parent directory to path for imports
