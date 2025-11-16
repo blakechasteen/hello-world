@@ -25,7 +25,6 @@ import logging
 import json
 from typing import Dict, List, Any, Optional, Callable, Tuple
 from dataclasses import dataclass, field, asdict
-from enum import Enum
 from pathlib import Path
 import numpy as np
 
