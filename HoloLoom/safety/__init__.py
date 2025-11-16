@@ -5,7 +5,6 @@ Code-level safety locks for Layer 6 (self-modification) capabilities.
 Complements documentation-level safety with runtime enforcement.
 
 Usage:
-    from HoloLoom.safety import SafetyLock, Layer6Capability
 
     # Check if operation is allowed
     if SafetyLock.is_layer6_enabled():
