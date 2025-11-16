@@ -31,7 +31,6 @@ Usage:
     >>> print(metrics["ece"], metrics["regret"], metrics["mean_reward"])
 """
 
-from __future__ import annotations
 
 import asyncio
 import logging
