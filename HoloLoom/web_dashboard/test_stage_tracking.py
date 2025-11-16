@@ -11,7 +11,6 @@ Usage:
 
 import asyncio
 import sys
-import time
 import aiohttp
 
 
