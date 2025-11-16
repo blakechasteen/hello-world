@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="HoloLoom Training Part 2: Core Concepts - Deep dive into architecture and how data flows">
+  <meta name="keywords" content="HoloLoom, architecture, 9-layer system, data flow, configuration, memory backends">
+
+  <title>HoloLoom Training - Part 2: Core Concepts Deep Dive</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-code-bg: #f5f5f5;
+
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --font-size-lg: 18px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-background);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-md) var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .navbar-nav {
+      display: flex;
+      gap: var(--spacing-lg);
+      list-style: none;
+    }
+
+    .navbar-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .navbar-nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* MAIN LAYOUT */
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      display: block;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--color-primary);
+      background: var(--color-surface);
+      font-weight: 600;
+    }
+
+    /* ARTICLE */
+    .article {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* BREADCRUMBS */
+    .breadcrumbs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumbs span {
+      margin: 0 var(--spacing-sm);
+    }
+
+    /* HEADER */
+    .article-header {
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .progress-badge {
+      display: inline-block;
+      background: var(--color-accent);
+      color: white;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article-title {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .article-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .edit-link {
+      display: inline-block;
+      color: var(--color-primary);
+      text-decoration: none;
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-lg);
+      border-bottom: 1px dotted var(--color-primary);
+    }
+
+    .edit-link:hover {
+      border-bottom-style: solid;
+    }
+
+    /* TABLE OF CONTENTS */
+    .toc {
+      background: var(--color-surface);
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      border-radius: var(--radius-md);
+    }
+
+    .toc-title {
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .toc-list {
+      list-style: none;
+      font-size: var(--font-size-sm);
+    }
+
+    .toc-list li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .toc-list a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-list-level-2 {
+      margin-left: var(--spacing-lg);
+      color: var(--color-text-secondary);
+    }
+
+    /* CONTENT STYLING */
+    .article h2 {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-primary);
+      scroll-margin-top: 80px;
+    }
+
+    .article h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .article h3 {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+      scroll-margin-top: 80px;
+    }
+
+    .article p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.8;
+    }
+
+    .article ul, .article ol {
+      margin-left: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* CODE BLOCKS */
+    .article pre {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+      font-size: 0.9em;
+    }
+
+    .article code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .article pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .article p code {
+      background: var(--color-surface);
+      padding: 2px 6px;
+      border-radius: var(--radius-md);
+      color: var(--color-secondary);
+      font-weight: 500;
+    }
+
+    /* TABLES */
+    .article table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--spacing-lg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      font-size: 0.9em;
+    }
+
+    .article th {
+      background: var(--color-surface);
+      padding: var(--spacing-md);
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .article td {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .article tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* BLOCKQUOTE */
+    .article blockquote {
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-md) var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      font-style: italic;
+      color: var(--color-text-secondary);
+    }
+
+    /* NAVIGATION */
+    .article-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-xl);
+      border-top: 2px solid var(--color-border);
+    }
+
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: var(--spacing-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .nav-link:hover {
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+    }
+
+    .nav-link-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-link-title {
+      font-size: var(--font-size-lg);
+    }
+
+    .nav-link.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      color: var(--color-text-secondary);
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 2em;
+      }
+
+      .article h2 {
+        font-size: 1.5em;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 1.5em;
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .breadcrumbs {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="navbar-brand">HoloLoom</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/docs/training/">Training</a></li>
+        <li><a href="https://github.com/hololoom/hololoom">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main-content">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Training Path</div>
+          <ul class="sidebar-nav">
+            <li><a href="part1.html">Part 1: Foundations</a></li>
+            <li><a href="part2.html" class="active">Part 2: Core Concepts</a></li>
+            <li><a href="part3.html">Part 3: Tutorials</a></li>
+            <li><a href="part4.html">Part 4: Advanced Topics</a></li>
+            <li><a href="part5.html">Part 5: Implementation</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Learning Resources</div>
+          <ul class="sidebar-nav">
+            <li><a href="/docs/">Documentation</a></li>
+            <li><a href="/docs/architecture.html">Architecture</a></li>
+            <li><a href="/demos/">Demos</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- ARTICLE -->
+      <article class="article">
+        <!-- BREADCRUMBS -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a>
+          <span>/</span>
+          <a href="/docs/training/">Training</a>
+          <span>/</span>
+          <span>Part 2: Core Concepts</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="article-header">
+          <div class="progress-badge">Part 2 of 5</div>
+          <h1 class="article-title">HoloLoom Training: Part 2 - Core Concepts Deep Dive</h1>
+
+          <div class="article-meta">
+            <span>📖 Reading Time: 45-60 minutes</span>
+            <span>💡 Difficulty: Intermediate</span>
+            <span>📅 Updated: November 2025</span>
+          </div>
+
+          <a href="https://github.com/hello-world/blob/main/TRAINING_PART_2_CORE_CONCEPTS.md" class="edit-link" target="_blank">
+            ✏️ Edit on GitHub
+          </a>
+        </div>
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+          <div class="toc-title">Table of Contents</div>
+          <ul class="toc-list">
+            <li><a href="#introduction">Introduction: From Basic to Deep</a></li>
+            <li><a href="#section-1">Section 1: The 9-Layer Architecture</a>
+              <ul class="toc-list-level-2">
+                <li><a href="#layer-1">Layer 1: Input Processing</a></li>
+                <li><a href="#layer-2">Layer 2: Pattern Selection</a></li>
+                <li><a href="#layer-3">Layer 3: Temporal Control</a></li>
+                <li><a href="#layer-4">Layer 4: Memory Retrieval</a></li>
+                <li><a href="#layer-5">Layer 5: Feature Extraction</a></li>
+              </ul>
+            </li>
+            <li><a href="#section-2">Section 2: Data Flow Through the System</a></li>
+            <li><a href="#section-3">Section 3: The Three Execution Modes</a></li>
+            <li><a href="#section-4">Section 4: Memory Backends Explained</a></li>
+            <li><a href="#section-5">Section 5: The Protocol-Based Design</a></li>
+            <li><a href="#section-6">Section 6: Configuration System</a></li>
+            <li><a href="#summary">Summary: Pulling It All Together</a></li>
+          </ul>
+        </div>
+
+        <h2 id="introduction">Introduction: From Basic to Deep</h2>
+
+        <p>Part 1 taught you "what" HoloLoom does. Part 2 teaches you "how" it does it.</p>
+
+        <p>In this guide, you'll learn:</p>
+        <ul>
+          <li>The 9-layer weaving architecture (from input to learning)</li>
+          <li>How data transforms at each stage</li>
+          <li>When and why to use different execution modes</li>
+          <li>How memory backends work and when to choose each</li>
+          <li>The protocol-based design pattern that makes HoloLoom flexible</li>
+          <li>How to configure the system for your needs</li>
+        </ul>
+
+        <p>Let's start with the foundation: the 9-layer architecture.</p>
+
+        <h2 id="section-1">Section 1: The 9-Layer Architecture</h2>
+
+        <h3>Overview</h3>
+
+        <p>HoloLoom's power comes from its <strong>layered design</strong>. Each layer does one thing well and passes data to the next layer. This separation enables:</p>
+
+        <ul>
+          <li><strong>Swappable components:</strong> replace memory backend without touching the orchestrator</li>
+          <li><strong>Understandable complexity:</strong> each layer is simple; power emerges from combination</li>
+          <li><strong>Graceful degradation:</strong> optional dependencies fail gracefully</li>
+        </ul>
+
+        <h3>Diagram 1: Complete 9-Layer Data Transformation Flowchart</h3>
+
+        <p>To understand how data flows through HoloLoom, visualize the complete transformation from input to output:</p>
+
+        <pre><code>┌─────────────────────────────────────────────┐
+│  INPUT: Query                                │
+│  Type: Query(text="What is Thompson?")       │
+│  Size: ~50 bytes                             │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 1: Input Processing (SpinningWheel)  │
+│  Output: ProcessedInput                      │
+│  Size: ~200 bytes (normalized text)          │
+│  Time: ~2-5ms                                │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 2: Pattern Selection (LoomCommand)    │
+│  Output: PatternCard (mode=FAST)             │
+│  Size: ~100 bytes                            │
+│  Time: ~1-2ms                                │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 3: Temporal Control (ChronoTrigger)   │
+│  Output: TemporalWindow (timeout=200ms)      │
+│  Size: ~150 bytes                            │
+│  Time: <1ms                                  │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 4: Memory Retrieval (YarnGraph)       │
+│  Output: List[MemoryShard] (n=6)             │
+│  Size: ~6KB (6 shards × 1KB each)            │
+│  Time: ~35-50ms                              │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 5: Feature Extraction (ResonanceShed) │
+│  Output: DotPlasma (Features)                │
+│  • Motifs: 3-5 patterns                      │
+│  • Embeddings: [96D, 192D, 384D]             │
+│  • Spectral: 5 graph features                │
+│  Size: ~2KB                                  │
+│  Time: ~25-35ms                              │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 6: Warp Space Tensioning              │
+│  Output: TensionedThreads (Continuous)       │
+│  Size: ~3KB (continuous manifold)            │
+│  Time: ~8-12ms                               │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 7: Decision Collapse                  │
+│  (ConvergenceEngine)                         │
+│  Output: ActionPlan                          │
+│  • Tool: "answer"                            │
+│  • Confidence: 0.92                          │
+│  Size: ~500 bytes                            │
+│  Time: ~5-10ms                               │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 8: Tool Execution                     │
+│  Output: ToolResult                          │
+│  Size: ~1KB (response text)                  │
+│  Time: ~30-50ms                              │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 9: Spacetime Construction             │
+│  Output: Spacetime (Complete Fabric)         │
+│  • Result + Trace + Metadata                 │
+│  Size: ~10KB (complete provenance)           │
+│  Time: ~5ms                                  │
+└─────────────────────────────────────────────┘
+
+SUMMARY:
+├─ Total latency: ~155ms (FAST mode)
+├─ Total data: 50 bytes → 10KB (200× expansion)
+├─ Retrieval: 40% of time
+├─ Features: 30% of time
+├─ Decision: 7% of time
+└─ Tool execution: 20% of time</code></pre>
+
+        <p><strong>Key observations:</strong></p>
+        <ul>
+          <li>Memory retrieval (Layer 4) dominates latency (~35-50ms)</li>
+          <li>Feature extraction (Layer 5) is second most expensive (~25-35ms)</li>
+          <li>Data grows 200× through processing (compression happens in learning loop)</li>
+          <li>Each layer is independent and can be profiled separately</li>
+        </ul>
+
+        <h3 id="layer-1">Layer 1: Input Processing (SpinningWheel)</h3>
+
+        <p><strong>What it does:</strong> Converts raw input (text, images, audio, video) into a unified <code>MemoryShard</code> format.</p>
+
+        <p><strong>Why it exists:</strong> Different input types need different parsing. Instead of having the orchestrator handle text differently than images, we have specialized "spinners" that understand each format.</p>
+
+        <p><strong>Data transformation:</strong></p>
+        <pre><code>Raw Input (e.g., YouTube URL)
+    ↓
+[YouTubeSpinner]
+    ↓
+MemoryShard {
+    id: "yt_abc123",
+    content: "transcript text",
+    modality: "audio",
+    source: "youtube",
+    entities: ["speaker", "topic"],  # Optional enrichment
+    timestamp: 2025-11-16
+}</code></pre>
+
+        <p><strong>Example:</strong></p>
+        <pre><code>from HoloLoom.spinningWheel import YouTubeSpinner, YouTubeSpinnerConfig
+
+config = YouTubeSpinnerConfig(chunk_duration=60.0)  # 1-min chunks
+spinner = YouTubeSpinner(config)
+
+shards = await spinner.spin({
+    'url': 'https://youtube.com/watch?v=dQw4w9WgXcQ',
+    'languages': ['en']
+})
+# Returns: List[MemoryShard] with 10-20 shards for a long video</code></pre>
+
+        <h3 id="layer-2">Layer 2: Pattern Selection (Loom Command)</h3>
+
+        <p><strong>What it does:</strong> Analyzes the query to determine complexity, then selects an execution template.</p>
+
+        <p><strong>Why it exists:</strong> Simple queries ("What is 2+2?") waste time if they use the full 9-layer pipeline. By detecting complexity upfront, we route to the fastest sufficient solution.</p>
+
+        <p><strong>Data transformation:</strong></p>
+        <pre><code>Query: "What is Thompson Sampling?"
+    ↓
+[QueryClassifier.classify()]
+    ↓
+ComplexityLevel = MEDIUM  # Fact-based, needs context
+    ↓
+[LoomCommand.select_pattern()]
+    ↓
+PatternCard = FAST_PATTERN {
+    embedding_scales: [768],
+    retrieval_k: 6,
+    enable_spectral: true,
+    layers: 5  # vs 9 for FUSED
+}</code></pre>
+
+        <p><strong>Decision logic:</strong></p>
+        <ul>
+          <li><strong>SIMPLE queries</strong> (<50ms):
+            <ul>
+              <li>"What is 2+2?" → BARE mode (regex, no context)</li>
+              <li>"What time is it?" → BARE mode (doesn't need knowledge graph)</li>
+            </ul>
+          </li>
+          <li><strong>STANDARD queries</strong> (100-200ms):
+            <ul>
+              <li>"Explain recursion" → FAST mode (needs context, moderate depth)</li>
+              <li>"What is Thompson Sampling?" → FAST mode</li>
+            </ul>
+          </li>
+          <li><strong>COMPLEX queries</strong> (200-500ms+):
+            <ul>
+              <li>"Compare Thompson Sampling with UCB" → FUSED mode (needs multi-angle analysis)</li>
+              <li>"How does your system work?" → FUSED mode</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3 id="layer-3">Layer 3: Temporal Control (Chrono Trigger)</h3>
+
+        <p><strong>What it does:</strong> Creates a time window for this query and sets hard limits (timeout, max iterations).</p>
+
+        <p><strong>Why it exists:</strong> Without boundaries, queries could run forever. Chrono Trigger enforces time discipline.</p>
+
+        <p><strong>Data transformation:</strong></p>
+        <pre><code>PatternCard (FAST_PATTERN)
+    ↓
+[ChronoTrigger.fire()]
+    ↓
+TemporalWindow {
+    start: 2025-11-16T10:30:00Z,
+    deadline: 2025-11-16T10:30:00.5Z,  # 500ms timeout
+    threads_active: [motif, embedding, memory],  # Which to activate
+    max_depth: 2,  # Recursion limit
+    decay_factor: 0.95  # Per-layer quality decay
+}</code></pre>
+
+        <h3 id="layer-4">Layer 4: Memory Retrieval (Yarn Graph)</h3>
+
+        <p><strong>What it does:</strong> Queries the knowledge graph to retrieve relevant entities and relationships.</p>
+
+        <p><strong>Why it exists:</strong> The orchestrator needs context about the query topic. The knowledge graph stores previous memories (learned facts).</p>
+
+        <p><strong>Data transformation:</strong></p>
+        <pre><code>TemporalWindow + Query("Thompson Sampling")
+    ↓
+[MemoryManager.retrieve()]
+    ↓
+Retrieved MemoryShards {
+    shard_0: {
+        content: "Thompson Sampling is a Bayesian strategy...",
+        confidence: 0.92,
+        relevance: 0.88
+    },
+    shard_1: {
+        content: "Exploration-exploitation tradeoff...",
+        confidence: 0.85,
+        relevance: 0.79
+    },
+    ... (up to K=6 shards)
+}</code></pre>
+
+        <h3 id="layer-5">Layer 5: Feature Extraction (Resonance Shed)</h3>
+
+        <p><strong>What it does:</strong> Lifts three feature "threads" from the input and retrieved memories:</p>
+        <ol>
+          <li><strong>Motif Thread (symbolic):</strong> Keywords, entities ("Thompson", "Sampling", "exploration")</li>
+          <li><strong>Embedding Thread (continuous):</strong> Dense vectors (768-dimensional)</li>
+          <li><strong>Spectral Thread (topological):</strong> Graph properties (Laplacian eigenvalues, SVD components)</li>
+        </ol>
+
+        <p><strong>Data transformation:</strong></p>
+        <pre><code>Retrieved memories
+    ↓
+[ResonanceShed.lift_features()]
+    ├── Motif Thread
+    │   └─ ["thompson", "sampling", "bandit", "exploration"]
+    │
+    ├── Embedding Thread
+    │   └─ tensor([0.23, -0.45, 0.67, ...])  # 768-dim
+    │
+    └── Spectral Thread
+        └─ {
+            laplacian_eigs: [2.1, 1.5, 0.9, 0.3],
+            svd_components: [[0.2, 0.8], [...]],
+            density: 0.15
+           }
+         ↓
+      DotPlasma (unified feature fluid)</code></pre>
+
+        <h2 id="section-2">Section 2: Data Flow Through the System</h2>
+
+        <h3>Complete Lifecycle Example</h3>
+
+        <p>Let's trace a real query through all 9 layers:</p>
+
+        <p><strong>Query:</strong> "What is Thompson Sampling?"</p>
+
+        <p><strong>Step 1: Input Processing</strong></p>
+        <pre><code>User Query: "What is Thompson Sampling?"
+    ↓
+[Layer 1: SpinningWheel]
+    ├─ InputRouter detects: text input
+    ├─ TextSpinner processes input
+    └─ Output: MemoryShard { content: "What is Thompson Sampling?", ... }</code></pre>
+
+        <p><strong>Step 2: Pattern Selection</strong></p>
+        <pre><code>Input MemoryShard
+    ↓
+[Layer 2: Loom Command]
+    ├─ QueryClassifier analyzes:
+    │   • Keyword count: 4
+    │   • Query type: FACTUAL
+    │   • Complexity signals: medium
+    ├─ Decision: FAST mode (100-200ms)
+    └─ Output: PatternCard = FAST_PATTERN</code></pre>
+
+        <p>This pattern allows the system to:</p>
+        <ul>
+          <li>Retrieve 6 relevant shards (not 20)</li>
+          <li>Use single embedding scale (not 3 scales)</li>
+          <li>Enable spectral features (yes)</li>
+          <li>Limit computation depth (5 layers, not 9)</li>
+        </ul>
+
+        <h2 id="section-3">Section 3: The Three Execution Modes</h2>
+
+        <p>HoloLoom adapts its processing depth based on query complexity. You control this with three modes:</p>
+
+        <h3>Diagram 2: BARE/FAST/FUSED Mode Comparison Matrix</h3>
+
+        <p>The three execution modes offer different tradeoffs. Use this matrix to understand when each mode is appropriate:</p>
+
+        <pre><code>┌──────────────────┬─────────────────┬─────────────────┬──────────────────┐
+│   Feature        │      BARE       │      FAST       │      FUSED       │
+├──────────────────┼─────────────────┼─────────────────┼──────────────────┤
+│ Latency          │   50-100ms      │   100-200ms     │   200-500ms      │
+│ Memory Usage     │   <1MB          │   5-10MB        │   10-20MB        │
+│ Quality (avg)    │   ★★★☆☆         │   ★★★★☆         │   ★★★★★          │
+├──────────────────┼─────────────────┼─────────────────┼──────────────────┤
+│ Motif Detection  │   Regex only    │   Hybrid        │   Full NLP       │
+│ Embedding Scale  │   Single (768D) │   Single (768D) │   Multi-scale    │
+│ Graph Traversal  │   1-hop         │   2-hop         │   3-hop          │
+│ Cache Enabled    │   ✗             │   ✓             │   ✓              │
+│ Zero-Copy Emb    │   ✗             │   ✓             │   ✓              │
+│ Thompson Sample  │   ✗             │   ✓             │   ✓              │
+│ Spectral Feats   │   ✗             │   ✓             │   ✓              │
+├──────────────────┼─────────────────┼─────────────────┼──────────────────┤
+│ Accuracy (simple)│   85%           │   92%           │   93%            │
+│ Accuracy (complex)│  45%           │   85%           │   95%            │
+└──────────────────┴─────────────────┴─────────────────┴──────────────────┘
+
+SELECTION GUIDE:
+• Need sub-100ms latency? → BARE
+• Production deployment? → FAST (recommended for ~95% of queries)
+• Research or quality critical? → FUSED</code></pre>
+
+        <h3>BARE Mode: Maximum Speed</h3>
+
+        <p><strong>When to use:</strong> Simple, factual queries with clear answers.</p>
+
+        <p><strong>Performance:</strong> ~50-100ms, <1MB memory</p>
+
+        <p><strong>Example queries:</strong></p>
+        <ul>
+          <li>"What time is it?" (system question)</li>
+          <li>"What is 2+2?" (arithmetic)</li>
+          <li>"Spell 'python'" (trivial)</li>
+        </ul>
+
+        <h3>FAST Mode: The Sweet Spot</h3>
+
+        <p><strong>When to use:</strong> Most production queries. Balanced speed and quality.</p>
+
+        <p><strong>Performance:</strong> ~100-200ms, ~5-10MB memory</p>
+
+        <p><strong>Features enabled:</strong></p>
+        <ul>
+          <li>✓ Hybrid motif detection (regex + spaCy if available)</li>
+          <li>✓ Matryoshka embeddings (768-dim)</li>
+          <li>✓ Spectral features (graph Laplacian, SVD)</li>
+          <li>✓ Neural policy with LoRA adapters</li>
+          <li>✓ Multi-memory retrieval (BM25 + semantic)</li>
+        </ul>
+
+        <p><strong>Example queries:</strong></p>
+        <ul>
+          <li>"Explain recursion"</li>
+          <li>"What is Thompson Sampling?"</li>
+          <li>"How does photosynthesis work?"</li>
+        </ul>
+
+        <h3>FUSED Mode: Maximum Quality</h3>
+
+        <p><strong>When to use:</strong> Complex queries needing deep understanding, research, investigation.</p>
+
+        <p><strong>Performance:</strong> ~200-500ms, ~10-20MB memory</p>
+
+        <p><strong>Features enabled:</strong></p>
+        <ul>
+          <li>✓ Full hybrid motif detection</li>
+          <li>✓ All Matryoshka scales (if configured)</li>
+          <li>✓ Complete spectral features</li>
+          <li>✓ Full neural policy (all adapters)</li>
+          <li>✓ Deep memory retrieval</li>
+          <li>✓ Multi-hop graph traversal</li>
+        </ul>
+
+        <p><strong>Example queries:</strong></p>
+        <ul>
+          <li>"Compare Thompson Sampling with UCB. What are the key tradeoffs?"</li>
+          <li>"Explain how HoloLoom's architecture enables self-improvement."</li>
+          <li>"Research the history and evolution of bandit algorithms."</li>
+        </ul>
+
+        <h2 id="section-4">Section 4: Memory Backends Explained</h2>
+
+        <p>HoloLoom supports three memory backends, each optimized for different scenarios:</p>
+
+        <h3>Diagram 3: Memory Backend Auto-Fallback Chain</h3>
+
+        <p>HoloLoom implements automatic graceful degradation for memory backends:</p>
+
+        <pre><code>PRODUCTION DEPLOYMENT STRATEGY
+═════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────┐
+│  TIER 1: Primary Backend (HYBRID)                            │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │ Neo4j (Graph Database)        +  Qdrant (Vector DB)    │  │
+│  │ • Persistent entity storage       • Fast semantic search │  │
+│  │ • 10M+ entities                   • Multi-scale embeddings│ │
+│  │ • Port: 7687                      • Port: 6333           │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                               │
+│  Status: Try to connect to Docker services                   │
+└───────────────────────┬──────────────────────────────────────┘
+                        │
+                ┌───────┴───────┐
+                │               │
+           SUCCESS ✓        FAILURE ✗
+              (95%)           (5%)
+                │               │
+                ▼               ▼
+        ┌───────────────┐  ┌─────────────────────────────────┐
+        │   Use HYBRID  │  │  Automatic Fallback Triggered   │
+        │  (persistent) │  │                                 │
+        │               │  │  • Log warning                  │
+        │ • Neo4j ✓     │  │  • Keep config set to HYBRID    │
+        │ • Qdrant ✓    │  │  • Switch to INMEMORY runtime   │
+        │ • Latency:    │  │  • Continue normally (no crash!)│
+        │   40-80ms     │  │                                 │
+        │ • Scale:      │  │  TIER 2: Fallback Backend       │
+        │   10M+        │  │  ┌─────────────────────────────┐│
+        │               │  │  │ NetworkX (In-Memory Graph)  ││
+        │               │  │  │ • Zero dependencies         ││
+        │               │  │  │ • Fast startup              ││
+        │               │  │  │ • Latency: 10-20ms          ││
+        │               │  │  │ • Ephemeral (lost on exit)  ││
+        │               │  │  └─────────────────────────────┘│
+        │               │  │                                 │
+        │               │  │ Key Benefit: Zero crashes!      │
+        │               │  │ System continues operating.     │
+        │               │  │ Data restored when Docker ready.│
+        └───────────────┘  └─────────────────────────────────┘</code></pre>
+
+        <h3>INMEMORY: NetworkX (Development & Testing)</h3>
+
+        <p><strong>What it is:</strong> In-memory graph using NetworkX. Everything stays in RAM, disappears on shutdown.</p>
+
+        <p><strong>Performance:</strong></p>
+        <ul>
+          <li>Retrieval latency: ~10-20ms</li>
+          <li>Memory per 1000 entities: ~2-5MB</li>
+          <li>Persistence: None (ephemeral)</li>
+          <li>Scaling limit: ~50k entities (then slowdown)</li>
+        </ul>
+
+        <p><strong>When to use:</strong></p>
+        <ul>
+          <li>✓ Local development</li>
+          <li>✓ Testing and debugging</li>
+          <li>✓ Demos and prototypes</li>
+          <li>✓ CI/CD pipelines</li>
+          <li>✗ Production (no persistence)</li>
+          <li>✗ Large datasets (>50k entities)</li>
+        </ul>
+
+        <h3>HYBRID: Neo4j + Qdrant (Production)</h3>
+
+        <p><strong>What it is:</strong> Combined graph database (Neo4j) + vector database (Qdrant) with automatic fallback to INMEMORY if unavailable.</p>
+
+        <p><strong>Performance:</strong></p>
+        <ul>
+          <li>Retrieval latency: ~40-80ms (with services), ~10-20ms (fallback to INMEMORY)</li>
+          <li>Persistence: Permanent (survives shutdown)</li>
+          <li>Scaling: 10M+ entities easily</li>
+          <li>Memory: Distributed across services</li>
+        </ul>
+
+        <p><strong>When to use:</strong></p>
+        <ul>
+          <li>✓ Production deployment</li>
+          <li>✓ Large knowledge bases (>100k shards)</li>
+          <li>✓ Persistent storage needed</li>
+          <li>✓ Multi-instance deployments</li>
+          <li>✗ Zero dependencies (requires Docker)</li>
+          <li>✗ Sub-50ms latency critical (use INMEMORY if needed)</li>
+        </ul>
+
+        <h3>HYPERSPACE: Gated Multipass (Research)</h3>
+
+        <p><strong>What it is:</strong> Advanced backend with multi-layer retrieval and gated access patterns. Useful for research and advanced scenarios.</p>
+
+        <p><strong>Performance:</strong></p>
+        <ul>
+          <li>Retrieval latency: ~100-200ms</li>
+          <li>Complexity: Multi-hop graph traversal</li>
+          <li>Use case: Finding indirect relationships</li>
+        </ul>
+
+        <p><strong>When to use:</strong></p>
+        <ul>
+          <li>✓ Research projects</li>
+          <li>✓ Finding hidden connections</li>
+          <li>✗ Production (slow)</li>
+          <li>✗ Budget-constrained (computationally expensive)</li>
+        </ul>
+
+        <h3>Comparison Table</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>INMEMORY</th>
+              <th>HYBRID</th>
+              <th>HYPERSPACE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Setup</strong></td>
+              <td>Zero</td>
+              <td>Docker</td>
+              <td>Docker + config</td>
+            </tr>
+            <tr>
+              <td><strong>Latency</strong></td>
+              <td>10-20ms</td>
+              <td>40-80ms</td>
+              <td>100-200ms</td>
+            </tr>
+            <tr>
+              <td><strong>Persistence</strong></td>
+              <td>✗</td>
+              <td>✓</td>
+              <td>✓</td>
+            </tr>
+            <tr>
+              <td><strong>Scale</strong></td>
+              <td>~50k</td>
+              <td>10M+</td>
+              <td>10M+</td>
+            </tr>
+            <tr>
+              <td><strong>Memory usage</strong></td>
+              <td>High</td>
+              <td>Distributed</td>
+              <td>Medium-High</td>
+            </tr>
+            <tr>
+              <td><strong>Best for</strong></td>
+              <td>Dev/test</td>
+              <td>Production</td>
+              <td>Research</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="section-5">Section 5: The Protocol-Based Design</h2>
+
+        <h3>Why Protocols?</h3>
+
+        <p>HoloLoom uses Python protocols (similar to interfaces in other languages) to define component boundaries. This enables:</p>
+
+        <ol>
+          <li><strong>Swappable implementations:</strong> Replace Neo4j with PostgreSQL without touching orchestrator</li>
+          <li><strong>Type safety:</strong> Protocol violations caught at development time</li>
+          <li><strong>Clear contracts:</strong> Components know exactly what to expect</li>
+          <li><strong>Testable:</strong> Easy to mock for unit testing</li>
+        </ol>
+
+        <h3>Key Protocols</h3>
+
+        <p><strong>1. PolicyEngine Protocol</strong></p>
+
+        <p>What it defines: How decision-making components work.</p>
+
+        <pre><code>class PolicyEngine(Protocol):
+    """Core decision-making interface."""
+
+    async def select_tool(
+        self,
+        context: Features,
+        available_tools: List[str],
+        temperature: float = 1.0
+    ) -> ActionPlan:
+        """Select which tool to use given context."""
+        ...
+
+    async def update(
+        self,
+        tool: str,
+        outcome: bool,
+        confidence: float
+    ) -> None:
+        """Learn from outcome of last decision."""
+        ...</code></pre>
+
+        <p><strong>Implementations:</strong></p>
+        <ul>
+          <li><code>NeuralPolicy</code> (transformer-based, default)</li>
+          <li><code>ThompsonBandit</code> (exploration via uncertainty)</li>
+          <li><code>SimplePolicy</code> (rule-based, for testing)</li>
+        </ul>
+
+        <p><strong>2. KGStore Protocol</strong></p>
+
+        <p>What it defines: How knowledge graph storage works.</p>
+
+        <pre><code>class KGStore(Protocol):
+    """Knowledge graph storage interface."""
+
+    async def add_edge(
+        self,
+        source: str,
+        target: str,
+        relation_type: str,
+        weight: float = 1.0
+    ) -> None:
+        """Add an entity relationship."""
+        ...
+
+    async def query_similar(
+        self,
+        embedding: np.ndarray,
+        k: int = 5,
+        threshold: float = 0.5
+    ) -> List[Entity]:
+        """Find similar entities by embedding."""
+        ...
+
+    async def get_subgraph(
+        self,
+        center_nodes: List[str],
+        depth: int = 2
+    ) -> 'KGStore':
+        """Extract subgraph around nodes."""
+        ...</code></pre>
+
+        <p><strong>Implementations:</strong></p>
+        <ul>
+          <li><code>NetworkXKG</code> (in-memory, development)</li>
+          <li><code>Neo4jKG</code> (production, persistent)</li>
+          <li><code>HyperKG</code> (research, multi-level)</li>
+        </ul>
+
+        <p><strong>3. Retriever Protocol</strong></p>
+
+        <p>What it defines: How memory retrieval works.</p>
+
+        <pre><code>class Retriever(Protocol):
+    """Memory retrieval interface."""
+
+    async def retrieve(
+        self,
+        query: Union[str, np.ndarray],
+        k: int = 6,
+        filters: Dict = None
+    ) -> List[MemoryShard]:
+        """Retrieve relevant memories."""
+        ...
+
+    async def ingest(
+        self,
+        shard: MemoryShard
+    ) -> None:
+        """Store a memory shard."""
+        ...</code></pre>
+
+        <p><strong>Implementations:</strong></p>
+        <ul>
+          <li><code>BM25Retriever</code> (keyword search)</li>
+          <li><code>SemanticRetriever</code> (embedding similarity)</li>
+          <li><code>HybridRetriever</code> (BM25 + semantic)</li>
+        </ul>
+
+        <h2 id="section-6">Section 6: Configuration System</h2>
+
+        <h3>Three Factory Methods</h3>
+
+        <p>HoloLoom provides three pre-configured modes accessible via factory methods:</p>
+
+        <pre><code>from HoloLoom.config import Config
+
+# Fastest
+config = Config.bare()
+
+# Balanced (recommended for production)
+config = Config.fast()
+
+# Highest quality
+config = Config.fused()</code></pre>
+
+        <h3>Key Configuration Parameters</h3>
+
+        <p><strong>Execution Control</strong></p>
+        <pre><code>config = Config.fast()
+
+# Mode selection
+config.mode = ExecutionMode.FAST  # or BARE, FUSED
+
+# Timeout controls
+config.pipeline_timeout = 0.5  # Max 500ms total
+config.retrieval_timeout = 0.2  # Max 200ms for retrieval</code></pre>
+
+        <p><strong>Memory Configuration</strong></p>
+        <pre><code># Backend selection
+config.memory_backend = MemoryBackend.HYBRID  # INMEMORY, HYBRID, HYPERSPACE
+
+# Neo4j connection (for HYBRID)
+config.neo4j_uri = "bolt://localhost:7687"
+config.neo4j_username = "neo4j"
+config.neo4j_password = "hololoom123"
+
+# Qdrant connection (for HYBRID)
+config.qdrant_host = "localhost"
+config.qdrant_port = 6333</code></pre>
+
+        <p><strong>Retrieval Settings</strong></p>
+        <pre><code># How many memories to retrieve
+config.retrieval_k = 6
+
+# Balance between BM25 (keyword) and semantic search
+config.bm25_weight = 0.15  # 15% BM25, 85% semantic</code></pre>
+
+        <h3>Performance vs Quality Tradeoff</h3>
+
+        <pre><code># Maximum speed (sacrifice quality)
+config = Config.bare()
+# Latency: ~50ms
+# Quality: 70% (simple queries only)
+
+# Balanced (recommended)
+config = Config.fast()
+# Latency: ~150ms
+# Quality: 90%
+
+# Maximum quality (sacrifice speed)
+config = Config.fused()
+# Latency: ~350ms
+# Quality: 98%</code></pre>
+
+        <h2 id="summary">Summary: Pulling It All Together</h2>
+
+        <h3>The Complete Picture</h3>
+
+        <pre><code>User Query
+    ↓
+[1] INPUT (SpinningWheel) → MemoryShard
+    ↓
+[2] PATTERN (LoomCommand) → PatternCard
+    ↓
+[3] TEMPORAL (ChronoTrigger) → TemporalWindow
+    ↓
+[4] MEMORY (YarnGraph) → Retrieved shards
+    ↓
+[5] FEATURES (ResonanceShed) → DotPlasma
+    ↓
+[6] MATH (WarpSpace) → Continuous manifold
+    ↓
+[7] DECISION (ConvergenceEngine) → ActionPlan
+    ↓
+[8] EXECUTION (ToolExecutor) → Spacetime
+    ↓
+[9] LEARNING (ReflectionBuffer) → Updated system
+    ↓
+Response delivered, system improved</code></pre>
+
+        <h3>Key Concepts</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Concept</th>
+              <th>Purpose</th>
+              <th>Performance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>9-Layer Architecture</strong></td>
+              <td>Separation of concerns</td>
+              <td>Maintainable</td>
+            </tr>
+            <tr>
+              <td><strong>BARE/FAST/FUSED Modes</strong></td>
+              <td>Speed/quality tradeoff</td>
+              <td>Flexible</td>
+            </tr>
+            <tr>
+              <td><strong>Memory Backends</strong></td>
+              <td>INMEMORY/HYBRID/HYPERSPACE</td>
+              <td>Scalable</td>
+            </tr>
+            <tr>
+              <td><strong>Protocol-Based Design</strong></td>
+              <td>Swappable components</td>
+              <td>Extensible</td>
+            </tr>
+            <tr>
+              <td><strong>Spacetime Fabric</strong></td>
+              <td>Complete provenance</td>
+              <td>Debuggable</td>
+            </tr>
+            <tr>
+              <td><strong>Reflection Loop</strong></td>
+              <td>Continuous improvement</td>
+              <td>Self-improving</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>When to Use What</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Config</th>
+              <th>Backend</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Local dev</td>
+              <td>Config.bare()</td>
+              <td>INMEMORY</td>
+              <td>Fast iteration</td>
+            </tr>
+            <tr>
+              <td>Production API</td>
+              <td>Config.fast()</td>
+              <td>HYBRID</td>
+              <td>Speed + reliability</td>
+            </tr>
+            <tr>
+              <td>Research</td>
+              <td>Config.fused()</td>
+              <td>HYPERSPACE</td>
+              <td>Maximum quality</td>
+            </tr>
+            <tr>
+              <td>Testing</td>
+              <td>Config.bare()</td>
+              <td>INMEMORY</td>
+              <td>Fast, no setup</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Next Steps</h3>
+
+        <p>Having completed Part 2, you now understand:</p>
+
+        <ul>
+          <li>✓ How the 9-layer architecture works</li>
+          <li>✓ How data flows through the system</li>
+          <li>✓ When to use each execution mode</li>
+          <li>✓ How memory backends work</li>
+          <li>✓ Why protocols matter</li>
+          <li>✓ How to configure HoloLoom</li>
+        </ul>
+
+        <p><strong>Next:</strong> Part 3 will cover <strong>Hands-On Tutorials</strong> including:</p>
+        <ul>
+          <li>Building your first query system</li>
+          <li>Creating multi-memory systems</li>
+          <li>Understanding retrieval mechanics</li>
+          <li>Custom tools and extensions</li>
+          <li>Performance optimization</li>
+        </ul>
+
+        <hr style="margin: var(--spacing-xl) 0; border: none; border-top: 1px solid var(--color-border);">
+
+        <!-- NAVIGATION -->
+        <div class="article-nav">
+          <a href="part1.html" class="nav-link">
+            <span class="nav-link-label">← Previous</span>
+            <span class="nav-link-title">Part 1: Foundations</span>
+          </a>
+          <a href="part3.html" class="nav-link">
+            <span class="nav-link-label">Next →</span>
+            <span class="nav-link-title">Part 3: Tutorials</span>
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <script>
+    // Generate anchor links for headers
+    document.querySelectorAll('.article h2, .article h3').forEach(heading => {
+      if (!heading.id) {
+        heading.id = heading.textContent
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-');
+      }
+
+      const link = document.createElement('a');
+      link.href = '#' + heading.id;
+      link.className = 'header-link';
+      link.innerHTML = ' 🔗';
+      link.style.marginLeft = '8px';
+      link.style.opacity = '0.5';
+      link.style.fontSize = '0.8em';
+      heading.appendChild(link);
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

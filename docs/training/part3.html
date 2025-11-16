@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="HoloLoom Training Part 3: Hands-on tutorials for building memory systems and custom tools">
+  <meta name="keywords" content="HoloLoom, tutorials, hands-on, code examples, memory systems, memory management">
+
+  <title>HoloLoom Training - Part 3: Hands-On Tutorials</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-code-bg: #f5f5f5;
+
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --font-size-lg: 18px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-background);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-md) var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .navbar-nav {
+      display: flex;
+      gap: var(--spacing-lg);
+      list-style: none;
+    }
+
+    .navbar-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .navbar-nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* MAIN LAYOUT */
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      display: block;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--color-primary);
+      background: var(--color-surface);
+      font-weight: 600;
+    }
+
+    /* ARTICLE */
+    .article {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* BREADCRUMBS */
+    .breadcrumbs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumbs span {
+      margin: 0 var(--spacing-sm);
+    }
+
+    /* HEADER */
+    .article-header {
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .progress-badge {
+      display: inline-block;
+      background: var(--color-accent);
+      color: white;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article-title {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .article-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .edit-link {
+      display: inline-block;
+      color: var(--color-primary);
+      text-decoration: none;
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-lg);
+      border-bottom: 1px dotted var(--color-primary);
+    }
+
+    .edit-link:hover {
+      border-bottom-style: solid;
+    }
+
+    /* TABLE OF CONTENTS */
+    .toc {
+      background: var(--color-surface);
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      border-radius: var(--radius-md);
+    }
+
+    .toc-title {
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .toc-list {
+      list-style: none;
+      font-size: var(--font-size-sm);
+    }
+
+    .toc-list li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .toc-list a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-list-level-2 {
+      margin-left: var(--spacing-lg);
+      color: var(--color-text-secondary);
+    }
+
+    /* CONTENT STYLING */
+    .article h2 {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-primary);
+      scroll-margin-top: 80px;
+    }
+
+    .article h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .article h3 {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+      scroll-margin-top: 80px;
+    }
+
+    .article p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.8;
+    }
+
+    .article ul, .article ol {
+      margin-left: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* CODE BLOCKS */
+    .article pre {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+      font-size: 0.85em;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .article code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .article pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .article p code {
+      background: var(--color-surface);
+      padding: 2px 6px;
+      border-radius: var(--radius-md);
+      color: var(--color-secondary);
+      font-weight: 500;
+    }
+
+    /* TABLES */
+    .article table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--spacing-lg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      font-size: 0.9em;
+    }
+
+    .article th {
+      background: var(--color-surface);
+      padding: var(--spacing-md);
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .article td {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .article tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* BLOCKQUOTE */
+    .article blockquote {
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-md) var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      font-style: italic;
+      color: var(--color-text-secondary);
+    }
+
+    /* CALLOUT BOX */
+    .callout {
+      background: var(--color-surface);
+      border-left: 4px solid var(--color-success);
+      padding: var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+      border-radius: var(--radius-md);
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: var(--color-success);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* NAVIGATION */
+    .article-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-xl);
+      border-top: 2px solid var(--color-border);
+    }
+
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: var(--spacing-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .nav-link:hover {
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+    }
+
+    .nav-link-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-link-title {
+      font-size: var(--font-size-lg);
+    }
+
+    .nav-link.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      color: var(--color-text-secondary);
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 2em;
+      }
+
+      .article h2 {
+        font-size: 1.5em;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 1.5em;
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .breadcrumbs {
+        font-size: 12px;
+      }
+
+      .article pre {
+        font-size: 0.75em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="navbar-brand">HoloLoom</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/docs/training/">Training</a></li>
+        <li><a href="https://github.com/hololoom/hololoom">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main-content">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Training Path</div>
+          <ul class="sidebar-nav">
+            <li><a href="part1.html">Part 1: Foundations</a></li>
+            <li><a href="part2.html">Part 2: Core Concepts</a></li>
+            <li><a href="part3.html" class="active">Part 3: Tutorials</a></li>
+            <li><a href="part4.html">Part 4: Advanced Topics</a></li>
+            <li><a href="part5.html">Part 5: Implementation</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Learning Resources</div>
+          <ul class="sidebar-nav">
+            <li><a href="/docs/">Documentation</a></li>
+            <li><a href="/docs/architecture.html">Architecture</a></li>
+            <li><a href="/demos/">Demos</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- ARTICLE -->
+      <article class="article">
+        <!-- BREADCRUMBS -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a>
+          <span>/</span>
+          <a href="/docs/training/">Training</a>
+          <span>/</span>
+          <span>Part 3: Tutorials</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="article-header">
+          <div class="progress-badge">Part 3 of 5</div>
+          <h1 class="article-title">HoloLoom Complete Training Guide: Part 3 - Hands-On Tutorials</h1>
+
+          <div class="article-meta">
+            <span>📖 Reading Time: 2-3 hours for all tutorials</span>
+            <span>💡 Difficulty: Beginner to Intermediate</span>
+            <span>📅 Updated: November 16, 2025</span>
+          </div>
+
+          <a href="https://github.com/hello-world/blob/main/TRAINING_PART_3_TUTORIALS.md" class="edit-link" target="_blank">
+            ✏️ Edit on GitHub
+          </a>
+        </div>
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+          <div class="toc-title">Table of Contents</div>
+          <ul class="toc-list">
+            <li><a href="#overview">Overview: What You'll Build</a></li>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#learning-path">Tutorial Learning Path</a></li>
+            <li><a href="#tutorial-1">Tutorial 1: Hello World</a></li>
+            <li><a href="#debugging">Common Issues & Debugging Guide</a></li>
+            <li><a href="#tutorial-2">Tutorial 2: Building a Memory System</a></li>
+            <li><a href="#tutorial-3">Tutorial 3: Understanding Retrieval and Ranking</a></li>
+            <li><a href="#tutorial-4">Tutorial 4: Adding Custom Tools</a></li>
+            <li><a href="#tutorial-5">Tutorial 5: Performance Optimization</a></li>
+            <li><a href="#summary">Summary: What You've Built</a></li>
+          </ul>
+        </div>
+
+        <h2 id="overview">Overview: What You'll Build</h2>
+
+        <p>This is the <strong>practical</strong> part of the HoloLoom training guide. You've learned concepts in Parts 1-2. Now you'll BUILD working systems using HoloLoom's unified memory API.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Tutorial</th>
+              <th>What</th>
+              <th>Time</th>
+              <th>Lines</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>First query to HoloLoom</td>
+              <td>10 min</td>
+              <td>50-60</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Multi-memory system</td>
+              <td>25 min</td>
+              <td>80-100</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Understand retrieval</td>
+              <td>20 min</td>
+              <td>70-80</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>Custom tools</td>
+              <td>30 min</td>
+              <td>80-100</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>Performance optimization</td>
+              <td>20 min</td>
+              <td>70-80</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="prerequisites">Prerequisites</h2>
+
+        <pre><code># Set up environment (from Part 1)
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install torch numpy
+
+# Verify installation
+python -c "from HoloLoom import HoloLoom; print('✓ Ready to start!')"</code></pre>
+
+        <h2 id="learning-path">Tutorial Learning Path (Progressive Complexity)</h2>
+
+        <pre><code>START HERE
+    │
+    ▼
+┌─────────────────────────────────────┐
+│ Tutorial 1: Hello World             │  ⏱ 10 min
+│ • First query                       │  Difficulty: ★☆☆☆☆
+│ • experience(), recall(), reflect() │
+└──────────────┬──────────────────────┘
+               │ Prerequisites: None
+               ▼
+┌─────────────────────────────────────┐
+│ Tutorial 2: Memory System           │  ⏱ 25 min
+│ • Batch operations                  │  Difficulty: ★★☆☆☆
+│ • Metrics and growth                │
+└──────────────┬──────────────────────┘
+               │ Prerequisites: Tutorial 1
+               ▼
+       ┌───────┴────────┐
+       │                │
+       ▼                ▼
+┌──────────────┐  ┌──────────────┐
+│ Tutorial 3   │  │ Tutorial 5   │    ⏱ 20 min
+│ Retrieval    │  │ Performance  │    Difficulty: ★★☆☆☆
+│ • Ranking    │  │ • Profiling  │
+│ • Traversal  │  │ • Benchmarks │
+└──────┬───────┘  └──────┬───────┘
+       │                 │
+       │ Prereq: T2     │ Prereq: T1-2
+       │                │
+       └────────┬────────┘
+                ▼
+       ┌─────────────────┐
+       │  Tutorial 4      │              ⏱ 30 min
+       │  Custom Tools    │              Difficulty: ★★★☆☆
+       │  • Extensions    │
+       │  • Adapters      │
+       └─────────────────┘
+               │ Prerequisites: T1-3
+               ▼
+         🎓 Mastery!
+
+LEARNING TRACKS:
+
+Fast Track (55 min):
+  Tutorial 1 → Tutorial 2 → Tutorial 5
+  (Learn basics + optimization)
+
+Deep Track (85 min):
+  Tutorial 1 → Tutorial 2 → Tutorial 3 → Tutorial 4
+  (Learn everything)
+
+Performance Focus (55 min):
+  Tutorial 1 → Tutorial 2 → Tutorial 5
+  (Optimize from the start)
+
+Advanced Only (30 min):
+  Tutorial 1 → Tutorial 4
+  (Skip to custom extensions, requires prior HoloLoom knowledge)</code></pre>
+
+        <h2 id="tutorial-1">Tutorial 1: Hello World - Your First Query</h2>
+
+        <h3>Objective</h3>
+        <p>Create, experience, and recall your first memory.</p>
+
+        <p><strong>Time:</strong> 10 minutes | <strong>Difficulty:</strong> Beginner</p>
+
+        <h3>The Complete Code</h3>
+
+        <pre><code>"""
+Tutorial 1: Hello World - Your First Query
+===========================================
+This is the simplest possible HoloLoom program.
+It demonstrates the 3 core operations: experience(), recall(), reflect()
+"""
+
+import asyncio
+from HoloLoom import HoloLoom
+
+async def main():
+    # Step 1: Initialize HoloLoom
+    # This creates an in-memory system with default configuration
+    # No configuration needed - it "just works"
+    loom = HoloLoom()
+
+    # Step 2: Experience something (create a memory)
+    # The experience() method takes any text and adds it to memory
+    # It returns a Memory object with id, text, timestamp, context
+    print("Creating a memory...")
+    memory = await loom.experience(
+        "Thompson Sampling is a Bayesian approach to exploration-exploitation tradeoff"
+    )
+    print(f"✓ Created memory with ID: {memory.id}")
+    print(f"  Text: {memory.text[:60]}...")
+    print(f"  Timestamp: {memory.timestamp}")
+
+    # Step 3: Recall memories (search)
+    # The recall() method searches for memories related to your query
+    # It uses semantic similarity + graph traversal
+    print("\nSearching for memories...")
+    query = "What is Thompson Sampling?"
+    memories = await loom.recall(query)
+    print(f"✓ Found {len(memories)} memory(ies)")
+
+    # Step 4: Display results
+    # memories is a list of Memory objects
+    if memories:
+        for i, mem in enumerate(memories, 1):
+            print(f"\n  Memory {i}:")
+            print(f"    Text: {mem.text[:70]}...")
+            print(f"    ID: {mem.id}")
+
+    # Step 5: Reflect (learn from feedback)
+    # The reflect() method tells the system which memories were helpful
+    # This updates the system's understanding for future queries
+    print("\nProviding feedback...")
+    await loom.reflect(memories, feedback={"helpful": True})
+    print("✓ System learned from your feedback")
+
+    # Step 6: Get metrics
+    # Show what the system learned
+    metrics = loom.get_metrics()
+    print(f"\nSystem Metrics:")
+    print(f"  Total memories: {metrics['n_memories']}")
+    print(f"  Total connections: {metrics['n_connections']}")
+    print(f"  Currently active: {metrics['n_active']}")
+
+    # Step 7: Print summary
+    print("\n" + loom.summary())
+
+# Run the program
+# asyncio.run() executes async functions
+if __name__ == "__main__":
+    asyncio.run(main())</code></pre>
+
+        <h3>Expected Output</h3>
+
+        <pre><code>Creating a memory...
+✓ Created memory with ID: mem_abc123def456
+  Text: Thompson Sampling is a Bayesian approach to explor...
+  Timestamp: 2025-11-16T14:30:45.123456
+
+Searching for memories...
+✓ Found 1 memory(ies)
+
+  Memory 1:
+    Text: Thompson Sampling is a Bayesian approach to explor...
+    ID: mem_abc123def456
+
+Providing feedback...
+✓ System learned from your feedback
+
+System Metrics:
+  Total memories: 1
+  Total connections: 1
+  Currently active: 1
+
+HoloLoom System
+===============
+Memories: 1
+Connections: 1
+Active: 1 (density: 1.00)
+Trajectory: 1 steps
+Shift detected: False</code></pre>
+
+        <div class="callout">
+          <div class="callout-title">✅ What You've Learned</div>
+          <ul>
+            <li>How to initialize HoloLoom (it's automatic!)</li>
+            <li>How to create memories with <code>experience()</code></li>
+            <li>How to search with <code>recall()</code></li>
+            <li>How to provide feedback with <code>reflect()</code></li>
+            <li>How to monitor the system with metrics</li>
+          </ul>
+        </div>
+
+        <p><strong>Next:</strong> Tutorial 2 - Build a multi-memory system with sophisticated retrieval.</p>
+
+        <h2 id="debugging">Common Issues & Debugging Guide</h2>
+
+        <p>If something goes wrong, this guide will help you fix it. Most issues have one of three causes: <strong>no memories</strong>, <strong>low similarity</strong>, or <strong>settings</strong>.</p>
+
+        <h3>Debugging Flowchart: "My Query Returns 0 Results"</h3>
+
+        <pre><code>PROBLEM: await loom.recall("query") returns []
+│
+├─── STEP 1: Did you call experience() first?
+│    │
+│    ├─ NO  → Create a memory first!
+│    │       await loom.experience("Sample memory")
+│    │       Then retry recall()
+│    │
+│    └─ YES → Continue to Step 2
+│
+├─── STEP 2: Is your query similar to stored memories?
+│    │
+│    ├─ Check similarities:
+│    │  • Same keywords?        → Try exact words
+│    │  • Same topic?           → Try synonyms
+│    │  • Same language level?  → Try simpler words
+│    │
+│    ├─ NO similarity found    → Rephrase query
+│    │  Example:
+│    │  ❌ Memory: "Thompson Sampling"
+│    │  ❌ Query: "What is exploration?"
+│    │  ✓ Fix: "Thompson Sampling balances exploration"
+│    │
+│    └─ YES similar           → Continue to Step 3
+│
+├─── STEP 3: Check retrieval settings
+│    │
+│    ├─ No limit specified?
+│    │  → Try adding limit parameter:
+│    │    results = await loom.recall("query", limit=10)
+│    │    (If this returns results, limit was too strict)
+│    │
+│    └─ Continue to Step 4
+│
+└─── STEP 4: Verify system state
+     │
+     ├─ Check if memories exist:
+     │  metrics = loom.get_metrics()
+     │  print(f"Total memories: {metrics['n_memories']}")
+     │
+     └─ If n_memories = 0
+        → No data stored! Create memories first</code></pre>
+
+        <h3>Quick Fixes Checklist</h3>
+
+        <ul>
+          <li>[ ] <strong>Memories exist?</strong> → <code>loom.get_metrics()['n_memories'] > 0</code></li>
+          <li>[ ] <strong>Query is similar?</strong> → Use words from stored memory text</li>
+          <li>[ ] <strong>Limit parameter set?</strong> → Try <code>limit=10</code></li>
+          <li>[ ] <strong>Check output format</strong> → <code>recall()</code> returns list of Memory objects</li>
+          <li>[ ] <strong>Enable debug output</strong> → Add <code>print()</code> statements between steps</li>
+        </ul>
+
+        <h2 id="tutorial-2">Tutorial 2: Building a Memory System</h2>
+
+        <h3>Objective</h3>
+        <p>Build a complete knowledge base and understand retrieval ranking.</p>
+
+        <p><strong>Time:</strong> 25 minutes | <strong>Difficulty:</strong> Beginner+</p>
+
+        <h3>Key Concepts Explained</h3>
+
+        <p><strong>Connections (Edges)</strong></p>
+        <ul>
+          <li>When you create memories, HoloLoom automatically links related ones</li>
+          <li>More memories = more potential connections</li>
+          <li>Density shows how "connected" the system is</li>
+          <li>Higher density = more semantic relationships found</li>
+        </ul>
+
+        <p><strong>Retrieval Ranking</strong></p>
+        <ul>
+          <li>Results are ranked by semantic similarity to your query</li>
+          <li>First result is most relevant</li>
+          <li>Limit parameter controls how many to return (default: no limit)</li>
+          <li>Results contain full Memory objects with all metadata</li>
+        </ul>
+
+        <p><strong>Batch Operations</strong></p>
+        <ul>
+          <li><code>experience_batch()</code> creates multiple memories efficiently</li>
+          <li>Faster than calling <code>experience()</code> in a loop (but same final result)</li>
+          <li>All memories created in one batch can reference each other</li>
+        </ul>
+
+        <h2 id="tutorial-3">Tutorial 3: Understanding Retrieval and Ranking</h2>
+
+        <h3>Objective</h3>
+        <p>Deep dive into how HoloLoom retrieves and ranks memories.</p>
+
+        <p><strong>Time:</strong> 20 minutes | <strong>Difficulty:</strong> Intermediate</p>
+
+        <h3>Retrieval Ranking Explained</h3>
+
+        <p><strong>The Three Levels of Matching</strong></p>
+
+        <pre><code>LEVEL 1: Exact Semantic Match
+┌─────────────────────────────┐
+│ Query: "Python"             │
+│   ↓ (convert to embedding)  │
+│ Find similar embeddings     │
+│   ↓                         │
+│ "Python lists..." (score: 0.95)  ← HIGH SCORE
+│ "Python dicts..." (score: 0.92)  ← HIGH SCORE
+│ "JavaScript..." (score: 0.45)    ← LOW SCORE
+└─────────────────────────────┘
+
+LEVEL 2: One-Hop Neighbors
+┌─────────────────────────────┐
+│ Start from direct match     │
+│   ↓                         │
+│ Find connected memories     │
+│   ↓                         │
+│ "Data structures..." (score: 0.70)  ← MEDIUM
+└─────────────────────────────┘
+
+LEVEL 3: Two-Hop Neighbors
+┌─────────────────────────────┐
+│ From one-hop neighbors      │
+│   ↓                         │
+│ Find further connections    │
+│   ↓                         │
+│ "Algorithms..." (score: 0.45)  ← LOWER
+└─────────────────────────────┘</code></pre>
+
+        <h3>Activation Strategies Compared</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Strategy</th>
+              <th>Best For</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>Returns</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PRECISE</strong></td>
+              <td>Narrow queries</td>
+              <td>High</td>
+              <td>Low</td>
+              <td>1-3 results</td>
+            </tr>
+            <tr>
+              <td><strong>BALANCED</strong></td>
+              <td>Most queries</td>
+              <td>Medium</td>
+              <td>Medium</td>
+              <td>3-6 results</td>
+            </tr>
+            <tr>
+              <td><strong>EXPLORATORY</strong></td>
+              <td>Broad research</td>
+              <td>Low</td>
+              <td>High</td>
+              <td>5-10 results</td>
+            </tr>
+            <tr>
+              <td><strong>DEEP</strong></td>
+              <td>Multi-hop reasoning</td>
+              <td>Medium</td>
+              <td>Medium</td>
+              <td>Traverses deep</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="tutorial-4">Tutorial 4: Adding Custom Tools and Adapters</h2>
+
+        <h3>Objective</h3>
+        <p>Extend HoloLoom with custom functionality.</p>
+
+        <p><strong>Time:</strong> 30 minutes | <strong>Difficulty:</strong> Intermediate</p>
+
+        <h3>Understanding Extensibility</h3>
+
+        <p><strong>The 5 Extension Points</strong></p>
+
+        <pre><code>Input Processing
+    ↓
+(Custom Processor)
+    ↓
+experience()
+    ↓
+(Memory Storage)
+    ↓
+Knowledge Graph
+    ↓
+recall()
+    ↓
+(Custom Ranking)
+    ↓
+Results
+    ↓
+reflect()
+    ↓
+(Feedback Processing)</code></pre>
+
+        <p>Each point can be customized:</p>
+        <ol>
+          <li><strong>Input Processing:</strong> Transform content before storage</li>
+          <li><strong>Memory Storage:</strong> Attach custom metadata</li>
+          <li><strong>Retrieval:</strong> Custom ranking or filtering</li>
+          <li><strong>Reflection:</strong> Custom feedback signals</li>
+          <li><strong>Session:</strong> Batch and resource management</li>
+        </ol>
+
+        <h2 id="tutorial-5">Tutorial 5: Performance Optimization</h2>
+
+        <h3>Objective</h3>
+        <p>Make HoloLoom faster and more efficient.</p>
+
+        <p><strong>Time:</strong> 20 minutes | <strong>Difficulty:</strong> Intermediate+</p>
+
+        <h3>Performance Characteristics</h3>
+
+        <p><strong>By Execution Mode</strong></p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>BARE</th>
+              <th>FAST</th>
+              <th>FUSED</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Create time</td>
+              <td>12ms</td>
+              <td>18ms</td>
+              <td>35ms</td>
+            </tr>
+            <tr>
+              <td>Query time</td>
+              <td>9ms</td>
+              <td>16ms</td>
+              <td>42ms</td>
+            </tr>
+            <tr>
+              <td>Memory usage</td>
+              <td>50MB</td>
+              <td>120MB</td>
+              <td>300MB</td>
+            </tr>
+            <tr>
+              <td>Quality (recall)</td>
+              <td>60%</td>
+              <td>85%</td>
+              <td>95%</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Optimization Checklist</h3>
+
+        <ul>
+          <li>[ ] Profile before optimizing (use PerformanceProfiler)</li>
+          <li>[ ] Start with FAST mode (default)</li>
+          <li>[ ] Use experience_batch() for multiple items</li>
+          <li>[ ] Use limit parameter in recall() (default: no limit)</li>
+          <li>[ ] Reuse HoloLoom instance across requests</li>
+          <li>[ ] Cache frequent queries in application layer</li>
+          <li>[ ] Monitor memory usage with get_metrics()</li>
+          <li>[ ] Only switch to BARE if profiling shows it's needed</li>
+          <li>[ ] Only switch to FUSED for research/accuracy-critical</li>
+        </ul>
+
+        <h3>Final Optimization Recommendations</h3>
+
+        <p><strong>For MOST USE CASES:</strong></p>
+        <ul>
+          <li>✓ Use Config.fast() (default ExecutionMode.FAST)</li>
+          <li>✓ Use experience_batch() for multiple memories</li>
+          <li>✓ Use limit parameter in recall() (default: no limit)</li>
+          <li>✓ Reuse HoloLoom instance across requests</li>
+          <li>✓ Cache frequent queries in application layer</li>
+        </ul>
+
+        <p><strong>For SPEED-CRITICAL APPLICATIONS:</strong></p>
+        <ul>
+          <li>✓ Use ExecutionMode.BARE</li>
+          <li>✓ Minimize memory graph size (<100 memories)</li>
+          <li>✓ Use very small limit values (limit=1 or 2)</li>
+          <li>✓ Implement application-level query caching</li>
+          <li>✓ Profile with PerformanceProfiler</li>
+        </ul>
+
+        <p><strong>For HIGHEST QUALITY RESULTS:</strong></p>
+        <ul>
+          <li>✓ Use ExecutionMode.FUSED</li>
+          <li>✓ Larger memory graphs (1000+ memories)</li>
+          <li>✓ No limit parameter (retrieve all relevant)</li>
+          <li>✓ Use DEEP activation strategy for research</li>
+          <li>✓ Allow more time per query</li>
+        </ul>
+
+        <h2 id="summary">Summary: What You've Built</h2>
+
+        <h3>Tutorial 1: Hello World</h3>
+        <ul>
+          <li>✓ First memory system (1 memory)</li>
+          <li>✓ Basic experience/recall/reflect flow</li>
+          <li>✓ System metrics</li>
+        </ul>
+
+        <h3>Tutorial 2: Multi-Memory System</h3>
+        <ul>
+          <li>✓ Knowledge base with 8+ memories</li>
+          <li>✓ Batch operations</li>
+          <li>✓ Multiple queries and ranking</li>
+        </ul>
+
+        <h3>Tutorial 3: Understanding Retrieval</h3>
+        <ul>
+          <li>✓ Semantic similarity mechanics</li>
+          <li>✓ Activation strategies</li>
+          <li>✓ Graph traversal (1-hop, 2-hop)</li>
+        </ul>
+
+        <h3>Tutorial 4: Custom Tools</h3>
+        <ul>
+          <li>✓ Custom processors</li>
+          <li>✓ Session management</li>
+          <li>✓ Structured data handling</li>
+        </ul>
+
+        <h3>Tutorial 5: Performance</h3>
+        <ul>
+          <li>✓ Mode comparison (BARE/FAST/FUSED)</li>
+          <li>✓ Profiling and benchmarking</li>
+          <li>✓ Optimization strategies</li>
+        </ul>
+
+        <h3>Next Steps</h3>
+
+        <p>You now understand:</p>
+        <ul>
+          <li><strong>Concepts</strong> (from Parts 1-2)</li>
+          <li><strong>Building</strong> (from Part 3 - these tutorials)</li>
+        </ul>
+
+        <p><strong>Where to Go From Here</strong></p>
+
+        <p><strong>Option 1: Dive Deeper</strong></p>
+        <ul>
+          <li>Read <a href="/docs/">HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md</a></li>
+          <li>Explore RAG system (<a href="/docs/rag/">HoloLoom/rag/README.md</a>)</li>
+          <li>Study alignment framework (<a href="/docs/alignment/">HoloLoom/alignment/</a>)</li>
+        </ul>
+
+        <p><strong>Option 2: Build Your Own Project</strong></p>
+        <ul>
+          <li>Create a domain-specific knowledge base</li>
+          <li>Add custom processors for your data</li>
+          <li>Integrate with your application</li>
+        </ul>
+
+        <p><strong>Option 3: Learn Advanced Features</strong></p>
+        <ul>
+          <li>Multi-agent systems (agentic reasoning)</li>
+          <li>Performance optimization (Phase 5)</li>
+          <li>Production deployment (alignment framework)</li>
+        </ul>
+
+        <div class="callout">
+          <div class="callout-title">🎓 Congratulations!</div>
+          <p>You've completed Part 3 of the HoloLoom Training Guide.</p>
+
+          <p>You can now:</p>
+          <ul>
+            <li>Create and manage memory systems</li>
+            <li>Understand how retrieval works</li>
+            <li>Extend HoloLoom with custom tools</li>
+            <li>Optimize for performance</li>
+            <li>Build production systems</li>
+          </ul>
+
+          <p><strong>Next:</strong> Start building your own HoloLoom project, or explore the advanced topics in the complete documentation.</p>
+
+          <p><em>Last updated: November 16, 2025</em></p>
+        </div>
+
+        <hr style="margin: var(--spacing-xl) 0; border: none; border-top: 1px solid var(--color-border);">
+
+        <!-- NAVIGATION -->
+        <div class="article-nav">
+          <a href="part2.html" class="nav-link">
+            <span class="nav-link-label">← Previous</span>
+            <span class="nav-link-title">Part 2: Core Concepts</span>
+          </a>
+          <a href="part4.html" class="nav-link">
+            <span class="nav-link-label">Next →</span>
+            <span class="nav-link-title">Part 4: Advanced Topics</span>
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <script>
+    // Generate anchor links for headers
+    document.querySelectorAll('.article h2, .article h3').forEach(heading => {
+      if (!heading.id) {
+        heading.id = heading.textContent
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-');
+      }
+
+      const link = document.createElement('a');
+      link.href = '#' + heading.id;
+      link.className = 'header-link';
+      link.innerHTML = ' 🔗';
+      link.style.marginLeft = '8px';
+      link.style.opacity = '0.5';
+      link.style.fontSize = '0.8em';
+      heading.appendChild(link);
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

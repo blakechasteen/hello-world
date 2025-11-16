@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="HoloLoom Training Part 1: Foundations - Learn the core concepts from first principles">
+  <meta name="keywords" content="HoloLoom, training, foundations, memory systems, knowledge graphs, Thompson Sampling">
+
+  <title>HoloLoom Training - Part 1: Foundations</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-code-bg: #f5f5f5;
+
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --font-size-lg: 18px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-background);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-md) var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .navbar-nav {
+      display: flex;
+      gap: var(--spacing-lg);
+      list-style: none;
+    }
+
+    .navbar-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .navbar-nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* MAIN LAYOUT */
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      display: block;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--color-primary);
+      background: var(--color-surface);
+      font-weight: 600;
+    }
+
+    /* ARTICLE */
+    .article {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* BREADCRUMBS */
+    .breadcrumbs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumbs span {
+      margin: 0 var(--spacing-sm);
+    }
+
+    /* HEADER */
+    .article-header {
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .progress-badge {
+      display: inline-block;
+      background: var(--color-accent);
+      color: white;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article-title {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .article-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .edit-link {
+      display: inline-block;
+      color: var(--color-primary);
+      text-decoration: none;
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-lg);
+      border-bottom: 1px dotted var(--color-primary);
+    }
+
+    .edit-link:hover {
+      border-bottom-style: solid;
+    }
+
+    /* TABLE OF CONTENTS */
+    .toc {
+      background: var(--color-surface);
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      border-radius: var(--radius-md);
+    }
+
+    .toc-title {
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .toc-list {
+      list-style: none;
+      font-size: var(--font-size-sm);
+    }
+
+    .toc-list li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .toc-list a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-list-level-2 {
+      margin-left: var(--spacing-lg);
+      color: var(--color-text-secondary);
+    }
+
+    /* CONTENT STYLING */
+    .article h2 {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-primary);
+      scroll-margin-top: 80px;
+    }
+
+    .article h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .article h3 {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+      scroll-margin-top: 80px;
+    }
+
+    .article p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.8;
+    }
+
+    .article ul, .article ol {
+      margin-left: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* CODE BLOCKS */
+    .article pre {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+    }
+
+    .article code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .article pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .article p code {
+      background: var(--color-surface);
+      padding: 2px 6px;
+      border-radius: var(--radius-md);
+      color: var(--color-secondary);
+      font-weight: 500;
+    }
+
+    /* TABLES */
+    .article table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--spacing-lg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .article th {
+      background: var(--color-surface);
+      padding: var(--spacing-md);
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .article td {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .article tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* BLOCKQUOTE */
+    .article blockquote {
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-md) var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      font-style: italic;
+      color: var(--color-text-secondary);
+    }
+
+    /* NAVIGATION */
+    .article-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-xl);
+      border-top: 2px solid var(--color-border);
+    }
+
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: var(--spacing-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .nav-link:hover {
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+    }
+
+    .nav-link-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-link-title {
+      font-size: var(--font-size-lg);
+    }
+
+    .nav-link.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      color: var(--color-text-secondary);
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 2em;
+      }
+
+      .article h2 {
+        font-size: 1.5em;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 1.5em;
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .breadcrumbs {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="navbar-brand">HoloLoom</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/docs/training/">Training</a></li>
+        <li><a href="https://github.com/hololoom/hololoom">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main-content">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Training Path</div>
+          <ul class="sidebar-nav">
+            <li><a href="part1.html" class="active">Part 1: Foundations</a></li>
+            <li><a href="part2.html">Part 2: Core Concepts</a></li>
+            <li><a href="part3.html">Part 3: Tutorials</a></li>
+            <li><a href="part4.html">Part 4: Advanced Topics</a></li>
+            <li><a href="part5.html">Part 5: Implementation</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Learning Resources</div>
+          <ul class="sidebar-nav">
+            <li><a href="/docs/">Documentation</a></li>
+            <li><a href="/docs/architecture.html">Architecture</a></li>
+            <li><a href="/demos/">Demos</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- ARTICLE -->
+      <article class="article">
+        <!-- BREADCRUMBS -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a>
+          <span>/</span>
+          <a href="/docs/training/">Training</a>
+          <span>/</span>
+          <span>Part 1: Foundations</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="article-header">
+          <div class="progress-badge">Part 1 of 5</div>
+          <h1 class="article-title">HoloLoom Complete Training Guide: Part 1 - Foundations</h1>
+
+          <div class="article-meta">
+            <span>📖 Reading Time: 45-60 minutes</span>
+            <span>💡 Difficulty: Beginner</span>
+            <span>📅 Updated: November 2025</span>
+          </div>
+
+          <a href="https://github.com/hello-world/blob/main/TRAINING_PART_1_FOUNDATIONS.md" class="edit-link" target="_blank">
+            ✏️ Edit on GitHub
+          </a>
+        </div>
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+          <div class="toc-title">Table of Contents</div>
+          <ul class="toc-list">
+            <li><a href="#introduction">Introduction: Why This Guide Exists</a></li>
+            <li><a href="#section-1">Section 1: What Problems Does HoloLoom Solve?</a>
+              <ul class="toc-list-level-2">
+                <li><a href="#memory-problem">The Memory Problem</a></li>
+                <li><a href="#exploration-exploitation">The Exploration-Exploitation Dilemma</a></li>
+                <li><a href="#rag-systems">Why Most RAG Systems Are Insufficient</a></li>
+              </ul>
+            </li>
+            <li><a href="#section-2">Section 2: The Weaving Metaphor Explained</a></li>
+            <li><a href="#section-3">Section 3: Memory Systems 101</a></li>
+            <li><a href="#section-4">Section 4: Knowledge Graphs for Beginners</a></li>
+            <li><a href="#section-5">Section 5: Neural Decision-Making Demystified</a></li>
+            <li><a href="#section-6">Section 6: Key Concepts Glossary</a></li>
+            <li><a href="#summary">Summary: Your Foundation</a></li>
+          </ul>
+        </div>
+
+        <!-- CONTENT -->
+        <h2 id="introduction">Introduction: Why This Guide Exists</h2>
+
+        <p>You've probably heard of AI systems that can answer questions, reason about problems, and even learn from experience. But have you ever wondered <em>how</em> they actually remember things? Or how they decide which tool to use? Or why most AI systems forget everything between conversations?</p>
+
+        <p>HoloLoom is different. It's built on a philosophy that real intelligence requires real memory—not just retrieving documents, but understanding relationships, learning from experience, and improving over time.</p>
+
+        <p>This Part 1 guide gives you the conceptual foundation you need to understand HoloLoom. We'll start with the problems it solves, then explore the beautiful metaphor it uses to organize itself, and finally introduce the core concepts you'll need for the rest of the training.</p>
+
+        <blockquote>
+          <strong>A note on learning:</strong> We'll use lots of analogies and thought experiments. Some will be metaphorical (the "weaving" metaphor), others practical (your own memory), and others visual (diagrams). Different analogies work for different people—if one doesn't click, the next one will.
+        </blockquote>
+
+        <h2 id="section-1">Section 1: What Problems Does HoloLoom Solve?</h2>
+
+        <h3 id="memory-problem">The Memory Problem</h3>
+
+        <p>Imagine you're talking to an expert consultant. In the first conversation, you ask about machine learning. They give you brilliant insights. A week later, you return with a follow-up question. But this consultant has amnesia—they've completely forgotten our previous conversation. You have to re-explain everything from scratch.</p>
+
+        <p>That's how most AI systems work today. Each conversation is isolated. The system has no persistent memory of previous interactions, no accumulated knowledge base that grows and improves.</p>
+
+        <p><strong>The problem:</strong> Without persistent memory, AI systems can't:</p>
+        <ul>
+          <li><strong>Learn from experience:</strong> Every mistake is forgotten</li>
+          <li><strong>Build relationships:</strong> No context about who they're talking to</li>
+          <li><strong>Improve over time:</strong> No feedback loop for self-improvement</li>
+          <li><strong>Make sophisticated inferences:</strong> Can't connect ideas across conversations</li>
+          <li><strong>Reason about complex problems:</strong> Can't access accumulated knowledge</li>
+        </ul>
+
+        <p>HoloLoom solves this with a two-part memory system:</p>
+        <ul>
+          <li><strong>Vector memory</strong> (for fast similarity): "This question reminds me of questions about X, Y, Z"</li>
+          <li><strong>Knowledge graph</strong> (for reasoning): "Entity A connects to Entity B through relationship R, which tells us..."</li>
+        </ul>
+
+        <p>Together, they create persistent, queryable, reasoning-capable memory.</p>
+
+        <h3 id="exploration-exploitation">The Exploration-Exploitation Dilemma</h3>
+
+        <p>Here's another fundamental problem: <strong>How much should an agent explore new strategies vs. exploit strategies that worked before?</strong></p>
+
+        <p>Imagine you're at a restaurant with 50 dishes. You find one you love. Should you:</p>
+        <ul>
+          <li>Always order the same dish (exploit)?</li>
+          <li>Try new dishes every time (explore)?</li>
+          <li>Mix of both?</li>
+        </ul>
+
+        <p>This is the <strong>exploration-exploitation tradeoff</strong>, and it's crucial for intelligent behavior.</p>
+
+        <p><strong>Visual: Exploration-Exploitation Spectrum</strong></p>
+
+        <p>Different strategies create different reward curves over time:</p>
+
+        <pre><code>Long-term Reward (cumulative satisfaction)
+  ↑
+  │                      ╭─── Thompson Sampling
+  │                      │         (optimal!)
+  │                  ╱───╯
+  │             ╱───╯ Epsilon-Greedy
+  │         ╱───╯   (mostly exploit, sometimes explore)
+  │     ╱───╯
+  │ ╱───╯ Pure Exploitation
+  │╯      (use best known)
+  │
+  │       ╲╲╲╲╲╲  Pure Exploration
+  │        ╲╲╲   (try everything)
+  │
+  └────────────────────────────────→ Time
+    Start                 Long-term
+
+Key Observations:
+├─ Pure Exploitation: Fast early rewards, but plateaus (missed opportunities)
+├─ Pure Exploration: Slow early, discovers better options, gains compound
+├─ Thompson Sampling: Balances both, gains compound like exploration
+│                     but faster like exploitation
+└─ Epsilon-Greedy: Linear improvement between extremes
+
+WHY Thompson Wins:
+- Explores HIGH-UNCERTAINTY options (might be great!)
+- Exploits HIGH-CONFIDENCE options (known to work)
+- Automatically adjusts as uncertainty decreases
+- Mathematically optimal for regret minimization</code></pre>
+
+        <p>Most AI systems take one extreme or the other. HoloLoom uses <strong>Thompson Sampling</strong>, a Bayesian approach that intelligently balances these. Think of it as: "Based on what I know so far, which tool has the highest probability of working best for this situation?"</p>
+
+        <h3 id="rag-systems">Why Most RAG Systems Are Insufficient</h3>
+
+        <p><strong>RAG</strong> (Retrieval-Augmented Generation) is popular these days: retrieve relevant documents, then generate an answer based on those documents.</p>
+
+        <p>But standard RAG systems have a crucial limitation: they treat memory as a <strong>static document collection</strong>. They ask: "Which documents are similar to this query?"</p>
+
+        <p>They don't ask:</p>
+        <ul>
+          <li>"What relationships exist between these documents?"</li>
+          <li>"If I follow connections through multiple documents, what emerges?"</li>
+          <li>"What did I learn from previous queries that informs this one?"</li>
+          <li>"How confident should I be in this answer?"</li>
+          <li>"Should I verify this across multiple sources?"</li>
+        </ul>
+
+        <p>HoloLoom's RAG system is "Level 4 Agentic RAG":</p>
+        <ul>
+          <li><strong>Level 1:</strong> Keyword search (basic)</li>
+          <li><strong>Level 2:</strong> Semantic similarity (standard RAG)</li>
+          <li><strong>Level 3:</strong> Graph relationships (multi-hop reasoning)</li>
+          <li><strong>Level 4:</strong> Agentic reasoning (DIRECT/VERIFY/RESEARCH/PLAN_EXECUTE modes)</li>
+        </ul>
+
+        <p>Most commercial systems stop at Level 2. HoloLoom goes to Level 4 out of the box.</p>
+
+        <h2 id="section-2">Section 2: The Weaving Metaphor Explained</h2>
+
+        <h3>Why Weaving? The Physical Metaphor</h3>
+
+        <p>Most AI systems are described as "pipelines" or "chains"—one step flows to the next in a linear path. This works for simple tasks but breaks down for complex reasoning.</p>
+
+        <p>HoloLoom uses a different metaphor: <strong>weaving</strong>. Why? Because intelligent behavior is actually a lot like weaving on a loom.</p>
+
+        <p>On a traditional loom:</p>
+        <ul>
+          <li><strong>Warp threads</strong> run vertically (fixed, parallel, independent)</li>
+          <li><strong>Weft/shuttle</strong> runs horizontally (moves across, interlaces, coordinates)</li>
+          <li><strong>Weaving</strong> = shuttle selects and interlaces warp threads into a fabric</li>
+        </ul>
+
+        <p>The result is stronger than any single thread because threads reinforce each other at intersection points.</p>
+
+        <p><strong>Why this metaphor for AI?</strong></p>
+
+        <p>An intelligent agent is similar:</p>
+        <ul>
+          <li><strong>Independent specialists</strong> (warp threads) each good at one thing</li>
+          <li><strong>Orchestrator</strong> (shuttle) that decides which specialists to activate</li>
+          <li><strong>Output</strong> (fabric) emerges from coordination, not from any single specialist</li>
+        </ul>
+
+        <p>This is much more realistic than "one-size-fits-all" systems.</p>
+
+        <h3>The Complete Weaving Cycle (Visual)</h3>
+
+        <p>Here's the entire cycle in ASCII form:</p>
+
+        <pre><code>┌──────────────────────────────────────────────────────────┐
+│                    QUERY ARRIVES                         │
+└────────────────────────┬─────────────────────────────────┘
+                         │
+                         ▼
+        ┌───────────────────────────────────┐
+        │  1. LOOM COMMAND                  │
+        │  Select pattern card (BARE/      │
+        │  FAST/FUSED)                      │
+        └───────────────────────────┬───────┘
+                                    │
+                         ┌──────────▼────────────┐
+                         │  2. CHRONO TRIGGER    │
+                         │  Create temporal      │
+                         │  windows              │
+                         └──────────┬────────────┘
+                                    │
+                    ┌───────────────▼──────────────┐
+                    │  3. YARN GRAPH              │
+                    │  Select threads (entities,  │
+                    │  relationships from memory) │
+                    └───────────────┬──────────────┘
+                                    │
+                ┌───────────────────▼────────────────┐
+                │  4. RESONANCE SHED               │
+                │  Lift feature threads, create    │
+                │  DotPlasma (motifs, embeddings,  │
+                │  spectral features)              │
+                └───────────────┬────────────────────┘
+                                │
+                ┌───────────────▼──────────────┐
+                │  5. WARP SPACE              │
+                │  Tension threads into       │
+                │  continuous manifold        │
+                └───────────────┬──────────────┘
+                                │
+                ┌───────────────▼──────────────┐
+                │  6. CONVERGENCE ENGINE      │
+                │  Collapse to discrete       │
+                │  decision (Thompson        │
+                │  Sampling)                  │
+                └───────────────┬──────────────┘
+                                │
+                ┌───────────────▼──────────────┐
+                │  7. TOOL EXECUTION         │
+                │  Take action, get result   │
+                └───────────────┬──────────────┘
+                                │
+                ┌───────────────▼──────────────┐
+                │  8. SPACETIME FABRIC       │
+                │  Weave result + lineage    │
+                │  into output                │
+                └───────────────┬──────────────┘
+                                │
+                ┌───────────────▼──────────────┐
+                │  9. REFLECTION BUFFER      │
+                │  Learn from outcome        │
+                │  (update Yarn Graph)       │
+                └───────────────┬──────────────┘
+                                │
+                         ┌──────▼──────┐
+                         │  RESPONSE   │
+                         │  + LINEAGE  │
+                         └─────────────┘</code></pre>
+
+        <p>This 9-step cycle is what makes HoloLoom different. It's not just "retrieve and generate"—it's a complete weaving process that involves memory, decision-making, execution, and learning.</p>
+
+        <h2 id="section-3">Section 3: Memory Systems 101</h2>
+
+        <h3>What Is a Memory System?</h3>
+
+        <p>A memory system is anything that stores information and retrieves it later. That sounds simple, but "storing" and "retrieving" hide a lot of complexity.</p>
+
+        <p><strong>Naive approach:</strong> "Just store everything and search linearly"</p>
+        <ul>
+          <li>❌ Slow (have to check every item)</li>
+          <li>❌ Dumb (doesn't understand semantic meaning)</li>
+          <li>❌ Doesn't help with reasoning</li>
+        </ul>
+
+        <p><strong>Smart approach:</strong> Use the right data structure + smart retrieval</p>
+
+        <h3>Vector Databases Explained Simply</h3>
+
+        <p>A <strong>vector database</strong> stores numbers (vectors) and retrieves them by similarity.</p>
+
+        <p>What's a vector? A list of numbers representing something:</p>
+
+        <pre><code>Rose:           [1.0, 0.1, 0.0, 0.0]
+Tulip:          [0.9, 0.2, 0.0, 0.0]
+Daisy:          [0.8, 0.3, 0.0, 0.0]
+Mathematics:    [0.0, 0.0, 0.9, 0.1]
+Physics:        [0.0, 0.0, 0.8, 0.2]
+
+(Think of it as: [color-intensity, petal-count, equation-relevance, physics-relevance])</code></pre>
+
+        <p>A vector database can answer: "Find the 3 most similar to Rose"</p>
+
+        <h3>Knowledge Graphs Explained Simply</h3>
+
+        <p>A <strong>knowledge graph</strong> is a visual representation of facts and relationships.</p>
+
+        <p>Here's a tiny one about cooking:</p>
+
+        <pre><code>        Salt ──ENHANCES──> Sweetness
+         │
+    PROPERTY: Mineral
+         │
+         └──REDUCES──> Bitterness
+
+
+      Recipe ──USES──> Salt
+        │                │
+    PREPARES           AMOUNT: 1 tsp
+        │                │
+       Soup ──CONTAINS──Broth
+        │
+    TASTES_GOOD_WITH
+        │
+      Bread</code></pre>
+
+        <p><strong>Components:</strong></p>
+        <ul>
+          <li><strong>Nodes</strong> (entities): Salt, Sweetness, Recipe, Soup, etc.</li>
+          <li><strong>Edges</strong> (relationships): ENHANCES, USES, CONTAINS, etc.</li>
+          <li><strong>Properties:</strong> Additional info on nodes or edges</li>
+        </ul>
+
+        <h3>Why HoloLoom Uses Both</h3>
+
+        <p>Neither system is perfect alone. Together, they're powerful:</p>
+
+        <pre><code>VECTOR DATABASE               KNOWLEDGE GRAPH
+─────────────────            ──────────────
+Fast retrieval               Logical reasoning
+Semantic understanding       Explicit relationships
+But: no reasoning            But: slow for scale</code></pre>
+
+        <p><strong>How HoloLoom combines them:</strong></p>
+
+        <p><strong>Step 1 - Fast Filter (Vector DB):</strong><br>
+        "Which documents might be relevant?"<br>
+        → Find top-10 similar documents using embeddings (fast, ~50ms)</p>
+
+        <p><strong>Step 2 - Smart Reasoning (Knowledge Graph):</strong><br>
+        "How do these documents relate to the question?"<br>
+        → Traverse the knowledge graph: follow entity relationships, make multi-hop inferences</p>
+
+        <p><strong>Step 3 - Synthesis:</strong><br>
+        "What's the final answer?"<br>
+        → Combine vector similarity scores with graph reasoning for a high-confidence answer</p>
+
+        <h2 id="section-4">Section 4: Knowledge Graphs for Beginners</h2>
+
+        <h3>Nodes and Edges: The Basics</h3>
+
+        <p>A knowledge graph has only two core components:</p>
+
+        <p><strong>Nodes</strong> = Things, concepts, entities:</p>
+        <pre><code>Thompson Sampling (concept)
+Alice (person)
+Python (programming language)
+Reinforcement Learning (field)</code></pre>
+
+        <p><strong>Edges</strong> = Relationships between things:</p>
+        <pre><code>Alice --KNOWS--> Python
+Python --USED_IN--> Reinforcement Learning
+Thompson Sampling --PART_OF--> Reinforcement Learning</code></pre>
+
+        <p>Visual representation:</p>
+        <pre><code>                Thompson Sampling
+                       │
+                   PART_OF
+                       │
+        Reinforcement Learning
+                       │
+                    USED_IN
+                       │
+                     Python
+                       │
+                    KNOWN_BY
+                       │
+                      Alice</code></pre>
+
+        <p>That's it. Nodes. Edges. Simple.</p>
+
+        <p>But here's the magic: once you have this structure, you can ask <strong>sophisticated questions:</strong></p>
+
+        <ul>
+          <li>"What languages are used in fields that Thompson Sampling relates to?" (multi-hop query)</li>
+          <li>"What do Alice and Python have in common?" (finding common ancestors)</li>
+          <li>"How similar are these two concepts?" (path analysis)</li>
+        </ul>
+
+        <h2 id="section-5">Section 5: Neural Decision-Making Demystified</h2>
+
+        <h3>What Is a Policy Network?</h3>
+
+        <p>A <strong>policy network</strong> is a neural network that maps situations → decisions.</p>
+
+        <p>Think of a chess player:</p>
+        <ul>
+          <li><strong>Input:</strong> Current board state (situation)</li>
+          <li><strong>Neural network:</strong> Player's brain (thinking)</li>
+          <li><strong>Output:</strong> Best move to make (decision)</li>
+        </ul>
+
+        <p>For HoloLoom:</p>
+        <ul>
+          <li><strong>Input:</strong> Query + context + memory (situation)</li>
+          <li><strong>Neural network:</strong> Policy network (thinking)</li>
+          <li><strong>Output:</strong> Which tool to use / how to respond (decision)</li>
+        </ul>
+
+        <h3>Thompson Sampling in Plain English</h3>
+
+        <p><strong>Thompson Sampling</strong> is a Bayesian approach to exploration-exploitation. Here's how it works:</p>
+
+        <p>Imagine you have 3 tools in your arsenal:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Tool</th>
+              <th>Evidence</th>
+              <th>Our Belief</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Tool A</td>
+              <td>Works 8 times, fails 2 times</td>
+              <td>Probably ~80% effective</td>
+            </tr>
+            <tr>
+              <td>Tool B</td>
+              <td>Works 4 times, fails 1 time</td>
+              <td>Probably ~80% effective</td>
+            </tr>
+            <tr>
+              <td>Tool C</td>
+              <td>Works 0 times, fails 1 time</td>
+              <td>Probably <50% effective</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p><strong>Thompson Sampling approach:</strong><br>
+        "Let me imagine 1000 possible worlds, each with slightly different success rates. Then, in each world, I pick the BEST tool. Across all worlds, B gets picked most often. So I'll pick B."</p>
+
+        <p>The key insight: <strong>Uncertainty drives exploration</strong>. Tools you haven't tried much (high uncertainty) get more exploration.</p>
+
+        <h2 id="section-6">Section 6: Key Concepts Glossary</h2>
+
+        <h3>Core HoloLoom Terms</h3>
+
+        <p><strong>MemoryShard</strong><br>
+        A discrete, queryable unit of memory—roughly equivalent to a document or concept with associated metadata.</p>
+
+        <pre><code>shard = MemoryShard(
+    content="Thompson Sampling balances exploration...",
+    entity="Thompson Sampling",
+    source="reinforcement_learning_textbook"
+)</code></pre>
+
+        <p><em>Think of it like: A single index card in a filing system.</em></p>
+
+        <p><strong>Spacetime</strong><br>
+        The complete output of a weaving cycle—includes the response AND the entire computational lineage (how you got there).</p>
+
+        <pre><code>spacetime = await orchestrator.weave(query)
+# spacetime.response = The answer
+# spacetime.trace = Full history of decisions made
+# spacetime.confidence = How confident was the system?
+# spacetime.sources = What shards were used?</code></pre>
+
+        <p><em>Think of it like: A finished woven tapestry that shows not just the pattern, but the threads used and how they were interlaced.</em></p>
+
+        <p><strong>Features / DotPlasma</strong><br>
+        The intermediate representation—flowing, continuous, a mixture of symbolic (motifs), continuous (embeddings), and topological (spectral) information.</p>
+
+        <p><strong>Yarn Graph</strong><br>
+        The discrete, persistent knowledge graph made of entities and relationships.</p>
+
+        <ul>
+          <li><strong>Entities:</strong> Concepts, facts, things</li>
+          <li><strong>Relationships:</strong> How things relate (IS_A, USES, MENTIONS, etc.)</li>
+          <li><strong>Type:</strong> Typed edges enable semantic reasoning</li>
+        </ul>
+
+        <p><em>Think of it like: A literal graph drawn on paper, with nodes (written concepts) and edges (written relationships).</em></p>
+
+        <p><strong>Warp Space</strong><br>
+        The continuous mathematical manifold where tensor operations happen.</p>
+
+        <ul>
+          <li>Entities from Yarn Graph → vectorized</li>
+          <li>Relationships → matrix operations</li>
+          <li>Queries → geometric/algebraic operations on vectors</li>
+        </ul>
+
+        <p><em>Think of it like: A continuous, mathematical version of the discrete graph—fluid rather than rigid.</em></p>
+
+        <p><strong>Thompson Sampling</strong><br>
+        A Bayesian approach to exploration-exploitation that uses probability distributions to decide which option to try next.</p>
+
+        <ul>
+          <li>Maintains a belief about each tool's success rate</li>
+          <li>Uncertainty = exploration opportunity</li>
+          <li>Automatically balances trying new things with using what works</li>
+        </ul>
+
+        <p><em>Think of it like: A scientist who "samples from their belief distribution" when deciding which experiment to try next.</em></p>
+
+        <h2 id="summary">Summary: Your Foundation</h2>
+
+        <p>You now understand:</p>
+
+        <ol>
+          <li><strong>The Problems:</strong> Memory persistence, knowledge organization, intelligent exploration, sophisticated reasoning</li>
+          <li><strong>The Metaphor:</strong> Weaving threads (independent modules) with a shuttle (orchestrator)</li>
+          <li><strong>The Memory Systems:</strong> Vector databases (fast similarity) + Knowledge graphs (logical reasoning)</li>
+          <li><strong>The Decision-Making:</strong> Neural networks (complex patterns) + Thompson Sampling (intelligent exploration)</li>
+          <li><strong>The Key Concepts:</strong> The terms you'll encounter throughout the training</li>
+        </ol>
+
+        <p><strong>Next Steps:</strong></p>
+
+        <p>In Part 2 (Architecture & Components), we'll go much deeper:</p>
+        <ul>
+          <li>How the 9-layer system actually works</li>
+          <li>Detailed walkthrough of each warp thread</li>
+          <li>How data flows through the pipeline</li>
+          <li>Real code examples and usage patterns</li>
+        </ul>
+
+        <p>In Part 3 (Building & Extending), we'll be hands-on:</p>
+        <ul>
+          <li>How to add custom tools</li>
+          <li>How to create input adapters</li>
+          <li>How to train the policy</li>
+          <li>How to monitor and improve performance</li>
+        </ul>
+
+        <hr style="margin: var(--spacing-xl) 0; border: none; border-top: 1px solid var(--color-border);">
+
+        <!-- NAVIGATION -->
+        <div class="article-nav">
+          <div class="nav-link disabled">
+            <span class="nav-link-label">← Previous</span>
+            <span class="nav-link-title">No previous part</span>
+          </div>
+          <a href="part2.html" class="nav-link">
+            <span class="nav-link-label">Next →</span>
+            <span class="nav-link-title">Part 2: Core Concepts</span>
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <script>
+    // Generate anchor links for headers
+    document.querySelectorAll('.article h2, .article h3').forEach(heading => {
+      if (!heading.id) {
+        heading.id = heading.textContent
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-');
+      }
+
+      const link = document.createElement('a');
+      link.href = '#' + heading.id;
+      link.className = 'header-link';
+      link.innerHTML = ' 🔗';
+      link.style.marginLeft = '8px';
+      link.style.opacity = '0.5';
+      link.style.fontSize = '0.8em';
+      heading.appendChild(link);
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
