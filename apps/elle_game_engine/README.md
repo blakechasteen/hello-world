@@ -628,29 +628,122 @@ public class NPCController : MonoBehaviour
 
 ### Godot (GDScript)
 
+**✨ Complete Godot Integration Available!**
+
+See [`godot_integration/README_GODOT.md`](godot_integration/README_GODOT.md) for:
+- Complete GDScript client (`ElleClient.gd`)
+- Data models matching Elle API (`ElleModels.gd`)
+- Full working example (`ExampleNPCInteraction.gd`)
+- Addon package for easy installation (`plugin.cfg`)
+- Step-by-step setup guide
+- Voice synthesis integration
+- API reference and troubleshooting
+
+**Quick Example**:
+
 ```gdscript
 extends Node
 
-const ELLE_URL = "http://localhost:8000/elle/game/action"
+@onready var elle = Elle  # Autoload singleton
 
-func get_elle_action(game_state: Dictionary, player_intent: Dictionary):
-    var request = HTTPRequest.new()
-    add_child(request)
-    request.connect("request_completed", self, "_on_request_completed")
+func _ready():
+    # Connect signals
+    elle.action_received.connect(_on_action_received)
 
-    var body = JSON.print({
-        "game_state": game_state,
-        "player_intent": player_intent
-    })
+    # Get NPC dialogue
+    await elle.quick_dialogue("Bob", "Hello! I'm new in town.")
 
-    var headers = ["Content-Type: application/json"]
-    request.request(ELLE_URL, headers, true, HTTPClient.METHOD_POST, body)
 
-func _on_request_completed(result, response_code, headers, body):
-    var json = JSON.parse(body.get_string_from_utf8())
-    var action = json.result
-    # Process action...
+func _on_action_received(action: ElleModels.ElleGameAction):
+    if action.has_dialogue():
+        var line = action.dialogue[0]
+        print("%s: \"%s\" %s" % [line.npc_id, line.text, line.get_tone_emoji()])
+
+    # Play voice audio if available
+    if action.has_audio():
+        elle.play_action_audio(action, $AudioStreamPlayer)
 ```
+
+👉 **[Full Godot Integration Guide](godot_integration/README_GODOT.md)**
+
+## Voice Synthesis
+
+**✨ Multi-Backend Text-to-Speech Integration!**
+
+Elle includes a comprehensive voice synthesis system with support for multiple TTS backends:
+
+| Backend | Quality | Latency | Cost | Local |
+|---------|---------|---------|------|-------|
+| **ElevenLabs** | ⭐⭐⭐⭐⭐ | ~2-3s | $$$ | ❌ |
+| **OpenAI TTS** | ⭐⭐⭐⭐ | ~1-2s | $$ | ❌ |
+| **Google Cloud** | ⭐⭐⭐⭐ | ~1-2s | $$ | ❌ |
+| **Piper** | ⭐⭐⭐ | <500ms | FREE | ✅ |
+
+### Features
+
+✅ **Multiple Backends**: Choose between ElevenLabs, OpenAI, Google Cloud, Piper
+✅ **Emotion-Aware**: Voice adapts to character mood/tone
+✅ **Voice Profiles**: Per-NPC voice configuration (pitch, speed, stability)
+✅ **Smart Caching**: Reuse common phrases (100MB default cache)
+✅ **Format Support**: WAV, MP3, OGG, OPUS
+
+### Quick Start
+
+```bash
+# Configure TTS backend
+export ELLE_VOICE_BACKEND="openai"  # or elevenlabs, piper, dummy
+export OPENAI_API_KEY="your-key-here"
+
+# Start Elle service (voice synthesis enabled automatically)
+python -m apps.elle_game_engine.service
+```
+
+### Python Example
+
+```python
+from apps.elle_game_engine.voice import create_voice_engine, VoiceProfile, Emotion
+
+# Initialize engine
+voice_engine = create_voice_engine(backend="openai")
+
+# Create voice profile
+bob_profile = VoiceProfile(
+    voice_id="alloy",
+    pitch=1.0,
+    speed=1.0,
+    emotion=Emotion.WARM
+)
+voice_engine.register_voice_profile("innkeeper", bob_profile)
+
+# Synthesize speech
+result = voice_engine.synthesize(
+    text="Welcome to my inn!",
+    npc_id="innkeeper"
+)
+
+# Save audio
+with open("innkeeper.mp3", "wb") as f:
+    f.write(result.audio_data)
+```
+
+### API Endpoint
+
+```bash
+curl -X POST "http://localhost:8000/elle/game/voice/synthesize" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Hello, traveler!",
+    "voice_profile": {
+      "voice_id": "alloy",
+      "pitch": 1.0,
+      "speed": 1.0,
+      "emotion": "warm"
+    },
+    "format": "mp3"
+  }'
+```
+
+👉 **[Complete Voice Synthesis Guide](VOICE_SYNTHESIS.md)**
 
 ### Python (for testing)
 
@@ -911,3 +1004,391 @@ Elle: "50 gold each."
 # Elle knows you're asking about potions from context
 # Response: "50 gold each."
 ```
+
+## HoloLoom Integration
+
+**Status**: ✅ Production Ready (2025-11-16)
+
+Elle Game Engine now integrates with HoloLoom's enterprise-grade memory and safety systems, providing:
+
+- **Knowledge Graph Storage**: Persistent conversation history using NetworkX MultiDiGraph
+- **Semantic Search**: Find similar conversations using Matryoshka multi-scale embeddings (96, 192, 384 dims)
+- **NPC Relationship Tracking**: Graph-based relationships with typed edges (LIKES, TRUSTS, DISLIKES)
+- **Safety Guardrails**: Risk-based action gating, adversarial input detection, audit trail
+- **Temporal Queries**: Point-in-time queries ("What did player discuss with NPC last week?")
+
+### Quick Start
+
+```python
+from apps.elle_game_engine.hololoom_integration import HoloLoomSessionStore
+
+# Create store with semantic embeddings
+store = HoloLoomSessionStore(
+    kg_path="sessions_kg.jsonl",
+    enable_embeddings=True
+)
+
+# Same API as InMemorySessionStore - drop-in replacement!
+session = store.create_session(player_id="player_123")
+session.add_exchange("Hello", "Greetings!")
+store.update_session(session)
+
+# NEW: Semantic search over conversations
+results = store.search_conversations(
+    query="healing herbs",
+    session_id=session.session_id,
+    limit=5
+)
+```
+
+### Complete Documentation
+
+👉 **[Full HoloLoom Integration Guide](HOLOLOOM_INTEGRATION.md)**
+
+Covers:
+- Architecture and design
+- Knowledge graph schema
+- Semantic search usage
+- Safety guardrails configuration
+- Migration from in-memory storage
+- Production deployment
+- 25 comprehensive tests
+
+### Testing
+
+```bash
+# Run HoloLoom integration tests
+pytest apps/elle_game_engine/tests/test_hololoom_integration.py -v
+# Result: 25/25 tests passing
+```
+
+---
+
+**Integration Complete**: November 16, 2025
+**Test Coverage**: 25/25 tests passing
+**HoloLoom Version**: Production Ready (November 2025)
+
+## Emotion Modeling & Quest Generation
+
+**Status**: ✅ Production Ready (2025-11-16)
+**Location**: `apps/elle_game_engine/emotion.py`, `apps/elle_game_engine/quest.py`
+
+Elle Game Engine now includes sophisticated emotion modeling and dynamic quest generation, making NPCs feel alive and responsive to player actions.
+
+### Emotion Modeling
+
+NPCs have rich emotional states based on the **PAD (Pleasure-Arousal-Dominance) model** from psychology:
+
+- **Valence**: Positive/negative emotion (-1.0 to 1.0)
+- **Arousal**: Energy level (0.0 = calm, 1.0 = excited)
+- **Dominance**: Control/power (0.0 = submissive, 1.0 = dominant)
+- **Trust**: Trust toward player (0.0 = distrust, 1.0 = trust)
+
+**Key Features**:
+- ✅ **16 distinct emotions**: happy, angry, sad, fearful, grateful, curious, anxious, etc.
+- ✅ **Dynamic updates**: Emotions change based on player actions (help, insult, gift, etc.)
+- ✅ **Emotional decay**: Emotions naturally return to baseline over time (exponential decay)
+- ✅ **Emotion history**: Track NPC emotional trajectory over time
+- ✅ **Game mechanics integration**: Emotions affect prices, quest difficulty, and NPC helpfulness
+
+### Quick Start: Emotions
+
+```python
+from apps.elle_game_engine.emotion import EmotionalState, EmotionEngine
+
+# Create emotion engine
+engine = EmotionEngine()
+
+# Initialize NPC emotional state
+innkeeper_emotion = EmotionalState.from_emotion_label("neutral", trust=0.5)
+
+# Player helps the NPC
+innkeeper_emotion = engine.process_player_action(
+    innkeeper_emotion,
+    action_type="help",
+    npc_id="innkeeper"
+)
+
+# Get emotion label and tone
+print(innkeeper_emotion.get_emotion_label())  # "happy"
+print(innkeeper_emotion.get_tone())  # "warm"
+
+# Generate context for LLM prompts
+context = engine.generate_emotion_context(innkeeper_emotion)
+# "The NPC is feeling happy (moderately energized). They trust the player somewhat.
+#  Their dialogue should have a warm tone."
+
+# Get game mechanic modifiers
+modifiers = engine.get_emotion_modifiers(innkeeper_emotion)
+print(modifiers["price_multiplier"])  # 0.85x (happy NPCs give discounts!)
+print(modifiers["quest_difficulty_modifier"])  # 0.75x (easier quests)
+print(modifiers["hint_generosity"])  # 0.85 (more helpful)
+```
+
+### Player Actions and Emotional Responses
+
+| Action | Valence | Trust | Arousal | Example Use Case |
+|--------|---------|-------|---------|------------------|
+| **help** | +0.3 | +0.2 | +0.1 | Player assists NPC |
+| **gift** | +0.4 | +0.3 | +0.2 | Player gives item |
+| **compliment** | +0.2 | +0.1 | +0.1 | Player praises NPC |
+| **insult** | -0.4 | -0.3 | +0.3 | Player is rude |
+| **threaten** | -0.5 | -0.5 | +0.4 | Player threatens NPC |
+| **steal** | -0.6 | -0.6 | +0.4 | Player steals from NPC |
+| **defend** | +0.3 | +0.4 | +0.3 | Player protects NPC |
+
+*All effects can be scaled with intensity multiplier (0.5 to 2.0)*
+
+### Dynamic Quest Generation
+
+Quests are generated dynamically using LLMs, adapting to:
+- NPC emotional state (angry NPCs give harder quests)
+- Player level and progress
+- World state (time, weather, tension)
+- Recent narrative events
+
+**Quest Features**:
+- ✅ **Multi-objective**: 2-5 steps per quest
+- ✅ **Difficulty scaling**: Trivial → Easy → Normal → Hard → Epic
+- ✅ **Contextual rewards**: XP, gold, items, reputation, flags
+- ✅ **Time limits**: Optional time-based challenges
+- ✅ **Emotional rationale**: LLM explains why NPC gave this quest
+
+### Quest API Endpoints
+
+**Generate Quest** (`POST /elle/game/quest/generate`):
+
+```bash
+curl -X POST "http://localhost:8000/elle/game/quest/generate" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "npc_id": "merchant",
+    "npc_name": "Gareth",
+    "npc_role": "merchant",
+    "emotional_state_data": {
+      "valence": 0.7,
+      "arousal": 0.5,
+      "dominance": 0.5,
+      "trust": 0.8
+    },
+    "player_level": 5,
+    "player_reputation": "hero",
+    "world_tension": "calm",
+    "world_time": "afternoon"
+  }'
+```
+
+**Response**:
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "title": "Gather Fresh Herbs",
+  "description": "I'm grateful for your help! Could you gather fresh herbs for tonight's stew?",
+  "difficulty": "easy",
+  "status": "available",
+  "giver_npc_id": "merchant",
+  "objectives": [
+    {
+      "id": "obj_1",
+      "description": "Collect 5 fresh herbs from the forest",
+      "target": 5,
+      "progress": 0,
+      "completed": false
+    }
+  ],
+  "reward": {
+    "description": "A warm meal and some gold",
+    "xp": 100,
+    "gold": 25,
+    "items": ["hearty_stew"]
+  },
+  "emotion_at_creation": "grateful",
+  "completion_percentage": 0.0
+}
+```
+
+**Get Quest** (`GET /elle/game/quest/{quest_id}`):
+
+```bash
+curl "http://localhost:8000/elle/game/quest/550e8400-e29b-41d4-a716-446655440000"
+```
+
+**Complete Quest** (`POST /elle/game/quest/{quest_id}/complete`):
+
+```bash
+curl -X POST "http://localhost:8000/elle/game/quest/550e8400.../complete"
+```
+
+**Fail Quest** (`POST /elle/game/quest/{quest_id}/fail`):
+
+```bash
+curl -X POST "http://localhost:8000/elle/game/quest/550e8400.../fail"
+```
+
+### Emotion-Quest Interaction Loop
+
+Emotions and quests create a feedback loop:
+
+1. **Player meets NPC** → NPC has emotional state (e.g., neutral)
+2. **Player helps NPC** → Emotion improves (valence +0.3, trust +0.2)
+3. **NPC offers quest** → Quest difficulty influenced by emotion (easier quest because happy)
+4. **Player completes quest** → Emotion improves more (valence +0.3, trust +0.2)
+5. **NPC offers better quest** → Higher rewards, more trust-based objectives
+
+**Example Progression**:
+```
+Initial: Neutral (trust: 0.5)
+  ↓ Player helps
+Happy (trust: 0.7) → Easy quest: "Gather 5 herbs" (100 XP, 25 gold)
+  ↓ Player completes
+Grateful (trust: 0.9) → Normal quest: "Negotiate with supplier" (250 XP, 100 gold)
+  ↓ Player completes
+Loyal Friend (trust: 1.0) → Hard quest: "Protect caravan" (500 XP, 250 gold, rare item)
+```
+
+### Integration with NPCState
+
+Emotional states are automatically integrated into `NPCState` models:
+
+```python
+from apps.elle_game_engine.models import NPCState
+from apps.elle_game_engine.emotion import EmotionalState
+
+# Create NPC with emotional state
+npc = NPCState(
+    id="merchant",
+    name="Gareth",
+    role="merchant",
+    mood="happy",  # Legacy field (optional)
+    emotional_state=EmotionalState.from_emotion_label("happy", trust=0.8)
+)
+
+# Emotional state is automatically injected into LLM prompts
+# Policy.py adds: "Emotion: The NPC is feeling happy (moderately energized).
+#                  They trust the player somewhat. Their dialogue should have a warm tone."
+```
+
+### Demonstration
+
+Run the comprehensive demo showing all features:
+
+```bash
+PYTHONPATH=. python demos/demo_emotion_quest.py
+```
+
+**Demo Output**:
+- ✅ NPC emotions changing based on player actions (help → gift → insult)
+- ✅ Emotional decay over time
+- ✅ Quest generation adapting to emotions (happy → easy quest, angry → hard quest)
+- ✅ Emotion-quest feedback loop
+- ✅ LLM context injection
+- ✅ Game mechanic modifiers (prices, quest difficulty, hint generosity)
+
+### Testing
+
+```bash
+# Test emotion system (24 tests)
+pytest apps/elle_game_engine/tests/test_emotion.py -v
+# Result: 24/24 passing
+
+# Test quest system (23 tests)
+pytest apps/elle_game_engine/tests/test_quest.py -v
+# Result: 23/23 passing
+```
+
+**Test Coverage**:
+- ✅ Emotion creation, updates, decay
+- ✅ Emotion label detection (16 emotions)
+- ✅ Tone generation
+- ✅ Player action processing
+- ✅ Emotion history tracking
+- ✅ Game mechanic modifiers
+- ✅ Quest creation, acceptance, completion, failure
+- ✅ Quest objectives and rewards
+- ✅ Time limit expiration
+- ✅ LLM-powered quest generation
+- ✅ Emotion-based difficulty scaling
+
+### Files
+
+**Core Implementation**:
+- `apps/elle_game_engine/emotion.py` (437 lines) - Emotion modeling system
+- `apps/elle_game_engine/quest.py` (612 lines) - Quest generation system
+- `apps/elle_game_engine/models.py` - Updated with EmotionalState integration
+- `apps/elle_game_engine/policy.py` - Updated to inject emotion context into prompts
+- `apps/elle_game_engine/service.py` - Updated with quest endpoints
+
+**Tests**:
+- `apps/elle_game_engine/tests/test_emotion.py` (329 lines) - 24 comprehensive tests
+- `apps/elle_game_engine/tests/test_quest.py` (359 lines) - 23 comprehensive tests
+
+**Demo**:
+- `demos/demo_emotion_quest.py` (337 lines) - Complete interactive demonstration
+
+**Total**: 2,073 lines of production code, tests, and documentation
+
+### Advanced Usage
+
+**Custom Emotion Baseline**:
+```python
+# Create NPC with custom emotional baseline
+state = EmotionalState(
+    valence=0.2,  # Slightly positive baseline
+    arousal=0.6,  # Naturally energetic
+    trust=0.3,    # Naturally distrustful
+    baseline_valence=0.2,  # Returns to positive after decay
+    baseline_trust=0.3      # Returns to low trust after decay
+)
+```
+
+**Action Intensity Scaling**:
+```python
+# Weak help (intensity 0.5)
+engine.process_player_action(state, "help", intensity=0.5)
+
+# Strong help (intensity 2.0)
+engine.process_player_action(state, "help", intensity=2.0)  # 2x effect!
+```
+
+**Quest Difficulty Suggestions**:
+```python
+# Quest generator suggests difficulty based on:
+# - NPC trust (low trust → harder quests)
+# - NPC valence (negative emotion → harder quests)
+# - World tension (high tension → harder quests)
+# - Player level
+
+suggested_difficulty = generator._suggest_difficulty(
+    emotional_state,
+    player_level=5,
+    world_tension="critical"
+)  # Returns: "hard" or "epic"
+```
+
+### Use Cases
+
+**RPG Systems**:
+- Reputation systems (trust affects prices and quest availability)
+- Branching narratives (emotions determine quest outcomes)
+- Relationship progression (build trust over time)
+
+**Simulation Games**:
+- AI citizens with emotional responses
+- Dynamic event generation based on city mood
+- Protest/celebration mechanics driven by collective emotion
+
+**Strategy Games**:
+- Diplomatic relations (trust affects alliance stability)
+- Morale systems (arousal and valence affect combat effectiveness)
+- Espionage (emotional manipulation gameplay)
+
+**Open World Games**:
+- Living NPCs that remember player actions
+- Dynamic quest generation adapting to world state
+- Emergent storytelling through emotional interactions
+
+---
+
+**Implementation Complete**: November 16, 2025
+**Test Coverage**: 47/47 tests passing (24 emotion + 23 quest)
+**Production Ready**: Yes

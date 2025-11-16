@@ -10,6 +10,11 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from enum import Enum
 
+# Import emotion system (circular import handled via Optional type hints)
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .emotion import EmotionalState
+
 
 # ============================================================================
 # Game State Models
@@ -26,6 +31,9 @@ class NPCState:
     location: str = ""  # coarse label: "village_square", "inn", "forest_edge"
     flags: Dict[str, bool] = field(default_factory=dict)  # custom world flags
 
+    # Emotion modeling (2025-11-16)
+    emotional_state: Optional["EmotionalState"] = None  # Rich emotional state (PAD model)
+
     def __post_init__(self):
         """Validate NPC state."""
         if not self.id:
@@ -34,6 +42,12 @@ class NPCState:
             raise ValueError("NPC name cannot be empty")
         if not self.role:
             raise ValueError("NPC role cannot be empty")
+
+        # Initialize emotional state if not provided
+        if self.emotional_state is None and self.mood:
+            # Create basic emotional state from legacy mood
+            from .emotion import EmotionalState
+            self.emotional_state = EmotionalState.from_emotion_label(self.mood)
 
 
 @dataclass
@@ -148,6 +162,8 @@ class ActionMode(str, Enum):
     HINT = "hint"  # Non-spoilery guidance
     WORLD_REACTION = "world_reaction"  # Environmental response
     DEV_DEBUG = "dev_debug"  # Developer-facing narrative notes
+    QUEST_OFFER = "quest_offer"  # NPC offering a quest (2025-11-16)
+    QUEST_UPDATE = "quest_update"  # Quest progress update (2025-11-16)
 
 
 @dataclass
@@ -197,6 +213,10 @@ class ElleGameAction:
     world_reaction: Optional[WorldChange] = None
     debug_notes: Optional[str] = None  # For devs, not shown to players
 
+    # Quest-related fields (2025-11-16)
+    quest_id: Optional[str] = None  # For QUEST_OFFER/QUEST_UPDATE modes
+    quest_data: Optional[Dict] = None  # Quest details (serialized Quest object)
+
     def __post_init__(self):
         """Validate action."""
         if self.priority not in ["low", "medium", "high"]:
@@ -235,4 +255,6 @@ class ElleGameAction:
                 "flag_changes": self.world_reaction.flag_changes,
             } if self.world_reaction else None,
             "debug_notes": self.debug_notes,
+            "quest_id": self.quest_id,
+            "quest_data": self.quest_data,
         }

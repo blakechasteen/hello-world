@@ -48,6 +48,13 @@ class MetricsCollector:
         self.cache_misses = 0
         self.rate_limit_hits = 0
 
+        # Pool metrics (set externally)
+        self.pool_size = 0
+        self.pool_active = 0
+        self.pool_available = 0
+        self.pool_utilization = 0.0
+        self.pool_wait_time_ms = 0.0
+
         # Latency tracking (rolling window)
         self.latency_samples: deque[LatencySample] = deque(maxlen=window_size)
 
@@ -88,6 +95,30 @@ class MetricsCollector:
         """Record a rate limit hit."""
         self.rate_limit_hits += 1
 
+    def update_pool_stats(
+        self,
+        pool_size: int,
+        active: int,
+        available: int,
+        utilization: float,
+        wait_time_ms: float,
+    ):
+        """
+        Update connection pool statistics.
+
+        Args:
+            pool_size: Total pool size
+            active: Active connections
+            available: Available connections
+            utilization: Pool utilization (0.0-1.0)
+            wait_time_ms: Average wait time in milliseconds
+        """
+        self.pool_size = pool_size
+        self.pool_active = active
+        self.pool_available = available
+        self.pool_utilization = utilization
+        self.pool_wait_time_ms = wait_time_ms
+
     def get_cache_hit_rate(self) -> float:
         """Calculate cache hit rate."""
         total = self.cache_hits + self.cache_misses
@@ -118,7 +149,7 @@ class MetricsCollector:
 
     def get_stats(self) -> Dict:
         """Get all metrics as dictionary."""
-        return {
+        stats = {
             "total_requests": self.total_requests,
             "requests_by_intent": dict(self.requests_by_intent),
             "requests_by_provider": dict(self.requests_by_provider),
@@ -130,6 +161,18 @@ class MetricsCollector:
             "p95_latency_ms": self.get_p95_latency(),
             "uptime_seconds": self.get_uptime_seconds(),
         }
+
+        # Add pool stats if available
+        if self.pool_size > 0:
+            stats["pool"] = {
+                "pool_size": self.pool_size,
+                "active": self.pool_active,
+                "available": self.pool_available,
+                "utilization": self.pool_utilization,
+                "wait_time_ms": self.pool_wait_time_ms,
+            }
+
+        return stats
 
     def to_prometheus_format(self) -> str:
         """
@@ -188,6 +231,28 @@ class MetricsCollector:
         lines.append("# HELP elle_uptime_seconds Service uptime in seconds")
         lines.append("# TYPE elle_uptime_seconds counter")
         lines.append(f"elle_uptime_seconds {self.get_uptime_seconds():.0f}")
+
+        # Pool metrics (if pooling enabled)
+        if self.pool_size > 0:
+            lines.append("# HELP elle_pool_size Total pool size")
+            lines.append("# TYPE elle_pool_size gauge")
+            lines.append(f"elle_pool_size {self.pool_size}")
+
+            lines.append("# HELP elle_pool_active Active connections")
+            lines.append("# TYPE elle_pool_active gauge")
+            lines.append(f"elle_pool_active {self.pool_active}")
+
+            lines.append("# HELP elle_pool_available Available connections")
+            lines.append("# TYPE elle_pool_available gauge")
+            lines.append(f"elle_pool_available {self.pool_available}")
+
+            lines.append("# HELP elle_pool_utilization Pool utilization (0.0-1.0)")
+            lines.append("# TYPE elle_pool_utilization gauge")
+            lines.append(f"elle_pool_utilization {self.pool_utilization:.4f}")
+
+            lines.append("# HELP elle_pool_wait_time_ms Average pool checkout wait time")
+            lines.append("# TYPE elle_pool_wait_time_ms gauge")
+            lines.append(f"elle_pool_wait_time_ms {self.pool_wait_time_ms:.2f}")
 
         return "\n".join(lines) + "\n"
 

@@ -125,6 +125,13 @@ class GamePolicy:
             if npc.flags:
                 npcs_text += f"    Flags: {npc.flags}\n"
 
+            # Add emotional state if available (2025-11-16)
+            if npc.emotional_state:
+                from .emotion import EmotionEngine
+                engine = EmotionEngine()
+                emotion_context = engine.generate_emotion_context(npc.emotional_state)
+                npcs_text += f"    Emotion: {emotion_context}\n"
+
         # Serialize player
         player_text = f"""  Name: {game_state.player.name}
   Location: {game_state.player.location}
