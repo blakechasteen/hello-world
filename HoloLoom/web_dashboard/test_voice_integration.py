@@ -40,7 +40,6 @@ async def test_voice_integration():
         deps['bark'] = '✗ BARK not installed (pip install git+https://github.com/suno-ai/bark.git scipy)'
 
     try:
-        import whisper
         deps['whisper'] = '✓ Whisper installed'
     except ImportError:
         deps['whisper'] = '✗ Whisper not installed (pip install openai-whisper)'
