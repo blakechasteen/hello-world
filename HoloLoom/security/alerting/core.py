@@ -162,6 +162,7 @@ class AlertingEngine:
             "email": self._send_email,
             "sms": self._send_sms,
         }
+        self._background_tasks: set[asyncio.Task] = set()  # Track all background tasks
 
     async def __aenter__(self):
         """Context manager entry."""
@@ -175,14 +176,31 @@ class AlertingEngine:
         """Context manager exit."""
         await self.close()
 
+    def _task_done_callback(self, task: asyncio.Task):
+        """Safe cleanup callback for completed tasks."""
+        try:
+            self._background_tasks.discard(task)
+        except (KeyError, RuntimeError):
+            # Task already removed or set being modified during iteration
+            pass
+
     async def close(self):
         """Cleanup resources."""
+        # Cancel escalation tasks
         for task in self.escalation_tasks.values():
             task.cancel()
             try:
                 await task
             except asyncio.CancelledError:
                 pass
+
+        # Cancel all background tasks
+        for task in self._background_tasks:
+            task.cancel()
+
+        # Wait for all tasks to complete (with timeout)
+        if self._background_tasks:
+            await asyncio.wait(self._background_tasks, timeout=5.0)
 
     async def alert(
         self,
@@ -259,6 +277,8 @@ class AlertingEngine:
         if self.config.escalation_enabled and severity in [AlertSeverity.WARNING, AlertSeverity.CRITICAL]:
             task = asyncio.create_task(self._escalate_alert(alert))
             self.escalation_tasks[alert.alert_id] = task
+            self._background_tasks.add(task)
+            task.add_done_callback(self._task_done_callback)
 
         logger.info(f"Alert sent: {alert.alert_id} ({severity.value}) via {alert.channels_sent}")
         return alert.alert_id

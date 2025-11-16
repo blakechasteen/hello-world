@@ -149,6 +149,56 @@ class VisualQAEngine:
             logger.warning(f"CLIP encoder initialization failed: {e}")
             self.clip_encoder = None
 
+    async def close(self):
+        """
+        Cleanup resources and release GPU memory.
+
+        This is critical for preventing GPU memory leaks when using CLIP models.
+        Should be called when done with visual Q&A, especially in long-running
+        applications.
+        """
+        # Release CLIP model (GPU memory)
+        if self.clip_encoder:
+            try:
+                # Clear CLIP model from GPU
+                if hasattr(self.clip_encoder, 'clip_model') and self.clip_encoder.clip_model is not None:
+                    del self.clip_encoder.clip_model
+                    self.clip_encoder.clip_model = None
+
+                # Clear CLIP processor
+                if hasattr(self.clip_encoder, 'clip_processor') and self.clip_encoder.clip_processor is not None:
+                    del self.clip_encoder.clip_processor
+                    self.clip_encoder.clip_processor = None
+
+                # If torch is available, clear GPU cache
+                try:
+                    import torch
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                        logger.info("✓ GPU memory cache cleared")
+                except ImportError:
+                    pass
+
+                logger.info("✓ CLIP encoder resources released")
+            except Exception as e:
+                logger.warning(f"Error releasing CLIP resources: {e}")
+
+        # Cleanup OCR spinner if it has cleanup method
+        if self.ocr_spinner:
+            try:
+                if hasattr(self.ocr_spinner, 'close'):
+                    await self.ocr_spinner.close()
+                    logger.info("✓ OCR spinner closed")
+            except Exception as e:
+                logger.warning(f"Error closing OCR spinner: {e}")
+
+        # Clear references
+        self.clip_encoder = None
+        self.ocr_spinner = None
+        self.fallback_ocr = None
+
+        logger.info("✓ VisualQAEngine resources cleaned up")
+
     # ========================================================================
     # OCR - Text Extraction
     # ========================================================================

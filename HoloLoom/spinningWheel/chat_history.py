@@ -508,9 +508,27 @@ class ChatHistoryAutoCapture:
         self.pending_conversations = set()
         self.last_batch_time = time.time()
 
+        # Background task tracking
+        self._background_tasks: set[asyncio.Task] = set()
+
         # Patch ConversationManager.add_message to trigger capture
         self._original_add_message = conversation_manager.add_message
         conversation_manager.add_message = self._hooked_add_message
+
+    def _spawn_background_task(self, coro):
+        """Spawn a background task and track it."""
+        task = asyncio.create_task(coro)
+        self._background_tasks.add(task)
+        task.add_done_callback(self._task_done_callback)
+        return task
+
+    def _task_done_callback(self, task: asyncio.Task):
+        """Safe cleanup callback for completed tasks."""
+        try:
+            self._background_tasks.discard(task)
+        except (KeyError, RuntimeError):
+            # Task already removed or set being modified during iteration
+            pass
 
     def _hooked_add_message(self, conversation_id: int, role: str, content: str, metadata=None):
         """Hooked version of add_message that triggers auto-capture."""
@@ -527,7 +545,7 @@ class ChatHistoryAutoCapture:
         )
 
         if should_ingest:
-            asyncio.create_task(self._ingest_pending())
+            self._spawn_background_task(self._ingest_pending())
 
         return result
 
@@ -548,6 +566,16 @@ class ChatHistoryAutoCapture:
 
         print(f"ChatHistoryAutoCapture: Ingested {len(conv_ids)} conversations "
               f"({sum(len(await self.spinner.spin_conversation(c)) for c in conv_ids)} shards)")
+
+    async def close(self):
+        """Cleanup resources and cancel background tasks."""
+        # Cancel all background tasks
+        for task in self._background_tasks:
+            task.cancel()
+
+        # Wait for tasks to complete (with timeout)
+        if self._background_tasks:
+            await asyncio.wait(self._background_tasks, timeout=5.0)
 
     def disable(self):
         """Disable auto-capture (restore original add_message)."""

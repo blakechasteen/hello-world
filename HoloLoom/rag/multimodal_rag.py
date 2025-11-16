@@ -187,6 +187,19 @@ class MultimodalRAG(SimpleRAG):
 
         return self
 
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Cleanup visual Q&A engine and parent resources."""
+        # Close visual Q&A engine first (releases GPU memory)
+        if hasattr(self, 'visual_qa_engine') and self.visual_qa_engine:
+            try:
+                await self.visual_qa_engine.close()
+                logger.info("✓ Visual Q&A engine cleaned up")
+            except Exception as e:
+                logger.error(f"Error closing visual Q&A engine: {e}")
+
+        # Call parent cleanup
+        await super().__aexit__(exc_type, exc_val, exc_tb)
+
     # ========================================================================
     # Photo Ingestion
     # ========================================================================

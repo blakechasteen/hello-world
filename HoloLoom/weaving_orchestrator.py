@@ -642,7 +642,7 @@ class WeavingOrchestrator:
         self.logger.info(f"Initializing WeavingOrchestrator with pattern: {self.default_pattern.value}")
 
         # Lifecycle management
-        self._background_tasks: List[asyncio.Task] = []
+        self._background_tasks: set[asyncio.Task] = set()
         self._bg_lock = asyncio.Lock()  # Protect concurrent access to _background_tasks
         self._closed = False
 
@@ -3241,19 +3241,25 @@ class WeavingOrchestrator:
         """
         task = asyncio.create_task(coro)
 
-        # Append is atomic in Python, safe in single-threaded asyncio
-        self._background_tasks.append(task)
+        # Add to background tasks set
+        self._background_tasks.add(task)
 
-        # Clean up completed tasks (callback is synchronous, but list operations are atomic)
-        def cleanup_callback(t):
-            try:
-                self._background_tasks.remove(t)
-            except ValueError:
-                pass  # Already removed
-
-        task.add_done_callback(cleanup_callback)
+        # Clean up completed tasks with race condition protection
+        task.add_done_callback(self._task_done_callback)
 
         return task
+
+    def _task_done_callback(self, task: asyncio.Task):
+        """
+        Safe cleanup callback for completed tasks.
+
+        Protects against race condition when task completes during __aexit__.
+        """
+        try:
+            self._background_tasks.discard(task)
+        except (KeyError, RuntimeError):
+            # Task already removed or set being modified during iteration
+            pass
 
     def save_dashboard(self, spacetime: Spacetime, output_path: str) -> None:
         """

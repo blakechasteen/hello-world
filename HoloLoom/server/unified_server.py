@@ -165,6 +165,9 @@ class ServerState:
         self.stage_durations: Dict[str, float] = {}  # stage_name → duration_ms
         self.recent_traces: deque = deque(maxlen=20)  # Last 20 pipeline traces
 
+        # Background task tracking
+        self._background_tasks: set[asyncio.Task] = set()
+
     def stage_tracking_callback(self, stage_id: int, stage_name: str, duration_ms: float):
         """
         Callback for tracking orchestrator stage progression (Phase 3.1).
@@ -238,6 +241,21 @@ class ServerState:
             )
         ]
 
+    def _spawn_background_task(self, coro):
+        """Spawn a background task and track it."""
+        task = asyncio.create_task(coro)
+        self._background_tasks.add(task)
+        task.add_done_callback(self._task_done_callback)
+        return task
+
+    def _task_done_callback(self, task: asyncio.Task):
+        """Safe cleanup callback for completed tasks."""
+        try:
+            self._background_tasks.discard(task)
+        except (KeyError, RuntimeError):
+            # Task already removed or set being modified during iteration
+            pass
+
     def record_query(self, mode: str, latency_ms: float, success: bool, confidence: float):
         """Record query statistics."""
         self.total_queries += 1
@@ -250,8 +268,8 @@ class ServerState:
         else:
             self.failed_queries += 1
 
-        # Broadcast stats update via SSE
-        asyncio.create_task(self.broadcast_stats())
+        # Broadcast stats update via SSE (tracked task)
+        self._spawn_background_task(self.broadcast_stats())
 
     async def broadcast_stats(self):
         """Broadcast statistics to all SSE clients."""
@@ -377,6 +395,16 @@ async def startup_event():
 async def shutdown_event():
     """Cleanup on shutdown."""
     logger.info("Shutting down HoloLoom Unified Server...")
+
+    # Cancel all background tasks
+    for task in state._background_tasks:
+        task.cancel()
+
+    # Wait for tasks to complete (with timeout)
+    if state._background_tasks:
+        await asyncio.wait(state._background_tasks, timeout=5.0)
+
+    # Close learning engine
     if state.learning_engine:
         await state.learning_engine.close()
 
