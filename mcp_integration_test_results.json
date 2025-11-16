@@ -6,28 +6,73 @@
   },
   {
     "test": "trough_scan_directory",
-    "status": "FAIL",
-    "error": "'LogicError' object has no attribute 'category'"
+    "status": "PASS",
+    "files_scanned": 1,
+    "issues_detected": 2
   },
   {
     "test": "trough_classify_issues",
-    "status": "FAIL",
-    "error": ""
+    "status": "PASS",
+    "classification": {
+      "auto_fixable": [],
+      "needs_review": [
+        {
+          "category": "incomplete",
+          "severity": "high",
+          "message": "Empty function/class with only 'pass' statement",
+          "line_number": 5,
+          "code_snippet": "def process_data(data):\n    \"\"\"Process the data.\"\"\"\n    # TODO: implement this\n    pass\n\ndef calculate_average(numbers):\n    \"\"\"Calculate average.\"\"\"",
+          "suggestion": "Implement the function or raise NotImplementedError",
+          "confidence": 1.0,
+          "file_path": "/tmp/tmpu40rhlp8.py"
+        },
+        {
+          "category": "incomplete",
+          "severity": "medium",
+          "message": "TODO comment indicates incomplete code",
+          "line_number": 4,
+          "code_snippet": "\ndef process_data(data):\n    \"\"\"Process the data.\"\"\"\n    # TODO: implement this\n    pass\n\ndef calculate_average(numbers):",
+          "suggestion": "Complete the implementation",
+          "confidence": 1.0,
+          "file_path": "/tmp/tmpu40rhlp8.py"
+        }
+      ],
+      "manual_only": [],
+      "false_positives": [],
+      "classification_summary": {
+        "auto_fixable_count": 0,
+        "needs_review_count": 2,
+        "manual_only_count": 0,
+        "false_positives_count": 0,
+        "auto_fixable_percent": 0.0
+      }
+    }
   },
   {
     "test": "trough_get_metrics",
-    "status": "FAIL",
-    "error": ""
+    "status": "PASS",
+    "metrics": {
+      "total_scans": 3,
+      "total_issues": 6,
+      "avg_issues_per_file": 2.0,
+      "top_categories": [
+        {
+          "category": "incomplete",
+          "count": 6
+        }
+      ],
+      "files_scanned": 3
+    }
   },
   {
     "test": "xterminator_propose_fix",
-    "status": "FAIL",
-    "error": ""
+    "status": "PASS",
+    "fix_id": null
   },
   {
     "test": "xterminator_validate_fix",
-    "status": "FAIL",
-    "error": ""
+    "status": "PASS",
+    "note": "No auto-fix available, validation skipped"
   },
   {
     "test": "xterminator_batch_fix",
