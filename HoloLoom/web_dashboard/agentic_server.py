@@ -65,7 +65,6 @@ from HoloLoom.web_dashboard.promptly_bridge import PromptlyBridge, PROMPTLY_AVAI
 from HoloLoom.agents.background_learner import create_agent_pool
 
 # Multi-threaded conversation manager with breakthrough sharing
-from HoloLoom.web_dashboard.conversation_thread_manager import create_conversation_thread_manager
 
 # Spinners for content ingestion
 from HoloLoom.spinningWheel.youtube_spinner import YouTubeSpinner, TRANSCRIPT_API_AVAILABLE as YOUTUBE_AVAILABLE
