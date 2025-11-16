@@ -265,7 +265,7 @@ class MoonshotQueryClassifier:
         # Configuration
         self.enable_semantic_tier = enable_semantic_tier
         self.enable_adaptive_learning = enable_adaptive_learning
-        self.stats_path = stats_path or Path("./data/classifier_stats.json")
+        self.stats_path = Path(stats_path) if stats_path else Path("./data/classifier_stats.json")
 
         # Confidence thresholds for tier escalation (tuned for 90%+ accuracy)
         self.confidence_thresholds = confidence_thresholds or {

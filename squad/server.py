@@ -145,32 +145,32 @@ def create_initial_shards() -> List[MemoryShard]:
     """Create initial memory shards with coding knowledge"""
     return [
         MemoryShard(
-            content="Python programming language with type hints, async/await, decorators",
+            id="shard-python-1",
+            text="Python programming language with type hints, async/await, decorators",
             entities=["python", "programming", "types"],
             motifs=["language", "code", "syntax"],
-            timestamp=datetime.now(),
-            source="squad:bootstrap"
+            metadata={"source": "squad:bootstrap", "timestamp": datetime.now().isoformat()}
         ),
         MemoryShard(
-            content="TypeScript programming language with interfaces, generics, type safety",
+            id="shard-typescript-1",
+            text="TypeScript programming language with interfaces, generics, type safety",
             entities=["typescript", "javascript", "types"],
             motifs=["language", "code", "types", "safety"],
-            timestamp=datetime.now(),
-            source="squad:bootstrap"
+            metadata={"source": "squad:bootstrap", "timestamp": datetime.now().isoformat()}
         ),
         MemoryShard(
-            content="VS Code extension API for commands, webviews, diagnostics",
+            id="shard-vscode-1",
+            text="VS Code extension API for commands, webviews, diagnostics",
             entities=["vscode", "extension", "api"],
             motifs=["development", "ide", "tools"],
-            timestamp=datetime.now(),
-            source="squad:bootstrap"
+            metadata={"source": "squad:bootstrap", "timestamp": datetime.now().isoformat()}
         ),
         MemoryShard(
-            content="HoloLoom agentic reasoning with multi-step verification and research modes",
+            id="shard-hololoom-1",
+            text="HoloLoom agentic reasoning with multi-step verification and research modes",
             entities=["hololoom", "agentic", "reasoning"],
             motifs=["ai", "intelligence", "verification"],
-            timestamp=datetime.now(),
-            source="squad:bootstrap"
+            metadata={"source": "squad:bootstrap", "timestamp": datetime.now().isoformat()}
         )
     ]
 
