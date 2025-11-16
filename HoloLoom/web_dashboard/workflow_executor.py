@@ -28,7 +28,6 @@ from pathlib import Path
 try:
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
     from fastapi.middleware.cors import CORSMiddleware
-    from fastapi.staticfiles import StaticFiles
     from pydantic import BaseModel
 except ImportError:
     print("FastAPI not installed. Install with: pip install fastapi uvicorn websockets")
