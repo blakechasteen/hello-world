@@ -21,7 +21,6 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import json
-import asyncio
 import sys
 
 # Add parent directory to path for imports
