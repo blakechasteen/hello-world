@@ -14,7 +14,6 @@ Exports:
 - Math/Analysis: Complete 7-module suite (real, complex, functional, measure, Fourier, stochastic, advanced)
 """
 
-from .space import WarpSpace
 
 # Optional advanced operations
 try:
