@@ -31,7 +31,6 @@ import logging
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Callable
 from pathlib import Path
-import json
 import yaml
 
 from HoloLoom.promptly.dspy_bridge import DSPyHoloLoom, DSPySignature, DSPyProgram, create_signature
