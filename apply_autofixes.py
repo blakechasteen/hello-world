@@ -327,13 +327,13 @@ async def main():
     # Start tracking session
     if applicator.tracker:
         applicator.session_id = applicator.tracker.start_session(
-            max_files=50,
+            max_files=100,
             categories=['dead_code', 'hardcoded_values', 'missing_docstrings', 'incomplete'],
             confidence_threshold=0.85
         )
 
     # Step 1: Scan HoloLoom
-    scan_result = await applicator.scan_hololoom(max_files=50)
+    scan_result = await applicator.scan_hololoom(max_files=100)
 
     # Step 2: Classify issues
     auto_fixable = await applicator.classify_issues(scan_result)
@@ -354,8 +354,8 @@ async def main():
         print(f"    {issue['category']} (confidence: {issue['confidence']:.2f})")
     print()
 
-    # Step 3: Apply fixes (limit to 10 for safety)
-    await applicator.apply_fixes(auto_fixable, max_fixes=10, dry_run=False)
+    # Step 3: Apply fixes (increased limit for scale-up)
+    await applicator.apply_fixes(auto_fixable, max_fixes=50, dry_run=False)
 
     # Step 4: Validate
     await applicator.validate_fixes()
