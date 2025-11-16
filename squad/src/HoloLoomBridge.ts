@@ -57,6 +57,23 @@ export interface CodeGenerationResult {
     task_type: string;
 }
 
+export interface IngestionResult {
+    success: boolean;
+    total_items: number;
+    source: string;
+    timestamp: string;
+    metadata?: any;
+}
+
+export interface ContextSummary {
+    total_shards: number;
+    codebases: number;
+    apis: number;
+    documentation_sites: number;
+    forum_searches: number;
+    metadata: any;
+}
+
 export class HoloLoomBridge {
     private client: AxiosInstance;
     private serverUrl: string;
@@ -194,6 +211,69 @@ export class HoloLoomBridge {
             language,
             question
         });
+        return response.data;
+    }
+
+    // ========================================================================
+    // RAG Ingestion Endpoints
+    // ========================================================================
+
+    async ingestCodebase(
+        rootPath: string,
+        includePatterns?: string[],
+        excludePatterns?: string[]
+    ): Promise<IngestionResult> {
+        const response = await this.client.post('/ingest/codebase', {
+            root_path: rootPath,
+            include_patterns: includePatterns,
+            exclude_patterns: excludePatterns
+        });
+        return response.data;
+    }
+
+    async ingestAPI(
+        specUrl: string,
+        apiType: 'openapi' | 'graphql' | 'rest' = 'openapi',
+        headers?: Record<string, string>
+    ): Promise<IngestionResult> {
+        const response = await this.client.post('/ingest/api', {
+            spec_url: specUrl,
+            api_type: apiType,
+            headers
+        });
+        return response.data;
+    }
+
+    async ingestDocumentation(
+        startUrl: string,
+        maxPages?: number,
+        followLinks?: boolean,
+        sameDomainOnly?: boolean
+    ): Promise<IngestionResult> {
+        const response = await this.client.post('/ingest/documentation', {
+            start_url: startUrl,
+            max_pages: maxPages,
+            follow_links: followLinks,
+            same_domain_only: sameDomainOnly
+        });
+        return response.data;
+    }
+
+    async searchForum(
+        query: string,
+        source: 'stackoverflow' | 'github' | 'reddit' = 'stackoverflow',
+        maxResults?: number
+    ): Promise<IngestionResult> {
+        const response = await this.client.post('/ingest/forum', {
+            query,
+            source,
+            max_results: maxResults
+        });
+        return response.data;
+    }
+
+    async getContextSummary(): Promise<ContextSummary> {
+        const response = await this.client.get('/context/summary');
         return response.data;
     }
 }

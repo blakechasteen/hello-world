@@ -33,6 +33,10 @@ from HoloLoom.alignment.audit_trail import AuditTrail
 # Squad modules
 from llm_providers import LLMClient, LLMProvider
 from code_generator import CodeGenerationEngine, CodeTask, CodeContext as GenCodeContext
+from codebase_ingestion import CodebaseIngestionEngine, CodebaseMetadata
+from api_connector import APIConnector, APIMetadata
+from documentation_crawler import DocumentationCrawler
+from forum_search import ForumSearchEngine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -146,6 +150,42 @@ class CodeGenerationResponse(BaseModel):
     task_type: str
 
 
+class CodebaseIngestRequest(BaseModel):
+    """Codebase ingestion request"""
+    root_path: str
+    include_patterns: Optional[List[str]] = None
+    exclude_patterns: Optional[List[str]] = None
+
+
+class APIConnectRequest(BaseModel):
+    """API connection request"""
+    spec_url: str
+    api_type: str = "openapi"  # openapi, graphql, rest
+    headers: Optional[Dict[str, str]] = None
+
+
+class DocumentationCrawlRequest(BaseModel):
+    """Documentation crawling request"""
+    url: str
+    max_pages: int = 50
+    follow_links: bool = True
+
+
+class ForumSearchRequest(BaseModel):
+    """Forum/StackOverflow search request"""
+    query: str
+    source: str = "stackoverflow"  # stackoverflow, github, reddit
+    max_results: int = 10
+
+
+class IngestionResponse(BaseModel):
+    """Ingestion response"""
+    success: bool
+    total_items: int
+    metadata: Dict[str, Any]
+    message: str
+
+
 # ============================================================================
 # Global State
 # ============================================================================
@@ -164,8 +204,21 @@ app.add_middleware(
 # Global instances
 llm_client: Optional[LLMClient] = None
 code_engine: Optional[CodeGenerationEngine] = None
+codebase_engine: Optional[CodebaseIngestionEngine] = None
+api_connector: Optional[APIConnector] = None
+doc_crawler: Optional[DocumentationCrawler] = None
+forum_search: Optional[ForumSearchEngine] = None
 config: Optional[Config] = None
 audit_trail: Optional[AuditTrail] = None
+
+# In-memory storage for ingested context
+ingested_shards: List[MemoryShard] = []
+context_metadata: Dict[str, Any] = {
+    "codebases": [],
+    "apis": [],
+    "documentation": [],
+    "forum_posts": []
+}
 
 
 # ============================================================================
@@ -174,10 +227,10 @@ audit_trail: Optional[AuditTrail] = None
 
 @app.on_event("startup")
 async def startup():
-    """Initialize Squad server with LLM and HoloLoom"""
-    global llm_client, code_engine, config, audit_trail
+    """Initialize Squad server with LLM and all engines"""
+    global llm_client, code_engine, codebase_engine, api_connector, doc_crawler, forum_search, config, audit_trail
 
-    logger.info("Starting Squad server (Enhanced)...")
+    logger.info("Starting Squad server (Enhanced with RAG)...")
 
     # Initialize LLM client (auto-selects best provider)
     llm_client = LLMClient()
@@ -188,6 +241,13 @@ async def startup():
     code_engine = CodeGenerationEngine(llm_client)
     logger.info("Code generation engine initialized")
 
+    # Initialize RAG engines
+    codebase_engine = CodebaseIngestionEngine()
+    api_connector = APIConnector()
+    doc_crawler = DocumentationCrawler()
+    forum_search = ForumSearchEngine()
+    logger.info("RAG engines initialized (codebase, API, docs, forums)")
+
     # Create config
     config = Config.fast()
     config.enable_alignment = True
@@ -195,7 +255,7 @@ async def startup():
     # Create audit trail
     audit_trail = AuditTrail()
 
-    logger.info("Squad server ready! 🚀")
+    logger.info("Squad server ready with RAG! 🚀")
 
 
 @app.on_event("shutdown")
@@ -580,6 +640,216 @@ async def handle_chat(request: ChatRequest):
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# API Endpoints - Context Ingestion (RAG)
+# ============================================================================
+
+@app.post("/ingest/codebase", response_model=IngestionResponse)
+async def ingest_codebase(request: CodebaseIngestRequest):
+    """
+    Ingest entire codebase for RAG context.
+
+    Scans directory, parses code, creates memory shards.
+    """
+    if not codebase_engine:
+        raise HTTPException(status_code=503, detail="Codebase engine not initialized")
+
+    try:
+        logger.info(f"Ingesting codebase from: {request.root_path}")
+
+        # Ingest codebase
+        entities, metadata = codebase_engine.ingest_codebase(
+            root_path=request.root_path,
+            include_patterns=request.include_patterns,
+            exclude_patterns=request.exclude_patterns
+        )
+
+        # Convert to memory shards
+        shards_data = codebase_engine.entities_to_memory_shards(entities)
+
+        # Create MemoryShard objects and add to global storage
+        for shard_data in shards_data:
+            shard = MemoryShard(**shard_data)
+            ingested_shards.append(shard)
+
+        # Store metadata
+        context_metadata["codebases"].append({
+            "root_path": metadata.root_path,
+            "total_files": metadata.total_files,
+            "total_entities": metadata.total_entities,
+            "languages": metadata.languages,
+            "timestamp": metadata.timestamp
+        })
+
+        return IngestionResponse(
+            success=True,
+            total_items=len(shards_data),
+            metadata={"entities": len(entities), "files": metadata.total_files},
+            message=f"Ingested {len(entities)} entities from {metadata.total_files} files"
+        )
+
+    except Exception as e:
+        logger.error(f"Codebase ingestion error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ingest/api", response_model=IngestionResponse)
+async def ingest_api(request: APIConnectRequest):
+    """
+    Connect to external API for RAG context.
+
+    Fetches OpenAPI/Swagger spec, extracts endpoints.
+    """
+    if not api_connector:
+        raise HTTPException(status_code=503, detail="API connector not initialized")
+
+    try:
+        logger.info(f"Connecting to API: {request.spec_url}")
+
+        # Connect to API
+        endpoints, metadata = api_connector.connect_openapi(
+            spec_url=request.spec_url,
+            headers=request.headers
+        )
+
+        # Convert to memory shards
+        shards_data = api_connector.endpoints_to_memory_shards(endpoints, metadata)
+
+        # Add to global storage
+        for shard_data in shards_data:
+            shard = MemoryShard(**shard_data)
+            ingested_shards.append(shard)
+
+        # Store metadata
+        context_metadata["apis"].append({
+            "title": metadata.title,
+            "version": metadata.version,
+            "base_url": metadata.base_url,
+            "total_endpoints": metadata.total_endpoints,
+            "timestamp": metadata.timestamp
+        })
+
+        return IngestionResponse(
+            success=True,
+            total_items=len(shards_data),
+            metadata={"endpoints": len(endpoints), "api": metadata.title},
+            message=f"Connected to {metadata.title} - {len(endpoints)} endpoints"
+        )
+
+    except Exception as e:
+        logger.error(f"API connection error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ingest/documentation", response_model=IngestionResponse)
+async def ingest_documentation(request: DocumentationCrawlRequest):
+    """
+    Crawl documentation website for RAG context.
+
+    Recursively crawls docs, extracts content and code examples.
+    """
+    if not doc_crawler:
+        raise HTTPException(status_code=503, detail="Documentation crawler not initialized")
+
+    try:
+        logger.info(f"Crawling documentation: {request.url}")
+
+        # Crawl documentation
+        pages = doc_crawler.crawl(
+            start_url=request.url,
+            max_pages=request.max_pages,
+            follow_links=request.follow_links
+        )
+
+        # Convert to memory shards
+        shards_data = doc_crawler.pages_to_memory_shards(pages)
+
+        # Add to global storage
+        for shard_data in shards_data:
+            shard = MemoryShard(**shard_data)
+            ingested_shards.append(shard)
+
+        # Store metadata
+        context_metadata["documentation"].append({
+            "url": request.url,
+            "pages_crawled": len(pages),
+            "shards_created": len(shards_data),
+            "timestamp": datetime.now().isoformat()
+        })
+
+        return IngestionResponse(
+            success=True,
+            total_items=len(shards_data),
+            metadata={"pages": len(pages), "url": request.url},
+            message=f"Crawled {len(pages)} pages from documentation"
+        )
+
+    except Exception as e:
+        logger.error(f"Documentation crawling error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ingest/forum", response_model=IngestionResponse)
+async def ingest_forum(request: ForumSearchRequest):
+    """
+    Search forums (Stack Overflow, GitHub, Reddit) for RAG context.
+
+    Searches for debugging solutions and adds to context.
+    """
+    if not forum_search:
+        raise HTTPException(status_code=503, detail="Forum search not initialized")
+
+    try:
+        logger.info(f"Searching {request.source} for: {request.query}")
+
+        # Search forum
+        posts = forum_search.search(
+            query=request.query,
+            source=request.source,
+            max_results=request.max_results
+        )
+
+        # Convert to memory shards
+        shards_data = forum_search.posts_to_memory_shards(posts)
+
+        # Add to global storage
+        for shard_data in shards_data:
+            shard = MemoryShard(**shard_data)
+            ingested_shards.append(shard)
+
+        # Store metadata
+        context_metadata["forum_posts"].append({
+            "query": request.query,
+            "source": request.source,
+            "results_found": len(posts),
+            "timestamp": datetime.now().isoformat()
+        })
+
+        return IngestionResponse(
+            success=True,
+            total_items=len(shards_data),
+            metadata={"posts": len(posts), "source": request.source},
+            message=f"Found {len(posts)} {request.source} posts"
+        )
+
+    except Exception as e:
+        logger.error(f"Forum search error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/context/summary")
+async def get_context_summary():
+    """Get summary of all ingested context"""
+    return {
+        "total_shards": len(ingested_shards),
+        "codebases": len(context_metadata["codebases"]),
+        "apis": len(context_metadata["apis"]),
+        "documentation_sites": len(context_metadata["documentation"]),
+        "forum_searches": len(context_metadata["forum_posts"]),
+        "metadata": context_metadata
+    }
 
 
 # ============================================================================
