@@ -110,14 +110,18 @@ class StrategySelector:
             FixStrategy.MANUAL  # Default to manual if unknown
         )
 
-        # Rule 6: Downgrade to manual if no tests
+        # Rule 6: Downgrade to manual if no tests (but allow LOW risk fixes)
         if not context.has_tests and primary_strategy in {FixStrategy.AST, FixStrategy.TEMPLATE}:
-            alternatives.append(primary_strategy)
-            return (
-                FixStrategy.MANUAL,
-                f"No test coverage - {primary_strategy.value} fix available but needs manual testing",
-                alternatives
-            )
+            # Allow low-risk fixes even without tests (unused imports, magic numbers, etc.)
+            if risk_level in {RiskLevel.HIGH, RiskLevel.CRITICAL}:
+                alternatives.append(primary_strategy)
+                return (
+                    FixStrategy.MANUAL,
+                    f"No test coverage - {primary_strategy.value} fix available but needs manual testing",
+                    alternatives
+                )
+            # LOW and MEDIUM risk: proceed with automated fix even without tests
+            # (simple fixes like unused imports, magic numbers are safe)
 
         # Rule 7: Consider alternatives based on context
         if primary_strategy == FixStrategy.AST:

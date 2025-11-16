@@ -264,6 +264,51 @@ result = obj.process()'''
         example_after='''logger.error("Invalid data - raising ValueError")
 raise ValueError("Invalid data")'''
     ),
+
+    # ========================================
+    # CODE QUALITY TEMPLATES
+    # ========================================
+
+    'remove_unused_import': FixTemplate(
+        name='remove_unused_import',
+        category='dead_code',
+        pattern=r'(?P<line>^(?:from\s+[\w.]+\s+import\s+.+|import\s+.+)\s*\n)',
+        template='',  # Empty template = remove the line
+        context_extractors=['line'],
+        required_imports=[],
+        description='Remove unused import statement',
+        example_before='''from typing import Dict, List, Optional
+import unused_module
+import json
+
+def process():
+    data = json.loads("{}")''',
+        example_after='''from typing import List, Optional
+import json
+
+def process():
+    data = json.loads("{}")'''
+    ),
+
+    'extract_magic_number': FixTemplate(
+        name='extract_magic_number',
+        category='hardcoded_values',
+        pattern=r'(?P<indent>[ \t]*)(?P<before>.*)(?P<number>\b(?:0x[0-9a-fA-F]+|\d+(?:\.\d+)?(?:e[+-]?\d+)?)\b)(?P<after>.*)',
+        template='''# Constants
+{constant_name} = {number}
+
+{indent}{before}{constant_name}{after}''',
+        context_extractors=['indent', 'before', 'number', 'after', 'constant_name'],
+        required_imports=[],
+        description='Extract magic number to named constant',
+        example_before='''def calculate_timeout():
+    return 30  # seconds''',
+        example_after='''# Constants
+DEFAULT_TIMEOUT_SECONDS = 30
+
+def calculate_timeout():
+    return DEFAULT_TIMEOUT_SECONDS  # seconds'''
+    ),
 }
 
 
