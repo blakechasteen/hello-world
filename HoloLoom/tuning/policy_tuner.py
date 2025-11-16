@@ -17,7 +17,6 @@ Eliminates Parameters:
 from typing import Dict, Any, List, Optional
 from collections import deque, defaultdict
 from dataclasses import dataclass
-from enum import Enum
 import numpy as np
 from HoloLoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
 
