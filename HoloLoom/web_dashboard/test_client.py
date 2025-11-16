@@ -1,3 +1,5 @@
+# Constants
+CONSTANT_100 = 100  # Extracted magic number
 #!/usr/bin/env python3
 """
 Test client for unified multithreaded chat dashboard.
@@ -116,7 +118,7 @@ async def test_chat():
 
                     console.print(f"[dim]Thread ID:[/] {thread_id_3}")
                     console.print(f"[dim]User:[/] {data_3['user_message']['content']}")
-                    console.print(f"[dim]Assistant:[/] {data_3['assistant_message']['content'][:100]}...")
+                    console.print(f"[dim]Assistant:[/] {data_3['assistant_message']['content'][:CONSTANT_100]}...")
 
                     if thread_id_3 != thread_id_1:
                         console.print("\n[green][OK] New thread created! (unrelated topic)[/]")
