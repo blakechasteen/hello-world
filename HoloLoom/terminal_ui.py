@@ -27,7 +27,6 @@ from dataclasses import dataclass
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.live import Live
 from rich.layout import Layout
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
 from rich.syntax import Syntax
