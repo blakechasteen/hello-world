@@ -24,7 +24,6 @@ Author: Claude Code (with HoloLoom architecture by Blake)
 Date: 2025-10-27 (Task 1.2: Shuttle Integration Complete)
 """
 
-from __future__ import annotations
 
 import asyncio
 import logging
