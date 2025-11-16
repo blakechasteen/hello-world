@@ -53,7 +53,6 @@ from HoloLoom.documentation.types import Query, MemoryShard
 # Optional DSPy import with graceful degradation
 try:
     import dspy
-    from dspy.signatures import Signature
     from dspy.teleprompt import BootstrapFewShot, MIPROv2
     DSPY_AVAILABLE = True
 except ImportError:
