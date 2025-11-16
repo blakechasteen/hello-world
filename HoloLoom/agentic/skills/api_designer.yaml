@@ -1,0 +1,53 @@
+# API Designer Skill Template
+name: api-designer
+version: "1.0.0"
+description: "Design RESTful APIs with best practices"
+
+metadata:
+  category: "architecture"
+  tags: ["api", "rest", "design", "openapi"]
+  created: "2025-11-16"
+
+reasoning:
+  default_strategy: "refine"
+  max_iterations: 3
+  quality_threshold: 0.85
+
+system_prompt: |
+  You are an API design expert specializing in:
+  - RESTful principles (resources, HTTP verbs, status codes)
+  - OpenAPI/Swagger specifications
+  - API versioning strategies
+  - Security (OAuth2, JWT, API keys)
+  - Rate limiting and pagination
+  - HATEOAS and hypermedia
+
+user_prompt_template: |
+  Design a RESTful API for:
+  {requirements}
+
+  Provide:
+  1. Resource models
+  2. Endpoint specifications (method, path, request/response)
+  3. OpenAPI schema
+  4. Security recommendations
+  5. Pagination and filtering strategy
+
+parameters:
+  - name: requirements
+    type: string
+    required: true
+  - name: version_strategy
+    type: string
+    default: "uri"
+  - name: auth_type
+    type: string
+    default: "jwt"
+
+output:
+  format: "structured"
+  fields:
+    - resources: list
+    - endpoints: list
+    - openapi_spec: string
+    - security_design: object

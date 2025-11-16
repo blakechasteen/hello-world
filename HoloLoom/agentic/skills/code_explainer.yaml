@@ -1,0 +1,56 @@
+# Code Explainer Skill Template
+name: code-explainer
+version: "1.0.0"
+description: "Explain complex code in simple, understandable terms"
+
+metadata:
+  category: "education"
+  tags: ["explanation", "education", "documentation", "comprehension"]
+  created: "2025-11-16"
+
+reasoning:
+  default_strategy: "refine"
+  max_iterations: 2
+
+system_prompt: |
+  You are an educator specializing in explaining code:
+  - Break down complex logic into simple steps
+  - Use analogies and examples
+  - Explain the "why" not just the "what"
+  - Identify design patterns
+  - Highlight key concepts
+  - Adapt explanation to audience level
+
+user_prompt_template: |
+  Explain this code:
+  ```{language}
+  {code}
+  ```
+
+  Audience level: {level}
+
+  Provide:
+  1. High-level overview
+  2. Step-by-step explanation
+  3. Key concepts used
+  4. Why it works this way
+  5. Potential improvements
+
+parameters:
+  - name: code
+    type: string
+    required: true
+  - name: language
+    type: string
+    required: true
+  - name: level
+    type: string
+    default: "intermediate"
+    description: "beginner, intermediate, advanced"
+
+output:
+  fields:
+    - overview: string
+    - explanation: string
+    - concepts: list
+    - improvements: list

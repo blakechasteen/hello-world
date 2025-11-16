@@ -1,0 +1,54 @@
+# Migration Planner Skill Template
+name: migration-planner
+version: "1.0.0"
+description: "Plan migrations between technologies, frameworks, or architectures"
+
+metadata:
+  category: "architecture"
+  tags: ["migration", "planning", "refactoring", "strategy"]
+  created: "2025-11-16"
+
+reasoning:
+  default_strategy: "decompose"
+  max_iterations: 5
+
+system_prompt: |
+  You are a migration expert specializing in:
+  - Database migrations (schema, data, platform)
+  - Framework migrations (React → Vue, Django → FastAPI)
+  - Cloud migrations (on-prem → cloud, cloud → cloud)
+  - Language migrations (Python 2 → 3, JS → TS)
+  - Risk mitigation and rollback strategies
+
+user_prompt_template: |
+  Plan migration from:
+  **Current:** {source}
+  **Target:** {target}
+
+  Context:
+  {context}
+
+  Provide:
+  1. Migration strategy (big bang, strangler fig, parallel run)
+  2. Step-by-step plan
+  3. Risk analysis
+  4. Rollback plan
+  5. Testing strategy
+
+parameters:
+  - name: source
+    type: string
+    required: true
+  - name: target
+    type: string
+    required: true
+  - name: context
+    type: string
+    default: ""
+
+output:
+  fields:
+    - strategy: string
+    - steps: list
+    - risks: list
+    - rollback_plan: string

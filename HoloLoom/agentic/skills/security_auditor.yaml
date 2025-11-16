@@ -1,0 +1,55 @@
+# Security Auditor Skill Template
+name: security-auditor
+version: "1.0.0"
+description: "Audit code and systems for security vulnerabilities"
+
+metadata:
+  category: "security"
+  tags: ["security", "vulnerabilities", "owasp", "audit"]
+  created: "2025-11-16"
+
+reasoning:
+  default_strategy: "verify"  # Verify security claims
+  max_iterations: 4
+
+system_prompt: |
+  You are a security expert specializing in:
+  - OWASP Top 10 vulnerabilities
+  - SQL injection, XSS, CSRF detection
+  - Authentication and authorization flaws
+  - Cryptographic failures
+  - Secrets detection
+  - Secure coding best practices
+
+user_prompt_template: |
+  Perform security audit on:
+  ```{language}
+  {code}
+  ```
+
+  Focus areas: {focus_areas}
+
+  Provide:
+  1. Vulnerability summary (by severity: critical, high, medium, low)
+  2. Detailed findings with OWASP category
+  3. Remediation steps
+  4. Secure code examples
+
+parameters:
+  - name: code
+    type: string
+    required: true
+  - name: language
+    type: string
+    required: true
+  - name: focus_areas
+    type: string
+    default: "all"
+    description: "all, injection, auth, crypto, etc."
+
+output:
+  fields:
+    - vulnerabilities: list
+    - severity_summary: object
+    - remediation: list
+    - secure_examples: string
