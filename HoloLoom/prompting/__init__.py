@@ -22,7 +22,6 @@ from .registry import (
     list_strategies
 )
 from .composite import CompositeStrategy
-from .auto_detect import AutoDetector
 
 __all__ = [
     'PromptingStrategy',
