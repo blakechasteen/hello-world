@@ -1,0 +1,172 @@
+{
+  "sop_id": "SAUERKRAUT_001",
+  "product_name": "Classic Sauerkraut",
+  "version": "1.0.0",
+  "created_date": "2025-11-16T00:00:00",
+  "last_modified": "2025-11-16T00:00:00",
+  "batch_size": 50,
+  "batch_unit": "jars",
+  "ingredients": [
+    {
+      "name": "Green Cabbage",
+      "quantity": 25,
+      "unit": "lb",
+      "cost_per_unit": 0.80,
+      "supplier": "Local farm or produce supplier"
+    },
+    {
+      "name": "Sea Salt (fine grain)",
+      "quantity": 6,
+      "unit": "oz",
+      "cost_per_unit": 0.15,
+      "supplier": "Bulk supplier"
+    },
+    {
+      "name": "Caraway Seeds (optional)",
+      "quantity": 4,
+      "unit": "tbsp",
+      "cost_per_unit": 0.20,
+      "supplier": "Spice supplier"
+    },
+    {
+      "name": "16oz Glass Jars",
+      "quantity": 50,
+      "unit": "jars",
+      "cost_per_unit": 0.50,
+      "supplier": "Packaging supplier"
+    },
+    {
+      "name": "Labels",
+      "quantity": 50,
+      "unit": "labels",
+      "cost_per_unit": 0.08,
+      "supplier": "Print shop"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "description": "Remove outer leaves from cabbages, quarter and remove cores",
+      "duration_minutes": 10,
+      "step_type": "PREP",
+      "equipment_needed": ["Large knife", "Cutting board"],
+      "safety_notes": ["Reserve clean outer leaves for covering"]
+    },
+    {
+      "step_number": 2,
+      "description": "Shred cabbage finely using mandoline or sharp knife (1/8 inch thickness)",
+      "duration_minutes": 30,
+      "step_type": "PREP",
+      "equipment_needed": ["Mandoline slicer or knife"],
+      "safety_notes": ["Use mandoline guard - very sharp"]
+    },
+    {
+      "step_number": 3,
+      "description": "Weigh shredded cabbage, calculate 2% salt by weight",
+      "duration_minutes": 5,
+      "step_type": "PREP",
+      "equipment_needed": ["Kitchen scale"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 4,
+      "description": "Place cabbage in large bowl, sprinkle with measured salt and caraway seeds",
+      "duration_minutes": 5,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Large mixing bowl"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 5,
+      "description": "Massage cabbage vigorously for 10 minutes until liquid releases",
+      "duration_minutes": 10,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Clean hands"],
+      "safety_notes": ["Cabbage should release enough brine to cover itself"]
+    },
+    {
+      "step_number": 6,
+      "description": "Let cabbage rest 10 minutes for more liquid to release",
+      "duration_minutes": 10,
+      "step_type": "WAIT",
+      "equipment_needed": [],
+      "safety_notes": []
+    },
+    {
+      "step_number": 7,
+      "description": "Pack cabbage tightly into jars, pressing down to remove air",
+      "duration_minutes": 30,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["50 x 16oz jars", "Tamper or clean fist"],
+      "safety_notes": ["Cabbage must be submerged in brine - add 2% salt water if needed"]
+    },
+    {
+      "step_number": 8,
+      "description": "Place reserved cabbage leaf on top to keep shreds submerged",
+      "duration_minutes": 10,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["Reserved outer leaves"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 9,
+      "description": "Seal jars loosely to allow gas escape, place on trays",
+      "duration_minutes": 10,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["Trays to catch overflow"],
+      "safety_notes": ["Do not seal tightly - gas buildup can break jars"]
+    },
+    {
+      "step_number": 10,
+      "description": "Ferment at room temperature (65-75°F) for 2-4 weeks",
+      "duration_minutes": 30240,
+      "step_type": "WAIT",
+      "equipment_needed": ["Cool, dark storage area"],
+      "safety_notes": ["Check daily for mold - remove any scum from surface"]
+    },
+    {
+      "step_number": 11,
+      "description": "Taste weekly - ready when pleasantly sour and crisp",
+      "duration_minutes": 20,
+      "step_type": "QC",
+      "equipment_needed": ["Clean fork for tasting"],
+      "quality_metrics": ["Pleasant sour taste", "Crisp texture", "Golden-yellow color"]
+    },
+    {
+      "step_number": 12,
+      "description": "Remove leaf covers, tighten lids, refrigerate, apply labels",
+      "duration_minutes": 20,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["Refrigeration", "Labels"],
+      "safety_notes": []
+    }
+  ],
+  "equipment": [
+    "Large sharp knife",
+    "Cutting boards",
+    "Mandoline slicer (highly recommended)",
+    "Kitchen scale (for precise salt measurement)",
+    "Large mixing bowl (10+ quart capacity)",
+    "50 x 16oz glass jars with lids",
+    "Tamper or kraut pounder",
+    "Trays for catching overflow",
+    "Refrigeration"
+  ],
+  "total_time_minutes": 120,
+  "active_time_minutes": 120,
+  "passive_time_minutes": 30240,
+  "target_yield": 50,
+  "yield_unit": "jars",
+  "retail_price": 5.00,
+  "cost_per_batch": 105.00,
+  "quality_standards": [
+    "Cabbage remains crisp (not mushy)",
+    "Pleasant sour aroma (not putrid)",
+    "Golden to pale yellow color",
+    "Brine clear or slightly cloudy",
+    "No surface mold or off-odors",
+    "pH below 4.0"
+  ],
+  "storage_instructions": "Refrigerate at 35-40°F. Will continue to slowly ferment and develop flavor in refrigerator. Best quality within 4-6 months. Always keep cabbage submerged in brine to prevent mold.",
+  "notes": "Salt percentage is critical - 2% by weight is ideal for safe fermentation. Too little = spoilage risk, too much = overly salty. Temperature affects fermentation speed: 65°F = 4 weeks, 75°F = 2-3 weeks. Scum/white film on surface is normal - just skim off. Only discard if you see fuzzy mold."
+}

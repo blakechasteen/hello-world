@@ -1,0 +1,258 @@
+{
+  "sop_id": "HOTSAUCE_001",
+  "product_name": "Fermented Habanero Hot Sauce",
+  "version": "1.0.0",
+  "created_date": "2025-11-16T00:00:00",
+  "last_modified": "2025-11-16T00:00:00",
+  "batch_size": 100,
+  "batch_unit": "bottles",
+  "ingredients": [
+    {
+      "name": "Fresh Habanero Peppers",
+      "quantity": 5,
+      "unit": "lb",
+      "cost_per_unit": 3.50,
+      "supplier": "Local farm or produce supplier"
+    },
+    {
+      "name": "Fresh Jalapeño Peppers",
+      "quantity": 3,
+      "unit": "lb",
+      "cost_per_unit": 2.00,
+      "supplier": "Local farm or produce supplier"
+    },
+    {
+      "name": "Fresh Garlic",
+      "quantity": 15,
+      "unit": "cloves",
+      "cost_per_unit": 0.05,
+      "supplier": "Produce supplier"
+    },
+    {
+      "name": "Sea Salt",
+      "quantity": 4,
+      "unit": "oz",
+      "cost_per_unit": 0.15,
+      "supplier": "Bulk supplier"
+    },
+    {
+      "name": "Apple Cider Vinegar",
+      "quantity": 32,
+      "unit": "oz",
+      "cost_per_unit": 0.12,
+      "supplier": "Bulk supplier"
+    },
+    {
+      "name": "Onion",
+      "quantity": 2,
+      "unit": "medium",
+      "cost_per_unit": 0.50,
+      "supplier": "Produce supplier"
+    },
+    {
+      "name": "Cumin",
+      "quantity": 2,
+      "unit": "tbsp",
+      "cost_per_unit": 0.20,
+      "supplier": "Spice supplier"
+    },
+    {
+      "name": "Smoked Paprika",
+      "quantity": 1,
+      "unit": "tbsp",
+      "cost_per_unit": 0.15,
+      "supplier": "Spice supplier"
+    },
+    {
+      "name": "Xanthan Gum (thickener)",
+      "quantity": 1,
+      "unit": "tsp",
+      "cost_per_unit": 0.10,
+      "supplier": "Restaurant supply"
+    },
+    {
+      "name": "5oz Bottles with Dropper Caps",
+      "quantity": 100,
+      "unit": "bottles",
+      "cost_per_unit": 0.65,
+      "supplier": "Packaging supplier"
+    },
+    {
+      "name": "Shrink Bands (tamper evident)",
+      "quantity": 100,
+      "unit": "bands",
+      "cost_per_unit": 0.03,
+      "supplier": "Packaging supplier"
+    },
+    {
+      "name": "Labels",
+      "quantity": 100,
+      "unit": "labels",
+      "cost_per_unit": 0.08,
+      "supplier": "Print shop"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "description": "Wearing gloves, remove stems from peppers, chop roughly",
+      "duration_minutes": 30,
+      "step_type": "PREP",
+      "equipment_needed": ["Nitrile gloves", "Knife", "Cutting board"],
+      "safety_notes": ["CRITICAL: Wear gloves and eye protection - habanero oil burns severely"]
+    },
+    {
+      "step_number": 2,
+      "description": "Peel and chop garlic and onions",
+      "duration_minutes": 10,
+      "step_type": "PREP",
+      "equipment_needed": ["Knife"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 3,
+      "description": "Combine peppers, garlic, onion in food-grade container",
+      "duration_minutes": 5,
+      "step_type": "PREP",
+      "equipment_needed": ["Food-grade fermentation vessel"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 4,
+      "description": "Dissolve 4 oz sea salt in 1 quart filtered water, pour over peppers",
+      "duration_minutes": 5,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Measuring cup", "Water"],
+      "safety_notes": ["All peppers must be submerged in brine"]
+    },
+    {
+      "step_number": 5,
+      "description": "Weight down peppers to keep submerged, cover loosely",
+      "duration_minutes": 5,
+      "step_type": "PREP",
+      "equipment_needed": ["Weight or fermentation weight", "Cloth cover"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 6,
+      "description": "Ferment at room temperature (65-75°F) for 7 days",
+      "duration_minutes": 10080,
+      "step_type": "WAIT",
+      "equipment_needed": ["Cool, dark storage area"],
+      "safety_notes": ["Check daily for mold - skim surface if needed"]
+    },
+    {
+      "step_number": 7,
+      "description": "Drain fermented peppers, RESERVE BRINE",
+      "duration_minutes": 10,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Colander", "Bowl for catching brine"],
+      "safety_notes": ["Still wear gloves"]
+    },
+    {
+      "step_number": 8,
+      "description": "Blend peppers with vinegar, cumin, paprika until smooth",
+      "duration_minutes": 10,
+      "step_type": "PROCESS",
+      "equipment_needed": ["High-speed blender"],
+      "safety_notes": ["Blend in well-ventilated area - fumes can burn eyes"]
+    },
+    {
+      "step_number": 9,
+      "description": "Add reserved brine to reach desired consistency, blend again",
+      "duration_minutes": 5,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Blender"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 10,
+      "description": "Strain through fine mesh to remove seeds and large particles",
+      "duration_minutes": 15,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Fine mesh strainer or cheesecloth"],
+      "safety_notes": ["Optional - some prefer seeds for texture"]
+    },
+    {
+      "step_number": 11,
+      "description": "Blend in xanthan gum to thicken and prevent separation",
+      "duration_minutes": 5,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Blender"],
+      "safety_notes": ["Add gradually while blending to prevent clumping"]
+    },
+    {
+      "step_number": 12,
+      "description": "Simmer sauce at 180°F for 10 minutes to pasteurize (optional)",
+      "duration_minutes": 15,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Pot", "Thermometer"],
+      "safety_notes": ["Do not boil - destroys probiotics but extends shelf life"]
+    },
+    {
+      "step_number": 13,
+      "description": "Fill 5oz bottles while sauce is warm, leave 1/4 inch headspace",
+      "duration_minutes": 30,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["Funnel", "100 x 5oz bottles"],
+      "safety_notes": ["Still wear gloves - sauce is very hot"]
+    },
+    {
+      "step_number": 14,
+      "description": "Cap bottles, apply shrink bands, cool to room temperature",
+      "duration_minutes": 10,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["Bottle caps", "Heat gun for shrink bands"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 15,
+      "description": "Apply labels, refrigerate",
+      "duration_minutes": 20,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["Labels"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 16,
+      "description": "Quality check - taste, pH test, visual inspection",
+      "duration_minutes": 10,
+      "step_type": "QC",
+      "equipment_needed": ["pH strips", "Spoons"],
+      "quality_metrics": ["pH below 4.0", "Bright color", "Smooth consistency", "No separation"]
+    }
+  ],
+  "equipment": [
+    "Nitrile gloves (CRITICAL)",
+    "Eye protection/goggles",
+    "Sharp knives",
+    "Cutting boards (dedicated for hot peppers)",
+    "Food-grade fermentation vessel",
+    "Fermentation weights",
+    "High-speed blender (Vitamix or similar)",
+    "Fine mesh strainer or cheesecloth",
+    "Large pot",
+    "Thermometer",
+    "Funnel",
+    "100 x 5oz bottles with dropper caps",
+    "Heat gun for shrink bands",
+    "pH test strips"
+  ],
+  "total_time_minutes": 180,
+  "active_time_minutes": 180,
+  "passive_time_minutes": 10080,
+  "target_yield": 100,
+  "yield_unit": "bottles",
+  "retail_price": 6.50,
+  "cost_per_batch": 292.00,
+  "quality_standards": [
+    "pH below 4.0 (safe for room temp storage if pasteurized)",
+    "Bright orange-red color",
+    "Smooth, pourable consistency",
+    "No separation or settling",
+    "Complex heat with fermented funk",
+    "No off-odors or mold"
+  ],
+  "storage_instructions": "If pasteurized: shelf-stable for 6 months, refrigerate after opening. If unpasteurized: refrigerate immediately, best within 3 months. Shake before use if separation occurs.",
+  "notes": "SAFETY CRITICAL: Always wear gloves and eye protection when handling hot peppers. Wash all equipment immediately after use. Fermentation develops complex flavor - don't skip. Can adjust heat by varying habanero/jalapeño ratio. Xanthan gum prevents separation but can be omitted. Pasteurization extends shelf life but reduces probiotic benefits."
+}
