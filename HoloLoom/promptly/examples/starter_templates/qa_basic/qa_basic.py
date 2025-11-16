@@ -16,7 +16,6 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
-from HoloLoom.config import Config
 from HoloLoom.documentation.types import MemoryShard
 import dspy
 
