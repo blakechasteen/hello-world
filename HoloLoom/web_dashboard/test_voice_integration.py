@@ -34,7 +34,6 @@ async def test_voice_integration():
     deps = {}
 
     try:
-        import bark
         deps['bark'] = '✓ BARK installed'
     except ImportError:
         deps['bark'] = '✗ BARK not installed (pip install git+https://github.com/suno-ai/bark.git scipy)'
