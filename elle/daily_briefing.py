@@ -22,6 +22,7 @@ try:
     from elle.tracker import TaskTracker, TaskStatus
     from elle.budget import BudgetBuilder
     from elle.sop_schema import SOP
+    from elle.calendar import YearlyCalendar
 except ImportError:
     import sys
     from pathlib import Path
@@ -30,6 +31,7 @@ except ImportError:
     from elle.tracker import TaskTracker, TaskStatus
     from elle.budget import BudgetBuilder
     from elle.sop_schema import SOP
+    from elle.calendar import YearlyCalendar
 
 
 @dataclass
@@ -84,6 +86,9 @@ class DailyBriefing:
     cash_flow_status: str
     weather: Optional[WeatherCondition] = None
     budget_variance: Optional[float] = None
+    calendar_reminders: List[Any] = None  # CalendarEvent objects
+    upcoming_deadlines: List[Any] = None  # CalendarEvent objects
+    active_production_windows: List[Any] = None  # CalendarEvent objects
 
     def to_text(self) -> str:
         """Format as human-readable text"""
@@ -124,6 +129,32 @@ class DailyBriefing:
             else:
                 lines.append(f"   ⚠ ${abs(self.budget_variance):.2f} behind budget")
         lines.append("")
+
+        # Calendar reminders and deadlines
+        if self.calendar_reminders:
+            lines.append("⏰ CALENDAR REMINDERS:")
+            for event in self.calendar_reminders:
+                lines.append(f"   • {event.name} - {event.start_date.strftime('%b %d')} ({event.days_until} days)")
+                if event.notes:
+                    lines.append(f"     {event.notes}")
+            lines.append("")
+
+        if self.upcoming_deadlines:
+            lines.append("🚨 CRITICAL DEADLINES:")
+            for event in self.upcoming_deadlines:
+                lines.append(f"   • {event.name} - {event.start_date.strftime('%b %d')} ({event.days_until} days)")
+                if event.notes:
+                    lines.append(f"     {event.notes}")
+            lines.append("")
+
+        if self.active_production_windows:
+            lines.append("📦 ACTIVE PRODUCTION WINDOWS:")
+            for event in self.active_production_windows:
+                duration_str = f"{event.days_remaining} days remaining" if event.days_remaining else "Today"
+                lines.append(f"   • {event.name} ({duration_str})")
+                if event.related_products:
+                    lines.append(f"     Products: {', '.join(event.related_products)}")
+            lines.append("")
 
         # Inventory alerts
         if self.inventory_alerts:
@@ -183,12 +214,20 @@ class DailyBriefingEngine:
         self,
         coz_dir: str = "coz",
         data_dir: str = "elle/data",
-        sop_dir: str = "elle/sops"
+        sop_dir: str = "elle/sops",
+        calendar_path: str = "coz/yearly_calendar.json"
     ):
         self.coz_sync = SyncManager(coz_dir=coz_dir)
         self.tracker = TaskTracker(db_path=f"{data_dir}/tasks.db")
         self.budget_builder = BudgetBuilder()
         self.sop_dir = sop_dir
+
+        # Load calendar (graceful fallback if not available)
+        try:
+            self.calendar = YearlyCalendar(calendar_path=calendar_path)
+        except Exception as e:
+            print(f"Warning: Could not load calendar: {e}")
+            self.calendar = None
 
         # Load available SOPs
         self.sops: Dict[str, SOP] = {}
@@ -425,6 +464,23 @@ class DailyBriefingEngine:
         priority_tasks = self.get_priority_tasks(seasonal_focus, weather)
         cash_flow_status, budget_variance = self.get_cash_flow_status()
 
+        # Get calendar information
+        calendar_reminders = []
+        upcoming_deadlines = []
+        active_production_windows = []
+
+        if self.calendar:
+            calendar_reminders = self.calendar.get_reminders()
+            upcoming_deadlines = self.calendar.get_critical_deadlines()
+
+            # Get active production-related events
+            active_events = self.calendar.get_active_events()
+            from elle.calendar import EventType
+            active_production_windows = [
+                e for e in active_events
+                if e.type in [EventType.PRODUCTION, EventType.HARVEST, EventType.PLANTING]
+            ]
+
         return DailyBriefing(
             date=datetime.now(),
             seasonal_focus=seasonal_focus,
@@ -434,7 +490,10 @@ class DailyBriefingEngine:
             yesterday_hours=yesterday_hours,
             cash_flow_status=cash_flow_status,
             weather=weather,
-            budget_variance=budget_variance
+            budget_variance=budget_variance,
+            calendar_reminders=calendar_reminders if calendar_reminders else None,
+            upcoming_deadlines=upcoming_deadlines if upcoming_deadlines else None,
+            active_production_windows=active_production_windows if active_production_windows else None
         )
 
 
