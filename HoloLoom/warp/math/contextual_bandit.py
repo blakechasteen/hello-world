@@ -22,7 +22,6 @@ Expected improvement: 2-3x better operation selection vs non-contextual TS.
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
-from collections import defaultdict
 import logging
 
 logger = logging.getLogger(__name__)
