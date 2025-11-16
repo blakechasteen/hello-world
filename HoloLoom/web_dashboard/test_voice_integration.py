@@ -82,7 +82,6 @@ async def test_voice_integration():
     print("-" * 60)
 
     try:
-        from HoloLoom.web_dashboard.voice_endpoints import add_voice_endpoints
         print("  ✓ voice_endpoints.py imported successfully")
     except ImportError as e:
         print(f"  ✗ Failed to import voice_endpoints: {e}")
