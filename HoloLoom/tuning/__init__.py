@@ -20,7 +20,6 @@ Usage:
     await coordinator.run_tuning_cycle()
 """
 
-from HoloLoom.tuning.base import TuningAgent, ThompsonBandit
 from HoloLoom.tuning.coordinator import MasterTuningCoordinator
 
 __all__ = [
