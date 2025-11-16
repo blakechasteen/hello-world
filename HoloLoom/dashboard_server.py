@@ -995,6 +995,191 @@ async def get_active_alerts(request: Request):
 
 
 # ============================================================================
+# Anomaly Detection API Endpoints (2025-11-16)
+# ============================================================================
+
+# Try to import anomaly detection
+try:
+    from HoloLoom.monitoring.anomaly_detection import get_anomaly_store
+    from HoloLoom.monitoring.performance_metrics import check_metric_anomalies
+    ANOMALY_DETECTION_AVAILABLE = True
+except ImportError:
+    ANOMALY_DETECTION_AVAILABLE = False
+
+
+@app.get("/anomalies")
+async def anomaly_dashboard():
+    """Serve anomaly detection dashboard."""
+    if not ANOMALY_DETECTION_AVAILABLE:
+        return HTMLResponse(
+            content="<h1>Anomaly Detection Not Available</h1>"
+                    "<p>Install dependencies: pip install scikit-learn numpy</p>",
+            status_code=503
+        )
+
+    # Serve anomaly dashboard HTML
+    dashboard_path = Path(__file__).parent / "monitoring" / "anomaly_dashboard.html"
+    if dashboard_path.exists():
+        return FileResponse(dashboard_path)
+    else:
+        # Return embedded HTML
+        return HTMLResponse(content=get_anomaly_dashboard_html())
+
+
+@app.get("/api/v1/monitoring/anomalies/recent")
+async def get_recent_anomalies(
+    request: Request,
+    limit: int = 50,
+    severity: Optional[str] = None
+):
+    """
+    Get recent anomalies.
+
+    Args:
+        limit: Maximum number of anomalies (default: 50, max: 200)
+        severity: Filter by severity (low/medium/high/critical)
+
+    Returns:
+        List of recent anomalies with metadata
+    """
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    if not ANOMALY_DETECTION_AVAILABLE:
+        return {"error": "Anomaly detection not available", "anomalies": [], "count": 0}
+
+    # Validate parameters
+    if limit < 1 or limit > 200:
+        raise HTTPException(status_code=400, detail="limit must be between 1 and 200")
+
+    if severity and severity not in ['low', 'medium', 'high', 'critical']:
+        raise HTTPException(
+            status_code=400,
+            detail="severity must be one of: low, medium, high, critical"
+        )
+
+    store = get_anomaly_store()
+    anomalies = store.get_recent(limit=limit, severity=severity)
+
+    return {
+        "anomalies": [a.to_dict() for a in anomalies],
+        "count": len(anomalies),
+        "severity_filter": severity
+    }
+
+
+@app.get("/api/v1/monitoring/anomalies/by-metric/{metric_name}")
+async def get_anomalies_by_metric(
+    request: Request,
+    metric_name: str,
+    hours: int = 24
+):
+    """
+    Get anomaly history for a specific metric.
+
+    Args:
+        metric_name: Name of the metric
+        hours: Time window in hours (default: 24, max: 168)
+
+    Returns:
+        Anomalies for the metric in the time window
+    """
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    if not ANOMALY_DETECTION_AVAILABLE:
+        return {"error": "Anomaly detection not available", "anomalies": [], "count": 0}
+
+    # Validate parameters
+    if hours < 1 or hours > 168:
+        raise HTTPException(status_code=400, detail="hours must be between 1 and 168")
+
+    store = get_anomaly_store()
+    anomalies = store.get_by_metric(metric_name, hours=hours)
+
+    return {
+        "metric": metric_name,
+        "anomalies": [a.to_dict() for a in anomalies],
+        "count": len(anomalies),
+        "window_hours": hours
+    }
+
+
+@app.post("/api/v1/monitoring/anomalies/{anomaly_id}/acknowledge")
+async def acknowledge_anomaly(
+    request: Request,
+    anomaly_id: int,
+    user: str = "system"
+):
+    """
+    Acknowledge an anomaly (mark as reviewed).
+
+    Args:
+        anomaly_id: ID of the anomaly
+        user: Username of the acknowledger (default: "system")
+
+    Returns:
+        Success status
+    """
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    if not ANOMALY_DETECTION_AVAILABLE:
+        return {"error": "Anomaly detection not available"}
+
+    store = get_anomaly_store()
+    store.acknowledge(anomaly_id, user)
+
+    return {
+        "status": "acknowledged",
+        "id": anomaly_id,
+        "acknowledged_by": user,
+        "acknowledged_at": datetime.now().isoformat()
+    }
+
+
+@app.get("/api/v1/monitoring/anomalies/stats")
+async def get_anomaly_stats(
+    request: Request,
+    hours: int = 24
+):
+    """
+    Get anomaly statistics for dashboard.
+
+    Args:
+        hours: Time window in hours (default: 24, max: 168)
+
+    Returns:
+        Aggregated anomaly statistics
+    """
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    if not ANOMALY_DETECTION_AVAILABLE:
+        return {
+            "error": "Anomaly detection not available",
+            "total_anomalies": 0,
+            "by_severity": {},
+            "by_metric": {},
+            "detection_rate": 0.0
+        }
+
+    # Validate parameters
+    if hours < 1 or hours > 168:
+        raise HTTPException(status_code=400, detail="hours must be between 1 and 168")
+
+    store = get_anomaly_store()
+
+    return {
+        "total_anomalies": store.count_recent(hours=hours),
+        "by_severity": store.count_by_severity(hours=hours),
+        "by_metric": store.count_by_metric(hours=hours),
+        "detection_rate": store.get_detection_rate(hours=hours),
+        "window_hours": hours
+    }
+
+
+# ============================================================================
 # Background Tasks
 # ============================================================================
 
@@ -1013,6 +1198,46 @@ async def broadcast_analytics_updates():
             }
 
             await manager.broadcast(update)
+
+
+async def anomaly_detection_loop():
+    """Background task to detect anomalies every minute."""
+    if not ANOMALY_DETECTION_AVAILABLE:
+        logger.warning("Anomaly detection not available - loop disabled")
+        return
+
+    logger.info("Starting anomaly detection background loop (60s interval)")
+
+    while True:
+        try:
+            await asyncio.sleep(60)  # Check every minute
+
+            # Get current metrics snapshot
+            snapshot = metrics_collector.get_snapshot()
+
+            # Check for anomalies
+            anomalies = check_metric_anomalies(snapshot)
+
+            # Broadcast to connected clients if anomalies detected
+            if anomalies and manager.active_connections:
+                for anomaly in anomalies:
+                    # Only broadcast medium/high/critical
+                    if anomaly.severity.value in ['medium', 'high', 'critical']:
+                        update = {
+                            "type": "anomaly_detected",
+                            "anomaly": anomaly.to_dict(),
+                            "timestamp": datetime.now().isoformat()
+                        }
+                        await manager.broadcast(update)
+
+                        logger.warning(
+                            f"Anomaly detected: {anomaly.metric_name}={anomaly.metric_value:.2f} "
+                            f"(severity: {anomaly.severity.value}, score: {anomaly.anomaly_score:.2f}σ)"
+                        )
+
+        except Exception as e:
+            logger.error(f"Error in anomaly detection loop: {e}", exc_info=True)
+            await asyncio.sleep(60)  # Continue loop even on error
 
 
 # ============================================================================
@@ -1099,6 +1324,7 @@ async def set_user_locale(locale: str, request: Request):
 async def start_background_tasks():
     """Start background update tasks."""
     asyncio.create_task(broadcast_analytics_updates())
+    asyncio.create_task(anomaly_detection_loop())
 
 
 # ============================================================================
@@ -2126,6 +2352,520 @@ def get_embedded_dashboard_html() -> str:
             connect();
             setInterval(updateCharts, 5000);
         });
+    </script>
+</body>
+</html>
+"""
+
+
+def get_anomaly_dashboard_html() -> str:
+    """Get embedded anomaly detection dashboard HTML."""
+    return """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HoloLoom Anomaly Detection</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #00d4ff; margin-bottom: 10px; font-size: 28px; }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2a3555;
+        }
+        .filters {
+            background: #1a1f3a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .filter-group label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        select, input[type="number"] {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #2a3555;
+            background: #0a0e27;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+        select:hover, input:hover { border-color: #00d4ff; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #1a1f3a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #2a3555;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .stat-value.critical { color: #ff4400; }
+        .stat-value.high { color: #ffaa00; }
+        .stat-value.medium { color: #00d4ff; }
+        .stat-value.low { color: #00ff88; }
+        .stat-label { color: #888; font-size: 12px; text-transform: uppercase; }
+        .timeline-section {
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #2a3555;
+            margin-bottom: 20px;
+        }
+        .timeline-section h2 { color: #00d4ff; margin-bottom: 15px; font-size: 18px; }
+        .feed-section {
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #2a3555;
+        }
+        .feed-section h2 { color: #00d4ff; margin-bottom: 15px; font-size: 18px; }
+        .anomaly-item {
+            background: #0a0e27;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+            position: relative;
+        }
+        .anomaly-item.critical { border-left-color: #ff4400; }
+        .anomaly-item.high { border-left-color: #ffaa00; }
+        .anomaly-item.medium { border-left-color: #00d4ff; }
+        .anomaly-item.low { border-left-color: #00ff88; }
+        .anomaly-item.acknowledged {
+            opacity: 0.5;
+            background: #151833;
+        }
+        .anomaly-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .anomaly-severity {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .anomaly-severity.critical { background: #ff440020; color: #ff4400; }
+        .anomaly-severity.high { background: #ffaa0020; color: #ffaa00; }
+        .anomaly-severity.medium { background: #00d4ff20; color: #00d4ff; }
+        .anomaly-severity.low { background: #00ff8820; color: #00ff88; }
+        .anomaly-metric {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+        .anomaly-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .detail-label { color: #888; font-size: 11px; }
+        .detail-value { color: #e0e0e0; font-weight: 500; }
+        .anomaly-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #2a3555;
+            background: #1a1f3a;
+            color: #00d4ff;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #2a3555;
+            border-color: #00d4ff;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 11px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .connection-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .connected { background: #00ff8820; color: #00ff88; }
+        .disconnected { background: #ff440020; color: #ff4400; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <div>
+                <h1>🚨 Anomaly Detection Dashboard</h1>
+                <p style="color: #888; margin-top: 5px;">Real-time monitoring with ML-based detection</p>
+            </div>
+            <div>
+                <span style="color: #666; margin-right: 15px;">WebSocket: <span id="ws-status" class="connection-status disconnected">Disconnected</span></span>
+                <a href="/" style="color: #00d4ff; text-decoration: none;">← Back to Main Dashboard</a>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Severity</label>
+                <select id="severity-filter" onchange="applyFilters()">
+                    <option value="">All Severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Metric</label>
+                <select id="metric-filter" onchange="applyFilters()">
+                    <option value="">All Metrics</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Time Window (hours)</label>
+                <input type="number" id="hours-filter" value="24" min="1" max="168" onchange="applyFilters()">
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="total-anomalies">0</div>
+                <div class="stat-label">Total Anomalies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value critical" id="critical-count">0</div>
+                <div class="stat-label">Critical</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value high" id="high-count">0</div>
+                <div class="stat-label">High</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value medium" id="medium-count">0</div>
+                <div class="stat-label">Medium</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value low" id="low-count">0</div>
+                <div class="stat-label">Low</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="detection-rate">0.0</div>
+                <div class="stat-label">Per Hour</div>
+            </div>
+        </div>
+
+        <div class="timeline-section">
+            <h2>📈 Anomaly Timeline</h2>
+            <canvas id="anomalyTimeline" style="max-height: 250px;"></canvas>
+        </div>
+
+        <div class="feed-section">
+            <h2>🔔 Recent Anomalies</h2>
+            <div id="anomaly-feed">
+                <div class="empty-state">Loading anomalies...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Chart.defaults.color = '#e0e0e0';
+        Chart.defaults.borderColor = '#2a3555';
+
+        let ws;
+        let allAnomalies = [];
+        let timelineChart;
+
+        function connect() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                document.getElementById('ws-status').className = 'connection-status connected';
+                document.getElementById('ws-status').textContent = 'Connected';
+                loadAnomalies();
+                loadStats();
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                document.getElementById('ws-status').className = 'connection-status disconnected';
+                document.getElementById('ws-status').textContent = 'Disconnected';
+                setTimeout(connect, 3000);
+            };
+
+            ws.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                if (message.type === 'anomaly_detected') {
+                    handleNewAnomaly(message.anomaly);
+                }
+            };
+        }
+
+        async function loadAnomalies() {
+            try {
+                const severity = document.getElementById('severity-filter').value;
+                const url = severity
+                    ? `/api/v1/monitoring/anomalies/recent?limit=100&severity=${severity}`
+                    : '/api/v1/monitoring/anomalies/recent?limit=100';
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                allAnomalies = data.anomalies || [];
+                renderAnomalies(allAnomalies);
+                updateMetricFilter(allAnomalies);
+                updateTimeline(allAnomalies);
+            } catch (error) {
+                console.error('Error loading anomalies:', error);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const hours = document.getElementById('hours-filter').value;
+                const response = await fetch(`/api/v1/monitoring/anomalies/stats?hours=${hours}`);
+                const stats = await response.json();
+
+                document.getElementById('total-anomalies').textContent = stats.total_anomalies || 0;
+                document.getElementById('critical-count').textContent = stats.by_severity?.critical || 0;
+                document.getElementById('high-count').textContent = stats.by_severity?.high || 0;
+                document.getElementById('medium-count').textContent = stats.by_severity?.medium || 0;
+                document.getElementById('low-count').textContent = stats.by_severity?.low || 0;
+                document.getElementById('detection-rate').textContent = (stats.detection_rate || 0).toFixed(1);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function renderAnomalies(anomalies) {
+            const feed = document.getElementById('anomaly-feed');
+
+            if (anomalies.length === 0) {
+                feed.innerHTML = '<div class="empty-state">No anomalies detected in this time window.</div>';
+                return;
+            }
+
+            feed.innerHTML = anomalies.map(anomaly => {
+                const time = new Date(anomaly.timestamp).toLocaleString();
+                const acknowledgedClass = anomaly.acknowledged ? 'acknowledged' : '';
+
+                return `
+                    <div class="anomaly-item ${anomaly.severity} ${acknowledgedClass}" data-id="${anomaly.id}">
+                        <div class="anomaly-header">
+                            <div>
+                                <span class="anomaly-severity ${anomaly.severity}">${anomaly.severity}</span>
+                                <div class="anomaly-metric">${anomaly.metric_name}</div>
+                            </div>
+                            <div class="timestamp">${time}</div>
+                        </div>
+
+                        <div class="anomaly-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Current Value</div>
+                                <div class="detail-value">${anomaly.metric_value.toFixed(2)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Expected Range</div>
+                                <div class="detail-value">
+                                    ${anomaly.expected_min ? anomaly.expected_min.toFixed(2) : 'N/A'} -
+                                    ${anomaly.expected_max ? anomaly.expected_max.toFixed(2) : 'N/A'}
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Anomaly Score</div>
+                                <div class="detail-value">${anomaly.anomaly_score.toFixed(2)}σ</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Detection Method</div>
+                                <div class="detail-value">${anomaly.detection_method}</div>
+                            </div>
+                        </div>
+
+                        <div class="anomaly-actions">
+                            ${anomaly.acknowledged
+                                ? `<span style="color: #00ff88; font-size: 12px;">✓ Acknowledged by ${anomaly.acknowledged_by}</span>`
+                                : `<button class="btn" onclick="acknowledgeAnomaly(${anomaly.id})">Acknowledge</button>`
+                            }
+                            <button class="btn" onclick="viewDetails(${anomaly.id})">View Details</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateMetricFilter(anomalies) {
+            const metrics = new Set(anomalies.map(a => a.metric_name));
+            const filter = document.getElementById('metric-filter');
+            const currentValue = filter.value;
+
+            filter.innerHTML = '<option value="">All Metrics</option>';
+            metrics.forEach(metric => {
+                const option = document.createElement('option');
+                option.value = metric;
+                option.textContent = metric;
+                filter.appendChild(option);
+            });
+
+            filter.value = currentValue;
+        }
+
+        function updateTimeline(anomalies) {
+            // Group by hour
+            const hourlyData = {};
+            anomalies.forEach(anomaly => {
+                const hour = new Date(anomaly.timestamp).toISOString().slice(0, 13) + ':00:00';
+                if (!hourlyData[hour]) {
+                    hourlyData[hour] = { critical: 0, high: 0, medium: 0, low: 0 };
+                }
+                hourlyData[hour][anomaly.severity]++;
+            });
+
+            const labels = Object.keys(hourlyData).sort();
+            const criticalData = labels.map(l => hourlyData[l].critical);
+            const highData = labels.map(l => hourlyData[l].high);
+            const mediumData = labels.map(l => hourlyData[l].medium);
+            const lowData = labels.map(l => hourlyData[l].low);
+
+            if (timelineChart) {
+                timelineChart.destroy();
+            }
+
+            const ctx = document.getElementById('anomalyTimeline').getContext('2d');
+            timelineChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(l => new Date(l).toLocaleString()),
+                    datasets: [
+                        {
+                            label: 'Critical',
+                            data: criticalData,
+                            backgroundColor: '#ff4400',
+                        },
+                        {
+                            label: 'High',
+                            data: highData,
+                            backgroundColor: '#ffaa00',
+                        },
+                        {
+                            label: 'Medium',
+                            data: mediumData,
+                            backgroundColor: '#00d4ff',
+                        },
+                        {
+                            label: 'Low',
+                            data: lowData,
+                            backgroundColor: '#00ff88',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, ticks: { color: '#888' }, grid: { display: false } },
+                        y: { stacked: true, ticks: { color: '#00d4ff' }, grid: { color: '#2a3555' } }
+                    },
+                    plugins: { legend: { display: true, labels: { color: '#e0e0e0' } } }
+                }
+            });
+        }
+
+        function handleNewAnomaly(anomaly) {
+            allAnomalies.unshift(anomaly);
+            renderAnomalies(allAnomalies);
+            loadStats();
+            updateTimeline(allAnomalies);
+        }
+
+        async function acknowledgeAnomaly(id) {
+            try {
+                const response = await fetch(`/api/v1/monitoring/anomalies/${id}/acknowledge`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    loadAnomalies();
+                }
+            } catch (error) {
+                console.error('Error acknowledging anomaly:', error);
+            }
+        }
+
+        function viewDetails(id) {
+            const anomaly = allAnomalies.find(a => a.id === id);
+            if (anomaly) {
+                alert(JSON.stringify(anomaly, null, 2));
+            }
+        }
+
+        function applyFilters() {
+            loadAnomalies();
+            loadStats();
+        }
+
+        // Initialize
+        connect();
+        setInterval(() => {
+            loadAnomalies();
+            loadStats();
+        }, 30000); // Refresh every 30 seconds
     </script>
 </body>
 </html>

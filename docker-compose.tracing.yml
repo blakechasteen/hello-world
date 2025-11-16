@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # Jaeger - All-in-one (development)
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: hololoom-jaeger
+    ports:
+      # Jaeger UI
+      - "16686:16686"
+      # Jaeger Collector (HTTP)
+      - "14268:14268"
+      # Jaeger Collector (gRPC)
+      - "14250:14250"
+      # Jaeger Agent (Thrift over UDP)
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      # Jaeger Agent (Thrift over HTTP)
+      - "5778:5778"
+      # Zipkin-compatible endpoint
+      - "9411:9411"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - hololoom-tracing
+
+  # Zipkin (alternative to Jaeger)
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: hololoom-zipkin
+    ports:
+      # Zipkin UI and API
+      - "9412:9411"
+    networks:
+      - hololoom-tracing
+
+  # OTEL Collector (optional - for advanced setups)
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: hololoom-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      # OTLP gRPC receiver
+      - "4317:4317"
+      # OTLP HTTP receiver
+      - "4318:4318"
+      # Prometheus exporter
+      - "8889:8889"
+      # Health check
+      - "13133:13133"
+    depends_on:
+      - jaeger
+    networks:
+      - hololoom-tracing
+
+networks:
+  hololoom-tracing:
+    driver: bridge
+
+# Usage:
+# ------
+#
+# Start Jaeger only:
+#   docker-compose -f docker-compose.tracing.yml up jaeger -d
+#
+# Start Zipkin only:
+#   docker-compose -f docker-compose.tracing.yml up zipkin -d
+#
+# Start all tracing services:
+#   docker-compose -f docker-compose.tracing.yml up -d
+#
+# Stop services:
+#   docker-compose -f docker-compose.tracing.yml down
+#
+# View logs:
+#   docker-compose -f docker-compose.tracing.yml logs -f jaeger
+#
+# Access UIs:
+# -----------
+# Jaeger UI: http://localhost:16686
+# Zipkin UI: http://localhost:9412
+#
+# Endpoints for HoloLoom:
+# -----------------------
+# Jaeger (UDP): localhost:6831
+# Jaeger (HTTP): http://localhost:14268/api/traces
+# Zipkin: http://localhost:9412/api/v2/spans
+# OTLP (gRPC): localhost:4317
+# OTLP (HTTP): http://localhost:4318

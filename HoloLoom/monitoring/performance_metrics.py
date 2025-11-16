@@ -486,3 +486,111 @@ def reset_metrics_collector():
     """Reset global metrics collector."""
     global _global_metrics_collector
     _global_metrics_collector = PerformanceMetricsCollector()
+
+
+# ============================================================================
+# Anomaly Detection Integration (2025-11-16)
+# ============================================================================
+
+# Try to import anomaly detection
+try:
+    from HoloLoom.monitoring.anomaly_detection import (
+        get_statistical_detector,
+        get_anomaly_store,
+        Anomaly,
+        AnomalySeverity,
+        DetectionMethod
+    )
+    ANOMALY_DETECTION_AVAILABLE = True
+except ImportError:
+    ANOMALY_DETECTION_AVAILABLE = False
+
+
+def check_metric_anomalies(snapshot: PerformanceSnapshot) -> List[Any]:
+    """
+    Check current metrics for anomalies.
+
+    Args:
+        snapshot: Current performance snapshot
+
+    Returns:
+        List of Anomaly objects detected
+    """
+    if not ANOMALY_DETECTION_AVAILABLE:
+        return []
+
+    detector = get_statistical_detector()
+    store = get_anomaly_store()
+    anomalies = []
+
+    # Define metric checks with thresholds
+    metric_checks = [
+        # System metrics
+        ("cpu_percent", snapshot.cpu_percent, 80.0),  # Alert if >80%
+        ("memory_percent", snapshot.memory_percent, 80.0),  # Alert if >80%
+        ("p95_latency_ms", snapshot.p95_latency_ms, None),  # Use detector default
+        ("p99_latency_ms", snapshot.p99_latency_ms, None),  # Use detector default
+    ]
+
+    # Add cache metrics
+    for cache_type, hit_rate in snapshot.cache_hit_rates.items():
+        metric_checks.append((f"cache_hit_rate_{cache_type}", hit_rate, None))
+
+    # Check each metric
+    for metric_name, value, threshold in metric_checks:
+        if value is None or value == 0.0:
+            continue
+
+        # Use Z-score detection
+        result = detector.detect_zscore(metric_name, value)
+
+        # Create anomaly if detected and severity is medium or higher
+        if result.is_anomaly and result.severity in [
+            AnomalySeverity.MEDIUM,
+            AnomalySeverity.HIGH,
+            AnomalySeverity.CRITICAL
+        ]:
+            anomaly = Anomaly(
+                timestamp=datetime.now(),
+                metric_name=metric_name,
+                metric_value=value,
+                expected_min=result.expected_min,
+                expected_max=result.expected_max,
+                anomaly_score=result.score,
+                severity=result.severity,
+                detection_method=result.method,
+                metadata=result.metadata
+            )
+
+            # Store anomaly
+            store.store(anomaly)
+            anomalies.append(anomaly)
+
+    return anomalies
+
+
+def get_current_metrics() -> Dict[str, float]:
+    """
+    Get current metric values for anomaly detection.
+
+    Returns:
+        Dictionary of metric_name -> value
+    """
+    collector = get_metrics_collector()
+    snapshot = collector.get_snapshot()
+
+    metrics = {
+        "cpu_percent": snapshot.cpu_percent,
+        "memory_mb": snapshot.memory_mb,
+        "memory_percent": snapshot.memory_percent,
+        "active_connections": float(snapshot.active_connections),
+        "p50_latency_ms": snapshot.p50_latency_ms,
+        "p95_latency_ms": snapshot.p95_latency_ms,
+        "p99_latency_ms": snapshot.p99_latency_ms,
+    }
+
+    # Add cache hit rates
+    for cache_type, hit_rate in snapshot.cache_hit_rates.items():
+        metrics[f"cache_hit_rate_{cache_type}"] = hit_rate
+
+    return metrics

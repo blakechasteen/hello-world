@@ -1,0 +1,24 @@
+# OpenTelemetry Distributed Tracing Dependencies
+# ================================================
+# Install with: pip install -r HoloLoom/tracing/requirements.txt
+
+# Core OpenTelemetry
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+
+# Exporters
+opentelemetry-exporter-jaeger>=1.20.0          # Jaeger exporter
+opentelemetry-exporter-zipkin-json>=1.20.0     # Zipkin exporter
+opentelemetry-exporter-otlp>=1.20.0           # OTLP exporter (generic)
+
+# Auto-instrumentation
+opentelemetry-instrumentation-fastapi>=0.41b0
+opentelemetry-instrumentation-requests>=0.41b0
+opentelemetry-instrumentation-logging>=0.41b0
+
+# Optional (for advanced features)
+# opentelemetry-instrumentation-sqlalchemy>=0.41b0  # Database instrumentation
+# opentelemetry-instrumentation-redis>=0.41b0       # Redis instrumentation
+
+# Dependencies for performance analysis
+numpy>=1.24.0
