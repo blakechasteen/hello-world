@@ -49,7 +49,6 @@ from HoloLoom.bandits.neural_ts.types import Context, Action, Observation
 from HoloLoom.bandits.neural_ts.eval import BanditEvaluator
 
 # Safety
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, create_guardrails
 
 # Monitoring
 from HoloLoom.fabric.spacetime import Spacetime
