@@ -18,7 +18,6 @@ understanding and sophisticated decision-making.
 
 import logging
 import numpy as np
-import warnings
 
 logger = logging.getLogger(__name__)
 
