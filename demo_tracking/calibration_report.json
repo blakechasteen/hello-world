@@ -1,0 +1,29 @@
+{
+  "metrics": {
+    "brier_score": 0.30282,
+    "ece": 0.31399999999999995,
+    "mce": 0.6523076923076923,
+    "overconfident_ratio": 1.0,
+    "underconfident_ratio": 0.0,
+    "recommended_adjustment": -0.31399999999999995
+  },
+  "recommendations": [
+    {
+      "issue": "High Brier score",
+      "severity": "high",
+      "recommendation": "Model predictions are poorly calibrated. Consider retraining with calibration loss."
+    },
+    {
+      "issue": "High Expected Calibration Error",
+      "severity": "medium",
+      "recommendation": "Apply post-hoc calibration (isotonic regression or Platt scaling)."
+    },
+    {
+      "issue": "Overconfident predictions",
+      "severity": "high",
+      "recommendation": "Reduce confidence scores by 0.314 on average."
+    }
+  ],
+  "analysis_date": "2025-11-16T19:09:40.578091",
+  "num_samples": 100
+}

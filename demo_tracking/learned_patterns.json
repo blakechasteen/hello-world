@@ -1,0 +1,209 @@
+{
+  "patterns": [
+    {
+      "pattern_type": "confidence_calibration",
+      "conditions": {
+        "confidence_range": [
+          0.7,
+          0.8
+        ]
+      },
+      "success_rate": 0.0975609756097561,
+      "support": 41,
+      "confidence_avg": 0.75,
+      "recommendation": "Confidence 0.7-0.8: overconfident (actual 9.8%)"
+    },
+    {
+      "pattern_type": "severity_outcome",
+      "conditions": {
+        "severity": "low"
+      },
+      "success_rate": 0.5882352941176471,
+      "support": 34,
+      "confidence_avg": 0.8567647058823529,
+      "recommendation": "LOW severity: needs manual review"
+    },
+    {
+      "pattern_type": "severity_outcome",
+      "conditions": {
+        "severity": "medium"
+      },
+      "success_rate": 0.45454545454545453,
+      "support": 33,
+      "confidence_avg": 0.8354545454545454,
+      "recommendation": "MEDIUM severity: needs manual review"
+    },
+    {
+      "pattern_type": "severity_outcome",
+      "conditions": {
+        "severity": "high"
+      },
+      "success_rate": 0.5151515151515151,
+      "support": 33,
+      "confidence_avg": 0.8090909090909091,
+      "recommendation": "HIGH severity: needs manual review"
+    },
+    {
+      "pattern_type": "confidence_calibration",
+      "conditions": {
+        "confidence_range": [
+          0.9,
+          1.0
+        ]
+      },
+      "success_rate": 0.8620689655172413,
+      "support": 29,
+      "confidence_avg": 0.95,
+      "recommendation": "Confidence 0.9-1.0: well calibrated"
+    },
+    {
+      "pattern_type": "confidence_calibration",
+      "conditions": {
+        "confidence_range": [
+          0.8,
+          0.9
+        ]
+      },
+      "success_rate": 0.8148148148148148,
+      "support": 27,
+      "confidence_avg": 0.8500000000000001,
+      "recommendation": "Confidence 0.8-0.9: well calibrated"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "dead_code",
+        "strategy": "ast"
+      },
+      "success_rate": 0.8888888888888888,
+      "support": 9,
+      "confidence_avg": 0.9355555555555556,
+      "recommendation": "Prefer ast for dead_code (high success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "hardcoded_values",
+        "strategy": "template"
+      },
+      "success_rate": 0.5555555555555556,
+      "support": 9,
+      "confidence_avg": 0.8233333333333334,
+      "recommendation": "Avoid template for hardcoded_values (low success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "missing_docstrings",
+        "strategy": "manual"
+      },
+      "success_rate": 0.5555555555555556,
+      "support": 9,
+      "confidence_avg": 0.8333333333333334,
+      "recommendation": "Avoid manual for missing_docstrings (low success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "type_errors",
+        "strategy": "ast"
+      },
+      "success_rate": 0.5555555555555556,
+      "support": 9,
+      "confidence_avg": 0.8433333333333333,
+      "recommendation": "Avoid ast for type_errors (low success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "dead_code",
+        "strategy": "template"
+      },
+      "success_rate": 0.5,
+      "support": 8,
+      "confidence_avg": 0.86,
+      "recommendation": "Avoid template for dead_code (low success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "hardcoded_values",
+        "strategy": "manual"
+      },
+      "success_rate": 0.75,
+      "support": 8,
+      "confidence_avg": 0.87,
+      "recommendation": "Prefer manual for hardcoded_values (high success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "missing_docstrings",
+        "strategy": "ast"
+      },
+      "success_rate": 0.375,
+      "support": 8,
+      "confidence_avg": 0.8049999999999999,
+      "recommendation": "Avoid ast for missing_docstrings (low success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "type_errors",
+        "strategy": "template"
+      },
+      "success_rate": 0.375,
+      "support": 8,
+      "confidence_avg": 0.815,
+      "recommendation": "Avoid template for type_errors (low success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "dead_code",
+        "strategy": "manual"
+      },
+      "success_rate": 0.5,
+      "support": 8,
+      "confidence_avg": 0.825,
+      "recommendation": "Avoid manual for dead_code (low success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "hardcoded_values",
+        "strategy": "ast"
+      },
+      "success_rate": 0.5,
+      "support": 8,
+      "confidence_avg": 0.835,
+      "recommendation": "Avoid ast for hardcoded_values (low success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "missing_docstrings",
+        "strategy": "template"
+      },
+      "success_rate": 0.375,
+      "support": 8,
+      "confidence_avg": 0.845,
+      "recommendation": "Avoid template for missing_docstrings (low success rate)"
+    },
+    {
+      "pattern_type": "category_strategy",
+      "conditions": {
+        "category": "type_errors",
+        "strategy": "manual"
+      },
+      "success_rate": 0.25,
+      "support": 8,
+      "confidence_avg": 0.705,
+      "recommendation": "Avoid manual for type_errors (low success rate)"
+    }
+  ],
+  "metadata": {
+    "num_patterns": 18,
+    "discovery_date": "2025-11-16T19:09:40.575568"
+  }
+}
