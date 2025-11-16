@@ -23,7 +23,6 @@ import json
 import logging
 from typing import Dict, List, Any, Optional
 from datetime import datetime
-from pathlib import Path
 
 try:
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
