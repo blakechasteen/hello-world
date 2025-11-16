@@ -24,7 +24,6 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Set, Optional, Tuple, Any
 from collections import defaultdict
 import logging
-from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
