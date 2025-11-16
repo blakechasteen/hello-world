@@ -26,7 +26,6 @@ import numpy as np
 try:
     from rich.console import Console
     from rich.table import Table
-    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
     from rich.panel import Panel
     from rich.tree import Tree
     from rich import box
