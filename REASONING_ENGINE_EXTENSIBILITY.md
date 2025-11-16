@@ -1,8 +1,6 @@
 # Reasoning Engine Extensibility Guide
 
-**Building Custom Reasoning Components with Elegance**
-
-*Every component is a protocol. Every extension is a possibility.*
+**Protocol-Based Extension Without Complexity**
 
 ---
 
@@ -10,19 +8,20 @@
 
 > **"Good frameworks are extended, not modified. Great frameworks make extension elegant."**
 
-The Reasoning Engine is built on **protocols, not implementations**. Every component can be replaced, extended, or composed. This guide shows you how to build custom reasoning components that integrate seamlessly.
+The Reasoning Engine is built on protocols, not implementations. Every component can be replaced, extended, or composed.
+
+**Key Principle**: Composition over inheritance. Dependency injection over tight coupling.
 
 ---
 
 ## Table of Contents
 
 1. [Extension Points](#extension-points)
-2. [Custom Reasoners](#custom-reasoners)
+2. [Domain-Specific Reasoners](#domain-specific-reasoners)
 3. [Custom Verifiers](#custom-verifiers)
-4. [Custom Planners](#custom-planners)
-5. [Plugin Architecture](#plugin-architecture)
-6. [Hook System](#hook-system)
-7. [Recipes](#recipes)
+4. [Composition Patterns](#composition-patterns)
+5. [Testing Extensions](#testing-extensions)
+6. [Plugin Architecture](#plugin-architecture)
 
 ---
 
@@ -31,50 +30,55 @@ The Reasoning Engine is built on **protocols, not implementations**. Every compo
 The Reasoning Engine has **7 extension points**:
 
 ```
-┌─────────────────────────────────────────────────┐
-│                                                 │
-│              ReasoningEngine                    │
-│                                                 │
-├─────────────────────────────────────────────────┤
-│                                                 │
-│  1. QueryPlanner      → Intent & Planning       │
-│  2. ChainOfThought    → Evidence & Synthesis    │
-│  3. SelfVerifier      → Verification Logic      │
-│  4. Backtracker       → Contradiction Handling  │
-│  5. ModeBandit        → Mode Selection          │
-│  6. ProvenanceTracker → Scratchpad Integration  │
-│  7. MetricsCollector  → Performance Tracking    │
-│                                                 │
-└─────────────────────────────────────────────────┘
+ReasoningEngine
+├── 1. QueryPlanner      → Intent analysis & planning
+├── 2. ChainOfThought    → Evidence gathering & synthesis
+├── 3. SelfVerifier      → Verification logic
+├── 4. Backtracker       → Contradiction resolution
+├── 5. ModeBandit        → Mode selection strategy
+├── 6. ProvenanceTracker → Scratchpad integration
+└── 7. MetricsCollector  → Performance tracking
 ```
 
 Each component is **swappable** via dependency injection.
 
+**Quick example**:
+```python
+from HoloLoom.reasoning.chain_of_thought import ChainOfThought
+from HoloLoom.reasoning.engine import ReasoningEngine
+
+class MyCustomReasoner(ChainOfThought):
+    def generate_standard_chain(self, query, intent, context):
+        return custom_chain
+
+engine = ReasoningEngine()
+engine.reasoner = MyCustomReasoner()
+result = await engine.reason(query, features, context)
+```
+
+That's the pattern. Extend, inject, use.
+
 ---
 
-## Custom Reasoners
+## Domain-Specific Reasoners
 
-### Example 1: Domain-Specific Reasoner
+### Example 1: Legal Reasoner
 
-**Use Case**: Legal document analysis with citations.
+**Use case**: Legal document analysis with citations and standards.
 
 ```python
 from HoloLoom.reasoning.chain_of_thought import ChainOfThought
-from HoloLoom.reasoning.types import ReasoningStep, StepType, Synthesis
+from HoloLoom.reasoning.types import ReasoningStep, StepType
 import re
 
 class LegalReasoner(ChainOfThought):
-    """Chain-of-thought for legal document analysis."""
-
     def __init__(self):
         super().__init__()
-        self.citation_pattern = r'\d+\s+\w+\.\s+\d+[a-z]?'  # e.g., "42 USC 1983"
+        self.citation_pattern = r'\d+\s+\w+\.\s+\d+[a-z]?'
 
     def generate_standard_chain(self, query, intent, context):
-        """Legal reasoning with citations."""
         chain = []
 
-        # Step 1: Extract legal citations
         citations = self._extract_citations(query.text, context)
         chain.append(ReasoningStep(
             thought=f"Legal analysis: {len(citations)} citations found",
@@ -83,7 +87,6 @@ class LegalReasoner(ChainOfThought):
             step_type=StepType.UNDERSTANDING
         ))
 
-        # Step 2: Identify legal issues
         issues = self._identify_legal_issues(query.text)
         chain.append(ReasoningStep(
             thought=f"Legal issues: {', '.join(issues)}",
@@ -92,7 +95,6 @@ class LegalReasoner(ChainOfThought):
             step_type=StepType.EVIDENCE
         ))
 
-        # Step 3: Apply legal standards
         for issue in issues:
             standard = self._find_applicable_standard(issue, citations)
             chain.append(ReasoningStep(
@@ -102,7 +104,6 @@ class LegalReasoner(ChainOfThought):
                 step_type=StepType.SYNTHESIS
             ))
 
-        # Step 4: Legal conclusion
         conclusion = self._synthesize_legal_conclusion(issues, citations)
         chain.append(ReasoningStep(
             thought=conclusion['conclusion'],
@@ -114,196 +115,119 @@ class LegalReasoner(ChainOfThought):
         return chain
 
     def _extract_citations(self, text, context):
-        """Extract legal citations from text and context."""
-        citations = []
-
-        # From query
-        citations.extend(re.findall(self.citation_pattern, text))
-
-        # From context shards
-        for shard in context.shards:
-            citations.extend(re.findall(self.citation_pattern, shard.text))
-
-        return list(set(citations))  # Deduplicate
+        citations = re.findall(self.citation_pattern, text)
+        context_citations = []
+        for item in context:
+            context_citations.extend(re.findall(self.citation_pattern, item.text))
+        return list(set(citations + context_citations))
 
     def _identify_legal_issues(self, text):
-        """Identify legal issues from text."""
-        issue_keywords = {
-            'liability': ['negligence', 'duty', 'breach', 'damages'],
-            'constitutional': ['first amendment', 'due process', 'equal protection'],
-            'contract': ['breach', 'performance', 'consideration'],
-            'criminal': ['intent', 'mens rea', 'actus reus'],
-        }
-
-        identified = []
-        text_lower = text.lower()
-
-        for issue_type, keywords in issue_keywords.items():
-            if any(kw in text_lower for kw in keywords):
-                identified.append(issue_type)
-
-        return identified
+        issue_keywords = ['liability', 'negligence', 'contract', 'tort', 'damages']
+        return [kw for kw in issue_keywords if kw in text.lower()]
 
     def _find_applicable_standard(self, issue, citations):
-        """Find legal standard for issue."""
-        # Simplified - in production, would query legal database
-        standards = {
-            'liability': {
-                'rule': 'Duty + Breach + Causation + Damages',
-                'citation': citations[0] if citations else 'Common Law',
-                'confidence': 0.9
-            },
-            'constitutional': {
-                'rule': 'Strict Scrutiny Test',
-                'citation': citations[0] if citations else 'Const. Art. I',
-                'confidence': 0.85
-            },
+        return {
+            'rule': f"Standard rule for {issue}",
+            'citation': citations[0] if citations else "N/A",
+            'confidence': 0.85
         }
 
-        return standards.get(issue, {
-            'rule': 'Case-specific analysis required',
-            'citation': 'N/A',
-            'confidence': 0.5
-        })
-
     def _synthesize_legal_conclusion(self, issues, citations):
-        """Synthesize legal conclusion."""
-        if len(citations) >= 3:
-            return {
-                'conclusion': f"Well-supported analysis across {len(issues)} legal issues",
-                'confidence': 0.9
-            }
-        elif len(citations) >= 1:
-            return {
-                'conclusion': f"Preliminary analysis of {len(issues)} issues",
-                'confidence': 0.75
-            }
-        else:
-            return {
-                'conclusion': "Analysis requires additional legal authority",
-                'confidence': 0.5
-            }
+        return {
+            'conclusion': f"Based on {len(issues)} issues and {len(citations)} authorities",
+            'confidence': min(0.9, 0.7 + 0.1 * len(citations))
+        }
 ```
 
 **Usage**:
 ```python
-from HoloLoom.reasoning import ReasoningEngine
-
-# Create engine with custom reasoner
 engine = ReasoningEngine()
-engine.cot_generator = LegalReasoner()  # Inject custom reasoner
-
-# Now all reasoning uses legal-specific logic
-result = await engine.reason(query, features, context)
+engine.reasoner = LegalReasoner()
+result = await engine.reason(legal_query, features, context)
 ```
 
 ---
 
-### Example 2: Multi-Language Reasoner
+### Example 2: Multilingual Reasoner
 
-**Use Case**: Reasoning across multiple languages with translation.
+**Use case**: Cross-language reasoning with translation verification.
 
 ```python
 from HoloLoom.reasoning.chain_of_thought import ChainOfThought
 from HoloLoom.reasoning.types import ReasoningStep, StepType
 
 class MultilingualReasoner(ChainOfThought):
-    """Reasoning with automatic translation."""
-
-    def __init__(self, primary_language='en'):
+    def __init__(self, translator):
         super().__init__()
-        self.primary_language = primary_language
-        self.translations = {}  # Cache
+        self.translator = translator
 
     def generate_standard_chain(self, query, intent, context):
-        # Detect query language
-        query_lang = self._detect_language(query.text)
+        chain = []
 
-        # Translate if needed
-        if query_lang != self.primary_language:
-            translated_query = self._translate(query.text, query_lang, self.primary_language)
-            chain = [ReasoningStep(
-                thought=f"Query language: {query_lang}, translated to {self.primary_language}",
-                evidence=f"Original: {query.text[:50]}...\nTranslated: {translated_query[:50]}...",
-                confidence=0.9,
-                step_type=StepType.UNDERSTANDING
-            )]
-        else:
-            chain = []
-            translated_query = query.text
+        detected_lang = self._detect_language(query.text)
+        chain.append(ReasoningStep(
+            thought=f"Query language: {detected_lang}",
+            evidence=f"Detected with {self.translator.confidence:.2f} confidence",
+            confidence=self.translator.confidence,
+            step_type=StepType.UNDERSTANDING
+        ))
 
-        # Reason in primary language
-        primary_chain = super().generate_standard_chain(
-            Query(text=translated_query),
-            intent,
-            context
-        )
-        chain.extend(primary_chain)
-
-        # Translate conclusion back if needed
-        if query_lang != self.primary_language:
-            conclusion = primary_chain[-1].thought
-            translated_conclusion = self._translate(conclusion, self.primary_language, query_lang)
-
+        if detected_lang != 'en':
+            translated = self.translator.translate(query.text, target='en')
             chain.append(ReasoningStep(
-                thought=f"Conclusion (in {query_lang}): {translated_conclusion}",
-                evidence=f"Original ({self.primary_language}): {conclusion}",
+                thought=f"Translated: {translated}",
+                evidence=f"Original: {query.text}",
                 confidence=0.85,
-                step_type=StepType.SYNTHESIS
+                step_type=StepType.UNDERSTANDING
             ))
+
+            back_translated = self.translator.translate(translated, target=detected_lang)
+            consistency = self._measure_consistency(query.text, back_translated)
+            chain.append(ReasoningStep(
+                thought=f"Translation consistency: {consistency:.2f}",
+                evidence=f"Back-translation matches original: {consistency > 0.9}",
+                confidence=consistency,
+                step_type=StepType.VERIFICATION
+            ))
+
+        reasoning = super().generate_standard_chain(query, intent, context)
+        chain.extend(reasoning)
 
         return chain
 
     def _detect_language(self, text):
-        """Detect language (placeholder - use real library)."""
-        # In production: use langdetect or spacy
-        return 'en'  # Default
+        return self.translator.detect(text)
 
-    def _translate(self, text, from_lang, to_lang):
-        """Translate text (placeholder - use real API)."""
-        cache_key = f"{from_lang}:{to_lang}:{text}"
-
-        if cache_key in self.translations:
-            return self.translations[cache_key]
-
-        # In production: use Google Translate API, DeepL, etc.
-        translated = text  # Placeholder
-
-        self.translations[cache_key] = translated
-        return translated
+    def _measure_consistency(self, original, back_translated):
+        original_words = set(original.lower().split())
+        back_words = set(back_translated.lower().split())
+        overlap = len(original_words & back_words)
+        return overlap / max(len(original_words), len(back_words))
 ```
 
 ---
 
 ## Custom Verifiers
 
-### Example 3: Confidence Calibration Verifier
+### Example 3: Calibrated Verifier
 
-**Use Case**: Ensure reasoning confidence matches actual accuracy.
+**Use case**: Adjust confidence based on historical accuracy.
 
 ```python
 from HoloLoom.reasoning.verifier import SelfVerifier
 from HoloLoom.reasoning.types import VerificationResult, VerificationSeverity
 
 class CalibratedVerifier(SelfVerifier):
-    """Verifier that calibrates confidence scores."""
-
-    def __init__(self, threshold=0.75, calibration_data=None):
+    def __init__(self, threshold=0.75):
         super().__init__(threshold)
-        # Historical data: predicted confidence → actual accuracy
-        self.calibration_data = calibration_data or {}
+        self.calibration_data = {}
 
     async def verify(self, chain, context):
-        # Run base verification
         base_result = await super().verify(chain, context)
 
-        # Calculate raw confidence
         raw_confidence = sum(s.confidence for s in chain) / len(chain)
-
-        # Calibrate based on historical data
         calibrated_confidence = self._calibrate(raw_confidence)
 
-        # Adjust result
         if calibrated_confidence < self.threshold:
             return VerificationResult(
                 passed=False,
@@ -313,115 +237,80 @@ class CalibratedVerifier(SelfVerifier):
                 confidence=calibrated_confidence
             )
 
-        return VerificationResult(
-            passed=True,
-            confidence=calibrated_confidence
-        )
+        return VerificationResult(passed=True, confidence=calibrated_confidence)
 
     def _calibrate(self, raw_confidence):
-        """Calibrate confidence based on historical accuracy."""
-        # Simple binning approach
-        confidence_bins = {
-            (0.0, 0.5): lambda c: c * 0.8,   # Low conf → reduce further
-            (0.5, 0.7): lambda c: c * 0.9,   # Medium → slight reduction
-            (0.7, 0.85): lambda c: c,        # Good → no change
-            (0.85, 1.0): lambda c: c * 1.05, # High → slight boost
+        bins = {
+            (0.0, 0.5): lambda c: c * 0.8,
+            (0.5, 0.7): lambda c: c * 0.9,
+            (0.7, 0.85): lambda c: c,
+            (0.85, 1.0): lambda c: c * 1.05,
         }
 
-        for (low, high), calibration_fn in confidence_bins.items():
+        for (low, high), fn in bins.items():
             if low <= raw_confidence < high:
-                return min(1.0, calibration_fn(raw_confidence))
+                return min(1.0, fn(raw_confidence))
 
         return raw_confidence
 
-    def update_calibration(self, predicted_confidence, actual_accuracy):
-        """Update calibration data with new observation."""
-        # Bin the confidence
-        bin_key = round(predicted_confidence, 1)
-
+    def update_calibration(self, predicted, actual):
+        bin_key = round(predicted, 1)
         if bin_key not in self.calibration_data:
             self.calibration_data[bin_key] = []
-
-        self.calibration_data[bin_key].append(actual_accuracy)
-
-        # Update calibration function based on running average
-        # (In production: use isotonic regression or Platt scaling)
+        self.calibration_data[bin_key].append(actual)
 ```
 
 ---
 
 ### Example 4: Fact-Checking Verifier
 
-**Use Case**: Verify claims against a knowledge base.
+**Use case**: Verify claims against external knowledge base.
 
 ```python
 from HoloLoom.reasoning.verifier import SelfVerifier
 from HoloLoom.reasoning.types import VerificationResult, VerificationSeverity
 
 class FactCheckingVerifier(SelfVerifier):
-    """Verifier that fact-checks claims."""
-
     def __init__(self, knowledge_base, threshold=0.75):
         super().__init__(threshold)
-        self.kb = knowledge_base  # External knowledge base API
+        self.kb = knowledge_base
 
     async def verify(self, chain, context):
-        # Run base verification
         base_result = await super().verify(chain, context)
-
-        # Extract factual claims
         claims = self._extract_claims(chain)
+        fact_check_results = await asyncio.gather(*[
+            self._fact_check(claim) for claim in claims
+        ])
 
-        # Fact-check each claim
-        fact_check_results = []
-        for claim in claims:
-            result = await self._fact_check(claim)
-            fact_check_results.append(result)
-
-        # Analyze results
         false_claims = [r for r in fact_check_results if not r['verified']]
 
         if false_claims:
             return VerificationResult(
                 passed=False,
-                issue=f"{len(false_claims)} unverified claims found",
-                correction=f"False claims: {[c['claim'] for c in false_claims]}",
+                issue=f"{len(false_claims)} unverified claims",
+                correction=f"False: {[c['claim'] for c in false_claims]}",
                 severity=VerificationSeverity.CRITICAL,
                 confidence=0.9
             )
 
-        # All claims verified
-        return VerificationResult(
-            passed=True,
-            confidence=0.95
-        )
+        return VerificationResult(passed=True, confidence=0.95)
 
     def _extract_claims(self, chain):
-        """Extract factual claims from reasoning chain."""
         claims = []
-
-        claim_indicators = ['is', 'are', 'was', 'were', 'has', 'have']
+        indicators = ['is', 'are', 'was', 'were', 'has', 'have']
 
         for step in chain:
-            # Simple heuristic: sentences with claim indicators
-            sentences = step.thought.split('.')
-            for sentence in sentences:
-                if any(indicator in sentence.lower() for indicator in claim_indicators):
+            for sentence in step.thought.split('.'):
+                if any(ind in sentence.lower() for ind in indicators):
                     claims.append(sentence.strip())
 
         return claims
 
     async def _fact_check(self, claim):
-        """Fact-check a claim against knowledge base."""
-        # Query knowledge base
         kb_result = await self.kb.query(claim)
-
-        # Determine if verified
-        verified = kb_result['confidence'] >= 0.8 and kb_result['matches'] > 0
-
         return {
             'claim': claim,
-            'verified': verified,
+            'verified': kb_result['confidence'] >= 0.8,
             'confidence': kb_result['confidence'],
             'sources': kb_result.get('sources', [])
         }
@@ -429,457 +318,334 @@ class FactCheckingVerifier(SelfVerifier):
 
 ---
 
-## Custom Planners
+## Composition Patterns
 
-### Example 5: Hierarchical Task Planner
+### Pattern 1: Chaining Verifiers
 
-**Use Case**: Decompose complex tasks into hierarchical sub-tasks.
+**Combine multiple verification strategies.**
 
 ```python
-from HoloLoom.reasoning.planner import QueryPlanner
-from HoloLoom.reasoning.types import QueryPlan, PlanStep
+class ChainedVerifier(SelfVerifier):
+    def __init__(self, verifiers):
+        super().__init__()
+        self.verifiers = verifiers
 
-class HierarchicalPlanner(QueryPlanner):
-    """Planner that creates hierarchical task decomposition."""
+    async def verify(self, chain, context):
+        for verifier in self.verifiers:
+            result = await verifier.verify(chain, context)
+            if not result.passed:
+                return result
+        return VerificationResult(passed=True, confidence=0.95)
 
-    def create_plan(self, query, features, context):
-        # Analyze query complexity
-        intent = self.analyze_intent(query, features)
+# Usage
+verifier = ChainedVerifier([
+    SelfVerifier(threshold=0.75),
+    CalibratedVerifier(),
+    FactCheckingVerifier(kb)
+])
+```
 
-        if intent.complexity < 0.5:
-            # Simple query → flat plan
-            return super().create_plan(query, features, context)
+---
 
-        # Complex query → hierarchical plan
-        return self._create_hierarchical_plan(query, intent)
+### Pattern 2: Ensemble Reasoners
 
-    def _create_hierarchical_plan(self, query, intent):
-        """Create hierarchical task decomposition."""
-        # Level 1: High-level goals
-        high_level_goals = self._identify_high_level_goals(query.text)
+**Combine multiple reasoning strategies.**
 
-        all_steps = []
-        dependencies = {}
+```python
+class EnsembleReasoner(ChainOfThought):
+    def __init__(self, reasoners):
+        super().__init__()
+        self.reasoners = reasoners
 
-        # Level 2: Decompose each goal into sub-tasks
-        for i, goal in enumerate(high_level_goals):
-            # Create goal step
-            goal_step = PlanStep(
-                question=f"High-level goal: {goal['description']}",
-                required_for="Overall objective",
-                complexity=goal['complexity']
-            )
-            all_steps.append(goal_step)
-            goal_idx = len(all_steps) - 1
+    async def generate_standard_chain(self, query, intent, context):
+        chains = await asyncio.gather(*[
+            reasoner.generate_standard_chain(query, intent, context)
+            for reasoner in self.reasoners
+        ])
 
-            # Create sub-tasks for this goal
-            sub_tasks = self._decompose_goal(goal)
-            for sub_task in sub_tasks:
-                sub_step = PlanStep(
-                    question=f"Sub-task: {sub_task['question']}",
-                    required_for=goal['description'],
-                    complexity=sub_task['complexity']
-                )
-                all_steps.append(sub_step)
-                sub_idx = len(all_steps) - 1
+        best_chain = max(chains, key=lambda c: sum(s.confidence for s in c) / len(c))
+        return best_chain
 
-                # Sub-task depends on goal
-                dependencies[sub_idx] = [goal_idx]
+# Usage
+reasoner = EnsembleReasoner([
+    LegalReasoner(),
+    MultilingualReasoner(translator),
+    ChainOfThought()
+])
+```
 
-        return QueryPlan(
-            steps=all_steps,
-            estimated_complexity=intent.complexity,
-            dependencies=dependencies
-        )
+---
 
-    def _identify_high_level_goals(self, text):
-        """Identify high-level goals from query."""
-        # Simple heuristic: split on "and", "also", "additionally"
-        parts = text.split(' and ')
+### Pattern 3: Conditional Reasoning
 
-        goals = []
-        for i, part in enumerate(parts):
-            goals.append({
-                'description': part.strip(),
-                'complexity': 0.6 + (i * 0.1)  # Later goals slightly more complex
-            })
+**Choose reasoner based on query characteristics.**
 
-        return goals
+```python
+class ConditionalReasoner(ChainOfThought):
+    def __init__(self, reasoners):
+        super().__init__()
+        self.reasoners = reasoners
 
-    def _decompose_goal(self, goal):
-        """Decompose goal into sub-tasks."""
-        # Generic decomposition
-        return [
-            {'question': f"Understand requirements for: {goal['description']}", 'complexity': 0.3},
-            {'question': f"Gather information about: {goal['description']}", 'complexity': 0.5},
-            {'question': f"Synthesize solution for: {goal['description']}", 'complexity': 0.7},
-        ]
+    async def generate_standard_chain(self, query, intent, context):
+        for condition, reasoner in self.reasoners:
+            if condition(query, intent):
+                return await reasoner.generate_standard_chain(query, intent, context)
+
+        return await super().generate_standard_chain(query, intent, context)
+
+# Usage
+reasoner = ConditionalReasoner([
+    (lambda q, i: 'legal' in q.text.lower(), LegalReasoner()),
+    (lambda q, i: self.detect_language(q.text) != 'en', MultilingualReasoner(translator))
+])
+```
+
+---
+
+## Testing Extensions
+
+### Unit Testing Custom Components
+
+```python
+import pytest
+from HoloLoom.reasoning.types import Query, Features, Context, QueryIntent, QueryType
+
+@pytest.mark.asyncio
+async def test_legal_reasoner():
+    reasoner = LegalReasoner()
+    query = Query(text="Analyze 42 USC 1983 liability")
+    intent = QueryIntent(
+        type=QueryType.ANALYTICAL,
+        requirements=['legal analysis'],
+        key_concepts=['liability', '42 USC 1983'],
+        complexity=0.7,
+        confidence=0.9
+    )
+    context = [Context(text="42 USC 1983 provides civil rights remedy")]
+
+    chain = reasoner.generate_standard_chain(query, intent, context)
+
+    assert len(chain) >= 3
+    assert any('42 USC 1983' in step.thought for step in chain)
+    assert all(step.confidence > 0.0 for step in chain)
+
+@pytest.mark.asyncio
+async def test_calibrated_verifier():
+    verifier = CalibratedVerifier(threshold=0.75)
+
+    high_conf_chain = [
+        ReasoningStep("High conf", "Evidence", 0.95, StepType.SYNTHESIS),
+        ReasoningStep("High conf", "Evidence", 0.90, StepType.SYNTHESIS),
+    ]
+
+    result = await verifier.verify(high_conf_chain, [])
+    assert result.passed
+    assert result.confidence >= 0.75
+
+    low_conf_chain = [
+        ReasoningStep("Low conf", "Evidence", 0.4, StepType.SYNTHESIS),
+    ]
+
+    result = await verifier.verify(low_conf_chain, [])
+    assert not result.passed
+```
+
+---
+
+### Integration Testing
+
+```python
+@pytest.mark.asyncio
+async def test_legal_reasoner_integration():
+    engine = ReasoningEngine()
+    engine.reasoner = LegalReasoner()
+
+    query = Query(text="What is the standard for 42 USC 1983 claims?")
+    features = Features(motifs=['liability', 'civil rights'])
+    context = [Context(text="42 USC 1983 addresses civil rights violations")]
+
+    result = await engine.reason(query, features, context)
+
+    assert result.total_confidence > 0.7
+    assert len(result.chain) >= 3
+    assert result.mode == ReasoningMode.STANDARD
 ```
 
 ---
 
 ## Plugin Architecture
 
-### Building Reasoning Plugins
-
-**Pattern**: Composable plugins that extend engine behavior.
+### Creating Plugins
 
 ```python
-from typing import Protocol, runtime_checkable
-from HoloLoom.reasoning.types import ReasoningResult
+from typing import Protocol
 
-@runtime_checkable
 class ReasoningPlugin(Protocol):
-    """Protocol for reasoning plugins."""
-
     async def before_reasoning(self, query, features, context):
-        """Called before reasoning starts."""
         ...
-
-    async def after_reasoning(self, result: ReasoningResult):
-        """Called after reasoning completes."""
-        ...
-
-    async def on_step(self, step, step_index):
-        """Called after each reasoning step."""
-        ...
-
-
-class LoggingPlugin:
-    """Plugin that logs all reasoning steps."""
-
-    def __init__(self, logger):
-        self.logger = logger
-
-    async def before_reasoning(self, query, features, context):
-        self.logger.info(f"Starting reasoning for: {query.text}")
 
     async def after_reasoning(self, result):
-        self.logger.info(
-            f"Reasoning complete: {len(result.chain)} steps, "
-            f"confidence={result.total_confidence:.2f}"
-        )
+        ...
 
-    async def on_step(self, step, step_index):
-        self.logger.debug(
-            f"Step {step_index}: {step.step_type.value} "
-            f"[{step.confidence:.2f}] {step.thought[:50]}"
-        )
+    async def on_step(self, step, index):
+        ...
 
+class LoggingPlugin:
+    async def before_reasoning(self, query, features, context):
+        logger.info(f"Starting reasoning: {query.text[:50]}")
+
+    async def after_reasoning(self, result):
+        logger.info(f"Completed: {result.total_confidence:.2f}")
+
+    async def on_step(self, step, index):
+        logger.debug(f"Step {index}: [{step.confidence:.2f}] {step.thought}")
 
 class MetricsPlugin:
-    """Plugin that collects metrics."""
-
     def __init__(self):
-        self.step_counts = {}
-        self.total_duration = 0
+        self.start_time = None
 
     async def before_reasoning(self, query, features, context):
         self.start_time = time.time()
 
     async def after_reasoning(self, result):
-        self.total_duration += result.duration_ms
+        duration = (time.time() - self.start_time) * 1000
+        metrics.record_duration(result.mode.value, duration)
+        metrics.record_confidence(result.total_confidence)
+```
 
-        # Count step types
-        for step in result.chain:
-            step_type = step.step_type.value
-            self.step_counts[step_type] = self.step_counts.get(step_type, 0) + 1
+---
 
-    async def on_step(self, step, step_index):
-        pass  # No per-step metrics
+### Pluggable Engine
 
-
-class PluggableReasoningEngine:
-    """Reasoning engine with plugin support."""
-
-    def __init__(self, plugins=None):
-        self.base_engine = ReasoningEngine()
+```python
+class PluggableReasoningEngine(ReasoningEngine):
+    def __init__(self, mode=ReasoningMode.STANDARD, plugins=None):
+        super().__init__(mode)
         self.plugins = plugins or []
 
-    def add_plugin(self, plugin):
-        """Add a plugin."""
-        self.plugins.append(plugin)
-
-    async def reason(self, query, features, context):
-        # Before hooks
+    async def reason(self, query, features, context, mode=None):
         for plugin in self.plugins:
             await plugin.before_reasoning(query, features, context)
 
-        # Run base reasoning
-        result = await self.base_engine.reason(query, features, context)
+        result = await super().reason(query, features, context, mode)
 
-        # Step hooks
-        for i, step in enumerate(result.chain):
-            for plugin in self.plugins:
-                await plugin.on_step(step, i)
-
-        # After hooks
         for plugin in self.plugins:
             await plugin.after_reasoning(result)
 
         return result
-```
 
-**Usage**:
-```python
-import logging
+# Usage
+engine = PluggableReasoningEngine(plugins=[
+    LoggingPlugin(),
+    MetricsPlugin()
+])
 
-# Create plugins
-logging_plugin = LoggingPlugin(logging.getLogger(__name__))
-metrics_plugin = MetricsPlugin()
-
-# Create engine with plugins
-engine = PluggableReasoningEngine(plugins=[logging_plugin, metrics_plugin])
-
-# Use normally
 result = await engine.reason(query, features, context)
-
-# Access plugin data
-print(f"Total duration: {metrics_plugin.total_duration}ms")
-print(f"Step counts: {metrics_plugin.step_counts}")
 ```
 
 ---
 
-## Hook System
+## Best Practices
 
-### Pre/Post Reasoning Hooks
+### 1. Prefer Composition Over Inheritance
 
 ```python
-class HookableReasoningEngine:
-    """Engine with hooks for pre/post processing."""
-
+# Good: Composition
+class MyReasoner:
     def __init__(self):
-        self.base_engine = ReasoningEngine()
-        self.pre_hooks = []
-        self.post_hooks = []
-
-    def register_pre_hook(self, hook):
-        """Register pre-reasoning hook.
-
-        Hook signature: async def hook(query, features, context) -> (query, features, context)
-        """
-        self.pre_hooks.append(hook)
-
-    def register_post_hook(self, hook):
-        """Register post-reasoning hook.
-
-        Hook signature: async def hook(result) -> result
-        """
-        self.post_hooks.append(hook)
+        self.legal = LegalReasoner()
+        self.multilingual = MultilingualReasoner(translator)
 
     async def reason(self, query, features, context):
-        # Pre-hooks
-        for hook in self.pre_hooks:
-            query, features, context = await hook(query, features, context)
+        if 'legal' in query.text:
+            return await self.legal.generate_standard_chain(query, intent, context)
+        else:
+            return await self.multilingual.generate_standard_chain(query, intent, context)
 
-        # Reasoning
-        result = await self.base_engine.reason(query, features, context)
-
-        # Post-hooks
-        for hook in self.post_hooks:
-            result = await hook(result)
-
-        return result
-
-
-# Example hooks
-async def normalize_query_hook(query, features, context):
-    """Pre-hook: Normalize query text."""
-    query.text = query.text.lower().strip()
-    return query, features, context
-
-
-async def confidence_boost_hook(result):
-    """Post-hook: Boost confidence if all steps agree."""
-    if len(result.chain) >= 3:
-        min_conf = min(s.confidence for s in result.chain)
-        max_conf = max(s.confidence for s in result.chain)
-
-        if max_conf - min_conf < 0.1:  # Steps agree
-            result.total_confidence = min(1.0, result.total_confidence * 1.1)
-
-    return result
-
-
-# Usage
-engine = HookableReasoningEngine()
-engine.register_pre_hook(normalize_query_hook)
-engine.register_post_hook(confidence_boost_hook)
+# Less flexible: Deep inheritance
+class MyReasoner(LegalReasoner, MultilingualReasoner):
+    pass
 ```
 
----
-
-## Recipes
-
-### Recipe 1: Streaming Reasoning
-
-**Use Case**: Stream reasoning steps as they're generated.
+### 2. Use Dependency Injection
 
 ```python
-from typing import AsyncIterator
-from HoloLoom.reasoning.types import ReasoningStep
+# Good: Dependencies injected
+class MyVerifier(SelfVerifier):
+    def __init__(self, kb, threshold=0.75):
+        super().__init__(threshold)
+        self.kb = kb
 
-class StreamingReasoner:
-    """Reasoner that yields steps as they're generated."""
-
+# Less flexible: Hardcoded dependencies
+class MyVerifier(SelfVerifier):
     def __init__(self):
-        self.base_engine = ReasoningEngine()
-
-    async def reason_streaming(
-        self,
-        query,
-        features,
-        context
-    ) -> AsyncIterator[ReasoningStep]:
-        """Yield reasoning steps as they're generated."""
-
-        # For now, generate all then yield
-        # In production: truly stream from LLM
-        result = await self.base_engine.reason(query, features, context)
-
-        for step in result.chain:
-            yield step
-            await asyncio.sleep(0.1)  # Simulate streaming delay
-
-
-# Usage
-async def main():
-    streamer = StreamingReasoner()
-
-    async for step in streamer.reason_streaming(query, features, context):
-        print(f"[{step.step_type.value}] {step.thought}")
-        print(f"Confidence: {step.confidence:.2f}\n")
+        super().__init__()
+        self.kb = KnowledgeBase("hardcoded-url")
 ```
 
----
-
-### Recipe 2: Retry with Backoff
-
-**Use Case**: Retry reasoning on failure with exponential backoff.
+### 3. Test Extensions Independently
 
 ```python
-import asyncio
-from typing import Optional
+# Test custom reasoner without engine
+async def test_reasoner():
+    reasoner = LegalReasoner()
+    chain = reasoner.generate_standard_chain(query, intent, context)
+    assert len(chain) > 0
 
-class RetryReasoner:
-    """Reasoner with retry logic."""
-
-    def __init__(self, max_retries=3, base_delay=1.0):
-        self.base_engine = ReasoningEngine()
-        self.max_retries = max_retries
-        self.base_delay = base_delay
-
-    async def reason_with_retry(
-        self,
-        query,
-        features,
-        context,
-        min_confidence=0.7
-    ):
-        """Reason with retry on low confidence."""
-
-        for attempt in range(self.max_retries):
-            try:
-                result = await self.base_engine.reason(query, features, context)
-
-                # Success if confidence meets threshold
-                if result.total_confidence >= min_confidence:
-                    return result
-
-                # Low confidence → retry
-                logger.warning(
-                    f"Low confidence ({result.total_confidence:.2f}), "
-                    f"retrying {attempt + 1}/{self.max_retries}"
-                )
-
-                # Exponential backoff
-                delay = self.base_delay * (2 ** attempt)
-                await asyncio.sleep(delay)
-
-            except Exception as e:
-                if attempt == self.max_retries - 1:
-                    raise
-                logger.error(f"Reasoning failed: {e}, retrying...")
-                await asyncio.sleep(self.base_delay * (2 ** attempt))
-
-        # All retries exhausted
-        logger.error("Max retries exhausted, returning best result")
-        return result  # Return last result even if low confidence
+# Then test integration
+async def test_integration():
+    engine = ReasoningEngine()
+    engine.reasoner = LegalReasoner()
+    result = await engine.reason(query, features, context)
+    assert result.total_confidence > 0.7
 ```
 
----
-
-### Recipe 3: Caching Reasoner
-
-**Use Case**: Cache reasoning results for repeated queries.
+### 4. Document Extension Points
 
 ```python
-from functools import lru_cache
-import hashlib
-import json
+class MyReasoner(ChainOfThought):
+    """
+    Custom reasoner for domain X.
 
-class CachedReasoner:
-    """Reasoner with result caching."""
+    Extension points:
+    - _extract_domain_features(): Extract domain-specific features
+    - _apply_domain_rules(): Apply domain-specific rules
+    - _synthesize_conclusion(): Create domain-specific conclusion
 
-    def __init__(self, cache_size=1000):
-        self.base_engine = ReasoningEngine()
-        self.cache = {}
-        self.cache_size = cache_size
-
-    def _cache_key(self, query, features, context):
-        """Generate cache key."""
-        key_data = {
-            'query': query.text,
-            'motifs': features.motifs[:5],  # First 5 motifs
-            'shard_count': len(context.shards)
-        }
-        return hashlib.md5(json.dumps(key_data, sort_keys=True).encode()).hexdigest()
-
-    async def reason(self, query, features, context):
-        """Reason with caching."""
-        cache_key = self._cache_key(query, features, context)
-
-        # Check cache
-        if cache_key in self.cache:
-            logger.info(f"Cache hit for query: {query.text[:50]}")
-            return self.cache[cache_key]
-
-        # Cache miss
-        result = await self.base_engine.reason(query, features, context)
-
-        # Store in cache
-        if len(self.cache) >= self.cache_size:
-            # Evict oldest entry
-            oldest_key = next(iter(self.cache))
-            del self.cache[oldest_key]
-
-        self.cache[cache_key] = result
-
-        return result
+    Example:
+        reasoner = MyReasoner()
+        engine = ReasoningEngine()
+        engine.reasoner = reasoner
+        result = await engine.reason(query, features, context)
+    """
+    pass
 ```
 
 ---
 
-## Summary
+## Extension Checklist
 
-**Extension Points**: 7 components (planner, CoT, verifier, backtracker, bandit, provenance, metrics)
+Before deploying custom extensions:
 
-**Custom Components**:
-- 2 custom reasoners (legal, multilingual)
-- 2 custom verifiers (calibration, fact-checking)
-- 1 custom planner (hierarchical)
-
-**Plugin Architecture**:
-- Protocol-based plugin system
-- Logging, metrics, and custom plugins
-- Hook system for pre/post processing
-
-**Recipes**:
-- Streaming reasoning
-- Retry with backoff
-- Result caching
+- [ ] Extends appropriate base class
+- [ ] Implements required methods
+- [ ] Unit tests cover key functionality
+- [ ] Integration tests verify engine compatibility
+- [ ] Documentation explains what, why, how
+- [ ] Error handling for edge cases
+- [ ] Performance profiled (no regressions)
+- [ ] Composition tested (works with other extensions)
 
 ---
 
-**Next**: See examples in `demos/custom_reasoning_examples.py`
+## Next Steps
+
+1. **Start simple**: Extend one component (reasoner or verifier)
+2. **Test thoroughly**: Unit tests + integration tests
+3. **Compose carefully**: Combine extensions via composition patterns
+4. **Monitor always**: Use plugins for logging and metrics
+5. **Document clearly**: Future you will thank present you
+
+---
+
+**"Good frameworks are extended, not modified. Great frameworks make extension elegant."**

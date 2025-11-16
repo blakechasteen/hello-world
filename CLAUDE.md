@@ -743,7 +743,7 @@ async with ReflectionBuffer(capacity=1000, persist_path="./reflections") as buff
 
 ## Reasoning Engine (Layer 6)
 
-**Status**: ✅ All 4 Phases Complete (November 15, 2025)
+**Status**: All 4 Phases Complete (November 15, 2025)
 **Location**: `HoloLoom/reasoning/`
 **Total**: ~14,150 lines (8K production + 1.6K tests + 3K docs + 1.5K demos)
 
@@ -830,7 +830,7 @@ Path('reasoning_chain.html').write_text(html)
 ```
 
 **Features**:
-- Step-by-step flow with icons (🧠 🔍 🔗 ✓ ↩ 📋 🔧)
+- Step-by-step flow with step type indicators
 - Color-coded confidence (green/blue/amber/red)
 - Collapsible evidence sections
 - Confidence timeline sparkline
@@ -1092,15 +1092,15 @@ Query → Features → Context
 
 ### Step Types
 
-| Icon | Type | Description |
-|------|------|-------------|
-| 🧠 | UNDERSTANDING | Analyze query intent |
-| 🔍 | EVIDENCE | Gather evidence from context |
-| 🔗 | SYNTHESIS | Synthesize reasoning |
-| ✓ | VERIFICATION | Self-check consistency |
-| ↩ | BACKTRACK | Revise earlier steps |
-| 📋 | PLANNING | Create sub-question plan |
-| 🔧 | CORRECTION | Correct detected error |
+| Type | Description |
+|------|-------------|
+| UNDERSTANDING | Analyze query intent |
+| EVIDENCE | Gather evidence from context |
+| SYNTHESIS | Synthesize reasoning |
+| VERIFICATION | Self-check consistency |
+| BACKTRACK | Revise earlier steps |
+| PLANNING | Create sub-question plan |
+| CORRECTION | Correct detected error |
 
 ---
 
