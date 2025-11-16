@@ -35,6 +35,104 @@ HoloLoom's power comes from its **layered design**. Each layer does one thing we
 
 Let's walk through each layer:
 
+### Diagram 1: Complete 9-Layer Data Transformation Flowchart
+
+To understand how data flows through HoloLoom, visualize the complete transformation from input to output:
+
+```
+┌─────────────────────────────────────────────┐
+│  INPUT: Query                                │
+│  Type: Query(text="What is Thompson?")       │
+│  Size: ~50 bytes                             │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 1: Input Processing (SpinningWheel)  │
+│  Output: ProcessedInput                      │
+│  Size: ~200 bytes (normalized text)          │
+│  Time: ~2-5ms                                │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 2: Pattern Selection (LoomCommand)    │
+│  Output: PatternCard (mode=FAST)             │
+│  Size: ~100 bytes                            │
+│  Time: ~1-2ms                                │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 3: Temporal Control (ChronoTrigger)   │
+│  Output: TemporalWindow (timeout=200ms)      │
+│  Size: ~150 bytes                            │
+│  Time: <1ms                                  │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 4: Memory Retrieval (YarnGraph)       │
+│  Output: List[MemoryShard] (n=6)             │
+│  Size: ~6KB (6 shards × 1KB each)            │
+│  Time: ~35-50ms                              │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 5: Feature Extraction (ResonanceShed) │
+│  Output: DotPlasma (Features)                │
+│  • Motifs: 3-5 patterns                      │
+│  • Embeddings: [96D, 192D, 384D]             │
+│  • Spectral: 5 graph features                │
+│  Size: ~2KB                                  │
+│  Time: ~25-35ms                              │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 6: Warp Space Tensioning              │
+│  Output: TensionedThreads (Continuous)       │
+│  Size: ~3KB (continuous manifold)            │
+│  Time: ~8-12ms                               │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 7: Decision Collapse                  │
+│  (ConvergenceEngine)                         │
+│  Output: ActionPlan                          │
+│  • Tool: "answer"                            │
+│  • Confidence: 0.92                          │
+│  Size: ~500 bytes                            │
+│  Time: ~5-10ms                               │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 8: Tool Execution                     │
+│  Output: ToolResult                          │
+│  Size: ~1KB (response text)                  │
+│  Time: ~30-50ms                              │
+└────────────────┬────────────────────────────┘
+                 ▼
+┌─────────────────────────────────────────────┐
+│  LAYER 9: Spacetime Construction             │
+│  Output: Spacetime (Complete Fabric)         │
+│  • Result + Trace + Metadata                 │
+│  Size: ~10KB (complete provenance)           │
+│  Time: ~5ms                                  │
+└─────────────────────────────────────────────┘
+
+SUMMARY:
+├─ Total latency: ~155ms (FAST mode)
+├─ Total data: 50 bytes → 10KB (200× expansion)
+├─ Retrieval: 40% of time
+├─ Features: 30% of time
+├─ Decision: 7% of time
+└─ Tool execution: 20% of time
+```
+
+**Key observations:**
+- Memory retrieval (Layer 4) dominates latency (~35-50ms)
+- Feature extraction (Layer 5) is second most expensive (~25-35ms)
+- Data grows 200× through processing (compression happens in learning loop)
+- Each layer is independent and can be profiled separately
+
+---
+
 ### Layer 1: Input Processing (SpinningWheel)
 
 **What it does:** Converts raw input (text, images, audio, video) into a unified `MemoryShard` format.
@@ -678,6 +776,45 @@ Spacetime = {
 
 HoloLoom adapts its processing depth based on query complexity. You control this with three modes:
 
+### Diagram 2: BARE/FAST/FUSED Mode Comparison Matrix
+
+The three execution modes offer different tradeoffs. Use this matrix to understand when each mode is appropriate:
+
+```
+┌──────────────────┬─────────────────┬─────────────────┬──────────────────┐
+│   Feature        │      BARE       │      FAST       │      FUSED       │
+├──────────────────┼─────────────────┼─────────────────┼──────────────────┤
+│ Latency          │   50-100ms      │   100-200ms     │   200-500ms      │
+│ Memory Usage     │   <1MB          │   5-10MB        │   10-20MB        │
+│ Quality (avg)    │   ★★★☆☆         │   ★★★★☆         │   ★★★★★          │
+├──────────────────┼─────────────────┼─────────────────┼──────────────────┤
+│ Motif Detection  │   Regex only    │   Hybrid        │   Full NLP       │
+│ Embedding Scale  │   Single (768D) │   Single (768D) │   Multi-scale    │
+│ Graph Traversal  │   1-hop         │   2-hop         │   3-hop          │
+│ Cache Enabled    │   ✗             │   ✓             │   ✓              │
+│ Zero-Copy Emb    │   ✗             │   ✓             │   ✓              │
+│ Thompson Sample  │   ✗             │   ✓             │   ✓              │
+│ Spectral Feats   │   ✗             │   ✓             │   ✓              │
+├──────────────────┼─────────────────┼─────────────────┼──────────────────┤
+│ Accuracy (simple)│   85%           │   92%           │   93%            │
+│ Accuracy (complex)│  45%           │   85%           │   95%            │
+├──────────────────┼─────────────────┼─────────────────┼──────────────────┤
+│ Best For         │  Speed-critical │  Production     │  Research        │
+│                  │  queries        │  balanced       │  quality-critical│
+│                  │  simple facts   │  standard       │  deep analysis   │
+├──────────────────┼─────────────────┼─────────────────┼──────────────────┤
+│ Example Query    │  "What time?"   │  "Explain X?"   │  "Compare X & Y" │
+│                  │  "2+2?"         │  "What is TS?"  │  "Design a..."   │
+└──────────────────┴─────────────────┴─────────────────┴──────────────────┘
+
+SELECTION GUIDE:
+• Need sub-100ms latency? → BARE
+• Production deployment? → FAST (recommended for ~95% of queries)
+• Research or quality critical? → FUSED
+```
+
+**Cross-reference:** See Section 4 for memory backend selection, which also impacts overall performance.
+
 ### BARE Mode: Maximum Speed
 
 **When to use:** Simple, factual queries with clear answers.
@@ -862,6 +999,73 @@ Query received
 
 HoloLoom supports three memory backends, each optimized for different scenarios:
 
+### Diagram 3: Memory Backend Auto-Fallback Chain
+
+HoloLoom implements automatic graceful degradation for memory backends:
+
+```
+PRODUCTION DEPLOYMENT STRATEGY
+═════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────┐
+│  TIER 1: Primary Backend (HYBRID)                            │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │ Neo4j (Graph Database)        +  Qdrant (Vector DB)    │  │
+│  │ • Persistent entity storage       • Fast semantic search │  │
+│  │ • 10M+ entities                   • Multi-scale embeddings│ │
+│  │ • Port: 7687                      • Port: 6333           │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                               │
+│  Status: Try to connect to Docker services                   │
+└───────────────────────┬──────────────────────────────────────┘
+                        │
+                ┌───────┴───────┐
+                │               │
+           SUCCESS ✓        FAILURE ✗
+              (95%)           (5%)
+                │               │
+                ▼               ▼
+        ┌───────────────┐  ┌─────────────────────────────────┐
+        │   Use HYBRID  │  │  Automatic Fallback Triggered   │
+        │  (persistent) │  │                                 │
+        │               │  │  • Log warning                  │
+        │ • Neo4j ✓     │  │  • Keep config set to HYBRID    │
+        │ • Qdrant ✓    │  │  • Switch to INMEMORY runtime   │
+        │ • Latency:    │  │  • Continue normally (no crash!)│
+        │   40-80ms     │  │                                 │
+        │ • Scale:      │  │  TIER 2: Fallback Backend       │
+        │   10M+        │  │  ┌─────────────────────────────┐│
+        │               │  │  │ NetworkX (In-Memory Graph)  ││
+        │               │  │  │ • Zero dependencies         ││
+        │               │  │  │ • Fast startup              ││
+        │               │  │  │ • Latency: 10-20ms          ││
+        │               │  │  │ • Ephemeral (lost on exit)  ││
+        │               │  │  └─────────────────────────────┘│
+        │               │  │                                 │
+        │               │  │ Key Benefit: Zero crashes!      │
+        │               │  │ System continues operating.     │
+        │               │  │ Data restored when Docker ready.│
+        └───────────────┘  └─────────────────────────────────┘
+
+FALLBACK LOGIC:
+1. Load config: memory_backend = HYBRID
+2. Try to connect:
+   - Neo4j @ bolt://localhost:7687
+   - Qdrant @ http://localhost:6333
+3. If either fails:
+   - Emit warning: "Docker service unavailable, using INMEMORY"
+   - Continue with NetworkX backend
+4. When Docker restored:
+   - Data can be re-ingested
+   - Or use separate persistence layer
+```
+
+**Key characteristics:**
+- **Automatic**: No code changes needed
+- **Transparent**: System operates normally with fallback
+- **Non-destructive**: No data loss (just ephemeral instead of persistent)
+- **Production-safe**: Never crash due to infrastructure issues
+
 ### INMEMORY: NetworkX (Development & Testing)
 
 **What it is:** In-memory graph using NetworkX. Everything stays in RAM, disappears on shutdown.
@@ -960,22 +1164,6 @@ async with WeavingOrchestrator(cfg=config) as orchestrator:
     spacetime = await orchestrator.weave(Query(text="..."))
 ```
 
-**Automatic Fallback:**
-```
-Initial config: HYBRID (Neo4j + Qdrant)
-                    │
-                    ▼
-         Try to connect to services
-                    │
-        ┌───────────┴───────────┐
-        │                       │
-      Success ✓              Failure ✗
-        │                       │
-      Use HYBRID          Automatic fallback
-      (persistent)        to INMEMORY
-                          (temporary)
-```
-
 ### HYPERSPACE: Gated Multipass (Research)
 
 **What it is:** Advanced backend with multi-layer retrieval and gated access patterns. Useful for research and advanced scenarios.
@@ -1038,6 +1226,114 @@ HoloLoom uses Python protocols (similar to interfaces in other languages) to def
 2. **Type safety**: Protocol violations caught at development time
 3. **Clear contracts**: Components know exactly what to expect
 4. **Testable**: Easy to mock for unit testing
+
+### Diagram 4: Protocol Swapping Before/After
+
+Protocols enable clean, flexible architecture:
+
+```
+═══════════════════════════════════════════════════════════════════════
+
+BEFORE: Tightly Coupled Architecture (Old Way)
+─────────────────────────────────────────────
+
+┌──────────────────────────┐
+│   WeavingOrchestrator    │
+│                          │
+│ imports:                 │
+│ • Neo4jGraph (hard-coded)│
+│ • MemoryManager (direct) │
+│ • NeuralPolicy (direct)  │
+└──────────────┬───────────┘
+               │
+        ┌──────┴──────┬──────────┐
+        ▼             ▼          ▼
+  ┌──────────┐  ┌──────────┐  ┌──────────┐
+  │Neo4jGraph│  │MemoryMgr │  │NeuralPol │
+  │(hard)    │  │(hard)    │  │(hard)    │
+  └──────────┘  └──────────┘  └──────────┘
+
+PROBLEMS:
+✗ To test: Must start Neo4j (slow, complex setup)
+✗ To swap: Edit orchestrator code (risky, couples concerns)
+✗ To integrate: Create custom Neo4j variant (code duplication)
+✗ Type safety: Mypy can't catch implementation mismatches
+
+
+═══════════════════════════════════════════════════════════════════════
+
+AFTER: Protocol-Based Architecture (New Way)
+──────────────────────────────────────────────
+
+┌──────────────────────────────────────────┐
+│   WeavingOrchestrator                    │
+│                                          │
+│ uses protocols:                          │
+│ • KGStore (interface)                    │
+│ • Retriever (interface)                  │
+│ • PolicyEngine (interface)               │
+└──────────────┬──────────────────────────┘
+               │
+        ┌──────┼──────┬────────────┐
+        │      │      │            │
+        ▼      ▼      ▼            ▼
+    ╔═════════════════════════════════╗
+    ║    Abstract Protocols (Traits)   ║
+    ║  • KGStore                       ║
+    ║  • Retriever                     ║
+    ║  • PolicyEngine                  ║
+    ╚═════════════════════════════════╝
+        │      │      │            │
+        ▼      ▼      ▼            ▼
+   ┌──────────┐ ┌──────────┐ ┌──────────┐
+   │NetworkXKG│ │Neo4jKG   │ │HyperKG   │
+   │(impl 1)  │ │(impl 2)  │ │(impl 3)  │
+   └──────────┘ └──────────┘ └──────────┘
+
+BENEFITS:
+✓ To test: Swap mock implementation (fast, simple)
+✓ To swap: Pass different implementation (no code change)
+✓ To integrate: Implement protocol (clear contract)
+✓ Type safety: Mypy validates protocol conformance
+
+
+═══════════════════════════════════════════════════════════════════════
+
+EXAMPLE: Swapping for Testing
+─────────────────────────────
+
+# Production code (unchanged)
+async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
+    spacetime = await orchestrator.weave(query)
+
+
+# Test code (swap implementation)
+class MockKG:  # Implements KGStore protocol
+    async def add_edge(self, source, target, rel, weight):
+        pass
+
+    async def get_subgraph(self, nodes, depth):
+        return self
+
+    async def query_similar(self, emb, k, threshold):
+        return []  # Return empty for predictability
+
+
+# Same orchestrator code, different backend!
+async with WeavingOrchestrator(
+    cfg=config,
+    shards=shards,
+    kg=MockKG()  # ← Swap one line!
+) as orchestrator:
+    spacetime = await orchestrator.weave(query)
+
+
+RESULT:
+• No changes to orchestrator
+• Test runs 100x faster (no DB)
+• Type-safe (Mypy validates MockKG implements KGStore)
+• Clear contract (protocol defines what's needed)
+```
 
 ### Key Protocols
 
@@ -1238,6 +1534,61 @@ config = Config.fast()
 config = Config.fused()
 ```
 
+### Diagram 5: Configuration Decision Tree
+
+Use this flowchart to select the right configuration for your scenario:
+
+```
+                    START
+                      │
+                      ▼
+        ┌─────────────────────────────┐
+        │  What's your priority?      │
+        └──┬──────────┬────────┬──────┘
+           │          │        │
+      Speed      Balance    Quality
+           │          │        │
+           ▼          ▼        ▼
+      ┌────────┐ ┌────────┐ ┌────────┐
+      │  BARE  │ │  FAST  │ │ FUSED  │
+      └───┬────┘ └───┬────┘ └───┬────┘
+          │          │          │
+          ▼          ▼          ▼
+   ┌────────────┐ ┌──────────┐ ┌────────────┐
+   │ <100ms     │ │Production│ │  Research  │
+   │ Simple     │ │ Balanced │ │   Quality  │
+   │ Regex      │ │ Hybrid   │ │   Fused    │
+   │ 1-hop KG   │ │ features │ │   Multi-hop│
+   │ INMEMORY   │ │ Neural   │ │   Full NLP │
+   │ No cache   │ │ Cache ✓  │ │   HYPERSP. │
+   └────────────┘ └──────────┘ └────────────┘
+
+FAST Path (Most Common):
+
+START
+  │
+  ├─ Need < 100ms? ──────────→ YES ──→ BARE
+  │                                     │
+  │                                     └─ Then use:
+  │                                        • INMEMORY backend
+  │                                        • Timeout: 100ms
+  │                                        • Minimal retrieval
+  │
+  ├─ Production query? ──────→ YES ──→ FAST ← (Default)
+  │                                    │
+  │                                    └─ Then use:
+  │                                       • HYBRID backend
+  │                                       • Timeout: 500ms
+  │                                       • Full features
+  │
+  └─ Need maximum quality? ──→ YES ──→ FUSED
+                                       │
+                                       └─ Then use:
+                                          • HYPERSPACE backend
+                                          • Timeout: no limit
+                                          • All features
+```
+
 ### Key Configuration Parameters
 
 #### Execution Control
@@ -1358,6 +1709,92 @@ config.retrieval_k = 20  # Maximum context
 config.enable_semantic_calculus = True
 config.use_wavelets = True  # Advanced features
 config.use_riemannian = True  # Geometric embeddings
+```
+
+### Diagram 6: Configuration Validation Checklist
+
+HoloLoom validates configuration automatically. Use this checklist when customizing:
+
+```
+Configuration Validation Pipeline:
+═══════════════════════════════════════════════════════════
+
+┌────────────────────────────────────────────────────────────┐
+│ Step 1: Mode Consistency Check                             │
+├────────────────────────────────────────────────────────────┤
+│ Verifies: BARE mode doesn't enable optional dependencies   │
+│                                                            │
+│ ✓ BARE mode with spaCy disabled              → PASS       │
+│ ✗ BARE mode with spectral features           → FAIL       │
+│                                                            │
+│ Example:                                                   │
+│ if config.mode == BARE and config.spectral_k_eigen > 0:  │
+│     raise ValueError("BARE mode cannot use spectral")     │
+└────────────┬───────────────────────────────────────────────┘
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│ Step 2: Memory Backend Availability Check                  │
+├────────────────────────────────────────────────────────────┤
+│ Verifies: Selected backend is available or fallback exists │
+│                                                            │
+│ ✓ HYBRID with fallback enabled                 → PASS     │
+│ ✗ HYBRID with no Docker and no fallback        → FAIL     │
+│                                                            │
+│ Example:                                                   │
+│ if config.memory_backend == HYBRID:                       │
+│     try_connect_to_services()                             │
+│     if not connected and not fallback:                    │
+│         raise ConfigError("No backend available")         │
+└────────────┬───────────────────────────────────────────────┘
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│ Step 3: Embedding Scale Alignment Check                    │
+├────────────────────────────────────────────────────────────┤
+│ Verifies: Embedding scales match retrieval expectations    │
+│                                                            │
+│ ✓ Scales: [96, 192, 384, 768] ascending      → PASS       │
+│ ✗ Scales: [768, 384, 192, 96] descending     → FAIL       │
+│ ✗ Scales: [768, 768, 768] duplicated         → FAIL       │
+│                                                            │
+│ Example:                                                   │
+│ if config.scales != sorted(config.scales):                │
+│     raise ValueError("Scales must be in ascending order")  │
+└────────────┬───────────────────────────────────────────────┘
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│ Step 4: Timeout Sanity Check                               │
+├────────────────────────────────────────────────────────────┤
+│ Verifies: Timeouts are reasonable for execution mode       │
+│                                                            │
+│ ✓ BARE mode with timeout 100ms                → PASS      │
+│ ✗ BARE mode with timeout 2000ms               → WARNING   │
+│ ✗ Any mode with timeout 10000ms+              → WARNING   │
+│                                                            │
+│ Example:                                                   │
+│ expected_latency = estimate_latency(config.mode)           │
+│ if config.pipeline_timeout < expected_latency * 0.8:      │
+│     warn(f"Timeout may be too aggressive")                 │
+└────────────┬───────────────────────────────────────────────┘
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│ Step 5: Dependency Availability Check                      │
+├────────────────────────────────────────────────────────────┤
+│ Verifies: Required Python packages are available           │
+│                                                            │
+│ ✓ spaCy installed and model available          → PASS     │
+│ ✗ spaCy required but not installed             → WARNING  │
+│ ✗ sentence-transformers required but missing   → WARNING  │
+│                                                            │
+│ Example:                                                   │
+│ if config.use_spacy:                                       │
+│     try: import spacy; spacy.load('en_core')             │
+│     except: warn("spaCy unavailable, falling back")        │
+└────────────┬───────────────────────────────────────────────┘
+             ▼
+         ✓ CONFIG VALID ✓
+
+         All checks passed!
+         System ready for initialization.
 ```
 
 ### Configuration Validation

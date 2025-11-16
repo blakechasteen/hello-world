@@ -18,11 +18,110 @@
 
 ---
 
+## Diagram 1: Simplified 9-Step Query Lifecycle Overview
+
+**Purpose**: High-level flowchart with timing reference before detailed walkthrough
+
+```
+SIMPLIFIED QUERY LIFECYCLE OVERVIEW
+(Detailed walkthrough follows in subsequent sections)
+
+Query: "What is Thompson Sampling?"
+    │
+    ▼ (5ms)
+[1. Pattern Selection] → mode=FAST selected
+    │
+    ▼ (1ms)
+[2. Temporal Window] → timeout=5s, window created
+    │
+    ▼ (50ms)
+[3. Memory Retrieval] → 5 shards retrieved from KG
+    │
+    ▼ (30ms)
+[4. Feature Extraction] → motifs + embeddings + spectral
+    │
+    ▼ (10ms)
+[5. Warp Tensioning] → continuous manifold created
+    │
+    ▼ (20ms)
+[6. Policy Decision] → tool="answer", confidence=0.92
+    │
+    ▼ (variable)
+[7. Tool Execution] → generate response
+    │
+    ▼ (5ms)
+[8. Spacetime Build] → result + trace + metadata
+    │
+    ▼ (2ms)
+[9. Reflection Update] → learn from outcome
+    │
+    ▼
+Result: Spacetime(response, confidence=0.92, trace=[...])
+
+Total: ~123ms (FAST mode)
+
+Read on for detailed code walkthrough of each step...
+```
+
+---
+
 ## 1. Complete Query Lifecycle Walkthrough
 
 ### Overview
 
 This section traces a single query from entry point to final `Spacetime` output. We'll follow the actual code path through all 9 steps of the weaving cycle.
+
+### Diagram 2: MemoryShard Data Schema
+
+**Purpose**: Understanding the core memory unit structure used throughout the pipeline
+
+```
+MemoryShard Data Structure (Core Memory Unit):
+
+┌─────────────────────────────────────────────┐
+│ MemoryShard                                 │
+├─────────────────────────────────────────────┤
+│ id: str                                     │
+│   • UUID identifier                         │
+│   • Example: "shard_abc123..."              │
+├─────────────────────────────────────────────┤
+│ text: str                                   │
+│   • Raw content                             │
+│   • Example: "Thompson Sampling balances..."│
+├─────────────────────────────────────────────┤
+│ embedding: np.ndarray                       │
+│   • Shape: (384,) for FUSED mode            │
+│   • Matryoshka scales: [96D, 192D, 384D]    │
+│   • Normalized L2 norm                      │
+├─────────────────────────────────────────────┤
+│ motifs: List[str]                           │
+│   • Extracted patterns                      │
+│   • Example: ["thompson_sampling",          │
+│               "exploration", "bayesian"]    │
+├─────────────────────────────────────────────┤
+│ entities: List[str]                         │
+│   • Named entities (spaCy NER)              │
+│   • Example: ["Thompson", "Sampling"]       │
+├─────────────────────────────────────────────┤
+│ metadata: Dict[str, Any]                    │
+│   ┌───────────────────────────────────────┐ │
+│   │ timestamp: float                      │ │
+│   │ source: str                           │ │
+│   │ importance: float (0.0-1.0)           │ │
+│   │ access_count: int                     │ │
+│   │ last_accessed: float                  │ │
+│   └───────────────────────────────────────┘ │
+├─────────────────────────────────────────────┤
+│ relationships: List[Tuple[str, str, str]]   │
+│   • (entity, relation, entity)              │
+│   • Example: [("Thompson", "IS_A",         │
+│               "Sampling"),                  │
+│               ("Sampling", "USES", "Beta")]│
+└─────────────────────────────────────────────┘
+
+Size: ~1-2KB per shard (typical)
+Used in: Memory retrieval (Layer 4)
+```
 
 ### Entry Point: The Query
 
@@ -733,6 +832,72 @@ Spacetime Output (with complete trace)
 ### Overview
 
 The Policy Engine is the "shuttle" - it decides which tool to use based on extracted features and context. This section walks through the actual neural network computation and Thompson Sampling integration.
+
+### Diagram 3: Policy Network Architecture Simplified
+
+**Purpose**: Understanding neural network layers and decision flow
+
+```
+Policy Network Architecture (Neural Core):
+
+Input Layer (Features):
+┌─────────────────────────────────────────────┐
+│ Motif Features (one-hot):     [0,1,0,...,0]│ → 100 dims
+│ Embedding (384D):             [0.23,-0.4,.]│ → 384 dims
+│ Spectral (graph):             [0.15,0.8,..]│ → 5 dims
+│ Context Memory (attention):   [0.1,0.5,...] │ → 128 dims
+└────────────────┬────────────────────────────┘
+                 │ Concatenate
+                 ▼
+        Input: 617 dimensions
+                 │
+                 ▼
+┌────────────────────────────────────────────┐
+│  MLP Layer 1: Linear(617 → 256)            │
+│  + ReLU activation                         │
+└────────────────┬───────────────────────────┘
+                 │
+                 ▼
+┌────────────────────────────────────────────┐
+│  Motif-Gated Attention                     │
+│  ┌──────────────────────────────────────┐  │
+│  │ Q = Linear(256 → 64)                 │  │
+│  │ K = Linear(context → 64)             │  │
+│  │ V = Linear(context → 64)             │  │
+│  │ Attention = softmax(QK^T/√64) × V    │  │
+│  │ Gate = sigmoid(motif_scores)         │  │
+│  │ Output = Attention × Gate            │  │
+│  └──────────────────────────────────────┘  │
+└────────────────┬───────────────────────────┘
+                 │
+                 ▼
+┌────────────────────────────────────────────┐
+│  LoRA Adapter Selection                    │
+│  • BARE adapter (simplified)               │
+│  • FAST adapter (balanced)                 │
+│  • FUSED adapter (full power)              │
+│  Selected based on mode                    │
+└────────────────┬───────────────────────────┘
+                 │
+                 ▼
+┌────────────────────────────────────────────┐
+│  MLP Layer 2: Linear(320 → n_tools)        │
+│  Output: Tool logits [answer, search,...]  │
+└────────────────┬───────────────────────────┘
+                 │
+                 ▼
+        Tool Probabilities
+        [0.85, 0.10, 0.05]
+                 │
+                 │ Thompson Sampling
+                 │ (bandit integration)
+                 ▼
+        Selected Tool: "answer"
+        Confidence: 0.92
+
+Parameters: ~500K total
+Training: PPO with GAE
+```
 
 ### Entry Point: Policy Decision
 
@@ -1520,6 +1685,55 @@ Query 3: "What is Thompson Sampling?" (exact match)
 
 The Yarn Graph (KG) is the persistent memory of relationships. This section explains how entities and relationships are stored and traversed.
 
+### Diagram 4: Knowledge Graph Traversal Tree Visualization
+
+**Purpose**: Understanding BFS traversal and entity relationships
+
+```
+Knowledge Graph Traversal (BFS Algorithm):
+
+Seed Entity: "Thompson Sampling"
+Max Hops: 2
+
+Hop 0 (Seed):
+┌──────────────────┐
+│Thompson Sampling │ ← Start here
+└────────┬─────────┘
+         │
+         ├─────────────────────────────────┐
+         │                                 │
+Hop 1 (Direct neighbors):                 │
+         │                                 │
+    ┌────┴────┐                       ┌────┴────┐
+    │ Bayesian│ ←──IS_A──             │Exploration│ ←─BALANCES─
+    │ Method  │                       │           │
+    └────┬────┘                       └────┬─────┘
+         │                                 │
+         │                                 │
+Hop 2 (Second-degree):                    │
+         │                                 │
+    ┌────┴────┐                       ┌────┴─────┐
+    │  Beta   │ ←──USES──             │ Bandits  │ ←─APPLIES_TO─
+    │Distribution│                    │          │
+    └─────────┘                       └──────────┘
+
+Entities Retrieved (Breadth-First Order):
+1. Thompson Sampling (seed)
+2. Bayesian Method (hop 1, via IS_A)
+3. Exploration (hop 1, via BALANCES)
+4. Beta Distribution (hop 2, via USES)
+5. Bandits (hop 2, via APPLIES_TO)
+
+Subgraph Extracted: 5 nodes, 4 edges
+Spectral Features Computed:
+• Laplacian eigenvalues: [0.0, 0.5, 1.2, 1.8, 2.1]
+• Average clustering: 0.6
+• Graph density: 0.4
+• Centrality (Thompson): 1.0 (highest)
+
+These features feed into the policy network!
+```
+
 ### Knowledge Graph Storage
 
 #### **Data Structures**
@@ -1844,6 +2058,68 @@ paths = kg.find_paths(
 
 Spacetime is the final woven fabric - the response with complete computational lineage.
 
+### Diagram 5: Spacetime Output Structure Tree
+
+**Purpose**: Complete output structure and trace information
+
+```
+Spacetime Output Structure (Complete Result):
+
+┌─────────────────────────────────────────────────┐
+│ Spacetime                                       │
+├─────────────────────────────────────────────────┤
+│ woven_result: str                               │
+│   "Thompson Sampling is a Bayesian approach..." │
+├─────────────────────────────────────────────────┤
+│ confidence: float                               │
+│   0.92                                          │
+├─────────────────────────────────────────────────┤
+│ trace: WeavingTrace                             │
+│ ┌─────────────────────────────────────────────┐ │
+│ │ stage_durations: Dict[str, float]           │ │
+│ │ ┌─────────────────────────────────────────┐ │ │
+│ │ │ "pattern_selection": 5.2ms              │ │ │
+│ │ │ "temporal_control": 1.1ms               │ │ │
+│ │ │ "memory_retrieval": 50.3ms              │ │ │
+│ │ │ "feature_extraction": 30.1ms            │ │ │
+│ │ │ "warp_tensioning": 10.5ms               │ │ │
+│ │ │ "policy_decision": 20.2ms               │ │ │
+│ │ │ "tool_execution": 3.8ms                 │ │ │
+│ │ │ "spacetime_build": 5.0ms                │ │ │
+│ │ │ "reflection_update": 2.1ms              │ │ │
+│ │ └─────────────────────────────────────────┘ │ │
+│ │                                             │ │
+│ │ total_duration: 128.3ms                     │ │
+│ │                                             │ │
+│ │ activated_threads: List[str]                │ │
+│ │   ["Thompson", "Sampling", "Bayesian", ...] │ │
+│ │                                             │ │
+│ │ decision_path: List[str]                    │ │
+│ │   ["extract_features", "attend_context",    │ │
+│ │    "thompson_sample", "select_tool"]        │ │
+│ └─────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────┤
+│ metadata: Dict[str, Any]                        │
+│ ┌─────────────────────────────────────────────┐ │
+│ │ query_text: "What is Thompson Sampling?"    │ │
+│ │ timestamp: 1699564823.45                    │ │
+│ │ mode: "FAST"                                │ │
+│ │ tool_used: "answer"                         │ │
+│ │ sources_count: 5                            │ │
+│ │ cache_hit: false                            │ │
+│ │ adapter_used: "fast_adapter"                │ │
+│ │ bandit_strategy: "BAYESIAN_BLEND"           │ │
+│ └─────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────┤
+│ sources: List[MemoryShard]                      │
+│   [MemoryShard(...), MemoryShard(...), ...]     │
+│   (5 shards used for this response)             │
+└─────────────────────────────────────────────────┘
+
+Total Size: ~10-15KB (including sources)
+Used For: Debugging, reflection, provenance tracking
+```
+
 ### Spacetime Data Structure
 
 ```python
@@ -1976,6 +2252,62 @@ async def weave(self, query: Query) -> Spacetime:
     return spacetime
 ```
 
+### Diagram 6: Query Lifecycle Timing Waterfall
+
+**Purpose**: Understanding stage timing breakdown and bottlenecks
+
+```
+Query Lifecycle Timing Waterfall (FAST Mode):
+
+Query: "What is Thompson Sampling?"
+
+0ms    ├──────────────────────────────────────────→ 128.3ms
+       │
+       ├─►Pattern Selection (5.2ms)
+       │  [Complexity detection → FAST mode]
+       │
+       ├────►Temporal Control (1.1ms)
+       │     [Create window, set timeout=5s]
+       │
+       ├──────►Memory Retrieval (50.3ms) ◄── BOTTLENECK
+       │       [KG traversal + vector search]
+       │       │
+       │       ├─ KG subgraph: 30ms
+       │       └─ Vector similarity: 20ms
+       │
+       ├─────────────►Feature Extraction (30.1ms)
+       │              [Motifs + embeddings + spectral]
+       │              │
+       │              ├─ Motif detection: 10ms
+       │              ├─ Embedding (cached): 2ms
+       │              └─ Spectral features: 18ms
+       │
+       ├──────────────────►Warp Tensioning (10.5ms)
+       │                   [Tensor operations]
+       │
+       ├─────────────────────►Policy Decision (20.2ms)
+       │                      [Neural net + Thompson]
+       │                      │
+       │                      ├─ Forward pass: 15ms
+       │                      └─ Bandit sample: 5ms
+       │
+       ├──────────────────────────►Tool Execution (3.8ms)
+       │                           [Generate response]
+       │
+       ├────────────────────────────►Spacetime Build (5.0ms)
+       │                             [Assemble result]
+       │
+       └──────────────────────────────►Reflection (2.1ms)
+                                       [Update stats]
+
+Optimization Opportunities:
+• Memory retrieval (50ms) → Use BARE mode for <100ms total
+• Feature extraction (30ms) → Enable compositional cache
+• Policy decision (20ms) → Pre-compute embeddings
+
+BARE: ~50ms │ FAST: ~128ms │ FUSED: ~300ms
+```
+
 ### Using Trace for Debugging
 
 ```python
@@ -2031,6 +2363,68 @@ else:
 ### Overview
 
 HoloLoom uses async context managers for proper resource cleanup.
+
+### Diagram 7: Async Lifecycle Sequence Diagram
+
+**Purpose**: Understanding context manager flow and resource cleanup
+
+```
+Async Lifecycle Management (Context Manager Pattern):
+
+Time →
+
+    ┌──────────────────────────────────────────────┐
+    │ async with WeavingOrchestrator(...) as orch: │
+    └──────┬───────────────────────────────────────┘
+           │
+           ▼
+    ┌────────────────────┐
+    │ __aenter__()       │
+    │ • Initialize policy│
+    │ • Connect to KG    │ ← Async setup
+    │ • Load embeddings  │
+    │ • Start reflection │
+    └──────┬─────────────┘
+           │
+           ▼
+    ┌────────────────────────────────────┐
+    │  Application Code Block:           │
+    │                                    │
+    │  spacetime = await orch.weave(q1)  │ ← Query 1
+    │  spacetime = await orch.weave(q2)  │ ← Query 2
+    │  spacetime = await orch.weave(q3)  │ ← Query 3
+    │                                    │
+    │  [Background tasks running...]     │
+    └──────┬─────────────────────────────┘
+           │
+           ▼
+    ┌────────────────────┐
+    │ __aexit__()        │
+    │ 1. Cancel bg tasks │ ← Graceful shutdown
+    │ 2. Flush metrics   │   (5s timeout)
+    │ 3. Close KG conn   │
+    │ 4. Save checkpoints│
+    └──────┬─────────────┘
+           │
+           ▼
+    Resources cleaned up ✓
+
+Error Handling:
+    try:
+        async with Orchestrator(...) as orch:
+            ...
+    except Exception as e:
+        # __aexit__ still called!
+        # Cleanup guaranteed
+        pass
+
+Manual Cleanup (if needed):
+    orch = Orchestrator(...)
+    try:
+        await orch.weave(query)
+    finally:
+        await orch.close()  # IMPORTANT!
+```
 
 ### Initialization and Teardown
 

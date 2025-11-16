@@ -73,6 +73,42 @@ This is the **exploration-exploitation tradeoff**, and it's crucial for intellig
 - ❌ Waste time on bad options
 - ❌ Exhausting and inefficient
 
+### Visual: Exploration-Exploitation Spectrum
+
+Different strategies create different reward curves over time:
+
+```
+Long-term Reward (cumulative satisfaction)
+  ↑
+  │                      ╭─── Thompson Sampling
+  │                      │         (optimal!)
+  │                  ╱───╯
+  │             ╱───╯ Epsilon-Greedy
+  │         ╱───╯   (mostly exploit, sometimes explore)
+  │     ╱───╯
+  │ ╱───╯ Pure Exploitation
+  │╯      (use best known)
+  │
+  │       ╲╲╲╲╲╲  Pure Exploration
+  │        ╲╲╲   (try everything)
+  │
+  └────────────────────────────────→ Time
+    Start                 Long-term
+
+Key Observations:
+├─ Pure Exploitation: Fast early rewards, but plateaus (missed opportunities)
+├─ Pure Exploration: Slow early, discovers better options, gains compound
+├─ Thompson Sampling: Balances both, gains compound like exploration
+│                     but faster like exploitation
+└─ Epsilon-Greedy: Linear improvement between extremes
+
+WHY Thompson Wins:
+- Explores HIGH-UNCERTAINTY options (might be great!)
+- Exploits HIGH-CONFIDENCE options (known to work)
+- Automatically adjusts as uncertainty decreases
+- Mathematically optimal for regret minimization
+```
+
 Most AI systems take one extreme or the other. HoloLoom uses **Thompson Sampling**, a Bayesian approach that intelligently balances these. Think of it as: "Based on what I know so far, which tool has the highest probability of working best for this situation?"
 
 ### Why Most RAG Systems Are Insufficient
@@ -581,6 +617,69 @@ Knowledge: "Thompson Sampling is about balanced exploration"
          Relationships: Thompson → EXPLORES, Thompson → BALANCES
 ```
 
+### Visual: Memory Consolidation Flow
+
+Here's how episodic experiences become semantic knowledge:
+
+```
+EPISODIC MEMORY (Recent Experiences)
+┌──────────────────────────────────────────────────────┐
+│ Query 1: "Thompson Sampling?"                        │
+│ Result: Confidence 0.92                              │
+│ Sources: [DocA: definition, DocB: algorithm]        │
+│ Time: T-2                                            │
+└──────────────────┬───────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────┐
+│ Query 2: "How does it balance exploration?"          │
+│ Result: Confidence 0.88                              │
+│ Sources: [DocB: algorithm, DocC: tradeoffs]         │
+│ Time: T-1                                            │
+└──────────────────┬───────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────┐
+│ Query 3: "Example of Thompson Sampling?"             │
+│ Result: Confidence 0.91                              │
+│ Sources: [DocA: definition, DocC: examples]         │
+│ Time: T                                              │
+└──────────────────┬───────────────────────────────────┘
+                   │
+                   ▼
+    ┌──────────────────────────────┐
+    │  CONSOLIDATION PROCESS       │
+    │  ├─ Extract patterns         │
+    │  ├─ Identify entities        │
+    │  ├─ Form relationships       │
+    │  └─ Assess confidence        │
+    └──────────────────────────────┘
+                   │
+                   ▼
+SEMANTIC MEMORY (Consolidated Knowledge)
+┌──────────────────────────────────────────────────────┐
+│ ENTITY: Thompson Sampling                            │
+│  ├─ Definition: Bayesian approach to balancing...   │
+│  ├─ Algorithm: Uses Beta distributions              │
+│  └─ Examples: [DocA examples, DocC examples]        │
+│                                                      │
+│ ENTITY: Exploration                                  │
+│  ├─ Definition: Trying new options                  │
+│  └─ Related: [Thompson, Balance, Discovery]         │
+│                                                      │
+│ RELATIONSHIPS (in Yarn Graph):                       │
+│  ├─ Thompson Sampling --BALANCES--> Exploration     │
+│  ├─ Thompson Sampling --USES--> Beta Distributions  │
+│  └─ Exploration --LEADS_TO--> Discovery             │
+│                                                      │
+│ CONFIDENCE: 0.90 (average of 0.92, 0.88, 0.91)     │
+│ Permanence: This knowledge persists across sessions!│
+└──────────────────────────────────────────────────────┘
+
+BENEFIT: Future queries about Thompson Sampling,
+exploration, or Bayesian methods can directly access
+this consolidated knowledge WITHOUT needing to
+re-process the original episodes!
+```
+
 The reflection buffer automatically:
 - Extracts entities and relationships from high-confidence results
 - Updates the knowledge graph
@@ -686,6 +785,62 @@ Battle --OCCURRED_AT--> Location
 Event --OCCURRED_AT--> TimeAndPlace
 ```
 Shows where/when things happened.
+
+### Visual: Knowledge Graph Relationship Type Reference Matrix
+
+A quick reference for all 7 relationship types:
+
+```
+┌─────────────┬──────────────────┬────────────────┬──────────────────┐
+│ Relation    │ Example           │ Direction      │ Reasoning Type   │
+├─────────────┼──────────────────┼────────────────┼──────────────────┤
+│             │                  │                │                  │
+│ IS_A        │ Dog → Animal      │ Upward         │ Classification   │
+│             │ (taxonomy)        │ (inherit)      │ (subtype traits) │
+│             │                  │                │                  │
+├─────────────┼──────────────────┼────────────────┼──────────────────┤
+│             │                  │                │                  │
+│ USES        │ Algorithm → Data  │ Functional     │ Dependencies     │
+│             │ Chef → Knife      │ (composition)  │ (what's needed?) │
+│             │                  │                │                  │
+├─────────────┼──────────────────┼────────────────┼──────────────────┤
+│             │                  │                │                  │
+│ MENTIONS    │ Document → Topic  │ Reference      │ Context          │
+│             │ BlogPost → Idea   │ (reference)    │ (what talks     │
+│             │                  │                │  about this?)    │
+│             │                  │                │                  │
+├─────────────┼──────────────────┼────────────────┼──────────────────┤
+│             │                  │                │                  │
+│ LEADS_TO    │ Rain → Wet        │ Causal         │ Causality        │
+│             │ Heat → Expansion  │ (directional)  │ (what causes    │
+│             │                  │                │  this?)          │
+│             │                  │                │                  │
+├─────────────┼──────────────────┼────────────────┼──────────────────┤
+│             │                  │                │                  │
+│ PART_OF     │ Wheel → Car       │ Composition    │ Assembly         │
+│             │ Chapter → Book    │ (hierarchical) │ (what contains  │
+│             │                  │                │  this?)          │
+│             │                  │                │                  │
+├─────────────┼──────────────────┼────────────────┼──────────────────┤
+│             │                  │                │                  │
+│ IN_TIME     │ Morning → Day     │ Temporal       │ Sequencing       │
+│             │ Event → Era       │ (sequence)     │ (when does this  │
+│             │                  │                │  happen?)        │
+│             │                  │                │                  │
+├─────────────┼──────────────────┼────────────────┼──────────────────┤
+│             │                  │                │                  │
+│ OCCURRED_AT │ Battle → Location │ Spatio-       │ Location/        │
+│             │ Event → Year      │ Temporal      │ History          │
+│             │                  │                │ (where/when?)    │
+│             │                  │                │                  │
+└─────────────┴──────────────────┴────────────────┴──────────────────┘
+
+PRO TIP: These edge types enable different reasoning patterns:
+├─ IS_A chains: Inheritance ("If parent has property, child has it too")
+├─ LEADS_TO chains: Causality ("A→B→C means A causes C indirectly")
+├─ PART_OF chains: Composition ("Wheel is part of Car is part of Transport")
+└─ Multi-type paths: Rich reasoning ("A IS_A B LEADS_TO C MENTIONS D")
+```
 
 **Why typed edges matter**:
 
@@ -937,6 +1092,64 @@ Low          │  C (0 wins, 1 loss)
 
 Tool C is uncertain (could be great, could be terrible), so Thompson Sampling explores it more. Tools A and B are more confident, so it mostly exploits one of them.
 
+### Visual: Thompson Sampling Beta Distributions
+
+Let's visualize how uncertainty drives exploration:
+
+```
+BETA(1,1): Complete Uncertainty
+Uncertainty: ████████████████ (100%)
+Exploration: MAXIMUM (anything could be best!)
+
+    |        ____________        |
+    |       /            \       |
+    |      /              \      |
+    |     /                \     |
+    |____/__________________|____
+    0.0        0.5        1.0
+
+    Alpha=1, Beta=1: No evidence yet
+    Expected success rate: 50%
+    Confidence: VERY LOW
+    → Thompson Sampling explores aggressively
+
+
+BETA(10,5): Moderate Confidence
+Uncertainty: ████████ (50%)
+Exploration: MODERATE (maybe explore alternatives)
+
+    |          /\               |
+    |         /  \              |
+    |        /    \             |
+    |       /      \            |
+    |______/________\__________|
+    0.0    0.67     1.0
+
+    Alpha=10, Beta=5: 10 successes, 5 failures
+    Expected success rate: 67%
+    Confidence: MODERATE
+    → Thompson Sampling still explores somewhat
+
+
+BETA(50,10): High Confidence
+Uncertainty: ███ (20%)
+Exploration: LOW (mostly exploit this tool!)
+
+    |           /\             |
+    |          /  \            |
+    |         /    \           |
+    |        /      \          |
+    |_______/________\________|
+    0.0      0.83    1.0
+
+    Alpha=50, Beta=10: 50 successes, 10 failures
+    Expected success rate: 83%
+    Confidence: HIGH
+    → Thompson Sampling mostly exploits this tool
+```
+
+**The Key Insight**: As uncertainty decreases (distribution gets narrower), exploration decreases. Thompson Sampling automatically spends more "trying time" on uncertain options. This is the elegant solution to exploration-exploitation!
+
 ### PPO: Proximal Policy Optimization (Overview)
 
 **PPO** is a reinforcement learning algorithm that improves policies through trial and error.
@@ -1061,12 +1274,53 @@ In the weaving metaphor:
 **Matryoshka Embeddings**
 Multi-scale embeddings at different dimensions (96D, 192D, 384D) where the smaller embeddings are literally the first N dimensions of the larger one.
 
+### Visual: Matryoshka Embedding Nesting
+
+Like Russian nesting dolls, each scale contains the smaller ones:
+
 ```
-384D embedding: [0.1, 0.2, 0.3, 0.4, ... 0.9]
-                └────────────────────────────┘
-                    192D: [0.1, 0.2, 0.3, 0.4, ... 0.5]
-                           └──────────────────────────┘
-                               96D: [0.1, 0.2, 0.3, 0.4]
+┌─────────────────────────────────────────────────────────────────┐
+│  384D EMBEDDING (Full Resolution - Outer Doll)                 │
+│  [d₀, d₁, d₂, d₃, ..., d₃₈₃]                                   │
+│                                                                  │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  192D EMBEDDING (Medium Resolution - Middle Doll)        │  │
+│  │  [d₀, d₁, d₂, d₃, ..., d₁₉₁]  ← Just first 192 dims!    │  │
+│  │                                                            │  │
+│  │  ┌───────────────────────────────────────────────────┐   │  │
+│  │  │  96D EMBEDDING (Core - Inner Doll)               │   │  │
+│  │  │  [d₀, d₁, d₂, d₃, ..., d₉₅]  ← Just first 96!   │   │  │
+│  │  │                                                   │   │  │
+│  │  │  Key Innovation:                                 │   │  │
+│  │  │  No matrix multiplication needed!                │   │  │
+│  │  │  Just use array slicing:                         │   │  │
+│  │  │  embedding_96d = full_384d[:96]                 │   │  │
+│  │  │  embedding_192d = full_384d[:192]               │   │  │
+│  │  │                                                   │   │  │
+│  │  │  ✓ Zero-copy (same memory!)                     │   │  │
+│  │  │  ✓ 37.7× faster scale extraction               │   │  │
+│  │  │  ✓ 50% memory savings (views share data)        │   │  │
+│  │  └───────────────────────────────────────────────────┘   │  │
+│  │                                                            │  │
+│  │  The "prefix property": First N dimensions alone          │  │
+│  │  encode the N-dimensional representation (Matryoshka!)    │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+
+USAGE PATTERNS:
+├─ Speed-critical: Use 96D (fast decisions)
+├─ Balanced: Use 192D (good quality + speed tradeoff)
+├─ Maximum quality: Use 384D (best retrieval accuracy)
+└─ Hybrid: Start with 96D, refine with 384D if uncertain
+
+MEMORY LAYOUT (Why it's efficient):
+Single allocated array (384 floats):
+[d₀ d₁ d₂ ... d₉₅ | d₉₆ d₉₇ ... d₁₉₁ | d₁₉₂ ... d₃₈₃]
+ └─ 96D ─┘          └── Middle 96 ──┘   └── Final 192 ──┘
+         └─────── 192D ──────┘
+         └────────── 384D ──────────────┘
+
+Slicing returns VIEWS (no copy), all share same backing memory!
 ```
 
 **Why "Matryoshka"?** Like Russian nesting dolls—each larger doll contains the smaller ones.
@@ -1118,7 +1372,65 @@ Automatic processes:
 - Track tool usage + outcomes → Update tool effectiveness
 - Find patterns in queries → Learn what works for different query types
 
-*Think of it like: A notebook where you write down experiences, and over time you extract lessons and add them to your knowledge base.*
+### Visual: Temporal Memory Decay
+
+Memories fade over time unless refreshed (like human memory):
+
+```
+Memory Activation Score
+  1.0 ┤●────────────────────────────────────────────────
+      │ │
+  0.9 ┤ │╲
+      │ │ ╲
+  0.8 ┤ │  ╲
+      │ │   ╲___
+  0.7 ┤ │       ╲___
+      │ │           ╲___
+  0.6 ┤ │               ╲___
+      │ │                   ╲___
+  0.5 ┤ │ ← THRESHOLD         ╲___  ← Memory becomes "cold"
+      │ │    (50%)                  ╲   at ~13 hours
+  0.4 ┤ │                           ╲___
+      │ │                               ╲___
+  0.3 ┤ │                                   ╲___
+      │ │                                       ╲___
+  0.2 ┤ │                                           ╲
+      │ │                                            ╲
+  0.1 ┤ │                                             ╲___
+      │ │                                                 ╲
+  0.0 ┤ └────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬─→
+      0      1    2    3    4    5    6    7    8    9   10  Hours
+           (1h) (2h) (3h) (4h) (5h) (6h) (7h) (8h) (9h) (10h)
+
+Formula: activation = initial_confidence × 0.95^hours
+
+Example Journey of a Memory:
+T=0h:  Just learned → activation = 1.0 (fresh!)
+T=3h:  activation = 1.0 × 0.95³ ≈ 0.86 (still warm)
+T=7h:  activation = 1.0 × 0.95⁷ ≈ 0.70 (cooling down)
+T=13h: activation = 1.0 × 0.95¹³ ≈ 0.51 (crossed threshold!)
+T=20h: activation = 1.0 × 0.95²⁰ ≈ 0.36 (cold memory)
+
+WHAT THIS MEANS:
+├─ HOT memories (activation > 0.75): Recently used, high confidence
+│  └─ Receive 2.0× weight boost in search results
+│
+├─ WARM memories (0.5 < activation ≤ 0.75): Used in past week
+│  └─ Standard weight in search results
+│
+└─ COLD memories (activation < 0.5): Haven't been used recently
+   └─ Receive 0.5× weight reduction
+   └─ Eventually archived (not deleted - always retrievable!)
+
+WHY THIS DESIGN:
+✓ Recency bias: Recent learning is more relevant
+✓ No permanent forgetting: All memories persist
+✓ Graceful degradation: Smooth transition, not cliff
+✓ Refresh mechanism: Use a memory → activation resets to 1.0!
+✓ Matches human cognition: How we naturally weight experiences
+```
+
+*Think of it like: A filing cabinet where recent documents sit on your desk (hot), older documents go to the shelf (cold), but none are ever truly thrown away.*
 
 ---
 

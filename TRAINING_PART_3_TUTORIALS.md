@@ -37,6 +37,73 @@ python -c "from HoloLoom import HoloLoom; print('✓ Ready to start!')"
 
 ---
 
+## Tutorial Learning Path (Progressive Complexity)
+
+Choose your learning track based on your goals:
+
+```
+START HERE
+    │
+    ▼
+┌─────────────────────────────────────┐
+│ Tutorial 1: Hello World             │  ⏱ 10 min
+│ • First query                       │  Difficulty: ★☆☆☆☆
+│ • experience(), recall(), reflect() │
+└──────────────┬──────────────────────┘
+               │ Prerequisites: None
+               ▼
+┌─────────────────────────────────────┐
+│ Tutorial 2: Memory System           │  ⏱ 25 min
+│ • Batch operations                  │  Difficulty: ★★☆☆☆
+│ • Metrics and growth                │
+└──────────────┬──────────────────────┘
+               │ Prerequisites: Tutorial 1
+               ▼
+       ┌───────┴────────┐
+       │                │
+       ▼                ▼
+┌──────────────┐  ┌──────────────┐
+│ Tutorial 3   │  │ Tutorial 5   │    ⏱ 20 min
+│ Retrieval    │  │ Performance  │    Difficulty: ★★☆☆☆
+│ • Ranking    │  │ • Profiling  │
+│ • Traversal  │  │ • Benchmarks │
+└──────┬───────┘  └──────┬───────┘
+       │                 │
+       │ Prereq: T2     │ Prereq: T1-2
+       │                │
+       └────────┬────────┘
+                ▼
+       ┌─────────────────┐
+       │  Tutorial 4      │              ⏱ 30 min
+       │  Custom Tools    │              Difficulty: ★★★☆☆
+       │  • Extensions    │
+       │  • Adapters      │
+       └─────────────────┘
+               │ Prerequisites: T1-3
+               ▼
+         🎓 Mastery!
+
+LEARNING TRACKS:
+
+Fast Track (55 min):
+  Tutorial 1 → Tutorial 2 → Tutorial 5
+  (Learn basics + optimization)
+
+Deep Track (85 min):
+  Tutorial 1 → Tutorial 2 → Tutorial 3 → Tutorial 4
+  (Learn everything)
+
+Performance Focus (55 min):
+  Tutorial 1 → Tutorial 2 → Tutorial 5
+  (Optimize from the start)
+
+Advanced Only (30 min):
+  Tutorial 1 → Tutorial 4
+  (Skip to custom extensions, requires prior HoloLoom knowledge)
+```
+
+---
+
 ## Tutorial 1: Hello World - Your First Query
 
 **Objective:** Create, experience, and recall your first memory.
@@ -209,6 +276,9 @@ asyncio.run(main())
 #
 # Fix: Make query more similar to stored memory
 await loom.recall("Thompson Sampling and Bayesian methods")  # More similar
+
+# For detailed debugging, see "Common Issues & Debugging Guide"
+# (section after this tutorial)
 ```
 
 ### Exercises
@@ -245,6 +315,103 @@ await loom.recall("Thompson Sampling and Bayesian methods")  # More similar
 ✓ How to monitor the system with metrics
 
 **Next**: Tutorial 2 - Build a multi-memory system with sophisticated retrieval.
+
+---
+
+## Common Issues & Debugging Guide
+
+If something goes wrong, this guide will help you fix it. Most issues have one of three causes: **no memories**, **low similarity**, or **settings**.
+
+### Debugging Flowchart: "My Query Returns 0 Results"
+
+```
+PROBLEM: await loom.recall("query") returns []
+│
+├─── STEP 1: Did you call experience() first?
+│    │
+│    ├─ NO  → Create a memory first!
+│    │       await loom.experience("Sample memory")
+│    │       Then retry recall()
+│    │
+│    └─ YES → Continue to Step 2
+│
+├─── STEP 2: Is your query similar to stored memories?
+│    │
+│    ├─ Check similarities:
+│    │  • Same keywords?        → Try exact words
+│    │  • Same topic?           → Try synonyms
+│    │  • Same language level?  → Try simpler words
+│    │
+│    ├─ NO similarity found    → Rephrase query
+│    │  Example:
+│    │  ❌ Memory: "Thompson Sampling"
+│    │  ❌ Query: "What is exploration?"
+│    │  ✓ Fix: "Thompson Sampling balances exploration"
+│    │
+│    └─ YES similar           → Continue to Step 3
+│
+├─── STEP 3: Check retrieval settings
+│    │
+│    ├─ No limit specified?
+│    │  → Try adding limit parameter:
+│    │    results = await loom.recall("query", limit=10)
+│    │    (If this returns results, limit was too strict)
+│    │
+│    ├─ Wrong activation strategy?
+│    │  → Try EXPLORATORY mode:
+│    │    results = await loom.recall(
+│    │        "query",
+│    │        strategy=ActivationStrategy.EXPLORATORY
+│    │    )
+│    │
+│    └─ Continue to Step 4
+│
+└─── STEP 4: Verify system state
+     │
+     ├─ Check if memories exist:
+     │  metrics = loom.get_metrics()
+     │  print(f"Total memories: {metrics['n_memories']}")
+     │
+     ├─ If n_memories = 0
+     │  → No data stored! Create memories first
+     │
+     └─ If n_memories > 0 but no results
+        → Query is too different
+        → Try more similar query
+        → Use simpler words
+        → Check Tutorial 3 for ranking details
+```
+
+### Common Error Solutions
+
+| Problem | Root Cause | Solution |
+|---------|-----------|----------|
+| **Empty recall results** | Query too different from memories | Use keywords that appear in stored memories |
+| **ImportError: No module named 'HoloLoom'** | PYTHONPATH not set | Run: `PYTHONPATH=. python script.py` |
+| **RuntimeError: Event loop already running** | Nested asyncio.run() calls | Use single `asyncio.run(main())` |
+| **Low confidence in results** | Memories not specific enough | Store more detailed, focused memories |
+| **Slow performance** | Using FUSED mode | Switch to FAST mode (default) |
+| **Memory growing too large** | Too many memories created | Implement memory limits or archiving |
+| **Results not relevant** | Using default settings | Try different `ActivationStrategy` (see Tutorial 3) |
+
+### Quick Fixes Checklist
+
+When debugging, check these in order:
+
+- [ ] **Memories exist?** → `loom.get_metrics()['n_memories'] > 0`
+- [ ] **Query is similar?** → Use words from stored memory text
+- [ ] **Limit parameter set?** → Try `limit=10`
+- [ ] **Right strategy?** → Use `ActivationStrategy.EXPLORATORY` for broad search
+- [ ] **Check output format** → `recall()` returns list of Memory objects
+- [ ] **Enable debug output** → Add `print()` statements between steps
+
+### Getting Help
+
+**If you're still stuck:**
+1. Check Tutorial 3 (Understanding Retrieval) for how ranking works
+2. Read "Common First Errors" section in Tutorial 1
+3. Print `loom.summary()` to see system state
+4. Try with a simpler query first, then gradually make more complex
 
 ---
 
@@ -499,13 +666,16 @@ Shift detected: False
 ### Common Questions
 
 **Q: Why are some queries returning 0 results?**
-A: The query is too different from your memories. Try queries that use similar words or concepts to what you stored.
+A: The query is too different from your memories. Try queries that use similar words or concepts to what you stored. See "Common Issues & Debugging Guide" for step-by-step troubleshooting.
 
 **Q: How many memories should I create?**
 A: Start with 5-20. More memories = more connections = better retrieval. But too many (>1000) can be slow.
 
 **Q: What's the difference between activation_density and connections?**
 A: Connections = total possible relationships (static). Activation_density = which relationships are "hot" for current query (dynamic).
+
+**Q: Still getting empty results?**
+A: Check the "Common Issues & Debugging Guide" section (appears after Tutorial 1). It has a complete flowchart for troubleshooting this specific problem.
 
 ### What You've Learned
 
