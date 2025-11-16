@@ -56,6 +56,16 @@ from HoloLoom.analytics.recursive_analytics import RecursiveAnalytics
 from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
 from HoloLoom.agentic.skill_agents import SkillRegistry, list_available_skills
 
+# Performance monitoring imports
+from HoloLoom.monitoring.performance_metrics import get_metrics_collector
+from HoloLoom.monitoring.prometheus_exporter import (
+    PrometheusMiddleware,
+    metrics_endpoint,
+    check_alerts,
+    is_prometheus_available
+)
+from HoloLoom.i18n import TranslationManager
+
 # Initialize logging
 logging.basicConfig(
     level=logging.INFO,
@@ -125,6 +135,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add Prometheus monitoring middleware
+if is_prometheus_available():
+    logger.info("Enabling Prometheus metrics collection")
+    app.add_middleware(PrometheusMiddleware, update_system_metrics=True)
+else:
+    logger.warning("Prometheus client not available - metrics collection disabled")
+
 # Initialize rate limiter
 if RATE_LIMITING_AVAILABLE:
     logger.info("Using slowapi for rate limiting")
@@ -140,6 +157,56 @@ analytics: Optional[RecursiveAnalytics] = None
 skill_registry: Optional[SkillRegistry] = None
 active_websockets: Set[WebSocket] = set()
 config: Optional[Config] = None
+i18n: Optional[TranslationManager] = None
+metrics_collector = get_metrics_collector()
+
+
+# ============================================================================
+# Language Detection and Management
+# ============================================================================
+
+def get_user_locale(request: Request) -> str:
+    """
+    Detect user's preferred language from multiple sources.
+
+    Detection order:
+    1. Query parameter: ?lang=es
+    2. Cookie: 'lang' cookie value
+    3. Accept-Language header: en-US,en;q=0.9,es;q=0.8 → "en"
+    4. Default: "en" (English)
+
+    Args:
+        request: FastAPI Request object
+
+    Returns:
+        Locale code (e.g., "en", "es", "fr", "de", "zh", "ja")
+    """
+    # 1. Check query parameter: ?lang=es
+    if "lang" in request.query_params:
+        requested_lang = request.query_params["lang"]
+        if i18n.locale_exists(requested_lang):
+            return requested_lang
+        logger.debug(f"Unknown locale in query param: {requested_lang}")
+
+    # 2. Check cookie
+    if "lang" in request.cookies:
+        cookie_lang = request.cookies["lang"]
+        if i18n.locale_exists(cookie_lang):
+            return cookie_lang
+        logger.debug(f"Unknown locale in cookie: {cookie_lang}")
+
+    # 3. Check Accept-Language header
+    accept_lang = request.headers.get("accept-language", "en")
+    # Parse "en-US,en;q=0.9,es;q=0.8" → preferred languages list
+    try:
+        preferred_langs = accept_lang.split(',')[0].split('-')[0].lower()
+        if i18n.locale_exists(preferred_langs):
+            return preferred_langs
+    except (IndexError, AttributeError):
+        pass
+
+    # 4. Default to English
+    return "en"
 
 
 # ============================================================================
@@ -149,7 +216,7 @@ config: Optional[Config] = None
 @app.on_event("startup")
 async def startup():
     """Initialize dashboard components."""
-    global analytics, skill_registry, config
+    global analytics, skill_registry, config, i18n
 
     logger.info("Initializing HoloLoom Promptly Dashboard...")
 
@@ -166,7 +233,11 @@ async def startup():
     await skill_registry.load_all_skills()
     logger.info(f"Loaded {len(skill_registry.skills)} professional skills")
 
-    logger.info("Dashboard server ready! API version: v1, Rate limiting: enabled")
+    # Initialize i18n (TranslationManager)
+    i18n = TranslationManager(default_locale="en")
+    logger.info(f"i18n initialized with {len(i18n.available_locales())} locales: {', '.join(i18n.available_locales())}")
+
+    logger.info("Dashboard server ready! API version: v1, Rate limiting: enabled, i18n: enabled")
 
 
 # ============================================================================
@@ -279,14 +350,24 @@ async def send_analytics_update(websocket: WebSocket):
 # ============================================================================
 
 @app.get("/")
-async def get_dashboard():
-    """Serve dashboard HTML."""
-    dashboard_html = Path(__file__).parent / "dashboard.html"
+async def get_dashboard(request: Request):
+    """Serve dashboard HTML with user's preferred language."""
+    # Detect user locale
+    locale = get_user_locale(request)
 
-    if dashboard_html.exists():
-        return FileResponse(dashboard_html)
-    else:
-        return HTMLResponse(content=get_embedded_dashboard_html())
+    # Get translations for this locale
+    translations = i18n.get_all(locale)
+
+    # Render dashboard HTML with translations
+    html = render_dashboard_with_translations(translations, locale)
+
+    # Create response
+    response = HTMLResponse(content=html)
+
+    # Set language cookie to remember user's choice
+    response.set_cookie("lang", locale, max_age=31536000)  # 1 year
+
+    return response
 
 
 # API v1 endpoints with rate limiting
@@ -468,6 +549,72 @@ if RATE_LIMITING_AVAILABLE:
                 "has_more": has_more,
                 "next_skip": next_skip
             }
+        }
+
+    @app.get("/api/v1/analytics/charts/quality-trend")
+    @limiter.limit("100/minute")
+    async def get_quality_trend_chart(request: Request, hours: int = 24):
+        """Get quality improvement trend data (hourly buckets)."""
+        data = analytics.get_quality_trend(hours=hours)
+        return {
+            "labels": [d['timestamp'] for d in data],
+            "values": [d['avg_quality_gain'] * 100 for d in data],
+            "counts": [d['count'] for d in data],
+            "min_values": [d['min_gain'] * 100 for d in data],
+            "max_values": [d['max_gain'] * 100 for d in data]
+        }
+
+    @app.get("/api/v1/analytics/charts/strategy-performance")
+    @limiter.limit("100/minute")
+    async def get_strategy_performance_chart(request: Request):
+        """Get strategy performance comparison data."""
+        data = analytics.get_strategy_performance()
+        return {
+            "labels": [d['strategy'] for d in data],
+            "values": [d['avg_quality_gain'] * 100 for d in data],
+            "counts": [d['count'] for d in data],
+            "colors": [
+                '#00ff88' if d['avg_quality_gain'] > 0.15 else
+                '#ffaa00' if d['avg_quality_gain'] > 0.10 else
+                '#ff4400'
+                for d in data
+            ]
+        }
+
+    @app.get("/api/v1/analytics/charts/query-volume-trend")
+    @limiter.limit("100/minute")
+    async def get_query_volume_chart(request: Request, days: int = 7):
+        """Get query volume trend data (daily buckets)."""
+        data = analytics.get_query_volume_trend(days=days)
+        return {
+            "labels": [d['date'] for d in data],
+            "values": [d['count'] for d in data],
+            "quality_gains": [d['avg_quality_gain'] * 100 for d in data],
+            "durations": [d['avg_duration_ms'] for d in data]
+        }
+
+    @app.get("/api/v1/analytics/charts/iteration-distribution")
+    @limiter.limit("100/minute")
+    async def get_iteration_distribution_chart(request: Request):
+        """Get iteration count distribution data."""
+        data = analytics.get_iteration_distribution()
+        return {
+            "labels": list(data.keys()),
+            "values": list(data.values()),
+            "colors": ['#00d4ff', '#00ff88', '#ffaa00', '#ff4400'][:len(data)]
+        }
+
+    @app.get("/api/v1/analytics/charts/cost-analysis")
+    @limiter.limit("100/minute")
+    async def get_cost_analysis_chart(request: Request):
+        """Get cost breakdown by strategy."""
+        data = analytics.get_cost_by_strategy()
+        return {
+            "labels": [d['strategy'] for d in data],
+            "input_costs": [d['input_cost'] for d in data],
+            "output_costs": [d['output_cost'] for d in data],
+            "total_costs": [d['total_cost'] for d in data],
+            "counts": [d['count'] for d in data]
         }
 
 else:
@@ -653,6 +800,199 @@ else:
             }
         }
 
+    @app.get("/api/v1/analytics/charts/quality-trend")
+    async def get_quality_trend_chart(request: Request, hours: int = 24):
+        """Get quality improvement trend data (hourly buckets)."""
+        await limiter(request)
+        data = analytics.get_quality_trend(hours=hours)
+        return {
+            "labels": [d['timestamp'] for d in data],
+            "values": [d['avg_quality_gain'] * 100 for d in data],
+            "counts": [d['count'] for d in data],
+            "min_values": [d['min_gain'] * 100 for d in data],
+            "max_values": [d['max_gain'] * 100 for d in data]
+        }
+
+    @app.get("/api/v1/analytics/charts/strategy-performance")
+    async def get_strategy_performance_chart(request: Request):
+        """Get strategy performance comparison data."""
+        await limiter(request)
+        data = analytics.get_strategy_performance()
+        return {
+            "labels": [d['strategy'] for d in data],
+            "values": [d['avg_quality_gain'] * 100 for d in data],
+            "counts": [d['count'] for d in data],
+            "colors": [
+                '#00ff88' if d['avg_quality_gain'] > 0.15 else
+                '#ffaa00' if d['avg_quality_gain'] > 0.10 else
+                '#ff4400'
+                for d in data
+            ]
+        }
+
+    @app.get("/api/v1/analytics/charts/query-volume-trend")
+    async def get_query_volume_chart(request: Request, days: int = 7):
+        """Get query volume trend data (daily buckets)."""
+        await limiter(request)
+        data = analytics.get_query_volume_trend(days=days)
+        return {
+            "labels": [d['date'] for d in data],
+            "values": [d['count'] for d in data],
+            "quality_gains": [d['avg_quality_gain'] * 100 for d in data],
+            "durations": [d['avg_duration_ms'] for d in data]
+        }
+
+    @app.get("/api/v1/analytics/charts/iteration-distribution")
+    async def get_iteration_distribution_chart(request: Request):
+        """Get iteration count distribution data."""
+        await limiter(request)
+        data = analytics.get_iteration_distribution()
+        return {
+            "labels": list(data.keys()),
+            "values": list(data.values()),
+            "colors": ['#00d4ff', '#00ff88', '#ffaa00', '#ff4400'][:len(data)]
+        }
+
+    @app.get("/api/v1/analytics/charts/cost-analysis")
+    async def get_cost_analysis_chart(request: Request):
+        """Get cost breakdown by strategy."""
+        await limiter(request)
+        data = analytics.get_cost_by_strategy()
+        return {
+            "labels": [d['strategy'] for d in data],
+            "input_costs": [d['input_cost'] for d in data],
+            "output_costs": [d['output_cost'] for d in data],
+            "total_costs": [d['total_cost'] for d in data],
+            "counts": [d['count'] for d in data]
+        }
+
+
+# ============================================================================
+# Performance Monitoring API Endpoints
+# ============================================================================
+
+@app.get("/metrics")
+async def get_metrics():
+    """
+    Prometheus metrics endpoint.
+
+    Returns:
+        Prometheus-formatted metrics for scraping
+    """
+    return await metrics_endpoint()
+
+
+@app.get("/performance")
+async def get_performance_dashboard():
+    """
+    Performance monitoring dashboard page.
+
+    Returns:
+        HTML dashboard with real-time performance metrics
+    """
+    dashboard_path = Path(__file__).parent / "monitoring" / "dashboard.html"
+    if dashboard_path.exists():
+        return FileResponse(dashboard_path)
+    else:
+        return HTMLResponse(
+            content="<h1>Performance Dashboard Not Found</h1>"
+                    "<p>Dashboard file is missing.</p>",
+            status_code=404
+        )
+
+
+@app.get("/api/v1/monitoring/current")
+async def get_current_metrics(request: Request):
+    """
+    Get current performance metrics snapshot.
+
+    Returns:
+        JSON with current system, request, performance, and cache metrics
+    """
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    # Update WebSocket connection count
+    metrics_collector.set_active_connections(len(manager.active_connections))
+
+    # Get snapshot
+    snapshot = metrics_collector.get_snapshot()
+
+    # Calculate request rate and error rate
+    request_rate = metrics_collector.calculate_rate(window_seconds=60)
+
+    # Simple error rate calculation (would be better with proper tracking)
+    # For now, return 0 as we don't have error tracking in the snapshot
+    error_rate = 0.0
+
+    return {
+        "system": {
+            "cpu_percent": snapshot.cpu_percent,
+            "memory_mb": snapshot.memory_mb,
+            "memory_percent": snapshot.memory_percent,
+            "active_connections": snapshot.active_connections
+        },
+        "requests": {
+            "total": 0,  # Prometheus counters don't expose values easily
+            "rate_per_second": request_rate,
+            "error_rate": error_rate
+        },
+        "performance": {
+            "p50_latency_ms": snapshot.p50_latency_ms,
+            "p95_latency_ms": snapshot.p95_latency_ms,
+            "p99_latency_ms": snapshot.p99_latency_ms
+        },
+        "cache": {
+            "query_cache_hit_rate": snapshot.cache_hit_rates.get('query', 0.0),
+            "embedding_cache_hit_rate": snapshot.cache_hit_rates.get('embedding', 0.0)
+        },
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/api/v1/monitoring/history")
+async def get_metrics_history(
+    request: Request,
+    window: str = "1h",
+    metric: str = "latency"
+):
+    """
+    Get historical metrics data for charting.
+
+    Args:
+        window: Time window (1h, 24h, 7d)
+        metric: Metric type (latency, throughput, errors, cache)
+
+    Returns:
+        Time-series data for the requested metric
+    """
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    # This is a placeholder - in production, use a time-series database
+    # For now, return empty data
+    return {
+        "metric": metric,
+        "window": window,
+        "data": [],
+        "message": "Historical data requires time-series database (implement with InfluxDB or Prometheus)"
+    }
+
+
+@app.get("/api/v1/monitoring/alerts")
+async def get_active_alerts(request: Request):
+    """
+    Get active performance alerts.
+
+    Returns:
+        List of active alerts with severity, metric, value, threshold
+    """
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    alerts = await check_alerts()
+    return alerts
+
 
 # ============================================================================
 # Background Tasks
@@ -675,6 +1015,86 @@ async def broadcast_analytics_updates():
             await manager.broadcast(update)
 
 
+# ============================================================================
+# i18n API Endpoints (Language Management)
+# ============================================================================
+
+@app.get("/api/v1/locales/available")
+async def get_available_locales(request: Request):
+    """
+    Get list of available locales with metadata.
+
+    Returns:
+        List of locale objects with code, name, native name, and flag emoji
+    """
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    locales = []
+    for locale_code in i18n.available_locales():
+        meta = i18n.get_locale_metadata(locale_code)
+        locales.append(meta)
+
+    return {
+        "locales": locales,
+        "default": i18n.default_locale,
+        "total": len(locales)
+    }
+
+
+@app.get("/api/v1/locales/current")
+async def get_current_locale(request: Request):
+    """Get the current user's locale."""
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    locale = get_user_locale(request)
+    meta = i18n.get_locale_metadata(locale)
+
+    return {
+        "current": locale,
+        "metadata": meta
+    }
+
+
+@app.post("/api/v1/locales/set/{locale}")
+async def set_user_locale(locale: str, request: Request):
+    """
+    Set user's preferred locale.
+
+    Args:
+        locale: Locale code (e.g., "es", "fr", "de", "zh", "ja")
+
+    Returns:
+        Success status with locale metadata
+    """
+    if RATE_LIMITING_AVAILABLE:
+        await limiter(request)
+
+    # Validate locale
+    if not i18n.locale_exists(locale):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown locale: {locale}. Available: {', '.join(i18n.available_locales())}"
+        )
+
+    meta = i18n.get_locale_metadata(locale)
+
+    response_data = {
+        "success": True,
+        "locale": locale,
+        "metadata": meta,
+        "message": f"Language changed to {meta['name']}"
+    }
+
+    response = JSONResponse(content=response_data)
+
+    # Set cookie to remember language preference
+    response.set_cookie("lang", locale, max_age=31536000)  # 1 year
+
+    return response
+
+
 @app.on_event("startup")
 async def start_background_tasks():
     """Start background update tasks."""
@@ -682,11 +1102,399 @@ async def start_background_tasks():
 
 
 # ============================================================================
+# Dashboard HTML Rendering with i18n
+# ============================================================================
+
+def render_dashboard_with_translations(translations: Dict[str, Any], locale: str) -> str:
+    """
+    Render dashboard HTML with translations for given locale.
+
+    Args:
+        translations: Dictionary of translations for the locale
+        locale: Locale code (e.g., "en", "es", "fr", "de", "zh", "ja")
+
+    Returns:
+        HTML string with all UI elements translated
+    """
+    # Extract translation keys for easier access
+    t = translations
+
+    # Generate language selector HTML
+    language_selector_options = ""
+    for available_locale in i18n.available_locales():
+        meta = i18n.get_locale_metadata(available_locale)
+        selected = "selected" if available_locale == locale else ""
+        language_selector_options += f'    <option value="{meta["code"]}" {selected}>{meta["flag"]} {meta["name"]}</option>\n'
+
+    # Generate translations JSON for JavaScript
+    translations_json = json.dumps(translations)
+
+    return f"""<!DOCTYPE html>
+<html lang="{locale}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{t.get('app', {}).get('title', 'HoloLoom Promptly Dashboard')}</title>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
+            padding: 20px;
+        }}
+        .container {{ max-width: 1400px; margin: 0 auto; }}
+        .header-bar {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2a3555;
+        }}
+        h1 {{
+            color: #00d4ff;
+            font-size: 28px;
+        }}
+        .language-selector {{
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #2a3555;
+            background: #1a1f3a;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 14px;
+        }}
+        .language-selector:hover {{
+            border-color: #00d4ff;
+            background: #252d4a;
+        }}
+        .status {{
+            background: #1a1f3a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #00d4ff;
+        }}
+        .grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }}
+        .card {{
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #2a3555;
+        }}
+        .card h2 {{
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }}
+        .metric {{
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #2a3555;
+        }}
+        .metric:last-child {{ border-bottom: none; }}
+        .metric-label {{ color: #888; cursor: help; border-bottom: 1px dotted #555; }}
+        .metric-value {{
+            color: #00ff88;
+            font-weight: 600;
+        }}
+        .connection-status {{
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }}
+        .connected {{
+            background: #00ff8820;
+            color: #00ff88;
+        }}
+        .disconnected {{
+            background: #ff440020;
+            color: #ff4400;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+        }}
+        thead {{
+            position: sticky;
+            top: 0;
+            background: #1a1f3a;
+            z-index: 10;
+        }}
+        th, td {{
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid #2a3555;
+        }}
+        th {{
+            color: #00d4ff;
+            font-weight: 600;
+        }}
+        tbody tr {{
+            background: #0a0e27;
+            transition: background-color 0.2s ease;
+        }}
+        tbody tr:nth-child(even) {{
+            background: #151833;
+        }}
+        tbody tr:hover {{
+            background: #2a3555;
+            cursor: pointer;
+        }}
+        .skeleton {{
+            background: linear-gradient(90deg, #1a1f3a 25%, #2a3555 50%, #1a1f3a 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+            height: 20px;
+            margin: 5px 0;
+        }}
+        .skeleton-item {{
+            height: 16px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #1a1f3a 25%, #2a3555 50%, #1a1f3a 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }}
+        @keyframes shimmer {{
+            0% {{ background-position: 200% 0; }}
+            100% {{ background-position: -200% 0; }}
+        }}
+        .timestamp {{
+            color: #666;
+            font-size: 12px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <div>
+                <h1>🔮 {t.get('app', {}).get('title', 'HoloLoom Promptly Dashboard')}</h1>
+                <p style="color: #888; margin-top: 5px;">{t.get('app', {}).get('subtitle', 'Real-time visualization')}</p>
+            </div>
+            <select class="language-selector" id="lang-select" onchange="changeLanguage(this.value)">
+{language_selector_options}            </select>
+        </div>
+
+        <div class="status">
+            <strong>{t.get('websocket', {}).get('connection_status', 'WebSocket Connection')}:</strong>
+            <span id="ws-status" class="connection-status disconnected">{t.get('websocket', {}).get('disconnected', 'Disconnected')}</span>
+            <span style="margin-left: 20px; color: #666;">{t.get('websocket', {}).get('last_update', 'Last update')}: <span id="last-update">–</span></span>
+            <span style="margin-left: 20px; color: #666;">API: v1</span>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>📊 {t.get('sections', {}).get('analytics_summary', 'Analytics Summary')}</h2>
+                <div class="metric">
+                    <span class="metric-label" title="{t.get('tooltips', {}).get('total_queries', '')}">{t.get('metrics', {}).get('total_queries', 'Total Queries')}</span>
+                    <span class="metric-value skeleton" id="total-queries">–</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label" title="{t.get('tooltips', {}).get('avg_quality_gain', '')}">{t.get('metrics', {}).get('avg_quality_gain', 'Avg Quality Gain')}</span>
+                    <span class="metric-value skeleton" id="avg-quality-gain">–</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label" title="{t.get('tooltips', {}).get('avg_iterations', '')}">{t.get('metrics', {}).get('avg_iterations', 'Avg Iterations')}</span>
+                    <span class="metric-value skeleton" id="avg-iterations">–</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label" title="{t.get('tooltips', {}).get('total_cost', '')}">{t.get('metrics', {}).get('total_cost', 'Total Cost')}</span>
+                    <span class="metric-value skeleton" id="total-cost">–</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🎯 {t.get('sections', {}).get('top_strategies', 'Top Strategies')}</h2>
+                <div id="top-strategies">
+                    <div class="skeleton-item" style="width: 80%;"></div>
+                    <div class="skeleton-item" style="width: 75%;"></div>
+                    <div class="skeleton-item" style="width: 70%;"></div>
+                    <div class="skeleton-item" style="width: 65%;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🛠️ {t.get('sections', {}).get('available_skills', 'Available Skills')}</h2>
+                <div id="skills-list">
+                    <div class="skeleton-item" style="width: 85%;"></div>
+                    <div class="skeleton-item" style="width: 90%;"></div>
+                    <div class="skeleton-item" style="width: 75%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📝 {t.get('sections', {}).get('recent_executions', 'Recent Executions')}</h2>
+            <table id="executions-table">
+                <thead>
+                    <tr>
+                        <th>{t.get('table', {}).get('time', 'Time')}</th>
+                        <th>{t.get('table', {}).get('strategy', 'Strategy')}</th>
+                        <th>{t.get('table', {}).get('query', 'Query')}</th>
+                        <th>{t.get('table', {}).get('iterations', 'Iterations')}</th>
+                        <th>{t.get('table', {}).get('quality_gain', 'Quality Gain')}</th>
+                    </tr>
+                </thead>
+                <tbody id="executions-body">
+                    <tr><td colspan="5" style="text-align: center; color: #666;">{t.get('empty_states', {}).get('no_executions', 'No executions yet')}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Translations object for JavaScript
+        const T = {translations_json};
+        const currentLocale = "{locale}";
+
+        let ws;
+
+        function changeLanguage(newLang) {{
+            // Call API to set language
+            fetch(`/api/v1/locales/set/${{newLang}}`, {{ method: 'POST' }})
+                .then(() => {{
+                    // Reload page with new language
+                    window.location.href = `/?lang=${{newLang}}`;
+                }})
+                .catch(err => console.error('Error changing language:', err));
+        }}
+
+        function connect() {{
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${{protocol}}//${{window.location.host}}/ws`);
+
+            ws.onopen = () => {{
+                console.log('WebSocket connected');
+                document.getElementById('ws-status').className = 'connection-status connected';
+                document.getElementById('ws-status').textContent = T.websocket.connected;
+            }};
+
+            ws.onclose = () => {{
+                console.log('WebSocket disconnected');
+                document.getElementById('ws-status').className = 'connection-status disconnected';
+                document.getElementById('ws-status').textContent = T.websocket.disconnected;
+                setTimeout(connect, 3000);
+            }};
+
+            ws.onmessage = (event) => {{
+                const message = JSON.parse(event.data);
+                console.log('Received:', message.type);
+
+                if (message.type === 'initial') {{
+                    updateDashboard(message.analytics, message.skills, message.recent_executions);
+                }} else if (message.type === 'analytics_update') {{
+                    updateAnalytics(message.data);
+                    document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+                }}
+            }};
+
+            // Ping every 30s
+            setInterval(() => {{
+                if (ws.readyState === WebSocket.OPEN) {{
+                    ws.send(JSON.stringify({{type: 'ping'}}));
+                }}
+            }}, 30000);
+        }}
+
+        function updateDashboard(analytics, skills, executions) {{
+            updateAnalytics(analytics);
+            updateSkills(skills);
+            updateExecutions(executions);
+        }}
+
+        function updateAnalytics(data) {{
+            const queriesElement = document.getElementById('total-queries');
+            queriesElement.textContent = data.total_queries || 0;
+            queriesElement.classList.remove('skeleton');
+
+            const gainElement = document.getElementById('avg-quality-gain');
+            gainElement.textContent = (((data.avg_quality_gain || 0) * 100).toFixed(1)) + T.units.percent;
+            gainElement.classList.remove('skeleton');
+
+            const iterElement = document.getElementById('avg-iterations');
+            iterElement.textContent = (data.avg_iterations || 0).toFixed(1);
+            iterElement.classList.remove('skeleton');
+
+            const costElement = document.getElementById('total-cost');
+            costElement.textContent = T.units.dollars + (data.total_cost || 0).toFixed(2);
+            costElement.classList.remove('skeleton');
+
+            if (data.strategies) {{
+                const topStrategies = Object.entries(data.strategies)
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .slice(0, 5);
+
+                const html = topStrategies.map(([name, stats]) =>
+                    `<div class="metric">
+                        <span class="metric-label">${{name}}</span>
+                        <span class="metric-value">${{stats.count}} (${{(stats.avg_quality_gain * 100).toFixed(1)}}%)</span>
+                    </div>`
+                ).join('');
+
+                document.getElementById('top-strategies').innerHTML = html || T.empty_states.no_strategies;
+            }}
+        }}
+
+        function updateSkills(skills) {{
+            const categories = Object.entries(skills);
+            const html = categories.map(([category, skillList]) =>
+                `<div style="margin-bottom: 10px;">
+                    <strong style="color: #00d4ff;">${{category}}</strong>: ${{skillList.length}}
+                </div>`
+            ).join('');
+
+            document.getElementById('skills-list').innerHTML = html || T.empty_states.no_skills;
+        }}
+
+        function updateExecutions(executions) {{
+            if (!executions || executions.length === 0) {{
+                document.getElementById('executions-body').innerHTML =
+                    `<tr><td colspan="5" style="text-align: center; color: #666;">${{T.empty_states.no_executions}}</td></tr>`;
+                return;
+            }}
+
+            const rows = executions.map(exec => {{
+                const time = new Date(exec.timestamp).toLocaleTimeString();
+                const qualityGain = ((exec.quality_gain || 0) * 100).toFixed(1) + T.units.percent;
+
+                return `<tr>
+                    <td class="timestamp">${{time}}</td>
+                    <td>${{exec.strategy}}</td>
+                    <td>${{exec.query_text.substring(0, 50)}}${{exec.query_text.length > 50 ? '...' : ''}}</td>
+                    <td>${{exec.iterations}}</td>
+                    <td style="color: ${{exec.quality_gain > 0 ? '#00ff88' : '#666'}}">${{qualityGain}}</td>
+                </tr>`;
+            }}).join('');
+
+            document.getElementById('executions-body').innerHTML = rows;
+        }}
+
+        // Connect on page load
+        connect();
+    </script>
+</body>
+</html>
+"""
+
+
+# ============================================================================
 # Embedded Dashboard HTML (fallback)
 # ============================================================================
 
 def get_embedded_dashboard_html() -> str:
-    """Get embedded dashboard HTML with API v1 endpoints."""
+    """Get embedded dashboard HTML with API v1 endpoints and Chart.js visualizations."""
     return """
 <!DOCTYPE html>
 <html>
@@ -694,6 +1502,7 @@ def get_embedded_dashboard_html() -> str:
     <title>HoloLoom Promptly Dashboard</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -702,7 +1511,7 @@ def get_embedded_dashboard_html() -> str:
             color: #e0e0e0;
             padding: 20px;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1600px; margin: 0 auto; }
         h1 {
             color: #00d4ff;
             margin-bottom: 10px;
@@ -731,6 +1540,25 @@ def get_embedded_dashboard_html() -> str:
             color: #00d4ff;
             margin-bottom: 15px;
             font-size: 18px;
+        }
+        .chart-card {
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #2a3555;
+            margin-bottom: 20px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-card h2 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        canvas {
+            max-height: 300px;
+            margin-top: auto;
         }
         .metric {
             display: flex;
@@ -763,58 +1591,43 @@ def get_embedded_dashboard_html() -> str:
             width: 100%;
             border-collapse: collapse;
         }
-
-        /* Sticky table header */
         thead {
             position: sticky;
             top: 0;
             background: #1a1f3a;
             z-index: 10;
         }
-
         th, td {
             padding: 12px 10px;
             text-align: left;
             border-bottom: 1px solid #2a3555;
         }
-
         th {
             color: #00d4ff;
             font-weight: 600;
         }
-
-        /* Zebra striping for better scannability */
         tbody tr {
             background: #0a0e27;
             transition: background-color 0.2s ease;
         }
-
         tbody tr:nth-child(even) {
             background: #151833;
         }
-
-        /* Hover state for interactive feedback */
         tbody tr:hover {
             background: #2a3555;
             cursor: pointer;
         }
-
-        /* First and last column alignment polish */
         td:first-child, th:first-child {
             padding-left: 15px;
         }
-
         td:last-child, th:last-child {
             padding-right: 15px;
             text-align: right;
         }
-
         .timestamp {
             color: #666;
             font-size: 12px;
         }
-
-        /* Loading Skeleton Styles */
         .skeleton {
             background: linear-gradient(90deg, #1a1f3a 25%, #2a3555 50%, #1a1f3a 75%);
             background-size: 200% 100%;
@@ -823,15 +1636,12 @@ def get_embedded_dashboard_html() -> str:
             height: 20px;
             margin: 5px 0;
         }
-
         .skeleton-text {
             width: 60%;
         }
-
         .skeleton-number {
             width: 40%;
         }
-
         .skeleton-item {
             height: 16px;
             margin-bottom: 10px;
@@ -840,19 +1650,15 @@ def get_embedded_dashboard_html() -> str:
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite;
         }
-
         @keyframes shimmer {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-
-        /* Tooltip Styles */
         .metric-label {
             position: relative;
             cursor: help;
             border-bottom: 1px dotted #555;
         }
-
         .metric-label:hover::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -870,7 +1676,6 @@ def get_embedded_dashboard_html() -> str:
             z-index: 1000;
             pointer-events: none;
         }
-
         .metric-label:hover::before {
             content: '';
             position: absolute;
@@ -880,6 +1685,17 @@ def get_embedded_dashboard_html() -> str:
             border: 6px solid transparent;
             border-top-color: #2a3555;
             z-index: 1000;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -896,19 +1712,19 @@ def get_embedded_dashboard_html() -> str:
             <div class="card">
                 <h2>📊 Analytics Summary</h2>
                 <div class="metric">
-                    <span class="metric-label" data-tooltip="Total number of queries processed by the recursive reasoning system">Total Queries</span>
+                    <span class="metric-label" data-tooltip="Total number of queries processed">Total Queries</span>
                     <span class="metric-value skeleton skeleton-number" id="total-queries">–</span>
                 </div>
                 <div class="metric">
-                    <span class="metric-label" data-tooltip="Average improvement in confidence score after refinement (initial → final)">Avg Quality Gain</span>
+                    <span class="metric-label" data-tooltip="Average quality improvement after refinement">Avg Quality Gain</span>
                     <span class="metric-value skeleton skeleton-number" id="avg-quality-gain">–</span>
                 </div>
                 <div class="metric">
-                    <span class="metric-label" data-tooltip="Average number of refinement iterations per query">Avg Iterations</span>
+                    <span class="metric-label" data-tooltip="Average refinement iterations per query">Avg Iterations</span>
                     <span class="metric-value skeleton skeleton-number" id="avg-iterations">–</span>
                 </div>
                 <div class="metric">
-                    <span class="metric-label" data-tooltip="Total estimated cost for LLM token usage across all queries">Total Cost</span>
+                    <span class="metric-label" data-tooltip="Total LLM token cost">Total Cost</span>
                     <span class="metric-value skeleton skeleton-number" id="total-cost">–</span>
                 </div>
             </div>
@@ -933,6 +1749,35 @@ def get_embedded_dashboard_html() -> str:
             </div>
         </div>
 
+        <h2 style="color: #00d4ff; margin-top: 30px; margin-bottom: 20px;">📈 Analytics Charts</h2>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h2>📈 Quality Improvement Trend (24h)</h2>
+                <canvas id="qualityTrendChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h2>📊 Strategy Performance</h2>
+                <canvas id="strategyPerformanceChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h2>📅 Query Volume Trend (7 days)</h2>
+                <canvas id="queryVolumeTrendChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h2>🔄 Iteration Distribution</h2>
+                <canvas id="iterationDistributionChart"></canvas>
+            </div>
+
+            <div class="chart-card" style="grid-column: span 2;">
+                <h2>💰 Cost Analysis by Strategy</h2>
+                <canvas id="costAnalysisChart"></canvas>
+            </div>
+        </div>
+
         <div class="card">
             <h2>📝 Recent Executions</h2>
             <table id="executions-table">
@@ -953,7 +1798,12 @@ def get_embedded_dashboard_html() -> str:
     </div>
 
     <script>
+        // Chart.js default configuration for dark theme
+        Chart.defaults.color = '#e0e0e0';
+        Chart.defaults.borderColor = '#2a3555';
+
         let ws;
+        let charts = {};
 
         function connect() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -963,33 +1813,238 @@ def get_embedded_dashboard_html() -> str:
                 console.log('WebSocket connected');
                 document.getElementById('ws-status').className = 'connection-status connected';
                 document.getElementById('ws-status').textContent = 'Connected';
+                updateCharts();
             };
 
             ws.onclose = () => {
                 console.log('WebSocket disconnected');
                 document.getElementById('ws-status').className = 'connection-status disconnected';
                 document.getElementById('ws-status').textContent = 'Disconnected';
-                setTimeout(connect, 3000); // Reconnect after 3s
+                setTimeout(connect, 3000);
             };
 
             ws.onmessage = (event) => {
                 const message = JSON.parse(event.data);
-                console.log('Received:', message.type);
-
                 if (message.type === 'initial') {
                     updateDashboard(message.analytics, message.skills, message.recent_executions);
+                    updateCharts();
                 } else if (message.type === 'analytics_update') {
                     updateAnalytics(message.data);
+                    updateCharts();
                     document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
                 }
             };
 
-            // Ping every 30s
             setInterval(() => {
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({type: 'ping'}));
                 }
             }, 30000);
+        }
+
+        function initializeCharts() {
+            // Quality Trend Chart (Line)
+            const qualityCtx = document.getElementById('qualityTrendChart').getContext('2d');
+            charts.quality = new Chart(qualityCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Avg Quality Gain (%)',
+                        data: [],
+                        borderColor: '#00d4ff',
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: { color: '#00d4ff' } } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#00d4ff' },
+                            grid: { color: '#2a3555' }
+                        },
+                        x: {
+                            ticks: { color: '#888' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Strategy Performance Chart (Bar)
+            const strategyCtx = document.getElementById('strategyPerformanceChart').getContext('2d');
+            charts.strategy = new Chart(strategyCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Avg Quality Gain (%)',
+                        data: [],
+                        backgroundColor: []
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#00d4ff' },
+                            grid: { color: '#2a3555' }
+                        },
+                        x: {
+                            ticks: { color: '#888' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Query Volume Trend Chart (Area)
+            const volumeCtx = document.getElementById('queryVolumeTrendChart').getContext('2d');
+            charts.volume = new Chart(volumeCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Query Count',
+                        data: [],
+                        borderColor: '#00d4ff',
+                        backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: { color: '#00d4ff' } } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#00d4ff' },
+                            grid: { color: '#2a3555' }
+                        },
+                        x: {
+                            ticks: { color: '#888' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Iteration Distribution Chart (Doughnut)
+            const iterCtx = document.getElementById('iterationDistributionChart').getContext('2d');
+            charts.iteration = new Chart(iterCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#00d4ff', '#00ff88', '#ffaa00', '#ff4400']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: { color: '#e0e0e0' } } }
+                }
+            });
+
+            // Cost Analysis Chart (Stacked Bar)
+            const costCtx = document.getElementById('costAnalysisChart').getContext('2d');
+            charts.cost = new Chart(costCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Input Cost ($)',
+                            data: [],
+                            backgroundColor: '#00d4ff'
+                        },
+                        {
+                            label: 'Output Cost ($)',
+                            data: [],
+                            backgroundColor: '#00ff88'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: true, labels: { color: '#e0e0e0' } } },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: { color: '#00d4ff' },
+                            grid: { color: '#2a3555' }
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: { color: '#888' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function updateCharts() {
+            try {
+                // Quality Trend
+                const qualityData = await fetch('/api/v1/analytics/charts/quality-trend').then(r => r.json());
+                if (charts.quality) {
+                    charts.quality.data.labels = qualityData.labels;
+                    charts.quality.data.datasets[0].data = qualityData.values;
+                    charts.quality.update();
+                }
+
+                // Strategy Performance
+                const strategyData = await fetch('/api/v1/analytics/charts/strategy-performance').then(r => r.json());
+                if (charts.strategy) {
+                    charts.strategy.data.labels = strategyData.labels;
+                    charts.strategy.data.datasets[0].data = strategyData.values;
+                    charts.strategy.data.datasets[0].backgroundColor = strategyData.colors;
+                    charts.strategy.update();
+                }
+
+                // Query Volume
+                const volumeData = await fetch('/api/v1/analytics/charts/query-volume-trend').then(r => r.json());
+                if (charts.volume) {
+                    charts.volume.data.labels = volumeData.labels;
+                    charts.volume.data.datasets[0].data = volumeData.values;
+                    charts.volume.update();
+                }
+
+                // Iteration Distribution
+                const iterData = await fetch('/api/v1/analytics/charts/iteration-distribution').then(r => r.json());
+                if (charts.iteration) {
+                    charts.iteration.data.labels = iterData.labels;
+                    charts.iteration.data.datasets[0].data = iterData.values;
+                    charts.iteration.update();
+                }
+
+                // Cost Analysis
+                const costData = await fetch('/api/v1/analytics/charts/cost-analysis').then(r => r.json());
+                if (charts.cost) {
+                    charts.cost.data.labels = costData.labels;
+                    charts.cost.data.datasets[0].data = costData.input_costs;
+                    charts.cost.data.datasets[1].data = costData.output_costs;
+                    charts.cost.update();
+                }
+            } catch (error) {
+                console.warn('Chart update failed:', error);
+            }
         }
 
         function updateDashboard(analytics, skills, executions) {
@@ -999,7 +2054,6 @@ def get_embedded_dashboard_html() -> str:
         }
 
         function updateAnalytics(data) {
-            // Update metrics and remove skeleton class
             const queriesElement = document.getElementById('total-queries');
             queriesElement.textContent = data.total_queries || 0;
             queriesElement.classList.remove('skeleton');
@@ -1016,7 +2070,6 @@ def get_embedded_dashboard_html() -> str:
             costElement.textContent = '$' + (data.total_cost || 0).toFixed(2);
             costElement.classList.remove('skeleton');
 
-            // Update top strategies
             if (data.strategies) {
                 const topStrategies = Object.entries(data.strategies)
                     .sort((a, b) => b[1].count - a[1].count)
@@ -1067,8 +2120,12 @@ def get_embedded_dashboard_html() -> str:
             document.getElementById('executions-body').innerHTML = rows;
         }
 
-        // Connect on page load
-        connect();
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            connect();
+            setInterval(updateCharts, 5000);
+        });
     </script>
 </body>
 </html>

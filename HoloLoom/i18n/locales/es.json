@@ -1,0 +1,129 @@
+{
+  "language": "Spanish",
+  "language_native": "Español",
+  "language_code": "es",
+  "language_flag": "🇪🇸",
+  "app": {
+    "title": "Panel de Control HoloLoom Promptly",
+    "subtitle": "Visualización en tiempo real de memoria y razonamiento",
+    "description": "Monitorea el aprendizaje recursivo, realiza un seguimiento de análisis y optimiza tu canalización de razonamiento"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "analytics": "Análisis",
+    "performance": "Rendimiento",
+    "settings": "Configuración",
+    "help": "Ayuda"
+  },
+  "metrics": {
+    "total_queries": "Consultas Totales",
+    "avg_quality_gain": "Ganancia de Calidad Promedio",
+    "avg_iterations": "Iteraciones Promedio",
+    "total_cost": "Costo Total",
+    "success_rate": "Tasa de Éxito",
+    "avg_latency": "Latencia Promedio"
+  },
+  "tooltips": {
+    "total_queries": "Número total de consultas procesadas por el sistema de razonamiento recursivo",
+    "avg_quality_gain": "Mejora promedio en la puntuación de confianza después del refinamiento (inicial → final)",
+    "avg_iterations": "Número promedio de iteraciones de refinamiento por consulta",
+    "total_cost": "Costo total estimado para el uso de tokens de LLM en todas las consultas",
+    "success_rate": "Porcentaje de consultas que alcanzaron el umbral de calidad deseado",
+    "avg_latency": "Tiempo promedio en milisegundos desde el inicio de la consulta hasta la finalización"
+  },
+  "sections": {
+    "analytics_summary": "Resumen de Análisis",
+    "top_strategies": "Mejores Estrategias",
+    "available_skills": "Habilidades Disponibles",
+    "recent_executions": "Ejecuciones Recientes",
+    "performance_metrics": "Métricas de Rendimiento",
+    "system_status": "Estado del Sistema"
+  },
+  "table": {
+    "time": "Hora",
+    "strategy": "Estrategia",
+    "query": "Consulta",
+    "iterations": "Iteraciones",
+    "quality_gain": "Ganancia de Calidad",
+    "duration": "Duración",
+    "cost": "Costo",
+    "status": "Estado"
+  },
+  "websocket": {
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "connecting": "Conectando...",
+    "last_update": "Última actualización",
+    "connection_status": "Estado de Conexión WebSocket"
+  },
+  "empty_states": {
+    "no_executions": "Sin ejecuciones aún",
+    "no_executions_hint": "Comienza a generar consultas para ver datos aquí",
+    "run_demo": "Ejecutar Demostración",
+    "no_strategies": "No hay datos de estrategia disponibles",
+    "no_skills": "No se han cargado habilidades",
+    "no_data": "No hay datos disponibles"
+  },
+  "buttons": {
+    "refresh": "Actualizar",
+    "export": "Exportar",
+    "settings": "Configuración",
+    "clear": "Limpiar",
+    "connect": "Conectar",
+    "disconnect": "Desconectar"
+  },
+  "status": {
+    "success": "Éxito",
+    "error": "Error",
+    "pending": "Pendiente",
+    "processing": "Procesando",
+    "completed": "Completado"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "username": "Nombre de Usuario",
+    "password": "Contraseña",
+    "email": "Correo Electrónico",
+    "login_button": "Entrar",
+    "logout_button": "Salir",
+    "invalid_credentials": "Nombre de usuario o contraseña inválidos",
+    "welcome": "Bienvenido",
+    "session": "Sesión"
+  },
+  "language": {
+    "title": "Idioma",
+    "select": "Seleccionar Idioma",
+    "english": "Inglés",
+    "spanish": "Español",
+    "french": "Francés",
+    "german": "Alemán",
+    "chinese": "Chino (Simplificado)",
+    "japanese": "Japonés"
+  },
+  "time": {
+    "now": "Justo ahora",
+    "minute_ago": "Hace 1 minuto",
+    "minutes_ago": "Hace {n} minutos",
+    "hour_ago": "Hace 1 hora",
+    "hours_ago": "Hace {n} horas",
+    "day_ago": "Hace 1 día",
+    "days_ago": "Hace {n} días"
+  },
+  "units": {
+    "milliseconds": "ms",
+    "seconds": "s",
+    "minutes": "min",
+    "hours": "h",
+    "days": "d",
+    "percent": "%",
+    "dollars": "$"
+  },
+  "errors": {
+    "connection_failed": "Error al conectar al servidor",
+    "invalid_data": "Datos inválidos recibidos",
+    "server_error": "Error del servidor",
+    "client_error": "Error del cliente",
+    "try_again": "Intentar de Nuevo"
+  }
+}

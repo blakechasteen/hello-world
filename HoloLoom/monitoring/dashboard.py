@@ -44,6 +44,11 @@ try:
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
+    # Mock types for type hints when rich not available
+    Console = type('Console', (), {})
+    Table = type('Table', (), {})
+    Panel = type('Panel', (), {})
+    Layout = type('Layout', (), {})
     print("Warning: rich library not available. Install with: pip install rich")
 
 

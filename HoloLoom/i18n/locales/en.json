@@ -1,0 +1,129 @@
+{
+  "language": "English",
+  "language_native": "English",
+  "language_code": "en",
+  "language_flag": "🇬🇧",
+  "app": {
+    "title": "HoloLoom Promptly Dashboard",
+    "subtitle": "Real-time memory and reasoning visualization",
+    "description": "Monitor recursive learning, track analytics, and optimize your reasoning pipeline"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "analytics": "Analytics",
+    "performance": "Performance",
+    "settings": "Settings",
+    "help": "Help"
+  },
+  "metrics": {
+    "total_queries": "Total Queries",
+    "avg_quality_gain": "Avg Quality Gain",
+    "avg_iterations": "Avg Iterations",
+    "total_cost": "Total Cost",
+    "success_rate": "Success Rate",
+    "avg_latency": "Avg Latency"
+  },
+  "tooltips": {
+    "total_queries": "Total number of queries processed by the recursive reasoning system",
+    "avg_quality_gain": "Average improvement in confidence score after refinement (initial → final)",
+    "avg_iterations": "Average number of refinement iterations per query",
+    "total_cost": "Total estimated cost for LLM token usage across all queries",
+    "success_rate": "Percentage of queries that reached desired quality threshold",
+    "avg_latency": "Average time in milliseconds from query start to completion"
+  },
+  "sections": {
+    "analytics_summary": "Analytics Summary",
+    "top_strategies": "Top Strategies",
+    "available_skills": "Available Skills",
+    "recent_executions": "Recent Executions",
+    "performance_metrics": "Performance Metrics",
+    "system_status": "System Status"
+  },
+  "table": {
+    "time": "Time",
+    "strategy": "Strategy",
+    "query": "Query",
+    "iterations": "Iterations",
+    "quality_gain": "Quality Gain",
+    "duration": "Duration",
+    "cost": "Cost",
+    "status": "Status"
+  },
+  "websocket": {
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "connecting": "Connecting...",
+    "last_update": "Last update",
+    "connection_status": "WebSocket Connection"
+  },
+  "empty_states": {
+    "no_executions": "No executions yet",
+    "no_executions_hint": "Start generating queries to see data here",
+    "run_demo": "Run Demo",
+    "no_strategies": "No strategy data available",
+    "no_skills": "No skills loaded",
+    "no_data": "No data available"
+  },
+  "buttons": {
+    "refresh": "Refresh",
+    "export": "Export",
+    "settings": "Settings",
+    "clear": "Clear",
+    "connect": "Connect",
+    "disconnect": "Disconnect"
+  },
+  "status": {
+    "success": "Success",
+    "error": "Error",
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "email": "Email",
+    "login_button": "Sign In",
+    "logout_button": "Sign Out",
+    "invalid_credentials": "Invalid username or password",
+    "welcome": "Welcome",
+    "session": "Session"
+  },
+  "language": {
+    "title": "Language",
+    "select": "Select Language",
+    "english": "English",
+    "spanish": "Spanish",
+    "french": "French",
+    "german": "German",
+    "chinese": "Chinese (Simplified)",
+    "japanese": "Japanese"
+  },
+  "time": {
+    "now": "Just now",
+    "minute_ago": "1 minute ago",
+    "minutes_ago": "{n} minutes ago",
+    "hour_ago": "1 hour ago",
+    "hours_ago": "{n} hours ago",
+    "day_ago": "1 day ago",
+    "days_ago": "{n} days ago"
+  },
+  "units": {
+    "milliseconds": "ms",
+    "seconds": "s",
+    "minutes": "min",
+    "hours": "h",
+    "days": "d",
+    "percent": "%",
+    "dollars": "$"
+  },
+  "errors": {
+    "connection_failed": "Failed to connect to server",
+    "invalid_data": "Invalid data received",
+    "server_error": "Server error",
+    "client_error": "Client error",
+    "try_again": "Try Again"
+  }
+}

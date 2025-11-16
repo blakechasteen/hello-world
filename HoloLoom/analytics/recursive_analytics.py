@@ -606,3 +606,205 @@ class RecursiveAnalytics:
                         matrix[strat1][strat2] = 0.0
 
         return matrix
+
+    def get_quality_trend(self, hours: int = 24) -> List[Dict[str, Any]]:
+        """
+        Get quality improvement trend over time (hourly buckets).
+
+        Args:
+            hours: Number of hours to look back (default: 24)
+
+        Returns:
+            List of hourly quality statistics
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                strftime('%Y-%m-%d %H:00:00', timestamp) as hour,
+                AVG(quality_gain) as avg_quality_gain,
+                COUNT(*) as count,
+                MIN(quality_gain) as min_gain,
+                MAX(quality_gain) as max_gain
+            FROM executions
+            WHERE timestamp >= datetime('now', ?)
+            GROUP BY hour
+            ORDER BY hour ASC
+        """, (f'-{hours} hours',))
+
+        trends = []
+        for row in cursor.fetchall():
+            hour, avg_gain, count, min_gain, max_gain = row
+            trends.append({
+                'timestamp': hour,
+                'avg_quality_gain': round(avg_gain, 3) if avg_gain else 0,
+                'count': count,
+                'min_gain': round(min_gain, 3) if min_gain else 0,
+                'max_gain': round(max_gain, 3) if max_gain else 0
+            })
+
+        conn.close()
+        return trends
+
+    def get_strategy_performance(self) -> List[Dict[str, Any]]:
+        """
+        Get performance breakdown by strategy (all-time).
+
+        Returns:
+            List of strategy performance metrics
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                strategy,
+                AVG(quality_gain) as avg_quality_gain,
+                AVG(iterations) as avg_iterations,
+                COUNT(*) as count,
+                SUM(cost) as total_cost,
+                AVG(duration_ms) as avg_duration,
+                SUM(CASE WHEN quality_gain > 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) as success_rate
+            FROM executions
+            GROUP BY strategy
+            ORDER BY avg_quality_gain DESC
+        """)
+
+        performances = []
+        for row in cursor.fetchall():
+            strategy, avg_gain, avg_iter, count, total_cost, avg_duration, success_rate = row
+            performances.append({
+                'strategy': strategy,
+                'avg_quality_gain': round(avg_gain, 3) if avg_gain else 0,
+                'avg_iterations': round(avg_iter, 1) if avg_iter else 0,
+                'count': count,
+                'total_cost': round(total_cost, 2) if total_cost else 0,
+                'avg_duration_ms': round(avg_duration, 1) if avg_duration else 0,
+                'success_rate': round(success_rate, 1) if success_rate else 0
+            })
+
+        conn.close()
+        return performances
+
+    def get_query_volume_trend(self, days: int = 7) -> List[Dict[str, Any]]:
+        """
+        Get query volume trend by day.
+
+        Args:
+            days: Number of days to look back (default: 7)
+
+        Returns:
+            List of daily query counts
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                DATE(timestamp) as day,
+                COUNT(*) as count,
+                AVG(quality_gain) as avg_quality_gain,
+                AVG(duration_ms) as avg_duration
+            FROM executions
+            WHERE timestamp >= datetime('now', ?)
+            GROUP BY day
+            ORDER BY day ASC
+        """, (f'-{days} days',))
+
+        trends = []
+        for row in cursor.fetchall():
+            day, count, avg_quality_gain, avg_duration = row
+            trends.append({
+                'date': day,
+                'count': count,
+                'avg_quality_gain': round(avg_quality_gain, 3) if avg_quality_gain else 0,
+                'avg_duration_ms': round(avg_duration, 1) if avg_duration else 0
+            })
+
+        conn.close()
+        return trends
+
+    def get_iteration_distribution(self) -> Dict[str, int]:
+        """
+        Get distribution of iteration counts.
+
+        Returns:
+            Dictionary with iteration count buckets and frequencies
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                CASE
+                    WHEN iterations = 1 THEN '1 iteration'
+                    WHEN iterations = 2 THEN '2 iterations'
+                    WHEN iterations = 3 THEN '3 iterations'
+                    ELSE '4+ iterations'
+                END as bucket,
+                COUNT(*) as count
+            FROM executions
+            GROUP BY bucket
+            ORDER BY
+                CASE
+                    WHEN iterations = 1 THEN 1
+                    WHEN iterations = 2 THEN 2
+                    WHEN iterations = 3 THEN 3
+                    ELSE 4
+                END
+        """)
+
+        distribution = {}
+        for row in cursor.fetchall():
+            bucket, count = row
+            distribution[bucket] = count
+
+        conn.close()
+        return distribution
+
+    def get_cost_by_strategy(self) -> List[Dict[str, Any]]:
+        """
+        Get cost breakdown by strategy.
+
+        Returns:
+            List of strategies with token and cost metrics
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Token costs: input ~$0.003/1M, output ~$0.006/1M tokens
+        # Using simplified model: avg cost per query
+        cursor.execute("""
+            SELECT
+                strategy,
+                SUM(tokens_used) as total_tokens,
+                SUM(cost) as total_cost,
+                COUNT(*) as count,
+                AVG(tokens_used) as avg_tokens,
+                AVG(cost) as avg_cost
+            FROM executions
+            GROUP BY strategy
+            ORDER BY total_cost DESC
+        """)
+
+        costs = []
+        for row in cursor.fetchall():
+            strategy, total_tokens, total_cost, count, avg_tokens, avg_cost = row
+            # Estimate input vs output (typically 30% input, 70% output)
+            input_cost = (total_cost or 0) * 0.3
+            output_cost = (total_cost or 0) * 0.7
+
+            costs.append({
+                'strategy': strategy,
+                'total_tokens': int(total_tokens) if total_tokens else 0,
+                'total_cost': round(total_cost, 2) if total_cost else 0,
+                'input_cost': round(input_cost, 2),
+                'output_cost': round(output_cost, 2),
+                'count': count,
+                'avg_tokens': int(avg_tokens) if avg_tokens else 0,
+                'avg_cost': round(avg_cost, 4) if avg_cost else 0
+            })
+
+        conn.close()
+        return costs

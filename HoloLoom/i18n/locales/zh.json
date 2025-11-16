@@ -1,0 +1,129 @@
+{
+  "language": "Chinese",
+  "language_native": "简体中文",
+  "language_code": "zh",
+  "language_flag": "🇨🇳",
+  "app": {
+    "title": "HoloLoom Promptly 仪表板",
+    "subtitle": "实时内存和推理可视化",
+    "description": "监控递归学习、跟踪分析并优化您的推理管道"
+  },
+  "nav": {
+    "dashboard": "仪表板",
+    "analytics": "分析",
+    "performance": "性能",
+    "settings": "设置",
+    "help": "帮助"
+  },
+  "metrics": {
+    "total_queries": "总查询数",
+    "avg_quality_gain": "平均质量提升",
+    "avg_iterations": "平均迭代次数",
+    "total_cost": "总成本",
+    "success_rate": "成功率",
+    "avg_latency": "平均延迟"
+  },
+  "tooltips": {
+    "total_queries": "递归推理系统处理的查询总数",
+    "avg_quality_gain": "优化后置信度分数的平均改进（初始 → 最终）",
+    "avg_iterations": "每个查询的平均优化迭代次数",
+    "total_cost": "所有查询中LLM令牌使用的总估算成本",
+    "success_rate": "达到所需质量阈值的查询百分比",
+    "avg_latency": "从查询开始到完成的平均时间（毫秒）"
+  },
+  "sections": {
+    "analytics_summary": "分析摘要",
+    "top_strategies": "顶级策略",
+    "available_skills": "可用技能",
+    "recent_executions": "最近的执行",
+    "performance_metrics": "性能指标",
+    "system_status": "系统状态"
+  },
+  "table": {
+    "time": "时间",
+    "strategy": "策略",
+    "query": "查询",
+    "iterations": "迭代",
+    "quality_gain": "质量提升",
+    "duration": "持续时间",
+    "cost": "成本",
+    "status": "状态"
+  },
+  "websocket": {
+    "connected": "已连接",
+    "disconnected": "已断开",
+    "connecting": "正在连接...",
+    "last_update": "最后更新",
+    "connection_status": "WebSocket 连接状态"
+  },
+  "empty_states": {
+    "no_executions": "尚无执行",
+    "no_executions_hint": "开始生成查询以在此处查看数据",
+    "run_demo": "运行演示",
+    "no_strategies": "没有可用的策略数据",
+    "no_skills": "未加载任何技能",
+    "no_data": "没有可用的数据"
+  },
+  "buttons": {
+    "refresh": "刷新",
+    "export": "导出",
+    "settings": "设置",
+    "clear": "清除",
+    "connect": "连接",
+    "disconnect": "断开"
+  },
+  "status": {
+    "success": "成功",
+    "error": "错误",
+    "pending": "待处理",
+    "processing": "处理中",
+    "completed": "已完成"
+  },
+  "auth": {
+    "login": "登录",
+    "logout": "登出",
+    "username": "用户名",
+    "password": "密码",
+    "email": "电子邮件",
+    "login_button": "登录",
+    "logout_button": "登出",
+    "invalid_credentials": "用户名或密码无效",
+    "welcome": "欢迎",
+    "session": "会话"
+  },
+  "language": {
+    "title": "语言",
+    "select": "选择语言",
+    "english": "英语",
+    "spanish": "西班牙语",
+    "french": "法语",
+    "german": "德语",
+    "chinese": "中文（简体）",
+    "japanese": "日语"
+  },
+  "time": {
+    "now": "刚刚",
+    "minute_ago": "1分钟前",
+    "minutes_ago": "{n}分钟前",
+    "hour_ago": "1小时前",
+    "hours_ago": "{n}小时前",
+    "day_ago": "1天前",
+    "days_ago": "{n}天前"
+  },
+  "units": {
+    "milliseconds": "毫秒",
+    "seconds": "秒",
+    "minutes": "分钟",
+    "hours": "小时",
+    "days": "天",
+    "percent": "%",
+    "dollars": "$"
+  },
+  "errors": {
+    "connection_failed": "连接到服务器失败",
+    "invalid_data": "收到无效数据",
+    "server_error": "服务器错误",
+    "client_error": "客户端错误",
+    "try_again": "重试"
+  }
+}

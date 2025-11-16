@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Performance Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #1a1f3a;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            border-left: 4px solid;
+        }
+
+        .stat-card.primary { border-color: #667eea; }
+        .stat-card.success { border-color: #48bb78; }
+        .stat-card.warning { border-color: #f6ad55; }
+        .stat-card.danger { border-color: #f56565; }
+
+        .stat-card h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .subtext {
+            font-size: 13px;
+            opacity: 0.6;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            background: #1a1f3a;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-container h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #a0aec0;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        .table-container {
+            background: #1a1f3a;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .table-container h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #a0aec0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            background: #0f1429;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #a0aec0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        tr:hover {
+            background: #0f1429;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.success { background: #48bb78; color: #fff; }
+        .badge.warning { background: #f6ad55; color: #1a1f3a; }
+        .badge.danger { background: #f56565; color: #fff; }
+
+        .alert-container {
+            background: #1a1f3a;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert.warning {
+            background: rgba(246, 173, 85, 0.1);
+            border-left: 4px solid #f6ad55;
+        }
+
+        .alert.critical {
+            background: rgba(245, 101, 101, 0.1);
+            border-left: 4px solid #f56565;
+        }
+
+        .alert-icon {
+            font-size: 20px;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .alert-message {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .update-time {
+            text-align: center;
+            opacity: 0.5;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 HoloLoom Performance Monitor</h1>
+        <p>Real-time system metrics and performance analytics</p>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card primary">
+            <h3>Request Rate</h3>
+            <div class="value" id="requestRate">--</div>
+            <div class="subtext">requests/second</div>
+        </div>
+
+        <div class="stat-card success">
+            <h3>P95 Latency</h3>
+            <div class="value" id="p95Latency">--</div>
+            <div class="subtext">milliseconds</div>
+        </div>
+
+        <div class="stat-card warning">
+            <h3>CPU Usage</h3>
+            <div class="value" id="cpuUsage">--</div>
+            <div class="subtext">percent</div>
+        </div>
+
+        <div class="stat-card danger">
+            <h3>Memory Usage</h3>
+            <div class="value" id="memoryUsage">--</div>
+            <div class="subtext">megabytes</div>
+        </div>
+    </div>
+
+    <div class="alert-container" id="alertsContainer" style="display: none;">
+        <h2>🚨 Active Alerts</h2>
+        <div id="alertsList"></div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-container">
+            <h2>📊 Request Latency (Last Hour)</h2>
+            <div class="chart-wrapper">
+                <canvas id="latencyChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>📈 Throughput & Error Rate</h2>
+            <div class="chart-wrapper">
+                <canvas id="throughputChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-container">
+            <h2>🎯 Cache Performance</h2>
+            <div class="chart-wrapper">
+                <canvas id="cacheChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>💻 System Resources</h2>
+            <div class="chart-wrapper">
+                <canvas id="systemChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <h2>🚀 Slowest Endpoints (Top 10)</h2>
+        <table id="endpointsTable">
+            <thead>
+                <tr>
+                    <th>Endpoint</th>
+                    <th>Avg Latency</th>
+                    <th>P95 Latency</th>
+                    <th>Request Count</th>
+                    <th>Error Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="5" class="loading">Loading data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="update-time">
+        Last updated: <span id="updateTime">--</span>
+    </div>
+
+    <script>
+        // Chart.js configuration
+        const chartConfig = {
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#a0aec0'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#a0aec0' },
+                    grid: { color: '#2d3748' }
+                },
+                y: {
+                    ticks: { color: '#a0aec0' },
+                    grid: { color: '#2d3748' }
+                }
+            }
+        };
+
+        // Initialize charts
+        const latencyChart = new Chart(
+            document.getElementById('latencyChart'),
+            {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'P50',
+                            data: [],
+                            borderColor: '#48bb78',
+                            backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'P95',
+                            data: [],
+                            borderColor: '#f6ad55',
+                            backgroundColor: 'rgba(246, 173, 85, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'P99',
+                            data: [],
+                            borderColor: '#f56565',
+                            backgroundColor: 'rgba(245, 101, 101, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: chartConfig
+            }
+        );
+
+        const throughputChart = new Chart(
+            document.getElementById('throughputChart'),
+            {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Requests/sec',
+                            data: [],
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Error Rate %',
+                            data: [],
+                            borderColor: '#f56565',
+                            backgroundColor: 'rgba(245, 101, 101, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    ...chartConfig,
+                    scales: {
+                        x: {
+                            ticks: { color: '#a0aec0' },
+                            grid: { color: '#2d3748' }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            ticks: { color: '#a0aec0' },
+                            grid: { color: '#2d3748' },
+                            title: { display: true, text: 'Requests/sec', color: '#a0aec0' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            ticks: { color: '#a0aec0' },
+                            grid: { display: false },
+                            title: { display: true, text: 'Error Rate %', color: '#a0aec0' }
+                        }
+                    }
+                }
+            }
+        );
+
+        const cacheChart = new Chart(
+            document.getElementById('cacheChart'),
+            {
+                type: 'bar',
+                data: {
+                    labels: ['Query Cache', 'Embedding Cache'],
+                    datasets: [
+                        {
+                            label: 'Hit Rate %',
+                            data: [0, 0],
+                            backgroundColor: [
+                                'rgba(102, 126, 234, 0.6)',
+                                'rgba(72, 187, 120, 0.6)'
+                            ],
+                            borderColor: [
+                                '#667eea',
+                                '#48bb78'
+                            ],
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    ...chartConfig,
+                    scales: {
+                        ...chartConfig.scales,
+                        y: {
+                            ...chartConfig.scales.y,
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            }
+        );
+
+        const systemChart = new Chart(
+            document.getElementById('systemChart'),
+            {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'CPU %',
+                            data: [],
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Memory %',
+                            data: [],
+                            borderColor: '#48bb78',
+                            backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    ...chartConfig,
+                    scales: {
+                        ...chartConfig.scales,
+                        y: {
+                            ...chartConfig.scales.y,
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            }
+        );
+
+        // Data storage for history
+        const maxDataPoints = 60; // 5 minutes at 5-second intervals
+        const metricsHistory = {
+            timestamps: [],
+            p50: [],
+            p95: [],
+            p99: [],
+            throughput: [],
+            errorRate: [],
+            cpu: [],
+            memory: []
+        };
+
+        // Update dashboard
+        async function updateDashboard() {
+            try {
+                const response = await fetch('/api/v1/monitoring/current');
+                const data = await response.json();
+
+                // Update stats cards
+                document.getElementById('requestRate').textContent =
+                    (data.requests?.rate_per_second || 0).toFixed(1);
+                document.getElementById('p95Latency').textContent =
+                    (data.performance?.p95_latency_ms || 0).toFixed(0);
+                document.getElementById('cpuUsage').textContent =
+                    (data.system?.cpu_percent || 0).toFixed(1) + '%';
+                document.getElementById('memoryUsage').textContent =
+                    (data.system?.memory_mb || 0).toFixed(0);
+
+                // Update history
+                const now = new Date().toLocaleTimeString();
+                metricsHistory.timestamps.push(now);
+                metricsHistory.p50.push(data.performance?.p50_latency_ms || 0);
+                metricsHistory.p95.push(data.performance?.p95_latency_ms || 0);
+                metricsHistory.p99.push(data.performance?.p99_latency_ms || 0);
+                metricsHistory.throughput.push(data.requests?.rate_per_second || 0);
+                metricsHistory.errorRate.push((data.requests?.error_rate || 0) * 100);
+                metricsHistory.cpu.push(data.system?.cpu_percent || 0);
+                metricsHistory.memory.push(data.system?.memory_percent || 0);
+
+                // Trim history
+                if (metricsHistory.timestamps.length > maxDataPoints) {
+                    Object.keys(metricsHistory).forEach(key => {
+                        metricsHistory[key] = metricsHistory[key].slice(-maxDataPoints);
+                    });
+                }
+
+                // Update charts
+                latencyChart.data.labels = metricsHistory.timestamps;
+                latencyChart.data.datasets[0].data = metricsHistory.p50;
+                latencyChart.data.datasets[1].data = metricsHistory.p95;
+                latencyChart.data.datasets[2].data = metricsHistory.p99;
+                latencyChart.update('none');
+
+                throughputChart.data.labels = metricsHistory.timestamps;
+                throughputChart.data.datasets[0].data = metricsHistory.throughput;
+                throughputChart.data.datasets[1].data = metricsHistory.errorRate;
+                throughputChart.update('none');
+
+                systemChart.data.labels = metricsHistory.timestamps;
+                systemChart.data.datasets[0].data = metricsHistory.cpu;
+                systemChart.data.datasets[1].data = metricsHistory.memory;
+                systemChart.update('none');
+
+                // Update cache chart
+                if (data.cache) {
+                    cacheChart.data.datasets[0].data = [
+                        (data.cache.query_cache_hit_rate || 0) * 100,
+                        (data.cache.embedding_cache_hit_rate || 0) * 100
+                    ];
+                    cacheChart.update('none');
+                }
+
+                // Update timestamp
+                document.getElementById('updateTime').textContent =
+                    new Date().toLocaleTimeString();
+
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+            }
+        }
+
+        // Update alerts
+        async function updateAlerts() {
+            try {
+                const response = await fetch('/api/v1/monitoring/alerts');
+                const alerts = await response.json();
+
+                const container = document.getElementById('alertsContainer');
+                const list = document.getElementById('alertsList');
+
+                if (alerts.length === 0) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                container.style.display = 'block';
+                list.innerHTML = alerts.map(alert => `
+                    <div class="alert ${alert.severity}">
+                        <div class="alert-icon">
+                            ${alert.severity === 'critical' ? '🚨' : '⚠️'}
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">${alert.metric.toUpperCase()}</div>
+                            <div class="alert-message">${alert.message}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error updating alerts:', error);
+            }
+        }
+
+        // Start updates
+        updateDashboard();
+        updateAlerts();
+        setInterval(updateDashboard, 5000);  // Update every 5 seconds
+        setInterval(updateAlerts, 10000);    // Check alerts every 10 seconds
+    </script>
+</body>
+</html>

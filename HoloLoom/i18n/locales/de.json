@@ -1,0 +1,129 @@
+{
+  "language": "German",
+  "language_native": "Deutsch",
+  "language_code": "de",
+  "language_flag": "🇩🇪",
+  "app": {
+    "title": "HoloLoom Promptly Dashboard",
+    "subtitle": "Echtzeit-Visualisierung von Gedächtnis und Argumentation",
+    "description": "Überwachen Sie das rekursive Lernen, verfolgen Sie Analysen und optimieren Sie Ihre Argumentationspipeline"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "analytics": "Analyse",
+    "performance": "Leistung",
+    "settings": "Einstellungen",
+    "help": "Hilfe"
+  },
+  "metrics": {
+    "total_queries": "Abfragen Insgesamt",
+    "avg_quality_gain": "Durchschnittlicher Qualitätsgewinn",
+    "avg_iterations": "Durchschnittliche Iterationen",
+    "total_cost": "Gesamtkosten",
+    "success_rate": "Erfolgsquote",
+    "avg_latency": "Durchschnittliche Latenz"
+  },
+  "tooltips": {
+    "total_queries": "Gesamtzahl der Abfragen, die vom rekursiven Argumentationssystem verarbeitet werden",
+    "avg_quality_gain": "Durchschnittliche Verbesserung des Vertrauenswerts nach Verfeinerung (Anfang → Ende)",
+    "avg_iterations": "Durchschnittliche Anzahl der Verfeinerungsiterationen pro Abfrage",
+    "total_cost": "Geschätzte Gesamtkosten für die LLM-Token-Nutzung über alle Abfragen hinweg",
+    "success_rate": "Prozentsatz der Abfragen, die die gewünschte Qualitätsschwelle erreicht haben",
+    "avg_latency": "Durchschnittliche Zeit in Millisekunden von Abfragebeginn bis Abschluss"
+  },
+  "sections": {
+    "analytics_summary": "Analysezusammenfassung",
+    "top_strategies": "Top-Strategien",
+    "available_skills": "Verfügbare Fähigkeiten",
+    "recent_executions": "Kürzliche Ausführungen",
+    "performance_metrics": "Leistungsmetriken",
+    "system_status": "Systemstatus"
+  },
+  "table": {
+    "time": "Zeit",
+    "strategy": "Strategie",
+    "query": "Abfrage",
+    "iterations": "Iterationen",
+    "quality_gain": "Qualitätsgewinn",
+    "duration": "Dauer",
+    "cost": "Kosten",
+    "status": "Status"
+  },
+  "websocket": {
+    "connected": "Verbunden",
+    "disconnected": "Getrennt",
+    "connecting": "Verbindung wird hergestellt...",
+    "last_update": "Letzte Aktualisierung",
+    "connection_status": "WebSocket-Verbindungsstatus"
+  },
+  "empty_states": {
+    "no_executions": "Noch keine Ausführungen",
+    "no_executions_hint": "Beginnen Sie, Abfragen zu generieren, um hier Daten zu sehen",
+    "run_demo": "Demo Ausführen",
+    "no_strategies": "Keine Strategiedaten verfügbar",
+    "no_skills": "Keine Fähigkeiten geladen",
+    "no_data": "Keine Daten verfügbar"
+  },
+  "buttons": {
+    "refresh": "Aktualisieren",
+    "export": "Exportieren",
+    "settings": "Einstellungen",
+    "clear": "Löschen",
+    "connect": "Verbinden",
+    "disconnect": "Trennen"
+  },
+  "status": {
+    "success": "Erfolg",
+    "error": "Fehler",
+    "pending": "Ausstehend",
+    "processing": "Verarbeitung läuft",
+    "completed": "Abgeschlossen"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "email": "E-Mail",
+    "login_button": "Einloggen",
+    "logout_button": "Ausloggen",
+    "invalid_credentials": "Ungültiger Benutzername oder Passwort",
+    "welcome": "Willkommen",
+    "session": "Sitzung"
+  },
+  "language": {
+    "title": "Sprache",
+    "select": "Sprache Wählen",
+    "english": "Englisch",
+    "spanish": "Spanisch",
+    "french": "Französisch",
+    "german": "Deutsch",
+    "chinese": "Chinesisch (Vereinfacht)",
+    "japanese": "Japanisch"
+  },
+  "time": {
+    "now": "Gerade eben",
+    "minute_ago": "Vor 1 Minute",
+    "minutes_ago": "Vor {n} Minuten",
+    "hour_ago": "Vor 1 Stunde",
+    "hours_ago": "Vor {n} Stunden",
+    "day_ago": "Vor 1 Tag",
+    "days_ago": "Vor {n} Tagen"
+  },
+  "units": {
+    "milliseconds": "ms",
+    "seconds": "s",
+    "minutes": "min",
+    "hours": "h",
+    "days": "T",
+    "percent": "%",
+    "dollars": "$"
+  },
+  "errors": {
+    "connection_failed": "Verbindung zum Server fehlgeschlagen",
+    "invalid_data": "Ungültige Daten empfangen",
+    "server_error": "Serverfehler",
+    "client_error": "Clientfehler",
+    "try_again": "Erneut Versuchen"
+  }
+}

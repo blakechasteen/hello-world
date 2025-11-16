@@ -1,0 +1,129 @@
+{
+  "language": "French",
+  "language_native": "Français",
+  "language_code": "fr",
+  "language_flag": "🇫🇷",
+  "app": {
+    "title": "Tableau de Bord HoloLoom Promptly",
+    "subtitle": "Visualisation en temps réel de la mémoire et du raisonnement",
+    "description": "Surveillez l'apprentissage récursif, suivez les analyses et optimisez votre pipeline de raisonnement"
+  },
+  "nav": {
+    "dashboard": "Tableau de Bord",
+    "analytics": "Analyse",
+    "performance": "Performance",
+    "settings": "Paramètres",
+    "help": "Aide"
+  },
+  "metrics": {
+    "total_queries": "Requêtes Totales",
+    "avg_quality_gain": "Gain de Qualité Moyen",
+    "avg_iterations": "Itérations Moyennes",
+    "total_cost": "Coût Total",
+    "success_rate": "Taux de Réussite",
+    "avg_latency": "Latence Moyenne"
+  },
+  "tooltips": {
+    "total_queries": "Nombre total de requêtes traitées par le système de raisonnement récursif",
+    "avg_quality_gain": "Amélioration moyenne du score de confiance après affinage (initial → final)",
+    "avg_iterations": "Nombre moyen d'itérations d'affinage par requête",
+    "total_cost": "Coût total estimé pour l'utilisation des jetons LLM dans toutes les requêtes",
+    "success_rate": "Pourcentage de requêtes qui ont atteint le seuil de qualité souhaité",
+    "avg_latency": "Temps moyen en millisecondes du début de la requête à l'achèvement"
+  },
+  "sections": {
+    "analytics_summary": "Résumé de l'Analyse",
+    "top_strategies": "Meilleures Stratégies",
+    "available_skills": "Compétences Disponibles",
+    "recent_executions": "Exécutions Récentes",
+    "performance_metrics": "Métriques de Performance",
+    "system_status": "État du Système"
+  },
+  "table": {
+    "time": "Heure",
+    "strategy": "Stratégie",
+    "query": "Requête",
+    "iterations": "Itérations",
+    "quality_gain": "Gain de Qualité",
+    "duration": "Durée",
+    "cost": "Coût",
+    "status": "État"
+  },
+  "websocket": {
+    "connected": "Connecté",
+    "disconnected": "Déconnecté",
+    "connecting": "Connexion en cours...",
+    "last_update": "Dernière mise à jour",
+    "connection_status": "État de la Connexion WebSocket"
+  },
+  "empty_states": {
+    "no_executions": "Aucune exécution pour le moment",
+    "no_executions_hint": "Commencez à générer des requêtes pour voir les données ici",
+    "run_demo": "Exécuter une Démonstration",
+    "no_strategies": "Aucune donnée de stratégie disponible",
+    "no_skills": "Aucune compétence chargée",
+    "no_data": "Aucune donnée disponible"
+  },
+  "buttons": {
+    "refresh": "Actualiser",
+    "export": "Exporter",
+    "settings": "Paramètres",
+    "clear": "Effacer",
+    "connect": "Connecter",
+    "disconnect": "Déconnecter"
+  },
+  "status": {
+    "success": "Succès",
+    "error": "Erreur",
+    "pending": "En attente",
+    "processing": "Traitement",
+    "completed": "Complété"
+  },
+  "auth": {
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "username": "Nom d'Utilisateur",
+    "password": "Mot de Passe",
+    "email": "E-mail",
+    "login_button": "Se Connecter",
+    "logout_button": "Se Déconnecter",
+    "invalid_credentials": "Nom d'utilisateur ou mot de passe invalide",
+    "welcome": "Bienvenue",
+    "session": "Session"
+  },
+  "language": {
+    "title": "Langue",
+    "select": "Sélectionner la Langue",
+    "english": "Anglais",
+    "spanish": "Espagnol",
+    "french": "Français",
+    "german": "Allemand",
+    "chinese": "Chinois (Simplifié)",
+    "japanese": "Japonais"
+  },
+  "time": {
+    "now": "À l'instant",
+    "minute_ago": "Il y a 1 minute",
+    "minutes_ago": "Il y a {n} minutes",
+    "hour_ago": "Il y a 1 heure",
+    "hours_ago": "Il y a {n} heures",
+    "day_ago": "Il y a 1 jour",
+    "days_ago": "Il y a {n} jours"
+  },
+  "units": {
+    "milliseconds": "ms",
+    "seconds": "s",
+    "minutes": "min",
+    "hours": "h",
+    "days": "j",
+    "percent": "%",
+    "dollars": "$"
+  },
+  "errors": {
+    "connection_failed": "Impossible de se connecter au serveur",
+    "invalid_data": "Données invalides reçues",
+    "server_error": "Erreur du serveur",
+    "client_error": "Erreur du client",
+    "try_again": "Réessayer"
+  }
+}

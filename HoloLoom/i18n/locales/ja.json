@@ -1,0 +1,129 @@
+{
+  "language": "Japanese",
+  "language_native": "日本語",
+  "language_code": "ja",
+  "language_flag": "🇯🇵",
+  "app": {
+    "title": "HoloLoom Promptly ダッシュボード",
+    "subtitle": "メモリと推論のリアルタイム可視化",
+    "description": "再帰的学習を監視し、分析を追跡し、推論パイプラインを最適化します"
+  },
+  "nav": {
+    "dashboard": "ダッシュボード",
+    "analytics": "分析",
+    "performance": "パフォーマンス",
+    "settings": "設定",
+    "help": "ヘルプ"
+  },
+  "metrics": {
+    "total_queries": "総クエリ数",
+    "avg_quality_gain": "平均品質向上",
+    "avg_iterations": "平均イテレーション数",
+    "total_cost": "合計コスト",
+    "success_rate": "成功率",
+    "avg_latency": "平均レイテンシ"
+  },
+  "tooltips": {
+    "total_queries": "再帰推論システムで処理されたクエリの総数",
+    "avg_quality_gain": "精密化後の信頼度スコアの平均改善（初期 → 最終）",
+    "avg_iterations": "クエリごとの平均精密化イテレーション数",
+    "total_cost": "すべてのクエリ全体のLLMトークン使用の総推定コスト",
+    "success_rate": "目的の品質しきい値に達したクエリの割合",
+    "avg_latency": "クエリ開始から完了までの平均時間（ミリ秒）"
+  },
+  "sections": {
+    "analytics_summary": "分析サマリー",
+    "top_strategies": "トップストラテジー",
+    "available_skills": "利用可能なスキル",
+    "recent_executions": "最近の実行",
+    "performance_metrics": "パフォーマンスメトリクス",
+    "system_status": "システムステータス"
+  },
+  "table": {
+    "time": "時間",
+    "strategy": "ストラテジー",
+    "query": "クエリ",
+    "iterations": "イテレーション",
+    "quality_gain": "品質向上",
+    "duration": "期間",
+    "cost": "コスト",
+    "status": "ステータス"
+  },
+  "websocket": {
+    "connected": "接続済み",
+    "disconnected": "切断",
+    "connecting": "接続中...",
+    "last_update": "最終更新",
+    "connection_status": "WebSocket接続ステータス"
+  },
+  "empty_states": {
+    "no_executions": "実行はまだありません",
+    "no_executions_hint": "クエリを生成し始めてここにデータを表示します",
+    "run_demo": "デモを実行",
+    "no_strategies": "利用可能なストラテジーデータがありません",
+    "no_skills": "読み込まれたスキルがありません",
+    "no_data": "利用可能なデータがありません"
+  },
+  "buttons": {
+    "refresh": "更新",
+    "export": "エクスポート",
+    "settings": "設定",
+    "clear": "クリア",
+    "connect": "接続",
+    "disconnect": "切断"
+  },
+  "status": {
+    "success": "成功",
+    "error": "エラー",
+    "pending": "保留中",
+    "processing": "処理中",
+    "completed": "完了"
+  },
+  "auth": {
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "email": "メールアドレス",
+    "login_button": "サインイン",
+    "logout_button": "サインアウト",
+    "invalid_credentials": "ユーザー名またはパスワードが無効です",
+    "welcome": "ようこそ",
+    "session": "セッション"
+  },
+  "language": {
+    "title": "言語",
+    "select": "言語を選択",
+    "english": "英語",
+    "spanish": "スペイン語",
+    "french": "フランス語",
+    "german": "ドイツ語",
+    "chinese": "中国語（簡体字）",
+    "japanese": "日本語"
+  },
+  "time": {
+    "now": "たった今",
+    "minute_ago": "1分前",
+    "minutes_ago": "{n}分前",
+    "hour_ago": "1時間前",
+    "hours_ago": "{n}時間前",
+    "day_ago": "1日前",
+    "days_ago": "{n}日前"
+  },
+  "units": {
+    "milliseconds": "ミリ秒",
+    "seconds": "秒",
+    "minutes": "分",
+    "hours": "時間",
+    "days": "日",
+    "percent": "%",
+    "dollars": "$"
+  },
+  "errors": {
+    "connection_failed": "サーバーへの接続に失敗しました",
+    "invalid_data": "無効なデータを受け取りました",
+    "server_error": "サーバーエラー",
+    "client_error": "クライアントエラー",
+    "try_again": "もう一度試す"
+  }
+}
