@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="HoloLoom Ecosystem: Complete overview of all components, integrations, and relationships in the HoloLoom system.">
+  <meta name="keywords" content="HoloLoom, Ecosystem, Architecture, Components, RAG, Alignment, Memory, Community">
+
+  <title>HoloLoom Ecosystem - Complete Overview</title>
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav role="navigation" aria-label="Main">
+    <div class="nav-container container">
+      <a href="/" class="nav-logo">HoloLoom</a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/bigplay.html">BigPlay</a></li>
+        <li><a href="/training/">Training</a></li>
+        <li><a href="/ecosystem.html" class="nav-active">Ecosystem</a></li>
+      </ul>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">☀️</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main" role="main">
+    <!-- Hero -->
+    <header class="hero">
+      <div class="container">
+        <h1>HoloLoom Ecosystem</h1>
+        <p class="hero-tagline">Complete System Architecture and Component Overview</p>
+        <p class="hero-subtext">Understanding the relationships, integrations, and dependencies of all HoloLoom components</p>
+      </div>
+    </header>
+
+    <!-- Table of Contents -->
+    <section style="padding: var(--spacing-2xl) 0; background-color: var(--color-surface); border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2 style="margin-top: 0;">Quick Navigation</h2>
+        <ul style="list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg);">
+          <li><a href="#architecture" style="font-weight: 600;">System Architecture</a></li>
+          <li><a href="#core-components" style="font-weight: 600;">Core Components</a></li>
+          <li><a href="#integrations" style="font-weight: 600;">Integrations</a></li>
+          <li><a href="#compatibility" style="font-weight: 600;">Version Compatibility</a></li>
+          <li><a href="#roadmap" style="font-weight: 600;">Future Roadmap</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- System Architecture -->
+    <section id="architecture" style="padding: var(--spacing-3xl) 0; border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2>System Architecture (9-Layer Model)</h2>
+
+        <div style="background-color: var(--color-surface); padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-2xl); overflow-x: auto;">
+          <pre style="margin: 0; font-size: 0.9rem;"><code>┌─────────────────────────────────────────────────────┐
+│ Layer 9: Application Interface (UI/API)              │
+│ ├─ BigPlay Dashboard                                  │
+│ ├─ FastAPI Server                                     │
+│ └─ VS Code Extension (Squad)                          │
+├─────────────────────────────────────────────────────┤
+│ Layer 8: Orchestration & Control Flow                │
+│ ├─ Weaving Orchestrator (Main coordinator)           │
+│ ├─ Loom Command (Pattern selection)                  │
+│ └─ Chrono Trigger (Temporal control)                 │
+├─────────────────────────────────────────────────────┤
+│ Layer 7: Feature Extraction & Fusion                 │
+│ ├─ Resonance Shed (Multi-modal fusion)               │
+│ ├─ Matryoshka Embeddings (Multi-scale)               │
+│ └─ Spectral Features (Topological)                   │
+├─────────────────────────────────────────────────────┤
+│ Layer 6: Continuous Mathematics & Tensioning        │
+│ ├─ Warp Space (Tensor field)                         │
+│ ├─ Multi-scale Operations                            │
+│ └─ Attention Mechanisms                              │
+├─────────────────────────────────────────────────────┤
+│ Layer 5: Decision Making & Exploration               │
+│ ├─ Convergence Engine (Discrete collapse)            │
+│ ├─ Thompson Sampling (Exploration/Exploitation)      │
+│ └─ Policy Network (Neural decision making)           │
+├─────────────────────────────────────────────────────┤
+│ Layer 4: RAG & Agentic Reasoning                     │
+│ ├─ Simple RAG (Level 2-4 RAG)                        │
+│ ├─ Multimodal RAG (Visual + Text)                    │
+│ ├─ Reasoning Modes (DIRECT/VERIFY/RESEARCH)         │
+│ └─ Multi-Query Decomposition                         │
+├─────────────────────────────────────────────────────┤
+│ Layer 3: Memory & Knowledge                          │
+│ ├─ Yarn Graph (Knowledge graph)                      │
+│ ├─ Memory Backends (Neo4j/Qdrant/INMEMORY)          │
+│ ├─ Semantic Cache (BM25 + embeddings)                │
+│ └─ Reflection Buffer (Learning from outcomes)        │
+├─────────────────────────────────────────────────────┤
+│ Layer 2: Input Processing & Adaptation               │
+│ ├─ SpinningWheel (Input adapters)                    │
+│ ├─ AudioSpinner (Audio/transcripts)                  │
+│ ├─ YouTubeSpinner (Video content)                    │
+│ └─ Input Router (Modality detection)                 │
+├─────────────────────────────────────────────────────┤
+│ Layer 1: Safety, Alignment & Logging                 │
+│ ├─ Safety Guardrails (Risk gating)                   │
+│ ├─ Deception Detection (Goal transparency)           │
+│ ├─ Audit Trail (Complete provenance)                 │
+│ └─ Performance Monitoring                            │
+└─────────────────────────────────────────────────────┘</code></pre>
+        </div>
+
+        <div style="background-color: var(--color-surface); padding: var(--spacing-lg); border-radius: var(--radius-lg); border-left: 4px solid var(--color-primary);">
+          <h3 style="margin-top: 0;">Architecture Philosophy: "Warp Thread" Modules</h3>
+          <p>Each layer is designed as an independent "warp thread" module following these principles:</p>
+          <ul style="margin-top: var(--spacing-md);">
+            <li><strong>Protocol-Based Design:</strong> Components define abstract interfaces, not concrete implementations</li>
+            <li><strong>Zero Inter-Dependencies:</strong> Modules don't import from each other, only from shared types</li>
+            <li><strong>Graceful Degradation:</strong> Optional dependencies fail gracefully with fallbacks</li>
+            <li><strong>Explicit Lifecycle:</strong> Async context managers ensure proper resource cleanup</li>
+            <li><strong>Complete Provenance:</strong> Every decision is logged for debugging and improvement</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Components -->
+    <section id="core-components" style="padding: var(--spacing-3xl) 0; border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2>Core Components</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-lg);">
+          <!-- HoloLoom Core -->
+          <div class="ecosystem-card">
+            <div class="ecosystem-card-header hololoom-theme">
+              <h3>HoloLoom Core</h3>
+              <span class="ecosystem-badge">Main</span>
+            </div>
+            <p><strong>Status:</strong> Production Ready (November 2025)</p>
+            <p><strong>Location:</strong> <code>HoloLoom/</code></p>
+            <p><strong>Purpose:</strong> Neural decision-making system with production RAG and adaptive learning</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Key Subsystems:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>Weaving Orchestrator (9-step cycle)</li>
+              <li>Policy Engine (Thompson Sampling)</li>
+              <li>Recursive Learning (5 phases)</li>
+              <li>Alignment Framework (Safety)</li>
+            </ul>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Performance:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>Simple queries: &lt;50ms</li>
+              <li>Compositional speedup: 291×</li>
+              <li>Hot-path latency: 0.03ms</li>
+            </ul>
+
+            <a href="/training/part1.html" class="ecosystem-link">Learn More</a>
+          </div>
+
+          <!-- RAG System -->
+          <div class="ecosystem-card">
+            <div class="ecosystem-card-header rag-theme">
+              <h3>RAG System</h3>
+              <span class="ecosystem-badge">Level 4</span>
+            </div>
+            <p><strong>Status:</strong> Production Ready (November 2025)</p>
+            <p><strong>Location:</strong> <code>HoloLoom/rag/</code></p>
+            <p><strong>Purpose:</strong> Retrieval-Augmented Generation with multimodal support and reasoning modes</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Features:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>4 Reasoning Modes (DIRECT/VERIFY/RESEARCH/PLAN_EXECUTE)</li>
+              <li>Multimodal Input (Text + Images + Audio)</li>
+              <li>Graph RAG (Yarn Graph traversal)</li>
+              <li>Visual Compression (5-20× token savings)</li>
+            </ul>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Latency:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>Text query (cold): ~150ms</li>
+              <li>Visual Q&A: ~1,110ms</li>
+              <li>Cached query: &lt;1ms</li>
+            </ul>
+
+            <a href="/training/part3.html" class="ecosystem-link">Learn More</a>
+          </div>
+
+          <!-- Memory Systems -->
+          <div class="ecosystem-card">
+            <div class="ecosystem-card-header memory-theme">
+              <h3>Memory Systems</h3>
+              <span class="ecosystem-badge">Advanced</span>
+            </div>
+            <p><strong>Status:</strong> Production Ready (October 2025)</p>
+            <p><strong>Location:</strong> <code>HoloLoom/memory/</code></p>
+            <p><strong>Purpose:</strong> Multi-backend knowledge storage with automatic fallback</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Storage Backends:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li><strong>INMEMORY:</strong> NetworkX (development, always works)</li>
+              <li><strong>HYBRID:</strong> Neo4j + Qdrant (production, auto-fallback)</li>
+              <li><strong>HYPERSPACE:</strong> Advanced gated multipass (research)</li>
+            </ul>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Features:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>BM25 + Semantic Retrieval</li>
+              <li>Entity Relationships</li>
+              <li>Spectral Graph Features</li>
+              <li>Automatic Fallback</li>
+            </ul>
+
+            <a href="/training/part2.html" class="ecosystem-link">Learn More</a>
+          </div>
+
+          <!-- Alignment Framework -->
+          <div class="ecosystem-card">
+            <div class="ecosystem-card-header alignment-theme">
+              <h3>Alignment Framework</h3>
+              <span class="ecosystem-badge">v1.0</span>
+            </div>
+            <p><strong>Status:</strong> Production Ready (November 2025)</p>
+            <p><strong>Location:</strong> <code>HoloLoom/alignment/</code></p>
+            <p><strong>Purpose:</strong> Safety-first architecture with guardrails and audit trails</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Components:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>Safety Guardrails (Risk-based gating)</li>
+              <li>Deception Detection (Goal transparency)</li>
+              <li>Instrumental Convergence Prevention</li>
+              <li>Audit Trail (Complete provenance)</li>
+            </ul>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Performance:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>Per-query overhead: 0.103ms</li>
+              <li>Memory footprint: &lt;10KB</li>
+              <li>No external dependencies</li>
+            </ul>
+
+            <a href="/training/part4.html" class="ecosystem-link">Learn More</a>
+          </div>
+
+          <!-- Promptly -->
+          <div class="ecosystem-card">
+            <div class="ecosystem-card-header promptly-theme">
+              <h3>Promptly</h3>
+              <span class="ecosystem-badge">New</span>
+            </div>
+            <p><strong>Status:</strong> Active Development</p>
+            <p><strong>Location:</strong> Separate Package</p>
+            <p><strong>Purpose:</strong> Prompt management and optimization tool</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Features:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>Prompt Version Control</li>
+              <li>Performance Tracking</li>
+              <li>Prompt Templates</li>
+              <li>A/B Testing</li>
+              <li>Integration with HoloLoom</li>
+            </ul>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Use Cases:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>Optimize LLM interactions</li>
+              <li>Track prompt effectiveness</li>
+              <li>Collaborate on prompts</li>
+            </ul>
+
+            <a href="#" class="ecosystem-link">Learn More</a>
+          </div>
+
+          <!-- Community Hub -->
+          <div class="ecosystem-card">
+            <div class="ecosystem-card-header community-theme">
+              <h3>Community Hub</h3>
+              <span class="ecosystem-badge">Growing</span>
+            </div>
+            <p><strong>Status:</strong> Active (November 2025)</p>
+            <p><strong>Location:</strong> Community Platform</p>
+            <p><strong>Purpose:</strong> Forums, discussions, and collaboration</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Features:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>Discussion Forums</li>
+              <li>Issue Tracker (GitHub)</li>
+              <li>Knowledge Base</li>
+              <li>Project Showcase</li>
+              <li>Contributor Profiles</li>
+            </ul>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Metrics:</h4>
+            <ul style="font-size: var(--font-size-sm); line-height: 1.8;">
+              <li>200+ Active Threads</li>
+              <li>50+ Contributors</li>
+              <li>500+ GitHub Stars</li>
+            </ul>
+
+            <a href="#" class="ecosystem-link">Join Community</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Integration Points -->
+    <section id="integrations" style="padding: var(--spacing-3xl) 0; border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2>Integration Architecture</h2>
+
+        <div style="display: grid; gap: var(--spacing-2xl); max-width: 900px;">
+          <!-- Integration Diagram -->
+          <div style="background-color: var(--color-surface); padding: var(--spacing-lg); border-radius: var(--radius-lg); overflow-x: auto;">
+            <pre style="margin: 0; font-size: 0.85rem;"><code>External Interfaces
+        ↓
+    ┌─────────────────────────────────────┐
+    │  FastAPI Server + VS Code Squad     │
+    └─────────────────────────────────────┘
+                ↓
+    ┌─────────────────────────────────────┐
+    │  BigPlay Dashboard (UI)              │
+    └─────────────────────────────────────┘
+                ↓
+    ┌─────────────────────────────────────┐
+    │  Weaving Orchestrator                │
+    │  ├─ Query Router                     │
+    │  ├─ Pattern Selector (Loom Command)  │
+    │  └─ Result Composer                  │
+    └─────────────────────────────────────┘
+                ↓
+    ┌──────────┬──────────┬────────────────┐
+    ↓          ↓          ↓                 ↓
+   RAG        Memory     Policy        Alignment
+   System     Systems    Engine        Framework
+    ├─        ├─         ├─             ├─
+   Text      Neo4j      Neural         Safety
+   Image     Qdrant      Thompson       Deception
+   Etc.      InMemory    Bandit        Audit
+
+Internal Data Flow
+    ↓
+    Query → Features → Context → Decision → Response
+                ↓
+    Reflection Buffer (Learning)</code></pre>
+          </div>
+
+          <!-- Integration Types -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg);">
+            <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+              <h3 style="margin-top: 0; color: var(--color-primary);">HoloLoom ↔ Memory</h3>
+              <p style="font-size: var(--font-size-sm); margin: var(--spacing-md) 0;">
+                Orchestrator queries memory systems (Neo4j/Qdrant/InMemory). Auto-fallback: if Neo4j unavailable, uses InMemory.
+              </p>
+              <code style="font-size: 0.75rem;">await hololoom.recall(query)</code>
+            </div>
+
+            <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+              <h3 style="margin-top: 0; color: var(--color-primary);">HoloLoom ↔ RAG</h3>
+              <p style="font-size: var(--font-size-sm); margin: var(--spacing-md) 0;">
+                RAG system uses orchestrator for reasoning. Supports multimodal input through SpinningWheel adapters.
+              </p>
+              <code style="font-size: 0.75rem;">await rag.query(text, mode="verify")</code>
+            </div>
+
+            <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+              <h3 style="margin-top: 0; color: var(--color-primary);">HoloLoom ↔ Policy</h3>
+              <p style="font-size: var(--font-size-sm); margin: var(--spacing-md) 0;">
+                Policy engine provides tool selection. Thompson Sampling adapts based on outcomes from reflection buffer.
+              </p>
+              <code style="font-size: 0.75rem;">action = policy.select_tool(features)</code>
+            </div>
+
+            <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+              <h3 style="margin-top: 0; color: var(--color-primary);">HoloLoom ↔ Alignment</h3>
+              <p style="font-size: var(--font-size-sm); margin: var(--spacing-md) 0;">
+                Alignment framework gates all actions. Guardrails check safety, audit trail logs decisions.
+              </p>
+              <code style="font-size: 0.75rem;">ok = await guardrails.gate_action(action)</code>
+            </div>
+
+            <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+              <h3 style="margin-top: 0; color: var(--color-primary);">HoloLoom ↔ Promptly</h3>
+              <p style="font-size: var(--font-size-sm); margin: var(--spacing-md) 0;">
+                Promptly integrates with LLM layer. Orchestrator can use Promptly-managed prompts for consistency.
+              </p>
+              <code style="font-size: 0.75rem;">prompt = promptly.load("my_prompt_v2")</code>
+            </div>
+
+            <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+              <h3 style="margin-top: 0; color: var(--color-primary);">HoloLoom ↔ Community</h3>
+              <p style="font-size: var(--font-size-sm); margin: var(--spacing-md) 0;">
+                Community hub hosts examples, discussions, and issues. Feedback informs roadmap and development.
+              </p>
+              <code style="font-size: 0.75rem;">GitHub: github.com/hololoom</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Version Compatibility -->
+    <section id="compatibility" style="padding: var(--spacing-3xl) 0; border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2>Version Compatibility Matrix</h2>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: var(--font-size-sm);">
+            <thead>
+              <tr style="background-color: var(--color-surface); border-bottom: 2px solid var(--color-border);">
+                <th style="padding: var(--spacing-md); text-align: left;">Component</th>
+                <th style="padding: var(--spacing-md); text-align: center;">Latest</th>
+                <th style="padding: var(--spacing-md); text-align: center;">Compatible With</th>
+                <th style="padding: var(--spacing-md); text-align: left;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--color-border);">
+                <td style="padding: var(--spacing-md);"><strong>HoloLoom Core</strong></td>
+                <td style="padding: var(--spacing-md); text-align: center;">1.0.0</td>
+                <td style="padding: var(--spacing-md); text-align: center;">RAG v1+, Memory v1+</td>
+                <td style="padding: var(--spacing-md);">✅ Stable</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--color-border);">
+                <td style="padding: var(--spacing-md);"><strong>RAG System</strong></td>
+                <td style="padding: var(--spacing-md); text-align: center;">1.0.0</td>
+                <td style="padding: var(--spacing-md); text-align: center;">HoloLoom 1.0+</td>
+                <td style="padding: var(--spacing-md);">✅ Stable</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--color-border);">
+                <td style="padding: var(--spacing-md);"><strong>Memory Systems</strong></td>
+                <td style="padding: var(--spacing-md); text-align: center;">1.0.0</td>
+                <td style="padding: var(--spacing-md); text-align: center;">HoloLoom 1.0+</td>
+                <td style="padding: var(--spacing-md);">✅ Stable</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--color-border);">
+                <td style="padding: var(--spacing-md);"><strong>Alignment Framework</strong></td>
+                <td style="padding: var(--spacing-md); text-align: center;">1.0.0</td>
+                <td style="padding: var(--spacing-md); text-align: center;">HoloLoom 1.0+</td>
+                <td style="padding: var(--spacing-md);">✅ Stable</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--color-border);">
+                <td style="padding: var(--spacing-md);"><strong>Recursive Learning</strong></td>
+                <td style="padding: var(--spacing-md); text-align: center;">1.0.0</td>
+                <td style="padding: var(--spacing-md); text-align: center;">HoloLoom 1.0+</td>
+                <td style="padding: var(--spacing-md);">✅ Stable</td>
+              </tr>
+              <tr>
+                <td style="padding: var(--spacing-md);"><strong>Promptly</strong></td>
+                <td style="padding: var(--spacing-md); text-align: center;">0.1.0</td>
+                <td style="padding: var(--spacing-md); text-align: center;">HoloLoom 0.5+</td>
+                <td style="padding: var(--spacing-md);">🚀 Beta</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: var(--spacing-2xl); padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg); border-left: 4px solid var(--color-warning);">
+          <h3 style="margin-top: 0; color: var(--color-warning);">Breaking Changes</h3>
+          <ul>
+            <li><strong>v1.0.0 (November 2025):</strong> Unified memory backends (removed 10+ legacy backends, kept 3 core options)</li>
+            <li><strong>v0.9.0 (October 2025):</strong> Phase 5 compositional caching (improved latency, some early APIs deprecated)</li>
+            <li><strong>v0.8.0 (September 2025):</strong> Alignment framework integration (added safety guardrails to all operations)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Future Roadmap -->
+    <section id="roadmap" style="padding: var(--spacing-3xl) 0;">
+      <div class="container">
+        <h2>Future Roadmap (Phases 6-10)</h2>
+
+        <div style="display: grid; gap: var(--spacing-lg);">
+          <!-- Phase 6 -->
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg); border-left: 4px solid #3b82f6;">
+            <h3 style="margin-top: 0;">Phase 6: SQL/Database Integration</h3>
+            <p><strong>Timeline:</strong> Q1 2026</p>
+            <p><strong>Focus:</strong> Query structured databases directly from HoloLoom</p>
+            <ul>
+              <li>SQL query generation and execution</li>
+              <li>Database schema introspection</li>
+              <li>Multi-database support (PostgreSQL, MySQL, etc.)</li>
+              <li>Automatic schema → knowledge graph mapping</li>
+            </ul>
+          </div>
+
+          <!-- Phase 7 -->
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg); border-left: 4px solid #8b5cf6;">
+            <h3 style="margin-top: 0;">Phase 7: Multi-Hop Reasoning</h3>
+            <p><strong>Timeline:</strong> Q2 2026</p>
+            <p><strong>Focus:</strong> Follow relationship chains in knowledge graphs</p>
+            <ul>
+              <li>Graph path finding algorithms</li>
+              <li>Multi-hop query planning</li>
+              <li>Relationship type weighting</li>
+              <li>Confidence aggregation across hops</li>
+            </ul>
+          </div>
+
+          <!-- Phase 8 -->
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg); border-left: 4px solid #ec4899;">
+            <h3 style="margin-top: 0;">Phase 8: Streaming & Real-Time</h3>
+            <p><strong>Timeline:</strong> Q3 2026</p>
+            <p><strong>Focus:</strong> Stream LLM generation token-by-token</p>
+            <ul>
+              <li>Token-by-token streaming responses</li>
+              <li>Real-time prompt optimization</li>
+              <li>Interactive refinement</li>
+              <li>Progressive result updates</li>
+            </ul>
+          </div>
+
+          <!-- Phase 9 -->
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg); border-left: 4px solid #16a34a;">
+            <h3 style="margin-top: 0;">Phase 9: Multi-Agent Coordination</h3>
+            <p><strong>Timeline:</strong> Q4 2026</p>
+            <p><strong>Focus:</strong> Coordinate multiple agents for complex tasks</p>
+            <ul>
+              <li>Agent pool management</li>
+              <li>Task distribution algorithms</li>
+              <li>Result aggregation and consensus</li>
+              <li>Collaborative learning between agents</li>
+            </ul>
+          </div>
+
+          <!-- Phase 10 -->
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg); border-left: 4px solid #0891b2;">
+            <h3 style="margin-top: 0;">Phase 10: Fine-Tuning Integration</h3>
+            <p><strong>Timeline:</strong> 2027</p>
+            <p><strong>Focus:</strong> Combine RAG with fine-tuned models</p>
+            <ul>
+              <li>LoRA adapter generation</li>
+              <li>Domain-specific model training</li>
+              <li>Hybrid retrieval + fine-tuned approach</li>
+              <li>Continuous model improvement</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer role="contentinfo" style="background-color: var(--color-surface); border-top: 1px solid var(--color-border); padding: var(--spacing-2xl) 0; margin-top: var(--spacing-3xl);">
+    <div class="container">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-2xl); margin-bottom: var(--spacing-2xl);">
+        <section>
+          <h3 style="font-size: var(--font-size-base); margin-top: 0;">Learning</h3>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: var(--spacing-sm);">
+            <li><a href="/training/">Training Guide</a></li>
+            <li><a href="/ecosystem.html">Ecosystem</a></li>
+            <li><a href="/interactive/">Diagrams</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 style="font-size: var(--font-size-base); margin-top: 0;">Reference</h3>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: var(--spacing-sm);">
+            <li><a href="/api/">API Docs</a></li>
+            <li><a href="/performance/">Performance</a></li>
+            <li><a href="/research/">Research</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 style="font-size: var(--font-size-base); margin-top: 0;">Community</h3>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: var(--spacing-sm);">
+            <li><a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="/contributing.html">Contributing</a></li>
+            <li><a href="/bigplay.html">BigPlay</a></li>
+          </ul>
+        </section>
+      </div>
+
+      <div style="text-align: center; padding-top: var(--spacing-lg); border-top: 1px solid var(--color-border); color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+        <p>Open Source • MIT License • Made with ❤️ by the HoloLoom Community</p>
+        <p>© 2025 HoloLoom</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/theme.js"></script>
+</body>
+</html>

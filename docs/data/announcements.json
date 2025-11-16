@@ -1,0 +1,52 @@
+[
+  {
+    "id": "bigplay-launch",
+    "title": "BigPlay Dashboard Launched",
+    "message": "Welcome to BigPlay - your unified gateway to the HoloLoom ecosystem. Find everything you need in one place.",
+    "type": "success",
+    "icon": "🚀",
+    "priority": "high",
+    "createdAt": "2025-11-16T00:00:00Z",
+    "expiresAt": "2025-12-16T00:00:00Z"
+  },
+  {
+    "id": "alignment-v1",
+    "title": "Alignment Framework v1.0 Released",
+    "message": "Production-ready safety framework with guardrails, deception detection, and complete audit trail. 0.103ms overhead.",
+    "type": "info",
+    "icon": "🔐",
+    "priority": "high",
+    "createdAt": "2025-11-15T00:00:00Z",
+    "expiresAt": "2025-12-15T00:00:00Z"
+  },
+  {
+    "id": "phase5-complete",
+    "title": "Phase 5: Compositional Caching Deployed",
+    "message": "291× speedup through Universal Grammar and compositional caching. Learn how on the training page.",
+    "type": "success",
+    "icon": "⚡",
+    "priority": "medium",
+    "createdAt": "2025-11-10T00:00:00Z",
+    "expiresAt": "2025-11-30T00:00:00Z"
+  },
+  {
+    "id": "rag-production",
+    "title": "RAG System Now Production-Ready",
+    "message": "Level 4 Agentic RAG with 24/25 tests passing. Multimodal support, reasoning modes, and visual compression included.",
+    "type": "info",
+    "icon": "📚",
+    "priority": "medium",
+    "createdAt": "2025-11-08T00:00:00Z",
+    "expiresAt": "2025-12-08T00:00:00Z"
+  },
+  {
+    "id": "training-complete",
+    "title": "Complete 5-Part Training Guide Published",
+    "message": "From foundations to advanced topics. 15+ hours of content with interactive diagrams. Perfect for learners at all levels.",
+    "type": "success",
+    "icon": "📖",
+    "priority": "high",
+    "createdAt": "2025-11-01T00:00:00Z",
+    "expiresAt": "2025-12-01T00:00:00Z"
+  }
+]

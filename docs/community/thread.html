@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thread - HoloLoom Community</title>
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/forums.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">HoloLoom</a>
+                <nav class="main-nav">
+                    <a href="/">Home</a>
+                    <a href="/docs">Docs</a>
+                    <a href="/community" class="active">Community</a>
+                    <a href="/github">GitHub</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="forum-container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-nav">
+            <div class="container">
+                <a href="./index.html">Forum</a>
+                <span>/</span>
+                <a id="categoryLink" href="./category.html">Category</a>
+                <span>/</span>
+                <span id="threadBreadcrumb">Thread</span>
+            </div>
+        </div>
+
+        <!-- Thread Header -->
+        <section class="thread-header-section">
+            <div class="container">
+                <h1 id="threadTitle">Loading...</h1>
+                <div class="thread-header-meta">
+                    <div class="meta-left">
+                        <span class="author-info">
+                            <strong id="threadAuthor">Author</strong>
+                            <span class="time" id="threadCreated"></span>
+                        </span>
+                        <span class="thread-type-badge" id="threadTypeBadge"></span>
+                    </div>
+                    <div class="meta-right">
+                        <span class="view-count"><span id="viewCount">0</span> views</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <div class="container thread-content-wrapper">
+            <!-- Sidebar -->
+            <aside class="thread-sidebar">
+                <div class="sidebar-card">
+                    <h4>Quick Stats</h4>
+                    <div class="stat-list">
+                        <div class="stat-item">
+                            <span class="label">Replies:</span>
+                            <span class="value" id="replyCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Views:</span>
+                            <span class="value" id="viewCountSidebar">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Votes:</span>
+                            <span class="value" id="voteCount">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h4>Tags</h4>
+                    <div id="tagsList" class="tags-list">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="sidebar-card actions-card">
+                    <button class="btn btn-secondary btn-small" onclick="shareThread()">
+                        📤 Share
+                    </button>
+                    <button class="btn btn-secondary btn-small" onclick="reportThread()">
+                        🚩 Report
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Thread -->
+            <section class="thread-main">
+                <!-- Original Post -->
+                <div class="post original-post" id="originalPost">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <!-- Replies Section -->
+                <section class="replies-section">
+                    <h2 id="repliesHeading">Replies</h2>
+                    <div id="repliesContainer" class="replies-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Reply Form -->
+                <section class="reply-form-section">
+                    <h3>Add Your Reply</h3>
+                    <form id="replyForm" onsubmit="submitReply(event)">
+                        <div class="form-group">
+                            <label for="replyAuthor">Your Name:</label>
+                            <input type="text" id="replyAuthor" class="form-input" required>
+                            <small>This will be displayed with your reply</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="replyContent">Your Reply:</label>
+                            <textarea id="replyContent" class="form-textarea" rows="6" required></textarea>
+                            <small>Markdown supported (# headings, **bold**, `code`, etc.)</small>
+                        </div>
+
+                        <div class="form-preview" id="replyPreview" style="display: none;">
+                            <h4>Preview</h4>
+                            <div class="preview-content" id="previewContent"></div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="togglePreview()">
+                                👁️ Preview
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                Post Reply
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2025 HoloLoom. Community Forum v1.0</p>
+            <p><a href="./index.html">Back to Forum</a> | <a href="/">Home</a></p>
+        </div>
+    </footer>
+
+    <!-- Markdown renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Forum system -->
+    <script src="../assets/js/forums.js"></script>
+    <script>
+        let currentThread = null;
+        let previewMode = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ForumManager.init();
+            loadThreadView();
+            setupReplyFormListeners();
+        });
+
+        function getThreadIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return parseInt(params.get('id')) || 1;
+        }
+
+        function loadThreadView() {
+            const threadId = getThreadIdFromUrl();
+            currentThread = ForumManager.getThread(threadId);
+
+            if (!currentThread) {
+                document.querySelector('.thread-main').innerHTML = `
+                    <div class="error-state">
+                        <h2>Thread Not Found</h2>
+                        <p>The discussion you're looking for doesn't exist.</p>
+                        <a href="./index.html" class="btn btn-primary">Back to Forum</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Increment view count
+            ForumManager.incrementViewCount(threadId);
+            currentThread.views++;
+
+            // Update header and breadcrumb
+            document.getElementById('threadTitle').textContent = currentThread.title;
+            document.getElementById('threadBreadcrumb').textContent = currentThread.title;
+            document.getElementById('threadAuthor').textContent = currentThread.author;
+            document.getElementById('threadCreated').textContent = getTimeAgo(new Date(currentThread.created));
+            document.getElementById('viewCount').textContent = currentThread.views;
+            document.getElementById('viewCountSidebar').textContent = currentThread.views;
+
+            // Category link
+            const categoryLink = document.getElementById('categoryLink');
+            const category = ForumManager.getCategories().find(c => c.id === currentThread.categoryId);
+            if (category) {
+                categoryLink.textContent = category.name;
+                categoryLink.href = `./category.html?id=${category.id}`;
+            }
+
+            // Thread type badge
+            document.getElementById('threadTypeBadge').innerHTML = getThreadTypeBadge(currentThread);
+
+            // Render original post
+            renderOriginalPost();
+
+            // Render replies
+            renderReplies();
+
+            // Update sidebar stats
+            document.getElementById('replyCount').textContent = currentThread.replies.length;
+            document.getElementById('voteCount').textContent = currentThread.upvotes - currentThread.downvotes;
+
+            // Render tags
+            renderTags();
+
+            // Pre-fill author name from localStorage
+            const savedAuthor = localStorage.getItem('forumAuthor');
+            if (savedAuthor) {
+                document.getElementById('replyAuthor').value = savedAuthor;
+            }
+        }
+
+        function renderOriginalPost() {
+            const container = document.getElementById('originalPost');
+            const renderedContent = marked(currentThread.content);
+
+            const userReputation = ForumManager.getUserReputation(currentThread.author);
+
+            container.innerHTML = `
+                <div class="post-header">
+                    <div class="post-author">
+                        <div class="avatar">${getInitials(currentThread.author)}</div>
+                        <div class="author-info">
+                            <h4>${currentThread.author}</h4>
+                            <p class="author-meta">
+                                ⭐ ${userReputation} reputation
+                                <span class="post-time">${getTimeAgo(new Date(currentThread.created))}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="post-controls">
+                        ${currentThread.type === 'question' && !currentThread.solved ? `
+                            <button class="btn btn-small btn-secondary" onclick="markAsSolved()">
+                                ✓ Mark as Solved
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div class="post-content">
+                    ${renderedContent}
+                </div>
+
+                <div class="post-footer">
+                    <div class="post-actions">
+                        <button class="vote-btn upvote" onclick="upvotePost('original')">
+                            <span class="vote-icon">👍</span>
+                            <span id="upvotes">${currentThread.upvotes}</span>
+                        </button>
+                        <button class="vote-btn downvote" onclick="downvotePost('original')">
+                            <span class="vote-icon">👎</span>
+                            <span id="downvotes">${currentThread.downvotes}</span>
+                        </button>
+                        <button class="share-btn" onclick="shareThread()">
+                            📤 Share
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderReplies() {
+            const container = document.getElementById('repliesContainer');
+            const heading = document.getElementById('repliesHeading');
+
+            heading.textContent = `Replies (${currentThread.replies.length})`;
+
+            if (currentThread.replies.length === 0) {
+                container.innerHTML = `
+                    <div class="no-replies">
+                        <p>No replies yet. Be the first to respond!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = currentThread.replies.map((reply, index) => {
+                const renderedContent = marked(reply.content);
+                const isSolution = currentThread.type === 'question' && reply.solution;
+                const userReputation = ForumManager.getUserReputation(reply.author);
+
+                return `
+                    <div class="reply ${isSolution ? 'solution-reply' : ''}" id="reply-${reply.id}">
+                        ${isSolution ? '<div class="solution-badge">✓ Solution</div>' : ''}
+
+                        <div class="post-header">
+                            <div class="post-author">
+                                <div class="avatar">${getInitials(reply.author)}</div>
+                                <div class="author-info">
+                                    <h4>${reply.author}</h4>
+                                    <p class="author-meta">
+                                        ⭐ ${userReputation} reputation
+                                        <span class="post-time">${getTimeAgo(new Date(reply.created))}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="post-controls">
+                                ${currentThread.type === 'question' && !currentThread.solved ? `
+                                    <button class="btn btn-small btn-secondary" onclick="markAsSolution(${reply.id})">
+                                        ✓ Mark as Solution
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="post-content">
+                            ${renderedContent}
+                        </div>
+
+                        <div class="post-footer">
+                            <div class="post-actions">
+                                <button class="vote-btn upvote" onclick="upvoteReply(${reply.id})">
+                                    <span class="vote-icon">👍</span>
+                                    <span class="vote-count-${reply.id}">${reply.upvotes}</span>
+                                </button>
+                                <button class="vote-btn downvote" onclick="downvoteReply(${reply.id})">
+                                    <span class="vote-icon">👎</span>
+                                    <span class="vote-count-down-${reply.id}">${reply.downvotes}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderTags() {
+            const container = document.getElementById('tagsList');
+            container.innerHTML = currentThread.tags.map(tag => `
+                <a href="./category.html?id=${currentThread.categoryId}&tag=${tag}" class="tag-badge">
+                    ${tag}
+                </a>
+            `).join('');
+        }
+
+        function setupReplyFormListeners() {
+            const textarea = document.getElementById('replyContent');
+            textarea.addEventListener('input', () => {
+                if (previewMode) {
+                    updatePreview();
+                }
+            });
+        }
+
+        function togglePreview() {
+            previewMode = !previewMode;
+            const preview = document.getElementById('replyPreview');
+
+            if (previewMode) {
+                updatePreview();
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function updatePreview() {
+            const content = document.getElementById('replyContent').value;
+            const renderedContent = marked(content);
+            document.getElementById('previewContent').innerHTML = renderedContent;
+        }
+
+        function submitReply(event) {
+            event.preventDefault();
+
+            const author = document.getElementById('replyAuthor').value.trim();
+            const content = document.getElementById('replyContent').value.trim();
+
+            if (!author || !content) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Save author to localStorage
+            localStorage.setItem('forumAuthor', author);
+
+            // Create reply
+            const reply = ForumManager.createReply(currentThread.id, {
+                author,
+                content
+            });
+
+            // Update view
+            currentThread = ForumManager.getThread(currentThread.id);
+            renderReplies();
+            document.getElementById('replyForm').reset();
+            document.getElementById('replyPreview').style.display = 'none';
+            previewMode = false;
+            document.getElementById('replyCount').textContent = currentThread.replies.length;
+
+            // Scroll to new reply
+            setTimeout(() => {
+                const replyElement = document.getElementById(`reply-${reply.id}`);
+                if (replyElement) {
+                    replyElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        }
+
+        function upvotePost(type) {
+            if (type === 'original') {
+                ForumManager.upvoteThread(currentThread.id);
+                currentThread = ForumManager.getThread(currentThread.id);
+                document.getElementById('upvotes').textContent = currentThread.upvotes;
+                document.getElementById('voteCount').textContent = currentThread.upvotes - currentThread.downvotes;
+            }
+        }
+
+        function downvotePost(type) {
+            if (type === 'original') {
+                ForumManager.downvoteThread(currentThread.id);
+                currentThread = ForumManager.getThread(currentThread.id);
+                document.getElementById('downvotes').textContent = currentThread.downvotes;
+                document.getElementById('voteCount').textContent = currentThread.upvotes - currentThread.downvotes;
+            }
+        }
+
+        function upvoteReply(replyId) {
+            ForumManager.upvoteReply(currentThread.id, replyId);
+            const reply = currentThread.replies.find(r => r.id === replyId);
+            if (reply) {
+                document.querySelector(`.vote-count-${replyId}`).textContent = reply.upvotes;
+            }
+        }
+
+        function downvoteReply(replyId) {
+            ForumManager.downvoteReply(currentThread.id, replyId);
+            const reply = currentThread.replies.find(r => r.id === replyId);
+            if (reply) {
+                document.querySelector(`.vote-count-down-${replyId}`).textContent = reply.downvotes;
+            }
+        }
+
+        function markAsSolution(replyId) {
+            ForumManager.markAsSolution(currentThread.id, replyId);
+            currentThread = ForumManager.getThread(currentThread.id);
+            renderReplies();
+        }
+
+        function markAsSolved() {
+            ForumManager.markThreadAsSolved(currentThread.id);
+            currentThread = ForumManager.getThread(currentThread.id);
+            loadThreadView();
+        }
+
+        function shareThread() {
+            const url = window.location.href;
+            const title = currentThread.title;
+
+            if (navigator.share) {
+                navigator.share({
+                    title,
+                    url
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(url);
+                alert('Link copied to clipboard!');
+            }
+        }
+
+        function reportThread() {
+            alert('Thank you for your report. Our moderation team will review this shortly.');
+            // In a real system, this would send to a moderation queue
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        function getThreadTypeBadge(thread) {
+            const badges = {
+                'question': '<span class="badge badge-info">❓ Question</span>',
+                'discussion': '<span class="badge badge-primary">💬 Discussion</span>',
+                'announcement': '<span class="badge badge-warning">📢 Announcement</span>'
+            };
+            return badges[thread.type] || badges['discussion'];
+        }
+    </script>
+</body>
+</html>

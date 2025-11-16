@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="BigPlay: Unified HoloLoom Ecosystem Dashboard. Mission control for HoloLoom, Promptly, Community, and all your learning needs.">
+  <meta name="keywords" content="HoloLoom, Promptly, Dashboard, Ecosystem, Neural Decision-Making, Community">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hololoom.dev/bigplay.html">
+  <meta property="og:title" content="BigPlay - HoloLoom Ecosystem Dashboard">
+  <meta property="og:description" content="Mission control for the HoloLoom ecosystem">
+
+  <title>BigPlay - HoloLoom Ecosystem Dashboard</title>
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  <link rel="stylesheet" href="/assets/css/search.css">
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav role="navigation" aria-label="Main">
+    <div class="nav-container container">
+      <div class="nav-logo">HoloLoom</div>
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link-home">Home</a></li>
+        <li><a href="/bigplay.html" class="nav-active">BigPlay</a></li>
+        <li><a href="/training/">Training</a></li>
+        <li><a href="/ecosystem.html">Ecosystem</a></li>
+      </ul>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Press 'd' to toggle">☀️</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main" role="main">
+    <!-- Hero Section with Animated Ecosystem -->
+    <header class="bigplay-hero" role="banner">
+      <div class="container">
+        <h1>BigPlay</h1>
+        <p class="hero-tagline">Mission Control for HoloLoom</p>
+        <p class="hero-subtext">Your unified gateway to learning, building, and contributing</p>
+
+        <!-- Animated Ecosystem Visualization -->
+        <div class="ecosystem-animation">
+          <svg viewBox="0 0 800 300" aria-label="HoloLoom ecosystem visualization">
+            <!-- Central node -->
+            <circle cx="400" cy="150" r="60" fill="url(#gradient-center)" class="ecosystem-node center-node"/>
+            <text x="400" y="155" text-anchor="middle" font-size="24" font-weight="bold" fill="white">HoloLoom</text>
+
+            <!-- Connected nodes -->
+            <circle cx="150" cy="100" r="45" fill="url(#gradient-promptly)" class="ecosystem-node promptly-node"/>
+            <text x="150" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Promptly</text>
+
+            <circle cx="650" cy="100" r="45" fill="url(#gradient-rag)" class="ecosystem-node rag-node"/>
+            <text x="650" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="white">RAG</text>
+
+            <circle cx="150" cy="220" r="45" fill="url(#gradient-memory)" class="ecosystem-node memory-node"/>
+            <text x="150" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Memory</text>
+
+            <circle cx="650" cy="220" r="45" fill="url(#gradient-community)" class="ecosystem-node community-node"/>
+            <text x="650" y="225" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Community</text>
+
+            <!-- Connection lines -->
+            <line x1="460" y1="120" x2="590" y2="100" stroke="url(#gradient-line)" stroke-width="2" class="ecosystem-line"/>
+            <line x1="340" y1="120" x2="210" y2="100" stroke="url(#gradient-line)" stroke-width="2" class="ecosystem-line"/>
+            <line x1="340" y1="180" x2="210" y2="220" stroke="url(#gradient-line)" stroke-width="2" class="ecosystem-line"/>
+            <line x1="460" y1="180" x2="590" y2="220" stroke="url(#gradient-line)" stroke-width="2" class="ecosystem-line"/>
+
+            <!-- Gradients -->
+            <defs>
+              <linearGradient id="gradient-center" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1"/>
+                <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1"/>
+              </linearGradient>
+              <linearGradient id="gradient-promptly" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1"/>
+                <stop offset="100%" style="stop-color:#f43f5e;stop-opacity:1"/>
+              </linearGradient>
+              <linearGradient id="gradient-rag" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#16a34a;stop-opacity:1"/>
+                <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1"/>
+              </linearGradient>
+              <linearGradient id="gradient-memory" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1"/>
+                <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1"/>
+              </linearGradient>
+              <linearGradient id="gradient-community" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#0891b2;stop-opacity:1"/>
+                <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1"/>
+              </linearGradient>
+              <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.5"/>
+                <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.5"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-value" id="stat-downloads">100K+</span>
+            <span class="hero-stat-label">Downloads</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value" id="stat-stars">⭐ 500+</span>
+            <span class="hero-stat-label">GitHub Stars</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value" id="stat-contributors">50+</span>
+            <span class="hero-stat-label">Contributors</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value" id="stat-active">200+</span>
+            <span class="hero-stat-label">Active Threads</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Getting Started Wizard -->
+    <section class="wizard-section">
+      <div class="container">
+        <h2>Getting Started</h2>
+        <p class="section-subtitle">What would you like to do?</p>
+
+        <div class="wizard-selector">
+          <button class="wizard-button" data-path="learn" aria-label="Learn HoloLoom">
+            <span class="wizard-icon">📚</span>
+            <span class="wizard-text">Learn HoloLoom</span>
+          </button>
+          <button class="wizard-button" data-path="promptly" aria-label="Use Promptly">
+            <span class="wizard-icon">✨</span>
+            <span class="wizard-text">Use Promptly</span>
+          </button>
+          <button class="wizard-button" data-path="community" aria-label="Join Community">
+            <span class="wizard-icon">👥</span>
+            <span class="wizard-text">Join Community</span>
+          </button>
+          <button class="wizard-button" data-path="issues" aria-label="Report Issue">
+            <span class="wizard-icon">🐛</span>
+            <span class="wizard-text">Report Issue</span>
+          </button>
+          <button class="wizard-button" data-path="contribute" aria-label="Contribute">
+            <span class="wizard-icon">🤝</span>
+            <span class="wizard-text">Contribute</span>
+          </button>
+        </div>
+
+        <!-- Wizard Recommendations -->
+        <div id="wizard-recommendations" class="wizard-recommendations hidden">
+          <div class="recommendation-card">
+            <h3 id="rec-title">Recommended Path</h3>
+            <p id="rec-description">Start here to learn the basics.</p>
+            <a href="#" id="rec-link" class="btn btn-primary">Get Started →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Search Everything -->
+    <section class="search-section">
+      <div class="container">
+        <div class="search-container">
+          <input
+            type="search"
+            id="universal-search"
+            class="search-input"
+            placeholder="Search docs, forums, issues... (or press /)"
+            aria-label="Search HoloLoom"
+          >
+          <div id="search-results" class="search-results hidden"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Activity Feed -->
+    <section class="activity-section">
+      <div class="container">
+        <h2>Recent Activity</h2>
+
+        <div class="activity-grid">
+          <!-- Documentation Updates -->
+          <div class="activity-card">
+            <h3 class="activity-title">📚 Latest Documentation</h3>
+            <div class="activity-list">
+              <div class="activity-item">
+                <span class="activity-label">Updated Today</span>
+                <p class="activity-text">Phase 3 Adaptive Learning System documentation expanded</p>
+              </div>
+              <div class="activity-item">
+                <span class="activity-label">Yesterday</span>
+                <p class="activity-text">Alignment Framework v1.0 production deployment guide</p>
+              </div>
+              <div class="activity-item">
+                <span class="activity-label">2 days ago</span>
+                <p class="activity-text">Complete RAG system integration examples added</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Community Forum Threads -->
+          <div class="activity-card">
+            <h3 class="activity-title">💬 Community Discussions</h3>
+            <div class="activity-list">
+              <div class="activity-item">
+                <span class="activity-label">4 hours ago</span>
+                <p class="activity-text">How to optimize embedding performance?</p>
+              </div>
+              <div class="activity-item">
+                <span class="activity-label">8 hours ago</span>
+                <p class="activity-text">Thompson Sampling vs Epsilon-Greedy - real-world comparison</p>
+              </div>
+              <div class="activity-item">
+                <span class="activity-label">1 day ago</span>
+                <p class="activity-text">Multimodal RAG with custom embeddings</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Open Issues -->
+          <div class="activity-card">
+            <h3 class="activity-title">🐛 Recent Issues</h3>
+            <div class="activity-list">
+              <div class="activity-item">
+                <span class="activity-label">Help Wanted</span>
+                <p class="activity-text">Add support for Ollama streaming responses</p>
+              </div>
+              <div class="activity-item">
+                <span class="activity-label">In Progress</span>
+                <p class="activity-text">Improve Neo4j fallback mechanism</p>
+              </div>
+              <div class="activity-item">
+                <span class="activity-label">Enhancement</span>
+                <p class="activity-text">Dashboard widget customization</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Announcement Banner -->
+        <div id="announcement-banner" class="announcement-banner" role="status" aria-live="polite">
+          <!-- Loaded dynamically from announcements.json -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Links Grid -->
+    <section class="quick-links-section">
+      <div class="container">
+        <h2>Quick Access</h2>
+        <p class="section-subtitle">12 most common tasks</p>
+
+        <div class="quick-links-grid">
+          <a href="/start.html" class="quick-link-card" data-category="install">
+            <span class="quick-link-icon">⚙️</span>
+            <h3>Install HoloLoom</h3>
+            <p>Get started in 5 minutes</p>
+          </a>
+
+          <a href="/training/part1.html" class="quick-link-card" data-category="learn">
+            <span class="quick-link-icon">📖</span>
+            <h3>Training Guide</h3>
+            <p>5-part comprehensive course</p>
+          </a>
+
+          <a href="/interactive/" class="quick-link-card" data-category="visual">
+            <span class="quick-link-icon">🎨</span>
+            <h3>Interactive Diagrams</h3>
+            <p>28 visual system diagrams</p>
+          </a>
+
+          <a href="#" class="quick-link-card" data-category="promptly">
+            <span class="quick-link-icon">✨</span>
+            <h3>Install Promptly</h3>
+            <p>Prompt management CLI</p>
+          </a>
+
+          <a href="#" class="quick-link-card" data-category="examples">
+            <span class="quick-link-icon">💡</span>
+            <h3>Browse Examples</h3>
+            <p>30+ working code examples</p>
+          </a>
+
+          <a href="#" class="quick-link-card" data-category="community">
+            <span class="quick-link-icon">👥</span>
+            <h3>Community Forums</h3>
+            <p>Ask questions, share ideas</p>
+          </a>
+
+          <a href="#" class="quick-link-card" data-category="issues">
+            <span class="quick-link-icon">🐛</span>
+            <h3>Report an Issue</h3>
+            <p>Bug reports and feedback</p>
+          </a>
+
+          <a href="#" class="quick-link-card" data-category="roadmap">
+            <span class="quick-link-icon">🗺️</span>
+            <h3>View Roadmap</h3>
+            <p>Future features and phases</p>
+          </a>
+
+          <a href="#" class="quick-link-card" data-category="api">
+            <span class="quick-link-icon">📚</span>
+            <h3>API Reference</h3>
+            <p>Complete API documentation</p>
+          </a>
+
+          <a href="/contributing.html" class="quick-link-card" data-category="contribute">
+            <span class="quick-link-icon">🤝</span>
+            <h3>Contributing Guide</h3>
+            <p>How to contribute code/docs</p>
+          </a>
+
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="quick-link-card" data-category="github">
+            <span class="quick-link-icon">🔗</span>
+            <h3>GitHub Repository</h3>
+            <p>View source code</p>
+          </a>
+
+          <a href="#" class="quick-link-card" data-category="support">
+            <span class="quick-link-icon">💬</span>
+            <h3>Contact & Support</h3>
+            <p>Get help from team</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ecosystem Map -->
+    <section class="ecosystem-section">
+      <div class="container">
+        <h2>Ecosystem Components</h2>
+        <p class="section-subtitle">Click on any component to learn more</p>
+
+        <div class="ecosystem-map">
+          <div class="ecosystem-card" data-component="hololoom">
+            <div class="ecosystem-card-header hololoom-theme">
+              <h3>HoloLoom Core</h3>
+              <span class="ecosystem-badge">Production Ready</span>
+            </div>
+            <p>Neural decision-making system with production RAG, adaptive learning, and self-improvement</p>
+            <ul class="component-features">
+              <li>Level 4 Agentic RAG</li>
+              <li>Thompson Sampling</li>
+              <li>Recursive Learning</li>
+              <li>Alignment Framework</li>
+            </ul>
+            <a href="/training/part1.html" class="ecosystem-link">Learn More →</a>
+          </div>
+
+          <div class="ecosystem-card" data-component="promptly">
+            <div class="ecosystem-card-header promptly-theme">
+              <h3>Promptly</h3>
+              <span class="ecosystem-badge">New</span>
+            </div>
+            <p>Prompt management and optimization tool for managing AI interactions</p>
+            <ul class="component-features">
+              <li>Version Control</li>
+              <li>Performance Tracking</li>
+              <li>Prompt Templates</li>
+              <li>A/B Testing</li>
+            </ul>
+            <a href="#" class="ecosystem-link">Learn More →</a>
+          </div>
+
+          <div class="ecosystem-card" data-component="memory">
+            <div class="ecosystem-card-header memory-theme">
+              <h3>Memory Systems</h3>
+              <span class="ecosystem-badge">Advanced</span>
+            </div>
+            <p>Multi-backend knowledge storage with automatic fallback and graph traversal</p>
+            <ul class="component-features">
+              <li>Neo4j/Qdrant</li>
+              <li>Yarn Graph</li>
+              <li>Semantic Search</li>
+              <li>Auto-Fallback</li>
+            </ul>
+            <a href="/training/part2.html" class="ecosystem-link">Learn More →</a>
+          </div>
+
+          <div class="ecosystem-card" data-component="rag">
+            <div class="ecosystem-card-header rag-theme">
+              <h3>RAG System</h3>
+              <span class="ecosystem-badge">Complete</span>
+            </div>
+            <p>Retrieval-Augmented Generation with multimodal support and reasoning modes</p>
+            <ul class="component-features">
+              <li>4 Reasoning Modes</li>
+              <li>Multimodal Input</li>
+              <li>CLIP Embeddings</li>
+              <li>Visual Compression</li>
+            </ul>
+            <a href="/training/part3.html" class="ecosystem-link">Learn More →</a>
+          </div>
+
+          <div class="ecosystem-card" data-component="community">
+            <div class="ecosystem-card-header community-theme">
+              <h3>Community Hub</h3>
+              <span class="ecosystem-badge">Growing</span>
+            </div>
+            <p>Forums, discussions, and issue tracking for community collaboration</p>
+            <ul class="component-features">
+              <li>Discussion Forums</li>
+              <li>Issue Tracker</li>
+              <li>Knowledge Base</li>
+              <li>Showcase</li>
+            </ul>
+            <a href="#" class="ecosystem-link">Join Now →</a>
+          </div>
+
+          <div class="ecosystem-card" data-component="alignment">
+            <div class="ecosystem-card-header alignment-theme">
+              <h3>Alignment Framework</h3>
+              <span class="ecosystem-badge">v1.0</span>
+            </div>
+            <p>Safety-first architecture with guardrails, deception detection, and audit trails</p>
+            <ul class="component-features">
+              <li>Safety Guardrails</li>
+              <li>Deception Detection</li>
+              <li>Instrument Convergence</li>
+              <li>Audit Trail</li>
+            </ul>
+            <a href="/training/part4.html" class="ecosystem-link">Learn More →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Community Spotlight -->
+    <section class="spotlight-section">
+      <div class="container">
+        <h2>Community Spotlight</h2>
+        <p class="section-subtitle">Featured contributions and discussions</p>
+
+        <div class="spotlight-grid">
+          <div class="spotlight-card">
+            <div class="spotlight-header">
+              <h3>Top Discussion This Week</h3>
+              <span class="spotlight-meta">127 replies</span>
+            </div>
+            <p class="spotlight-title">Optimizing Thompson Sampling for Real-Time Systems</p>
+            <p class="spotlight-excerpt">A deep dive into exploration-exploitation tradeoffs with practical implementations...</p>
+            <div class="spotlight-footer">
+              <span class="spotlight-author">by @user_123</span>
+              <a href="#" class="spotlight-link">View →</a>
+            </div>
+          </div>
+
+          <div class="spotlight-card">
+            <div class="spotlight-header">
+              <h3>Top Contributor (Month)</h3>
+              <span class="spotlight-meta">12 contributions</span>
+            </div>
+            <p class="spotlight-title">@DevStar - Implementing Graph RAG enhancements</p>
+            <p class="spotlight-excerpt">3 merged PRs improving knowledge graph traversal and multi-hop reasoning...</p>
+            <div class="spotlight-footer">
+              <span class="spotlight-author">Profile</span>
+              <a href="#" class="spotlight-link">View →</a>
+            </div>
+          </div>
+
+          <div class="spotlight-card">
+            <div class="spotlight-header">
+              <h3>Success Story</h3>
+              <span class="spotlight-meta">Featured</span>
+            </div>
+            <p class="spotlight-title">Building a Multi-Agent Research Assistant with HoloLoom</p>
+            <p class="spotlight-excerpt">Case study: How ChatGPT+ researchers used HoloLoom RAG to automate literature reviews...</p>
+            <div class="spotlight-footer">
+              <span class="spotlight-author">by @researcher_team</span>
+              <a href="#" class="spotlight-link">Read →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Customizable Widgets (Dashboard Settings) -->
+    <section class="dashboard-settings">
+      <div class="container">
+        <div class="settings-header">
+          <h3>Dashboard Customization</h3>
+          <button id="reset-dashboard" class="btn btn-outline" title="Reset dashboard to defaults">Reset to Defaults</button>
+        </div>
+        <p class="settings-help">Choose which widgets to display on your dashboard</p>
+
+        <div class="settings-grid">
+          <label class="settings-checkbox">
+            <input type="checkbox" name="widget-activity" checked>
+            <span>Recent Activity Feed</span>
+          </label>
+          <label class="settings-checkbox">
+            <input type="checkbox" name="widget-ecosystem" checked>
+            <span>Ecosystem Map</span>
+          </label>
+          <label class="settings-checkbox">
+            <input type="checkbox" name="widget-spotlight" checked>
+            <span>Community Spotlight</span>
+          </label>
+          <label class="settings-checkbox">
+            <input type="checkbox" name="widget-quick-links" checked>
+            <span>Quick Links</span>
+          </label>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer role="contentinfo">
+    <div class="container">
+      <div class="footer-content">
+        <section class="footer-section">
+          <h3>Learning</h3>
+          <ul>
+            <li><a href="/training/">Training Guide</a></li>
+            <li><a href="/start.html">Getting Started</a></li>
+            <li><a href="/interactive/">Interactive Diagrams</a></li>
+            <li><a href="/help/glossary">Glossary</a></li>
+          </ul>
+        </section>
+
+        <section class="footer-section">
+          <h3>Reference</h3>
+          <ul>
+            <li><a href="/api/">API Docs</a></li>
+            <li><a href="/ecosystem.html">Ecosystem</a></li>
+            <li><a href="/performance/">Performance</a></li>
+            <li><a href="/research/">Research</a></li>
+          </ul>
+        </section>
+
+        <section class="footer-section">
+          <h3>Community</h3>
+          <ul>
+            <li><a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="/contributing.html">Contributing</a></li>
+            <li><a href="#" target="_blank" rel="noopener noreferrer">Discord</a></li>
+            <li><a href="#" target="_blank" rel="noopener noreferrer">Twitter</a></li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="footer-bottom">
+        <p>Open Source • MIT License • Made with ❤️ by the HoloLoom Community</p>
+        <p class="footer-credits">© 2025 HoloLoom • BigPlay Dashboard</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/assets/js/theme.js"></script>
+  <script src="/assets/js/dashboard.js"></script>
+  <script>
+    // Initialize dashboard
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        window.BigPlayDashboard && window.BigPlayDashboard.init();
+      });
+    } else {
+      window.BigPlayDashboard && window.BigPlayDashboard.init();
+    }
+  </script>
+</body>
+</html>

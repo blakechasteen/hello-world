@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Issues</title>
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/issues.css">
+</head>
+<body>
+    <header class="site-header">
+        <nav class="site-nav">
+            <a href="../" class="site-logo">HoloLoom</a>
+            <ul class="nav-links">
+                <li><a href="../">Home</a></li>
+                <li><a href="./">Issues</a></li>
+                <li><a href="../docs/">Documentation</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="issues-header">
+            <div class="issues-title-block">
+                <h1>Issues</h1>
+                <p class="issues-subtitle">Report bugs, request features, and track improvements</p>
+            </div>
+            <a href="./new.html" class="btn btn-primary">New Issue</a>
+        </section>
+
+        <!-- Statistics -->
+        <div class="issues-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="stat-total">0</div>
+                <div class="stat-label">Total Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-open">0</div>
+                <div class="stat-label">Open</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-closed">0</div>
+                <div class="stat-label">Closed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-high">0</div>
+                <div class="stat-label">High Priority</div>
+            </div>
+        </div>
+
+        <!-- Filters and Controls -->
+        <div class="issues-controls">
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="filter-status">Status:</label>
+                    <select id="filter-status" class="filter-select">
+                        <option value="">All</option>
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label for="filter-priority">Priority:</label>
+                    <select id="filter-priority" class="filter-select">
+                        <option value="">All</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label for="filter-component">Component:</label>
+                    <select id="filter-component" class="filter-select">
+                        <option value="">All</option>
+                        <option value="HoloLoom">HoloLoom</option>
+                        <option value="Documentation">Documentation</option>
+                        <option value="API">API</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label for="filter-label">Label:</label>
+                    <select id="filter-label" class="filter-select">
+                        <option value="">All</option>
+                        <option value="bug">Bug</option>
+                        <option value="feature">Feature</option>
+                        <option value="documentation">Documentation</option>
+                        <option value="question">Question</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="search-sort-group">
+                <div class="search-box">
+                    <input
+                        type="text"
+                        id="search-input"
+                        class="search-input"
+                        placeholder="Search issues..."
+                        aria-label="Search issues"
+                    >
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="sort-item">
+                    <label for="sort-by">Sort:</label>
+                    <select id="sort-by" class="sort-select">
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                        <option value="title">Title (A-Z)</option>
+                        <option value="priority">Priority</option>
+                        <option value="updated">Recently Updated</option>
+                    </select>
+                </div>
+
+                <button id="reset-filters" class="btn btn-secondary" title="Reset all filters">Reset</button>
+            </div>
+        </div>
+
+        <!-- Issues Container -->
+        <div class="issues-container">
+            <div id="issues-list" class="issues-list">
+                <!-- Issues will be populated here -->
+            </div>
+
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <div class="empty-state-content">
+                    <div class="empty-icon">📋</div>
+                    <h2>No issues found</h2>
+                    <p>Try adjusting your filters or create a new issue to get started.</p>
+                    <a href="./new.html" class="btn btn-primary">Create First Issue</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="pagination" style="display: none;">
+            <button id="prev-page" class="btn btn-secondary" aria-label="Previous page">← Previous</button>
+            <div class="page-info">
+                <span id="page-number">1</span> / <span id="total-pages">1</span>
+            </div>
+            <button id="next-page" class="btn btn-secondary" aria-label="Next page">Next →</button>
+        </div>
+
+        <!-- Debug Info -->
+        <div class="issues-footer">
+            <small class="text-muted">
+                Last updated: <span id="last-updated">—</span>
+                | <button id="export-issues" class="link-button">Export as JSON</button>
+                | <button id="import-issues" class="link-button">Import from JSON</button>
+                | <span id="storage-info">—</span>
+            </small>
+        </div>
+    </main>
+
+    <!-- Hidden import input -->
+    <input type="file" id="import-file" style="display: none;" accept=".json" aria-label="Import issues file">
+
+    <footer class="site-footer">
+        <p>&copy; 2025 HoloLoom. <a href="../">Back to home</a></p>
+    </footer>
+
+    <script src="../assets/js/issues.js"></script>
+    <script>
+        // Initialize issues page on load
+        document.addEventListener('DOMContentLoaded', () => {
+            IssuesManager.init();
+            IssuesUI.render();
+            IssuesUI.updateStats();
+        });
+
+        // Re-render when filters change
+        document.getElementById('filter-status').addEventListener('change', () => IssuesUI.render());
+        document.getElementById('filter-priority').addEventListener('change', () => IssuesUI.render());
+        document.getElementById('filter-component').addEventListener('change', () => IssuesUI.render());
+        document.getElementById('filter-label').addEventListener('change', () => IssuesUI.render());
+        document.getElementById('sort-by').addEventListener('change', () => IssuesUI.render());
+        document.getElementById('search-input').addEventListener('input', () => IssuesUI.render());
+        document.getElementById('reset-filters').addEventListener('click', () => IssuesUI.resetFilters());
+
+        // Pagination
+        document.getElementById('prev-page').addEventListener('click', () => IssuesUI.previousPage());
+        document.getElementById('next-page').addEventListener('click', () => IssuesUI.nextPage());
+
+        // Import/Export
+        document.getElementById('export-issues').addEventListener('click', () => IssuesManager.exportToJSON());
+        document.getElementById('import-issues').addEventListener('click', () => {
+            document.getElementById('import-file').click();
+        });
+        document.getElementById('import-file').addEventListener('change', (e) => {
+            IssuesManager.importFromJSON(e.target.files[0]);
+            e.target.value = ''; // Reset file input
+        });
+    </script>
+</body>
+</html>

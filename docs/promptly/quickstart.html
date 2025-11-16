@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Get started with Promptly in 5 minutes - Installation, first prompts, loop composition, and CLI basics">
+  <meta name="keywords" content="Promptly, quick start, installation, setup, getting started">
+
+  <title>Promptly Quick Start Guide</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-code-bg: #f5f5f5;
+      --color-warning: #fbbf24;
+
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --font-size-lg: 18px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-background);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-md) var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .navbar-nav {
+      display: flex;
+      gap: var(--spacing-lg);
+      list-style: none;
+    }
+
+    .navbar-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .navbar-nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* MAIN LAYOUT */
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      display: block;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--color-primary);
+      background: var(--color-surface);
+      font-weight: 600;
+    }
+
+    /* ARTICLE */
+    .article {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* BREADCRUMBS */
+    .breadcrumbs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumbs span {
+      margin: 0 var(--spacing-sm);
+    }
+
+    /* HEADER */
+    .article-header {
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .progress-badge {
+      display: inline-block;
+      background: var(--color-success);
+      color: white;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article-title {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .article-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .edit-link {
+      display: inline-block;
+      color: var(--color-primary);
+      text-decoration: none;
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-lg);
+      border-bottom: 1px dotted var(--color-primary);
+    }
+
+    .edit-link:hover {
+      border-bottom-style: solid;
+    }
+
+    /* TABLE OF CONTENTS */
+    .toc {
+      background: var(--color-surface);
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      border-radius: var(--radius-md);
+    }
+
+    .toc-title {
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .toc-list {
+      list-style: none;
+      font-size: var(--font-size-sm);
+    }
+
+    .toc-list li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .toc-list a:hover {
+      text-decoration: underline;
+    }
+
+    /* CONTENT STYLING */
+    .article h2 {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-primary);
+      scroll-margin-top: 80px;
+    }
+
+    .article h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .article h3 {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+      scroll-margin-top: 80px;
+    }
+
+    .article p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.8;
+    }
+
+    .article ul, .article ol {
+      margin-left: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* CODE BLOCKS */
+    .article pre {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+    }
+
+    .article code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .article pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .article p code {
+      background: var(--color-surface);
+      padding: 2px 6px;
+      border-radius: var(--radius-md);
+      color: var(--color-secondary);
+      font-weight: 500;
+    }
+
+    /* CALLOUT BOXES */
+    .callout {
+      border-left: 4px solid;
+      padding: var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+      border-radius: var(--radius-md);
+      background-color: var(--color-surface);
+    }
+
+    .callout.info {
+      border-left-color: var(--color-accent);
+    }
+
+    .callout.success {
+      border-left-color: var(--color-success);
+    }
+
+    .callout.warning {
+      border-left-color: #d97706;
+    }
+
+    .callout-title {
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text);
+    }
+
+    /* STEPS */
+    .step {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .step-number {
+      background: var(--color-primary);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-weight: 600;
+      font-size: 1.1em;
+      color: var(--color-text);
+    }
+
+    /* NAVIGATION */
+    .article-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-xl);
+      border-top: 2px solid var(--color-border);
+    }
+
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: var(--spacing-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .nav-link:hover {
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+    }
+
+    .nav-link-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-link-title {
+      font-size: var(--font-size-lg);
+    }
+
+    .nav-link.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      color: var(--color-text-secondary);
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 2em;
+      }
+
+      .article h2 {
+        font-size: 1.5em;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 1.5em;
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .breadcrumbs {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="navbar-brand">HoloLoom</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/docs/promptly/">Promptly</a></li>
+        <li><a href="/docs/training/">Training</a></li>
+        <li><a href="https://github.com">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main-content">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Promptly Docs</div>
+          <ul class="sidebar-nav">
+            <li><a href="index.html">Overview</a></li>
+            <li><a href="quickstart.html" class="active">Quick Start</a></li>
+            <li><a href="guide.html">Complete Guide</a></li>
+            <li><a href="api.html">API Reference</a></li>
+            <li><a href="examples.html">Examples</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Resources</div>
+          <ul class="sidebar-nav">
+            <li><a href="/docs/training/">Training</a></li>
+            <li><a href="https://github.com">GitHub</a></li>
+            <li><a href="https://claude.ai">Claude Desktop</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- ARTICLE -->
+      <article class="article">
+        <!-- BREADCRUMBS -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a>
+          <span>/</span>
+          <a href="/docs/promptly/">Promptly</a>
+          <span>/</span>
+          <span>Quick Start</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="article-header">
+          <div class="progress-badge">5 Minute Setup</div>
+          <h1 class="article-title">Getting Started with Promptly</h1>
+
+          <div class="article-meta">
+            <span>⏱️ 5 minutes to first prompt</span>
+            <span>✅ All platforms supported</span>
+            <span>📦 Zero external dependencies for basics</span>
+          </div>
+        </div>
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+          <div class="toc-title">Quick Navigation</div>
+          <ul class="toc-list">
+            <li><a href="#installation">Installation</a></li>
+            <li><a href="#first-prompt">Your First Prompt</a></li>
+            <li><a href="#cli-basics">CLI Basics</a></li>
+            <li><a href="#first-loop">First Recursive Loop</a></li>
+            <li><a href="#vscode-integration">VS Code Integration</a></li>
+            <li><a href="#claude-desktop">Claude Desktop Setup</a></li>
+            <li><a href="#next-steps">Next Steps</a></li>
+          </ul>
+        </div>
+
+        <h2 id="installation">Installation</h2>
+
+        <div class="callout success">
+          <div class="callout-title">✨ 30 Seconds</div>
+          <p>Three commands and you're ready to go!</p>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Install Promptly</div>
+          </div>
+
+          <pre><code>pip install -e promptly/</code></pre>
+
+          <p>Or from source:</p>
+          <pre><code>cd promptly
+pip install -e .</code></pre>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">Verify Installation</div>
+          </div>
+
+          <pre><code>python -c "from promptly import Promptly; print('Success!')"</code></pre>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title">Run CLI</div>
+          </div>
+
+          <pre><code>python promptly/promptly_cli.py</code></pre>
+
+          <p><strong>Windows users:</strong> Use <code>promptly.bat</code> or <code>Promptly.ps1</code></p>
+        </div>
+
+        <h2 id="first-prompt">Your First Prompt</h2>
+
+        <p>Create a file <code>my_first_prompt.py</code>:</p>
+
+        <pre><code>from promptly import Promptly
+
+# Create Promptly instance
+p = Promptly()
+
+# Add a simple prompt
+p.add(
+    name="hello-world",
+    content="Say hello to {name} in a friendly way"
+)
+
+# Get the prompt back
+prompt = p.get("hello-world")
+print(f"Prompt: {prompt.content}")
+print(f"Created: {prompt.created_at}")</code></pre>
+
+        <p>Run it:</p>
+
+        <pre><code>python my_first_prompt.py</code></pre>
+
+        <h2 id="cli-basics">CLI Basics</h2>
+
+        <p>Promptly has a friendly command-line interface:</p>
+
+        <pre><code># Add a prompt
+promptly add sql-optimizer "Optimize this query: {query}"
+
+# List all prompts
+promptly list
+
+# View a prompt
+promptly get sql-optimizer
+
+# Execute a prompt
+promptly execute sql-optimizer --query "SELECT * FROM users"
+
+# Create a branch for experimentation
+promptly branch feature/advanced-opts
+
+# Commit changes
+promptly commit -m "Add index hints"
+
+# View version history
+promptly log sql-optimizer</code></pre>
+
+        <h2 id="first-loop">First Recursive Loop</h2>
+
+        <p>Loops allow iterative refinement and complex reasoning:</p>
+
+        <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+
+# Create a refinement loop
+loop = RecursiveLoop(
+    loop_type=LoopType.REFINE,
+    max_iterations=3,
+    quality_threshold=0.85
+)
+
+# Run with your prompt
+result = loop.run(
+    initial_prompt="Write a summary of this article: {article}",
+    llm_fn=lambda p: call_llm(p)
+)
+
+print(f"Final output: {result.final_output}")
+print(f"Iterations: {result.iterations}")
+print(f"Quality: {result.final_quality:.2f}")</code></pre>
+
+        <h3>Loop Types Explained</h3>
+
+        <ul>
+          <li><strong>REFINE</strong> - Improve output iteratively (best for quality)</li>
+          <li><strong>CRITIQUE</strong> - Generate, critique, and improve (self-feedback)</li>
+          <li><strong>DECOMPOSE</strong> - Break problems into parts, solve, combine</li>
+          <li><strong>VERIFY</strong> - Generate output and verify correctness</li>
+          <li><strong>EXPLORE</strong> - Generate multiple solutions, compare and rank</li>
+          <li><strong>HOFSTADTER</strong> - Meta-reasoning and self-referential thinking</li>
+        </ul>
+
+        <h2 id="vscode-integration">VS Code Integration</h2>
+
+        <div class="callout info">
+          <div class="callout-title">💡 Slash Command Integration</div>
+          <p>Use Promptly features directly in VS Code with slash commands.</p>
+        </div>
+
+        <p>Install the Promptly extension from VS Code marketplace:</p>
+
+        <pre><code># Or install from source
+git clone <repo>
+cd promptly-vscode
+npm install
+npm run compile
+code --install-extension ./promptly.vsix</code></pre>
+
+        <p>Available slash commands:</p>
+
+        <pre><code>/review              → Review current file with Claude
+/explain             → Explain selected code
+/optimize-prompt     → Optimize prompt text
+/remember "note"     → Save to HoloLoom memory
+/recall "query"      → Query HoloLoom knowledge graph
+/strategy auto       → Apply best prompting strategy
+/gs                  → Git status
+/gc                  → Git commit</code></pre>
+
+        <h2 id="claude-desktop">Claude Desktop Integration</h2>
+
+        <div class="callout success">
+          <div class="callout-title">🎉 30+ MCP Tools</div>
+          <p>Use Promptly directly within Claude Desktop conversations.</p>
+        </div>
+
+        <h3>Step 1: Install MCP SDK</h3>
+
+        <pre><code>pip install mcp</code></pre>
+
+        <h3>Step 2: Configure Claude Desktop</h3>
+
+        <p>Edit your Claude Desktop config file:</p>
+
+        <p><strong>macOS/Linux:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></p>
+        <p><strong>Windows:</strong> <code>%APPDATA%\Claude\claude_desktop_config.json</code></p>
+
+        <pre><code>{
+  "mcpServers": {
+    "promptly": {
+      "command": "python",
+      "args": [
+        "/path/to/Promptly/promptly/integrations/mcp_server.py"
+      ]
+    }
+  }
+}</code></pre>
+
+        <h3>Step 3: Restart Claude Desktop</h3>
+
+        <p>Close and reopen Claude Desktop. Promptly tools should now be available in conversations!</p>
+
+        <h3>Available Tools in Claude</h3>
+
+        <ul>
+          <li><strong>promptly_add</strong> - Create/update prompts</li>
+          <li><strong>promptly_get</strong> - Retrieve prompts</li>
+          <li><strong>promptly_list</strong> - List all prompts</li>
+          <li><strong>promptly_skill_add</strong> - Create skills</li>
+          <li><strong>promptly_execute_skill</strong> - Run skills</li>
+          <li><strong>promptly_refine_iteratively</strong> - Refinement loops</li>
+          <li><strong>promptly_ab_test</strong> - A/B test prompts</li>
+          <li><strong>promptly_score_prompt</strong> - Auto-score quality</li>
+          <li>...and 20+ more tools</li>
+        </ul>
+
+        <h2 id="next-steps">What's Next?</h2>
+
+        <div class="callout info">
+          <div class="callout-title">📚 Recommended Path</div>
+          <p>You've got the basics down! Here's where to go next:</p>
+        </div>
+
+        <ol>
+          <li><strong><a href="guide.html">Read the Complete Guide</a></strong> - Learn all features, patterns, and best practices</li>
+          <li><strong><a href="examples.html">Explore Examples</a></strong> - See 10+ practical use cases</li>
+          <li><strong><a href="api.html">API Reference</a></strong> - Deep dive into specific tools</li>
+          <li><strong>Build a skill</strong> - Create your first reusable prompt template</li>
+          <li><strong>Run A/B tests</strong> - Compare prompts objectively</li>
+          <li><strong>Integrate with HoloLoom</strong> - Leverage semantic memory</li>
+        </ol>
+
+        <h3>Popular First Projects</h3>
+
+        <ul>
+          <li><strong>Code Reviewer</strong> - Review code for bugs and improvements</li>
+          <li><strong>Blog Post Writer</strong> - Compose articles through iterative refinement</li>
+          <li><strong>SQL Optimizer</strong> - Optimize database queries</li>
+          <li><strong>Documentation Generator</strong> - Create docs from code</li>
+          <li><strong>Test Generator</strong> - Write unit tests automatically</li>
+        </ul>
+
+        <div class="callout success">
+          <div class="callout-title">✨ You're Ready!</div>
+          <p>You've successfully installed and understood the basics of Promptly. Start building amazing prompts!</p>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="article-nav">
+          <a href="index.html" class="nav-link">
+            <div class="nav-link-label">Previous: Overview</div>
+            <div class="nav-link-title">← Back to Overview</div>
+          </a>
+
+          <a href="guide.html" class="nav-link">
+            <div class="nav-link-label">Next: Complete Guide</div>
+            <div class="nav-link-title">Learn All Features →</div>
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+</body>
+</html>

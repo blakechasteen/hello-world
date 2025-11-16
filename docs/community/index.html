@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Community Forum</title>
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/forums.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">HoloLoom</a>
+                <nav class="main-nav">
+                    <a href="/">Home</a>
+                    <a href="/docs">Docs</a>
+                    <a href="/community" class="active">Community</a>
+                    <a href="/github">GitHub</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="forum-container">
+        <!-- Forum Header -->
+        <section class="forum-header">
+            <div class="container">
+                <h1>Community Forum</h1>
+                <p class="subtitle">Ask questions, share ideas, and collaborate with the HoloLoom community</p>
+
+                <div class="forum-actions">
+                    <button class="btn btn-primary" onclick="window.location.href='./new.html'">
+                        <span class="icon">+</span> Start Discussion
+                    </button>
+                    <div class="search-box">
+                        <input type="text" id="forumSearch" placeholder="Search discussions..." class="search-input">
+                        <button class="search-btn" onclick="searchForum()">🔍</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Bar -->
+        <section class="forum-stats">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-value" id="totalThreads">0</div>
+                        <div class="stat-label">Discussions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="totalReplies">0</div>
+                        <div class="stat-label">Replies</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="totalUsers">0</div>
+                        <div class="stat-label">Contributors</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="todayThreads">0</div>
+                        <div class="stat-label">Today</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Activity Feed -->
+        <section class="recent-activity">
+            <div class="container">
+                <h2>Recent Activity</h2>
+                <div id="activityFeed" class="activity-feed">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Forum Categories -->
+        <section class="forum-categories">
+            <div class="container">
+                <h2>Browse Categories</h2>
+                <div class="categories-grid" id="categoriesContainer">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Top Contributors -->
+        <section class="top-contributors">
+            <div class="container">
+                <h2>Top Contributors</h2>
+                <div class="contributors-grid" id="contributorsContainer">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2025 HoloLoom. Community Forum v1.0</p>
+            <p><a href="./README.md">Forum Guide</a> | <a href="/">Home</a></p>
+        </div>
+    </footer>
+
+    <!-- Markdown renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Forum system -->
+    <script src="../assets/js/forums.js"></script>
+    <script>
+        // Initialize forum on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            ForumManager.init();
+            renderForumIndex();
+            updateStatistics();
+            renderRecentActivity();
+            renderTopContributors();
+        });
+
+        function renderForumIndex() {
+            const container = document.getElementById('categoriesContainer');
+            const categories = ForumManager.getCategories();
+
+            container.innerHTML = categories.map(category => `
+                <div class="category-card">
+                    <div class="category-header">
+                        <h3><a href="./category.html?id=${category.id}">${category.name}</a></h3>
+                        <div class="category-icon">${getCategoryIcon(category.id)}</div>
+                    </div>
+                    <p class="category-description">${category.description}</p>
+                    <div class="category-stats">
+                        <span class="stat-item">
+                            <strong>${category.threadCount}</strong> discussions
+                        </span>
+                        <span class="stat-item">
+                            <strong>${category.postCount}</strong> posts
+                        </span>
+                    </div>
+                    <a href="./category.html?id=${category.id}" class="btn btn-secondary btn-small">
+                        View Category →
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        function renderRecentActivity() {
+            const container = document.getElementById('activityFeed');
+            const recentThreads = ForumManager.getRecentActivity(5);
+
+            container.innerHTML = recentThreads.map(thread => {
+                const timeAgo = getTimeAgo(new Date(thread.created));
+                const lastReply = thread.replies.length > 0
+                    ? thread.replies[thread.replies.length - 1].created
+                    : thread.created;
+
+                return `
+                    <div class="activity-item">
+                        <div class="activity-avatar">${getInitials(thread.author)}</div>
+                        <div class="activity-content">
+                            <a href="./thread.html?id=${thread.id}" class="activity-title">
+                                ${thread.title}
+                            </a>
+                            <p class="activity-meta">
+                                <span class="author">${thread.author}</span>
+                                <span class="category">${getCategoryName(thread.categoryId)}</span>
+                                <span class="time">${timeAgo}</span>
+                            </p>
+                        </div>
+                        <div class="activity-stats">
+                            <span class="reply-count">${thread.replies.length}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderTopContributors() {
+            const container = document.getElementById('contributorsContainer');
+            const contributors = ForumManager.getTopContributors(8);
+
+            container.innerHTML = contributors.map(user => `
+                <div class="contributor-card">
+                    <div class="contributor-avatar">${getInitials(user.name)}</div>
+                    <h4>${user.name}</h4>
+                    <p class="contributor-stat">${user.postCount} posts</p>
+                    <p class="contributor-reputation">⭐ ${user.reputation} points</p>
+                </div>
+            `).join('');
+        }
+
+        function updateStatistics() {
+            const stats = ForumManager.getStatistics();
+            document.getElementById('totalThreads').textContent = stats.threadCount;
+            document.getElementById('totalReplies').textContent = stats.replyCount;
+            document.getElementById('totalUsers').textContent = stats.userCount;
+            document.getElementById('todayThreads').textContent = stats.todayThreadCount;
+        }
+
+        function searchForum() {
+            const query = document.getElementById('forumSearch').value;
+            if (query.trim()) {
+                const results = ForumManager.searchThreads(query);
+                displaySearchResults(results, query);
+            }
+        }
+
+        function displaySearchResults(results, query) {
+            const container = document.getElementById('categoriesContainer');
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="search-empty">
+                        <p>No results found for "${query}"</p>
+                        <a href="./new.html" class="btn btn-primary">Start new discussion</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = results.map(thread => `
+                <div class="thread-preview">
+                    <h3><a href="./thread.html?id=${thread.id}">${thread.title}</a></h3>
+                    <p class="thread-excerpt">${truncateText(thread.content, 150)}</p>
+                    <div class="thread-meta">
+                        <span>${thread.author}</span>
+                        <span>${getTimeAgo(new Date(thread.created))}</span>
+                        <span>${thread.replies.length} replies</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getCategoryIcon(categoryId) {
+            const icons = {
+                'general': '💬',
+                'hololoom': '🎯',
+                'promptly': '📝',
+                'development': '⚙️',
+                'announcements': '📢'
+            };
+            return icons[categoryId] || '📌';
+        }
+
+        function getCategoryName(categoryId) {
+            const categories = ForumManager.getCategories();
+            const cat = categories.find(c => c.id === categoryId);
+            return cat ? cat.name : 'Unknown';
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        function truncateText(text, length) {
+            const plain = text.replace(/[#*`]/g, '').trim();
+            return plain.length > length ? plain.substring(0, length) + '...' : plain;
+        }
+    </script>
+</body>
+</html>

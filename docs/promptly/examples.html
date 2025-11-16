@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Promptly Examples - 10+ practical examples and use case walkthroughs">
+  <meta name="keywords" content="Promptly, examples, tutorials, use cases, code review, SQL optimization">
+
+  <title>Promptly Examples & Use Cases</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-code-bg: #f5f5f5;
+
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --font-size-lg: 18px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-background);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-md) var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .navbar-nav {
+      display: flex;
+      gap: var(--spacing-lg);
+      list-style: none;
+    }
+
+    .navbar-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .navbar-nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* MAIN LAYOUT */
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      display: block;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--color-primary);
+      background: var(--color-surface);
+      font-weight: 600;
+    }
+
+    /* ARTICLE */
+    .article {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* BREADCRUMBS */
+    .breadcrumbs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumbs span {
+      margin: 0 var(--spacing-sm);
+    }
+
+    /* HEADER */
+    .article-header {
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .progress-badge {
+      display: inline-block;
+      background: var(--color-success);
+      color: white;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article-title {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .article-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    /* TABLE OF CONTENTS */
+    .toc {
+      background: var(--color-surface);
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      border-radius: var(--radius-md);
+    }
+
+    .toc-title {
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .toc-list {
+      list-style: none;
+      font-size: var(--font-size-sm);
+    }
+
+    .toc-list li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .toc-list a:hover {
+      text-decoration: underline;
+    }
+
+    /* CONTENT STYLING */
+    .article h2 {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-primary);
+      scroll-margin-top: 80px;
+    }
+
+    .article h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .article h3 {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+      scroll-margin-top: 80px;
+    }
+
+    .article p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.8;
+    }
+
+    .article ul, .article ol {
+      margin-left: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* CODE BLOCKS */
+    .article pre {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+    }
+
+    .article code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .article pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .article p code {
+      background: var(--color-surface);
+      padding: 2px 6px;
+      border-radius: var(--radius-md);
+      color: var(--color-secondary);
+      font-weight: 500;
+    }
+
+    /* EXAMPLE CARD */
+    .example-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+    }
+
+    .example-title {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .example-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-md);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .example-badge {
+      display: inline-block;
+      background: var(--color-accent);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* CALLOUT BOXES */
+    .callout {
+      border-left: 4px solid;
+      padding: var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+      border-radius: var(--radius-md);
+      background-color: var(--color-surface);
+    }
+
+    .callout.info {
+      border-left-color: var(--color-accent);
+    }
+
+    .callout.success {
+      border-left-color: var(--color-success);
+    }
+
+    .callout-title {
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text);
+    }
+
+    /* NAVIGATION */
+    .article-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-xl);
+      border-top: 2px solid var(--color-border);
+    }
+
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: var(--spacing-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .nav-link:hover {
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+    }
+
+    .nav-link-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-link-title {
+      font-size: var(--font-size-lg);
+    }
+
+    .nav-link.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      color: var(--color-text-secondary);
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 2em;
+      }
+
+      .article h2 {
+        font-size: 1.5em;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 1.5em;
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .breadcrumbs {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="navbar-brand">HoloLoom</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/docs/promptly/">Promptly</a></li>
+        <li><a href="/docs/training/">Training</a></li>
+        <li><a href="https://github.com">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main-content">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Promptly Docs</div>
+          <ul class="sidebar-nav">
+            <li><a href="index.html">Overview</a></li>
+            <li><a href="quickstart.html">Quick Start</a></li>
+            <li><a href="guide.html">Complete Guide</a></li>
+            <li><a href="api.html">API Reference</a></li>
+            <li><a href="examples.html" class="active">Examples</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Resources</div>
+          <ul class="sidebar-nav">
+            <li><a href="/docs/training/">Training</a></li>
+            <li><a href="https://github.com">GitHub</a></li>
+            <li><a href="https://claude.ai">Claude Desktop</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- ARTICLE -->
+      <article class="article">
+        <!-- BREADCRUMBS -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a>
+          <span>/</span>
+          <a href="/docs/promptly/">Promptly</a>
+          <span>/</span>
+          <span>Examples</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="article-header">
+          <div class="progress-badge">12+ Examples</div>
+          <h1 class="article-title">Promptly Examples & Use Cases</h1>
+
+          <div class="article-meta">
+            <span>💡 Practical examples</span>
+            <span>🎯 Real-world use cases</span>
+            <span>📋 Copy-paste ready</span>
+          </div>
+        </div>
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+          <div class="toc-title">Examples</div>
+          <ul class="toc-list">
+            <li><a href="#code-review">Code Review Pipeline</a></li>
+            <li><a href="#sql-optimization">SQL Query Optimizer</a></li>
+            <li><a href="#blog-writer">Iterative Blog Writer</a></li>
+            <li><a href="#test-generator">Test Case Generator</a></li>
+            <li><a href="#security-audit">Security Audit</a></li>
+            <li><a href="#prompt-comparison">Prompt A/B Testing</a></li>
+            <li><a href="#document-analysis">Document Analysis</a></li>
+            <li><a href="#idea-refinement">Idea Refinement Loop</a></li>
+            <li><a href="#bug-detective">Bug Detective</a></li>
+            <li><a href="#api-design">API Design Review</a></li>
+            <li><a href="#hololoom-integration">HoloLoom Integration</a></li>
+            <li><a href="#custom-skill">Custom Skill Creation</a></li>
+          </ul>
+        </div>
+
+        <h2 id="code-review">1. Code Review Pipeline</h2>
+
+        <div class="example-card">
+          <div class="example-title">Multi-Stage Code Review with Recursive Refinement</div>
+          <div class="example-meta">
+            <span class="example-badge">INTERMEDIATE</span>
+            <span>Uses: Decompose + Critique loops</span>
+          </div>
+
+          <p>Automatically review code across multiple dimensions and iteratively improve the feedback.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+from promptly import Promptly
+
+p = Promptly()
+
+# Create decompose loop to split code into components
+decompose_loop = RecursiveLoop(
+    loop_type=LoopType.DECOMPOSE,
+    max_iterations=1
+)
+
+# Create critique loop for improvement
+critique_loop = RecursiveLoop(
+    loop_type=LoopType.CRITIQUE,
+    max_iterations=3,
+    quality_threshold=0.85
+)
+
+code_sample = """
+def process_user_data(data):
+    result = []
+    for item in data:
+        if item['active']:
+            result.append(item['name'].upper())
+    return result
+"""
+
+# Stage 1: Decompose code into components
+decompose_result = decompose_loop.run(
+    initial_prompt=f"""
+Analyze this code and identify its components:
+{code_sample}
+
+Break it down into:
+1. Input validation
+2. Core logic
+3. Output formatting
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+# Stage 2: Critique and improve
+critique_result = critique_loop.run(
+    initial_prompt=f"""
+Original Code:
+{code_sample}
+
+Component Analysis:
+{decompose_result.final_output}
+
+Now provide a comprehensive code review covering:
+- Performance issues
+- Security concerns
+- Code clarity and style
+- Suggested improvements
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+print("Review:", critique_result.final_output)</code></pre>
+        </div>
+
+        <h2 id="sql-optimization">2. SQL Query Optimizer</h2>
+
+        <div class="example-card">
+          <div class="example-title">Optimize and Verify SQL Queries</div>
+          <div class="example-meta">
+            <span class="example-badge">BEGINNER</span>
+            <span>Uses: Verify loop, LLM Judge</span>
+          </div>
+
+          <p>Optimize SQL queries and verify the optimizations don't break functionality.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+from promptly.tools.llm_judge_enhanced import EnhancedLLMJudge
+
+# Create verify loop
+verify_loop = RecursiveLoop(
+    loop_type=LoopType.VERIFY,
+    max_iterations=2
+)
+
+original_query = """
+SELECT * FROM orders o
+JOIN customers c ON o.customer_id = c.id
+WHERE c.country = 'US'
+ORDER BY o.created_at DESC
+"""
+
+result = verify_loop.run(
+    initial_prompt=f"""
+Optimize this SQL query:
+{original_query}
+
+The optimization must:
+1. Return identical results
+2. Improve performance (add indexes, better joins, etc.)
+3. Be compatible with PostgreSQL
+
+Provide the optimized query and explain the optimizations.
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+# Evaluate the optimization
+judge = EnhancedLLMJudge()
+score = judge.evaluate(
+    query="Is this SQL optimization valid and safe?",
+    response=result.final_output,
+    criteria=["correctness", "performance", "compatibility"]
+)
+
+print(f"Optimization quality: {score.overall:.2f}")
+print(f"Optimized query:\n{result.final_output}")</code></pre>
+        </div>
+
+        <h2 id="blog-writer">3. Iterative Blog Writer</h2>
+
+        <div class="example-card">
+          <div class="example-title">Write and Refine Blog Posts</div>
+          <div class="example-meta">
+            <span class="example-badge">BEGINNER</span>
+            <span>Uses: Refine loop</span>
+          </div>
+
+          <p>Write a blog post with automatic refinement for clarity and engagement.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+
+# Create refine loop for quality improvement
+refine_loop = RecursiveLoop(
+    loop_type=LoopType.REFINE,
+    max_iterations=5,
+    quality_threshold=0.90
+)
+
+result = refine_loop.run(
+    initial_prompt="""
+Write a blog post about "Machine Learning in Healthcare"
+
+Requirements:
+- 800-1000 words
+- Target audience: healthcare professionals with limited ML experience
+- Include 2-3 practical examples
+- Focus on real-world applications and challenges
+
+The post should:
+1. Hook the reader in the introduction
+2. Explain ML concepts in accessible language
+3. Discuss healthcare applications
+4. Address limitations and challenges
+5. End with actionable insights
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+print(f"Final post (quality={result.final_quality:.2f}):")
+print(result.final_output)
+print(f"\nRefinement iterations: {result.iterations}")</code></pre>
+        </div>
+
+        <h2 id="test-generator">4. Test Case Generator</h2>
+
+        <div class="example-card">
+          <div class="example-title">Generate Comprehensive Test Cases</div>
+          <div class="example-meta">
+            <span class="example-badge">BEGINNER</span>
+            <span>Uses: Explore loop</span>
+          </div>
+
+          <p>Generate multiple test case approaches and select the best one.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+
+explore_loop = RecursiveLoop(
+    loop_type=LoopType.EXPLORE,
+    max_iterations=3
+)
+
+function_code = """
+def calculate_discount(price, quantity, membership):
+    discount_rate = 0
+    if membership == 'gold':
+        discount_rate = 0.15
+    elif membership == 'silver':
+        discount_rate = 0.10
+    if quantity >= 10:
+        discount_rate += 0.05
+    return price * (1 - discount_rate)
+"""
+
+result = explore_loop.run(
+    initial_prompt=f"""
+Generate comprehensive test cases for this function:
+
+{function_code}
+
+Explore 3 different testing approaches:
+1. Happy path testing (normal usage)
+2. Edge case testing (boundaries)
+3. Error case testing (invalid inputs)
+
+For each approach, list specific test cases with expected outputs.
+Then recommend the best combination of test cases.
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+print(result.final_output)</code></pre>
+        </div>
+
+        <h2 id="security-audit">5. Security Audit</h2>
+
+        <div class="example-card">
+          <div class="example-title">Security Vulnerability Assessment</div>
+          <div class="example-meta">
+            <span class="example-badge">INTERMEDIATE</span>
+            <span>Uses: Multiple loops, HoloLoom context</span>
+          </div>
+
+          <p>Comprehensive security audit with memory of past vulnerabilities.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+from promptly.integrations.hololoom_bridge import HoloLoomBridge
+
+# Get context from previous security audits
+bridge = HoloLoomBridge()
+past_vulnerabilities = bridge.recall(
+    "Security vulnerabilities found in authentication code",
+    limit=3
+)
+
+# Run security audit loop
+audit_loop = RecursiveLoop(
+    loop_type=LoopType.CRITIQUE,
+    max_iterations=2
+)
+
+code = """
+def login_user(username, password):
+    user = db.query(f"SELECT * FROM users WHERE username='{username}'")
+    if user and user.password == password:
+        session.user_id = user.id
+        return True
+    return False
+"""
+
+result = audit_loop.run(
+    initial_prompt=f"""
+Security Audit of Login Function
+
+Code to audit:
+{code}
+
+Previous vulnerability patterns to check for:
+{past_vulnerabilities}
+
+Identify ALL security issues including:
+- SQL injection risks
+- Authentication bypass
+- Password storage issues
+- Session management problems
+- Input validation gaps
+
+For each issue: describe it, rate severity, and provide a fix.
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+# Store findings for future audits
+bridge.remember(
+    query="Security audit of login function",
+    answer=result.final_output,
+    feedback={"severity": "critical"}
+)
+
+print(result.final_output)</code></pre>
+        </div>
+
+        <h2 id="prompt-comparison">6. Prompt A/B Testing</h2>
+
+        <div class="example-card">
+          <div class="example-title">Compare Prompt Variations Objectively</div>
+          <div class="example-meta">
+            <span class="example-badge">BEGINNER</span>
+            <span>Uses: A/B Testing tool</span>
+          </div>
+
+          <p>Test two prompt approaches and determine which performs better.</p>
+
+          <pre><code>from promptly.tools.ab_testing import ABTester
+
+tester = ABTester()
+
+# Define two prompt approaches
+prompt_a = """
+Explain {topic} to a {audience} in {style}.
+"""
+
+prompt_b = """
+I need an explanation of {topic}.
+Target audience: {audience}
+Style preference: {style}
+
+Please provide:
+1. Clear definition
+2. Key concepts
+3. Practical examples
+4. Common misconceptions
+"""
+
+# Test cases
+test_cases = [
+    {
+        "topic": "Machine Learning",
+        "audience": "high school student",
+        "style": "simple and engaging"
+    },
+    {
+        "topic": "Quantum Computing",
+        "audience": "software engineer",
+        "style": "technical and detailed"
+    },
+    {
+        "topic": "Blockchain",
+        "audience": "business executive",
+        "style": "business-focused"
+    }
+]
+
+# Run A/B test
+results = tester.compare(
+    prompt_a=prompt_a,
+    prompt_b=prompt_b,
+    test_cases=test_cases,
+    criteria=["clarity", "completeness", "engagement"],
+    num_samples=2
+)
+
+print(f"Winner: {results.winner} prompt")
+print(f"Confidence: {results.confidence:.1%}")
+print(f"\nDetailed results:")
+for test in results.breakdown:
+    print(f"  {test.topic}: A={test.score_a:.2f}, B={test.score_b:.2f}")</code></pre>
+        </div>
+
+        <h2 id="document-analysis">7. Document Analysis</h2>
+
+        <div class="example-card">
+          <div class="example-title">Analyze and Summarize Documents</div>
+          <div class="example-meta">
+            <span class="example-badge">BEGINNER</span>
+            <span>Uses: Decompose loop</span>
+          </div>
+
+          <p>Break down complex documents and create summaries.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+
+decompose_loop = RecursiveLoop(
+    loop_type=LoopType.DECOMPOSE
+)
+
+document = """
+[Long technical document about distributed systems...]
+"""
+
+result = decompose_loop.run(
+    initial_prompt=f"""
+Analyze this technical document:
+
+{document[:2000]}...
+
+Break it down into:
+1. Main topic and scope
+2. Key concepts explained
+3. Technical details and algorithms
+4. Practical applications
+5. Challenges and limitations
+6. Future directions
+
+Then create a 200-word executive summary.
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+print(result.final_output)</code></pre>
+        </div>
+
+        <h2 id="idea-refinement">8. Idea Refinement Loop</h2>
+
+        <div class="example-card">
+          <div class="example-title">Iteratively Refine and Improve Ideas</div>
+          <div class="example-meta">
+            <span class="example-badge">BEGINNER</span>
+            <span>Uses: Refine loop</span>
+          </div>
+
+          <p>Take a rough idea and refine it through multiple iterations.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+
+refine_loop = RecursiveLoop(
+    loop_type=LoopType.REFINE,
+    max_iterations=4,
+    quality_threshold=0.88
+)
+
+rough_idea = "An app that helps people track their habits"
+
+result = refine_loop.run(
+    initial_prompt=f"""
+Starting idea: {rough_idea}
+
+Refine this idea by iteratively:
+1. Identifying the core problem it solves
+2. Defining the target user clearly
+3. Describing key features
+4. Explaining the unique value proposition
+5. Outlining business model
+
+After each refinement, make it more specific, compelling, and actionable.
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+print(f"Refined idea (quality={result.final_quality:.2f}):")
+print(result.final_output)</code></pre>
+        </div>
+
+        <h2 id="bug-detective">9. Bug Detective</h2>
+
+        <div class="example-card">
+          <div class="example-title">Find and Fix Bugs Automatically</div>
+          <div class="example-meta">
+            <span class="example-badge">INTERMEDIATE</span>
+            <span>Uses: Verify loop</span>
+          </div>
+
+          <p>Detect bugs and generate verified fixes.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+
+verify_loop = RecursiveLoop(
+    loop_type=LoopType.VERIFY,
+    max_iterations=2
+)
+
+buggy_code = """
+def find_duplicate(arr):
+    seen = {}
+    for i, num in enumerate(arr):
+        if num in seen:
+            return num
+    return None
+"""
+
+result = verify_loop.run(
+    initial_prompt=f"""
+Analyze this code for bugs:
+
+{buggy_code}
+
+1. Identify any bugs
+2. Explain why it's a bug
+3. Provide a corrected version
+4. Verify the fix handles all edge cases
+
+Edge cases to consider:
+- Empty array
+- Single element
+- Duplicate at different positions
+- All elements are duplicates
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+print(result.final_output)</code></pre>
+        </div>
+
+        <h2 id="api-design">10. API Design Review</h2>
+
+        <div class="example-card">
+          <div class="example-title">Review and Improve REST API Design</div>
+          <div class="example-meta">
+            <span class="example-badge">INTERMEDIATE</span>
+            <span>Uses: Critique loop</span>
+          </div>
+
+          <p>Evaluate API design and suggest improvements.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+
+critique_loop = RecursiveLoop(
+    loop_type=LoopType.CRITIQUE,
+    max_iterations=3
+)
+
+api_spec = """
+GET /api/users - List all users
+POST /api/users - Create new user
+GET /api/user/{id} - Get user by ID
+PUT /api/user/{id} - Update user
+DELETE /api/user/{id} - Delete user
+"""
+
+result = critique_loop.run(
+    initial_prompt=f"""
+Review this REST API design:
+
+{api_spec}
+
+Evaluate and improve:
+1. RESTfulness - Do endpoints follow REST principles?
+2. Consistency - Naming, structure, conventions
+3. Versioning - How would versioning work?
+4. Error handling - How are errors communicated?
+5. Documentation - What's unclear?
+6. Security - Authentication, authorization
+7. Pagination - How are lists handled?
+
+Provide specific improvements for each area.
+""",
+    llm_fn=lambda p: call_llm(p)
+)
+
+print(result.final_output)</code></pre>
+        </div>
+
+        <h2 id="hololoom-integration">11. HoloLoom Integration Example</h2>
+
+        <div class="example-card">
+          <div class="example-title">Use HoloLoom Memory in Prompts</div>
+          <div class="example-meta">
+            <span class="example-badge">ADVANCED</span>
+            <span>Uses: HoloLoom Bridge</span>
+          </div>
+
+          <p>Leverage persistent memory to make prompts context-aware.</p>
+
+          <pre><code>from promptly.integrations.hololoom_bridge import HoloLoomBridge
+from promptly import Promptly
+
+bridge = HoloLoomBridge()
+p = Promptly()
+
+# Retrieve relevant context from memory
+context = bridge.recall(
+    "What are the main challenges in ML deployment?",
+    limit=5
+)
+
+# Create a prompt that uses this context
+p.add("ml-deployment-expert",
+    f"""
+Based on our previous discussions:
+{context}
+
+Now answer: {'{question}'}
+
+Build on the insights we've already discussed,
+adding new perspectives and solutions.
+""")
+
+# Use the prompt
+result = p.execute("ml-deployment-expert", {
+    "question": "How can we reduce model serving latency?"
+})
+
+# Store the result for future learning
+bridge.remember(
+    query="How can we reduce model serving latency?",
+    answer=result,
+    feedback={"helpful": True}
+)
+
+print(result)</code></pre>
+        </div>
+
+        <h2 id="custom-skill">12. Creating a Custom Skill</h2>
+
+        <div class="example-card">
+          <div class="example-title">Build and Share Reusable Skills</div>
+          <div class="example-meta">
+            <span class="example-badge">ADVANCED</span>
+            <span>Uses: Skill system</span>
+          </div>
+
+          <p>Create a reusable prompt skill for your team.</p>
+
+          <pre><code>from promptly import Promptly
+
+p = Promptly()
+
+# Create a custom skill
+p.add(
+    name="performance-audit",
+    content="""
+Perform a comprehensive performance audit on this code:
+
+{code}
+
+Analyze:
+1. Time Complexity - What's the Big O complexity?
+2. Space Complexity - Memory usage analysis
+3. Bottlenecks - What's slow and why?
+4. Optimizations - Specific improvements
+5. Trade-offs - What are the alternatives?
+
+Provide:
+- Current performance metrics (estimated)
+- Optimized version with improvements
+- Benchmark comparison
+- Implementation difficulty (1-10)
+""",
+    tags=["performance", "code", "audit"],
+    metadata={
+        "author": "team",
+        "domain": "performance",
+        "difficulty": "intermediate"
+    }
+)
+
+# Now you and your team can use it
+result = p.execute("performance-audit", {
+    "code": "def slow_function(n): return sum(slow_helper(i) for i in range(n))"
+})
+
+print("Performance Audit:")
+print(result)</code></pre>
+        </div>
+
+        <div class="callout success">
+          <div class="callout-title">🎉 Ready to Build</div>
+          <p>You've seen 12 practical examples covering all major Promptly use cases. Mix and match these patterns to solve your own problems!</p>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="article-nav">
+          <a href="api.html" class="nav-link">
+            <div class="nav-link-label">Previous: API Reference</div>
+            <div class="nav-link-title">← API Docs</div>
+          </a>
+
+          <div style="flex: 1;"></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</body>
+</html>

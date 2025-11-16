@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Promptly - Powerful meta-prompt framework with loop composition, LLM judging, A/B testing, and HoloLoom integration">
+  <meta name="keywords" content="Promptly, prompt engineering, recursive loops, LLM testing, Claude Desktop, MCP">
+
+  <title>Promptly - Prompt Composition & Testing Framework</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-code-bg: #f5f5f5;
+      --color-feature-bg: #f0f4ff;
+
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --font-size-lg: 18px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-background);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-md) var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .navbar-nav {
+      display: flex;
+      gap: var(--spacing-lg);
+      list-style: none;
+    }
+
+    .navbar-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .navbar-nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* MAIN LAYOUT */
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      display: block;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--color-primary);
+      background: var(--color-surface);
+      font-weight: 600;
+    }
+
+    /* ARTICLE */
+    .article {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* BREADCRUMBS */
+    .breadcrumbs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumbs span {
+      margin: 0 var(--spacing-sm);
+    }
+
+    /* HEADER */
+    .article-header {
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .progress-badge {
+      display: inline-block;
+      background: var(--color-accent);
+      color: white;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article-title {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .article-subtitle {
+      font-size: 1.3em;
+      color: var(--color-text-secondary);
+      font-weight: 500;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .article-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .edit-link {
+      display: inline-block;
+      color: var(--color-primary);
+      text-decoration: none;
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-lg);
+      border-bottom: 1px dotted var(--color-primary);
+    }
+
+    .edit-link:hover {
+      border-bottom-style: solid;
+    }
+
+    /* TABLE OF CONTENTS */
+    .toc {
+      background: var(--color-surface);
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      border-radius: var(--radius-md);
+    }
+
+    .toc-title {
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .toc-list {
+      list-style: none;
+      font-size: var(--font-size-sm);
+    }
+
+    .toc-list li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .toc-list a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-list-level-2 {
+      margin-left: var(--spacing-lg);
+      color: var(--color-text-secondary);
+    }
+
+    /* FEATURES GRID */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--spacing-lg);
+      margin: var(--spacing-xl) 0;
+    }
+
+    .feature-card {
+      background: var(--color-feature-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      transition: all 0.2s;
+    }
+
+    .feature-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      font-size: 2em;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .feature-title {
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: var(--spacing-sm);
+      font-size: 1.1em;
+    }
+
+    .feature-desc {
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+    }
+
+    /* CONTENT STYLING */
+    .article h2 {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-primary);
+      scroll-margin-top: 80px;
+    }
+
+    .article h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .article h3 {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+      scroll-margin-top: 80px;
+    }
+
+    .article p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.8;
+    }
+
+    .article ul, .article ol {
+      margin-left: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* CODE BLOCKS */
+    .article pre {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+    }
+
+    .article code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .article pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .article p code {
+      background: var(--color-surface);
+      padding: 2px 6px;
+      border-radius: var(--radius-md);
+      color: var(--color-secondary);
+      font-weight: 500;
+    }
+
+    /* CALLOUT BOXES */
+    .callout {
+      border-left: 4px solid;
+      padding: var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+      border-radius: var(--radius-md);
+      background-color: var(--color-surface);
+    }
+
+    .callout.info {
+      border-left-color: var(--color-accent);
+    }
+
+    .callout.success {
+      border-left-color: var(--color-success);
+    }
+
+    .callout.warning {
+      border-left-color: #d97706;
+    }
+
+    .callout-title {
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text);
+    }
+
+    /* QUICK LINKS */
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--spacing-lg);
+      margin: var(--spacing-xl) 0;
+    }
+
+    .quick-link {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s;
+    }
+
+    .quick-link:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(30, 64, 175, 0.1);
+    }
+
+    .quick-link-title {
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .quick-link-desc {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+    }
+
+    /* NAVIGATION */
+    .article-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-xl);
+      border-top: 2px solid var(--color-border);
+    }
+
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: var(--spacing-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .nav-link:hover {
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+    }
+
+    .nav-link-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-link-title {
+      font-size: var(--font-size-lg);
+    }
+
+    .nav-link.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      color: var(--color-text-secondary);
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 2em;
+      }
+
+      .article h2 {
+        font-size: 1.5em;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 1.5em;
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .breadcrumbs {
+        font-size: 12px;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="navbar-brand">HoloLoom</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/docs/promptly/">Promptly</a></li>
+        <li><a href="/docs/training/">Training</a></li>
+        <li><a href="https://github.com">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main-content">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Promptly Docs</div>
+          <ul class="sidebar-nav">
+            <li><a href="index.html" class="active">Overview</a></li>
+            <li><a href="quickstart.html">Quick Start</a></li>
+            <li><a href="guide.html">Complete Guide</a></li>
+            <li><a href="api.html">API Reference</a></li>
+            <li><a href="examples.html">Examples</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Resources</div>
+          <ul class="sidebar-nav">
+            <li><a href="/docs/training/">Training</a></li>
+            <li><a href="https://github.com">GitHub</a></li>
+            <li><a href="https://claude.ai">Claude Desktop</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- ARTICLE -->
+      <article class="article">
+        <!-- BREADCRUMBS -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a>
+          <span>/</span>
+          <a href="/docs/">Docs</a>
+          <span>/</span>
+          <span>Promptly</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="article-header">
+          <div class="progress-badge">Latest: v1.1</div>
+          <h1 class="article-title">Promptly Framework</h1>
+          <p class="article-subtitle">Powerful meta-prompt framework with loop composition, LLM judging, A/B testing, and HoloLoom integration</p>
+
+          <div class="article-meta">
+            <span>⚡ Production Ready</span>
+            <span>📦 ~17,000 lines</span>
+            <span>🔗 HoloLoom Integrated</span>
+          </div>
+
+          <a href="https://github.com/archive/old_projects/Promptly" class="edit-link" target="_blank">
+            ✏️ View on GitHub
+          </a>
+        </div>
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+          <div class="toc-title">On This Page</div>
+          <ul class="toc-list">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#key-features">Key Features</a></li>
+            <li><a href="#quick-start">Quick Start</a></li>
+            <li><a href="#core-components">Core Components</a></li>
+            <li><a href="#hololoom-integration">HoloLoom Integration</a></li>
+            <li><a href="#next-steps">Next Steps</a></li>
+          </ul>
+        </div>
+
+        <!-- CONTENT -->
+        <h2 id="overview">Overview</h2>
+
+        <p>Promptly is a production-ready, enterprise-grade prompt engineering platform that enables you to:</p>
+
+        <ul>
+          <li><strong>Compose prompts</strong> into powerful chains and pipelines</li>
+          <li><strong>Define recursive loops</strong> (REFINE, CRITIQUE, DECOMPOSE, VERIFY, EXPLORE, HOFSTADTER) inspired by self-reference theory</li>
+          <li><strong>Test prompts</strong> with LLM judging and A/B testing</li>
+          <li><strong>Manage versions</strong> using Git-style branching and merging</li>
+          <li><strong>Build skills</strong> as reusable, shareable prompt components</li>
+          <li><strong>Integrate with HoloLoom</strong> for semantic memory and neural decision-making</li>
+          <li><strong>Use Claude Desktop</strong> via 30+ MCP tools</li>
+          <li><strong>Monitor analytics</strong> with real-time dashboards</li>
+        </ul>
+
+        <p><strong>Status:</strong> ✅ Complete and operational (October 2025). All 10 core features implemented and tested.</p>
+
+        <h2 id="key-features">Key Features</h2>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🔄</div>
+            <div class="feature-title">Recursive Loops</div>
+            <div class="feature-desc">
+              6 loop types (REFINE, CRITIQUE, DECOMPOSE, VERIFY, EXPLORE, HOFSTADTER) for iterative improvement and self-referential reasoning.
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">⚙️</div>
+            <div class="feature-title">Loop Composition</div>
+            <div class="feature-desc">
+              Chain multiple loops into pipelines. Sequential execution, conditional branching, and result aggregation.
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🏆</div>
+            <div class="feature-title">LLM Judge</div>
+            <div class="feature-desc">
+              Evaluate prompt responses with multi-criteria scoring. Compare outputs from different prompts objectively.
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">A/B Testing</div>
+            <div class="feature-desc">
+              Test prompt variations against each other. Statistical analysis shows which performs best.
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">💾</div>
+            <div class="feature-title">Version Control</div>
+            <div class="feature-desc">
+              Git-style version control for prompts. Branches, commits, merges, and full history tracking.
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-title">Skills System</div>
+            <div class="feature-desc">
+              13+ professional prompt templates. Create, test, share, and version-manage reusable skills.
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🧠</div>
+            <div class="feature-title">HoloLoom Integration</div>
+            <div class="feature-desc">
+              Leverage HoloLoom's semantic memory and knowledge graphs for context-aware prompt enhancement.
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <div class="feature-title">Claude Desktop</div>
+            <div class="feature-desc">
+              30+ MCP tools directly in Claude Desktop. Manage prompts, execute loops, run tests conversationally.
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">📈</div>
+            <div class="feature-title">Analytics Dashboard</div>
+            <div class="feature-desc">
+              Real-time analytics with WebSocket updates. Track execution, quality, cost, and success rates.
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-title">Smart AI Features</div>
+            <div class="feature-desc">
+              Auto-scoring, tag suggestions, duplicate detection, and semantic search for prompt discovery.
+            </div>
+          </div>
+        </div>
+
+        <h2 id="quick-start">Quick Start</h2>
+
+        <div class="callout info">
+          <div class="callout-title">🚀 30-Second Setup</div>
+          <p>Get up and running with Promptly in just 30 seconds.</p>
+        </div>
+
+        <h3>Installation</h3>
+
+        <pre><code>pip install -e promptly/</code></pre>
+
+        <h3>CLI Usage</h3>
+
+        <pre><code>python promptly/promptly_cli.py
+
+# Or use shortcuts
+./promptly/promptly.bat  # Windows
+./promptly/Promptly.ps1  # PowerShell</code></pre>
+
+        <h3>Python API</h3>
+
+        <pre><code>from promptly import Promptly
+
+p = Promptly()
+
+# Chain prompts
+result = p.chain([
+    "Analyze this code",
+    "Find bugs",
+    "Suggest fixes"
+])</code></pre>
+
+        <p>See <a href="quickstart.html">Quick Start guide</a> for complete setup instructions.</p>
+
+        <h2 id="core-components">Core Components</h2>
+
+        <h3>1. Prompt Composition Engine</h3>
+
+        <p>Chain multiple prompts together to create complex reasoning flows:</p>
+
+        <pre><code>result = p.chain([
+    "List 5 ML topics",
+    "Pick the most interesting",
+    "Explain it in detail"
+])</code></pre>
+
+        <h3>2. Recursive Loop System</h3>
+
+        <p>6 loop types for different problem-solving approaches:</p>
+
+        <ul>
+          <li><strong>REFINE</strong>: Iterative quality improvement</li>
+          <li><strong>CRITIQUE</strong>: Self-critique and improvement</li>
+          <li><strong>DECOMPOSE</strong>: Break complex problems into parts</li>
+          <li><strong>VERIFY</strong>: Generate and verify correctness</li>
+          <li><strong>EXPLORE</strong>: Generate multiple solutions and compare</li>
+          <li><strong>HOFSTADTER</strong>: Meta-reasoning and self-reference</li>
+        </ul>
+
+        <h3>3. LLM Judge</h3>
+
+        <p>Evaluate responses using multi-criteria scoring:</p>
+
+        <pre><code>from promptly.tools.llm_judge_enhanced import EnhancedLLMJudge
+
+judge = EnhancedLLMJudge()
+score = judge.evaluate(
+    query="Explain AI",
+    response="AI is artificial intelligence...",
+    criteria=["accuracy", "clarity", "completeness"]
+)</code></pre>
+
+        <h3>4. A/B Testing Framework</h3>
+
+        <p>Compare prompt variations objectively:</p>
+
+        <pre><code>from promptly.tools.ab_testing import ABTester
+
+tester = ABTester()
+winner = tester.compare(
+    prompt_a="Explain {topic} simply",
+    prompt_b="Provide detailed {topic} overview",
+    test_cases=[{"topic": "ML"}, {"topic": "NLP"}]
+)</code></pre>
+
+        <h3>5. Skill System</h3>
+
+        <p>13 professional prompt templates for common tasks:</p>
+
+        <ul>
+          <li>Code Reviewer</li>
+          <li>Bug Detective</li>
+          <li>SQL Optimizer</li>
+          <li>API Designer</li>
+          <li>Test Generator</li>
+          <li>Security Auditor</li>
+          <li>...and 7 more</li>
+        </ul>
+
+        <h2 id="hololoom-integration">HoloLoom Integration</h2>
+
+        <p>Promptly bridges with HoloLoom's semantic memory system:</p>
+
+        <pre><code>from promptly.integrations.hololoom_bridge import HoloLoomBridge
+
+bridge = HoloLoomBridge()
+
+# Query HoloLoom memory for context
+result = bridge.query_with_memory(
+    query="What did we discuss about MCTS?",
+    context_limit=5
+)</code></pre>
+
+        <p>This enables:</p>
+
+        <ul>
+          <li>Context-aware prompt enhancement using neural memory</li>
+          <li>Knowledge graph integration for semantic relationships</li>
+          <li>Persistent learning across sessions</li>
+          <li>Unified semantic space across both systems</li>
+        </ul>
+
+        <h2 id="next-steps">Next Steps</h2>
+
+        <div class="quick-links">
+          <a href="quickstart.html" class="quick-link">
+            <div class="quick-link-title">⚡ Quick Start</div>
+            <div class="quick-link-desc">Get started in 5 minutes with step-by-step setup</div>
+          </a>
+
+          <a href="guide.html" class="quick-link">
+            <div class="quick-link-title">📚 Complete Guide</div>
+            <div class="quick-link-desc">Learn all features, patterns, and advanced usage</div>
+          </a>
+
+          <a href="api.html" class="quick-link">
+            <div class="quick-link-title">🔌 API Reference</div>
+            <div class="quick-link-desc">Comprehensive API documentation and tools</div>
+          </a>
+
+          <a href="examples.html" class="quick-link">
+            <div class="quick-link-title">💡 Examples</div>
+            <div class="quick-link-desc">10+ practical examples and use case walkthroughs</div>
+          </a>
+        </div>
+
+        <div class="callout success">
+          <div class="callout-title">✨ Production Ready</div>
+          <p>Promptly is fully operational with comprehensive testing, documentation, and examples. Start building today!</p>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="article-nav">
+          <div style="flex: 1;"></div>
+          <a href="quickstart.html" class="nav-link">
+            <div class="nav-link-label">Next: Quick Start</div>
+            <div class="nav-link-title">Getting Started →</div>
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+</body>
+</html>

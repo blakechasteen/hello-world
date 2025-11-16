@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Issue - HoloLoom</title>
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/issues.css">
+</head>
+<body>
+    <header class="site-header">
+        <nav class="site-nav">
+            <a href="../" class="site-logo">HoloLoom</a>
+            <ul class="nav-links">
+                <li><a href="../">Home</a></li>
+                <li><a href="./">Issues</a></li>
+                <li><a href="../docs/">Documentation</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="issue-form-header">
+            <h1>Create New Issue</h1>
+            <p>Help us improve HoloLoom by reporting bugs, requesting features, or asking questions.</p>
+        </section>
+
+        <div class="issue-form-wrapper">
+            <div class="issue-form-main">
+                <form id="create-issue-form" class="create-issue-form">
+                    <!-- Title -->
+                    <div class="form-group">
+                        <label for="issue-title">
+                            Title <span class="required">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="issue-title"
+                            name="title"
+                            class="form-input"
+                            placeholder="Brief summary of the issue"
+                            maxlength="200"
+                            required
+                            aria-required="true"
+                        >
+                        <small class="form-help">
+                            Be specific and descriptive (1-200 characters)
+                        </small>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="issue-description">
+                            Description <span class="required">*</span>
+                        </label>
+                        <textarea
+                            id="issue-description"
+                            name="description"
+                            class="form-textarea"
+                            placeholder="Provide details about the issue. Markdown is supported."
+                            rows="12"
+                            required
+                            aria-required="true"
+                        ></textarea>
+                        <small class="form-help">
+                            Markdown formatting supported: **bold**, *italic*, `code`, [links](url)
+                        </small>
+                    </div>
+
+                    <!-- Component -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="issue-component">
+                                Component <span class="required">*</span>
+                            </label>
+                            <select
+                                id="issue-component"
+                                name="component"
+                                class="form-select"
+                                required
+                                aria-required="true"
+                            >
+                                <option value="">Select a component</option>
+                                <option value="HoloLoom">HoloLoom Core</option>
+                                <option value="Documentation">Documentation</option>
+                                <option value="API">API/Server</option>
+                                <option value="UI">Web UI</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="issue-priority">
+                                Priority <span class="required">*</span>
+                            </label>
+                            <select
+                                id="issue-priority"
+                                name="priority"
+                                class="form-select"
+                                required
+                                aria-required="true"
+                            >
+                                <option value="">Select priority</option>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Labels -->
+                    <div class="form-group">
+                        <label>Labels</label>
+                        <div class="label-checkboxes">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="labels" value="bug" class="checkbox-input">
+                                <span class="checkbox-text">🐛 Bug</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="labels" value="feature" class="checkbox-input">
+                                <span class="checkbox-text">✨ Feature</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="labels" value="documentation" class="checkbox-input">
+                                <span class="checkbox-text">📚 Documentation</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="labels" value="question" class="checkbox-input">
+                                <span class="checkbox-text">❓ Question</span>
+                            </label>
+                        </div>
+                        <small class="form-help">Select one or more labels to categorize the issue</small>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Issue</button>
+                        <a href="./" class="btn btn-secondary">Cancel</a>
+                    </div>
+
+                    <div id="form-error" class="form-error" style="display: none;" role="alert">
+                        <!-- Error messages will appear here -->
+                    </div>
+
+                    <div id="form-success" class="form-success" style="display: none;" role="alert">
+                        <!-- Success message will appear here -->
+                    </div>
+                </form>
+            </div>
+
+            <!-- Preview Panel -->
+            <aside class="issue-preview-panel">
+                <h3>Preview</h3>
+
+                <div class="preview-section">
+                    <h4 id="preview-title">Your Issue Title</h4>
+                    <div class="preview-meta">
+                        <span class="preview-label new">new</span>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <h5>Description</h5>
+                    <div id="preview-description" class="preview-content">
+                        <p><em>Description preview will appear here as you type...</em></p>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <h5>Metadata</h5>
+                    <div class="preview-meta-list">
+                        <div>
+                            <strong>Component:</strong>
+                            <span id="preview-component">—</span>
+                        </div>
+                        <div>
+                            <strong>Priority:</strong>
+                            <span id="preview-priority">—</span>
+                        </div>
+                        <div>
+                            <strong>Labels:</strong>
+                            <span id="preview-labels">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-info">
+                    <strong>💡 Tip:</strong> Use Markdown for formatting. Your issue will be numbered automatically.
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2025 HoloLoom. <a href="../">Back to home</a></p>
+    </footer>
+
+    <script src="../assets/js/issues.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            IssuesManager.init();
+            const form = document.getElementById('create-issue-form');
+
+            // Real-time preview
+            document.getElementById('issue-title').addEventListener('input', (e) => {
+                document.getElementById('preview-title').textContent = e.target.value || 'Your Issue Title';
+            });
+
+            document.getElementById('issue-description').addEventListener('input', (e) => {
+                const html = IssuesMarkdown.toHTML(e.target.value);
+                document.getElementById('preview-description').innerHTML = html || '<p><em>Description preview will appear here...</em></p>';
+            });
+
+            document.getElementById('issue-component').addEventListener('change', (e) => {
+                document.getElementById('preview-component').textContent = e.target.value || '—';
+            });
+
+            document.getElementById('issue-priority').addEventListener('change', (e) => {
+                document.getElementById('preview-priority').textContent = e.target.value || '—';
+            });
+
+            // Label preview
+            const updateLabelPreview = () => {
+                const selected = Array.from(document.querySelectorAll('input[name="labels"]:checked'))
+                    .map(cb => cb.value);
+                if (selected.length === 0) {
+                    document.getElementById('preview-labels').textContent = '—';
+                } else {
+                    document.getElementById('preview-labels').innerHTML = selected
+                        .map(label => `<span class="label-badge label-${label}">${label}</span>`)
+                        .join('');
+                }
+            };
+
+            document.querySelectorAll('input[name="labels"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateLabelPreview);
+            });
+
+            // Form submission
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const errorDiv = document.getElementById('form-error');
+                const successDiv = document.getElementById('form-success');
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+
+                try {
+                    const title = document.getElementById('issue-title').value.trim();
+                    const description = document.getElementById('issue-description').value.trim();
+                    const component = document.getElementById('issue-component').value;
+                    const priority = document.getElementById('issue-priority').value;
+                    const labels = Array.from(document.querySelectorAll('input[name="labels"]:checked'))
+                        .map(cb => cb.value);
+
+                    // Validation
+                    if (!title) throw new Error('Title is required');
+                    if (!description) throw new Error('Description is required');
+                    if (!component) throw new Error('Component is required');
+                    if (!priority) throw new Error('Priority is required');
+
+                    // Create issue
+                    const issueId = IssuesManager.createIssue({
+                        title,
+                        description,
+                        component,
+                        priority,
+                        labels
+                    });
+
+                    successDiv.innerHTML = `
+                        <strong>✓ Issue #${issueId} created successfully!</strong>
+                        <p>Redirecting to your new issue...</p>
+                    `;
+                    successDiv.style.display = 'block';
+
+                    // Redirect after 1.5 seconds
+                    setTimeout(() => {
+                        window.location.href = `./view.html?id=${issueId}`;
+                    }, 1500);
+
+                } catch (error) {
+                    errorDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                    errorDiv.style.display = 'block';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

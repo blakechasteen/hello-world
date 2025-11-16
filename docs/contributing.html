@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Contributing to HoloLoom: Code, documentation, and community contribution guidelines.">
+  <meta name="keywords" content="Contributing, HoloLoom, Open Source, Development, Community">
+
+  <title>Contributing to HoloLoom</title>
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav role="navigation" aria-label="Main">
+    <div class="nav-container container">
+      <a href="/" class="nav-logo">HoloLoom</a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/bigplay.html">BigPlay</a></li>
+        <li><a href="/training/">Training</a></li>
+        <li><a href="/contributing.html" class="nav-active">Contributing</a></li>
+      </ul>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">☀️</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main" role="main">
+    <!-- Hero -->
+    <header class="hero">
+      <div class="container">
+        <h1>Contributing to HoloLoom</h1>
+        <p class="hero-tagline">Help us build the future of neural decision-making</p>
+        <p class="hero-subtext">Code, documentation, ideas, and community support are all welcome</p>
+        <div class="hero-cta">
+          <a href="#getting-started" class="btn btn-primary">Get Started</a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">GitHub</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Quick Navigation -->
+    <section style="padding: var(--spacing-2xl) 0; background-color: var(--color-surface); border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2 style="margin-top: 0;">How to Contribute</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--spacing-lg);">
+          <a href="#code" style="padding: var(--spacing-lg); background-color: var(--color-background); border: 2px solid var(--color-border); border-radius: var(--radius-lg); text-decoration: none; color: var(--color-text); text-align: center; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'">
+            💻 Code
+          </a>
+          <a href="#documentation" style="padding: var(--spacing-lg); background-color: var(--color-background); border: 2px solid var(--color-border); border-radius: var(--radius-lg); text-decoration: none; color: var(--color-text); text-align: center; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'">
+            📚 Documentation
+          </a>
+          <a href="#testing" style="padding: var(--spacing-lg); background-color: var(--color-background); border: 2px solid var(--color-border); border-radius: var(--radius-lg); text-decoration: none; color: var(--color-text); text-align: center; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'">
+            ✅ Testing
+          </a>
+          <a href="#community" style="padding: var(--spacing-lg); background-color: var(--color-background); border: 2px solid var(--color-border); border-radius: var(--radius-lg); text-decoration: none; color: var(--color-text); text-align: center; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'">
+            👥 Community
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Getting Started -->
+    <section id="getting-started" style="padding: var(--spacing-3xl) 0; border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2>Getting Started</h2>
+
+        <div style="background-color: var(--color-surface); padding: var(--spacing-lg); border-radius: var(--radius-lg); border-left: 4px solid var(--color-primary); margin-bottom: var(--spacing-2xl);">
+          <h3 style="margin-top: 0;">Code of Conduct</h3>
+          <p>We are committed to providing a welcoming and inspiring community for all. Please read and abide by our <strong>Code of Conduct</strong>:</p>
+          <ul>
+            <li><strong>Be respectful:</strong> Disagreements are natural, but hostility is not acceptable</li>
+            <li><strong>Be inclusive:</strong> Welcome people of all backgrounds and experience levels</li>
+            <li><strong>Be constructive:</strong> Focus on solving problems, not assigning blame</li>
+            <li><strong>Be professional:</strong> Keep all communication professional and appropriate</li>
+            <li><strong>Report violations:</strong> Contact the team at conduct@hololoom.dev</li>
+          </ul>
+        </div>
+
+        <h3>Step 1: Set Up Your Development Environment</h3>
+
+        <div style="background-color: var(--color-surface); padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-lg); font-family: var(--font-mono); font-size: 0.9rem; overflow-x: auto;">
+          <pre style="margin: 0;"><code># Clone the repository
+git clone https://github.com/hololoom/hololoom.git
+cd hololoom
+
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install --upgrade pip
+pip install -e ".[dev]"
+
+# Run tests
+pytest HoloLoom/tests/ -v</code></pre>
+        </div>
+
+        <h3>Step 2: Create a Feature Branch</h3>
+
+        <div style="background-color: var(--color-surface); padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-lg); font-family: var(--font-mono); font-size: 0.9rem; overflow-x: auto;">
+          <pre style="margin: 0;"><code># Create and switch to a new branch
+git checkout -b feature/your-feature-name
+
+# Make your changes, commit regularly
+git add .
+git commit -m "Brief description of your changes"
+
+# Push to your fork
+git push origin feature/your-feature-name</code></pre>
+        </div>
+
+        <h3>Step 3: Submit a Pull Request</h3>
+        <p>When you're ready to share your work:</p>
+        <ol>
+          <li>Push your branch to GitHub</li>
+          <li>Click "Create Pull Request" on the GitHub website</li>
+          <li>Provide a clear title and description</li>
+          <li>Link any related issues</li>
+          <li>Wait for code review</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Code Contributions -->
+    <section id="code" style="padding: var(--spacing-3xl) 0; border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2>Code Contributions</h2>
+
+        <div style="display: grid; gap: var(--spacing-2xl);">
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Code Style & Standards</h3>
+            <ul>
+              <li><strong>Language:</strong> Python 3.9+</li>
+              <li><strong>Style Guide:</strong> PEP 8</li>
+              <li><strong>Type Hints:</strong> Required for public APIs</li>
+              <li><strong>Docstrings:</strong> Google style with examples</li>
+              <li><strong>Line Length:</strong> 100 characters max</li>
+              <li><strong>Testing:</strong> Unit tests for all new code</li>
+            </ul>
+
+            <h4>Code Style Example:</h4>
+            <div style="background-color: var(--color-background); padding: var(--spacing-md); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto;">
+              <pre style="margin: 0;"><code>def calculate_similarity(embedding_a: np.ndarray, embedding_b: np.ndarray) -> float:
+    """Calculate cosine similarity between two embeddings.
+
+    Args:
+        embedding_a: First embedding vector (n_dims,)
+        embedding_b: Second embedding vector (n_dims,)
+
+    Returns:
+        Cosine similarity score (0.0-1.0)
+
+    Example:
+        >>> a = np.array([1.0, 0.0, 0.0])
+        >>> b = np.array([1.0, 1.0, 0.0])
+        >>> similarity = calculate_similarity(a, b)
+        >>> print(f"{similarity:.3f}")  # 0.707
+    """
+    norm_a = np.linalg.norm(embedding_a)
+    norm_b = np.linalg.norm(embedding_b)
+    return np.dot(embedding_a, embedding_b) / (norm_a * norm_b)</code></pre>
+            </div>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">What to Work On</h3>
+            <p>Looking for something to contribute? Start with:</p>
+
+            <h4>Good First Issues</h4>
+            <ul>
+              <li>Labeled <code>good-first-issue</code> on GitHub</li>
+              <li>Suitable for new contributors</li>
+              <li>Clear scope and requirements</li>
+              <li>Pair with experienced mentor if needed</li>
+            </ul>
+
+            <h4>Active Areas</h4>
+            <ul>
+              <li><strong>Phase 6:</strong> SQL/Database Integration</li>
+              <li><strong>Optimization:</strong> Performance improvements</li>
+              <li><strong>Backends:</strong> New memory backends (PostgreSQL, etc.)</li>
+              <li><strong>LLM Integration:</strong> New LLM providers</li>
+              <li><strong>Adapters:</strong> New SpinningWheel input adapters</li>
+            </ul>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Code Review Process</h3>
+            <ol>
+              <li><strong>Automated Checks:</strong> CI/CD runs tests, linting, type checks</li>
+              <li><strong>Code Review:</strong> At least 1 maintainer reviews changes</li>
+              <li><strong>Discussion:</strong> Feedback provided in comments</li>
+              <li><strong>Revisions:</strong> Make requested changes and push again</li>
+              <li><strong>Approval:</strong> Maintainer approves when satisfied</li>
+              <li><strong>Merge:</strong> PR is merged into main</li>
+            </ol>
+
+            <h4>What We Look For</h4>
+            <ul>
+              <li>Code follows style guide</li>
+              <li>Tests are included and passing</li>
+              <li>Documentation is updated</li>
+              <li>No unnecessary dependencies added</li>
+              <li>Changes are focused and atomic</li>
+              <li>Commit messages are clear</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Documentation Contributions -->
+    <section id="documentation" style="padding: var(--spacing-3xl) 0; border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2>Documentation Contributions</h2>
+
+        <div style="display: grid; gap: var(--spacing-2xl);">
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Documentation Types</h3>
+
+            <h4>Training Materials (docs/training/)</h4>
+            <ul>
+              <li>5-part comprehensive course</li>
+              <li>Beginner → Advanced progression</li>
+              <li>HTML with interactive elements</li>
+              <li>Examples for each concept</li>
+            </ul>
+
+            <h4>API Reference</h4>
+            <ul>
+              <li>Complete API documentation</li>
+              <li>Docstring → documentation generator</li>
+              <li>Code examples for each function</li>
+              <li>Parameter descriptions</li>
+            </ul>
+
+            <h4>Architecture Guides</h4>
+            <ul>
+              <li>System design documents</li>
+              <li>Component relationships</li>
+              <li>Data flow diagrams</li>
+              <li>Integration points</li>
+            </ul>
+
+            <h4>Tutorials & Guides</h4>
+            <ul>
+              <li>Step-by-step how-to guides</li>
+              <li>Real-world examples</li>
+              <li>Best practices</li>
+              <li>Common pitfalls</li>
+            </ul>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Documentation Standards</h3>
+
+            <h4>Markdown Guidelines</h4>
+            <ul>
+              <li>Clear, concise writing</li>
+              <li>Headers for structure</li>
+              <li>Code blocks with syntax highlighting</li>
+              <li>External links for references</li>
+              <li>Consistent formatting</li>
+            </ul>
+
+            <h4>Datestamp Requirements</h4>
+            <p>All documentation must include datestamps:</p>
+            <div style="background-color: var(--color-background); padding: var(--spacing-md); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.9rem;">
+              <pre style="margin: 0;"><code># Updated 2025-11-16: Added Phase 5 documentation
+## Performance Optimization (November 2025)
+
+**Implemented: 2025-11-13** - Zero-copy embedding system
+
+## Tutorial
+**Last Updated: 2025-11-16** by @contributor</code></pre>
+            </div>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">How to Contribute Documentation</h3>
+
+            <h4>Fix Typos & Improve Clarity</h4>
+            <ol>
+              <li>Find a documentation file</li>
+              <li>Click "Edit" or fork the repo</li>
+              <li>Make your changes</li>
+              <li>Submit a PR with title: "docs: Fix typo in XYZ"</li>
+            </ol>
+
+            <h4>Write New Tutorials</h4>
+            <ol>
+              <li>Choose a topic (check roadmap)</li>
+              <li>Discuss on GitHub Issues</li>
+              <li>Write tutorial with examples</li>
+              <li>Include code snippets that work</li>
+              <li>Add to table of contents</li>
+              <li>Submit PR for review</li>
+            </ol>
+
+            <h4>Add Examples</h4>
+            <ol>
+              <li>Create working example in demos/</li>
+              <li>Add comments explaining each step</li>
+              <li>Include performance metrics</li>
+              <li>Document any setup required</li>
+              <li>Submit PR with demo</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testing Contributions -->
+    <section id="testing" style="padding: var(--spacing-3xl) 0; border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2>Testing Contributions</h2>
+
+        <div style="display: grid; gap: var(--spacing-2xl);">
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Test Organization</h3>
+
+            <h4>Three Tiers for Fast Feedback:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg); margin-top: var(--spacing-lg);">
+              <div style="padding: var(--spacing-md); background-color: var(--color-background); border-radius: var(--radius-md);">
+                <h4 style="margin-top: 0; color: var(--color-success);">Unit Tests</h4>
+                <p style="font-size: var(--font-size-sm); margin: var(--spacing-md) 0;">Isolated component testing</p>
+                <code style="font-size: 0.8rem;">HoloLoom/tests/unit/</code>
+                <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">&lt;5 seconds</p>
+              </div>
+
+              <div style="padding: var(--spacing-md); background-color: var(--color-background); border-radius: var(--radius-md);">
+                <h4 style="margin-top: 0; color: var(--color-warning);">Integration Tests</h4>
+                <p style="font-size: var(--font-size-sm); margin: var(--spacing-md) 0;">Multi-component testing</p>
+                <code style="font-size: 0.8rem;">HoloLoom/tests/integration/</code>
+                <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">&lt;30 seconds</p>
+              </div>
+
+              <div style="padding: var(--spacing-md); background-color: var(--color-background); border-radius: var(--radius-md);">
+                <h4 style="margin-top: 0; color: var(--color-primary);">E2E Tests</h4>
+                <p style="font-size: var(--font-size-sm); margin: var(--spacing-md) 0;">Full pipeline testing</p>
+                <code style="font-size: 0.8rem;">HoloLoom/tests/e2e/</code>
+                <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">&lt;2 minutes</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Writing Tests</h3>
+
+            <h4>Test Template:</h4>
+            <div style="background-color: var(--color-background); padding: var(--spacing-md); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto;">
+              <pre style="margin: 0;"><code>import pytest
+from HoloLoom.policy.unified import NeuralCore
+
+class TestNeuralCore:
+    """Test suite for NeuralCore policy module."""
+
+    @pytest.fixture
+    def core(self):
+        """Fixture providing a NeuralCore instance."""
+        return NeuralCore(
+            mem_dim=384,
+            n_tools=5,
+            scales=[96, 192, 384]
+        )
+
+    def test_forward_pass(self, core):
+        """Test forward pass with valid inputs."""
+        features = {
+            'motifs': ['test_motif'],
+            'embeddings': [0.5] * 384,
+        }
+        logits = core(features)
+        assert logits.shape == (5,)
+
+    def test_invalid_features_raise_error(self, core):
+        """Test that invalid features raise ValueError."""
+        invalid_features = {'invalid': 'data'}
+        with pytest.raises(ValueError):
+            core(invalid_features)</code></pre>
+            </div>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Running Tests</h3>
+
+            <div style="background-color: var(--color-background); padding: var(--spacing-md); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.9rem; overflow-x: auto;">
+              <pre style="margin: 0;"><code># Run all tests
+pytest HoloLoom/tests/ -v
+
+# Run only unit tests
+pytest HoloLoom/tests/unit/ -v
+
+# Run with coverage report
+pytest HoloLoom/tests/ --cov=HoloLoom --cov-report=html
+
+# Run specific test file
+pytest HoloLoom/tests/unit/test_policy.py -v
+
+# Run with markers
+pytest -m "not slow" HoloLoom/tests/</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Community Contributions -->
+    <section id="community" style="padding: var(--spacing-3xl) 0; border-bottom: 1px solid var(--color-border);">
+      <div class="container">
+        <h2>Community Contributions</h2>
+
+        <div style="display: grid; gap: var(--spacing-2xl);">
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Ways to Contribute (Non-Code)</h3>
+
+            <h4>Help in Communities</h4>
+            <ul>
+              <li>Answer questions in GitHub Discussions</li>
+              <li>Help new contributors get started</li>
+              <li>Share your experiences and use cases</li>
+              <li>Provide feedback on new features</li>
+            </ul>
+
+            <h4>Report Issues</h4>
+            <ul>
+              <li>Found a bug? Report it on GitHub Issues</li>
+              <li>Include: reproduction steps, expected behavior, actual behavior</li>
+              <li>Attach error logs and system info</li>
+              <li>Label appropriately (bug, feature-request, etc.)</li>
+            </ul>
+
+            <h4>Share Projects</h4>
+            <ul>
+              <li>Built something with HoloLoom? Share it!</li>
+              <li>Showcase in Community Hub</li>
+              <li>Write a blog post about your experience</li>
+              <li>Create a tutorial or demo</li>
+            </ul>
+
+            <h4>Improve Ecosystem</h4>
+            <ul>
+              <li>Create new SpinningWheel adapters</li>
+              <li>Build integrations with other tools</li>
+              <li>Develop VS Code extensions</li>
+              <li>Create deployment guides</li>
+            </ul>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Recognition & Rewards</h3>
+
+            <h4>Contributor Recognition</h4>
+            <ul>
+              <li>Listed in README.md contributors section</li>
+              <li>GitHub contributor graph visibility</li>
+              <li>Mention in monthly newsletters</li>
+              <li>Feature on HoloLoom website</li>
+            </ul>
+
+            <h4>Milestone Recognition</h4>
+            <ul>
+              <li><strong>5 contributions:</strong> Contributor badge in discord</li>
+              <li><strong>10 contributions:</strong> Featured contributor spotlight</li>
+              <li><strong>25 contributions:</strong> Maintainer offer (if interested)</li>
+            </ul>
+
+            <h4>Incentive Programs</h4>
+            <ul>
+              <li>Bug bounty program (coming soon)</li>
+              <li>Grant program for major features</li>
+              <li>Sponsorship program for sustained contributions</li>
+            </ul>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Support & Resources</h3>
+
+            <h4>Getting Help</h4>
+            <ul>
+              <li><strong>Questions:</strong> GitHub Discussions or Discord</li>
+              <li><strong>Bugs:</strong> GitHub Issues with bug template</li>
+              <li><strong>Features:</strong> GitHub Issues with feature template</li>
+              <li><strong>Direct Help:</strong> Reach out to @maintainers</li>
+            </ul>
+
+            <h4>Learning Resources</h4>
+            <ul>
+              <li>5-part training course: /training/</li>
+              <li>API documentation: /api/</li>
+              <li>Architecture overview: /ecosystem.html</li>
+              <li>Contributing guide: This page</li>
+            </ul>
+
+            <h4>Contact</h4>
+            <ul>
+              <li><strong>Email:</strong> hello@hololoom.dev</li>
+              <li><strong>GitHub:</strong> github.com/hololoom</li>
+              <li><strong>Discord:</strong> discord.gg/hololoom (coming soon)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Reference -->
+    <section style="padding: var(--spacing-3xl) 0;">
+      <div class="container">
+        <h2>Quick Reference</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg);">
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Branch Naming</h3>
+            <ul style="font-size: var(--font-size-sm);">
+              <li><code>feature/</code> - New features</li>
+              <li><code>bugfix/</code> - Bug fixes</li>
+              <li><code>docs/</code> - Documentation</li>
+              <li><code>test/</code> - Test additions</li>
+              <li><code>refactor/</code> - Code refactoring</li>
+            </ul>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">Commit Messages</h3>
+            <div style="font-family: var(--font-mono); font-size: 0.85rem;">
+              <p style="margin: 0;">Good:</p>
+              <code style="font-size: 0.75rem;">feat: Add RAG verification mode<br/>fix: Handle empty embedding case<br/>docs: Update training guide</code>
+            </div>
+          </div>
+
+          <div style="padding: var(--spacing-lg); background-color: var(--color-surface); border-radius: var(--radius-lg);">
+            <h3 style="margin-top: 0;">PR Title Format</h3>
+            <div style="font-family: var(--font-mono); font-size: 0.85rem;">
+              <p style="margin: 0;">Example:</p>
+              <code style="font-size: 0.75rem;">feat: Improve embedding cache performance (#123)</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer role="contentinfo" style="background-color: var(--color-surface); border-top: 1px solid var(--color-border); padding: var(--spacing-2xl) 0; margin-top: var(--spacing-3xl);">
+    <div class="container">
+      <div style="text-align: center; color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+        <p>Open Source • MIT License • Made with ❤️ by the HoloLoom Community</p>
+        <p>© 2025 HoloLoom</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/theme.js"></script>
+</body>
+</html>

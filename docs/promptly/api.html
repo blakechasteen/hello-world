@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Promptly API Reference - Complete documentation of all Promptly APIs and tools">
+  <meta name="keywords" content="Promptly API, reference, documentation, methods, tools">
+
+  <title>Promptly API Reference</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-code-bg: #f5f5f5;
+
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --font-size-lg: 18px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-background);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-md) var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .navbar-nav {
+      display: flex;
+      gap: var(--spacing-lg);
+      list-style: none;
+    }
+
+    .navbar-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .navbar-nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* MAIN LAYOUT */
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      display: block;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--color-primary);
+      background: var(--color-surface);
+      font-weight: 600;
+    }
+
+    /* ARTICLE */
+    .article {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* BREADCRUMBS */
+    .breadcrumbs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumbs span {
+      margin: 0 var(--spacing-sm);
+    }
+
+    /* HEADER */
+    .article-header {
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .progress-badge {
+      display: inline-block;
+      background: var(--color-secondary);
+      color: white;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article-title {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .article-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .edit-link {
+      display: inline-block;
+      color: var(--color-primary);
+      text-decoration: none;
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-lg);
+      border-bottom: 1px dotted var(--color-primary);
+    }
+
+    .edit-link:hover {
+      border-bottom-style: solid;
+    }
+
+    /* TABLE OF CONTENTS */
+    .toc {
+      background: var(--color-surface);
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      border-radius: var(--radius-md);
+    }
+
+    .toc-title {
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .toc-list {
+      list-style: none;
+      font-size: var(--font-size-sm);
+    }
+
+    .toc-list li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .toc-list a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-list-level-2 {
+      margin-left: var(--spacing-lg);
+      color: var(--color-text-secondary);
+    }
+
+    /* CONTENT STYLING */
+    .article h2 {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-primary);
+      scroll-margin-top: 80px;
+    }
+
+    .article h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .article h3 {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+      scroll-margin-top: 80px;
+      font-family: var(--font-mono);
+      background: var(--color-surface);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+    }
+
+    .article p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.8;
+    }
+
+    .article ul, .article ol {
+      margin-left: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* CODE BLOCKS */
+    .article pre {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+    }
+
+    .article code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .article pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .article p code {
+      background: var(--color-surface);
+      padding: 2px 6px;
+      border-radius: var(--radius-md);
+      color: var(--color-secondary);
+      font-weight: 500;
+    }
+
+    /* API REFERENCE */
+    .api-method {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+    }
+
+    .api-signature {
+      background: var(--color-code-bg);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-md);
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .api-params {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .api-param {
+      margin-bottom: var(--spacing-md);
+      padding-left: var(--spacing-lg);
+      border-left: 2px solid var(--color-accent);
+    }
+
+    .param-name {
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--color-primary);
+    }
+
+    .param-type {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-left: var(--spacing-sm);
+    }
+
+    .param-desc {
+      margin-top: var(--spacing-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* NAVIGATION */
+    .article-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-xl);
+      border-top: 2px solid var(--color-border);
+    }
+
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: var(--spacing-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .nav-link:hover {
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+    }
+
+    .nav-link-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-link-title {
+      font-size: var(--font-size-lg);
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 2em;
+      }
+
+      .article h2 {
+        font-size: 1.5em;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 1.5em;
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .breadcrumbs {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="navbar-brand">HoloLoom</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/docs/promptly/">Promptly</a></li>
+        <li><a href="/docs/training/">Training</a></li>
+        <li><a href="https://github.com">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main-content">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Promptly Docs</div>
+          <ul class="sidebar-nav">
+            <li><a href="index.html">Overview</a></li>
+            <li><a href="quickstart.html">Quick Start</a></li>
+            <li><a href="guide.html">Complete Guide</a></li>
+            <li><a href="api.html" class="active">API Reference</a></li>
+            <li><a href="examples.html">Examples</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">API Modules</div>
+          <ul class="sidebar-nav">
+            <li><a href="#promptly-core">Promptly Core</a></li>
+            <li><a href="#recursive-loops">Recursive Loops</a></li>
+            <li><a href="#tools">Tools</a></li>
+            <li><a href="#integrations">Integrations</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- ARTICLE -->
+      <article class="article">
+        <!-- BREADCRUMBS -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a>
+          <span>/</span>
+          <a href="/docs/promptly/">Promptly</a>
+          <span>/</span>
+          <span>API Reference</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="article-header">
+          <div class="progress-badge">Complete API Docs</div>
+          <h1 class="article-title">Promptly API Reference</h1>
+
+          <div class="article-meta">
+            <span>📚 Comprehensive documentation</span>
+            <span>🔌 All modules and tools</span>
+            <span>💻 Code examples for each method</span>
+          </div>
+        </div>
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+          <div class="toc-title">API Modules</div>
+          <ul class="toc-list">
+            <li><a href="#promptly-core">Promptly Core API</a></li>
+            <li><a href="#recursive-loops">Recursive Loops API</a></li>
+            <li><a href="#loop-composition">Loop Composition API</a></li>
+            <li><a href="#tools">Tools & Utilities</a>
+              <ul class="toc-list-level-2">
+                <li><a href="#llm-judge">LLM Judge</a></li>
+                <li><a href="#ab-testing">A/B Testing</a></li>
+                <li><a href="#cost-tracker">Cost Tracker</a></li>
+              </ul>
+            </li>
+            <li><a href="#integrations">Integrations</a>
+              <ul class="toc-list-level-2">
+                <li><a href="#hololoom-bridge">HoloLoom Bridge</a></li>
+                <li><a href="#mcp-server">MCP Server</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <h2 id="promptly-core">Promptly Core API</h2>
+
+        <p>The main Promptly class provides prompt management and execution.</p>
+
+        <h3>Promptly.__init__(data_dir=None)</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+Promptly(data_dir: str = None) -> Promptly
+          </div>
+
+          <p>Initialize a new Promptly instance.</p>
+
+          <div class="api-params">
+            <div class="api-param">
+              <span class="param-name">data_dir</span>
+              <span class="param-type">str, optional</span>
+              <div class="param-desc">Directory for storing prompts. Defaults to ~/.promptly</div>
+            </div>
+          </div>
+
+          <pre><code>from promptly import Promptly
+
+p = Promptly()
+p = Promptly(data_dir="/custom/path")</code></pre>
+        </div>
+
+        <h3>add(name, content, metadata=None, tags=None)</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+add(name: str, content: str, metadata: dict = None, tags: List[str] = None) -> Prompt
+          </div>
+
+          <p>Add a new prompt to the system.</p>
+
+          <div class="api-params">
+            <div class="api-param">
+              <span class="param-name">name</span>
+              <span class="param-type">str</span>
+              <div class="param-desc">Unique identifier for the prompt</div>
+            </div>
+            <div class="api-param">
+              <span class="param-name">content</span>
+              <span class="param-type">str</span>
+              <div class="param-desc">The prompt template text. Supports {variable} syntax</div>
+            </div>
+            <div class="api-param">
+              <span class="param-name">metadata</span>
+              <span class="param-type">dict, optional</span>
+              <div class="param-desc">Optional metadata (author, source, etc.)</div>
+            </div>
+            <div class="api-param">
+              <span class="param-name">tags</span>
+              <span class="param-type">List[str], optional</span>
+              <div class="param-desc">Tags for categorization and search</div>
+            </div>
+          </div>
+
+          <pre><code>p.add(
+    name="code-reviewer",
+    content="Review this {language} code: {code}",
+    tags=["code", "review"],
+    metadata={"author": "team", "version": "1.0"}
+)</code></pre>
+        </div>
+
+        <h3>get(name, version=None, branch="main")</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+get(name: str, version: int = None, branch: str = "main") -> Prompt
+          </div>
+
+          <p>Retrieve a prompt by name.</p>
+
+          <div class="api-params">
+            <div class="api-param">
+              <span class="param-name">name</span>
+              <span class="param-type">str</span>
+              <div class="param-desc">Prompt name</div>
+            </div>
+            <div class="api-param">
+              <span class="param-name">version</span>
+              <span class="param-type">int, optional</span>
+              <div class="param-desc">Specific version. Latest if not specified</div>
+            </div>
+            <div class="api-param">
+              <span class="param-name">branch</span>
+              <span class="param-type">str, optional</span>
+              <div class="param-desc">Branch name. Defaults to "main"</div>
+            </div>
+          </div>
+
+          <pre><code>prompt = p.get("code-reviewer")
+prompt_v2 = p.get("code-reviewer", version=2)
+feature_prompt = p.get("code-reviewer", branch="feature/advanced")</code></pre>
+        </div>
+
+        <h3>list(branch="main", tags=None, limit=None)</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+list(branch: str = "main", tags: List[str] = None, limit: int = None) -> List[Prompt]
+          </div>
+
+          <p>List all prompts, optionally filtered by tags.</p>
+
+          <pre><code>all_prompts = p.list()
+code_prompts = p.list(tags=["code"])
+recent = p.list(limit=10)</code></pre>
+        </div>
+
+        <h3>search(query, limit=10)</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+search(query: str, limit: int = 10) -> List[Prompt]
+          </div>
+
+          <p>Search prompts by name or content.</p>
+
+          <pre><code>results = p.search("code review", limit=5)</code></pre>
+        </div>
+
+        <h3>delete(name), update(name, content)</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+delete(name: str) -> bool
+update(name: str, content: str) -> Prompt
+          </div>
+
+          <p>Delete or update a prompt.</p>
+
+          <pre><code>p.delete("old-prompt")
+p.update("code-reviewer", content="New template...")</code></pre>
+        </div>
+
+        <h2 id="recursive-loops">Recursive Loops API</h2>
+
+        <h3>RecursiveLoop(loop_type, max_iterations, quality_threshold)</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+RecursiveLoop(
+  loop_type: LoopType,
+  max_iterations: int = 5,
+  quality_threshold: float = 0.9,
+  convergence_threshold: float = 0.02,
+  timeout_seconds: int = None
+) -> RecursiveLoop
+          </div>
+
+          <p>Create a recursive loop for iterative reasoning.</p>
+
+          <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+
+loop = RecursiveLoop(
+    loop_type=LoopType.REFINE,
+    max_iterations=5,
+    quality_threshold=0.85
+)</code></pre>
+        </div>
+
+        <h3>run(initial_prompt, llm_fn)</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+run(initial_prompt: str, llm_fn: Callable) -> LoopResult
+          </div>
+
+          <p>Execute the loop with the given prompt.</p>
+
+          <pre><code>result = loop.run(
+    initial_prompt="Write an essay about {topic}",
+    llm_fn=lambda p: call_llm(p)
+)
+
+print(f"Final output: {result.final_output}")
+print(f"Iterations: {result.iterations}")
+print(f"Quality: {result.final_quality}")</code></pre>
+        </div>
+
+        <h2 id="loop-composition">Loop Composition API</h2>
+
+        <h3>LoopComposer()</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+LoopComposer() -> LoopComposer
+          </div>
+
+          <p>Create a loop composer for defining pipelines.</p>
+
+          <pre><code>from promptly.loop_composition import LoopComposer
+
+composer = LoopComposer()</code></pre>
+        </div>
+
+        <h3>parse(dsl_string)</h3>
+
+        <div class="api-method">
+          <div class="api-signature">
+parse(dsl_string: str) -> Pipeline
+          </div>
+
+          <p>Parse a loop composition DSL string into a pipeline.</p>
+
+          <pre><code>pipeline = composer.parse("""
+LOOP research_pipeline
+  INPUT: topic
+
+  STEP research:
+    - DECOMPOSE topic into subtopics
+    - Research each subtopic
+
+  STEP analyze:
+    - ANALYZE findings
+
+  OUTPUT: research_summary
+END
+""")</code></pre>
+        </div>
+
+        <h2 id="tools">Tools & Utilities</h2>
+
+        <h3 id="llm-judge">EnhancedLLMJudge</h3>
+
+        <pre><code>from promptly.tools.llm_judge_enhanced import EnhancedLLMJudge
+
+judge = EnhancedLLMJudge()
+
+# Evaluate a response
+score = judge.evaluate(
+    query: str,
+    response: str,
+    criteria: List[str],
+    rubric: str = "standard"  # novice, intermediate, expert, standard
+) -> Score
+
+# Compare responses
+winner = judge.compare(
+    query: str,
+    responses: List[str],
+    criteria: List[str]
+) -> ComparisonResult
+
+# Batch evaluation
+results = judge.batch_evaluate(
+    evaluations: List[Dict]
+) -> List[Score]</code></pre>
+
+        <h3 id="ab-testing">ABTester</h3>
+
+        <pre><code>from promptly.tools.ab_testing import ABTester
+
+tester = ABTester()
+
+# Compare two prompts
+results = tester.compare(
+    prompt_a: str,
+    prompt_b: str,
+    test_cases: List[Dict],
+    criteria: List[str] = None,
+    num_samples: int = 1
+) -> ComparisonResults</code></pre>
+
+        <h3 id="cost-tracker">CostTracker</h3>
+
+        <pre><code>from promptly.tools.cost_tracker import CostTracker
+
+tracker = CostTracker()
+
+# Track execution with cost
+result = tracker.execute_and_track(
+    prompt: str,
+    variables: Dict,
+    model: str = "gpt-4"
+) -> ExecutionResult
+
+# Get statistics
+stats = tracker.get_stats() -> Dict</code></pre>
+
+        <h2 id="integrations">Integrations</h2>
+
+        <h3 id="hololoom-bridge">HoloLoomBridge</h3>
+
+        <pre><code>from promptly.integrations.hololoom_bridge import HoloLoomBridge
+
+bridge = HoloLoomBridge()
+
+# Query memory
+context = bridge.recall(
+    query: str,
+    limit: int = 5
+) -> str
+
+# Store interactions
+bridge.remember(
+    query: str,
+    answer: str,
+    feedback: Dict = None
+) -> None
+
+# Query with memory context
+result = bridge.query_with_memory(
+    query: str,
+    context_limit: int = 5
+) -> str</code></pre>
+
+        <h3 id="mcp-server">MCP Server</h3>
+
+        <p>30+ MCP tools available for Claude Desktop integration.</p>
+
+        <pre><code># Common MCP tools
+promptly_add(name, content, metadata)
+promptly_get(name, version)
+promptly_list(branch)
+promptly_skill_add(name, description)
+promptly_execute_skill(skill_name, user_input)
+promptly_refine_iteratively(task, initial_output, max_iterations)
+promptly_ab_test(prompt_a, prompt_b, test_cases)
+promptly_score_prompt(content)
+promptly_auto_tag(content)
+promptly_find_duplicates(min_similarity)</code></pre>
+
+        <h2>Return Types</h2>
+
+        <h3>Prompt</h3>
+
+        <pre><code>class Prompt:
+    name: str
+    content: str
+    version: int
+    branch: str
+    created_at: datetime
+    updated_at: datetime
+    tags: List[str]
+    metadata: Dict[str, Any]
+    author: str</code></pre>
+
+        <h3>Score</h3>
+
+        <pre><code>class Score:
+    overall: float  # 0.0-1.0
+    scores: Dict[str, float]  # criterion -> score
+    feedback: List[str]
+    timestamp: datetime</code></pre>
+
+        <h3>LoopResult</h3>
+
+        <pre><code>class LoopResult:
+    final_output: str
+    iterations: int
+    final_quality: float
+    quality_trajectory: List[float]
+    scratchpad: Scratchpad
+    execution_time_ms: float</code></pre>
+
+        <!-- NAVIGATION -->
+        <div class="article-nav">
+          <a href="guide.html" class="nav-link">
+            <div class="nav-link-label">Previous: Complete Guide</div>
+            <div class="nav-link-title">← Guide</div>
+          </a>
+
+          <a href="examples.html" class="nav-link">
+            <div class="nav-link-label">Next: Examples</div>
+            <div class="nav-link-title">See Examples →</div>
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+</body>
+</html>

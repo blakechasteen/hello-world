@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Promptly Complete Guide - Core concepts, patterns, loop DSL, skills system, and advanced features">
+  <meta name="keywords" content="Promptly, guide, tutorials, patterns, loop composition, skills, advanced features">
+
+  <title>Promptly Complete Guide</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-code-bg: #f5f5f5;
+
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 16px;
+      --font-size-sm: 14px;
+      --font-size-lg: 18px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-background);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-md) var(--spacing-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .navbar-nav {
+      display: flex;
+      gap: var(--spacing-lg);
+      list-style: none;
+    }
+
+    .navbar-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .navbar-nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* MAIN LAYOUT */
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      display: block;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--color-primary);
+      background: var(--color-surface);
+      font-weight: 600;
+    }
+
+    /* ARTICLE */
+    .article {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* BREADCRUMBS */
+    .breadcrumbs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumbs span {
+      margin: 0 var(--spacing-sm);
+    }
+
+    /* HEADER */
+    .article-header {
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .progress-badge {
+      display: inline-block;
+      background: var(--color-primary);
+      color: white;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article-title {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .article-meta {
+      display: flex;
+      gap: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .edit-link {
+      display: inline-block;
+      color: var(--color-primary);
+      text-decoration: none;
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-lg);
+      border-bottom: 1px dotted var(--color-primary);
+    }
+
+    .edit-link:hover {
+      border-bottom-style: solid;
+    }
+
+    /* TABLE OF CONTENTS */
+    .toc {
+      background: var(--color-surface);
+      border-left: 4px solid var(--color-accent);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      border-radius: var(--radius-md);
+    }
+
+    .toc-title {
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-primary);
+    }
+
+    .toc-list {
+      list-style: none;
+      font-size: var(--font-size-sm);
+    }
+
+    .toc-list li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .toc-list a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-list-level-2 {
+      margin-left: var(--spacing-lg);
+      color: var(--color-text-secondary);
+    }
+
+    /* CONTENT STYLING */
+    .article h2 {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-primary);
+      scroll-margin-top: 80px;
+    }
+
+    .article h2:first-of-type {
+      margin-top: 0;
+    }
+
+    .article h3 {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+      scroll-margin-top: 80px;
+    }
+
+    .article h4 {
+      font-size: 1.1em;
+      font-weight: 600;
+      margin-top: var(--spacing-lg);
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text);
+    }
+
+    .article p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.8;
+    }
+
+    .article ul, .article ol {
+      margin-left: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .article li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* CODE BLOCKS */
+    .article pre {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+    }
+
+    .article code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    .article pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .article p code {
+      background: var(--color-surface);
+      padding: 2px 6px;
+      border-radius: var(--radius-md);
+      color: var(--color-secondary);
+      font-weight: 500;
+    }
+
+    /* TABLES */
+    .article table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--spacing-lg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .article th {
+      background: var(--color-surface);
+      padding: var(--spacing-md);
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .article td {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .article tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* CALLOUT BOXES */
+    .callout {
+      border-left: 4px solid;
+      padding: var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+      border-radius: var(--radius-md);
+      background-color: var(--color-surface);
+    }
+
+    .callout.info {
+      border-left-color: var(--color-accent);
+    }
+
+    .callout.success {
+      border-left-color: var(--color-success);
+    }
+
+    .callout.warning {
+      border-left-color: #d97706;
+    }
+
+    .callout-title {
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text);
+    }
+
+    /* NAVIGATION */
+    .article-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-xl);
+      border-top: 2px solid var(--color-border);
+    }
+
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: var(--spacing-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .nav-link:hover {
+      border-color: var(--color-primary);
+      background: var(--color-surface);
+    }
+
+    .nav-link-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-link-title {
+      font-size: var(--font-size-lg);
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 2em;
+      }
+
+      .article h2 {
+        font-size: 1.5em;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: var(--spacing-lg);
+      }
+
+      .article-title {
+        font-size: 1.5em;
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .breadcrumbs {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="navbar-brand">HoloLoom</a>
+      <ul class="navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/docs/promptly/">Promptly</a></li>
+        <li><a href="/docs/training/">Training</a></li>
+        <li><a href="https://github.com">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main-content">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Promptly Docs</div>
+          <ul class="sidebar-nav">
+            <li><a href="index.html">Overview</a></li>
+            <li><a href="quickstart.html">Quick Start</a></li>
+            <li><a href="guide.html" class="active">Complete Guide</a></li>
+            <li><a href="api.html">API Reference</a></li>
+            <li><a href="examples.html">Examples</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-title">Resources</div>
+          <ul class="sidebar-nav">
+            <li><a href="/docs/training/">Training</a></li>
+            <li><a href="https://github.com">GitHub</a></li>
+            <li><a href="https://claude.ai">Claude Desktop</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- ARTICLE -->
+      <article class="article">
+        <!-- BREADCRUMBS -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a>
+          <span>/</span>
+          <a href="/docs/promptly/">Promptly</a>
+          <span>/</span>
+          <span>Complete Guide</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="article-header">
+          <div class="progress-badge">Comprehensive Reference</div>
+          <h1 class="article-title">Promptly Complete Guide</h1>
+
+          <div class="article-meta">
+            <span>📖 In-depth coverage of all features</span>
+            <span>🎯 Best practices and patterns</span>
+            <span>💡 Advanced techniques</span>
+          </div>
+        </div>
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+          <div class="toc-title">Sections</div>
+          <ul class="toc-list">
+            <li><a href="#prompt-composition">Prompt Composition</a>
+              <ul class="toc-list-level-2">
+                <li><a href="#prompt-basics">Basic Operations</a></li>
+                <li><a href="#prompt-versioning">Version Control</a></li>
+                <li><a href="#prompt-variables">Variables & Templating</a></li>
+              </ul>
+            </li>
+            <li><a href="#recursive-loops">Recursive Loops</a>
+              <ul class="toc-list-level-2">
+                <li><a href="#loop-types">6 Loop Types</a></li>
+                <li><a href="#loop-composition">Composing Loops</a></li>
+                <li><a href="#loop-configuration">Configuration & Tuning</a></li>
+              </ul>
+            </li>
+            <li><a href="#skills">Skills System</a></li>
+            <li><a href="#testing">Testing & Quality</a>
+              <ul class="toc-list-level-2">
+                <li><a href="#llm-judge">LLM Judge</a></li>
+                <li><a href="#ab-testing">A/B Testing</a></li>
+              </ul>
+            </li>
+            <li><a href="#advanced">Advanced Features</a></li>
+          </ul>
+        </div>
+
+        <h2 id="prompt-composition">Prompt Composition</h2>
+
+        <p>Prompt composition is the foundation of Promptly. It lets you chain multiple prompts together and build complex reasoning flows.</p>
+
+        <h3 id="prompt-basics">Basic Operations</h3>
+
+        <pre><code>from promptly import Promptly
+
+p = Promptly()
+
+# Add a prompt
+p.add(
+    name="analyze-code",
+    content="Analyze this Python code for performance issues: {code}"
+)
+
+# Get a prompt
+prompt = p.get("analyze-code")
+
+# List all prompts
+all_prompts = p.list()
+
+# Search prompts
+results = p.search("performance", limit=10)
+
+# Delete a prompt
+p.delete("analyze-code")
+
+# Update a prompt
+p.update("analyze-code", content="New content")</code></pre>
+
+        <h3 id="prompt-versioning">Version Control</h3>
+
+        <p>Promptly implements Git-style version control for prompts:</p>
+
+        <pre><code># Create a branch for experimentation
+p.branch("feature/advanced-analysis")
+
+# Commit changes
+p.commit("Add exception handling check")
+
+# View history
+history = p.log("analyze-code", limit=10)
+
+# View a specific version
+old_version = p.get("analyze-code", version=2)
+
+# Merge branches
+p.checkout("main")
+p.merge("feature/advanced-analysis")
+
+# View diffs between versions
+diff = p.diff("analyze-code", v1=1, v2=2)</code></pre>
+
+        <h3 id="prompt-variables">Variables & Templating</h3>
+
+        <p>Use curly braces for variable interpolation:</p>
+
+        <pre><code># Simple variables
+template = "Analyze this {language} code: {code}"
+
+# Nested templates
+p.add("code-reviewer", """
+Analyze this {language} code:
+{code}
+
+Focus on:
+1. {criterion1}
+2. {criterion2}
+3. {criterion3}
+""")
+
+# Use them
+result = p.execute("code-reviewer", {
+    "language": "Python",
+    "code": "def foo(): pass",
+    "criterion1": "Performance",
+    "criterion2": "Security",
+    "criterion3": "Readability"
+})</code></pre>
+
+        <h2 id="recursive-loops">Recursive Loops</h2>
+
+        <p>Recursive loops enable iterative reasoning and self-improvement. They're inspired by Hofstadter's concept of strange loops and self-reference.</p>
+
+        <h3 id="loop-types">6 Loop Types</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Purpose</th>
+              <th>Best For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>REFINE</strong></td>
+              <td>Iterative quality improvement</td>
+              <td>Writing, code quality, explanations</td>
+            </tr>
+            <tr>
+              <td><strong>CRITIQUE</strong></td>
+              <td>Self-critique and feedback loop</td>
+              <td>Analysis, reviews, recommendations</td>
+            </tr>
+            <tr>
+              <td><strong>DECOMPOSE</strong></td>
+              <td>Break complex problems into parts</td>
+              <td>Architecture design, planning</td>
+            </tr>
+            <tr>
+              <td><strong>VERIFY</strong></td>
+              <td>Generate and verify correctness</td>
+              <td>Code generation, problem solving</td>
+            </tr>
+            <tr>
+              <td><strong>EXPLORE</strong></td>
+              <td>Multiple solutions, ranking</td>
+              <td>Brainstorming, optimization</td>
+            </tr>
+            <tr>
+              <td><strong>HOFSTADTER</strong></td>
+              <td>Meta-reasoning, self-reference</td>
+              <td>Philosophy, introspection, complex reasoning</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>REFINE Example</h4>
+
+        <pre><code>from promptly.recursive_loops import RecursiveLoop, LoopType
+
+loop = RecursiveLoop(
+    loop_type=LoopType.REFINE,
+    max_iterations=5,
+    quality_threshold=0.90
+)
+
+result = loop.run(
+    initial_prompt="Write a blog post about {topic}",
+    llm_fn=lambda p: call_llm(p)
+)
+
+# Access results
+print(f"Iterations: {result.iterations}")
+print(f"Final quality: {result.final_quality}")
+print(f"Improvement: {result.quality_trajectory}")</code></pre>
+
+        <h4>CRITIQUE Example</h4>
+
+        <pre><code>critique_loop = RecursiveLoop(
+    loop_type=LoopType.CRITIQUE,
+    max_iterations=3
+)
+
+result = critique_loop.run(
+    initial_prompt="""
+Generate a solution for {problem}.
+Then critique your solution.
+Then improve it based on the critique.
+""",
+    llm_fn=call_llm
+)</code></pre>
+
+        <h3 id="loop-composition">Composing Loops</h3>
+
+        <p>Chain multiple loops together for complex workflows:</p>
+
+        <pre><code>from promptly.loop_composition import LoopComposer
+
+composer = LoopComposer()
+
+# Define a pipeline
+pipeline = composer.parse("""
+LOOP code_review_pipeline
+  INPUT: code
+
+  STEP decompose:
+    - DECOMPOSE the code into components
+
+  STEP analyze:
+    - ANALYZE each component for issues
+
+  STEP verify:
+    - VERIFY no issues were missed
+
+  STEP refine:
+    - REFINE the analysis for clarity
+
+  OUTPUT: comprehensive_review
+END
+""")
+
+# Execute the pipeline
+result = pipeline.execute({"code": "..."})</code></pre>
+
+        <div class="callout info">
+          <div class="callout-title">💡 Loop Composition DSL</div>
+          <p>The DSL (Domain Specific Language) makes it easy to define complex pipelines without code. See examples.html for more.</p>
+        </div>
+
+        <h3 id="loop-configuration">Configuration & Tuning</h3>
+
+        <pre><code># Fine-tune loop behavior
+loop = RecursiveLoop(
+    loop_type=LoopType.REFINE,
+    max_iterations=10,           # Stop after 10 iterations
+    quality_threshold=0.85,      # Stop if quality reaches 0.85
+    convergence_threshold=0.02,  # Stop if improvement < 2%
+    timeout_seconds=120          # Stop after 2 minutes
+)
+
+# Track progress
+for iteration in loop.run_interactive(...):
+    print(f"Iteration {iteration.num}: quality={iteration.quality}")
+    if iteration.should_stop:
+        break</code></pre>
+
+        <h2 id="skills">Skills System</h2>
+
+        <p>Skills are reusable, shareable prompt templates. Promptly includes 13 professional templates.</p>
+
+        <h3>Using Built-in Skills</h3>
+
+        <pre><code>from promptly.skill_templates_extended import SkillLibrary
+
+library = SkillLibrary()
+
+# List available skills
+skills = library.list_skills()
+
+# Use a skill
+result = library.execute("code-reviewer", {
+    "code": "def process_data(data): ...",
+    "focus": "security"
+})
+
+# Get skill details
+skill_info = library.get_skill_info("sql-optimizer")</code></pre>
+
+        <h3>Creating Custom Skills</h3>
+
+        <pre><code># Create a new skill
+my_skill = library.create_skill(
+    name="performance-auditor",
+    description="Audit code for performance bottlenecks",
+    template="""
+Audit this {language} code for performance issues:
+{code}
+
+Identify:
+1. Algorithmic inefficiencies
+2. Memory leaks
+3. I/O bottlenecks
+4. Caching opportunities
+
+Provide specific recommendations for each issue.
+""",
+    loop_type="CRITIQUE",
+    max_iterations=3
+)
+
+# Save skill
+library.save_skill(my_skill)
+
+# Share skill with team
+library.share_skill("performance-auditor", team="backend-team")</code></pre>
+
+        <h2 id="testing">Testing & Quality</h2>
+
+        <h3 id="llm-judge">LLM Judge</h3>
+
+        <p>Evaluate prompt responses using multi-criteria scoring:</p>
+
+        <pre><code>from promptly.tools.llm_judge_enhanced import EnhancedLLMJudge
+
+judge = EnhancedLLMJudge()
+
+# Evaluate a single response
+score = judge.evaluate(
+    query="Explain machine learning",
+    response="Machine learning is a subset of AI that...",
+    criteria=["accuracy", "clarity", "completeness", "engagement"],
+    rubric="expert_level"  # novice, intermediate, expert
+)
+
+print(f"Overall: {score.overall:.2f}")
+print(f"Accuracy: {score.scores['accuracy']:.2f}")
+print(f"Breakdown: {score.feedback}")
+
+# Batch evaluation
+results = judge.batch_evaluate([
+    {"query": "What is AI?", "response": "..."},
+    {"query": "Explain ML", "response": "..."}
+])
+
+# Compare responses
+winner = judge.compare(
+    query="Explain quantum computing",
+    responses=[response_a, response_b],
+    criteria=["accuracy", "clarity"]
+)</code></pre>
+
+        <h3 id="ab-testing">A/B Testing</h3>
+
+        <p>Compare prompt variations objectively:</p>
+
+        <pre><code>from promptly.tools.ab_testing import ABTester
+
+tester = ABTester()
+
+# Define test prompts
+prompt_a = "Explain {topic} in simple terms"
+prompt_b = "Provide a detailed {topic} overview with examples"
+
+# Test cases
+test_cases = [
+    {"topic": "Machine Learning"},
+    {"topic": "Neural Networks"},
+    {"topic": "Deep Learning"},
+    {"topic": "Natural Language Processing"}
+]
+
+# Run A/B test
+results = tester.compare(
+    prompt_a=prompt_a,
+    prompt_b=prompt_b,
+    test_cases=test_cases,
+    criteria=["clarity", "completeness", "usefulness"],
+    num_samples=3  # Run each test 3 times
+)
+
+# Analyze results
+print(f"Winner: {results.winner}")
+print(f"Confidence: {results.confidence:.2f}")
+print(f"Effect size: {results.effect_size:.2f}")
+
+# Get detailed breakdown
+for test_case in results.breakdown:
+    print(f"{test_case.topic}: A={test_case.score_a:.2f}, B={test_case.score_b:.2f}")</code></pre>
+
+        <h2 id="advanced">Advanced Features</h2>
+
+        <h3>HoloLoom Integration</h3>
+
+        <p>Leverage HoloLoom's semantic memory for context-aware prompts:</p>
+
+        <pre><code>from promptly.integrations.hololoom_bridge import HoloLoomBridge
+
+bridge = HoloLoomBridge()
+
+# Query memory for context
+context = bridge.recall("What did we discuss about MCTS?", limit=5)
+
+# Use context in prompts
+prompt_with_context = f"""
+Based on our previous discussion:
+{context}
+
+Now answer: {new_question}
+"""
+
+# Store interactions for learning
+bridge.remember(
+    query="What is Thompson Sampling?",
+    answer="Thompson Sampling is a Bayesian approach...",
+    feedback={"helpful": True, "accuracy": 0.95}
+)</code></pre>
+
+        <h3>Cost Tracking</h3>
+
+        <pre><code>from promptly.tools.cost_tracker import CostTracker
+
+tracker = CostTracker()
+
+# Track prompt execution costs
+result = tracker.execute_and_track(
+    prompt="Analyze this code: {code}",
+    variables={"code": "..."},
+    model="gpt-4"
+)
+
+# Get analytics
+stats = tracker.get_stats()
+print(f"Total cost: ${stats['total_cost']:.2f}")
+print(f"Avg cost per execution: ${stats['avg_cost']:.4f}")
+print(f"Most expensive prompts: {stats['most_expensive']}")</code></pre>
+
+        <h3>Analytics & Insights</h3>
+
+        <pre><code>from promptly.tools.prompt_analytics import AnalyticsEngine
+
+analytics = AnalyticsEngine()
+
+# Get overall statistics
+summary = analytics.get_summary()
+print(f"Total executions: {summary['total_executions']}")
+print(f"Success rate: {summary['success_rate']:.1%}")
+print(f"Avg quality: {summary['avg_quality']:.2f}")
+
+# Per-prompt statistics
+stats = analytics.get_prompt_stats("analyze-code")
+print(f"Executions: {stats['executions']}")
+print(f"Avg latency: {stats['avg_latency_ms']:.0f}ms")
+print(f"Quality trajectory: {stats['quality_trend']}")</code></pre>
+
+        <div class="callout success">
+          <div class="callout-title">✨ Master Promptly</div>
+          <p>You've learned the complete Promptly framework! Check out examples.html for practical use cases, or api.html for API details.</p>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="article-nav">
+          <a href="quickstart.html" class="nav-link">
+            <div class="nav-link-label">Previous: Quick Start</div>
+            <div class="nav-link-title">← Quick Start</div>
+          </a>
+
+          <a href="api.html" class="nav-link">
+            <div class="nav-link-label">Next: API Reference</div>
+            <div class="nav-link-title">API Docs →</div>
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+</body>
+</html>

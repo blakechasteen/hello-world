@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Discussion - HoloLoom Community</title>
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/forums.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">HoloLoom</a>
+                <nav class="main-nav">
+                    <a href="/">Home</a>
+                    <a href="/docs">Docs</a>
+                    <a href="/community" class="active">Community</a>
+                    <a href="/github">GitHub</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="forum-container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-nav">
+            <div class="container">
+                <a href="./index.html">Forum</a>
+                <span>/</span>
+                <span>Create Discussion</span>
+            </div>
+        </div>
+
+        <!-- Create Thread Section -->
+        <section class="create-thread-section">
+            <div class="container">
+                <h1>Start a New Discussion</h1>
+                <p class="subtitle">Share your thoughts, ask questions, or announce something important</p>
+
+                <div class="create-thread-wrapper">
+                    <!-- Form Column -->
+                    <div class="form-column">
+                        <form id="newThreadForm" onsubmit="submitNewThread(event)">
+                            <!-- Category Selection -->
+                            <div class="form-group">
+                                <label for="categorySelect">
+                                    <span class="required">*</span> Category
+                                </label>
+                                <select id="categorySelect" class="form-select" required>
+                                    <option value="">Select a category...</option>
+                                </select>
+                                <small>Choose the most relevant category for your discussion</small>
+                            </div>
+
+                            <!-- Discussion Type -->
+                            <div class="form-group">
+                                <label for="typeSelect">
+                                    <span class="required">*</span> Discussion Type
+                                </label>
+                                <select id="typeSelect" class="form-select" required onchange="updateTypeHelp()">
+                                    <option value="">Select a type...</option>
+                                    <option value="question">❓ Question</option>
+                                    <option value="discussion">💬 Discussion</option>
+                                    <option value="announcement">📢 Announcement</option>
+                                </select>
+                                <small id="typeHelp" class="help-text"></small>
+                            </div>
+
+                            <!-- Your Name -->
+                            <div class="form-group">
+                                <label for="authorName">
+                                    <span class="required">*</span> Your Name
+                                </label>
+                                <input
+                                    type="text"
+                                    id="authorName"
+                                    class="form-input"
+                                    placeholder="How should we address you?"
+                                    required>
+                                <small>This will be displayed with your discussion</small>
+                            </div>
+
+                            <!-- Title -->
+                            <div class="form-group">
+                                <label for="threadTitle">
+                                    <span class="required">*</span> Title
+                                </label>
+                                <input
+                                    type="text"
+                                    id="threadTitle"
+                                    class="form-input"
+                                    placeholder="What's your question or topic?"
+                                    maxlength="200"
+                                    required>
+                                <div class="char-counter">
+                                    <span id="titleCharCount">0</span>/200
+                                </div>
+                                <small>Be descriptive and concise (3-200 characters)</small>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="form-group">
+                                <label for="threadContent">
+                                    <span class="required">*</span> Description
+                                </label>
+                                <textarea
+                                    id="threadContent"
+                                    class="form-textarea"
+                                    rows="10"
+                                    placeholder="Provide more details about your topic..."
+                                    required></textarea>
+                                <small>Markdown supported: **bold**, *italic*, `code`, # headings, - lists, etc.</small>
+                            </div>
+
+                            <!-- Tags -->
+                            <div class="form-group">
+                                <label for="tagsInput">Tags (optional)</label>
+                                <input
+                                    type="text"
+                                    id="tagsInput"
+                                    class="form-input"
+                                    placeholder="thompson-sampling, beginner, help (comma-separated)">
+                                <small>Add relevant tags to help others find your discussion</small>
+                            </div>
+
+                            <!-- Guidelines -->
+                            <div class="form-group guidelines-box">
+                                <h4>Community Guidelines</h4>
+                                <ul>
+                                    <li>✅ Be respectful and constructive</li>
+                                    <li>✅ Search for existing discussions first</li>
+                                    <li>✅ Provide clear context and examples</li>
+                                    <li>✅ Use code blocks for code snippets</li>
+                                    <li>❌ No spam, harassment, or self-promotion</li>
+                                </ul>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="agreeGuidelines" required>
+                                    <span>I agree to follow community guidelines</span>
+                                </label>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="goBack()">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    Create Discussion
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Preview Column -->
+                    <aside class="preview-column">
+                        <div class="preview-card">
+                            <h3>Preview</h3>
+                            <div class="preview-container" id="previewContainer">
+                                <div class="preview-placeholder">
+                                    <p>Your discussion preview will appear here as you type</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h4>Formatting Help</h4>
+                            <div class="formatting-examples">
+                                <div class="example">
+                                    <code>**bold text**</code>
+                                    <div class="result"><strong>bold text</strong></div>
+                                </div>
+                                <div class="example">
+                                    <code>*italic text*</code>
+                                    <div class="result"><em>italic text</em></div>
+                                </div>
+                                <div class="example">
+                                    <code>`code snippet`</code>
+                                    <div class="result"><code>code snippet</code></div>
+                                </div>
+                                <div class="example">
+                                    <code># Heading 1</code>
+                                    <div class="result"><h4>Heading 1</h4></div>
+                                </div>
+                                <div class="example">
+                                    <code>- List item</code>
+                                    <div class="result">
+                                        <ul><li>List item</li></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tips-card">
+                            <h4>💡 Tips for Good Questions</h4>
+                            <ul>
+                                <li>Include specific error messages</li>
+                                <li>Provide minimal working examples</li>
+                                <li>Explain what you've already tried</li>
+                                <li>Include relevant code blocks</li>
+                            </ul>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2025 HoloLoom. Community Forum v1.0</p>
+            <p><a href="./index.html">Back to Forum</a> | <a href="/">Home</a></p>
+        </div>
+    </footer>
+
+    <!-- Markdown renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Forum system -->
+    <script src="../assets/js/forums.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            ForumManager.init();
+            initializeForm();
+            setupFormListeners();
+        });
+
+        function initializeForm() {
+            // Load categories
+            const categories = ForumManager.getCategories();
+            const categorySelect = document.getElementById('categorySelect');
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                categorySelect.appendChild(option);
+            });
+
+            // Check if category was pre-selected from URL
+            const params = new URLSearchParams(window.location.search);
+            const selectedCategory = params.get('category');
+            if (selectedCategory) {
+                categorySelect.value = selectedCategory;
+            }
+
+            // Pre-fill author from localStorage
+            const savedAuthor = localStorage.getItem('forumAuthor');
+            if (savedAuthor) {
+                document.getElementById('authorName').value = savedAuthor;
+            }
+        }
+
+        function setupFormListeners() {
+            // Title character counter
+            document.getElementById('threadTitle').addEventListener('input', (e) => {
+                document.getElementById('titleCharCount').textContent = e.target.value.length;
+                updatePreview();
+            });
+
+            // Content preview
+            document.getElementById('threadContent').addEventListener('input', updatePreview);
+
+            // Type help
+            document.getElementById('typeSelect').addEventListener('change', updateTypeHelp);
+        }
+
+        function updateTypeHelp() {
+            const type = document.getElementById('typeSelect').value;
+            const helpText = document.getElementById('typeHelp');
+
+            const helpMessages = {
+                'question': '❓ Ask for help or advice from the community',
+                'discussion': '💬 Start a conversation or share ideas',
+                'announcement': '📢 Share important news or updates'
+            };
+
+            helpText.textContent = helpMessages[type] || '';
+        }
+
+        function updatePreview() {
+            const title = document.getElementById('threadTitle').value;
+            const content = document.getElementById('threadContent').value;
+            const type = document.getElementById('typeSelect').value;
+            const category = document.getElementById('categorySelect').value;
+            const author = document.getElementById('authorName').value;
+
+            const container = document.getElementById('previewContainer');
+
+            if (!title && !content) {
+                container.innerHTML = `
+                    <div class="preview-placeholder">
+                        <p>Your discussion preview will appear here as you type</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const categoryObj = ForumManager.getCategories().find(c => c.id === category);
+            const categoryName = categoryObj ? categoryObj.name : 'Category';
+            const typeBadge = getTypeIcon(type);
+
+            const renderedContent = content ? marked(content) : '<p><em>No description provided yet</em></p>';
+
+            container.innerHTML = `
+                <div class="preview-thread">
+                    <div class="preview-header">
+                        <h3>${title || 'Thread Title'}</h3>
+                        ${type ? `<span class="badge">${typeBadge}</span>` : ''}
+                    </div>
+                    <div class="preview-meta">
+                        <span>${author || 'Your Name'}</span>
+                        <span>${categoryName}</span>
+                    </div>
+                    <div class="preview-content">
+                        ${renderedContent}
+                    </div>
+                </div>
+            `;
+        }
+
+        function submitNewThread(event) {
+            event.preventDefault();
+
+            // Validate
+            const category = document.getElementById('categorySelect').value;
+            const type = document.getElementById('typeSelect').value;
+            const author = document.getElementById('authorName').value.trim();
+            const title = document.getElementById('threadTitle').value.trim();
+            const content = document.getElementById('threadContent').value.trim();
+            const tags = parseTags(document.getElementById('tagsInput').value);
+
+            if (!category || !type || !author || !title || !content) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (title.length < 3) {
+                alert('Title must be at least 3 characters long');
+                return;
+            }
+
+            if (!document.getElementById('agreeGuidelines').checked) {
+                alert('Please agree to community guidelines');
+                return;
+            }
+
+            // Save author to localStorage
+            localStorage.setItem('forumAuthor', author);
+
+            // Create thread
+            const threadData = {
+                categoryId: category,
+                title,
+                content,
+                author,
+                type,
+                tags
+            };
+
+            const newThread = ForumManager.createThread(threadData);
+
+            // Show success message
+            showSuccessMessage();
+
+            // Redirect after delay
+            setTimeout(() => {
+                window.location.href = `./thread.html?id=${newThread.id}`;
+            }, 2000);
+        }
+
+        function parseTags(input) {
+            return input
+                .split(',')
+                .map(tag => tag.trim().toLowerCase())
+                .filter(tag => tag.length > 0)
+                .slice(0, 5); // Max 5 tags
+        }
+
+        function showSuccessMessage() {
+            const form = document.getElementById('newThreadForm');
+            form.innerHTML = `
+                <div class="success-message">
+                    <h2>✓ Discussion Created!</h2>
+                    <p>Your discussion has been published. Redirecting you to it now...</p>
+                    <div class="loading-spinner"></div>
+                </div>
+            `;
+        }
+
+        function goBack() {
+            history.back();
+        }
+
+        function getTypeIcon(type) {
+            const icons = {
+                'question': '❓ Question',
+                'discussion': '💬 Discussion',
+                'announcement': '📢 Announcement'
+            };
+            return icons[type] || type;
+        }
+    </script>
+</body>
+</html>

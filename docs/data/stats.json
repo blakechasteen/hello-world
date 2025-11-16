@@ -1,0 +1,29 @@
+{
+  "lastUpdated": "2025-11-16T10:00:00Z",
+  "downloads": "100K+",
+  "stars": "500+",
+  "contributors": "50+",
+  "activeThreads": "200+",
+  "openIssues": "25",
+  "closedIssues": "180",
+  "pullRequests": "15",
+  "pythonFiles": "302",
+  "linesOfCode": "100K+",
+  "documentationLines": "50K+",
+  "visualDiagrams": "28",
+  "trainingParts": "5",
+  "performanceSpeedup": "291x",
+  "hotPathLatency": "0.03ms",
+  "simpleQueryLatency": "<50ms",
+  "externalDependencies": "0",
+  "pythonVersion": "3.9+",
+  "license": "MIT",
+  "lastRelease": "2025-11-15",
+  "nextPlannedRelease": "2025-12-15",
+  "metrics": {
+    "uptime": "99.9%",
+    "testCoverage": "85%",
+    "communityGrowth": "+25% monthly",
+    "issueResolutionTime": "3 days avg"
+  }
+}

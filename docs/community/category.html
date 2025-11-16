@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category - HoloLoom Community</title>
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/forums.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">HoloLoom</a>
+                <nav class="main-nav">
+                    <a href="/">Home</a>
+                    <a href="/docs">Docs</a>
+                    <a href="/community" class="active">Community</a>
+                    <a href="/github">GitHub</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="forum-container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-nav">
+            <div class="container">
+                <a href="./index.html">Forum</a>
+                <span>/</span>
+                <span id="categoryBreadcrumb">Category</span>
+            </div>
+        </div>
+
+        <!-- Category Header -->
+        <section class="category-header-section">
+            <div class="container">
+                <div class="header-content">
+                    <div class="header-left">
+                        <h1 id="categoryTitle">Loading...</h1>
+                        <p id="categoryDescription" class="category-description-text"></p>
+                    </div>
+                    <div class="header-right">
+                        <button class="btn btn-primary" onclick="createNewThread()">
+                            <span class="icon">+</span> New Discussion
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters and Sorting -->
+        <section class="thread-controls">
+            <div class="container">
+                <div class="controls-wrapper">
+                    <div class="filter-group">
+                        <label for="filterSelect">Filter:</label>
+                        <select id="filterSelect" onchange="applyFilters()">
+                            <option value="all">All Discussions</option>
+                            <option value="questions">Questions</option>
+                            <option value="discussions">Discussions</option>
+                            <option value="announcements">Announcements</option>
+                            <option value="unanswered">Unanswered</option>
+                            <option value="solved">Solved</option>
+                        </select>
+                    </div>
+
+                    <div class="sort-group">
+                        <label for="sortSelect">Sort by:</label>
+                        <select id="sortSelect" onchange="applyFilters()">
+                            <option value="recent">Recent</option>
+                            <option value="hot">Hot</option>
+                            <option value="top">Top (Most Upvoted)</option>
+                            <option value="oldest">Oldest</option>
+                            <option value="mostReplies">Most Replies</option>
+                        </select>
+                    </div>
+
+                    <div class="search-box-inline">
+                        <input type="text" id="categorySearch" placeholder="Search this category..." class="search-input">
+                        <button class="search-btn" onclick="performSearch()">🔍</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Thread List -->
+        <section class="thread-list-section">
+            <div class="container">
+                <div id="threadListContainer" class="thread-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Pagination -->
+        <section class="pagination-section">
+            <div class="container">
+                <div class="pagination" id="paginationContainer">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2025 HoloLoom. Community Forum v1.0</p>
+            <p><a href="./index.html">Back to Forum</a> | <a href="/">Home</a></p>
+        </div>
+    </footer>
+
+    <!-- Markdown renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Forum system -->
+    <script src="../assets/js/forums.js"></script>
+    <script>
+        const THREADS_PER_PAGE = 10;
+        let currentPage = 1;
+        let currentFilter = 'all';
+        let currentSort = 'recent';
+        let displayedThreads = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ForumManager.init();
+            loadCategoryView();
+        });
+
+        function getCategoryIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id') || 'general';
+        }
+
+        function loadCategoryView() {
+            const categoryId = getCategoryIdFromUrl();
+            const category = ForumManager.getCategories().find(c => c.id === categoryId);
+
+            if (!category) {
+                document.getElementById('categoryTitle').textContent = 'Category Not Found';
+                return;
+            }
+
+            // Update header
+            document.getElementById('categoryTitle').textContent = category.name;
+            document.getElementById('categoryBreadcrumb').textContent = category.name;
+            document.getElementById('categoryDescription').textContent = category.description;
+
+            // Load threads
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const categoryId = getCategoryIdFromUrl();
+            const filter = document.getElementById('filterSelect').value;
+            const sort = document.getElementById('sortSelect').value;
+            const searchQuery = document.getElementById('categorySearch').value;
+
+            currentFilter = filter;
+            currentSort = sort;
+            currentPage = 1;
+
+            let threads = ForumManager.getThreadsByCategory(categoryId);
+
+            // Apply search
+            if (searchQuery.trim()) {
+                threads = threads.filter(t =>
+                    t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    t.content.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+            }
+
+            // Apply filters
+            switch (filter) {
+                case 'questions':
+                    threads = threads.filter(t => t.type === 'question');
+                    break;
+                case 'discussions':
+                    threads = threads.filter(t => t.type === 'discussion');
+                    break;
+                case 'announcements':
+                    threads = threads.filter(t => t.type === 'announcement');
+                    break;
+                case 'unanswered':
+                    threads = threads.filter(t => t.type === 'question' && t.replies.length === 0);
+                    break;
+                case 'solved':
+                    threads = threads.filter(t => t.solved === true);
+                    break;
+            }
+
+            // Apply sorting
+            switch (sort) {
+                case 'hot':
+                    threads = ForumManager.sortByHotScore(threads);
+                    break;
+                case 'top':
+                    threads = threads.sort((a, b) => b.upvotes - a.upvotes);
+                    break;
+                case 'oldest':
+                    threads = threads.sort((a, b) => new Date(a.created) - new Date(b.created));
+                    break;
+                case 'mostReplies':
+                    threads = threads.sort((a, b) => b.replies.length - a.replies.length);
+                    break;
+                case 'recent':
+                default:
+                    threads = threads.sort((a, b) => new Date(b.created) - new Date(a.created));
+            }
+
+            displayedThreads = threads;
+            renderThreadList();
+            renderPagination();
+        }
+
+        function renderThreadList() {
+            const container = document.getElementById('threadListContainer');
+            const start = (currentPage - 1) * THREADS_PER_PAGE;
+            const end = start + THREADS_PER_PAGE;
+            const threads = displayedThreads.slice(start, end);
+
+            if (threads.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>No discussions found.</p>
+                        <button class="btn btn-primary" onclick="createNewThread()">
+                            Be the first to start a discussion
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = threads.map(thread => {
+                const lastReply = thread.replies.length > 0
+                    ? thread.replies[thread.replies.length - 1]
+                    : null;
+                const timeAgo = getTimeAgo(new Date(thread.created));
+                const lastActivityTime = lastReply
+                    ? getTimeAgo(new Date(lastReply.created))
+                    : timeAgo;
+
+                return `
+                    <div class="thread-item">
+                        <div class="thread-status">
+                            ${getThreadStatusIcon(thread)}
+                        </div>
+                        <div class="thread-content">
+                            <div class="thread-title-row">
+                                <a href="./thread.html?id=${thread.id}" class="thread-title">
+                                    ${thread.title}
+                                </a>
+                                ${thread.solved ? '<span class="badge badge-success">✓ Solved</span>' : ''}
+                            </div>
+                            <p class="thread-excerpt">${truncateText(thread.content, 120)}</p>
+                            <div class="thread-tags">
+                                ${thread.tags.map(tag => `
+                                    <span class="tag-badge">${tag}</span>
+                                `).join('')}
+                            </div>
+                            <div class="thread-meta">
+                                <span class="author">by ${thread.author}</span>
+                                <span class="time">${timeAgo}</span>
+                            </div>
+                        </div>
+                        <div class="thread-stats">
+                            <div class="stat">
+                                <span class="stat-number">${thread.replies.length}</span>
+                                <span class="stat-label">replies</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">${thread.views}</span>
+                                <span class="stat-label">views</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">${thread.upvotes - thread.downvotes}</span>
+                                <span class="stat-label">votes</span>
+                            </div>
+                            ${lastReply ? `
+                                <div class="last-activity">
+                                    <small>Last reply ${lastActivityTime}</small>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPagination() {
+            const container = document.getElementById('paginationContainer');
+            const totalPages = Math.ceil(displayedThreads.length / THREADS_PER_PAGE);
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+
+            // Previous button
+            if (currentPage > 1) {
+                html += `<button class="pagination-btn" onclick="goToPage(${currentPage - 1})">← Previous</button>`;
+            }
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<span class="pagination-current">${i}</span>`;
+                } else if (i <= 3 || i > totalPages - 3 || Math.abs(i - currentPage) <= 1) {
+                    html += `<button class="pagination-btn" onclick="goToPage(${i})">${i}</button>`;
+                } else if (i === 4 || i === totalPages - 3) {
+                    html += `<span class="pagination-ellipsis">...</span>`;
+                }
+            }
+
+            // Next button
+            if (currentPage < totalPages) {
+                html += `<button class="pagination-btn" onclick="goToPage(${currentPage + 1})">Next →</button>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderThreadList();
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function performSearch() {
+            currentPage = 1;
+            applyFilters();
+        }
+
+        function createNewThread() {
+            const categoryId = getCategoryIdFromUrl();
+            window.location.href = `./new.html?category=${categoryId}`;
+        }
+
+        function getThreadStatusIcon(thread) {
+            if (thread.type === 'announcement') {
+                return '<span class="status-icon" title="Announcement">📢</span>';
+            }
+            if (thread.type === 'question') {
+                return thread.solved
+                    ? '<span class="status-icon solved" title="Solved">✓</span>'
+                    : '<span class="status-icon question" title="Question">?</span>';
+            }
+            return '<span class="status-icon discussion" title="Discussion">💬</span>';
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        function truncateText(text, length) {
+            const plain = text.replace(/[#*`]/g, '').trim();
+            return plain.length > length ? plain.substring(0, length) + '...' : plain;
+        }
+    </script>
+</body>
+</html>
