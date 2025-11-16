@@ -2,7 +2,6 @@
 Start the dashboard with HTTPS for Firefox microphone access
 """
 import subprocess
-import sys
 import os
 
 print("=" * 60)
