@@ -57,7 +57,6 @@ if ffmpeg_path.exists():
 from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
 from HoloLoom.config import Config, MemoryBackend
 from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.alignment.audit_trail import OutcomeType, AuditTrail
 from HoloLoom.web_dashboard.conversation_manager import ConversationManager
 from HoloLoom.web_dashboard.promptly_bridge import PromptlyBridge, PROMPTLY_AVAILABLE
 
