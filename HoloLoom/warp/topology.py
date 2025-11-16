@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 # Optional: Use scikit-tda for advanced persistent homology
 try:
     import ripser
-    from persim import plot_diagrams, bottleneck, wasserstein
     HAS_RIPSER = True
     logger.info("Ripser available for fast persistent homology")
 except ImportError:
