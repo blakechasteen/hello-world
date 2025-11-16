@@ -5,6 +5,7 @@ import { ClaudeCommands } from './commands/claudeCommands';
 import { HoloLoomCommands } from './commands/hololoomCommands';
 import { HoloLoomSidebarProvider } from './views/sidebarProvider';
 import { HoloLoomCodeLensProvider, registerCodeLensCommands } from './providers/codeLensProvider';
+import { WorkspaceWatcher, registerWorkspaceCommands } from './watchers/workspaceWatcher';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Promptly extension activated');
@@ -34,6 +35,16 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register CodeLens commands
     registerCodeLensCommands(context);
+
+    // Start workspace watcher (auto-indexing)
+    const workspaceWatcher = new WorkspaceWatcher();
+    workspaceWatcher.start();
+    context.subscriptions.push({
+        dispose: () => workspaceWatcher.stop()
+    });
+
+    // Register workspace commands
+    registerWorkspaceCommands(context, workspaceWatcher);
 
     // Register commands
     context.subscriptions.push(

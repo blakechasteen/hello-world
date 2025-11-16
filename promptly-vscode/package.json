@@ -67,6 +67,14 @@
       {
         "command": "promptly.recall",
         "title": "Promptly: Recall (HoloLoom)"
+      },
+      {
+        "command": "promptly.indexWorkspace",
+        "title": "HoloLoom: Index Workspace"
+      },
+      {
+        "command": "promptly.indexingStatus",
+        "title": "HoloLoom: Show Indexing Status"
       }
     ],
     "keybindings": [
