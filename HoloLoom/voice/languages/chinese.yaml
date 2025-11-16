@@ -1,0 +1,63 @@
+code: zh
+name: Chinese (Mandarin)
+native_name: 中文（普通话）
+
+variants:
+  - zh-CN:
+      voice_id: echo
+      fallback: alloy
+      name: Simplified Chinese (Mainland)
+  - zh-TW:
+      voice_id: shimmer
+      fallback: echo
+      name: Traditional Chinese (Taiwan)
+
+default_voice: echo
+fallback_voice: alloy
+rtl: false
+
+ui_strings:
+  # Greetings
+  greeting: "你好"  # Nǐ hǎo
+  greeting_morning: "早上好"  # Zǎoshang hǎo
+  greeting_afternoon: "下午好"  # Xiàwǔ hǎo
+  greeting_evening: "晚上好"  # Wǎnshàng hǎo
+  goodbye: "再见"  # Zàijiàn
+  see_you: "回头见"  # Huítóu jiàn
+
+  # Status messages
+  processing: "正在处理您的请求..."  # Processing your request
+  thinking: "让我想想..."  # Let me think
+  searching: "正在搜索信息..."  # Searching for information
+  analyzing: "分析中..."  # Analyzing
+  complete: "完成！"  # Done
+  ready: "准备就绪！"  # Ready
+
+  # Error messages
+  error: "抱歉，发生了错误。"  # Sorry, there was an error
+  error_network: "网络连接错误。请重试。"  # Network error
+  error_timeout: "请求超时。请重试。"  # Timeout
+  error_unknown: "发生了意外错误。"  # Unexpected error
+  not_understood: "我没听清楚。您能再说一遍吗？"  # Didn't understand
+
+  # Confirmation prompts
+  confirm_yes: "是"  # Yes
+  confirm_no: "否"  # No
+  confirm_cancel: "取消"  # Cancel
+  confirm_continue: "继续"  # Continue
+
+  # Navigation
+  go_back: "返回"  # Go back
+  next: "下一个"  # Next
+  previous: "上一个"  # Previous
+  menu: "菜单"  # Menu
+
+  # Language switching
+  language_detected: "检测到语言"  # Language detected
+  language_switched: "语言已切换到中文"  # Switched to Chinese
+  switch_to_language: "切换到{language}"  # Switch to language
+
+metadata:
+  speakers: 1100000000  # Native + non-native speakers
+  script: Hanzi (Simplified/Traditional)
+  direction: ltr

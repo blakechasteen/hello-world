@@ -1,0 +1,67 @@
+code: es
+name: Spanish
+native_name: Español
+
+variants:
+  - es-ES:
+      voice_id: shimmer
+      fallback: nova
+      name: European Spanish
+  - es-MX:
+      voice_id: echo
+      fallback: shimmer
+      name: Mexican Spanish
+  - es-AR:
+      voice_id: fable
+      fallback: shimmer
+      name: Argentinian Spanish
+
+default_voice: shimmer
+fallback_voice: nova
+rtl: false
+
+ui_strings:
+  # Greetings
+  greeting: "Hola"
+  greeting_morning: "Buenos días"
+  greeting_afternoon: "Buenas tardes"
+  greeting_evening: "Buenas noches"
+  goodbye: "Adiós"
+  see_you: "Hasta luego"
+
+  # Status messages
+  processing: "Procesando tu solicitud..."
+  thinking: "Déjame pensar en eso..."
+  searching: "Buscando información..."
+  analyzing: "Analizando..."
+  complete: "¡Listo!"
+  ready: "¡Preparado!"
+
+  # Error messages
+  error: "Lo siento, hubo un error."
+  error_network: "Error de conexión de red. Por favor, inténtalo de nuevo."
+  error_timeout: "La solicitud expiró. Por favor, inténtalo de nuevo."
+  error_unknown: "Ocurrió un error inesperado."
+  not_understood: "No te entendí bien. ¿Puedes repetir?"
+
+  # Confirmation prompts
+  confirm_yes: "Sí"
+  confirm_no: "No"
+  confirm_cancel: "Cancelar"
+  confirm_continue: "Continuar"
+
+  # Navigation
+  go_back: "Volver"
+  next: "Siguiente"
+  previous: "Anterior"
+  menu: "Menú"
+
+  # Language switching
+  language_detected: "Idioma detectado"
+  language_switched: "Idioma cambiado a español"
+  switch_to_language: "Cambiar a {language}"
+
+metadata:
+  speakers: 500000000  # Native + non-native speakers
+  script: Latin
+  direction: ltr
