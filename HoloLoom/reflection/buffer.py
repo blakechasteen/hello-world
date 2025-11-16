@@ -25,6 +25,7 @@ Author: Claude Code (with HoloLoom by Blake)
 Date: 2025-10-26
 """
 
+import asyncio
 import json
 import logging
 import time
@@ -174,6 +175,9 @@ class ReflectionBuffer:
         self.last_analysis_time = datetime.now()
         self.analysis_interval = timedelta(minutes=5)  # Analyze every 5 minutes
 
+        # Concurrency control
+        self._lock = asyncio.Lock()  # Protect concurrent access to episodes and metrics
+
         self.logger = logging.getLogger(__name__)
         self.logger.info(f"ReflectionBuffer initialized (capacity={capacity}, window={learning_window})")
 
@@ -209,11 +213,13 @@ class ReflectionBuffer:
             'success': reward >= self.success_threshold
         }
 
-        # Store in buffer
-        self.episodes.append(episode)
+        # Critical section: protect concurrent access to shared state
+        async with self._lock:
+            # Store in buffer
+            self.episodes.append(episode)
 
-        # Update metrics
-        self._update_metrics(episode)
+            # Update metrics
+            self._update_metrics(episode)
 
         self.logger.debug(
             f"Stored episode: tool={spacetime.tool_used}, "
