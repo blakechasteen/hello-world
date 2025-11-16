@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive gallery of 28 HoloLoom training diagrams with search, filtering, and learning paths">
+    <title>HoloLoom Training Diagrams Gallery</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root[data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #64748b;
+            --accent-primary: #1e40af;
+            --accent-secondary: #3b82f6;
+            --success: #16a34a;
+            --warning: #f97316;
+            --danger: #dc2626;
+            --border-color: #e2e8f0;
+        }
+
+        :root[data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #60a5fa;
+            --success: #22c55e;
+            --warning: #fb923c;
+            --danger: #ef4444;
+            --border-color: #334155;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Header */
+        .gallery-header {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gallery-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .gallery-header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-bar {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-tertiary);
+        }
+
+        /* Main Container */
+        .gallery-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Sidebar */
+        .gallery-sidebar {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-section h3 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            font-size: 0.95rem;
+        }
+
+        .filter-label:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .filter-label input {
+            cursor: pointer;
+            accent-color: var(--accent-primary);
+        }
+
+        .learning-path {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .learning-path:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.15);
+        }
+
+        .learning-path-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .learning-path-info {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Sort Options */
+        .sort-options {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .sort-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .sort-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .sort-btn:hover {
+            border-color: var(--accent-primary);
+        }
+
+        /* Main Grid */
+        .gallery-main {
+            flex: 1;
+        }
+
+        .gallery-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stats-text {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-text strong {
+            color: var(--accent-primary);
+        }
+
+        .diagrams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Diagram Card */
+        .diagram-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .diagram-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 12px 24px rgba(30, 64, 175, 0.15);
+        }
+
+        .diagram-header {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 1rem;
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .diagram-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            opacity: 0.2;
+            position: absolute;
+            top: -10px;
+            right: 10px;
+        }
+
+        .diagram-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .diagram-part {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .diagram-body {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .diagram-metadata {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .metadata-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .metadata-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 50px;
+        }
+
+        .metadata-value {
+            color: var(--text-primary);
+        }
+
+        .difficulty-stars {
+            color: var(--warning);
+            letter-spacing: 2px;
+        }
+
+        .diagram-type {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            width: fit-content;
+        }
+
+        .diagram-type.architecture {
+            background: rgba(30, 64, 175, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .diagram-type.algorithm {
+            background: rgba(22, 163, 74, 0.15);
+            color: var(--success);
+        }
+
+        .diagram-type.performance {
+            background: rgba(249, 115, 22, 0.15);
+            color: var(--warning);
+        }
+
+        .diagram-description {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .diagram-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .diagram-links {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+            flex-wrap: wrap;
+        }
+
+        .link-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .link-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .link-btn.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .stats-badge {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            margin-top: 0.5rem;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Footer */
+        .gallery-footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-secondary);
+            text-decoration: underline;
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Help Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal h2 {
+            margin-bottom: 1rem;
+        }
+
+        .shortcuts-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .shortcut-item {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .shortcut-key {
+            background: var(--bg-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .gallery-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .gallery-sidebar {
+                position: static;
+                margin-bottom: 1rem;
+            }
+
+            .gallery-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header-controls {
+                flex-direction: column;
+            }
+
+            .search-bar {
+                min-width: 100%;
+            }
+
+            .diagrams-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+
+            .sidebar-section {
+                margin-bottom: 1rem;
+            }
+
+            .footer-links {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery-header {
+                padding: 1rem;
+            }
+
+            .gallery-header h1 {
+                font-size: 1.25rem;
+            }
+
+            .diagrams-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .diagram-metadata {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                max-height: 90vh;
+            }
+
+            .header-buttons {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="gallery-header">
+        <h1>HoloLoom Training Diagrams Gallery</h1>
+        <p>Interactive exploration of 28 diagrams • 5 learning parts • 0 external dependencies</p>
+        <div class="header-controls">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search diagrams by title or topic...">
+            </div>
+            <div class="header-buttons">
+                <button class="btn btn-primary" id="theme-toggle" aria-label="Toggle dark mode">
+                    <span id="theme-icon">🌙</span> Dark
+                </button>
+                <button class="btn btn-primary" id="help-btn" aria-label="Show keyboard shortcuts">
+                    <span>?</span> Help
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="gallery-container">
+        <!-- Sidebar -->
+        <aside class="gallery-sidebar">
+            <!-- Sort Options -->
+            <div class="sidebar-section">
+                <h3>Sort By</h3>
+                <div class="sort-options">
+                    <button class="sort-btn active" data-sort="number">Number</button>
+                    <button class="sort-btn" data-sort="difficulty">Difficulty</button>
+                    <button class="sort-btn" data-sort="part">Part</button>
+                </div>
+            </div>
+
+            <!-- Filters: Part -->
+            <div class="sidebar-section">
+                <h3>Part</h3>
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="part" value="1">
+                        <span>Part 1: Foundations (6)</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="part" value="2">
+                        <span>Part 2: Core Concepts (6)</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="part" value="3">
+                        <span>Part 3: Tutorials (2)</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="part" value="4">
+                        <span>Part 4: Advanced (7)</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="part" value="5">
+                        <span>Part 5: Implementation (7)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Filters: Type -->
+            <div class="sidebar-section">
+                <h3>Type</h3>
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="type" value="architecture">
+                        <span>Architecture</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="type" value="algorithm">
+                        <span>Algorithm</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="type" value="performance">
+                        <span>Performance</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="type" value="reference">
+                        <span>Reference</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="type" value="flow">
+                        <span>Data Flow</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Filters: Difficulty -->
+            <div class="sidebar-section">
+                <h3>Difficulty</h3>
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="difficulty" value="1">
+                        <span>Beginner (★)</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="difficulty" value="2">
+                        <span>Intermediate (★★)</span>
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" class="filter-checkbox" data-filter="difficulty" value="3">
+                        <span>Advanced (★★★)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Learning Paths -->
+            <div class="sidebar-section">
+                <h3>Learning Paths</h3>
+                <div class="learning-path" data-path="beginner">
+                    <div class="learning-path-title">🟢 Foundations</div>
+                    <div class="learning-path-info">6 diagrams • 30 min</div>
+                </div>
+                <div class="learning-path" data-path="performance">
+                    <div class="learning-path-title">⚡ Performance</div>
+                    <div class="learning-path-info">5 diagrams • 20 min</div>
+                </div>
+                <div class="learning-path" data-path="advanced">
+                    <div class="learning-path-title">🔬 Advanced</div>
+                    <div class="learning-path-info">6 diagrams • 45 min</div>
+                </div>
+                <div class="learning-path" data-path="implementation">
+                    <div class="learning-path-title">💻 Implementation</div>
+                    <div class="learning-path-info">6 diagrams • 40 min</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="gallery-main">
+            <div class="gallery-stats">
+                <div class="stats-text">
+                    Showing <strong id="diagram-count">28</strong> diagrams
+                </div>
+                <div class="stats-text" id="filter-info" style="display: none;">
+                    Filter active
+                </div>
+            </div>
+
+            <div class="diagrams-grid" id="diagrams-grid"></div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="gallery-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#" id="copy-link">Copy Gallery Link</a>
+                <a href="#" id="clear-filters">Clear Filters</a>
+                <a href="https://github.com" target="_blank">GitHub</a>
+                <a href="#" id="about-link">About</a>
+            </div>
+            <div class="footer-text">
+                <p>🎨 HoloLoom Training v1.0 • November 2025 • <a href="#" id="analytics-link">View Analytics</a></p>
+                <p style="font-size: 0.85rem; margin-top: 0.5rem;">All diagrams available as ASCII (current), Interactive HTML (coming soon), and Animated SVG (coming soon)</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Help Modal -->
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="help-close" aria-label="Close">&times;</button>
+            <h2>Keyboard Shortcuts</h2>
+            <div class="shortcuts-list">
+                <div class="shortcut-item">
+                    <div class="shortcut-key">?</div>
+                    <div>Show this help</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-key">/</div>
+                    <div>Focus search box</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-key">Esc</div>
+                    <div>Clear filters & close modal</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-key">1-5</div>
+                    <div>Filter by Part 1-5</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-key">T</div>
+                    <div>Toggle dark mode</div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-key">↑/↓</div>
+                    <div>Navigate cards (future)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Diagram Database
+        const diagrams = [
+            // Part 1: Foundations
+            { id: 1, part: 1, title: "Exploration-Exploitation Spectrum", type: "algorithm", difficulty: 1, tags: ["Thompson", "Bandits", "Strategy"], description: "Compare reward curves for different exploration strategies and understand the exploration-exploitation tradeoff." },
+            { id: 2, part: 1, title: "Thompson Sampling Beta Distributions", type: "algorithm", difficulty: 2, tags: ["Thompson", "Statistics", "Bayesian"], description: "See how Beta distributions model uncertainty and drive Thompson Sampling decisions." },
+            { id: 3, part: 1, title: "Memory Consolidation Flow", type: "algorithm", difficulty: 1, tags: ["Memory", "Learning", "Knowledge"], description: "Visualize how episodic memories become semantic knowledge through consolidation." },
+            { id: 4, part: 1, title: "Knowledge Graph Relationship Matrix", type: "reference", difficulty: 1, tags: ["KG", "Semantics", "Reference"], description: "Complete reference for all 7 relationship types used in knowledge graphs." },
+            { id: 5, part: 1, title: "Matryoshka Embedding Nesting", type: "reference", difficulty: 2, tags: ["Embeddings", "Architecture"], description: "Understand nested multi-scale embeddings and the zero-copy prefix property." },
+            { id: 6, part: 1, title: "Temporal Memory Decay Curve", type: "performance", difficulty: 1, tags: ["Memory", "Performance", "Temporal"], description: "Explore how memory activation fades over time with hot/warm/cold decay." },
+
+            // Part 2: Core Concepts
+            { id: 7, part: 2, title: "Complete 9-Layer Data Transformation", type: "architecture", difficulty: 2, tags: ["Architecture", "Orchestrator", "Data Flow"], description: "See data transformation through all 9 layers with I/O types and timing." },
+            { id: 8, part: 2, title: "BARE/FAST/FUSED Mode Comparison", type: "reference", difficulty: 1, tags: ["Configuration", "Modes", "Tradeoffs"], description: "Side-by-side feature comparison of execution modes (latency vs quality)." },
+            { id: 9, part: 2, title: "Memory Backend Fallback Chain", type: "architecture", difficulty: 2, tags: ["Reliability", "Backends", "Graceful Degradation"], description: "Understand auto-fallback strategy from HYBRID to INMEMORY." },
+            { id: 10, part: 2, title: "Protocol Swapping Before/After", type: "architecture", difficulty: 2, tags: ["Design Patterns", "Flexibility"], description: "See benefits of protocol-based design for swappable implementations." },
+            { id: 11, part: 2, title: "Configuration Decision Tree", type: "flow", difficulty: 1, tags: ["Configuration", "Decision Making"], description: "Decision tree to guide configuration selection based on priorities." },
+            { id: 12, part: 2, title: "Configuration Validation Checklist", type: "flow", difficulty: 1, tags: ["Debugging", "Configuration"], description: "5-step validation pipeline to catch configuration issues." },
+
+            // Part 3: Tutorials
+            { id: 13, part: 3, title: "Tutorial Learning Path Roadmap", type: "flow", difficulty: 1, tags: ["Learning", "Tutorials", "Planning"], description: "Tutorial dependency tree showing 4 different learning tracks." },
+            { id: 14, part: 3, title: "Comprehensive Debugging Flowchart", type: "flow", difficulty: 2, tags: ["Troubleshooting", "Debugging"], description: "Systematic decision tree to debug common HoloLoom issues." },
+
+            // Part 4: Advanced Topics
+            { id: 15, part: 4, title: "Beta Distribution Uncertainty Comparison", type: "algorithm", difficulty: 3, tags: ["Statistics", "Thompson", "Advanced"], description: "Deep dive into how uncertainty drives Thompson Sampling decisions." },
+            { id: 16, part: 4, title: "Compositional Cache 3-Tier Architecture", type: "performance", difficulty: 3, tags: ["Caching", "Performance", "Phase 5"], description: "Understand the 291× speedup mechanism through parallel cache tiers." },
+            { id: 17, part: 4, title: "Recursive Learning 5-Phase Progression", type: "algorithm", difficulty: 3, tags: ["Learning", "Recursive", "Self-Improvement"], description: "See the complete self-improving feedback loop with confidence-based branching." },
+            { id: 18, part: 4, title: "X-bar Syntax Tree Examples", type: "algorithm", difficulty: 3, tags: ["Linguistics", "Grammar", "Phase 5"], description: "Phrase structure trees showing Universal Grammar integration." },
+            { id: 19, part: 4, title: "Alignment Framework Integration", type: "architecture", difficulty: 3, tags: ["Safety", "Alignment", "Guardrails"], description: "4-module safety pipeline with <0.1ms overhead." },
+            { id: 20, part: 4, title: "RAG Levels Pyramid (1-4)", type: "reference", difficulty: 2, tags: ["RAG", "Capabilities"], description: "Capability pyramid showing RAG sophistication levels." },
+            { id: 21, part: 4, title: "Phase 5 Speedup Breakdown", type: "performance", difficulty: 3, tags: ["Performance", "Phase 5", "Optimization"], description: "Attribute the 291× speedup across parse, merge, and semantic caches." },
+
+            // Part 5: Implementation
+            { id: 22, part: 5, title: "Simplified 9-Step Query Lifecycle", type: "flow", difficulty: 2, tags: ["Lifecycle", "Implementation", "Code"], description: "High-level overview of the 9-step weaving cycle with timing." },
+            { id: 23, part: 5, title: "MemoryShard Data Schema", type: "reference", difficulty: 2, tags: ["Data Structure", "Implementation"], description: "Complete schema for the memory unit with all fields." },
+            { id: 24, part: 5, title: "Policy Network Architecture Simplified", type: "architecture", difficulty: 3, tags: ["Neural Network", "Policy", "Implementation"], description: "Neural network layers for decision-making with ~500K parameters." },
+            { id: 25, part: 5, title: "Knowledge Graph Traversal Tree", type: "algorithm", difficulty: 3, tags: ["Algorithms", "Graph", "Implementation"], description: "BFS traversal showing multi-hop entity and relationship retrieval." },
+            { id: 26, part: 5, title: "Spacetime Output Structure Tree", type: "reference", difficulty: 2, tags: ["Data Structure", "Output"], description: "Complete output structure with trace and metadata." },
+            { id: 27, part: 5, title: "Query Lifecycle Timing Waterfall", type: "performance", difficulty: 2, tags: ["Performance", "Profiling"], description: "Stage-by-stage timing breakdown identifying bottlenecks." },
+            { id: 28, part: 5, title: "Async Lifecycle Sequence Diagram", type: "flow", difficulty: 2, tags: ["Async", "Lifecycle", "Implementation"], description: "Sequence diagram showing async context manager flow." }
+        ];
+
+        // Learning path definitions
+        const learningPaths = {
+            beginner: [1, 2, 3, 7, 8, 5],
+            performance: [8, 16, 21, 27, 6],
+            advanced: [15, 17, 18, 19, 20, 24],
+            implementation: [22, 23, 24, 25, 26, 27]
+        };
+
+        // Analytics
+        const analytics = {
+            views: {},
+            downloads: {},
+            favorites: {}
+        };
+
+        // State
+        let state = {
+            search: '',
+            filters: {
+                part: [],
+                type: [],
+                difficulty: []
+            },
+            sort: 'number',
+            selectedPath: null
+        };
+
+        // Initialize
+        function init() {
+            loadState();
+            setupEventListeners();
+            renderDiagrams();
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Search
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                state.search = e.target.value.toLowerCase();
+                renderDiagrams();
+            });
+
+            // Theme toggle
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+            // Help modal
+            document.getElementById('help-btn').addEventListener('click', () => {
+                document.getElementById('help-modal').classList.add('active');
+            });
+            document.getElementById('help-close').addEventListener('click', () => {
+                document.getElementById('help-modal').classList.remove('active');
+            });
+
+            // Filters
+            document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const filter = e.target.dataset.filter;
+                    const value = e.target.value;
+                    if (e.target.checked) {
+                        state.filters[filter].push(value);
+                    } else {
+                        state.filters[filter] = state.filters[filter].filter(v => v !== value);
+                    }
+                    renderDiagrams();
+                    saveState();
+                });
+            });
+
+            // Sort
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.sort = e.target.dataset.sort;
+                    renderDiagrams();
+                });
+            });
+
+            // Learning paths
+            document.querySelectorAll('.learning-path').forEach(path => {
+                path.addEventListener('click', (e) => {
+                    const pathName = e.currentTarget.dataset.path;
+                    state.selectedPath = pathName;
+                    state.filters = {
+                        part: [],
+                        type: [],
+                        difficulty: []
+                    };
+                    document.querySelectorAll('.filter-checkbox').forEach(cb => cb.checked = false);
+                    renderDiagrams();
+                    saveState();
+                });
+            });
+
+            // Footer links
+            document.getElementById('clear-filters').addEventListener('click', (e) => {
+                e.preventDefault();
+                state.search = '';
+                state.filters = { part: [], type: [], difficulty: [] };
+                state.selectedPath = null;
+                document.getElementById('search-input').value = '';
+                document.querySelectorAll('.filter-checkbox').forEach(cb => cb.checked = false);
+                renderDiagrams();
+                saveState();
+            });
+
+            document.getElementById('copy-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                navigator.clipboard.writeText(window.location.href);
+                alert('Gallery link copied to clipboard!');
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '?') {
+                    document.getElementById('help-modal').classList.add('active');
+                } else if (e.key === '/') {
+                    document.getElementById('search-input').focus();
+                    e.preventDefault();
+                } else if (e.key === 'Escape') {
+                    document.getElementById('help-modal').classList.remove('active');
+                    state.search = '';
+                    state.filters = { part: [], type: [], difficulty: [] };
+                    document.getElementById('search-input').value = '';
+                    renderDiagrams();
+                } else if (e.key === 't' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    toggleTheme();
+                } else if (e.key >= '1' && e.key <= '5') {
+                    // Filter by part
+                    const part = e.key;
+                    const checkbox = document.querySelector(`[data-filter="part"][value="${part}"]`);
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        const filter = 'part';
+                        if (checkbox.checked) {
+                            state.filters[filter].push(part);
+                        } else {
+                            state.filters[filter] = state.filters[filter].filter(v => v !== part);
+                        }
+                        renderDiagrams();
+                    }
+                }
+            });
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            document.getElementById('theme-icon').textContent = newTheme === 'light' ? '🌙' : '☀️';
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Filtering and Sorting
+        function getFilteredDiagrams() {
+            let filtered = diagrams;
+
+            // Search
+            if (state.search) {
+                filtered = filtered.filter(d => {
+                    const text = `${d.title} ${d.tags.join(' ')}`.toLowerCase();
+                    return text.includes(state.search);
+                });
+            }
+
+            // Learning path
+            if (state.selectedPath) {
+                const pathDiagrams = learningPaths[state.selectedPath];
+                filtered = filtered.filter(d => pathDiagrams.includes(d.id));
+            } else {
+                // Regular filters
+                if (state.filters.part.length > 0) {
+                    filtered = filtered.filter(d => state.filters.part.includes(String(d.part)));
+                }
+                if (state.filters.type.length > 0) {
+                    filtered = filtered.filter(d => state.filters.type.includes(d.type));
+                }
+                if (state.filters.difficulty.length > 0) {
+                    filtered = filtered.filter(d => state.filters.difficulty.includes(String(d.difficulty)));
+                }
+            }
+
+            // Sort
+            if (state.sort === 'difficulty') {
+                filtered.sort((a, b) => b.difficulty - a.difficulty);
+            } else if (state.sort === 'part') {
+                filtered.sort((a, b) => a.part - b.part || a.id - b.id);
+            } else {
+                filtered.sort((a, b) => a.id - b.id);
+            }
+
+            return filtered;
+        }
+
+        // Render diagrams
+        function renderDiagrams() {
+            const filtered = getFilteredDiagrams();
+            const grid = document.getElementById('diagrams-grid');
+            grid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><h2>No diagrams found</h2><p>Try adjusting your search or filters</p></div>';
+                document.getElementById('diagram-count').textContent = '0';
+                document.getElementById('filter-info').style.display = 'inline';
+                return;
+            }
+
+            filtered.forEach(diagram => {
+                const card = createDiagramCard(diagram);
+                grid.appendChild(card);
+            });
+
+            document.getElementById('diagram-count').textContent = filtered.length;
+            document.getElementById('filter-info').style.display =
+                (state.search || Object.values(state.filters).some(f => f.length > 0) || state.selectedPath) ? 'inline' : 'none';
+        }
+
+        // Create diagram card
+        function createDiagramCard(diagram) {
+            const views = (analytics.views[diagram.id] || 0);
+            const typeClass = diagram.type === 'algorithm' ? 'algorithm' : diagram.type === 'architecture' ? 'architecture' : diagram.type === 'performance' ? 'performance' : '';
+
+            const card = document.createElement('div');
+            card.className = 'diagram-card';
+            card.innerHTML = `
+                <div class="diagram-header">
+                    <div class="diagram-number">#${diagram.id}</div>
+                    <div>
+                        <div class="diagram-title">${diagram.title}</div>
+                        <div class="diagram-part">Part ${diagram.part}</div>
+                    </div>
+                </div>
+                <div class="diagram-body">
+                    <div class="diagram-type ${typeClass}">${diagram.type.charAt(0).toUpperCase() + diagram.type.slice(1)}</div>
+                    <div class="diagram-metadata">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Difficulty</span>
+                            <span class="metadata-value difficulty-stars">${'★'.repeat(diagram.difficulty)}${'☆'.repeat(3 - diagram.difficulty)}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Part</span>
+                            <span class="metadata-value">${diagram.part}</span>
+                        </div>
+                    </div>
+                    <p class="diagram-description">${diagram.description}</p>
+                    <div class="diagram-tags">
+                        ${diagram.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                    <div class="diagram-links">
+                        <button class="link-btn" onclick="trackView(${diagram.id})">View ASCII</button>
+                        <button class="link-btn coming-soon" title="Coming soon">Interactive</button>
+                        <button class="link-btn coming-soon" title="Coming soon">Animated</button>
+                    </div>
+                    <div class="stats-badge">
+                        <span class="badge">👁 ${views}</span>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        // Track views
+        function trackView(diagramId) {
+            analytics.views[diagramId] = (analytics.views[diagramId] || 0) + 1;
+            localStorage.setItem('diagram_analytics', JSON.stringify(analytics));
+            alert(`Diagram #${diagramId} - Viewing ASCII version would open the full training documentation`);
+            renderDiagrams();
+        }
+
+        // Load/Save state
+        function loadState() {
+            const saved = localStorage.getItem('gallery_state');
+            if (saved) {
+                state = JSON.parse(saved);
+                // Restore checkboxes
+                Object.entries(state.filters).forEach(([filterType, values]) => {
+                    values.forEach(value => {
+                        const checkbox = document.querySelector(`[data-filter="${filterType}"][value="${value}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                });
+            }
+
+            const analyticsData = localStorage.getItem('diagram_analytics');
+            if (analyticsData) {
+                Object.assign(analytics, JSON.parse(analyticsData));
+            }
+
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.getElementById('theme-icon').textContent = theme === 'light' ? '🌙' : '☀️';
+        }
+
+        function saveState() {
+            localStorage.setItem('gallery_state', JSON.stringify(state));
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

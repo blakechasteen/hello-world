@@ -572,6 +572,98 @@
           "content": "Feature representation combining motifs (symbolic), embeddings (continuous), and spectral features (topological)."
         }
       ]
+    },
+    {
+      "url": "/interactive",
+      "title": "Interactive Diagrams - Learning Through Visualization",
+      "excerpt": "Explore HoloLoom through interactive diagrams and visualizations with clickable elements and detailed explanations",
+      "sections": [
+        {
+          "heading": "Interactive Gallery Overview",
+          "content": "28 HoloLoom training diagrams with search, filtering, and learning paths. Featured interactive diagrams for Thompson Sampling and 9-layer architecture."
+        },
+        {
+          "heading": "Featured Interactive Diagrams",
+          "content": "Thompson Sampling interactive visualization showing exploration-exploitation balance and probability distributions. 9-layer architecture diagram with data flow and layer interactions."
+        },
+        {
+          "heading": "How to Use Interactive Diagrams",
+          "content": "Hover over elements to learn more, click to expand details, follow connections between components, and explore related concepts."
+        },
+        {
+          "heading": "Learning Paths",
+          "content": "Start with Thompson Sampling to understand decision-making, then explore 9-layer architecture to see how everything fits together, finish with complete gallery for deep exploration."
+        }
+      ]
+    },
+    {
+      "url": "/interactive/diagrams/02_thompson_sampling.html",
+      "title": "Interactive Thompson Sampling Visualization",
+      "excerpt": "Explore Thompson Sampling exploration-exploitation balance through interactive visualization",
+      "sections": [
+        {
+          "heading": "Thompson Sampling Exploration",
+          "content": "Understand how HoloLoom balances exploration and exploitation through Thompson Sampling's Bayesian approach with interactive probability distributions."
+        },
+        {
+          "heading": "Decision Logic",
+          "content": "See how Thompson Sampling samples from Beta-Bernoulli conjugate priors to make optimal tool selections based on accumulated evidence."
+        },
+        {
+          "heading": "Interactive Features",
+          "content": "Click elements to see probability distributions, explore different scenarios, adjust parameters, and watch how exploration patterns change over time."
+        },
+        {
+          "heading": "Related Content",
+          "content": "Part 1 training covers Thompson Sampling foundations. Research section provides deep theoretical dive into Beta-Bernoulli conjugacy and regret bounds."
+        }
+      ]
+    },
+    {
+      "url": "/interactive/diagrams/07_9layer_architecture.html",
+      "title": "Interactive 9-Layer Architecture Diagram",
+      "excerpt": "Explore the complete 9-layer weaving architecture through interactive visualization",
+      "sections": [
+        {
+          "heading": "9-Layer Architecture Overview",
+          "content": "Understand the complete data transformation pipeline from input through learning with all 9 layers: Input Adapters, Motif Detection, Embedding Generation, Memory Retrieval, Feature Fusion, Policy Selection, Tool Execution, Output Synthesis, and Reflection Learning."
+        },
+        {
+          "heading": "Data Flow Visualization",
+          "content": "Follow data as it flows through each layer, see how information is transformed, enriched, and used to make decisions. Interactive visualization shows layer interactions and data size changes."
+        },
+        {
+          "heading": "Layer Details",
+          "content": "Click on each layer to see details about what processing happens, input/output formats, time complexity, and scaling characteristics."
+        },
+        {
+          "heading": "Related Content",
+          "content": "Part 2 training provides comprehensive overview of 9-layer architecture. Architecture guide section has detailed documentation of each layer. Advanced topics cover optimization and deployment."
+        }
+      ]
+    },
+    {
+      "url": "/interactive/gallery.html",
+      "title": "Complete Diagram Gallery - All 28 Interactive Visualizations",
+      "excerpt": "Browse and search all 28 HoloLoom training diagrams with filtering and learning paths",
+      "sections": [
+        {
+          "heading": "Gallery Overview",
+          "content": "Interactive gallery of 28 HoloLoom training diagrams covering architecture, algorithms, data flow, system interactions, and learning concepts."
+        },
+        {
+          "heading": "Search & Filter",
+          "content": "Search diagrams by title or content, filter by topic and learning path, find exactly what you need in seconds."
+        },
+        {
+          "heading": "Learning Paths",
+          "content": "Beginner path covers foundations, intermediate path explores core concepts, advanced path focuses on implementation details and optimization."
+        },
+        {
+          "heading": "Featured Topics",
+          "content": "Thompson Sampling exploration-exploitation balance, 9-layer architecture data flow, memory systems hierarchy, knowledge graph structure, policy decision flow, and more."
+        }
+      ]
     }
   ]
 }

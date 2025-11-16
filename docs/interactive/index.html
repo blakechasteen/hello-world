@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive diagrams for HoloLoom training - Explore Thompson Sampling, 9-layer architecture, and more with interactive visualizations">
+  <meta name="keywords" content="HoloLoom, interactive diagrams, Thompson Sampling, 9-layer architecture, neural networks, knowledge graphs">
+
+  <title>Interactive Diagrams - HoloLoom</title>
+
+  <style>
+    /* Reset and Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root[data-theme="light"] {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8fafc;
+      --bg-tertiary: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #64748b;
+      --accent-primary: #1e40af;
+      --accent-secondary: #3b82f6;
+      --success: #16a34a;
+      --warning: #f97316;
+      --border-color: #e2e8f0;
+    }
+
+    :root[data-theme="dark"] {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-tertiary: #94a3b8;
+      --accent-primary: #3b82f6;
+      --accent-secondary: #60a5fa;
+      --success: #22c55e;
+      --warning: #fb923c;
+      --border-color: #334155;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Navigation */
+    nav.main-nav {
+      background-color: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 40px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav.main-nav .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav.main-nav .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+
+    nav.main-nav ul {
+      list-style: none;
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    nav.main-nav a {
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav.main-nav a:hover {
+      color: var(--accent-primary);
+    }
+
+    /* Header */
+    .page-header {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 1.5rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Main Content */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    .intro-section {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+      border-left: 4px solid var(--accent-primary);
+    }
+
+    .intro-section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .intro-section p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    /* Diagrams Grid */
+    .diagrams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .diagram-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .diagram-card:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      transform: translateY(-4px);
+      border-color: var(--accent-secondary);
+    }
+
+    .diagram-card-header {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      color: white;
+      padding: 1.5rem;
+    }
+
+    .diagram-card-header h3 {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .diagram-card-header .badge {
+      display: inline-block;
+      background-color: rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .diagram-card-body {
+      padding: 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .diagram-card-description {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      flex: 1;
+    }
+
+    .diagram-card-footer {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: auto;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-primary);
+      color: white;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-secondary);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--border-color);
+    }
+
+    /* Gallery Button */
+    .gallery-link-section {
+      text-align: center;
+      margin: 3rem 0;
+      padding: 2rem;
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+    }
+
+    .gallery-link-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .gallery-link-section p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    .gallery-link {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+    }
+
+    .gallery-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(30, 64, 175, 0.3);
+    }
+
+    /* Quick Links */
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .quick-link-card {
+      padding: 1.5rem;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .quick-link-card:hover {
+      border-color: var(--accent-secondary);
+      background-color: var(--bg-tertiary);
+    }
+
+    .quick-link-card h4 {
+      color: var(--accent-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .quick-link-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    .quick-link-card a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .quick-link-card a:hover {
+      color: var(--accent-secondary);
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-secondary);
+      margin-top: 4rem;
+    }
+
+    footer a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    footer a:hover {
+      color: var(--accent-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .diagrams-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header h1 {
+        font-size: 1.8rem;
+      }
+
+      nav.main-nav ul {
+        gap: 16px;
+      }
+
+      nav.main-nav {
+        padding: 12px 20px;
+      }
+    }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="main-nav">
+    <div class="nav-container">
+      <a href="/" class="logo">HoloLoom</a>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/training">Training</a></li>
+        <li><a href="/interactive">Diagrams</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Interactive Diagrams</h1>
+    <p>Explore HoloLoom's architecture and concepts through interactive visualizations. Click on elements to learn more.</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Intro -->
+    <div class="intro-section">
+      <h2>Learn Through Interactive Exploration</h2>
+      <p>These diagrams bring HoloLoom's core concepts to life. Hover over elements, click to expand, and follow the connections between components.</p>
+      <p><strong>Pro tip:</strong> Start with Thompson Sampling to understand decision-making, then explore the 9-layer architecture to see how everything fits together.</p>
+    </div>
+
+    <!-- Featured Diagrams -->
+    <h2 style="margin-bottom: 2rem; text-align: center;">Featured Interactive Diagrams</h2>
+    <div class="diagrams-grid">
+      <!-- Thompson Sampling -->
+      <div class="diagram-card">
+        <div class="diagram-card-header">
+          <span class="badge">Intermediate</span>
+          <h3>Thompson Sampling</h3>
+        </div>
+        <div class="diagram-card-body">
+          <p class="diagram-card-description">
+            Understand how HoloLoom balances exploration and exploitation through Thompson Sampling's Bayesian approach. See the probability distributions and decision logic in action.
+          </p>
+          <div class="diagram-card-footer">
+            <a href="./diagrams/02_thompson_sampling.html" class="btn btn-primary">View Interactive</a>
+            <a href="./diagrams/02_QUICK_START.md" class="btn btn-secondary" style="font-size: 0.8rem;">Quick Start</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9-Layer Architecture -->
+      <div class="diagram-card">
+        <div class="diagram-card-header">
+          <span class="badge">Intermediate</span>
+          <h3>9-Layer Architecture</h3>
+        </div>
+        <div class="diagram-card-body">
+          <p class="diagram-card-description">
+            Explore the complete data flow through HoloLoom's 9-layer weaving system. From input processing to learning, see how each layer transforms and enriches data.
+          </p>
+          <div class="diagram-card-footer">
+            <a href="./diagrams/07_9layer_architecture.html" class="btn btn-primary">View Interactive</a>
+            <a href="./diagrams/07_QUICKSTART.md" class="btn btn-secondary" style="font-size: 0.8rem;">Guide</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Complete Gallery -->
+      <div class="diagram-card">
+        <div class="diagram-card-header">
+          <span class="badge">All Diagrams</span>
+          <h3>Complete Gallery</h3>
+        </div>
+        <div class="diagram-card-body">
+          <p class="diagram-card-description">
+            Browse all 28 HoloLoom training diagrams with search, filtering, and organized learning paths. Find exactly what you're looking for.
+          </p>
+          <div class="diagram-card-footer">
+            <a href="./gallery.html" class="btn btn-primary">Open Gallery</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links to Training Parts -->
+    <h2 style="margin-bottom: 2rem; margin-top: 3rem; text-align: center;">Related Training Content</h2>
+    <div class="quick-links">
+      <div class="quick-link-card">
+        <h4>Part 1: Foundations</h4>
+        <p>Learn the foundational concepts including memory systems, Thompson Sampling, and feature extraction.</p>
+        <a href="/training/part1.html">Read Part 1 →</a>
+      </div>
+      <div class="quick-link-card">
+        <h4>Part 2: Core Concepts</h4>
+        <p>Deep dive into the 9-layer architecture, data flow, and execution modes.</p>
+        <a href="/training/part2.html">Read Part 2 →</a>
+      </div>
+      <div class="quick-link-card">
+        <h4>Training Hub</h4>
+        <p>Access all 5 training parts and explore the complete HoloLoom curriculum.</p>
+        <a href="/training">Browse All →</a>
+      </div>
+    </div>
+
+    <!-- Gallery CTA -->
+    <div class="gallery-link-section">
+      <h2>Explore All 28 Interactive Diagrams</h2>
+      <p>Search, filter by topic, and follow learning paths through the complete HoloLoom diagram collection.</p>
+      <a href="./gallery.html" class="gallery-link">Open Interactive Gallery →</a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 HoloLoom. <a href="/">Home</a> | <a href="/training">Training</a> | <a href="https://github.com/hololoom">GitHub</a></p>
+  </footer>
+</body>
+</html>
