@@ -20,6 +20,26 @@ Last Updated: 2025-11-16
 
 ---
 
+## 🎨 Interactive Visualizations
+
+Before diving into the code, explore BigPlay's architecture and capabilities through our **interactive visualizations**:
+
+📊 **[Open Interactive Visualizations](visualizations/index.html)** - Best viewed in a web browser
+
+**Available Now:**
+- **System Architecture** - Click through all 16 components to understand how BigPlay works
+- **PAD Emotion Model** - 3D visualization of our emotion system (rotate with your mouse!)
+- **Performance Dashboard** - Real-time metrics with live charts
+
+**What You'll Learn:**
+- How the 4-layer architecture connects (Client → API → Engine → Data)
+- How NPCs model emotions in 3D space (Pleasure, Arousal, Dominance)
+- What production performance looks like (latency, throughput, costs)
+
+💡 **Tip:** Open `visualizations/index.html` in your browser and explore the interactive diagrams before reading the docs. It'll make everything clearer!
+
+---
+
 ## Prerequisites
 
 **What You Need:**

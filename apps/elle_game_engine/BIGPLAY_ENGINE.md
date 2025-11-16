@@ -34,6 +34,33 @@ Traditional game development:
 
 ---
 
+## 🎨 Interactive Visualizations
+
+**New!** Explore BigPlay's architecture through interactive visualizations:
+
+📊 **[Open Visualizations Hub](visualizations/index.html)** - Interactive diagrams in your browser
+
+**3 Live Visualizations:**
+
+1. **🏗️ System Architecture** - Click through 16 components (Client, API, Engine, Data layers)
+   - Unity, Godot, Unreal, Web integrations
+   - FastAPI server, WebSocket multiplayer
+   - HoloLoom knowledge graph, vector DB, session store
+
+2. **😊 PAD Emotion Model** - 3D interactive emotion space
+   - Rotate and zoom the emotion cube
+   - See 5 sample NPCs plotted in emotion space
+   - Understand Pleasure, Arousal, Dominance dimensions
+
+3. **📊 Performance Dashboard** - Live metrics with Chart.js
+   - Response time distribution (P50, P95, P99)
+   - Throughput, error rates, cache hit rates
+   - LLM provider distribution and cost breakdown
+
+💡 **Tip:** Open the visualizations in a separate window while reading this doc!
+
+---
+
 ## 🏗️ Architecture Overview
 
 ```
