@@ -240,19 +240,26 @@ Please provide a clear and concise answer based on the context above."""
 
                 # Generate answer
                 self.logger.info(f"[AGENTIC] Generating LLM answer for: {query.text}")
-                llm_response = await self.llm.generate(
-                    prompt=user_prompt,
-                    system_prompt=system_prompt,
-                    max_tokens=500,
-                    temperature=0.7
+                llm_timeout = getattr(self.cfg, 'llm_timeout', 30.0)
+                llm_response = await asyncio.wait_for(
+                    self.llm.generate(
+                        prompt=user_prompt,
+                        system_prompt=system_prompt,
+                        max_tokens=500,
+                        temperature=0.7
+                    ),
+                    timeout=llm_timeout
                 )
 
                 # Set response in spacetime
                 spacetime.response = llm_response.content
                 self.logger.info(f"[AGENTIC] LLM answer generated ({len(llm_response.content)} chars)")
 
+            except asyncio.TimeoutError:
+                self.logger.warning(f"[AGENTIC] LLM answer generation timed out after {llm_timeout}s", exc_info=True)
+                spacetime.response = f"Retrieved relevant information but LLM timed out after {llm_timeout}s"
             except Exception as e:
-                self.logger.warning(f"[AGENTIC] LLM answer generation failed: {e}")
+                self.logger.warning(f"[AGENTIC] LLM answer generation failed: {e}", exc_info=True)
                 spacetime.response = f"Retrieved relevant information but could not generate answer: {e}"
         else:
             self.logger.warning("[AGENTIC] No LLM available for answer generation")
@@ -567,12 +574,16 @@ Focus on:
 
 Questions:"""
 
-                # Call LLM
-                response = await self.llm.generate(
-                    prompt=user_prompt,
-                    system_prompt=system_prompt,
-                    max_tokens=300,
-                    temperature=0.7
+                # Call LLM with timeout
+                llm_timeout = getattr(self.cfg, 'llm_timeout', 30.0)
+                response = await asyncio.wait_for(
+                    self.llm.generate(
+                        prompt=user_prompt,
+                        system_prompt=system_prompt,
+                        max_tokens=300,
+                        temperature=0.7
+                    ),
+                    timeout=llm_timeout
                 )
 
                 # Parse questions from LLM response
@@ -582,8 +593,10 @@ Questions:"""
                     self.logger.info(f"[AGENTIC] LLM generated {len(questions)} research queries")
                     return questions
 
+            except asyncio.TimeoutError:
+                self.logger.warning(f"LLM query generation timed out after {llm_timeout}s, using fallback", exc_info=True)
             except Exception as e:
-                self.logger.warning(f"LLM query generation failed: {e}, using fallback")
+                self.logger.warning(f"LLM query generation failed: {e}, using fallback", exc_info=True)
 
         # Fallback to template-based queries if LLM unavailable
         self.logger.info("[AGENTIC] Using template-based research queries (LLM unavailable)")

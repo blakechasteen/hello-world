@@ -17,6 +17,7 @@ Installation:
     pip install ollama anthropic openai
 """
 
+import asyncio
 import logging
 from typing import Dict, Optional, Any
 from HoloLoom.documentation.types import Query, Context
@@ -117,11 +118,16 @@ Answer (be concise):"""
         # Try LLM generation
         if self.llm and (not hasattr(self.llm, 'is_available') or self.llm.is_available()):
             try:
-                response = await self.llm.generate(
-                    prompt=user_prompt,
-                    system_prompt=system_prompt,
-                    max_tokens=500,
-                    temperature=0.7
+                # Add timeout protection (default 30s)
+                llm_timeout = getattr(self.cfg, 'llm_timeout', 30.0)
+                response = await asyncio.wait_for(
+                    self.llm.generate(
+                        prompt=user_prompt,
+                        system_prompt=system_prompt,
+                        max_tokens=500,
+                        temperature=0.7
+                    ),
+                    timeout=llm_timeout
                 )
 
                 return {
@@ -135,8 +141,11 @@ Answer (be concise):"""
                     "context_preview": context_str[:200] + "..." if len(context_str) > 200 else context_str
                 }
 
+            except asyncio.TimeoutError:
+                logger.error(f"LLM generation timed out after {llm_timeout}s", exc_info=True)
+                # Fall through to fallback
             except Exception as e:
-                logger.error(f"LLM generation failed: {e}")
+                logger.error(f"LLM generation failed: {e}", exc_info=True)
                 # Fall through to fallback
 
         # Fallback: Return base implementation (stubs)
