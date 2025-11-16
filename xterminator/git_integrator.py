@@ -711,11 +711,18 @@ class GitIntegrator:
                     pr_url = pr_result.pr_url
 
         # Success!
+        # Extract commit SHA from commit operation (if it exists)
+        commit_sha = None
+        for op in operations:
+            if op.operation == "commit" and op.commit:
+                commit_sha = op.commit
+                break
+
         return GitOperation(
             success=True,
             operation="apply_fix_complete",
             branch=self.current_branch,
-            commit=operations[-2].commit if len(operations) >= 2 else None,
+            commit=commit_sha,
             pr_url=pr_url,
             rollback_available=True
         )
