@@ -60,7 +60,6 @@ from HoloLoom.config import Config, ExecutionMode
 from HoloLoom.motif.base import create_motif_detector
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
 from HoloLoom.memory.base import create_retriever
-from HoloLoom.memory.graph import KG  # Yarn Graph for thread storage
 from HoloLoom.policy.unified import create_policy
 from HoloLoom.alignment.safety_guardrails import create_guardrails, SafetyGuardrails
 
