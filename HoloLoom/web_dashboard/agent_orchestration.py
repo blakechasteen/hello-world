@@ -36,7 +36,6 @@ import asyncio
 from typing import Dict, List, Optional, Set, Any, Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from collections import defaultdict
 import time
 import heapq
 import uuid
