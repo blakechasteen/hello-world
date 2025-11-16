@@ -25,7 +25,7 @@ from HoloLoom.memory.lifecycle_manager import (
     MemoryScope,
     SCOPE_LIFECYCLE_MAP
 )
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 # ============================================================================

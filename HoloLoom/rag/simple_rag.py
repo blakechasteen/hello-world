@@ -17,7 +17,7 @@ import time
 
 from HoloLoom.hololoom import HoloLoom
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 from HoloLoom.rag.reranking import create_reranker, Reranker
 
 # Custom embedding plugins (graceful degradation if unavailable)

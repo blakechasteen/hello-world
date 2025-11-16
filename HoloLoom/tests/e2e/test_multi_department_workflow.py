@@ -24,7 +24,7 @@ from HoloLoom.departments import (
     DepartmentRequest,
     DepartmentRegistry
 )
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 from HoloLoom.departments.context import ContextDepartment
 from HoloLoom.departments.beekeeping import MasterWeaverDepartment
 from HoloLoom.departments.infrastructure import InfrastructureDepartment

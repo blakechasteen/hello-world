@@ -24,7 +24,7 @@ from HoloLoom.resonance.shed import (
     FeatureThread,
     create_resonance_shed
 )
-from HoloLoom.documentation.types import Motif
+from HoloLoom.Documentation.types import Motif
 
 
 # ============================================================================

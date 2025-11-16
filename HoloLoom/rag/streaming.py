@@ -24,7 +24,7 @@ from typing import AsyncGenerator, Dict, Any, Optional, List, Tuple
 import time
 import logging
 
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 
 logger = logging.getLogger(__name__)
 

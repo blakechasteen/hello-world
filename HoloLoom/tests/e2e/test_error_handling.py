@@ -18,7 +18,7 @@ import asyncio
 from unittest.mock import patch, MagicMock
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 
 
 class TestGracefulDegradation:
@@ -170,7 +170,7 @@ class TestResourceExhaustion:
     @pytest.mark.asyncio
     async def test_large_memory_graph(self, bare_config):
         """Should handle large knowledge graphs."""
-        from HoloLoom.documentation.types import MemoryShard
+        from HoloLoom.Documentation.types import MemoryShard
 
         # Create 1000 shards
         large_shards = [

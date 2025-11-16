@@ -12,7 +12,7 @@ from enum import Enum
 
 # Import from HoloLoom types
 try:
-    from HoloLoom.documentation.types import MemoryShard
+    from HoloLoom.Documentation.types import MemoryShard
 except ImportError:
     # Fallback for standalone usage
     @dataclass

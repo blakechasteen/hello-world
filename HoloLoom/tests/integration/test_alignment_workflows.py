@@ -28,7 +28,7 @@ from typing import List, Dict
 from pathlib import Path
 
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 from HoloLoom.config import Config
 from HoloLoom.alignment import (
     SafetyGuardrails,

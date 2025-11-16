@@ -34,7 +34,7 @@ from unittest.mock import Mock, patch
 
 # HoloLoom core
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 from HoloLoom.config import Config, ExecutionMode
 
 # Alignment framework

@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import re
 
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 # ============================================================================

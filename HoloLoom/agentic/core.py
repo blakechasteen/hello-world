@@ -23,7 +23,7 @@ from typing import List, Dict, Optional, Any
 from enum import Enum
 from datetime import datetime
 
-from HoloLoom.documentation.types import Query, Context, MemoryShard
+from HoloLoom.Documentation.types import Query, Context, MemoryShard
 from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.recursive import FullLearningEngine, ActionItemTracker, ActionStatus

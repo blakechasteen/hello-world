@@ -16,7 +16,7 @@ from HoloLoom.recursive.hot_patterns import (
     HotPatternFeedbackEngine
 )
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 
 class TestUsageRecord:

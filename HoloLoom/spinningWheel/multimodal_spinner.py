@@ -13,7 +13,7 @@ from pathlib import Path
 from HoloLoom.input.protocol import ModalityType, ProcessedInput
 from HoloLoom.input.router import InputRouter
 from HoloLoom.input.fusion import MultiModalFusion
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 class MultiModalSpinner:

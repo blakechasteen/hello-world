@@ -13,7 +13,7 @@ from typing import Protocol, runtime_checkable, List, Any, Tuple, Optional
 
 # Import shared types
 try:
-    from HoloLoom.documentation.types import (
+    from HoloLoom.Documentation.types import (
         Features, Context, ActionPlan, Query, Vector
     )
 except ImportError:

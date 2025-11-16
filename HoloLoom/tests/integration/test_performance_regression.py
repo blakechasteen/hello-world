@@ -36,7 +36,7 @@ from datetime import datetime
 
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 
 # ============================================================================

@@ -51,7 +51,7 @@ import logging
 
 from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 
 # Optional dependencies (graceful degradation)
 try:
