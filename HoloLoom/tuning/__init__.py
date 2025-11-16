@@ -24,7 +24,6 @@ from HoloLoom.tuning.base import TuningAgent, ThompsonBandit
 from HoloLoom.tuning.coordinator import MasterTuningCoordinator
 from HoloLoom.tuning.timeout_tuner import TimeoutTuner
 from HoloLoom.tuning.cache_tuner import CacheTuner
-from HoloLoom.tuning.threshold_tuner import ThresholdTuner
 
 __all__ = [
     'TuningAgent',
