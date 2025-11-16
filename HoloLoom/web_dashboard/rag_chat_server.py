@@ -41,7 +41,6 @@ try:
         AgentQueryContext,
         AccessLevel
     )
-    from HoloLoom.memory.mcp_rag_server import rag_query
 except ImportError as e:
     print(f"Warning: Could not import HoloLoom modules: {e}")
     RepositoryContextManager = None
