@@ -27,7 +27,6 @@ import numpy as np
 from typing import List, Dict, Set, Tuple, Any, Optional
 from dataclasses import dataclass, field
 from collections import defaultdict
-import itertools
 
 logger = logging.getLogger(__name__)
 
