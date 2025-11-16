@@ -14,7 +14,6 @@ Architecture:
 - Persistence across sessions
 
 Usage:
-    from HoloLoom.tuning import MasterTuningCoordinator
 
     coordinator = MasterTuningCoordinator()
     await coordinator.run_tuning_cycle()
