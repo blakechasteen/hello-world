@@ -26,7 +26,14 @@ from dataclasses import dataclass, asdict
 from collections import defaultdict
 import glob
 
-from trough import AISlopDetector, MLLogicDetector, Language, Severity, SlopIssue
+from trough import (
+    AISlopDetector,
+    MLLogicDetector,
+    TypeScriptSlopDetector,
+    Language,
+    Severity,
+    SlopIssue
+)
 
 
 @dataclass
@@ -52,12 +59,25 @@ class TroughMCPServer:
         self.info = MCPServerInfo()
         self.slop_detector = AISlopDetector()
         self.logic_detector = MLLogicDetector()
+        self.typescript_detector = TypeScriptSlopDetector()
         self.session_state: Dict[str, Any] = {
             'total_scans': 0,
             'total_issues': 0,
             'scans_by_file': {},
             'issues_by_category': defaultdict(int)
         }
+
+    def _detect_language(self, file_path: str) -> Language:
+        """Detect language from file extension."""
+        ext = file_path.lower().split('.')[-1]
+        ext_map = {
+            'py': Language.PYTHON,
+            'ts': Language.TYPESCRIPT,
+            'tsx': Language.TSX,
+            'js': Language.JAVASCRIPT,
+            'jsx': Language.JSX
+        }
+        return ext_map.get(ext, Language.PYTHON)
 
     async def trough_scan_file(
         self,
@@ -100,19 +120,30 @@ class TroughMCPServer:
                 'scan_duration_ms': 0
             }
 
-        # Detect AI slop
-        slop_issues = await self.slop_detector.detect_all(
-            code,
-            Language.PYTHON,
-            file_path
-        )
+        # Detect language from file extension
+        language = self._detect_language(file_path)
 
-        # Detect logic errors (if enabled)
+        # Detect AI slop (use appropriate detector)
+        if language == Language.PYTHON:
+            slop_issues = await self.slop_detector.detect_all(
+                code,
+                language,
+                file_path
+            )
+        else:
+            # Use TypeScript detector for TS/JS files
+            slop_issues = await self.typescript_detector.detect_all(
+                code,
+                language,
+                file_path
+            )
+
+        # Detect logic errors (if enabled and Python file)
         logic_errors = []
-        if include_ml_logic:
+        if include_ml_logic and language == Language.PYTHON:
             logic_errors = await self.logic_detector.detect(
                 code,
-                Language.PYTHON,
+                language,
                 file_path
             )
 
@@ -213,7 +244,7 @@ class TroughMCPServer:
         self,
         directory: str,
         max_files: int = 100,
-        file_pattern: str = "**/*.py",
+        file_pattern: str = "**/*.{py,ts,tsx,js,jsx}",
         min_severity: str = "low",
         categories: Optional[List[str]] = None
     ) -> Dict[str, Any]:
