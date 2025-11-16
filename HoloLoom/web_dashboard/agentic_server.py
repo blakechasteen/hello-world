@@ -27,7 +27,6 @@ Then open: http://localhost:8001
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, Form
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import json
 import asyncio
