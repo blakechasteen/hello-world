@@ -28,7 +28,6 @@ Public API:
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional, Set, Tuple, Callable
-from collections import defaultdict
 import logging
 import math
 
