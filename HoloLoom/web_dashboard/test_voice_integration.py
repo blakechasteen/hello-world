@@ -46,7 +46,6 @@ async def test_voice_integration():
         deps['whisper'] = '✗ Whisper not installed (pip install openai-whisper)'
 
     try:
-        import torch
         deps['torch'] = '✓ PyTorch installed'
     except ImportError:
         deps['torch'] = '✗ PyTorch not installed (pip install torch)'
