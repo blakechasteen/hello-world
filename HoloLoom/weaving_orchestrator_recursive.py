@@ -41,6 +41,7 @@ Architecture:
 """
 
 import logging
+import time
 from typing import Optional
 from dataclasses import dataclass
 
@@ -57,6 +58,7 @@ from HoloLoom.protocols.recursive_reasoning import (
     ReasoningStrategy,
     ReasoningJournal
 )
+from HoloLoom.analytics.recursive_analytics import RecursiveAnalytics
 
 logger = logging.getLogger(__name__)
 
@@ -121,9 +123,11 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
         cfg: Config,
         shards: list[MemoryShard],
         enable_recursive: bool = True,
+        enable_analytics: bool = True,
         quality_threshold: float = 0.85,
         max_iterations: int = 3,
         default_strategy: ReasoningStrategy = ReasoningStrategy.ADAPTIVE,
+        analytics_db_path: str = ".hololoom/recursive_analytics.db",
         **kwargs
     ):
         """
@@ -133,9 +137,11 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
             cfg: HoloLoom configuration
             shards: Memory shards
             enable_recursive: Enable recursive reasoning
+            enable_analytics: Enable analytics tracking
             quality_threshold: Minimum quality to skip refinement
             max_iterations: Maximum refinement iterations
             default_strategy: Default recursive strategy
+            analytics_db_path: Path to analytics database
             **kwargs: Passed to base WeavingOrchestrator
         """
         # Initialize base orchestrator
@@ -143,6 +149,7 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
 
         # Recursive reasoning configuration
         self.enable_recursive = enable_recursive
+        self.enable_analytics = enable_analytics
         self.recursive_config = RecursiveConfig(
             strategy=default_strategy,
             max_iterations=max_iterations,
@@ -169,6 +176,13 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
         else:
             self.recursive_engine = None
             logger.info("RecursiveWeavingOrchestrator initialized (recursive disabled)")
+
+        # Initialize analytics tracker
+        if enable_analytics:
+            self.analytics = RecursiveAnalytics(db_path=analytics_db_path)
+            logger.info(f"Analytics tracking enabled (db={analytics_db_path})")
+        else:
+            self.analytics = None
 
     async def weave(
         self,
@@ -270,6 +284,7 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
         3. Quality check
         4. Recursive refinement (if needed)
         5. Spacetime construction with provenance
+        6. Analytics tracking (if enabled)
 
         Args:
             query: User's query
@@ -278,10 +293,14 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
         Returns:
             Enhanced spacetime with reasoning journal
         """
+        # Start timing
+        start_time = time.time()
+
         # Phase 1: Feature extraction (standard HoloLoom pipeline)
         # This would call Resonance Shed, Warp Space, etc.
         # For now, we call base weave to get features
         initial_spacetime = await super().weave(query)
+        initial_quality = initial_spacetime.confidence
 
         # Extract features from initial pass
         features = initial_spacetime.metadata.get('features')
@@ -293,6 +312,9 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
             config=config
         )
 
+        # Calculate duration
+        duration_ms = (time.time() - start_time) * 1000
+
         # Phase 3: Construct enhanced spacetime
         enhanced = RecursiveSpacetime(
             response=result.spacetime.response,
@@ -302,7 +324,10 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
                 "recursive_reasoning": {
                     "iterations": result.iterations,
                     "strategy": result.strategy_used.value,
-                    "quality_trajectory": result.journal.get_confidence_trajectory()
+                    "quality_trajectory": result.journal.get_confidence_trajectory(),
+                    "initial_quality": initial_quality,
+                    "final_quality": result.final_quality,
+                    "duration_ms": duration_ms
                 }
             },
             trace=result.spacetime.trace,
@@ -317,6 +342,28 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
             f"strategy={result.strategy_used.value}, "
             f"final_quality={result.final_quality:.2f}"
         )
+
+        # Phase 4: Track analytics (if enabled)
+        if self.analytics:
+            # Estimate tokens (rough heuristic: ~4 chars per token)
+            estimated_tokens = (
+                len(query.text) +
+                sum(len(t.observation) for t in result.journal.traces)
+            ) // 4 * result.iterations
+
+            # Check if converged
+            converged = result.journal.converged() if result.journal else False
+
+            await self.analytics.track_execution(
+                strategy=result.strategy_used,
+                query_text=query.text,
+                iterations=result.iterations,
+                initial_quality=initial_quality,
+                final_quality=result.final_quality,
+                duration_ms=duration_ms,
+                tokens_used=estimated_tokens,
+                converged=converged
+            )
 
         return enhanced
 
@@ -346,6 +393,7 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
             - Average iterations
             - Quality improvements
             - Common query patterns
+            - Analytics summary (if enabled)
         """
         if self.recursive_engine is None:
             return {"recursive_enabled": False}
@@ -359,7 +407,43 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
             }
         })
 
+        # Add analytics if available
+        if self.analytics:
+            stats["analytics"] = self.analytics.get_summary()
+
         return stats
+
+    def get_analytics_summary(self) -> dict:
+        """
+        Get comprehensive analytics summary.
+
+        Returns:
+            Analytics summary with:
+            - Overall statistics
+            - Per-strategy breakdown
+            - Quality trends
+            - Recommendations
+        """
+        if not self.analytics:
+            return {"analytics_enabled": False}
+
+        summary = self.analytics.get_summary()
+        summary["recommendations"] = self.analytics.get_recommendations()
+
+        return summary
+
+    def export_analytics(self, output_path: str):
+        """
+        Export analytics to CSV.
+
+        Args:
+            output_path: Path to output CSV file
+        """
+        if not self.analytics:
+            raise RuntimeError("Analytics not enabled")
+
+        self.analytics.export_to_csv(output_path)
+        logger.info(f"Analytics exported to {output_path}")
 
 
 # Convenience factory function
