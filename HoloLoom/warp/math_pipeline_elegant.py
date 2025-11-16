@@ -30,7 +30,6 @@ try:
     from rich.panel import Panel
     from rich.layout import Layout
     from rich.live import Live
-    from rich.syntax import Syntax
     from rich.tree import Tree
     from rich import box
     HAS_RICH = True
