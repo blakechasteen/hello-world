@@ -168,7 +168,7 @@ class HyperspaceBackend:
             # NetworkXKG doesn't have health_check, so we just check if it exists
             return self.base_storage is not None and hasattr(self.base_storage, 'G')
         except Exception as e:
-            self.logger.error(f"HYPERSPACE health check failed: {e}")
+            self.logger.error(f"HYPERSPACE health check failed: {e}", exc_info=True)
             return False
     
     # ============================================================================

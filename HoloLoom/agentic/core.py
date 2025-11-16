@@ -143,6 +143,14 @@ class AgenticOrchestrator:
                 if self.llm:
                     self.logger.info("LLM-activated agentic search enabled")
 
+    async def __aenter__(self):
+        """Async context manager entry."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - cleanup resources."""
+        await self.close()
+
     async def reason(
         self,
         query: Query,

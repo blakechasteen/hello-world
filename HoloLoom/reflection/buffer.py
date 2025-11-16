@@ -898,7 +898,7 @@ class ReflectionBuffer:
             self.logger.info(f"Flushed metrics to {metrics_file}")
 
         except Exception as e:
-            self.logger.error(f"Failed to flush metrics: {e}")
+            self.logger.error(f"Failed to flush metrics: {e}", exc_info=True)
 
     async def close(self) -> None:
         """

@@ -251,7 +251,7 @@ class WeavingMemoryAdapter:
             )
             return cls(backend=backend, backend_type="factory")
         except Exception as e:
-            logger.error(f"Failed to create backend: {e}, falling back to in-memory")
+            logger.error(f"Failed to create backend: {e}, falling back to in-memory", exc_info=True)
             return cls(backend_type="in_memory")
 
     @classmethod
@@ -332,7 +332,7 @@ class WeavingMemoryAdapter:
             return shards
 
         except Exception as e:
-            self.logger.error(f"UnifiedMemory recall failed: {e}")
+            self.logger.error(f"UnifiedMemory recall failed: {e}", exc_info=True)
             return []
 
     def _select_via_factory(self, query: Query, temporal_window: Optional['TemporalWindow']) -> List[MemoryShard]:

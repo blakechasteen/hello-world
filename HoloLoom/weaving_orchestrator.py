@@ -264,7 +264,7 @@ Answer:"""
                     "packing_stats": packing_stats
                 }
             except Exception as e:
-                self.logger.error(f"LLM generation failed: {e}")
+                self.logger.error(f"LLM generation failed: {e}", exc_info=True)
                 # Fall through to fallback
 
         # Fallback (LLM unavailable)
@@ -2869,7 +2869,7 @@ class WeavingOrchestrator:
             return shards
 
         except Exception as e:
-            self.logger.error(f"Failed to query memory backend: {e}")
+            self.logger.error(f"Failed to query memory backend: {e}", exc_info=True)
             return []
 
     # ========================================================================
@@ -3318,7 +3318,7 @@ class WeavingOrchestrator:
             result = await self.health_checker.check_health()
             return result.to_dict()
         except Exception as e:
-            self.logger.error(f"[PRODUCTION] Health check failed: {e}")
+            self.logger.error(f"[PRODUCTION] Health check failed: {e}", exc_info=True)
             return {
                 "healthy": False,
                 "status": "unhealthy",

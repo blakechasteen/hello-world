@@ -233,7 +233,7 @@ class SimpleRAG(StreamingRAGMixin):
                     else:
                         self.embedding_provider = None
                 except Exception as e2:
-                    logger.error(f"Failed to fallback to MatryoshkaEmbedding: {e2}")
+                    logger.error(f"Failed to fallback to MatryoshkaEmbedding: {e2}", exc_info=True)
                     self.embedding_provider = None
 
     async def __aenter__(self):
@@ -282,7 +282,7 @@ class SimpleRAG(StreamingRAGMixin):
                 await self.orchestrator.__aexit__(exc_type, exc_val, exc_tb)
                 logger.info("✓ Orchestrator cleaned up")
             except Exception as e:
-                logger.error(f"Error closing orchestrator: {e}")
+                logger.error(f"Error closing orchestrator: {e}", exc_info=True)
 
         # Close memory system
         if self.loom:
@@ -290,7 +290,7 @@ class SimpleRAG(StreamingRAGMixin):
                 await self.loom.__aexit__(exc_type, exc_val, exc_tb)
                 logger.info("✓ HoloLoom cleaned up")
             except Exception as e:
-                logger.error(f"Error closing HoloLoom: {e}")
+                logger.error(f"Error closing HoloLoom: {e}", exc_info=True)
 
     async def ingest(self, content: Any) -> None:
         """
