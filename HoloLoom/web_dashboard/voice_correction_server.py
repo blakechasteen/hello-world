@@ -18,7 +18,6 @@ Author: Claude Code
 Date: January 2025
 """
 
-import asyncio
 import json
 from pathlib import Path
 from typing import Dict, Set
