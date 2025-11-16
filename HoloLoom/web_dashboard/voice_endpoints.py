@@ -11,7 +11,6 @@ To integrate:
 
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import Response, JSONResponse
-from pathlib import Path
 import logging
 
 logger = logging.getLogger(__name__)
