@@ -273,7 +273,10 @@ class AutoFixTracker:
         print("Performance:")
         print(f"  Avg Confidence: {session.avg_confidence:.1%}")
         print(f"  Total Duration: {session.total_duration_ms:.0f}ms")
-        print(f"  Avg Duration/Fix: {session.total_duration_ms / session.total_fixes_attempted:.0f}ms")
+        if session.total_fixes_attempted > 0:
+            print(f"  Avg Duration/Fix: {session.total_duration_ms / session.total_fixes_attempted:.0f}ms")
+        else:
+            print(f"  Avg Duration/Fix: N/A (no fixes attempted)")
         print(f"  Time Saved: {session.time_saved_hours:.1f} hours")
         print()
 

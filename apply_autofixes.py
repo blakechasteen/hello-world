@@ -139,7 +139,8 @@ class AutoFixApplicator:
         confidence = issue.get('confidence', 0.0)
         category = issue.get('category', '')
 
-        auto_fixable_categories = ['dead_code', 'copy_paste', 'incomplete']
+        # Match tracker configuration (line 325)
+        auto_fixable_categories = ['dead_code', 'hardcoded_values', 'missing_docstrings', 'incomplete']
 
         return (
             severity in ['low', 'medium'] and
@@ -205,6 +206,11 @@ class AutoFixApplicator:
                 print(f"  ✓ Fixes applied: {applied}")
                 if failed > 0:
                     print(f"  ! Fixes failed: {failed}")
+
+                    # Debug: Show first failure reason
+                    for fix_result in result.get('results', [])[:3]:
+                        if fix_result['status'] != 'applied':
+                            print(f"    - {fix_result['status']}: {fix_result.get('error', 'No error message')}")
 
                 self.results['fixes_attempted'] += result.get('total_issues', 0)
                 self.results['fixes_successful'] += applied

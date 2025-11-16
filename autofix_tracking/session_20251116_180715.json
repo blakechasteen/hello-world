@@ -1,0 +1,21 @@
+{
+  "session_id": "session_20251116_180715",
+  "start_time": "2025-11-16T18:07:15.193604",
+  "end_time": "2025-11-16T18:07:17.103995",
+  "max_files": 50,
+  "categories": [
+    "dead_code",
+    "hardcoded_values",
+    "missing_docstrings",
+    "incomplete"
+  ],
+  "confidence_threshold": 0.85,
+  "fixes": [],
+  "total_fixes_attempted": 0,
+  "total_fixes_applied": 0,
+  "total_fixes_failed": 0,
+  "total_duration_ms": 0.0,
+  "avg_confidence": 0.0,
+  "success_rate": 0.0,
+  "time_saved_hours": 0.0
+}
