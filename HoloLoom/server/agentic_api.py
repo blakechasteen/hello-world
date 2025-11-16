@@ -1658,6 +1658,167 @@ async def search_codebase(
 
 
 # ============================================================================
+# Graph Visualization
+# ============================================================================
+
+@app.get("/api/graph/html")
+async def get_graph_html(
+    max_nodes: int = 50,
+    title: str = "HoloLoom Knowledge Graph",
+    highlight_recent: bool = True
+):
+    """
+    Get knowledge graph as interactive HTML visualization.
+
+    Args:
+        max_nodes: Maximum nodes to include (default: 50)
+        title: Graph title
+        highlight_recent: Highlight recently accessed nodes
+
+    Returns:
+        HTML document with D3.js force-directed graph
+
+    Example:
+        GET /api/graph/html?max_nodes=100&title=My%20Knowledge
+
+    Integration:
+        // In VS Code webview
+        const response = await fetch('http://localhost:8000/api/graph/html');
+        const html = await response.text();
+        webview.html = html;
+    """
+    from fastapi.responses import HTMLResponse
+    from HoloLoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
+    from HoloLoom import HoloLoom
+
+    try:
+        # Get knowledge graph from HoloLoom
+        async with HoloLoom(config=state.config) as loom:
+            # Access the knowledge graph
+            kg = loom.memory_manager.knowledge_graph
+
+            # Optional: Get recently accessed nodes for highlighting
+            highlighted_path = None
+            if highlight_recent and hasattr(loom, 'awareness_graph'):
+                # Get top 5 most recently activated nodes
+                recent_nodes = loom.awareness_graph.get_top_activated(limit=5)
+                if recent_nodes:
+                    highlighted_path = [node for node, _ in recent_nodes]
+
+            # Render to HTML
+            subtitle = f"Generated {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            html = render_knowledge_graph_from_kg(
+                kg,
+                title=title,
+                subtitle=subtitle,
+                max_nodes=max_nodes,
+                highlighted_path=highlighted_path
+            )
+
+            return HTMLResponse(content=html)
+
+    except Exception as e:
+        logger.error(f"Graph visualization failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/graph/data")
+async def get_graph_data(
+    max_nodes: int = 50,
+    include_metadata: bool = False
+):
+    """
+    Get knowledge graph as JSON data.
+
+    Args:
+        max_nodes: Maximum nodes to include
+        include_metadata: Include full node/edge metadata
+
+    Returns:
+        JSON with nodes and edges arrays
+
+    Example:
+        GET /api/graph/data?max_nodes=100
+
+        Response:
+        {
+          "nodes": [
+            {"id": "Thompson Sampling", "label": "Thompson Sampling", "degree": 5, "type": "concept"},
+            ...
+          ],
+          "edges": [
+            {"src": "Thompson Sampling", "dst": "exploration", "type": "USES", "weight": 1.0},
+            ...
+          ],
+          "metadata": {
+            "total_nodes": 47,
+            "total_edges": 128,
+            "rendered_nodes": 50,
+            "rendered_edges": 95
+          }
+        }
+    """
+    from HoloLoom import HoloLoom
+
+    try:
+        async with HoloLoom(config=state.config) as loom:
+            kg = loom.memory_manager.knowledge_graph
+
+            # Get all nodes (limit to max_nodes)
+            all_nodes = list(kg.G.nodes())[:max_nodes]
+            node_id_set = set(all_nodes)
+
+            # Build nodes array
+            nodes = []
+            for node_id in all_nodes:
+                node_data = kg.G.nodes.get(node_id, {})
+                degree = kg.G.degree(node_id)
+
+                node_obj = {
+                    "id": node_id,
+                    "label": node_id,
+                    "degree": degree,
+                    "type": node_data.get('node_type', 'default')
+                }
+
+                if include_metadata:
+                    node_obj["metadata"] = node_data
+
+                nodes.append(node_obj)
+
+            # Build edges array
+            edges = []
+            for src, dst, key, data in kg.G.edges(keys=True, data=True):
+                if src in node_id_set and dst in node_id_set:
+                    edge_obj = {
+                        "src": src,
+                        "dst": dst,
+                        "type": data.get('type', 'unknown'),
+                        "weight": data.get('weight', 1.0)
+                    }
+
+                    if include_metadata:
+                        edge_obj["metadata"] = data
+
+                    edges.append(edge_obj)
+
+            return {
+                "nodes": nodes,
+                "edges": edges,
+                "metadata": {
+                    "total_nodes": kg.G.number_of_nodes(),
+                    "total_edges": kg.G.number_of_edges(),
+                    "rendered_nodes": len(nodes),
+                    "rendered_edges": len(edges)
+                }
+            }
+
+    except Exception as e:
+        logger.error(f"Graph data export failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
 # Main (for development)
 # ============================================================================
 

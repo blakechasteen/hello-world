@@ -75,6 +75,10 @@
       {
         "command": "promptly.indexingStatus",
         "title": "HoloLoom: Show Indexing Status"
+      },
+      {
+        "command": "promptly.showGraph",
+        "title": "HoloLoom: Show Knowledge Graph"
       }
     ],
     "keybindings": [

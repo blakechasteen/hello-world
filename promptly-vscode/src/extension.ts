@@ -4,6 +4,7 @@ import { GitCommands } from './commands/gitCommands';
 import { ClaudeCommands } from './commands/claudeCommands';
 import { HoloLoomCommands } from './commands/hololoomCommands';
 import { HoloLoomSidebarProvider } from './views/sidebarProvider';
+import { GraphViewProvider } from './views/graphViewProvider';
 import { HoloLoomCodeLensProvider, registerCodeLensCommands } from './providers/codeLensProvider';
 import { WorkspaceWatcher, registerWorkspaceCommands } from './watchers/workspaceWatcher';
 
@@ -23,6 +24,9 @@ export function activate(context: vscode.ExtensionContext) {
             sidebarProvider
         )
     );
+
+    // Register knowledge graph viewer
+    const graphViewProvider = new GraphViewProvider(context);
 
     // Register CodeLens provider for inline suggestions
     const codeLensProvider = new HoloLoomCodeLensProvider();
@@ -110,6 +114,11 @@ export function activate(context: vscode.ExtensionContext) {
                 const result = await hololoomCommands.recall(query);
                 chatView.sendBotMessage(result);
             }
+        }),
+
+        // Knowledge Graph
+        vscode.commands.registerCommand('promptly.showGraph', async () => {
+            await graphViewProvider.show();
         })
     );
 
