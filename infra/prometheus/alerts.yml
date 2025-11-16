@@ -1,0 +1,209 @@
+# HoloLoom Security Alert Rules
+
+groups:
+  - name: security_alerts
+    interval: 10s
+    rules:
+      # High attack rate
+      - alert: HighAttackRate
+        expr: rate(hololoom_attacks_blocked_total[1m]) > 100
+        for: 2m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "High attack rate detected"
+          description: "Attack rate is {{ $value }} attacks/sec (threshold: 100/sec)"
+
+      # Brute force detection
+      - alert: BruteForceAttack
+        expr: rate(hololoom_auth_failures_total{type="brute_force"}[5m]) > 20
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Brute force attack detected"
+          description: "{{ $value }} failed auth attempts/min from same IP"
+
+      # SQL injection attempts
+      - alert: SQLInjectionAttempts
+        expr: increase(hololoom_attacks_blocked_total{type="sql_injection"}[5m]) > 10
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "SQL injection attempts detected"
+          description: "{{ $value }} SQL injection attempts in last 5 minutes"
+
+      # Anomaly spike
+      - alert: AnomalySpikeDetected
+        expr: rate(hololoom_anomalies_detected_total[1m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Anomaly spike detected"
+          description: "{{ $value }} anomalies/min detected (threshold: 10/min)"
+
+      # Compliance score drop
+      - alert: ComplianceScoreDrop
+        expr: hololoom_compliance_score < 0.95
+        for: 5m
+        labels:
+          severity: warning
+          category: compliance
+        annotations:
+          summary: "Compliance score dropped"
+          description: "Compliance score is {{ $value }} (threshold: 0.95)"
+
+      # WAF rule triggered
+      - alert: WAFRuleTriggered
+        expr: rate(hololoom_waf_rules_triggered[5m]) > 50
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "WAF rule triggered frequently"
+          description: "{{ $value }} WAF triggers/min (threshold: 50/min)"
+
+      # Rate limit violations
+      - alert: RateLimitViolations
+        expr: rate(hololoom_rate_limit_violations[5m]) > 100
+        for: 5m
+        labels:
+          severity: info
+          category: security
+        annotations:
+          summary: "High rate limit violations"
+          description: "{{ $value }} rate limit violations/min"
+
+      # Forensic log integrity failure
+      - alert: ForensicLogIntegrityFailure
+        expr: hololoom_forensic_log_integrity_failures_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Forensic log integrity compromised"
+          description: "Hash chain verification failed - possible tampering"
+
+      # SOAR playbook failures
+      - alert: SOARPlaybookFailures
+        expr: rate(hololoom_soar_playbook_failures_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: operations
+        annotations:
+          summary: "SOAR playbook failures"
+          description: "{{ $value }} playbook failures/min"
+
+  - name: infrastructure_alerts
+    interval: 30s
+    rules:
+      # Service down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.instance }} has been down for 1 minute"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High CPU usage on {{ $labels.job }}"
+          description: "CPU usage is {{ $value | humanizePercentage }}"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High memory usage on {{ $labels.job }}"
+          description: "Memory usage is {{ $value | humanizePercentage }}"
+
+      # Disk space low
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Disk space low on {{ $labels.instance }}"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+
+      # High API latency
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.99, rate(hololoom_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High API latency"
+          description: "p99 latency is {{ $value }}s (threshold: 1s)"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(hololoom_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High error rate"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+  - name: database_alerts
+    interval: 30s
+    rules:
+      # PostgreSQL connection exhaustion
+      - alert: PostgreSQLConnectionsHigh
+        expr: pg_stat_activity_count / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "PostgreSQL connections high"
+          description: "{{ $value | humanizePercentage }} of max connections used"
+
+      # Redis memory high
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Redis memory usage high"
+          description: "{{ $value | humanizePercentage }} of max memory used"
+
+      # Neo4j heap usage high
+      - alert: Neo4jHeapHigh
+        expr: neo4j_memory_heap_used / neo4j_memory_heap_max > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Neo4j heap usage high"
+          description: "{{ $value | humanizePercentage }} of max heap used"
