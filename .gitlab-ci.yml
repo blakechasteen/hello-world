@@ -1,0 +1,289 @@
+# HoloLoom VoiceAgent GitLab CI/CD Pipeline
+# ===========================================
+# Automated testing, building, and deployment for GitLab
+# Date: November 15, 2025
+
+# Global variables
+variables:
+  DOCKER_REGISTRY: docker.io
+  IMAGE_NAME: hololoom/voice-agent
+  PYTHON_VERSION: "3.10"
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+# Pipeline stages
+stages:
+  - test
+  - lint
+  - security
+  - build
+  - helm-validate
+  - deploy-staging
+  - deploy-production
+  - release
+
+# Default configuration
+default:
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - python --version
+    - pip install --upgrade pip
+
+# ============================================================================
+# Test Stage - Run all tests
+# ============================================================================
+test:unit:
+  stage: test
+  image: python:${PYTHON_VERSION}
+  cache:
+    paths:
+      - .cache/pip
+  before_script:
+    - pip install --cache-dir .cache/pip -r HoloLoom/voice/requirements.txt
+    - pip install pytest pytest-asyncio pytest-cov
+  script:
+    - PYTHONPATH=. pytest HoloLoom/voice/tests/test_voice_agent.py -v --cov=HoloLoom.voice --cov-report=xml --cov-report=term
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    expire_in: 1 week
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+# ============================================================================
+# Lint Stage - Code quality checks
+# ============================================================================
+lint:flake8:
+  stage: lint
+  image: python:${PYTHON_VERSION}
+  before_script:
+    - pip install flake8
+  script:
+    - flake8 HoloLoom/voice --count --select=E9,F63,F7,F82 --show-source --statistics
+    - flake8 HoloLoom/voice --count --max-line-length=127 --statistics
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+lint:black:
+  stage: lint
+  image: python:${PYTHON_VERSION}
+  before_script:
+    - pip install black
+  script:
+    - black --check HoloLoom/voice
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+lint:mypy:
+  stage: lint
+  image: python:${PYTHON_VERSION}
+  before_script:
+    - pip install mypy
+  script:
+    - mypy HoloLoom/voice --ignore-missing-imports
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+# ============================================================================
+# Security Stage - Vulnerability scanning
+# ============================================================================
+security:trivy:
+  stage: security
+  image: aquasec/trivy:latest
+  script:
+    - trivy fs --exit-code 0 --severity HIGH,CRITICAL --format json -o trivy-report.json .
+    - trivy fs --exit-code 1 --severity CRITICAL .
+  artifacts:
+    reports:
+      container_scanning: trivy-report.json
+    expire_in: 1 week
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+# ============================================================================
+# Build Stage - Build and push Docker image
+# ============================================================================
+build:docker:
+  stage: build
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY
+  script:
+    # Build image
+    - docker build -f Dockerfile.voice -t $IMAGE_NAME:$CI_COMMIT_SHA .
+    - docker tag $IMAGE_NAME:$CI_COMMIT_SHA $IMAGE_NAME:$CI_COMMIT_REF_SLUG
+
+    # Push to registry
+    - docker push $IMAGE_NAME:$CI_COMMIT_SHA
+    - docker push $IMAGE_NAME:$CI_COMMIT_REF_SLUG
+
+    # Tag as latest if main branch
+    - |
+      if [ "$CI_COMMIT_BRANCH" == "main" ]; then
+        docker tag $IMAGE_NAME:$CI_COMMIT_SHA $IMAGE_NAME:latest
+        docker push $IMAGE_NAME:latest
+      fi
+
+    # Scan image with Trivy
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --exit-code 0 $IMAGE_NAME:$CI_COMMIT_SHA
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+# ============================================================================
+# Helm Validation Stage - Validate Helm chart
+# ============================================================================
+helm:lint:
+  stage: helm-validate
+  image: alpine/helm:latest
+  script:
+    - helm lint deployment/helm/hololoom-voice
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+helm:template:
+  stage: helm-validate
+  image: alpine/helm:latest
+  script:
+    - helm template hololoom-voice deployment/helm/hololoom-voice --set voiceAgent.secrets.openaiApiKey.secretName=test-secret --debug
+  artifacts:
+    paths:
+      - rendered-manifests.yaml
+    expire_in: 1 week
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+# ============================================================================
+# Deploy to Staging - Automatic on develop branch
+# ============================================================================
+deploy:staging:
+  stage: deploy-staging
+  image: alpine/helm:latest
+  before_script:
+    - apk add --no-cache curl kubectl
+    - echo "$KUBE_CONFIG_STAGING" | base64 -d > kubeconfig
+    - export KUBECONFIG=./kubeconfig
+  script:
+    # Create namespace
+    - kubectl create namespace hololoom-voice-staging --dry-run=client -o yaml | kubectl apply -f -
+
+    # Create secrets
+    - |
+      kubectl create secret generic voice-agent-secrets \
+        --from-literal=OPENAI_API_KEY="$OPENAI_API_KEY_STAGING" \
+        --from-literal=NEO4J_PASSWORD="$NEO4J_PASSWORD_STAGING" \
+        -n hololoom-voice-staging \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+    # Deploy with Helm
+    - |
+      helm upgrade --install hololoom-voice deployment/helm/hololoom-voice \
+        --namespace hololoom-voice-staging \
+        --set voiceAgent.image.tag=$CI_COMMIT_SHA \
+        --set voiceAgent.replicaCount=2 \
+        --set voiceAgent.env[0].name=ENVIRONMENT \
+        --set voiceAgent.env[0].value=staging \
+        --wait \
+        --timeout 5m
+
+    # Verify deployment
+    - kubectl rollout status deployment/hololoom-voice-hololoom-voice -n hololoom-voice-staging --timeout=5m
+  environment:
+    name: staging
+    url: https://voice-staging.hololoom.ai
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+# ============================================================================
+# Deploy to Production - Manual approval required
+# ============================================================================
+deploy:production:
+  stage: deploy-production
+  image: alpine/helm:latest
+  before_script:
+    - apk add --no-cache curl kubectl
+    - echo "$KUBE_CONFIG_PRODUCTION" | base64 -d > kubeconfig
+    - export KUBECONFIG=./kubeconfig
+  script:
+    # Create namespace
+    - kubectl create namespace hololoom-voice --dry-run=client -o yaml | kubectl apply -f -
+
+    # Create secrets
+    - |
+      kubectl create secret generic voice-agent-secrets \
+        --from-literal=OPENAI_API_KEY="$OPENAI_API_KEY_PRODUCTION" \
+        --from-literal=NEO4J_PASSWORD="$NEO4J_PASSWORD_PRODUCTION" \
+        -n hololoom-voice \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+    # Deploy with Helm
+    - |
+      helm upgrade --install hololoom-voice deployment/helm/hololoom-voice \
+        --namespace hololoom-voice \
+        --set voiceAgent.image.tag=$CI_COMMIT_SHA \
+        --set voiceAgent.replicaCount=5 \
+        --set voiceAgent.autoscaling.minReplicas=5 \
+        --set voiceAgent.autoscaling.maxReplicas=50 \
+        --set voiceAgent.env[0].name=ENVIRONMENT \
+        --set voiceAgent.env[0].value=production \
+        --wait \
+        --timeout 10m
+
+    # Verify deployment
+    - kubectl rollout status deployment/hololoom-voice-hololoom-voice -n hololoom-voice --timeout=10m
+
+    # Smoke tests
+    - |
+      kubectl run smoke-test \
+        --image=curlimages/curl:latest \
+        --rm -i --restart=Never \
+        --namespace=hololoom-voice \
+        -- curl -f http://hololoom-voice-hololoom-voice:8080/health
+  environment:
+    name: production
+    url: https://voice.hololoom.ai
+  when: manual  # Require manual approval
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ============================================================================
+# Release Stage - Create GitLab release
+# ============================================================================
+release:tag:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Creating release for $CI_COMMIT_TAG"
+  release:
+    tag_name: 'v$CI_PIPELINE_IID'
+    description: |
+      ## VoiceAgent Release v$CI_PIPELINE_IID
+
+      ### Changes
+      $CI_COMMIT_MESSAGE
+
+      ### Deployment
+      - ✅ Deployed to production
+      - Docker image: $IMAGE_NAME:$CI_COMMIT_SHA
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /^Release/'

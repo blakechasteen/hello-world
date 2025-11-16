@@ -1,0 +1,63 @@
+code: fr
+name: French
+native_name: Français
+
+variants:
+  - fr-FR:
+      voice_id: echo
+      fallback: nova
+      name: European French
+  - fr-CA:
+      voice_id: fable
+      fallback: echo
+      name: Canadian French
+
+default_voice: echo
+fallback_voice: nova
+rtl: false
+
+ui_strings:
+  # Greetings
+  greeting: "Bonjour"
+  greeting_morning: "Bonjour"
+  greeting_afternoon: "Bon après-midi"
+  greeting_evening: "Bonsoir"
+  goodbye: "Au revoir"
+  see_you: "À bientôt"
+
+  # Status messages
+  processing: "Traitement de votre demande..."
+  thinking: "Laissez-moi réfléchir à cela..."
+  searching: "Recherche d'informations..."
+  analyzing: "Analyse en cours..."
+  complete: "Terminé !"
+  ready: "Prêt !"
+
+  # Error messages
+  error: "Désolé, il y a eu une erreur."
+  error_network: "Erreur de connexion réseau. Veuillez réessayer."
+  error_timeout: "La demande a expiré. Veuillez réessayer."
+  error_unknown: "Une erreur inattendue s'est produite."
+  not_understood: "Je n'ai pas bien compris. Pouvez-vous répéter ?"
+
+  # Confirmation prompts
+  confirm_yes: "Oui"
+  confirm_no: "Non"
+  confirm_cancel: "Annuler"
+  confirm_continue: "Continuer"
+
+  # Navigation
+  go_back: "Retour"
+  next: "Suivant"
+  previous: "Précédent"
+  menu: "Menu"
+
+  # Language switching
+  language_detected: "Langue détectée"
+  language_switched: "Langue changée en français"
+  switch_to_language: "Changer en {language}"
+
+metadata:
+  speakers: 280000000  # Native + non-native speakers
+  script: Latin
+  direction: ltr

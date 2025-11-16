@@ -1,0 +1,53 @@
+# Kubernetes ConfigMap for HoloLoom VoiceAgent
+# ==============================================
+# Non-sensitive configuration
+# Date: November 15, 2025
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: voice-agent-config
+  namespace: hololoom-voice
+  labels:
+    app: voice-agent
+    component: config
+
+data:
+  # HoloLoom Configuration
+  HOLOLOOM_MODE: "FAST"
+  HOLOLOOM_LOG_LEVEL: "INFO"
+  HOLOLOOM_ENABLE_METRICS: "true"
+
+  # Voice Agent Configuration
+  VOICE_AGENT_NAME: "Elle"
+  VOICE_TTS_VOICE: "nova"
+  VOICE_TURN_MODE: "hybrid"
+  VOICE_MAX_TURNS: "20"
+  VOICE_SILENCE_THRESHOLD: "1.5"
+
+  # Memory Configuration
+  NEO4J_URI: "bolt://neo4j-service:7687"
+  NEO4J_USER: "neo4j"
+  QDRANT_HOST: "qdrant-service"
+  QDRANT_PORT: "6333"
+
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+
+  # Logging Configuration
+  STRUCTLOG_ENABLED: "true"
+  LOG_FORMAT: "json"
+  LOG_LEVEL: "INFO"
+
+  # Performance Configuration
+  WORKERS: "4"
+  MAX_CONCURRENT_SESSIONS: "50"
+  SESSION_TIMEOUT: "300"
+
+  # Feature Flags
+  ENABLE_CONVERSATION_MEMORY: "true"
+  ENABLE_YARN_GRAPH: "true"
+  ENABLE_VAD: "true"
+  ENABLE_INTERRUPTS: "true"

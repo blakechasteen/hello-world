@@ -1,0 +1,59 @@
+code: ja
+name: Japanese
+native_name: 日本語
+
+variants:
+  - ja-JP:
+      voice_id: shimmer
+      fallback: nova
+      name: Standard Japanese
+
+default_voice: shimmer
+fallback_voice: nova
+rtl: false
+
+ui_strings:
+  # Greetings
+  greeting: "こんにちは"  # Konnichiwa
+  greeting_morning: "おはようございます"  # Ohayou gozaimasu
+  greeting_afternoon: "こんにちは"  # Konnichiwa
+  greeting_evening: "こんばんは"  # Konbanwa
+  goodbye: "さようなら"  # Sayounara
+  see_you: "またね"  # Mata ne
+
+  # Status messages
+  processing: "リクエストを処理しています..."  # Processing your request
+  thinking: "考えさせてください..."  # Let me think
+  searching: "情報を検索しています..."  # Searching for information
+  analyzing: "分析中..."  # Analyzing
+  complete: "完了！"  # Done
+  ready: "準備完了！"  # Ready
+
+  # Error messages
+  error: "申し訳ございません、エラーが発生しました。"  # I'm sorry, there was an error
+  error_network: "ネットワーク接続エラーです。もう一度お試しください。"  # Network error
+  error_timeout: "リクエストがタイムアウトしました。もう一度お試しください。"  # Timeout
+  error_unknown: "予期しないエラーが発生しました。"  # Unexpected error
+  not_understood: "よく聞き取れませんでした。もう一度言っていただけますか？"  # Didn't understand
+
+  # Confirmation prompts
+  confirm_yes: "はい"  # Yes
+  confirm_no: "いいえ"  # No
+  confirm_cancel: "キャンセル"  # Cancel
+  confirm_continue: "続ける"  # Continue
+
+  # Navigation
+  go_back: "戻る"  # Go back
+  next: "次へ"  # Next
+  previous: "前へ"  # Previous
+  menu: "メニュー"  # Menu
+
+  # Language switching
+  language_detected: "言語が検出されました"  # Language detected
+  language_switched: "言語が日本語に切り替わりました"  # Switched to Japanese
+  switch_to_language: "{language}に切り替え"  # Switch to language
+
+metadata:
+  speakers: 125000000  # Native + non-native speakers
+  script: Kanji/Hiragana/Katakana
+  direction: ltr
