@@ -20,6 +20,8 @@ class Language(str, Enum):
     PYTHON = "python"
     JAVASCRIPT = "javascript"
     TYPESCRIPT = "typescript"
+    TSX = "tsx"  # TypeScript + JSX
+    JSX = "jsx"  # JavaScript + JSX
     JAVA = "java"
     RUST = "rust"
     GO = "go"

@@ -30,6 +30,7 @@ __author__ = 'mythRL Team'
 from .trough_types import Language, Severity, SlopCategory, ErrorCategory, SlopIssue, LogicError
 from .ml_logic_detector import MLLogicDetector
 from .ai_slop_detector import AISlopDetector
+from .typescript_detector import TypeScriptSlopDetector, detect_typescript_issues
 
 __all__ = [
     # Types
@@ -43,4 +44,6 @@ __all__ = [
     # Detectors
     'MLLogicDetector',
     'AISlopDetector',
+    'TypeScriptSlopDetector',
+    'detect_typescript_issues',
 ]
