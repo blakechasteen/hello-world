@@ -21,7 +21,6 @@ from .registry import (
     suggest_strategies,
     list_strategies
 )
-from .composite import CompositeStrategy
 
 __all__ = [
     'PromptingStrategy',
