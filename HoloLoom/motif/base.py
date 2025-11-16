@@ -5,7 +5,6 @@ This file provides lightweight, test-friendly motif detectors and a
 project may use spaCy or regex-based detectors; here we implement
 small, dependency-free stubs so the example runs.
 """
-from __future__ import annotations
 from typing import List, Optional
 import re
 
