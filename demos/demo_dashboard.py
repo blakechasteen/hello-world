@@ -24,6 +24,16 @@ import asyncio
 import time
 from rich.console import Console
 from rich.panel import Panel
+from rich.prompt import Confirm
+from rich.progress import (
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    BarColumn,
+    TaskProgressColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn
+)
 
 from HoloLoom.config import Config
 from HoloLoom.documentation.types import Query
@@ -62,54 +72,91 @@ def calculate_discount(price, discount_percent):
     return price * (1 - discount_percent / 100)
 """
 
-    console.print("\\n[bold]Executing sample queries...[/bold]")
+    # Execute recursive weaving queries with progress bar
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        TimeElapsedColumn(),
+        TimeRemainingColumn(),
+        console=console,
+        transient=True
+    ) as progress:
+        task = progress.add_task(
+            "[cyan]Executing sample queries[/cyan]",
+            total=len(queries_and_strategies)
+        )
 
-    # Execute recursive weaving queries
-    for i, (query_text, strategy) in enumerate(queries_and_strategies, 1):
-        console.print(f"  [{i}/6] Weaving: {query_text[:40]}... (strategy: {strategy.value})")
-
-        async with RecursiveWeavingOrchestrator(
-            cfg=config,
-            shards=[],
-            enable_recursive=True,
-            enable_analytics=True,
-            default_strategy=strategy,
-            max_iterations=3,
-            quality_threshold=0.85
-        ) as orch:
-            query = Query(text=query_text)
-            await orch.weave_with_strategy(
-                query=query,
-                strategy=strategy,
-                max_iterations=3
+        for i, (query_text, strategy) in enumerate(queries_and_strategies, 1):
+            progress.update(
+                task,
+                description=f"[cyan]Query {i}/{len(queries_and_strategies)}: {query_text[:35]}...[/cyan]"
             )
 
-        # Small delay between executions
-        await asyncio.sleep(0.5)
+            async with RecursiveWeavingOrchestrator(
+                cfg=config,
+                shards=[],
+                enable_recursive=True,
+                enable_analytics=True,
+                default_strategy=strategy,
+                max_iterations=3,
+                quality_threshold=0.85
+            ) as orch:
+                query = Query(text=query_text)
+                await orch.weave_with_strategy(
+                    query=query,
+                    strategy=strategy,
+                    max_iterations=3
+                )
 
-    console.print("\\n[bold]Executing sample skills...[/bold]")
+            progress.advance(task)
+            # Small delay between executions
+            await asyncio.sleep(0.5)
 
-    # Execute skills
+    console.print("[green]✓ All queries executed![/green]\\n")
+
+    # Execute skills with progress bar
     skills_to_test = [
         ("code-reviewer", {"code": sample_code, "language": "python"}),
         ("test-generator", {"code": sample_code, "language": "python"}),
         ("refactoring-expert", {"code": sample_code, "language": "python"}),
     ]
 
-    for i, (skill_name, params) in enumerate(skills_to_test, 1):
-        console.print(f"  [{i}/3] Executing skill: {skill_name}")
-
-        await execute_skill(
-            skill_name=skill_name,
-            parameters=params,
-            config=config,
-            enable_analytics=True
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        TimeElapsedColumn(),
+        TimeRemainingColumn(),
+        console=console,
+        transient=True
+    ) as progress:
+        task = progress.add_task(
+            "[cyan]Executing sample skills[/cyan]",
+            total=len(skills_to_test)
         )
 
-        await asyncio.sleep(0.5)
+        for i, (skill_name, params) in enumerate(skills_to_test, 1):
+            progress.update(
+                task,
+                description=f"[cyan]Skill {i}/{len(skills_to_test)}: {skill_name}[/cyan]"
+            )
 
-    console.print("\\n[green]✓ Sample data generated![/green]")
-    console.print(f"  Total executions: {len(queries_and_strategies) + len(skills_to_test)}")
+            await execute_skill(
+                skill_name=skill_name,
+                parameters=params,
+                config=config,
+                enable_analytics=True
+            )
+
+            progress.advance(task)
+            await asyncio.sleep(0.5)
+
+    console.print("[green]✓ All skills executed![/green]\\n")
+    console.print(f"[green]✅ Sample data generated![/green]")
+    console.print(f"[dim]Total executions: {len(queries_and_strategies) + len(skills_to_test)}[/dim]")
 
 
 async def main():
@@ -127,7 +174,9 @@ async def main():
     console.print("3. Open http://localhost:8000 in your browser")
     console.print("4. Watch the dashboard update in real-time!\\n")
 
-    input("[dim]Press Enter to generate sample data...[/dim]")
+    if not Confirm.ask("[bold]Generate sample data?[/bold]", default=True):
+        console.print("[yellow]Skipping data generation. Dashboard will start empty.[/yellow]")
+        return
 
     # Generate sample data
     await generate_sample_data()

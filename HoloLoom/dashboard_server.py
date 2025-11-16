@@ -11,7 +11,7 @@ Real-time WebSocket dashboard for visualizing:
 
 Features:
 - WebSocket for real-time updates
-- REST API for historical data
+- REST API (v1) with rate limiting
 - FastAPI backend
 - Connects to analytics database
 - Live monitoring of all Promptly integration features
@@ -22,6 +22,7 @@ Usage:
 Then open: http://localhost:8000
 
 Created: 2025-11-16
+Updated: 2025-11-16 (Added rate limiting and API versioning)
 Integration: Phases 1-4 → Real-time Dashboard
 """
 
@@ -31,11 +32,23 @@ import logging
 from typing import Dict, List, Set, Optional, Any
 from datetime import datetime, timedelta
 from pathlib import Path
+from collections import defaultdict
+import time
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+
+# Try to import slowapi for rate limiting
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    RATE_LIMITING_AVAILABLE = True
+except ImportError:
+    RATE_LIMITING_AVAILABLE = False
+    Limiter = None
 
 # HoloLoom imports
 from HoloLoom.config import Config
@@ -50,8 +63,58 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
-app = FastAPI(title="HoloLoom Promptly Dashboard", version="1.0.0")
+# ============================================================================
+# Simple Rate Limiter (fallback if slowapi not available)
+# ============================================================================
+
+class SimpleRateLimiter:
+    """Simple in-memory rate limiter as fallback."""
+
+    def __init__(self, max_requests: int = 100, window_seconds: int = 60):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests: Dict[str, List[float]] = defaultdict(list)
+
+    def check_rate_limit(self, client_id: str) -> bool:
+        """Check if client is within rate limit."""
+        now = time.time()
+        window_start = now - self.window_seconds
+
+        # Clean old requests
+        self.requests[client_id] = [
+            req_time for req_time in self.requests[client_id]
+            if req_time > window_start
+        ]
+
+        # Check limit
+        if len(self.requests[client_id]) >= self.max_requests:
+            return False
+
+        # Record request
+        self.requests[client_id].append(now)
+        return True
+
+    async def __call__(self, request: Request):
+        """Middleware-style rate limit check."""
+        client_id = request.client.host if request.client else "unknown"
+
+        if not self.check_rate_limit(client_id):
+            raise HTTPException(
+                status_code=429,
+                detail=f"Rate limit exceeded. Max {self.max_requests} requests per {self.window_seconds} seconds."
+            )
+
+
+# ============================================================================
+# FastAPI App Initialization with Rate Limiting
+# ============================================================================
+
+# Create FastAPI app with API versioning
+app = FastAPI(
+    title="HoloLoom Promptly Dashboard",
+    version="1.0.0",
+    description="Real-time dashboard with v1 REST API and rate limiting"
+)
 
 # Add CORS middleware
 app.add_middleware(
@@ -61,6 +124,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize rate limiter
+if RATE_LIMITING_AVAILABLE:
+    logger.info("Using slowapi for rate limiting")
+    limiter = Limiter(key_func=get_remote_address)
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+else:
+    logger.warning("slowapi not available - using fallback rate limiter. Install with: pip install slowapi")
+    limiter = SimpleRateLimiter(max_requests=100, window_seconds=60)
 
 # Global state
 analytics: Optional[RecursiveAnalytics] = None
@@ -93,7 +166,7 @@ async def startup():
     await skill_registry.load_all_skills()
     logger.info(f"Loaded {len(skill_registry.skills)} professional skills")
 
-    logger.info("Dashboard server ready!")
+    logger.info("Dashboard server ready! API version: v1, Rate limiting: enabled")
 
 
 # ============================================================================
@@ -137,7 +210,7 @@ manager = ConnectionManager()
 
 
 # ============================================================================
-# WebSocket Endpoint
+# WebSocket Endpoint (no rate limiting)
 # ============================================================================
 
 @app.websocket("/ws")
@@ -202,7 +275,7 @@ async def send_analytics_update(websocket: WebSocket):
 
 
 # ============================================================================
-# REST API Endpoints
+# REST API Endpoints (v1 with rate limiting)
 # ============================================================================
 
 @app.get("/")
@@ -216,87 +289,369 @@ async def get_dashboard():
         return HTMLResponse(content=get_embedded_dashboard_html())
 
 
-@app.get("/api/analytics/summary")
-async def get_analytics_summary():
-    """Get analytics summary."""
-    summary = analytics.get_summary()
-    return summary
+# API v1 endpoints with rate limiting
+if RATE_LIMITING_AVAILABLE:
+    @app.get("/api/v1/analytics/summary")
+    @limiter.limit("100/minute")
+    async def get_analytics_summary(request: Request):
+        """Get analytics summary."""
+        summary = analytics.get_summary()
+        return summary
 
+    @app.get("/api/v1/analytics/trends")
+    @limiter.limit("100/minute")
+    async def get_analytics_trends(
+        request: Request,
+        days: int = 7,
+        skip: int = 0,
+        limit: int = 50
+    ):
+        """
+        Get quality trends over time with optional pagination.
 
-@app.get("/api/analytics/trends")
-async def get_analytics_trends(days: int = 7):
-    """Get quality trends over time."""
-    trends = analytics.get_quality_trends(days=days)
-    return {"trends": trends}
+        Parameters:
+        - days: Number of days to look back (default: 7)
+        - skip: Number of items to skip (default: 0)
+        - limit: Number of items per page (default: 50, max: 100)
 
+        Response includes pagination metadata when limit is specified.
+        """
+        # Validate pagination parameters
+        if skip < 0:
+            raise HTTPException(status_code=400, detail="skip must be >= 0")
+        if limit < 1:
+            raise HTTPException(status_code=400, detail="limit must be >= 1")
 
-@app.get("/api/analytics/strategy/{strategy}")
-async def get_strategy_metrics(strategy: str):
-    """Get metrics for specific strategy."""
-    metrics = analytics.get_strategy_metrics(strategy)
+        # Cap limit at reasonable max
+        max_limit = 100
+        if limit > max_limit:
+            limit = max_limit
 
-    if not metrics:
-        raise HTTPException(status_code=404, detail=f"Strategy not found: {strategy}")
+        # Get all trends
+        all_trends = analytics.get_quality_trends(days=days)
 
-    return {
-        "strategy": strategy,
-        "total_executions": metrics.total_executions,
-        "avg_iterations": metrics.avg_iterations,
-        "avg_quality_gain": metrics.avg_quality_gain,
-        "avg_duration_ms": metrics.avg_duration_ms,
-        "success_rate": metrics.success_rate,
-        "convergence_rate": metrics.convergence_rate
-    }
+        # Calculate pagination metadata
+        total = len(all_trends)
+        has_more = (skip + limit) < total
+        next_skip = skip + limit if has_more else None
 
+        # Apply pagination
+        paginated_trends = all_trends[skip:skip + limit]
 
-@app.get("/api/analytics/recommendations")
-async def get_recommendations():
-    """Get AI-powered recommendations."""
-    recommendations = analytics.get_recommendations()
-    return {"recommendations": recommendations}
-
-
-@app.get("/api/skills")
-async def get_skills():
-    """Get all available skills."""
-    skills = await list_available_skills()
-    return skills
-
-
-@app.get("/api/skills/{skill_name}")
-async def get_skill_details(skill_name: str):
-    """Get details for specific skill."""
-    skill = skill_registry.get_skill(skill_name)
-
-    if not skill:
-        raise HTTPException(status_code=404, detail=f"Skill not found: {skill_name}")
-
-    return {
-        "name": skill.name,
-        "version": skill.version,
-        "description": skill.description,
-        "category": skill.metadata.category,
-        "tags": skill.metadata.tags,
-        "strategy": skill.reasoning.default_strategy,
-        "max_iterations": skill.reasoning.max_iterations,
-        "quality_threshold": skill.reasoning.quality_threshold,
-        "parameters": [
-            {
-                "name": p.name,
-                "type": p.type,
-                "required": p.required,
-                "description": p.description
+        return {
+            "trends": paginated_trends,
+            "pagination": {
+                "skip": skip,
+                "limit": limit,
+                "total": total,
+                "count": len(paginated_trends),
+                "has_more": has_more,
+                "next_skip": next_skip
             }
-            for p in skill.parameters
-        ]
-    }
+        }
 
+    @app.get("/api/v1/analytics/strategy/{strategy}")
+    @limiter.limit("100/minute")
+    async def get_strategy_metrics(request: Request, strategy: str):
+        """Get metrics for specific strategy."""
+        metrics = analytics.get_strategy_metrics(strategy)
 
-@app.get("/api/executions/recent")
-async def get_recent_executions(limit: int = 20):
-    """Get recent executions."""
-    recent = analytics.get_recent_executions(limit=limit)
-    return {"executions": recent}
+        if not metrics:
+            raise HTTPException(status_code=404, detail=f"Strategy not found: {strategy}")
+
+        return {
+            "strategy": strategy,
+            "total_executions": metrics.total_executions,
+            "avg_iterations": metrics.avg_iterations,
+            "avg_quality_gain": metrics.avg_quality_gain,
+            "avg_duration_ms": metrics.avg_duration_ms,
+            "success_rate": metrics.success_rate,
+            "convergence_rate": metrics.convergence_rate
+        }
+
+    @app.get("/api/v1/analytics/recommendations")
+    @limiter.limit("100/minute")
+    async def get_recommendations(request: Request):
+        """Get AI-powered recommendations."""
+        recommendations = analytics.get_recommendations()
+        return {"recommendations": recommendations}
+
+    @app.get("/api/v1/skills")
+    @limiter.limit("100/minute")
+    async def get_skills(request: Request):
+        """Get all available skills."""
+        skills = await list_available_skills()
+        return skills
+
+    @app.get("/api/v1/skills/{skill_name}")
+    @limiter.limit("100/minute")
+    async def get_skill_details(request: Request, skill_name: str):
+        """Get details for specific skill."""
+        skill = skill_registry.get_skill(skill_name)
+
+        if not skill:
+            raise HTTPException(status_code=404, detail=f"Skill not found: {skill_name}")
+
+        return {
+            "name": skill.name,
+            "version": skill.version,
+            "description": skill.description,
+            "category": skill.metadata.category,
+            "tags": skill.metadata.tags,
+            "strategy": skill.reasoning.default_strategy,
+            "max_iterations": skill.reasoning.max_iterations,
+            "quality_threshold": skill.reasoning.quality_threshold,
+            "parameters": [
+                {
+                    "name": p.name,
+                    "type": p.type,
+                    "required": p.required,
+                    "description": p.description
+                }
+                for p in skill.parameters
+            ]
+        }
+
+    @app.get("/api/v1/executions/recent")
+    @limiter.limit("100/minute")
+    async def get_recent_executions(
+        request: Request,
+        skip: int = 0,
+        limit: int = 20
+    ):
+        """
+        Get recent executions with pagination support.
+
+        Parameters:
+        - skip: Number of items to skip (default: 0)
+        - limit: Number of items per page (default: 20, max: 100)
+
+        Response includes pagination metadata:
+        - skip: Current offset
+        - limit: Current page size
+        - total: Total number of items
+        - count: Number of items in current page
+        - has_more: Whether more pages exist
+        - next_skip: Skip value for next page (null if last page)
+        """
+        # Validate pagination parameters
+        if skip < 0:
+            raise HTTPException(status_code=400, detail="skip must be >= 0")
+        if limit < 1:
+            raise HTTPException(status_code=400, detail="limit must be >= 1")
+
+        # Cap limit at reasonable max to prevent abuse
+        max_limit = 100
+        if limit > max_limit:
+            limit = max_limit
+
+        # Get total count for pagination metadata
+        total = analytics.get_total_executions_count()
+
+        # Fetch paginated results
+        recent = analytics.get_recent_executions(limit=limit, skip=skip)
+
+        # Convert ExecutionRecord objects to dictionaries
+        executions_data = [record.to_dict() for record in recent]
+
+        # Calculate pagination metadata
+        has_more = (skip + limit) < total
+        next_skip = skip + limit if has_more else None
+
+        return {
+            "executions": executions_data,
+            "pagination": {
+                "skip": skip,
+                "limit": limit,
+                "total": total,
+                "count": len(executions_data),
+                "has_more": has_more,
+                "next_skip": next_skip
+            }
+        }
+
+else:
+    # Fallback endpoints with simple rate limiting
+    @app.get("/api/v1/analytics/summary")
+    async def get_analytics_summary(request: Request):
+        """Get analytics summary."""
+        await limiter(request)
+        summary = analytics.get_summary()
+        return summary
+
+    @app.get("/api/v1/analytics/trends")
+    async def get_analytics_trends(
+        request: Request,
+        days: int = 7,
+        skip: int = 0,
+        limit: int = 50
+    ):
+        """
+        Get quality trends over time with optional pagination.
+
+        Parameters:
+        - days: Number of days to look back (default: 7)
+        - skip: Number of items to skip (default: 0)
+        - limit: Number of items per page (default: 50, max: 100)
+
+        Response includes pagination metadata when limit is specified.
+        """
+        await limiter(request)
+
+        # Validate pagination parameters
+        if skip < 0:
+            raise HTTPException(status_code=400, detail="skip must be >= 0")
+        if limit < 1:
+            raise HTTPException(status_code=400, detail="limit must be >= 1")
+
+        # Cap limit at reasonable max
+        max_limit = 100
+        if limit > max_limit:
+            limit = max_limit
+
+        # Get all trends
+        all_trends = analytics.get_quality_trends(days=days)
+
+        # Calculate pagination metadata
+        total = len(all_trends)
+        has_more = (skip + limit) < total
+        next_skip = skip + limit if has_more else None
+
+        # Apply pagination
+        paginated_trends = all_trends[skip:skip + limit]
+
+        return {
+            "trends": paginated_trends,
+            "pagination": {
+                "skip": skip,
+                "limit": limit,
+                "total": total,
+                "count": len(paginated_trends),
+                "has_more": has_more,
+                "next_skip": next_skip
+            }
+        }
+
+    @app.get("/api/v1/analytics/strategy/{strategy}")
+    async def get_strategy_metrics(request: Request, strategy: str):
+        """Get metrics for specific strategy."""
+        await limiter(request)
+        metrics = analytics.get_strategy_metrics(strategy)
+
+        if not metrics:
+            raise HTTPException(status_code=404, detail=f"Strategy not found: {strategy}")
+
+        return {
+            "strategy": strategy,
+            "total_executions": metrics.total_executions,
+            "avg_iterations": metrics.avg_iterations,
+            "avg_quality_gain": metrics.avg_quality_gain,
+            "avg_duration_ms": metrics.avg_duration_ms,
+            "success_rate": metrics.success_rate,
+            "convergence_rate": metrics.convergence_rate
+        }
+
+    @app.get("/api/v1/analytics/recommendations")
+    async def get_recommendations(request: Request):
+        """Get AI-powered recommendations."""
+        await limiter(request)
+        recommendations = analytics.get_recommendations()
+        return {"recommendations": recommendations}
+
+    @app.get("/api/v1/skills")
+    async def get_skills(request: Request):
+        """Get all available skills."""
+        await limiter(request)
+        skills = await list_available_skills()
+        return skills
+
+    @app.get("/api/v1/skills/{skill_name}")
+    async def get_skill_details(request: Request, skill_name: str):
+        """Get details for specific skill."""
+        await limiter(request)
+        skill = skill_registry.get_skill(skill_name)
+
+        if not skill:
+            raise HTTPException(status_code=404, detail=f"Skill not found: {skill_name}")
+
+        return {
+            "name": skill.name,
+            "version": skill.version,
+            "description": skill.description,
+            "category": skill.metadata.category,
+            "tags": skill.metadata.tags,
+            "strategy": skill.reasoning.default_strategy,
+            "max_iterations": skill.reasoning.max_iterations,
+            "quality_threshold": skill.reasoning.quality_threshold,
+            "parameters": [
+                {
+                    "name": p.name,
+                    "type": p.type,
+                    "required": p.required,
+                    "description": p.description
+                }
+                for p in skill.parameters
+            ]
+        }
+
+    @app.get("/api/v1/executions/recent")
+    async def get_recent_executions(
+        request: Request,
+        skip: int = 0,
+        limit: int = 20
+    ):
+        """
+        Get recent executions with pagination support.
+
+        Parameters:
+        - skip: Number of items to skip (default: 0)
+        - limit: Number of items per page (default: 20, max: 100)
+
+        Response includes pagination metadata:
+        - skip: Current offset
+        - limit: Current page size
+        - total: Total number of items
+        - count: Number of items in current page
+        - has_more: Whether more pages exist
+        - next_skip: Skip value for next page (null if last page)
+        """
+        await limiter(request)
+
+        # Validate pagination parameters
+        if skip < 0:
+            raise HTTPException(status_code=400, detail="skip must be >= 0")
+        if limit < 1:
+            raise HTTPException(status_code=400, detail="limit must be >= 1")
+
+        # Cap limit at reasonable max to prevent abuse
+        max_limit = 100
+        if limit > max_limit:
+            limit = max_limit
+
+        # Get total count for pagination metadata
+        total = analytics.get_total_executions_count()
+
+        # Fetch paginated results
+        recent = analytics.get_recent_executions(limit=limit, skip=skip)
+
+        # Convert ExecutionRecord objects to dictionaries
+        executions_data = [record.to_dict() for record in recent]
+
+        # Calculate pagination metadata
+        has_more = (skip + limit) < total
+        next_skip = skip + limit if has_more else None
+
+        return {
+            "executions": executions_data,
+            "pagination": {
+                "skip": skip,
+                "limit": limit,
+                "total": total,
+                "count": len(executions_data),
+                "has_more": has_more,
+                "next_skip": next_skip
+            }
+        }
 
 
 # ============================================================================
@@ -331,13 +686,14 @@ async def start_background_tasks():
 # ============================================================================
 
 def get_embedded_dashboard_html() -> str:
-    """Get embedded dashboard HTML."""
+    """Get embedded dashboard HTML with API v1 endpoints."""
     return """
 <!DOCTYPE html>
 <html>
 <head>
     <title>HoloLoom Promptly Dashboard</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -407,18 +763,123 @@ def get_embedded_dashboard_html() -> str:
             width: 100%;
             border-collapse: collapse;
         }
+
+        /* Sticky table header */
+        thead {
+            position: sticky;
+            top: 0;
+            background: #1a1f3a;
+            z-index: 10;
+        }
+
         th, td {
-            padding: 10px;
+            padding: 12px 10px;
             text-align: left;
             border-bottom: 1px solid #2a3555;
         }
+
         th {
             color: #00d4ff;
             font-weight: 600;
         }
+
+        /* Zebra striping for better scannability */
+        tbody tr {
+            background: #0a0e27;
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #151833;
+        }
+
+        /* Hover state for interactive feedback */
+        tbody tr:hover {
+            background: #2a3555;
+            cursor: pointer;
+        }
+
+        /* First and last column alignment polish */
+        td:first-child, th:first-child {
+            padding-left: 15px;
+        }
+
+        td:last-child, th:last-child {
+            padding-right: 15px;
+            text-align: right;
+        }
+
         .timestamp {
             color: #666;
             font-size: 12px;
+        }
+
+        /* Loading Skeleton Styles */
+        .skeleton {
+            background: linear-gradient(90deg, #1a1f3a 25%, #2a3555 50%, #1a1f3a 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+            height: 20px;
+            margin: 5px 0;
+        }
+
+        .skeleton-text {
+            width: 60%;
+        }
+
+        .skeleton-number {
+            width: 40%;
+        }
+
+        .skeleton-item {
+            height: 16px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #1a1f3a 25%, #2a3555 50%, #1a1f3a 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Tooltip Styles */
+        .metric-label {
+            position: relative;
+            cursor: help;
+            border-bottom: 1px dotted #555;
+        }
+
+        .metric-label:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a0e27;
+            color: #00d4ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            border: 1px solid #2a3555;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .metric-label:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #2a3555;
+            z-index: 1000;
         }
     </style>
 </head>
@@ -428,37 +889,47 @@ def get_embedded_dashboard_html() -> str:
         <div class="status">
             <strong>WebSocket:</strong> <span id="ws-status" class="connection-status disconnected">Disconnected</span>
             <span style="margin-left: 20px; color: #666;">Last update: <span id="last-update">Never</span></span>
+            <span style="margin-left: 20px; color: #666;">API: v1</span>
         </div>
 
         <div class="grid">
             <div class="card">
                 <h2>📊 Analytics Summary</h2>
                 <div class="metric">
-                    <span class="metric-label">Total Queries</span>
-                    <span class="metric-value" id="total-queries">0</span>
+                    <span class="metric-label" data-tooltip="Total number of queries processed by the recursive reasoning system">Total Queries</span>
+                    <span class="metric-value skeleton skeleton-number" id="total-queries">–</span>
                 </div>
                 <div class="metric">
-                    <span class="metric-label">Avg Quality Gain</span>
-                    <span class="metric-value" id="avg-quality-gain">0%</span>
+                    <span class="metric-label" data-tooltip="Average improvement in confidence score after refinement (initial → final)">Avg Quality Gain</span>
+                    <span class="metric-value skeleton skeleton-number" id="avg-quality-gain">–</span>
                 </div>
                 <div class="metric">
-                    <span class="metric-label">Avg Iterations</span>
-                    <span class="metric-value" id="avg-iterations">0</span>
+                    <span class="metric-label" data-tooltip="Average number of refinement iterations per query">Avg Iterations</span>
+                    <span class="metric-value skeleton skeleton-number" id="avg-iterations">–</span>
                 </div>
                 <div class="metric">
-                    <span class="metric-label">Total Cost</span>
-                    <span class="metric-value" id="total-cost">$0.00</span>
+                    <span class="metric-label" data-tooltip="Total estimated cost for LLM token usage across all queries">Total Cost</span>
+                    <span class="metric-value skeleton skeleton-number" id="total-cost">–</span>
                 </div>
             </div>
 
             <div class="card">
                 <h2>🎯 Top Strategies</h2>
-                <div id="top-strategies">Loading...</div>
+                <div id="top-strategies">
+                    <div class="skeleton-item" style="width: 80%;"></div>
+                    <div class="skeleton-item" style="width: 75%;"></div>
+                    <div class="skeleton-item" style="width: 70%;"></div>
+                    <div class="skeleton-item" style="width: 65%;"></div>
+                </div>
             </div>
 
             <div class="card">
                 <h2>🛠️ Available Skills</h2>
-                <div id="skills-list">Loading...</div>
+                <div id="skills-list">
+                    <div class="skeleton-item" style="width: 85%;"></div>
+                    <div class="skeleton-item" style="width: 90%;"></div>
+                    <div class="skeleton-item" style="width: 75%;"></div>
+                </div>
             </div>
         </div>
 
@@ -528,13 +999,22 @@ def get_embedded_dashboard_html() -> str:
         }
 
         function updateAnalytics(data) {
-            document.getElementById('total-queries').textContent = data.total_queries || 0;
-            document.getElementById('avg-quality-gain').textContent =
-                ((data.avg_quality_gain || 0) * 100).toFixed(1) + '%';
-            document.getElementById('avg-iterations').textContent =
-                (data.avg_iterations || 0).toFixed(1);
-            document.getElementById('total-cost').textContent =
-                '$' + (data.total_cost || 0).toFixed(2);
+            // Update metrics and remove skeleton class
+            const queriesElement = document.getElementById('total-queries');
+            queriesElement.textContent = data.total_queries || 0;
+            queriesElement.classList.remove('skeleton');
+
+            const gainElement = document.getElementById('avg-quality-gain');
+            gainElement.textContent = ((data.avg_quality_gain || 0) * 100).toFixed(1) + '%';
+            gainElement.classList.remove('skeleton');
+
+            const iterElement = document.getElementById('avg-iterations');
+            iterElement.textContent = (data.avg_iterations || 0).toFixed(1);
+            iterElement.classList.remove('skeleton');
+
+            const costElement = document.getElementById('total-cost');
+            costElement.textContent = '$' + (data.total_cost || 0).toFixed(2);
+            costElement.classList.remove('skeleton');
 
             // Update top strategies
             if (data.strategies) {

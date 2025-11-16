@@ -12,9 +12,13 @@ import time
 import sys
 import random
 from pathlib import Path
+from rich.console import Console
+from rich.prompt import Confirm
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+console = Console()
 
 from HoloLoom.alignment.monitoring import AlignmentMonitor
 from HoloLoom.alignment.live_monitor import LiveDashboard
@@ -57,11 +61,13 @@ async def simulate_queries(monitor: AlignmentMonitor, count: int = 100):
 
 
 async def main():
-    print("="*80)
-    print("LIVE MONITORING DASHBOARD DEMO")
-    print("="*80)
-    print("\nPress Enter to start...")
-    input()
+    console.print("\n" + "="*80)
+    console.print("[bold]LIVE MONITORING DASHBOARD DEMO[/bold]")
+    console.print("="*80)
+
+    if not Confirm.ask("\n[bold]Start dashboard simulation?[/bold]", default=True):
+        console.print("[yellow]Demo cancelled.[/yellow]")
+        return
 
     monitor = AlignmentMonitor(
         thresholds={

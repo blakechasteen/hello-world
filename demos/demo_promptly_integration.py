@@ -23,6 +23,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.syntax import Syntax
 from rich.markdown import Markdown
+from rich.prompt import Confirm
 
 from HoloLoom.config import Config
 from HoloLoom.documentation.types import Query, MemoryShard
@@ -302,8 +303,7 @@ async def main():
             traceback.print_exc()
 
         if i < len(demos):
-            console.print("\n[dim]Press Enter to continue...[/dim]")
-            input()
+            Confirm.ask("\n[bold]Continue to next demo?[/bold]", default=True)
 
     console.print("\n\n" + "="*70)
     console.print("[bold green]✅ All demos complete![/bold green]")

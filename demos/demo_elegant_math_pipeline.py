@@ -17,6 +17,10 @@ Date: 2025-10-29
 import asyncio
 import sys
 from pathlib import Path
+from rich.console import Console
+from rich.prompt import Confirm
+
+console = Console()
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -327,7 +331,10 @@ async def main():
     print("  6. Interactive HTML dashboard")
     print("  7. Complete elegant features")
     print()
-    input("Press Enter to start demos...")
+
+    if not Confirm.ask("\n[bold]Start demos?[/bold]", default=True):
+        console.print("[yellow]Demos cancelled.[/yellow]")
+        return
 
     demos = [
         demo_fluent_api,
@@ -339,11 +346,15 @@ async def main():
         demo_elegant_features
     ]
 
-    for demo in demos:
+    for i, demo in enumerate(demos):
         try:
             await demo()
             print("\n" + "-"*80)
-            input("Press Enter for next demo...")
+
+            if i < len(demos) - 1:
+                if not Confirm.ask("[bold]Continue to next demo?[/bold]", default=True):
+                    console.print("[yellow]Skipping remaining demos.[/yellow]")
+                    break
         except Exception as e:
             print(f"\n✗ Demo failed: {e}")
             import traceback

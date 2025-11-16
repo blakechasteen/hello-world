@@ -19,9 +19,13 @@ import signal
 import sys
 from pathlib import Path
 from typing import Optional
+from rich.console import Console
+from rich.prompt import Confirm
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+console = Console()
 
 from HoloLoom.alignment import (
     create_guardrails,
@@ -355,8 +359,11 @@ async def main():
     print()
 
     # Ask user preference
-    enable_dashboard = input("Enable live monitoring dashboard? (y/n): ").lower() == 'y'
-    print()
+    enable_dashboard = Confirm.ask(
+        "[bold]Enable live monitoring dashboard?[/bold]",
+        default=True
+    )
+    console.print()
 
     # Create production system
     system = ProductionAlignmentSystem(

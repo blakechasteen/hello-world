@@ -20,6 +20,7 @@ import asyncio
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from rich.prompt import Confirm
 from rich.progress import track
 
 from HoloLoom.config import Config
@@ -293,8 +294,7 @@ async def main():
             traceback.print_exc()
 
         if i < len(demos):
-            console.print("\n[dim]Press Enter to continue...[/dim]")
-            input()
+            Confirm.ask("\n[bold]Continue to next demo?[/bold]", default=True)
 
     console.print("\n\n" + "="*70)
     console.print("[bold green]✅ Analytics dashboard complete![/bold green]")

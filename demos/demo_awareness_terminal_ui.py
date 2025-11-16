@@ -25,6 +25,8 @@ Commands during demo:
 import asyncio
 import sys
 from pathlib import Path
+from rich.console import Console
+from rich.prompt import Confirm, Prompt
 
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -115,9 +117,9 @@ async def demo_automated():
         console.print("\n[bold cyan]→ Compositional Awareness Context:[/]")
         ui.show_awareness_context(dual_stream.awareness_context)
 
-        # Ask if user wants to see dual-stream
-        console.print("[dim]Press Enter to continue to next query...[/]")
-        input()
+        # Ask if user wants to continue
+        if not Confirm.ask("\n[bold]Continue to next query?[/]", default=True):
+            break
 
     # Show session summary
     console.print("\n\n[bold green]═══ Demo Complete ═══[/]\n")
@@ -192,7 +194,12 @@ def main():
         console.print("  1. [cyan]interactive[/] - Type your own queries")
         console.print("  2. [cyan]automated[/] - See predefined examples")
         console.print("  3. [cyan]meta[/] - Deep dive into meta-awareness")
-        choice = input("\nChoice (1/2/3): ").strip()
+
+        choice = Prompt.ask(
+            "\n[bold]Choice[/]",
+            choices=["1", "2", "3"],
+            default="2"
+        )
 
         mode_map = {"1": "interactive", "2": "automated", "3": "meta"}
         mode = mode_map.get(choice, "interactive")

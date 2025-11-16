@@ -16,6 +16,7 @@ Run: python -m demos.demo_llm_awareness
 import asyncio
 import sys
 from pathlib import Path
+from rich.prompt import Confirm
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -289,14 +290,20 @@ async def main():
     print("╚" + "=" * 78 + "╝")
     
     await demo_llm_high_confidence()
-    
-    input("\n[Press Enter to continue to Demo 2...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 2 (Low Confidence)?[/bold]", default=True):
+        print("Demo cancelled.")
+        return
     await demo_llm_low_confidence()
-    
-    input("\n[Press Enter to continue to Demo 3...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 3 (Comparison)?[/bold]", default=True):
+        print("Demo cancelled.")
+        return
     await demo_llm_comparison()
-    
-    input("\n[Press Enter to continue to Demo 4...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 4 (Meta-Awareness)?[/bold]", default=True):
+        print("Demo cancelled.")
+        return
     await demo_meta_awareness_with_llm()
     
     print("\n" + "=" * 80)

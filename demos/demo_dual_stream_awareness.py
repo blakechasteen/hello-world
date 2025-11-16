@@ -10,6 +10,7 @@ Run: python -m demos.demo_dual_stream_awareness
 import asyncio
 import sys
 from pathlib import Path
+from rich.prompt import Confirm
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -224,17 +225,21 @@ async def main():
     
     # Run demos
     await demo_high_confidence()
-    
-    input("\n[Press Enter to continue to Demo 2...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 2 (Low Confidence)?[/bold]", default=True):
+        return
     await demo_low_confidence()
-    
-    input("\n[Press Enter to continue to Demo 3...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 3 (Medium Confidence)?[/bold]", default=True):
+        return
     await demo_medium_confidence()
-    
-    input("\n[Press Enter to continue to Demo 4...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 4 (Comparison)?[/bold]", default=True):
+        return
     await demo_comparison()
-    
-    input("\n[Press Enter to continue to Demo 5...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 5 (Learning Effect)?[/bold]", default=True):
+        return
     await demo_learning_effect()
     
     print("\n" + "=" * 80)

@@ -38,6 +38,7 @@ from HoloLoom.awareness import (
 )
 from rich.console import Console
 from rich.panel import Panel
+from rich.prompt import Confirm
 from rich import box
 
 
@@ -118,10 +119,10 @@ async def demo_ollama_integration():
                      f"Domain: {ctx.patterns.domain} | "
                      f"Cache: {ctx.confidence.query_cache_status}[/]")
 
-        # Ask if user wants to see internal reasoning
+        # Ask if user wants to continue
         if i < len(test_queries):
-            console.print("[dim]Press Enter for next query...[/]")
-            input()
+            if not Confirm.ask("\n[bold]Continue to next query?[/bold]", default=True):
+                break
 
     console.print("\n[bold green]Demo complete![/]\n")
 

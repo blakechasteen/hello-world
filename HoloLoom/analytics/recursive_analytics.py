@@ -402,16 +402,42 @@ class RecursiveAnalytics:
         conn.close()
         return trends
 
+    def get_total_executions_count(self, strategy: Optional[ReasoningStrategy] = None) -> int:
+        """
+        Get total count of executions.
+
+        Args:
+            strategy: Optional filter by strategy
+
+        Returns:
+            Total number of execution records
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        if strategy:
+            cursor.execute("""
+                SELECT COUNT(*) FROM executions WHERE strategy = ?
+            """, (strategy.value,))
+        else:
+            cursor.execute("SELECT COUNT(*) FROM executions")
+
+        count = cursor.fetchone()[0]
+        conn.close()
+        return count
+
     def get_recent_executions(
         self,
         limit: int = 10,
+        skip: int = 0,
         strategy: Optional[ReasoningStrategy] = None
     ) -> List[ExecutionRecord]:
         """
-        Get recent execution records.
+        Get recent execution records with pagination support.
 
         Args:
-            limit: Maximum number of records
+            limit: Maximum number of records per page
+            skip: Number of records to skip (offset)
             strategy: Optional filter by strategy
 
         Returns:
@@ -426,14 +452,14 @@ class RecursiveAnalytics:
                 SELECT * FROM executions
                 WHERE strategy = ?
                 ORDER BY timestamp DESC
-                LIMIT ?
-            """, (strategy.value, limit))
+                LIMIT ? OFFSET ?
+            """, (strategy.value, limit, skip))
         else:
             cursor.execute("""
                 SELECT * FROM executions
                 ORDER BY timestamp DESC
-                LIMIT ?
-            """, (limit,))
+                LIMIT ? OFFSET ?
+            """, (limit, skip))
 
         records = []
         for row in cursor.fetchall():
@@ -520,47 +546,6 @@ class RecursiveAnalytics:
             )
 
         return recommendations
-
-    def get_recent_executions(self, limit: int = 20) -> List[Dict[str, Any]]:
-        """
-        Get recent executions for dashboard display.
-
-        Args:
-            limit: Maximum number of executions to return
-
-        Returns:
-            List of execution records as dictionaries
-        """
-        cursor = self.conn.cursor()
-        cursor.execute('''
-            SELECT
-                id, strategy, query_text, iterations,
-                initial_quality, final_quality, quality_gain,
-                duration_ms, tokens_used, cost,
-                converged, timestamp
-            FROM executions
-            ORDER BY timestamp DESC
-            LIMIT ?
-        ''', (limit,))
-
-        executions = []
-        for row in cursor.fetchall():
-            executions.append({
-                'id': row[0],
-                'strategy': row[1],
-                'query_text': row[2],
-                'iterations': row[3],
-                'initial_quality': row[4],
-                'final_quality': row[5],
-                'quality_gain': row[6],
-                'duration_ms': row[7],
-                'tokens_used': row[8],
-                'cost': row[9],
-                'converged': bool(row[10]),
-                'timestamp': row[11]
-            })
-
-        return executions
 
     def export_to_csv(self, output_path: str):
         """

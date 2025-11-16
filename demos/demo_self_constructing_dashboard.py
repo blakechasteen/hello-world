@@ -19,8 +19,12 @@ from datetime import datetime
 from dataclasses import dataclass, field
 from typing import Dict, List, Any
 import webbrowser
+from rich.console import Console
+from rich.prompt import Confirm
 
 from HoloLoom.visualization import DashboardConstructor, DashboardRenderer
+
+console = Console()
 
 
 # Mock Spacetime for demo (replace with actual HoloLoom integration)
@@ -249,8 +253,11 @@ async def main():
 
     # Offer to open in browser
     print(f"\n{'='*80}")
-    response = input("Open dashboards in browser? (y/n): ").strip().lower()
-    if response == 'y':
+    open_browser = Confirm.ask(
+        "\n[bold]Open dashboards in browser?[/bold]",
+        default=True
+    )
+    if open_browser:
         print("\nOpening dashboards...")
         for i, path in enumerate(paths):
             webbrowser.open(f'file://{path.absolute()}')

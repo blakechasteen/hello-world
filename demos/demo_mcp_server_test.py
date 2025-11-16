@@ -16,6 +16,7 @@ import json
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from rich.prompt import Confirm
 
 # Import MCP server components
 from HoloLoom.mcp_server_promptly import (
@@ -270,8 +271,7 @@ async def main():
         results.append((name, success))
 
         if i < len(tests):
-            console.print("\\n[dim]Press Enter to continue...[/dim]")
-            input()
+            Confirm.ask("\n[bold]Continue to next test?[/bold]", default=True)
 
     # Summary
     console.print("\\n\\n" + "="*70)

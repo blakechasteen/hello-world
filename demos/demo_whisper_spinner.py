@@ -7,11 +7,15 @@ Demonstrates transcribing audio files with the WhisperSpinner.
 
 import asyncio
 from pathlib import Path
+from rich.console import Console
+from rich.prompt import Prompt
 from HoloLoom.spinningWheel.whisper_spinner import (
     WhisperSpinner,
     transcribe_audio,
     transcribe_with_timecodes
 )
+
+console = Console()
 
 
 async def demo_basic_transcription(audio_path: Path):
@@ -109,11 +113,27 @@ async def demo_convenience_function(audio_path: Path):
 
 async def main():
     """Main demo"""
-    print("Whisper Spinner Demo")
-    print("=" * 60)
+    console.print("\n[bold]Whisper Spinner Demo[/bold]")
+    console.print("=" * 60)
 
-    # Check if user provided audio file
-    audio_path = Path(input("\nEnter path to audio file (or 'demo' to see example): ").strip())
+    # Get audio file path from user with validation
+    def validate_audio_path(path_str: str) -> str:
+        """Validate audio file path or 'demo' option."""
+        path_str = path_str.strip().lower()
+        if path_str == 'demo':
+            return path_str
+        path = Path(path_str)
+        if not path.exists():
+            raise ValueError(f"[red]File not found: {path_str}[/red]")
+        if path.suffix.lower() not in ['.wav', '.mp3', '.m4a', '.flac', '.ogg', '.opus']:
+            raise ValueError(f"[yellow]Unsupported format: {path.suffix}. Supported: wav, mp3, m4a, flac, ogg, opus[/yellow]")
+        return path_str
+
+    audio_path_str = Prompt.ask(
+        "\n[bold]Enter path to audio file[/bold] [dim](or 'demo' for example)[/dim]",
+        console=console
+    )
+    audio_path = Path(audio_path_str)
 
     if str(audio_path).lower() == 'demo':
         print("\n📝 Example Usage:\n")

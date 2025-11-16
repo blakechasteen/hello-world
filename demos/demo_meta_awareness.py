@@ -16,6 +16,7 @@ Run: python -m demos.demo_meta_awareness
 import asyncio
 import sys
 from pathlib import Path
+from rich.prompt import Confirm
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -369,23 +370,29 @@ async def main():
     print("╚" + "=" * 78 + "╝")
     
     await demo_meta_awareness_basic()
-    
-    input("\n[Press Enter to continue to Demo 2...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 2 (Ambiguous)?[/bold]", default=True):
+        return
     await demo_meta_awareness_ambiguous()
-    
-    input("\n[Press Enter to continue to Demo 3...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 3 (Calibration)?[/bold]", default=True):
+        return
     await demo_calibration_learning()
-    
-    input("\n[Press Enter to continue to Demo 4...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 4 (Uncertainty)?[/bold]", default=True):
+        return
     await demo_uncertainty_decomposition()
-    
-    input("\n[Press Enter to continue to Demo 5...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 5 (Adversarial)?[/bold]", default=True):
+        return
     await demo_adversarial_probing()
-    
-    input("\n[Press Enter to continue to Demo 6...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 6 (Humility)?[/bold]", default=True):
+        return
     await demo_epistemic_humility()
-    
-    input("\n[Press Enter to continue to Demo 7...]")
+
+    if not Confirm.ask("\n[bold]Continue to Demo 7 (Recursive)?[/bold]", default=True):
+        return
     await demo_recursive_depth()
     
     print("\n" + "=" * 80)
