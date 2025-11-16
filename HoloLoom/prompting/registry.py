@@ -8,7 +8,6 @@ and cached for performance.
 
 from typing import Dict, List, Optional, Tuple
 import importlib
-import importlib.util
 import sys
 from pathlib import Path
 import logging
