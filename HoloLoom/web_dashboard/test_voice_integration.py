@@ -52,7 +52,6 @@ async def test_voice_integration():
         deps['torch'] = '✗ PyTorch not installed (pip install torch)'
 
     try:
-        import scipy
         deps['scipy'] = '✓ SciPy installed'
     except ImportError:
         deps['scipy'] = '✗ SciPy not installed (pip install scipy)'
