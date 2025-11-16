@@ -38,7 +38,6 @@ import argparse
 import hashlib
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Dict, List, Tuple
 
 
 # ============================================================================
