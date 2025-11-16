@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thompson Sampling Interactive | HoloLoom Training</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e40af;
+            --secondary: #7c3aed;
+            --success: #16a34a;
+            --warning: #f97316;
+            --danger: #dc2626;
+            --neutral: #64748b;
+            --light-bg: #f8fafc;
+            --dark-bg: #0f172a;
+            --card-bg: #ffffff;
+            --text-color: #000000;
+            --border-color: #e2e8f0;
+            --color-a: #3b82f6;
+            --color-b: #ec4899;
+            --color-c: #f59e0b;
+        }
+
+        [data-theme="dark"] {
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --border-color: #334155;
+            --light-bg: #0f172a;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: var(--neutral);
+            margin-bottom: 20px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--light-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        /* Main Content Grid */
+        main {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sections */
+        section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        section h2 {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        section h3 {
+            font-size: 1.1em;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            color: var(--text-color);
+        }
+
+        /* Tool Controls */
+        .tool-group {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+            transition: all 0.3s;
+        }
+
+        .tool-group.tool-a {
+            border-left-color: var(--color-a);
+        }
+
+        .tool-group.tool-b {
+            border-left-color: var(--color-b);
+        }
+
+        .tool-group.tool-c {
+            border-left-color: var(--color-c);
+        }
+
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .tool-name {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .reset-btn {
+            padding: 6px 12px;
+            font-size: 0.85em;
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: var(--border-color);
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+        }
+
+        .slider-label span {
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-color);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 8px rgba(30, 64, 175, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 8px rgba(30, 64, 175, 0.2);
+        }
+
+        /* Tool Stats */
+        .tool-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            font-size: 0.9em;
+            padding: 12px;
+            background: var(--card-bg);
+            border-radius: 6px;
+            margin-top: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            color: var(--neutral);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* SVG Diagrams */
+        .diagrams-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .diagrams-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .diagram-canvas {
+            background: var(--light-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .diagram-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+        }
+
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Sampling Section */
+        .sampling-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .sampling-controls button {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .sampling-info {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        /* History Table */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .history-table th {
+            background: var(--light-bg);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .history-table td {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .history-table tr:hover {
+            background: var(--light-bg);
+        }
+
+        .tool-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: white;
+        }
+
+        .tool-badge.a {
+            background: var(--color-a);
+        }
+
+        .tool-badge.b {
+            background: var(--color-b);
+        }
+
+        .tool-badge.c {
+            background: var(--color-c);
+        }
+
+        /* Stats Display */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card h4 {
+            font-size: 0.85em;
+            color: var(--neutral);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Presets */
+        .presets-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .presets-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .preset-btn {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+            background: var(--light-bg);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .preset-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .preset-desc {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        /* Educational Content */
+        .educational-section {
+            background: linear-gradient(135deg, rgba(30, 64, 175, 0.1), rgba(124, 58, 237, 0.1));
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+        .educational-section h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        .key-insight {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid var(--success);
+        }
+
+        .key-insight strong {
+            color: var(--success);
+        }
+
+        /* Uncertainty Indicator */
+        .uncertainty-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .uncertainty-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .uncertainty-low {
+            background: var(--success);
+            width: 20%;
+        }
+
+        .uncertainty-medium {
+            background: var(--warning);
+            width: 50%;
+        }
+
+        .uncertainty-high {
+            background: var(--danger);
+            width: 100%;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--neutral);
+            border-top: 1px solid var(--border-color);
+            margin-top: 30px;
+            padding-top: 30px;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        section {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            section {
+                padding: 15px;
+            }
+
+            main {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Thompson Sampling: Interactive Beta Distributions</h1>
+        <p>Adjust sliders to see how uncertainty affects exploration decisions</p>
+        <div class="header-controls">
+            <button class="btn-secondary theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
+            <button class="btn-primary" onclick="resetAll()">Reset All</button>
+            <button class="btn-secondary" onclick="downloadState()">Download State</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Left Panel: Controls -->
+        <div>
+            <section>
+                <h2>⚙️ Tool Parameters</h2>
+
+                <!-- Tool A -->
+                <div class="tool-group tool-a">
+                    <div class="tool-header">
+                        <span class="tool-name">Tool A (Answer)</span>
+                        <button class="reset-btn" onclick="resetTool('a')">Reset</button>
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>α (Successes)</span>
+                            <span id="alpha-a-val">50</span>
+                        </div>
+                        <input type="range" id="alpha-a" min="1" max="100" value="50"
+                               oninput="updateTool('a', 'alpha')" aria-label="Tool A alpha parameter">
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>β (Failures)</span>
+                            <span id="beta-a-val">10</span>
+                        </div>
+                        <input type="range" id="beta-a" min="1" max="100" value="10"
+                               oninput="updateTool('a', 'beta')" aria-label="Tool A beta parameter">
+                    </div>
+
+                    <div class="tool-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Expected Rate:</span>
+                            <span class="stat-value" id="exp-rate-a">83.3%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Confidence:</span>
+                            <span class="stat-value" id="confidence-a">HIGH</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px;">
+                        <div style="font-size: 0.85em; color: var(--neutral); margin-bottom: 6px;">Uncertainty</div>
+                        <div class="uncertainty-bar">
+                            <div class="uncertainty-fill uncertainty-low" id="unc-a">Low</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tool B -->
+                <div class="tool-group tool-b">
+                    <div class="tool-header">
+                        <span class="tool-name">Tool B (Search)</span>
+                        <button class="reset-btn" onclick="resetTool('b')">Reset</button>
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>α (Successes)</span>
+                            <span id="alpha-b-val">10</span>
+                        </div>
+                        <input type="range" id="alpha-b" min="1" max="100" value="10"
+                               oninput="updateTool('b', 'alpha')" aria-label="Tool B alpha parameter">
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>β (Failures)</span>
+                            <span id="beta-b-val">5</span>
+                        </div>
+                        <input type="range" id="beta-b" min="1" max="100" value="5"
+                               oninput="updateTool('b', 'beta')" aria-label="Tool B beta parameter">
+                    </div>
+
+                    <div class="tool-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Expected Rate:</span>
+                            <span class="stat-value" id="exp-rate-b">66.7%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Confidence:</span>
+                            <span class="stat-value" id="confidence-b">MEDIUM</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px;">
+                        <div style="font-size: 0.85em; color: var(--neutral); margin-bottom: 6px;">Uncertainty</div>
+                        <div class="uncertainty-bar">
+                            <div class="uncertainty-fill uncertainty-medium" id="unc-b">Medium</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tool C -->
+                <div class="tool-group tool-c">
+                    <div class="tool-header">
+                        <span class="tool-name">Tool C (Experimental)</span>
+                        <button class="reset-btn" onclick="resetTool('c')">Reset</button>
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>α (Successes)</span>
+                            <span id="alpha-c-val">2</span>
+                        </div>
+                        <input type="range" id="alpha-c" min="1" max="100" value="2"
+                               oninput="updateTool('c', 'alpha')" aria-label="Tool C alpha parameter">
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>β (Failures)</span>
+                            <span id="beta-c-val">1</span>
+                        </div>
+                        <input type="range" id="beta-c" min="1" max="100" value="1"
+                               oninput="updateTool('c', 'beta')" aria-label="Tool C beta parameter">
+                    </div>
+
+                    <div class="tool-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Expected Rate:</span>
+                            <span class="stat-value" id="exp-rate-c">66.7%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Confidence:</span>
+                            <span class="stat-value" id="confidence-c">LOW</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px;">
+                        <div style="font-size: 0.85em; color: var(--neutral); margin-bottom: 6px;">Uncertainty</div>
+                        <div class="uncertainty-bar">
+                            <div class="uncertainty-fill uncertainty-high" id="unc-c">High</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preset Scenarios -->
+                <h3 style="margin-top: 30px;">Example Scenarios</h3>
+                <div class="presets-grid">
+                    <button class="preset-btn" onclick="loadPreset('equal')">
+                        <div class="preset-name">Equal Uncertainty</div>
+                        <div class="preset-desc">All 3 tools at Beta(5,5)</div>
+                    </button>
+                    <button class="preset-btn" onclick="loadPreset('dominant')">
+                        <div class="preset-name">One Dominant</div>
+                        <div class="preset-desc">A strong, B&C weak</div>
+                    </button>
+                    <button class="preset-btn" onclick="loadPreset('exploration')">
+                        <div class="preset-name">High Exploration</div>
+                        <div class="preset-desc">All at Beta(2,1)</div>
+                    </button>
+                    <button class="preset-btn" onclick="loadPreset('tested')">
+                        <div class="preset-name">Well-Tested</div>
+                        <div class="preset-desc">All at Beta(50,10)</div>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Right Panel: Visualizations -->
+        <div>
+            <!-- Beta Distribution Curves -->
+            <section>
+                <h2>📊 Beta Distributions</h2>
+                <div class="diagrams-grid">
+                    <div class="diagram-canvas">
+                        <div class="diagram-title" style="color: var(--color-a);">Tool A (Answer)</div>
+                        <svg id="canvas-a" width="300" height="200" viewBox="0 0 300 200"></svg>
+                    </div>
+                    <div class="diagram-canvas">
+                        <div class="diagram-title" style="color: var(--color-b);">Tool B (Search)</div>
+                        <svg id="canvas-b" width="300" height="200" viewBox="0 0 300 200"></svg>
+                    </div>
+                    <div class="diagram-canvas">
+                        <div class="diagram-title" style="color: var(--color-c);">Tool C (Experimental)</div>
+                        <svg id="canvas-c" width="300" height="200" viewBox="0 0 300 200"></svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Thompson Sampling Simulation -->
+            <section>
+                <h2>🎲 Thompson Sampling Simulation</h2>
+
+                <div class="sampling-info">
+                    Thompson Sampling draws a random sample from each tool's Beta distribution and selects
+                    the tool with the highest sample. This elegantly balances exploration (trying uncertain tools)
+                    and exploitation (using proven tools).
+                </div>
+
+                <div class="sampling-controls">
+                    <button class="btn-primary" onclick="sampleOnce()">Sample Once</button>
+                    <button class="btn-primary" onclick="sample10()">Sample 10 Times</button>
+                    <button class="btn-secondary" onclick="resetSamples()">Clear History</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Tool A Wins</h4>
+                        <div class="value" id="win-a">0</div>
+                        <div style="font-size: 0.8em; color: var(--neutral); margin-top: 5px;">
+                            <span id="pct-a">0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Tool B Wins</h4>
+                        <div class="value" id="win-b">0</div>
+                        <div style="font-size: 0.8em; color: var(--neutral); margin-top: 5px;">
+                            <span id="pct-b">0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Tool C Wins</h4>
+                        <div class="value" id="win-c">0</div>
+                        <div style="font-size: 0.8em; color: var(--neutral); margin-top: 5px;">
+                            <span id="pct-c">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Sample History (Last 20)</h3>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Iteration</th>
+                            <th>Winner</th>
+                            <th>Sample Value</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--neutral); padding: 20px;">
+                                Click "Sample Once" or "Sample 10 Times" to generate samples
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Educational Content -->
+            <section class="educational-section">
+                <h3>💡 How Thompson Sampling Works</h3>
+
+                <p><strong>The Problem:</strong> You have multiple tools (strategies) and need to decide which one to use.
+                Each tool has some unknown success rate. How do you balance trying new tools (exploration) with using
+                proven tools (exploitation)?</p>
+
+                <p><strong>The Bayesian Solution:</strong> Represent each tool's success rate as a Beta distribution.
+                Thompson Sampling samples from each distribution and picks the winner. This naturally explores uncertain
+                tools while exploiting proven ones.</p>
+
+                <div class="key-insight">
+                    <strong>Key Insight:</strong> The uncertainty (width) of a distribution determines exploration.
+                    A narrow distribution (like Tool A with α=50, β=10) is confident, so Thompson Sampling mostly
+                    picks it. A wide distribution (like Tool C with α=2, β=1) is uncertain, so Thompson Sampling
+                    explores it more often.
+                </div>
+
+                <p style="margin-top: 15px;">
+                    <strong>Formula:</strong> E[Beta(α,β)] = α / (α+β)<br>
+                    Higher α → more successes → higher expected value<br>
+                    Higher β → more failures → lower expected value<br>
+                    α = β → maximum uncertainty (uniform distribution)
+                </p>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>
+            <a href="../gallery.html">← Back to Gallery</a> |
+            <a href="../../TRAINING_PART_1_FOUNDATIONS.md">View Original Documentation</a> |
+            <strong>Created: November 2025</strong>
+        </p>
+    </footer>
+</div>
+
+<script>
+    // State
+    const tools = {
+        a: { alpha: 50, beta: 10, color: '#3b82f6' },
+        b: { alpha: 10, beta: 5, color: '#ec4899' },
+        c: { alpha: 2, beta: 1, color: '#f59e0b' }
+    };
+
+    const defaults = {
+        a: { alpha: 50, beta: 10 },
+        b: { alpha: 10, beta: 5 },
+        c: { alpha: 2, beta: 1 }
+    };
+
+    let samples = [];
+
+    // Gamma function approximation (for Beta PDF)
+    function logGamma(x) {
+        const g = 7;
+        const coef = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+                      771.32342877765313, -176.61502916214059, 12.507343278686905,
+                      -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+
+        if (x < 0.5) return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * x)) - logGamma(1 - x);
+
+        x -= 1;
+        let a = coef[0];
+        const t = x + g + 0.5;
+        for (let i = 1; i < coef.length; i++) {
+            a += coef[i] / (x + i);
+        }
+        return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+    }
+
+    // Beta PDF calculation
+    function betaPDF(x, alpha, beta) {
+        if (x <= 0 || x >= 1) return 0;
+        const logB = logGamma(alpha) + logGamma(beta) - logGamma(alpha + beta);
+        return Math.exp((alpha - 1) * Math.log(x) + (beta - 1) * Math.log(1 - x) - logB);
+    }
+
+    // Expected value of Beta distribution
+    function betaMean(alpha, beta) {
+        return alpha / (alpha + beta);
+    }
+
+    // Variance of Beta distribution
+    function betaVariance(alpha, beta) {
+        const sum = alpha + beta;
+        return (alpha * beta) / (sum * sum * (sum + 1));
+    }
+
+    // Standard deviation
+    function betaStdDev(alpha, beta) {
+        return Math.sqrt(betaVariance(alpha, beta));
+    }
+
+    // Uncertainty level (0=low, 1=high)
+    function getUncertaintyLevel(alpha, beta) {
+        const variance = betaVariance(alpha, beta);
+        return Math.min(1, variance / 0.05); // Normalize by max expected variance
+    }
+
+    // Sample from Beta distribution using inverse transform
+    function sampleBeta(alpha, beta) {
+        // Using Gamma-based sampling
+        const u1 = Math.random();
+        const u2 = Math.random();
+
+        // Approximate Gamma sampling
+        const gammaAlpha = Math.pow(u1, 1 / alpha);
+        const gammaBeta = Math.pow(u2, 1 / beta);
+
+        return gammaAlpha / (gammaAlpha + gammaBeta);
+    }
+
+    // Draw Beta distribution curve
+    function drawBeta(canvasId, alpha, beta, color) {
+        const canvas = document.getElementById(canvasId);
+        canvas.innerHTML = '';
+
+        const width = 300;
+        const height = 200;
+        const padding = 20;
+        const plotWidth = width - 2 * padding;
+        const plotHeight = height - 2 * padding;
+
+        // Find max PDF value for scaling
+        let maxPdf = 0;
+        for (let i = 0; i <= 100; i++) {
+            const x = i / 100;
+            const pdf = betaPDF(x, alpha, beta);
+            maxPdf = Math.max(maxPdf, pdf);
+        }
+
+        // Draw background
+        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bg.setAttribute('width', width);
+        bg.setAttribute('height', height);
+        bg.setAttribute('fill', 'var(--light-bg)');
+        canvas.appendChild(bg);
+
+        // Grid lines
+        for (let i = 0; i <= 10; i++) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            const x = padding + (i / 10) * plotWidth;
+            line.setAttribute('x1', x);
+            line.setAttribute('y1', padding);
+            line.setAttribute('x2', x);
+            line.setAttribute('y2', height - padding);
+            line.setAttribute('stroke', 'var(--border-color)');
+            line.setAttribute('stroke-width', '0.5');
+            line.setAttribute('opacity', '0.5');
+            canvas.appendChild(line);
+        }
+
+        // Generate path points
+        let pathData = `M ${padding} ${height - padding}`;
+        for (let i = 0; i <= 100; i++) {
+            const x = i / 100;
+            const pdf = betaPDF(x, alpha, beta);
+            const px = padding + (x * plotWidth);
+            const py = height - padding - (pdf / maxPdf) * plotHeight;
+            if (i === 0) {
+                pathData += ` L ${px} ${py}`;
+            } else {
+                pathData += ` L ${px} ${py}`;
+            }
+        }
+        pathData += ` L ${width - padding} ${height - padding}`;
+
+        // Draw gradient fill
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        gradient.setAttribute('id', `grad-${canvasId}`);
+        gradient.setAttribute('x1', '0%');
+        gradient.setAttribute('y1', '0%');
+        gradient.setAttribute('x2', '0%');
+        gradient.setAttribute('y2', '100%');
+
+        const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop1.setAttribute('offset', '0%');
+        stop1.setAttribute('stop-color', color);
+        stop1.setAttribute('stop-opacity', '0.3');
+        gradient.appendChild(stop1);
+
+        const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop2.setAttribute('offset', '100%');
+        stop2.setAttribute('stop-color', color);
+        stop2.setAttribute('stop-opacity', '0.05');
+        gradient.appendChild(stop2);
+
+        defs.appendChild(gradient);
+        canvas.appendChild(defs);
+
+        // Draw filled area
+        const fill = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        fill.setAttribute('d', pathData);
+        fill.setAttribute('fill', `url(#grad-${canvasId})`);
+        fill.setAttribute('stroke', 'none');
+        canvas.appendChild(fill);
+
+        // Draw curve line
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathData.replace(/L/g, 'L'));
+        path.setAttribute('stroke', color);
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', 'none');
+        canvas.appendChild(path);
+
+        // Mark peak
+        const mean = betaMean(alpha, beta);
+        const peakPdf = betaPDF(mean, alpha, beta);
+        const peakX = padding + (mean * plotWidth);
+        const peakY = height - padding - (peakPdf / maxPdf) * plotHeight;
+
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', peakX);
+        dot.setAttribute('cy', peakY);
+        dot.setAttribute('r', '3');
+        dot.setAttribute('fill', color);
+        canvas.appendChild(dot);
+
+        // Add axes
+        const axisX = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        axisX.setAttribute('x1', padding);
+        axisX.setAttribute('y1', height - padding);
+        axisX.setAttribute('x2', width - padding);
+        axisX.setAttribute('y2', height - padding);
+        axisX.setAttribute('stroke', 'var(--text-color)');
+        axisX.setAttribute('stroke-width', '1');
+        canvas.appendChild(axisX);
+
+        const axisY = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        axisY.setAttribute('x1', padding);
+        axisY.setAttribute('y1', padding);
+        axisY.setAttribute('x2', padding);
+        axisY.setAttribute('y2', height - padding);
+        axisY.setAttribute('stroke', 'var(--text-color)');
+        axisY.setAttribute('stroke-width', '1');
+        canvas.appendChild(axisY);
+
+        // Axis labels
+        const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        xLabel.setAttribute('x', width - padding);
+        xLabel.setAttribute('y', height - padding + 15);
+        xLabel.setAttribute('font-size', '10');
+        xLabel.setAttribute('text-anchor', 'end');
+        xLabel.setAttribute('fill', 'var(--neutral)');
+        xLabel.textContent = '100%';
+        canvas.appendChild(xLabel);
+
+        const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        yLabel.setAttribute('x', padding - 8);
+        yLabel.setAttribute('y', padding);
+        yLabel.setAttribute('font-size', '10');
+        yLabel.setAttribute('text-anchor', 'end');
+        yLabel.setAttribute('fill', 'var(--neutral)');
+        yLabel.textContent = 'P(x)';
+        canvas.appendChild(yLabel);
+    }
+
+    // Update tool display
+    function updateTool(tool, param) {
+        const alphaInput = document.getElementById(`alpha-${tool}`);
+        const betaInput = document.getElementById(`beta-${tool}`);
+        const alpha = parseInt(alphaInput.value);
+        const beta = parseInt(betaInput.value);
+
+        tools[tool].alpha = alpha;
+        tools[tool].beta = beta;
+
+        // Update value displays
+        document.getElementById(`alpha-${tool}-val`).textContent = alpha;
+        document.getElementById(`beta-${tool}-val`).textContent = beta;
+
+        // Update statistics
+        const mean = betaMean(alpha, beta);
+        const uncertainty = getUncertaintyLevel(alpha, beta);
+
+        document.getElementById(`exp-rate-${tool}`).textContent =
+            (mean * 100).toFixed(1) + '%';
+
+        // Confidence level
+        let confidence = 'LOW';
+        let uncClass = 'uncertainty-high';
+        let uncText = 'High';
+        if (uncertainty < 0.3) {
+            confidence = 'HIGH';
+            uncClass = 'uncertainty-low';
+            uncText = 'Low';
+        } else if (uncertainty < 0.6) {
+            confidence = 'MEDIUM';
+            uncClass = 'uncertainty-medium';
+            uncText = 'Medium';
+        }
+        document.getElementById(`confidence-${tool}`).textContent = confidence;
+
+        const uncBar = document.getElementById(`unc-${tool}`);
+        uncBar.className = `uncertainty-fill ${uncClass}`;
+        uncBar.textContent = uncText;
+
+        // Redraw curve
+        drawBeta(`canvas-${tool}`, alpha, beta, tools[tool].color);
+    }
+
+    // Reset tool to defaults
+    function resetTool(tool) {
+        document.getElementById(`alpha-${tool}`).value = defaults[tool].alpha;
+        document.getElementById(`beta-${tool}`).value = defaults[tool].beta;
+        updateTool(tool, 'alpha');
+    }
+
+    // Reset all tools
+    function resetAll() {
+        resetTool('a');
+        resetTool('b');
+        resetTool('c');
+    }
+
+    // Load preset scenarios
+    function loadPreset(preset) {
+        const presets = {
+            equal: { a: { alpha: 5, beta: 5 }, b: { alpha: 5, beta: 5 }, c: { alpha: 5, beta: 5 } },
+            dominant: { a: { alpha: 90, beta: 10 }, b: { alpha: 5, beta: 5 }, c: { alpha: 2, beta: 2 } },
+            exploration: { a: { alpha: 2, beta: 1 }, b: { alpha: 2, beta: 1 }, c: { alpha: 2, beta: 1 } },
+            tested: { a: { alpha: 50, beta: 10 }, b: { alpha: 50, beta: 10 }, c: { alpha: 50, beta: 10 } }
+        };
+
+        const config = presets[preset];
+        for (const tool in config) {
+            document.getElementById(`alpha-${tool}`).value = config[tool].alpha;
+            document.getElementById(`beta-${tool}`).value = config[tool].beta;
+            updateTool(tool, 'alpha');
+        }
+    }
+
+    // Thompson Sampling
+    function sampleOnce() {
+        const sampleA = sampleBeta(tools.a.alpha, tools.a.beta);
+        const sampleB = sampleBeta(tools.b.alpha, tools.b.beta);
+        const sampleC = sampleBeta(tools.c.alpha, tools.c.beta);
+
+        const samples_local = [
+            { tool: 'a', value: sampleA },
+            { tool: 'b', value: sampleB },
+            { tool: 'c', value: sampleC }
+        ];
+
+        const winner = samples_local.reduce((max, s) => s.value > max.value ? s : max);
+
+        samples.unshift({
+            iteration: samples.length + 1,
+            winner: winner.tool.toUpperCase(),
+            value: winner.value,
+            time: new Date().toLocaleTimeString()
+        });
+
+        if (samples.length > 20) samples.pop();
+
+        updateStats();
+        updateHistory();
+    }
+
+    function sample10() {
+        for (let i = 0; i < 10; i++) {
+            sampleOnce();
+        }
+    }
+
+    function resetSamples() {
+        samples = [];
+        document.getElementById('win-a').textContent = '0';
+        document.getElementById('win-b').textContent = '0';
+        document.getElementById('win-c').textContent = '0';
+        document.getElementById('pct-a').textContent = '0%';
+        document.getElementById('pct-b').textContent = '0%';
+        document.getElementById('pct-c').textContent = '0%';
+        updateHistory();
+    }
+
+    function updateStats() {
+        const counts = { a: 0, b: 0, c: 0 };
+        samples.forEach(s => {
+            counts[s.winner.toLowerCase()]++;
+        });
+
+        const total = samples.length || 1;
+        document.getElementById('win-a').textContent = counts.a;
+        document.getElementById('win-b').textContent = counts.b;
+        document.getElementById('win-c').textContent = counts.c;
+        document.getElementById('pct-a').textContent = ((counts.a / total) * 100).toFixed(0) + '%';
+        document.getElementById('pct-b').textContent = ((counts.b / total) * 100).toFixed(0) + '%';
+        document.getElementById('pct-c').textContent = ((counts.c / total) * 100).toFixed(0) + '%';
+    }
+
+    function updateHistory() {
+        const tbody = document.getElementById('history-body');
+        if (samples.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--neutral); padding: 20px;">No samples yet</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = samples.map((s, i) => `
+            <tr>
+                <td>${s.iteration}</td>
+                <td><span class="tool-badge ${s.winner.toLowerCase()}">${s.winner}</span></td>
+                <td>${(s.value * 100).toFixed(1)}%</td>
+                <td>${s.time}</td>
+            </tr>
+        `).join('');
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        const btn = document.querySelector('.theme-toggle');
+        btn.textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+
+    // Download state
+    function downloadState() {
+        const state = {
+            tools: tools,
+            samples: samples,
+            timestamp: new Date().toISOString()
+        };
+        const json = JSON.stringify(state, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `thompson-sampling-${Date.now()}.json`;
+        a.click();
+    }
+
+    // Initialize on load
+    window.addEventListener('load', () => {
+        // Check for saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.querySelector('.theme-toggle').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+        // Draw initial curves
+        updateTool('a', 'alpha');
+        updateTool('b', 'alpha');
+        updateTool('c', 'alpha');
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram #7: 9-Layer Data Transformation | HoloLoom</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header .subtitle {
+            opacity: 0.95;
+            font-size: 0.95rem;
+        }
+
+        .controls-section {
+            background: white;
+            padding: 1.5rem;
+            margin: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            border-left: 4px solid #1e40af;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #1e40af;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: #1e40af;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .architecture-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .layer-card {
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            border-left: 4px solid #94a3b8;
+            position: relative;
+        }
+
+        .layer-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(4px);
+        }
+
+        .layer-card.layer-1 { border-left-color: #06b6d4; }
+        .layer-card.layer-2 { border-left-color: #0d9488; }
+        .layer-card.layer-3 { border-left-color: #2563eb; }
+        .layer-card.layer-4 { border-left-color: #dc2626; }
+        .layer-card.layer-5 { border-left-color: #d946ef; }
+        .layer-card.layer-6 { border-left-color: #f59e0b; }
+        .layer-card.layer-7 { border-left-color: #7c3aed; }
+        .layer-card.layer-8 { border-left-color: #16a34a; }
+        .layer-card.layer-9 { border-left-color: #1e40af; }
+
+        .layer-card.active {
+            box-shadow: 0 8px 24px rgba(30, 64, 175, 0.2);
+            transform: translateX(4px);
+        }
+
+        .layer-header {
+            padding: 1rem;
+            background: #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .layer-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: #1e40af;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 0.75rem;
+        }
+
+        .layer-title {
+            flex: 1;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .timing-badge {
+            background: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e40af;
+            border: 1px solid #1e40af;
+        }
+
+        .layer-content {
+            padding: 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .layer-card.expanded .layer-content {
+            max-height: 500px;
+        }
+
+        .io-section {
+            margin-bottom: 1rem;
+        }
+
+        .io-section h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .data-flow {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .data-badge {
+            background: #1e40af;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .arrow {
+            color: #94a3b8;
+            font-weight: bold;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            font-size: 1.2rem;
+            color: #1e40af;
+            transition: transform 0.3s;
+        }
+
+        .layer-card.expanded .expand-btn {
+            transform: rotate(180deg);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sidebar-panel {
+            background: white;
+            border-radius: 6px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #1e40af;
+        }
+
+        .sidebar-panel h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #1e293b;
+        }
+
+        .data-viewer {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-family: "Fira Code", monospace;
+            font-size: 0.75rem;
+            max-height: 300px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+
+        .mode-comparison {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .mode-option {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .mode-option:hover {
+            border-color: #1e40af;
+            background: #f0f4ff;
+        }
+
+        .mode-option.selected {
+            background: #1e40af;
+            color: white;
+            border-color: #1e40af;
+        }
+
+        .performance-chart {
+            margin-top: 1rem;
+        }
+
+        .stage-bar {
+            display: flex;
+            margin-bottom: 0.75rem;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stage-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 120px;
+            color: #475569;
+        }
+
+        .stage-bar-container {
+            flex: 1;
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stage-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            padding: 0 0.25rem;
+        }
+
+        .stage-bar-fill.bottleneck {
+            background: linear-gradient(90deg, #dc2626, #ef4444);
+        }
+
+        .stage-time {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1e293b;
+            min-width: 45px;
+            text-align: right;
+        }
+
+        .animation-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        button.btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            flex: 1;
+        }
+
+        .slider-group {
+            margin-top: 1rem;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .slider-label-text {
+            font-weight: 600;
+        }
+
+        .slider-value {
+            color: #1e40af;
+            font-weight: 700;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #1e40af;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #1e3a8a;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #1e40af;
+            cursor: pointer;
+            border: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-close:hover {
+            color: #1e293b;
+        }
+
+        .modal h2 {
+            margin-bottom: 1rem;
+            color: #1e40af;
+        }
+
+        .modal h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #1e293b;
+            font-size: 1rem;
+        }
+
+        .modal p {
+            margin-bottom: 0.75rem;
+            color: #475569;
+        }
+
+        .modal code {
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-family: "Fira Code", monospace;
+            font-size: 0.85rem;
+            color: #7c3aed;
+        }
+
+        .modal pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.8rem;
+            margin: 0.75rem 0;
+        }
+
+        .flow-arrow {
+            text-align: center;
+            padding: 0.5rem 0;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            margin-top: -0.5rem;
+            margin-bottom: -0.5rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-size: 0.9rem;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .stat {
+            padding: 0.75rem;
+            background: #f1f5f9;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-top: 0.25rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            transition: width 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .layer-card.animating {
+            animation: pulse 0.6s ease-in-out;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .modal-content {
+                max-width: 95vw;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔄 HoloLoom 9-Layer Architecture</h1>
+        <p class="subtitle">Interactive data transformation visualization | See how queries flow through all 9 layers</p>
+    </header>
+
+    <div class="controls-section">
+        <div class="control-group">
+            <label for="example-query">Example Query</label>
+            <select id="example-query">
+                <option value="simple">Simple: "What is Thompson Sampling?" (FAST, ~150ms)</option>
+                <option value="complex">Complex: "How does recursive learning work?" (FUSED, ~300ms)</option>
+                <option value="research">Research: "Optimize this code" (RESEARCH, ~600ms)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="execution-mode">Execution Mode</label>
+            <select id="execution-mode">
+                <option value="BARE">BARE - Minimal (fastest, ~50ms)</option>
+                <option value="FAST" selected>FAST - Balanced (production, ~150ms)</option>
+                <option value="FUSED">FUSED - Full (best quality, ~300ms)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <button class="btn-primary" id="trace-btn">▶ Trace Query</button>
+            <button class="btn-secondary" id="reset-btn">⟲ Reset</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="architecture-column">
+            <!-- Layer 1 -->
+            <div class="layer-card layer-1" data-layer="1">
+                <div class="layer-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="layer-number">1</div>
+                        <div class="layer-title">Input Processing</div>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <div class="timing-badge timing-1">2-5ms</div>
+                        <button class="expand-btn">▼</button>
+                    </div>
+                </div>
+                <div class="layer-content">
+                    <div class="io-section">
+                        <h4>🔤 Input</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">Query</span>
+                            <span class="arrow">→</span>
+                            <span>Text normalization & tokenization</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>📤 Output</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">ProcessedInput</span>
+                            <span class="arrow">→</span>
+                            <span>~200 bytes</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>🔧 Key Operation</h4>
+                        <p style="font-size: 0.9rem; color: #475569;">SpinningWheel adapter converts raw input to normalized, tokenized format. Supports text, audio, images.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer 2 -->
+            <div class="layer-card layer-2" data-layer="2">
+                <div class="layer-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="layer-number">2</div>
+                        <div class="layer-title">Pattern Selection</div>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <div class="timing-badge timing-2">1-2ms</div>
+                        <button class="expand-btn">▼</button>
+                    </div>
+                </div>
+                <div class="layer-content">
+                    <div class="io-section">
+                        <h4>🎯 Input</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">ProcessedInput</span>
+                            <span class="arrow">→</span>
+                            <span>Complexity detection</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>📤 Output</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">PatternCard</span>
+                            <span class="arrow">→</span>
+                            <span>BARE|FAST|FUSED mode</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>🔧 Key Operation</h4>
+                        <p style="font-size: 0.9rem; color: #475569;">LoomCommand analyzes query complexity and selects execution mode. Determines which components activate.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer 3 -->
+            <div class="layer-card layer-3" data-layer="3">
+                <div class="layer-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="layer-number">3</div>
+                        <div class="layer-title">Temporal Control</div>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <div class="timing-badge timing-3">&lt;1ms</div>
+                        <button class="expand-btn">▼</button>
+                    </div>
+                </div>
+                <div class="layer-content">
+                    <div class="io-section">
+                        <h4>🎯 Input</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">Timestamp</span>
+                            <span class="arrow">→</span>
+                            <span>Current execution time</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>📤 Output</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">TemporalWindow</span>
+                            <span class="arrow">→</span>
+                            <span>Time bounds & timeout</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>🔧 Key Operation</h4>
+                        <p style="font-size: 0.9rem; color: #475569;">ChronoTrigger establishes temporal window for memory retrieval (e.g., last 24 hours) and sets execution timeout.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer 4 -->
+            <div class="layer-card layer-4" data-layer="4">
+                <div class="layer-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="layer-number">4</div>
+                        <div class="layer-title">Memory Retrieval ⚡</div>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <div class="timing-badge timing-4">35-50ms</div>
+                        <button class="expand-btn">▼</button>
+                    </div>
+                </div>
+                <div class="layer-content">
+                    <div class="io-section">
+                        <h4>🎯 Input</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">TemporalWindow</span>
+                            <span class="arrow">→</span>
+                            <span>Graph + vector search</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>📤 Output</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">MemoryShards</span>
+                            <span class="arrow">→</span>
+                            <span>~6KB (n=6)</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>🔧 Key Operation</h4>
+                        <p style="font-size: 0.9rem; color: #475569;">YarnGraph combines BM25 keyword search, semantic similarity, and graph traversal to retrieve relevant memories. <strong>Bottleneck: ~40% of total time.</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer 5 -->
+            <div class="layer-card layer-5" data-layer="5">
+                <div class="layer-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="layer-number">5</div>
+                        <div class="layer-title">Feature Extraction</div>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <div class="timing-badge timing-5">25-35ms</div>
+                        <button class="expand-btn">▼</button>
+                    </div>
+                </div>
+                <div class="layer-content">
+                    <div class="io-section">
+                        <h4>🎯 Input</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">MemoryShards</span>
+                            <span class="arrow">→</span>
+                            <span>Multi-scale extraction</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>📤 Output</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">DotPlasma</span>
+                            <span class="arrow">→</span>
+                            <span>~2KB (features)</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>🔧 Key Operation</h4>
+                        <p style="font-size: 0.9rem; color: #475569;">ResonanceShed extracts: <strong>Motifs</strong> (symbolic patterns), <strong>Embeddings</strong> (96D, 192D, 384D Matryoshka), <strong>Spectral features</strong> (graph Laplacian eigenvalues).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer 6 -->
+            <div class="layer-card layer-6" data-layer="6">
+                <div class="layer-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="layer-number">6</div>
+                        <div class="layer-title">Warp Space Tensioning</div>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <div class="timing-badge timing-6">8-12ms</div>
+                        <button class="expand-btn">▼</button>
+                    </div>
+                </div>
+                <div class="layer-content">
+                    <div class="io-section">
+                        <h4>🎯 Input</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">DotPlasma</span>
+                            <span class="arrow">→</span>
+                            <span>Discrete features</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>📤 Output</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">TensionedThreads</span>
+                            <span class="arrow">→</span>
+                            <span>~3KB (manifold)</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>🔧 Key Operation</h4>
+                        <p style="font-size: 0.9rem; color: #475569;">WarpSpace transforms discrete features into continuous tensor manifold. Enables neural operations on symbolic memory.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer 7 -->
+            <div class="layer-card layer-7" data-layer="7">
+                <div class="layer-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="layer-number">7</div>
+                        <div class="layer-title">Decision Collapse</div>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <div class="timing-badge timing-7">5-10ms</div>
+                        <button class="expand-btn">▼</button>
+                    </div>
+                </div>
+                <div class="layer-content">
+                    <div class="io-section">
+                        <h4>🎯 Input</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">TensionedThreads</span>
+                            <span class="arrow">→</span>
+                            <span>Neural + Thompson</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>📤 Output</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">ActionPlan</span>
+                            <span class="arrow">→</span>
+                            <span>Tool + confidence</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>🔧 Key Operation</h4>
+                        <p style="font-size: 0.9rem; color: #475569;">ConvergenceEngine collapses probability distribution to discrete tool selection using Thompson Sampling. Neural network generates logits; Thompson balances exploration/exploitation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer 8 -->
+            <div class="layer-card layer-8" data-layer="8">
+                <div class="layer-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="layer-number">8</div>
+                        <div class="layer-title">Tool Execution</div>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <div class="timing-badge timing-8">30-50ms</div>
+                        <button class="expand-btn">▼</button>
+                    </div>
+                </div>
+                <div class="layer-content">
+                    <div class="io-section">
+                        <h4>🎯 Input</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">ActionPlan</span>
+                            <span class="arrow">→</span>
+                            <span>Execute tool</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>📤 Output</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">ToolResult</span>
+                            <span class="arrow">→</span>
+                            <span>~1KB (response)</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>🔧 Key Operation</h4>
+                        <p style="font-size: 0.9rem; color: #475569;">Execute selected tool (answer, search, write, calculate, etc.) with query and retrieved context. Tool determines final response content.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer 9 -->
+            <div class="layer-card layer-9" data-layer="9">
+                <div class="layer-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="layer-number">9</div>
+                        <div class="layer-title">Spacetime Construction</div>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <div class="timing-badge timing-9">5ms</div>
+                        <button class="expand-btn">▼</button>
+                    </div>
+                </div>
+                <div class="layer-content">
+                    <div class="io-section">
+                        <h4>🎯 Input</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">ToolResult</span>
+                            <span class="arrow">→</span>
+                            <span>Assemble output</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>📤 Output</h4>
+                        <div class="data-flow">
+                            <span class="data-badge">Spacetime</span>
+                            <span class="arrow">→</span>
+                            <span>~10KB (provenance)</span>
+                        </div>
+                    </div>
+                    <div class="io-section">
+                        <h4>🔧 Key Operation</h4>
+                        <p style="font-size: 0.9rem; color: #475569;">Spacetime constructs final output with complete trace: response, metadata, confidence, all intermediate steps. Enables reflection learning and audit trails.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Data Viewer -->
+            <div class="sidebar-panel">
+                <h3>📊 Data at Each Stage</h3>
+                <div class="data-viewer" id="data-viewer">
+Query(text="What is Thompson Sampling?")
+├─ size: 50 bytes
+└─ mode: FAST
+
+Layer 1: Input Processing
+├─ ProcessedInput
+├─ normalized: "what is thompson sampling"
+└─ size: 200 bytes
+
+Layer 2: Pattern Selection
+├─ PatternCard(mode=FAST)
+├─ scales: [96, 192, 384]
+└─ size: 100 bytes
+
+Layer 3: Temporal Control
+├─ TemporalWindow
+├─ timeout: 200ms
+└─ size: 150 bytes
+
+Layer 4: Memory Retrieval
+├─ MemoryShards (n=6)
+├─ relevance: [0.92, 0.88, 0.85, 0.81, 0.77, 0.72]
+└─ size: 6 KB
+
+Layer 5: Feature Extraction
+├─ DotPlasma
+├─ motifs: [thompson, bayesian, sampling]
+├─ embeddings: [96D, 192D, 384D]
+└─ size: 2 KB
+
+Layer 6: Warp Space
+├─ TensionedThreads
+├─ manifold_dim: 5
+└─ size: 3 KB
+
+Layer 7: Decision Collapse
+├─ ActionPlan
+├─ tool: "answer"
+├─ confidence: 0.92
+└─ size: 500 bytes
+
+Layer 8: Tool Execution
+├─ ToolResult
+├─ response: "Thompson Sampling is..."
+└─ size: 1 KB
+
+Layer 9: Spacetime
+├─ Complete output with trace
+└─ size: 10 KB (total provenance)
+                </div>
+            </div>
+
+            <!-- Mode Comparison -->
+            <div class="sidebar-panel">
+                <h3>🎯 Execution Modes</h3>
+                <div class="mode-comparison">
+                    <div class="mode-option" data-mode="BARE">
+                        <div style="font-size: 1.2rem;">⚡</div>
+                        <div style="font-size: 0.85rem; font-weight: 600;">BARE</div>
+                        <div style="font-size: 0.75rem; color: #64748b;">~50ms</div>
+                    </div>
+                    <div class="mode-option selected" data-mode="FAST">
+                        <div style="font-size: 1.2rem;">✨</div>
+                        <div style="font-size: 0.85rem; font-weight: 600;">FAST</div>
+                        <div style="font-size: 0.75rem; color: #64748b;">~150ms</div>
+                    </div>
+                    <div class="mode-option" data-mode="FUSED">
+                        <div style="font-size: 1.2rem;">🎨</div>
+                        <div style="font-size: 0.85rem; font-weight: 600;">FUSED</div>
+                        <div style="font-size: 0.75rem; color: #64748b;">~300ms</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Profiler -->
+            <div class="sidebar-panel">
+                <h3>⏱ Latency Waterfall</h3>
+                <div class="performance-chart">
+                    <div class="stage-bar">
+                        <div class="stage-label">Input</div>
+                        <div class="stage-bar-container">
+                            <div class="stage-bar-fill" style="width: 3%"></div>
+                        </div>
+                        <div class="stage-time">3ms</div>
+                    </div>
+                    <div class="stage-bar">
+                        <div class="stage-label">Pattern</div>
+                        <div class="stage-bar-container">
+                            <div class="stage-bar-fill" style="width: 1%"></div>
+                        </div>
+                        <div class="stage-time">1ms</div>
+                    </div>
+                    <div class="stage-bar">
+                        <div class="stage-label">Temporal</div>
+                        <div class="stage-bar-container">
+                            <div class="stage-bar-fill" style="width: 1%"></div>
+                        </div>
+                        <div class="stage-time">1ms</div>
+                    </div>
+                    <div class="stage-bar">
+                        <div class="stage-label">Memory</div>
+                        <div class="stage-bar-container">
+                            <div class="stage-bar-fill bottleneck" style="width: 33%"></div>
+                        </div>
+                        <div class="stage-time">50ms</div>
+                    </div>
+                    <div class="stage-bar">
+                        <div class="stage-label">Features</div>
+                        <div class="stage-bar-container">
+                            <div class="stage-bar-fill" style="width: 23%"></div>
+                        </div>
+                        <div class="stage-time">35ms</div>
+                    </div>
+                    <div class="stage-bar">
+                        <div class="stage-label">Warp</div>
+                        <div class="stage-bar-container">
+                            <div class="stage-bar-fill" style="width: 8%"></div>
+                        </div>
+                        <div class="stage-time">12ms</div>
+                    </div>
+                    <div class="stage-bar">
+                        <div class="stage-label">Decision</div>
+                        <div class="stage-bar-container">
+                            <div class="stage-bar-fill" style="width: 6%"></div>
+                        </div>
+                        <div class="stage-time">9ms</div>
+                    </div>
+                    <div class="stage-bar">
+                        <div class="stage-label">Execution</div>
+                        <div class="stage-bar-container">
+                            <div class="stage-bar-fill" style="width: 20%"></div>
+                        </div>
+                        <div class="stage-time">30ms</div>
+                    </div>
+                    <div class="stage-bar">
+                        <div class="stage-label">Spacetime</div>
+                        <div class="stage-bar-container">
+                            <div class="stage-bar-fill" style="width: 5%"></div>
+                        </div>
+                        <div class="stage-time">7ms</div>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value" id="total-time">148ms</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Bottleneck</div>
+                        <div class="stat-value" id="bottleneck-pct">34%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timing Adjustment -->
+            <div class="sidebar-panel">
+                <h3>🎚 Adjust Parameters</h3>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span class="slider-label-text">Memory Retrieval Limit</span>
+                        <span class="slider-value" id="retrieval-value">6</span>
+                    </div>
+                    <input type="range" id="retrieval-slider" min="1" max="10" value="6">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span class="slider-label-text">Embedding Scales</span>
+                        <span class="slider-value" id="scales-value">3</span>
+                    </div>
+                    <input type="range" id="scales-slider" min="1" max="3" value="3">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span class="slider-label-text">Graph Hop Depth</span>
+                        <span class="slider-value" id="hops-value">3</span>
+                    </div>
+                    <input type="range" id="hops-slider" min="1" max="5" value="3">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for detailed layer info -->
+    <div class="modal" id="layer-modal">
+        <div class="modal-content">
+            <button class="modal-close">✕</button>
+            <h2 id="modal-title">Layer Details</h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Interactive diagram showing complete 9-layer data transformation. Click layers to expand details. Use "Trace Query" to animate data flow.</p>
+        <p style="margin-top: 1rem; font-size: 0.85rem;">📖 <a href="../../TRAINING_PART_2_CORE_CONCEPTS.md" style="color: #1e40af;">Read full documentation</a> | 🎬 <a href="../../animated/svg/07_9layer_flow.svg" style="color: #1e40af;">View animation</a> | 📄 <a href="../../pdf/PART_2_CORE_CONCEPTS.pdf" style="color: #1e40af;">Download PDF</a></p>
+    </footer>
+
+    <script>
+        // Layer data and configuration
+        const layerConfig = {
+            1: { name: "Input Processing", timings: { BARE: 2, FAST: 3, FUSED: 5 } },
+            2: { name: "Pattern Selection", timings: { BARE: 1, FAST: 2, FUSED: 2 } },
+            3: { name: "Temporal Control", timings: { BARE: 0.5, FAST: 0.5, FUSED: 1 } },
+            4: { name: "Memory Retrieval", timings: { BARE: 20, FAST: 45, FUSED: 50 }, bottleneck: true },
+            5: { name: "Feature Extraction", timings: { BARE: 10, FAST: 30, FUSED: 35 } },
+            6: { name: "Warp Space Tensioning", timings: { BARE: 5, FAST: 10, FUSED: 12 } },
+            7: { name: "Decision Collapse", timings: { BARE: 3, FAST: 8, FUSED: 10 } },
+            8: { name: "Tool Execution", timings: { BARE: 15, FAST: 40, FUSED: 50 } },
+            9: { name: "Spacetime Construction", timings: { BARE: 2, FAST: 5, FUSED: 7 } }
+        };
+
+        const exampleQueries = {
+            simple: {
+                query: "What is Thompson Sampling?",
+                mode: "FAST",
+                expectedTime: 150,
+                dataAtStages: {
+                    1: "Query(text='What is Thompson Sampling?', size=50B)",
+                    9: "Response about Thompson Sampling with 92% confidence"
+                }
+            },
+            complex: {
+                query: "How does the recursive learning system work?",
+                mode: "FUSED",
+                expectedTime: 300,
+                dataAtStages: {
+                    1: "Query(text='How does recursive learning...', size=72B)",
+                    9: "Comprehensive explanation with tracing and verification"
+                }
+            },
+            research: {
+                query: "Optimize this code for production",
+                mode: "RESEARCH",
+                expectedTime: 600,
+                dataAtStages: {
+                    1: "Query(text='Optimize this code...', size=85B)",
+                    9: "Multi-step optimization analysis with recommendations"
+                }
+            }
+        };
+
+        // State
+        let currentMode = "FAST";
+        let isAnimating = false;
+
+        // DOM elements
+        const traceBtn = document.getElementById("trace-btn");
+        const resetBtn = document.getElementById("reset-btn");
+        const modeSelect = document.getElementById("execution-mode");
+        const querySelect = document.getElementById("example-query");
+        const layerCards = document.querySelectorAll(".layer-card");
+        const modal = document.getElementById("layer-modal");
+        const modeOptions = document.querySelectorAll(".mode-option");
+
+        // Event listeners
+        traceBtn.addEventListener("click", startTracing);
+        resetBtn.addEventListener("click", resetAnimation);
+        modeSelect.addEventListener("change", (e) => {
+            currentMode = e.target.value;
+            updatePerformanceMetrics();
+        });
+
+        layerCards.forEach((card, index) => {
+            card.addEventListener("click", (e) => {
+                if (e.target.closest(".expand-btn")) {
+                    card.classList.toggle("expanded");
+                } else if (!e.target.closest(".expand-btn")) {
+                    showLayerDetails(index + 1);
+                }
+            });
+        });
+
+        modeOptions.forEach(option => {
+            option.addEventListener("click", () => {
+                modeOptions.forEach(opt => opt.classList.remove("selected"));
+                option.classList.add("selected");
+                currentMode = option.dataset.mode;
+                modeSelect.value = currentMode;
+                updatePerformanceMetrics();
+            });
+        });
+
+        document.querySelector(".modal-close").addEventListener("click", closeModal);
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Slider listeners
+        document.getElementById("retrieval-slider").addEventListener("input", (e) => {
+            document.getElementById("retrieval-value").textContent = e.target.value;
+            updatePerformanceMetrics();
+        });
+
+        document.getElementById("scales-slider").addEventListener("input", (e) => {
+            document.getElementById("scales-value").textContent = e.target.value;
+            updatePerformanceMetrics();
+        });
+
+        document.getElementById("hops-slider").addEventListener("input", (e) => {
+            document.getElementById("hops-value").textContent = e.target.value;
+            updatePerformanceMetrics();
+        });
+
+        function startTracing() {
+            if (isAnimating) return;
+            isAnimating = true;
+            traceBtn.disabled = true;
+
+            // Animate each layer sequentially
+            layerCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add("active");
+                    card.classList.add("animating");
+                    setTimeout(() => {
+                        card.classList.remove("animating");
+                    }, 600);
+                }, index * 300);
+            });
+
+            // Re-enable after animation
+            setTimeout(() => {
+                isAnimating = false;
+                traceBtn.disabled = false;
+            }, layerCards.length * 300 + 500);
+        }
+
+        function resetAnimation() {
+            layerCards.forEach(card => {
+                card.classList.remove("active");
+                card.classList.remove("animating");
+                card.classList.remove("expanded");
+            });
+            isAnimating = false;
+            traceBtn.disabled = false;
+        }
+
+        function updatePerformanceMetrics() {
+            const retrieval = parseInt(document.getElementById("retrieval-slider").value);
+            const scales = parseInt(document.getElementById("scales-slider").value);
+            const hops = parseInt(document.getElementById("hops-slider").value);
+
+            // Calculate adjusted timings based on mode and sliders
+            let totalTime = 0;
+            for (let i = 1; i <= 9; i++) {
+                const baseTime = layerConfig[i].timings[currentMode];
+                let adjustedTime = baseTime;
+
+                if (i === 4) adjustedTime *= (retrieval / 6); // Adjust memory retrieval
+                if (i === 5) adjustedTime *= (scales / 3); // Adjust features
+
+                totalTime += adjustedTime;
+            }
+
+            document.getElementById("total-time").textContent = Math.round(totalTime) + "ms";
+
+            const bottleneckTime = layerConfig[4].timings[currentMode] * (retrieval / 6);
+            const bottleneckPct = Math.round((bottleneckTime / totalTime) * 100);
+            document.getElementById("bottleneck-pct").textContent = bottleneckPct + "%";
+        }
+
+        function showLayerDetails(layerNum) {
+            const details = {
+                1: {
+                    title: "Layer 1: Input Processing",
+                    content: `
+                        <h3>Purpose</h3>
+                        <p>Convert raw input (text, images, audio) into normalized, tokenized format ready for processing.</p>
+
+                        <h3>Algorithm</h3>
+                        <pre>1. Detect input type
+2. Apply appropriate spinner (TextSpinner, AudioSpinner, etc)
+3. Normalize text (lowercase, punctuation handling)
+4. Tokenize into words/subwords
+5. Build ProcessedInput object</pre>
+
+                        <h3>Example</h3>
+                        <p><strong>Input:</strong> "What is Thompson Sampling?"</p>
+                        <p><strong>Output:</strong> ProcessedInput(tokens=['what', 'is', 'thompson', 'sampling'], normalized_text='what is thompson sampling')</p>
+
+                        <h3>Performance</h3>
+                        <p>Time: 2-5ms | Data size: 50 bytes → 200 bytes</p>
+                    `
+                },
+                2: {
+                    title: "Layer 2: Pattern Selection",
+                    content: `
+                        <h3>Purpose</h3>
+                        <p>Analyze query complexity and select execution mode (BARE/FAST/FUSED).</p>
+
+                        <h3>Algorithm</h3>
+                        <pre>1. Analyze query features:
+   - Token count
+   - Entity presence
+   - Query type (factual/procedural/analytical)
+2. Calculate complexity score (0.0-1.0)
+3. Map to mode:
+   - Score < 0.3: BARE
+   - Score 0.3-0.7: FAST
+   - Score > 0.7: FUSED
+4. Return PatternCard with mode and config</pre>
+
+                        <h3>PatternCard Contents</h3>
+                        <p><code>mode</code>, <code>scales</code>, <code>retrieval_limit</code>, <code>timeout</code></p>
+
+                        <h3>Performance</h3>
+                        <p>Time: 1-2ms | Data size: ~100 bytes</p>
+                    `
+                },
+                3: {
+                    title: "Layer 3: Temporal Control",
+                    content: `
+                        <h3>Purpose</h3>
+                        <p>Establish temporal window for memory retrieval and execution timeout.</p>
+
+                        <h3>Algorithm</h3>
+                        <pre>1. Get current timestamp
+2. Determine temporal window:
+   - Recent queries: 24h window
+   - Research mode: 7d window
+3. Set execution timeout:
+   - BARE: 100ms
+   - FAST: 200ms
+   - FUSED: no limit
+4. Return TemporalWindow object</pre>
+
+                        <h3>Use Cases</h3>
+                        <p>Prevents stale memories, limits execution time, enables time-aware reasoning.</p>
+
+                        <h3>Performance</h3>
+                        <p>Time: <1ms | Data size: ~150 bytes</p>
+                    `
+                },
+                4: {
+                    title: "Layer 4: Memory Retrieval ⚡",
+                    content: `
+                        <h3>Purpose</h3>
+                        <p>Retrieve relevant memories from knowledge graph and vector store.</p>
+
+                        <h3>Algorithm (Hybrid Search)</h3>
+                        <pre>1. BM25 keyword search (fast, lexical)
+2. Semantic similarity search (slow, exact)
+3. Graph traversal from query entities
+4. Rank and fuse results
+5. Return top-k MemoryShards</pre>
+
+                        <h3>Why It's a Bottleneck</h3>
+                        <p>Requires database lookups, vector computations, graph traversal. ~40% of total latency.</p>
+
+                        <h3>Optimization Strategies</h3>
+                        <ul>
+                            <li>Reduce k (retrieval_limit): 6 shards is good for FAST</li>
+                            <li>Cache frequent queries (Phase 5)</li>
+                            <li>Use BARE mode for speed-critical apps</li>
+                        </ul>
+
+                        <h3>Performance</h3>
+                        <p>Time: 35-50ms | Data size: 6 shards × 1KB = 6KB</p>
+                    `
+                },
+                5: {
+                    title: "Layer 5: Feature Extraction",
+                    content: `
+                        <h3>Purpose</h3>
+                        <p>Extract multiple representations: motifs (symbolic), embeddings (continuous), spectral (topological).</p>
+
+                        <h3>Three Feature Types</h3>
+                        <p><strong>Motifs:</strong> Symbolic patterns (keywords, entities). Fast, interpretable.</p>
+                        <p><strong>Embeddings:</strong> Matryoshka multi-scale (96D, 192D, 384D). Semantic meaning.</p>
+                        <p><strong>Spectral:</strong> Graph Laplacian eigenvalues, SVD components. Topological structure.</p>
+
+                        <h3>Algorithm</h3>
+                        <pre>1. Extract motifs from memories
+2. Compute embeddings at 3 scales
+3. Compute graph spectral features
+4. Combine into DotPlasma object
+5. Return fused representation</pre>
+
+                        <h3>Performance</h3>
+                        <p>Time: 25-35ms | Data size: ~2KB</p>
+                    `
+                },
+                6: {
+                    title: "Layer 6: Warp Space Tensioning",
+                    content: `
+                        <h3>Purpose</h3>
+                        <p>Transform discrete features into continuous tensor manifold for neural operations.</p>
+
+                        <h3>Discrete → Continuous Transformation</h3>
+                        <p>DotPlasma (symbolic + embeddings + spectral) is discrete, interpretable.</p>
+                        <p>TensionedThreads is continuous, enables neural network operations.</p>
+
+                        <h3>Algorithm</h3>
+                        <pre>1. Normalize features to [-1, 1]
+2. Project onto lower-dim manifold
+3. Combine embeddings + spectral
+4. Create manifold object
+5. Return TensionedThreads</pre>
+
+                        <h3>Why It Matters</h3>
+                        <p>Enables using neural networks on symbolic knowledge. Bridges symbolic and neural AI.</p>
+
+                        <h3>Performance</h3>
+                        <p>Time: 8-12ms | Data size: ~3KB</p>
+                    `
+                },
+                7: {
+                    title: "Layer 7: Decision Collapse",
+                    content: `
+                        <h3>Purpose</h3>
+                        <p>Select best tool using neural network + Thompson Sampling.</p>
+
+                        <h3>Two-Stage Decision</h3>
+                        <p><strong>Stage 1 (Neural):</strong> Neural network generates logits for each tool.</p>
+                        <p><strong>Stage 2 (Thompson):</strong> Thompson Sampling uses uncertainty to decide.</p>
+
+                        <h3>Algorithm</h3>
+                        <pre>1. Neural forward pass on TensionedThreads
+2. Get logits for 4 tools
+3. For each tool, sample from Thompson prior
+4. Select tool with highest sampled value
+5. Return ActionPlan with tool + confidence</pre>
+
+                        <h3>Tools Available</h3>
+                        <p>answer, search, write, calculate</p>
+
+                        <h3>Performance</h3>
+                        <p>Time: 5-10ms | Data size: ~500 bytes</p>
+                    `
+                },
+                8: {
+                    title: "Layer 8: Tool Execution",
+                    content: `
+                        <h3>Purpose</h3>
+                        <p>Execute selected tool to generate response.</p>
+
+                        <h3>Available Tools</h3>
+                        <pre>answer: Generate response from context
+search: Retrieve additional information
+write: Compose code or document
+calculate: Perform computation</pre>
+
+                        <h3>Algorithm</h3>
+                        <pre>1. Get selected tool from ActionPlan
+2. Prepare input: query + context
+3. Execute tool
+4. Collect output and metadata
+5. Return ToolResult</pre>
+
+                        <h3>Context Provided</h3>
+                        <p>Query, retrieved memories, extracted features, temporal window</p>
+
+                        <h3>Performance</h3>
+                        <p>Time: 30-50ms | Data size: ~1KB response</p>
+                    `
+                },
+                9: {
+                    title: "Layer 9: Spacetime Construction",
+                    content: `
+                        <h3>Purpose</h3>
+                        <p>Assemble complete output with full provenance for reflection and auditing.</p>
+
+                        <h3>Spacetime Contents</h3>
+                        <pre>result: Final response text
+trace: All intermediate steps
+metadata: Confidence, timing, tools used
+feedback: For learning loop</pre>
+
+                        <h3>Algorithm</h3>
+                        <pre>1. Collect ToolResult
+2. Collect execution trace
+3. Calculate confidence
+4. Assemble Spacetime object
+5. Store in reflection buffer</pre>
+
+                        <h3>Why Provenance Matters</h3>
+                        <p>Enable debugging, reflection learning, auditing, explainability.</p>
+
+                        <h3>Performance</h3>
+                        <p>Time: 5ms | Data size: ~10KB (complete trace)</p>
+                    `
+                }
+            };
+
+            const detail = details[layerNum];
+            document.getElementById("modal-title").textContent = detail.title;
+            document.getElementById("modal-body").innerHTML = detail.content;
+            modal.classList.add("active");
+        }
+
+        function closeModal() {
+            modal.classList.remove("active");
+        }
+
+        // Initialize
+        updatePerformanceMetrics();
+    </script>
+</body>
+</html>
