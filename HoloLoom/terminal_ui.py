@@ -33,7 +33,6 @@ from rich.markdown import Markdown
 from rich.tree import Tree
 from rich.prompt import Prompt, Confirm
 from rich import box
-from rich.text import Text
 
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator, Query
 from HoloLoom.loom.command import PatternCard
