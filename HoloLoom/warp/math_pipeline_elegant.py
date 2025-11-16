@@ -29,7 +29,6 @@ try:
     from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
     from rich.panel import Panel
     from rich.layout import Layout
-    from rich.live import Live
     from rich.tree import Tree
     from rich import box
     HAS_RICH = True
