@@ -12,7 +12,6 @@ Usage:
 import asyncio
 import sys
 import time
-from typing import Dict, Any
 import aiohttp
 
 
