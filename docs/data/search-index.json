@@ -1,0 +1,577 @@
+{
+  "pages": [
+    {
+      "url": "/",
+      "title": "HoloLoom Documentation",
+      "excerpt": "Complete documentation for HoloLoom neural decision-making system",
+      "sections": [
+        {
+          "heading": "Welcome to HoloLoom",
+          "content": "HoloLoom is a comprehensive neural decision-making system that combines multi-scale embeddings, knowledge graph memory with spectral features, unified policy engine with Thompson Sampling exploration, and PPO reinforcement learning."
+        },
+        {
+          "heading": "Getting Started",
+          "content": "Begin with the quick start guide or explore the training curriculum for comprehensive learning paths."
+        }
+      ]
+    },
+    {
+      "url": "/start",
+      "title": "Getting Started - 5 Minute Quick Start",
+      "excerpt": "Quick start guide to get HoloLoom running in 5 minutes",
+      "sections": [
+        {
+          "heading": "Installation",
+          "content": "Install HoloLoom using pip: pip install hololoom. Requires Python 3.8+ and PyTorch."
+        },
+        {
+          "heading": "Your First Query",
+          "content": "Create your first query using the simple HoloLoom API. The system automatically handles weaving threads, memory retrieval, and policy decisions."
+        },
+        {
+          "heading": "Next Steps",
+          "content": "Explore the training curriculum for deeper understanding of the system architecture and advanced features."
+        }
+      ]
+    },
+    {
+      "url": "/training",
+      "title": "Training Hub - Complete HoloLoom Curriculum",
+      "excerpt": "Comprehensive training curriculum with 5 progressive parts from foundations to implementation",
+      "sections": [
+        {
+          "heading": "Part 1: Foundations",
+          "content": "Learn the foundational concepts including the weaving metaphor, memory systems, knowledge graphs, Thompson Sampling, and feature extraction techniques."
+        },
+        {
+          "heading": "Part 2: Core Concepts",
+          "content": "Deep dive into the 9-layer architecture, data flow, execution modes (BARE/FAST/FUSED), memory backends, and system configuration."
+        },
+        {
+          "heading": "Part 3: Tutorials & Hands-On",
+          "content": "Step-by-step tutorials covering installation, memory building, retrieval operations, custom tools, and performance optimization."
+        },
+        {
+          "heading": "Part 4: Advanced Topics",
+          "content": "Explore recursive learning systems, alignment frameworks, RAG systems, universal grammar integration, and performance optimization strategies."
+        },
+        {
+          "heading": "Part 5: Implementation",
+          "content": "Code walkthroughs, deployment guides, troubleshooting tips, and real-world case studies of HoloLoom in production."
+        }
+      ]
+    },
+    {
+      "url": "/training/part1",
+      "title": "Part 1: Foundations - Understanding the Weaving Metaphor",
+      "excerpt": "Foundational concepts of HoloLoom including weaving metaphor, memory systems, and knowledge graphs",
+      "sections": [
+        {
+          "heading": "The Weaving Metaphor",
+          "content": "HoloLoom uses a textile metaphor to describe computation. Warp threads represent independent modules, the shuttle orchestrator coordinates their interaction, and the woven fabric is the complete output with full provenance."
+        },
+        {
+          "heading": "Memory Systems Explained",
+          "content": "Understanding HoloLoom's three-tier memory architecture: episodic memories for recent interactions, semantic memories for general knowledge, and procedural memories for how to accomplish tasks."
+        },
+        {
+          "heading": "Knowledge Graphs & Relationships",
+          "content": "Knowledge graphs represent semantic relationships as a network of entities and connections. Learn how HoloLoom uses Yarn Graph for symbolic memory with spectral features."
+        },
+        {
+          "heading": "Thompson Sampling for Exploration",
+          "content": "Thompson Sampling balances exploration and exploitation in decision-making. Understand the Beta-Bernoulli conjugate pair and how it enables effective tool selection."
+        },
+        {
+          "heading": "Multi-Scale Feature Extraction",
+          "content": "Matryoshka embeddings provide multi-scale representations where smaller dimensions are prefix-aligned with larger ones, enabling efficient retrieval at different scales."
+        }
+      ]
+    },
+    {
+      "url": "/training/part2",
+      "title": "Part 2: Core Concepts - 9-Layer Architecture Deep Dive",
+      "excerpt": "Complete 9-layer architecture of HoloLoom system design",
+      "sections": [
+        {
+          "heading": "9-Layer Architecture Overview",
+          "content": "HoloLoom's 9-layer architecture: Input Adapters, Motif Detection, Embedding Generation, Memory Retrieval, Feature Fusion, Policy Selection, Tool Execution, Output Synthesis, and Reflection Learning."
+        },
+        {
+          "heading": "Data Flow Through Layers",
+          "content": "Understand how information flows through each layer, from raw input through semantic understanding to final decision and output generation."
+        },
+        {
+          "heading": "Execution Modes: BARE, FAST, FUSED",
+          "content": "Three execution modes provide speed-quality tradeoffs. BARE is fastest with minimal processing, FAST balances speed and quality, FUSED uses all features for maximum quality."
+        },
+        {
+          "heading": "Memory Backend Systems",
+          "content": "Choose between INMEMORY for development, HYBRID with Neo4j for production, or HYPERSPACE for advanced research. All support graceful fallback."
+        },
+        {
+          "heading": "Configuration & Tuning",
+          "content": "Configure every aspect of HoloLoom including scales, budgets, timeouts, and feature activation for your specific use case."
+        }
+      ]
+    },
+    {
+      "url": "/training/part3",
+      "title": "Part 3: Tutorials & Hands-On Examples",
+      "excerpt": "Step-by-step tutorials for using HoloLoom in practice",
+      "sections": [
+        {
+          "heading": "Tutorial 1: Hello World",
+          "content": "Create your first HoloLoom application with a simple query and observe the full weaving cycle in action."
+        },
+        {
+          "heading": "Tutorial 2: Building Memory",
+          "content": "Learn how to ingest documents, build knowledge graphs, and create embeddings for effective retrieval."
+        },
+        {
+          "heading": "Tutorial 3: Retrieval Operations",
+          "content": "Master different retrieval strategies including BM25 keyword search, semantic similarity, and graph traversal."
+        },
+        {
+          "heading": "Tutorial 4: Custom Tools & Policies",
+          "content": "Extend HoloLoom with custom tools and define policies that control how tools are selected and executed."
+        },
+        {
+          "heading": "Tutorial 5: Performance Optimization",
+          "content": "Profile your HoloLoom system, identify bottlenecks, and optimize using caching, batching, and execution mode selection."
+        }
+      ]
+    },
+    {
+      "url": "/training/part4",
+      "title": "Part 4: Advanced Topics - Beyond the Basics",
+      "excerpt": "Advanced features including recursive learning, alignment frameworks, and RAG systems",
+      "sections": [
+        {
+          "heading": "Recursive Learning System",
+          "content": "5-phase recursive learning enables continuous improvement from every interaction using scratchpad integration, pattern mining, hot tracking, and Thompson Sampling updates."
+        },
+        {
+          "heading": "Alignment Framework",
+          "content": "Production-ready safety mechanisms including risk-based action gating, deception detection, instrumental convergence prevention, and complete audit trails."
+        },
+        {
+          "heading": "RAG (Retrieval-Augmented Generation) Systems",
+          "content": "Level 4 agentic RAG with hybrid search, graph traversal, multimodal capabilities, and performance monitoring dashboards."
+        },
+        {
+          "heading": "Universal Grammar Integration",
+          "content": "Apply Chomskyan linguistics to query understanding through X-bar theory phrase structure analysis and compositional caching for 50-300x speedup."
+        },
+        {
+          "heading": "Performance Optimization Strategies",
+          "content": "Advanced techniques including zero-copy embeddings, compositional caching, linguistic filtering, and background learning loops."
+        }
+      ]
+    },
+    {
+      "url": "/training/part5",
+      "title": "Part 5: Implementation - Code Walkthroughs & Deployment",
+      "excerpt": "Production deployment, code walkthroughs, and real-world case studies",
+      "sections": [
+        {
+          "heading": "Code Walkthrough: The Orchestrator",
+          "content": "Complete walkthrough of WeavingOrchestrator showing the 9-step weaving cycle, protocol-based design, and lifecycle management."
+        },
+        {
+          "heading": "Deployment Guide",
+          "content": "Deploy HoloLoom to production with Docker, manage dependencies, monitor performance, and handle graceful degradation."
+        },
+        {
+          "heading": "Troubleshooting Guide",
+          "content": "Common issues and solutions including import errors, memory problems, performance bottlenecks, and dependency resolution."
+        },
+        {
+          "heading": "Case Studies",
+          "content": "Real-world examples of HoloLoom in production including customer support, document retrieval, and multi-step reasoning."
+        },
+        {
+          "heading": "Monitoring & Maintenance",
+          "content": "Set up monitoring, track performance metrics, manage logs, and maintain your HoloLoom deployment over time."
+        }
+      ]
+    },
+    {
+      "url": "/training/diagrams",
+      "title": "Diagram Gallery - 28 Visual References",
+      "excerpt": "Complete gallery of 28 ASCII art diagrams explaining HoloLoom concepts",
+      "sections": [
+        {
+          "heading": "Exploration-Exploitation Spectrum",
+          "content": "Visual comparison of different exploration strategies and how Thompson Sampling balances them."
+        },
+        {
+          "heading": "Complete 9-Layer Architecture",
+          "content": "Full data transformation pipeline from input to output with all 9 layers and their interactions."
+        },
+        {
+          "heading": "Memory System Hierarchy",
+          "content": "Three-tier memory architecture with episodic, semantic, and procedural memories and their relationships."
+        },
+        {
+          "heading": "Knowledge Graph Structure",
+          "content": "Entity-relationship graph showing how symbolic knowledge is stored and traversed in Yarn Graph."
+        },
+        {
+          "heading": "Policy Decision Flow",
+          "content": "Flow diagram showing how the unified policy engine makes decisions using context, exploration strategy, and bandit updates."
+        }
+      ]
+    },
+    {
+      "url": "/architecture",
+      "title": "Architecture & System Design",
+      "excerpt": "Complete system architecture reference for HoloLoom",
+      "sections": [
+        {
+          "heading": "System Overview",
+          "content": "High-level overview of HoloLoom's design, core components, and how they interact in the weaving cycle."
+        },
+        {
+          "heading": "Component Relationships",
+          "content": "Understand how Loom Command, Chrono Trigger, Yarn Graph, Resonance Shed, Warp Space, and other components work together."
+        },
+        {
+          "heading": "Data Structures",
+          "content": "Key data structures used throughout HoloLoom including Spacetime, DotPlasma, WeavingTrace, and TensionedThread."
+        }
+      ]
+    },
+    {
+      "url": "/architecture/9-layer",
+      "title": "9-Layer Architecture Deep Dive",
+      "excerpt": "Detailed explanation of each layer in HoloLoom's architecture",
+      "sections": [
+        {
+          "heading": "Layer 1: Input Adapters (SpinningWheel)",
+          "content": "Convert raw inputs (audio, text, documents) into standardized MemoryShard objects with metadata and embeddings."
+        },
+        {
+          "heading": "Layer 2: Motif Detection",
+          "content": "Extract symbolic patterns and motifs from input using regex patterns, spaCy entities, and learned templates."
+        },
+        {
+          "heading": "Layer 3: Embedding Generation",
+          "content": "Create Matryoshka multi-scale embeddings (96, 192, 384 dimensions) with spectral graph features."
+        },
+        {
+          "heading": "Layer 4: Memory Retrieval",
+          "content": "Retrieve relevant memories using BM25 keyword search and semantic similarity across multiple scales."
+        },
+        {
+          "heading": "Layer 5: Feature Fusion (Resonance Shed)",
+          "content": "Combine extracted motifs, embeddings, and spectral features into DotPlasma feature representation."
+        },
+        {
+          "heading": "Layer 6: Policy Engine (Warp Space)",
+          "content": "Neural policy with Thompson Sampling bandit selects best tool based on features and context."
+        },
+        {
+          "heading": "Layer 7: Tool Execution",
+          "content": "Execute selected tool and gather results with proper error handling and graceful fallback."
+        },
+        {
+          "heading": "Layer 8: Output Synthesis",
+          "content": "Synthesize final response from tool results, context, and feedback with full provenance tracking."
+        },
+        {
+          "heading": "Layer 9: Reflection Learning",
+          "content": "Learn from outcomes through episodic storage, policy updates, and continuous adaptation."
+        }
+      ]
+    },
+    {
+      "url": "/architecture/components",
+      "title": "Component Reference - Detailed API",
+      "excerpt": "API reference for all major HoloLoom components",
+      "sections": [
+        {
+          "heading": "WeavingOrchestrator",
+          "content": "Main orchestrator coordinating the 9-step weaving cycle. Implements protocol-based design with backward compatibility."
+        },
+        {
+          "heading": "Policy Engine (UnifiedPolicy)",
+          "content": "Neural decision-making with three bandit exploration strategies: Epsilon-Greedy, Bayesian Blend, and Pure Thompson Sampling."
+        },
+        {
+          "heading": "Memory Systems",
+          "content": "Unified memory API with pluggable backends: NetworkX (INMEMORY), Neo4j+Qdrant (HYBRID), Hyperspace (HYPERSPACE)."
+        },
+        {
+          "heading": "Embedding System",
+          "content": "Matryoshka embeddings with zero-copy access, multi-scale fusion, and spectral features for efficient retrieval."
+        },
+        {
+          "heading": "Knowledge Graph (Yarn Graph)",
+          "content": "Entity-relationship graph using NetworkX MultiDiGraph with typed edges and spectral features."
+        }
+      ]
+    },
+    {
+      "url": "/api",
+      "title": "API Reference - Complete Function Documentation",
+      "excerpt": "Complete API reference for HoloLoom",
+      "sections": [
+        {
+          "heading": "Core API (hololoom.py)",
+          "content": "Main entry point with three core methods: experience() to form memories, recall() to retrieve memories, reflect() to learn from feedback."
+        },
+        {
+          "heading": "Memory API",
+          "content": "Memory system interface with methods for storing, retrieving, and searching across embeddings and knowledge graphs."
+        },
+        {
+          "heading": "Policy API",
+          "content": "Policy engine interface for decision-making with access to bandit statistics, policy weights, and adaptation controls."
+        },
+        {
+          "heading": "RAG API",
+          "content": "Retrieval-Augmented Generation system with zero-config API supporting text and multimodal queries."
+        }
+      ]
+    },
+    {
+      "url": "/api/core",
+      "title": "Core API - hololoom.py",
+      "excerpt": "Main HoloLoom entry point API",
+      "sections": [
+        {
+          "heading": "class HoloLoom",
+          "content": "Main class providing unified API. Methods: __init__(config), experience(content), recall(query), reflect(memories, feedback), summary(), get_metrics()."
+        },
+        {
+          "heading": "experience(content)",
+          "content": "Form memories from input. Returns Memory object with activation tracking. Supports text, audio, documents."
+        },
+        {
+          "heading": "recall(query)",
+          "content": "Retrieve memories matching query. Returns list of Memory objects ranked by relevance with confidence scores."
+        },
+        {
+          "heading": "reflect(memories, feedback)",
+          "content": "Learn from feedback to improve future recalls. Updates awareness graph and policy weights asynchronously."
+        }
+      ]
+    },
+    {
+      "url": "/research",
+      "title": "Research Papers & Theory",
+      "excerpt": "Research foundations and theoretical background for HoloLoom",
+      "sections": [
+        {
+          "heading": "Thompson Sampling",
+          "content": "Bayesian approach to the exploration-exploitation tradeoff using Beta-Bernoulli conjugate priors for principled balancing."
+        },
+        {
+          "heading": "Knowledge Graphs & Semantics",
+          "content": "Entity-relationship models for symbolic knowledge representation with spectral analysis for topological features."
+        },
+        {
+          "heading": "Universal Grammar",
+          "content": "Chomskyan linguistics applied to NLP through X-bar theory phrase structure analysis and compositional semantics."
+        },
+        {
+          "heading": "AI Alignment",
+          "content": "Safety-first approach with risk-based gating, deception detection, and instrumental convergence prevention."
+        }
+      ]
+    },
+    {
+      "url": "/research/thompson-sampling",
+      "title": "Thompson Sampling - Deep Theoretical Dive",
+      "excerpt": "Complete mathematical treatment of Thompson Sampling and its applications",
+      "sections": [
+        {
+          "heading": "The Exploration-Exploitation Dilemma",
+          "content": "How Thompson Sampling provides optimal balance between exploring new options and exploiting known good options."
+        },
+        {
+          "heading": "Beta-Bernoulli Conjugate Pair",
+          "content": "Mathematical foundations using Beta-Bernoulli conjugacy for efficient posterior updates and reward sampling."
+        },
+        {
+          "heading": "Regret Bounds",
+          "content": "Theoretical guarantees on expected regret compared to oracle strategies with optimal arm selection."
+        },
+        {
+          "heading": "Practical Implementation",
+          "content": "How Thompson Sampling is implemented in HoloLoom's policy engine with tool selection and bandit updates."
+        }
+      ]
+    },
+    {
+      "url": "/research/knowledge-graphs",
+      "title": "Knowledge Graphs & Semantic Relationships",
+      "excerpt": "Theory and practice of knowledge graph representation",
+      "sections": [
+        {
+          "heading": "Entity-Relationship Model",
+          "content": "Represent knowledge as a graph where nodes are entities and edges are typed relationships between them."
+        },
+        {
+          "heading": "Spectral Graph Analysis",
+          "content": "Extract topological features using Laplacian eigenvalues and adjacency matrix decomposition for policy input."
+        },
+        {
+          "heading": "Path Finding & Traversal",
+          "content": "Navigate knowledge graphs to find connections between entities and build reasoning chains."
+        },
+        {
+          "heading": "HoloLoom's Yarn Graph",
+          "content": "NetworkX-based implementation with typed edges (IS_A, USES, MENTIONS, etc.) and spectral features."
+        }
+      ]
+    },
+    {
+      "url": "/performance",
+      "title": "Performance & Optimization",
+      "excerpt": "Performance characteristics and optimization techniques for HoloLoom",
+      "sections": [
+        {
+          "heading": "Performance Baselines",
+          "content": "Measured performance across different execution modes: BARE <50ms, FAST <150ms, FUSED <300ms average latency."
+        },
+        {
+          "heading": "Optimization Techniques",
+          "content": "Strategies for improving performance including caching, batching, scale selection, and mode tuning."
+        },
+        {
+          "heading": "Bottleneck Analysis",
+          "content": "Identify common bottlenecks in typical workflows and solutions for each."
+        },
+        {
+          "heading": "Scaling to Large Datasets",
+          "content": "Handle thousands of memories efficiently with proper backend selection and index tuning."
+        }
+      ]
+    },
+    {
+      "url": "/performance/benchmarks",
+      "title": "Performance Benchmarks - Real-World Measurements",
+      "excerpt": "Detailed performance benchmarks across different scenarios",
+      "sections": [
+        {
+          "heading": "Query Latency by Mode",
+          "content": "BARE: 45ms average, FAST: 125ms average, FUSED: 275ms average with 95th percentile measurements."
+        },
+        {
+          "heading": "Memory Retrieval Performance",
+          "content": "BM25: <10ms, semantic search: <50ms, graph traversal: <100ms depending on graph size."
+        },
+        {
+          "heading": "Scaling Characteristics",
+          "content": "How latency scales with number of memories, query complexity, and result size."
+        },
+        {
+          "heading": "Cache Effectiveness",
+          "content": "Cache hit rates and speedups for repeated queries showing 100x improvement in warm paths."
+        }
+      ]
+    },
+    {
+      "url": "/contributing",
+      "title": "Contributing Guide",
+      "excerpt": "How to contribute to HoloLoom project",
+      "sections": [
+        {
+          "heading": "Getting Involved",
+          "content": "Join the HoloLoom community by contributing code, documentation, examples, or bug reports."
+        },
+        {
+          "heading": "Development Setup",
+          "content": "Set up your development environment with proper dependencies and testing infrastructure."
+        },
+        {
+          "heading": "Code Style & Standards",
+          "content": "Follow HoloLoom's code style guidelines including naming, formatting, and architecture patterns."
+        },
+        {
+          "heading": "Testing Requirements",
+          "content": "Write tests for all new features with unit, integration, and end-to-end coverage."
+        }
+      ]
+    },
+    {
+      "url": "/about",
+      "title": "About HoloLoom",
+      "excerpt": "Vision, philosophy, and history of HoloLoom project",
+      "sections": [
+        {
+          "heading": "Project Vision",
+          "content": "Build a transparent, reliable neural decision-making system that's safe, understandable, and production-ready."
+        },
+        {
+          "heading": "Core Philosophy",
+          "content": "Reliable systems: Safety First. All architectural decisions prioritize reliability over performance until safety is guaranteed."
+        },
+        {
+          "heading": "Development History",
+          "content": "Timeline of major milestones from Phase 1 foundations through Phase 5 advanced features and alignment framework."
+        },
+        {
+          "heading": "Team & Credits",
+          "content": "Contributors and acknowledgments for the HoloLoom project."
+        }
+      ]
+    },
+    {
+      "url": "/help/faq",
+      "title": "Frequently Asked Questions",
+      "excerpt": "Common questions about HoloLoom",
+      "sections": [
+        {
+          "heading": "What is HoloLoom?",
+          "content": "Neural decision-making system combining embeddings, knowledge graphs, policies, and learning. Uses weaving metaphor for coordination."
+        },
+        {
+          "heading": "What are the system requirements?",
+          "content": "Python 3.8+, PyTorch, and ~2GB RAM. Optional backends require Docker for Neo4j and Qdrant."
+        },
+        {
+          "heading": "How do I get started?",
+          "content": "Install with pip, read the 5-minute quick start, then explore the training curriculum for deeper learning."
+        },
+        {
+          "heading": "Can I use it in production?",
+          "content": "Yes. HoloLoom is production-ready with alignment frameworks, monitoring, and graceful degradation built-in."
+        },
+        {
+          "heading": "How is it licensed?",
+          "content": "MIT license. Open source with community contributions welcome."
+        }
+      ]
+    },
+    {
+      "url": "/help/glossary",
+      "title": "Complete Glossary of Terms",
+      "excerpt": "Definitions of key terms used throughout HoloLoom documentation",
+      "sections": [
+        {
+          "heading": "Weaving Metaphor",
+          "content": "Computational model using textile terminology: warp threads (modules), shuttle (orchestrator), fabric (output)."
+        },
+        {
+          "heading": "Thompson Sampling",
+          "content": "Bayesian approach to exploration-exploitation using Beta-Bernoulli conjugate priors."
+        },
+        {
+          "heading": "Matryoshka Embeddings",
+          "content": "Multi-scale embeddings where smaller dimensions are prefixes of larger ones (96, 192, 384 dims)."
+        },
+        {
+          "heading": "Yarn Graph",
+          "content": "Knowledge graph representation using NetworkX MultiDiGraph with entity-relationship model."
+        },
+        {
+          "heading": "DotPlasma",
+          "content": "Feature representation combining motifs (symbolic), embeddings (continuous), and spectral features (topological)."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="HoloLoom Documentation - Complete training and API reference">
+  <title>HoloLoom Documentation - Search Example</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/search.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+
+  <style>
+    /* Minimal example styles for demo */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      line-height: 1.6;
+      color: var(--color-text, #1a1a1a);
+      background-color: var(--color-background, #ffffff);
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-primary-dark: #1e3a8a;
+      --color-primary-light: #dbeafe;
+      --color-text: #1a1a1a;
+      --color-text-muted: #6b7280;
+      --color-background: #ffffff;
+      --color-background-hover: #f8f9fa;
+      --color-border: #e5e7eb;
+      --color-border-light: #f3f4f6;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-primary: #3b82f6;
+        --color-primary-dark: #1d4ed8;
+        --color-primary-light: rgba(59, 130, 246, 0.15);
+        --color-text: #f1f5f9;
+        --color-text-muted: #94a3b8;
+        --color-background: #0f172a;
+        --color-background-hover: #1e293b;
+        --color-border: #334155;
+        --color-border-light: #1e293b;
+      }
+    }
+
+    /* Navigation */
+    nav {
+      background-color: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    nav .logo {
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    nav .nav-links {
+      display: flex;
+      gap: 24px;
+      margin-left: auto;
+    }
+
+    nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--color-primary);
+    }
+
+    /* Main Content */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      color: var(--color-text);
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: var(--color-text-muted);
+      line-height: 1.8;
+    }
+
+    .demo-section {
+      margin-bottom: 48px;
+    }
+
+    .demo-section h2 {
+      font-size: 24px;
+      margin-bottom: 16px;
+      margin-top: 32px;
+      color: var(--color-text);
+    }
+
+    code {
+      background-color: var(--color-background-hover);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    pre {
+      background-color: var(--color-background-hover);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+    }
+
+    /* Search stats */
+    .search-stats {
+      background-color: var(--color-background-hover);
+      border-radius: 6px;
+      padding: 16px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--color-text-muted);
+      font-family: monospace;
+    }
+
+    .search-stats strong {
+      color: var(--color-text);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation with Search -->
+  <nav role="navigation" aria-label="Main">
+    <a href="/" class="logo">HoloLoom</a>
+
+    <!-- Search Container -->
+    <div class="search-container">
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search documentation (press / to focus)"
+        autocomplete="off"
+        aria-label="Search documentation"
+      >
+      <div id="search-results" role="region" aria-label="Search results"></div>
+    </div>
+
+    <!-- Nav Links -->
+    <div class="nav-links">
+      <a href="/training">Training</a>
+      <a href="/architecture">Architecture</a>
+      <a href="/api">API</a>
+      <a href="/research">Research</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main role="main">
+    <h1>HoloLoom Documentation Search</h1>
+    <p>
+      This page demonstrates the integrated full-text search system for HoloLoom documentation.
+      Try searching for any term from the documentation using the search box above.
+    </p>
+
+    <!-- Demo Section: How to Use -->
+    <div class="demo-section">
+      <h2>How to Use Search</h2>
+
+      <p><strong>Quick search:</strong> Press <code>/</code> to focus the search box</p>
+      <p><strong>Type to search:</strong> Results appear as you type (300ms debounce)</p>
+      <p><strong>Navigate results:</strong> Use <code>↑</code> <code>↓</code> arrows to move through results</p>
+      <p><strong>Open result:</strong> Press <code>Enter</code> or click a result</p>
+      <p><strong>Close results:</strong> Press <code>Escape</code></p>
+
+      <p style="margin-top: 24px; padding: 16px; background-color: var(--color-background-hover); border-radius: 6px;">
+        <strong>Try searching for:</strong> "Thompson Sampling", "knowledge graph", "weaving", "9-layer", "RAG"
+      </p>
+    </div>
+
+    <!-- Demo Section: Features -->
+    <div class="demo-section">
+      <h2>Search Features</h2>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">1. Full-Text Search</h3>
+      <p>
+        Search across all documentation pages including titles, headings, and body content.
+        Results are ranked by relevance, with title matches weighted highest.
+      </p>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">2. Keyword Matching</h3>
+      <p>
+        Search queries are tokenized (split into words) and matched against indexed content.
+        Supports partial word matching and handles punctuation automatically.
+      </p>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">3. Typo Tolerance</h3>
+      <p>
+        Fuzzy matching using Levenshtein distance helps find results even with spelling mistakes.
+        Example: Searching "tompson" will still find "thompson" (with a small relevance penalty).
+      </p>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">4. Result Highlighting</h3>
+      <p>
+        Query terms are highlighted in search results, making it easy to see why a result matched.
+      </p>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">5. Search History</h3>
+      <p>
+        Your last 10 searches are saved to browser storage for easy access.
+        Clear history by clicking the ⌫ button in search results.
+      </p>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">6. Keyboard Navigation</h3>
+      <p>
+        Fully keyboard accessible. Use Tab to navigate, ↑↓ for results, Enter to select.
+      </p>
+    </div>
+
+    <!-- Demo Section: Implementation -->
+    <div class="demo-section">
+      <h2>Integration Steps</h2>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">1. Include Files</h3>
+      <p>Add these lines to your HTML template:</p>
+      <pre><code>&lt;!-- In &lt;head&gt; --&gt;
+&lt;link rel="stylesheet" href="/assets/css/search.css"&gt;
+
+&lt;!-- In &lt;body&gt; navigation --&gt;
+&lt;div class="search-container"&gt;
+  &lt;input
+    id="search-input"
+    type="text"
+    placeholder="Search documentation (press / to focus)"
+    autocomplete="off"
+    aria-label="Search documentation"
+  &gt;
+  &lt;div id="search-results"&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Before &lt;/body&gt; --&gt;
+&lt;script src="/assets/js/search.js"&gt;&lt;/script&gt;</code></pre>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">2. Build Search Index</h3>
+      <p>Run the index generation script to create <code>docs/data/search-index.json</code>:</p>
+      <pre><code>python scripts/generate-search-index.py</code></pre>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">3. Deploy</h3>
+      <p>Deploy the docs directory to your hosting (GitHub Pages, Netlify, etc.)</p>
+    </div>
+
+    <!-- Demo Section: API -->
+    <div class="demo-section">
+      <h2>JavaScript API</h2>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">Access Search Object</h3>
+      <p>After page load, use <code>window.hololoomSearch</code> to interact with search:</p>
+
+      <pre><code>// Get current statistics
+const stats = window.hololoomSearch.getStatistics();
+console.log(`Indexed ${stats.indexedPages} pages with ${stats.indexTokens} tokens`);
+
+// Get search history
+const history = window.hololoomSearch.getSearchHistory();
+console.log('Recent searches:', history);
+
+// Clear search history
+window.hololoomSearch.clearSearchHistory();
+
+// Perform search programmatically
+const results = window.hololoomSearch.search('Thompson');
+console.log(`Found ${results.length} results`);
+
+// Get autocomplete suggestions
+const suggestions = window.hololoomSearch.getAutocomplete('Thomp');
+console.log('Suggestions:', suggestions);</code></pre>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">Configuration</h3>
+      <p>Customize search behavior:</p>
+      <pre><code>// Modify config before searching
+window.hololoomSearch.config.maxResults = 20;      // Show 20 results instead of 10
+window.hololoomSearch.config.debounceDelay = 500;  // Wait 500ms after typing
+window.hololoomSearch.config.maxHistorySize = 20;  // Store 20 searches instead of 10</code></pre>
+    </div>
+
+    <!-- Demo Section: Statistics -->
+    <div class="demo-section">
+      <h2>Index Statistics</h2>
+      <p>View current index statistics below (open browser console to see details):</p>
+
+      <div class="search-stats" id="stats-container">
+        <p>Loading statistics...</p>
+      </div>
+    </div>
+
+    <!-- Demo Section: Configuration -->
+    <div class="demo-section">
+      <h2>Customization</h2>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">CSS Styling</h3>
+      <p>
+        All search UI styles are customizable via CSS. Edit <code>docs/assets/css/search.css</code>
+        to change colors, spacing, fonts, and layout.
+      </p>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">Search Scoring</h3>
+      <p>
+        Adjust how search results are ranked by modifying the weight multipliers in <code>search.js</code>:
+      </p>
+      <pre><code>const typeMultiplier = {
+  'title': 3.0,    // Title matches weighted 3x
+  'heading': 2.0,  // Header matches weighted 2x
+  'body': 1.0      // Body matches baseline
+};</code></pre>
+
+      <h3 style="margin-top: 16px; margin-bottom: 8px;">Search Index</h3>
+      <p>
+        Manually edit <code>docs/data/search-index.json</code> to add custom pages
+        or modify indexed content without regenerating the full index.
+      </p>
+    </div>
+
+    <!-- Demo Section: Files -->
+    <div class="demo-section">
+      <h2>Files Included</h2>
+
+      <p>The complete search system includes:</p>
+
+      <pre><code>docs/
+├── assets/
+│   ├── css/
+│   │   └── search.css              # Search UI styles
+│   └── js/
+│       └── search.js               # Search implementation (1000+ lines)
+├── data/
+│   └── search-index.json           # Pre-built search index
+├── SEARCH_INTEGRATION_GUIDE.md      # Complete documentation
+└── SEARCH_HTML_EXAMPLE.html         # This file</code></pre>
+
+      <p style="margin-top: 16px;">
+        All files are production-ready and follow the HoloLoom documentation architecture.
+        See <code>FLAGSHIP_SITE_ARCHITECTURE.md</code> for complete site design.
+      </p>
+    </div>
+
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/search.js"></script>
+
+  <!-- Display Statistics -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('stats-container');
+
+      // Wait a bit for search to initialize
+      setTimeout(() => {
+        if (window.hololoomSearch) {
+          const stats = window.hololoomSearch.getStatistics();
+
+          container.innerHTML = `
+            <strong>Search Index Statistics:</strong><br>
+            Indexed Pages: ${stats.indexedPages}<br>
+            Indexed Sections: ${stats.indexedSections}<br>
+            Indexed Tokens: ${stats.indexTokens}<br>
+            Search History Size: ${stats.searchHistory}
+          `;
+
+          console.log('Search initialized successfully!');
+          console.log('Statistics:', stats);
+          console.log('Try searching using window.hololoomSearch.search("term")');
+        } else {
+          container.innerHTML = `
+            <strong>Status:</strong> Waiting for search to initialize...
+            (This may take a moment to load the search index)
+          `;
+        }
+      }, 100);
+    });
+  </script>
+
+</body>
+</html>

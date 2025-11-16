@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HoloLoom Training Part 5: Implementation Walkthroughs - Complete Query Lifecycle, Policy Engine, Embeddings, Knowledge Graphs, Spacetime, and Lifecycle Management.">
+  <meta name="keywords" content="HoloLoom, implementation, query lifecycle, policy engine, embeddings, knowledge graphs, spacetime, async context managers">
+
+  <title>Part 5: Implementation Walkthroughs - HoloLoom Training</title>
+
+  <style>
+    /* ============================================
+       CSS CUSTOM PROPERTIES & THEME SYSTEM
+       ============================================ */
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-warning: #ea580c;
+      --color-error: #dc2626;
+      --color-code-bg: #f5f5f5;
+      --color-code-text: #d73a49;
+
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 18px;
+      --font-size-sm: 16px;
+      --font-size-lg: 20px;
+      --font-size-xl: 28px;
+      --line-height: 1.6;
+
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-xl: 12px;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root[data-theme="dark"] {
+        --color-primary: #3b82f6;
+        --color-secondary: #a78bfa;
+        --color-accent: #60a5fa;
+        --color-background: #0f172a;
+        --color-surface: #1e293b;
+        --color-text: #f1f5f9;
+        --color-text-secondary: #cbd5e1;
+        --color-border: #334155;
+        --color-code-bg: #1e293b;
+        --color-code-text: #f472b6;
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: var(--line-height);
+      color: var(--color-text);
+      background-color: var(--color-background);
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    /* ============================================
+       NAVIGATION
+       ============================================ */
+
+    nav.main-nav {
+      background-color: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-lg) var(--spacing-2xl);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav.main-nav .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav.main-nav .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+
+    nav.main-nav ul {
+      list-style: none;
+      display: flex;
+      gap: var(--spacing-2xl);
+      align-items: center;
+    }
+
+    nav.main-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav.main-nav a:hover,
+    nav.main-nav a.active {
+      color: var(--color-primary);
+    }
+
+    /* ============================================
+       LAYOUT
+       ============================================ */
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--spacing-lg);
+    }
+
+    .content-wrapper {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: var(--spacing-2xl);
+      margin: var(--spacing-2xl) 0;
+    }
+
+    @media (max-width: 768px) {
+      .content-wrapper {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+      }
+
+      .sidebar {
+        display: none;
+      }
+    }
+
+    /* ============================================
+       SIDEBAR
+       ============================================ */
+
+    .sidebar {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+    }
+
+    .sidebar h3 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text-secondary);
+    }
+
+    .sidebar ul {
+      list-style: none;
+    }
+
+    .sidebar li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-size: 14px;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      display: block;
+      transition: all 0.2s;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: var(--color-primary);
+      color: white;
+    }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+
+    .main-content {
+      min-width: 0;
+    }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      margin-bottom: var(--spacing-lg);
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    /* Header Section */
+    .page-header {
+      margin-bottom: var(--spacing-2xl);
+      padding-bottom: var(--spacing-lg);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .page-header h1 {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      line-height: 1.2;
+    }
+
+    .page-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-lg);
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .progress-bar {
+      height: 4px;
+      background-color: var(--color-border);
+      border-radius: 2px;
+      margin-top: var(--spacing-md);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--color-success);
+      width: 100%;
+    }
+
+    /* Typography */
+    h2 {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-md);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--color-border);
+      scroll-margin-top: 100px;
+    }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      scroll-margin-top: 100px;
+    }
+
+    h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: var(--spacing-lg);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Code Blocks */
+    pre {
+      background-color: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--color-code-text);
+    }
+
+    pre code {
+      color: inherit;
+      background: none;
+      padding: 0;
+      font-size: 13px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    th {
+      background-color: var(--color-surface);
+      padding: var(--spacing-md);
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    td {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    tr:hover {
+      background-color: var(--color-surface);
+    }
+
+    /* Lists */
+    ul, ol {
+      margin-bottom: var(--spacing-lg);
+      margin-left: var(--spacing-xl);
+    }
+
+    li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* Blockquote */
+    blockquote {
+      border-left: 4px solid var(--color-primary);
+      padding-left: var(--spacing-lg);
+      margin-left: 0;
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-style: italic;
+    }
+
+    /* Table of Contents */
+    .toc {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .toc h3 {
+      margin-top: 0;
+      font-size: 16px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .toc ul {
+      list-style: none;
+      margin: 0;
+    }
+
+    .toc li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc a {
+      color: var(--color-primary);
+    }
+
+    /* Navigation Between Parts */
+    .part-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-lg);
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .nav-item.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .nav-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+      font-weight: 600;
+    }
+
+    .nav-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    /* Edit Link */
+    .edit-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .edit-link:hover {
+      color: var(--color-primary);
+    }
+
+    /* Diagrams */
+    .diagram {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      border-left: 4px solid var(--color-accent);
+      background-color: var(--color-surface);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      border-radius: var(--radius-md);
+    }
+
+    .callout strong {
+      color: var(--color-primary);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: var(--spacing-3xl);
+      padding: var(--spacing-2xl) 0;
+      border-top: 1px solid var(--color-border);
+      text-align: center;
+      color: var(--color-text-secondary);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="main-nav">
+    <div class="nav-container">
+      <a href="/" class="logo">HoloLoom</a>
+      <ul>
+        <li><a href="/">Docs</a></li>
+        <li><a href="/training" class="active">Training</a></li>
+        <li><a href="https://github.com/hololoom/hololoom">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="content-wrapper">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <h3>Training Parts</h3>
+        <ul>
+          <li><a href="index.html">Overview</a></li>
+          <li><a href="part1.html">Part 1: Foundations</a></li>
+          <li><a href="part2.html">Part 2: Core Concepts</a></li>
+          <li><a href="part3.html">Part 3: Tutorials</a></li>
+          <li><a href="part4.html">Part 4: Advanced</a></li>
+          <li><a href="part5.html" class="active">Part 5: Implementation</a></li>
+        </ul>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a> / <a href="/training">Training</a> / <strong>Part 5: Implementation</strong>
+        </div>
+
+        <!-- Edit Link -->
+        <a href="https://github.com/hololoom/hololoom/edit/main/TRAINING_PART_5_IMPLEMENTATION.md" class="edit-link">
+          ✎ Edit on GitHub
+        </a>
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <h1>Part 5: Implementation Walkthroughs</h1>
+          <div class="page-meta">
+            <div class="meta-item">📅 November 2025</div>
+            <div class="meta-item">⏱ 120+ minutes</div>
+            <div class="meta-item">🎯 Advanced Level</div>
+            <div class="meta-item">📍 Part 5 of 5</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+          <h3>📑 Table of Contents</h3>
+          <ul>
+            <li><a href="#complete-lifecycle">1. Complete Query Lifecycle Walkthrough</a></li>
+            <li><a href="#policy-engine">2. Policy Engine Decision Making</a></li>
+            <li><a href="#embeddings">3. Embedding Computation and Caching</a></li>
+            <li><a href="#knowledge-graph">4. Knowledge Graph Traversal</a></li>
+            <li><a href="#spacetime">5. Spacetime Construction and Provenance</a></li>
+            <li><a href="#lifecycle">6. Lifecycle Management and Cleanup</a></li>
+          </ul>
+        </div>
+
+        <div class="callout">
+          <strong>Note:</strong> This is the final part of the HoloLoom training series. It requires understanding of Parts 1-4. This section provides detailed code walkthroughs of actual HoloLoom implementation.
+        </div>
+
+        <!-- Content Starts Here -->
+
+        <h2 id="complete-lifecycle">1. Complete Query Lifecycle Walkthrough</h2>
+
+        <h3>Overview</h3>
+
+        <p>This section traces a single query from entry point to final <code>Spacetime</code> output. We'll follow the actual code path through all 9 steps of the weaving cycle.</p>
+
+        <h3>Simplified 9-Step Query Lifecycle Overview</h3>
+
+        <p><strong>Purpose</strong>: High-level flowchart with timing reference before detailed walkthrough</p>
+
+        <div class="diagram"><pre>SIMPLIFIED QUERY LIFECYCLE OVERVIEW
+(Detailed walkthrough follows in subsequent sections)
+
+Query: "What is Thompson Sampling?"
+    │
+    ▼ (5ms)
+[1. Pattern Selection] → mode=FAST selected
+    │
+    ▼ (1ms)
+[2. Temporal Window] → timeout=5s, window created
+    │
+    ▼ (50ms)
+[3. Memory Retrieval] → 5 shards retrieved from KG
+    │
+    ▼ (30ms)
+[4. Feature Extraction] → motifs + embeddings + spectral
+    │
+    ▼ (10ms)
+[5. Warp Tensioning] → continuous manifold created
+    │
+    ▼ (20ms)
+[6. Policy Decision] → tool="answer", confidence=0.92
+    │
+    ▼ (variable)
+[7. Tool Execution] → generate response
+    │
+    ▼ (5ms)
+[8. Spacetime Build] → result + trace + metadata
+    │
+    ▼ (2ms)
+[9. Reflection Update] → learn from outcome
+    │
+    ▼
+Result: Spacetime(response, confidence=0.92, trace=[...])
+
+Total: ~123ms (FAST mode)</pre></div>
+
+        <h3>MemoryShard Data Structure</h3>
+
+        <p><strong>Purpose</strong>: Understanding the core memory unit structure used throughout the pipeline</p>
+
+        <div class="diagram"><pre>MemoryShard Data Structure (Core Memory Unit):
+
+┌─────────────────────────────────────────────┐
+│ MemoryShard                                 │
+├─────────────────────────────────────────────┤
+│ id: str                                     │
+│   • UUID identifier                         │
+│   • Example: "shard_abc123..."              │
+├─────────────────────────────────────────────┤
+│ text: str                                   │
+│   • Raw content                             │
+│   • Example: "Thompson Sampling balances..."│
+├─────────────────────────────────────────────┤
+│ embedding: np.ndarray                       │
+│   • Shape: (384,) for FUSED mode            │
+│   • Matryoshka scales: [96D, 192D, 384D]    │
+│   • Normalized L2 norm                      │
+├─────────────────────────────────────────────┤
+│ motifs: List[str]                           │
+│   • Extracted patterns                      │
+│   • Example: ["thompson_sampling",          │
+│               "exploration", "bayesian"]    │
+├─────────────────────────────────────────────┤
+│ metadata: Dict                              │
+│   • Created timestamp                       │
+│   • Source document                         │
+│   • Confidence scores                       │
+├─────────────────────────────────────────────┤
+│ spectral_features: np.ndarray               │
+│   • Graph Laplacian eigenvalues             │
+│   • SVD topic components                    │
+│   • Shape: (20,)                            │
+└─────────────────────────────────────────────┘
+
+        <h2 id="policy-engine">2. Policy Engine Decision Making</h2>
+
+        <h3>Overview</h3>
+
+        <p>The policy engine is the "brain" of HoloLoom - it decides which tool to use based on:</p>
+
+        <ul>
+          <li><strong>Neural predictions</strong>: Deep learning on extracted features</li>
+          <li><strong>Thompson Sampling</strong>: Bayesian exploration-exploitation balance</li>
+          <li><strong>Context memory</strong>: What worked for similar queries before</li>
+        </ul>
+
+        <h3>Policy Architecture Diagram</h3>
+
+        <div class="diagram"><pre>Neural Policy Engine: Decision-Making Pipeline
+
+Input Features (from feature extraction):
+├─ Motif embeddings (384D)
+├─ Spectral features (20D)
+├─ Query context (variable)
+└─ Historical performance data
+    │
+    ▼
+┌─────────────────────────────────┐
+│ Neural Network (3 layers)       │
+│                                 │
+│ Layer 1: Dense (384 → 256)     │
+│   • ReLU activation             │
+│   • Dropout (0.1)               │
+│   │
+│   ▼
+│ Layer 2: Dense (256 → 128)     │
+│   • ReLU activation             │
+│   • Dropout (0.1)               │
+│   │
+│   ▼
+│ Layer 3: Dense (128 → n_tools) │
+│   • Output: Logits over tools   │
+│   • Example: [0.5, 2.1, 0.9]    │
+│     (3 tools)                   │
+└─────────────────────────────────┘
+    │
+    ├─────────────────────┬─────────────────────┐
+    ▼                     ▼                     ▼
+Epsilon-Greedy    Bayesian Blend      Pure Thompson
+(10% explore)     (70% NN+30% TS)      (100% TS)
+    │                    │                    │
+    └────────────────┬───┴────────────────┬──┘
+                     ▼
+            Selected Tool (e.g., "semantic_search")
+                     │
+                     ▼
+            Execute & Get Outcome
+                     │
+                     ▼
+            Update Thompson Sampling
+            α/β statistics
+                     │
+                     ▼
+            Return Decision + Confidence</pre></div>
+
+        <h2 id="embeddings">3. Embedding Computation and Caching</h2>
+
+        <h3>Matryoshka Multi-Scale Embeddings</h3>
+
+        <p>HoloLoom uses <strong>Matryoshka embeddings</strong> - a single 384D embedding that encodes multiple scales:</p>
+
+        <pre><code>Full embedding (384D):
+├─ Finest scale: 96D (most specific, exact semantics)
+├─ Medium scale: 192D (semantic + some context)
+└─ Coarse scale: 384D (broad topics + relationships)</code></pre>
+
+        <p><strong>Advantage</strong>: One embedding, multiple retrieval qualities. Use 96D for fast similar searches, 384D for deep understanding.</p>
+
+        <h3>Zero-Copy Embedding Optimization</h3>
+
+        <p>Instead of multiplying matrices to extract scales, use array slicing:</p>
+
+        <pre><code class="language-python"># Traditional (slow): 37.7× slower
+embedding_96d = np.matmul(full_embedding, projection_matrix_96)  # ~37ms
+
+# Zero-copy (fast): Direct slicing
+embedding_96d = full_embedding[:96]  # ~1ms ⚡
+
+# Speedup: 37×!</code></pre>
+
+        <h3>Embedding Cache Strategy</h3>
+
+        <div class="diagram"><pre>Three-Level Embedding Cache:
+
+Query: "Thompson Sampling"
+    │
+    ▼
+┌─────────────────────────────┐
+│ L1: Semantic Cache          │
+│ Hash("Thompson Sampling")   │
+│  → Check if computed        │
+│     │                       │
+│     ├─ HIT: Return 384D vec │ (1ms)
+│     │                       │
+│     └─ MISS: Continue       │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│ L2: Parse Cache             │
+│ Cache X-bar structure       │
+│  → Reuse phrase trees       │
+│     │                       │
+│     ├─ HIT: Skip parsing    │ (10× speedup)
+│     │                       │
+│     └─ MISS: Parse with     │
+│           spaCy             │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│ L3: Merge Cache             │
+│ Cache composition results   │
+│  → Reuse phrase merges      │
+│     │                       │
+│     ├─ HIT: Skip composition│ (5× speedup)
+│     │                       │
+│     └─ MISS: Merge layers   │
+└──────────────┬──────────────┘
+               │
+               ▼
+Compute Embedding (384D)
+Store in L1-L3 caches</pre></div>
+
+        <h2 id="knowledge-graph">4. Knowledge Graph Traversal</h2>
+
+        <h3>Yarn Graph Structure</h3>
+
+        <p>HoloLoom's knowledge graph (Yarn Graph) uses NetworkX MultiDiGraph with typed edges:</p>
+
+        <pre><code>Graph Structure:
+
+Nodes:
+├─ "Thompson Sampling" (entity type: CONCEPT)
+├─ "Thompson" (entity type: PERSON)
+├─ "Bayesian" (entity type: CONCEPT)
+└─ "Exploration" (entity type: CONCEPT)
+
+Edges (with relationship types):
+├─ "Thompson Sampling" --[IS_A]→ "Bayesian Method"
+├─ "Thompson Sampling" --[USES]→ "Beta Distribution"
+├─ "Thompson" --[DISCOVERED]→ "Thompson Sampling"
+├─ "Thompson Sampling" --[LEADS_TO]→ "Exploration Balance"
+└─ ... (more relationships)</code></pre>
+
+        <h3>Multi-Hop Retrieval</h3>
+
+        <p>Retrieve knowledge by following relationship paths:</p>
+
+        <pre><code class="language-python"># Start: "Thompson Sampling"
+# Goal: Find related concepts 2 hops away
+
+hop_1 = graph.get_neighbors("Thompson Sampling")
+# Returns: ["Beta Distribution", "Exploration", "Bayesian"]
+
+hop_2 = []
+for neighbor in hop_1:
+    neighbors_of_neighbor = graph.get_neighbors(neighbor)
+    hop_2.extend(neighbors_of_neighbor)
+# Returns: ["Probability", "Variance", "Reward", ...]
+
+# Result: Ranked by relevance score</code></pre>
+
+        <h2 id="spacetime">5. Spacetime Construction and Provenance</h2>
+
+        <h3>What is Spacetime?</h3>
+
+        <p><strong>Spacetime</strong> is HoloLoom's output format - a 4-dimensional response with complete provenance:</p>
+
+        <pre><code>Spacetime = Response + Trace + Metadata + Confidence
+
+Structure:
+├─ response: str
+│   └─ "Thompson Sampling balances exploration..."
+│
+├─ trace: List[WeavingStep]
+│   ├─ Step 1: Pattern selection (FAST mode)
+│   ├─ Step 2: Memory retrieval (5 shards found)
+│   ├─ Step 3: Feature extraction (confidence: 0.85)
+│   ├─ Step 4: Policy decision (tool: semantic_search)
+│   └─ Step 5: Response generation (latency: 42ms)
+│
+├─ metadata: Dict
+│   ├─ confidence: 0.92
+│   ├─ latency_ms: 125
+│   ├─ tool_used: "semantic_search"
+│   ├─ sources: [shard_id_1, shard_id_2, ...]
+│   └─ timestamp: "2025-11-16T10:30:45Z"
+│
+└─ confidence: float (0.0-1.0)
+    └─ 0.92 (very confident)</code></pre>
+
+        <h3>Building the Trace</h3>
+
+        <pre><code class="language-python">trace = []
+
+# Step 1: Log pattern selection
+trace.append(WeavingStep(
+    name="Pattern Selection",
+    duration_ms=5,
+    status="SUCCESS",
+    details={"mode": "FAST", "complexity": "medium"}
+))
+
+# Step 2: Log memory retrieval
+trace.append(WeavingStep(
+    name="Memory Retrieval",
+    duration_ms=50,
+    status="SUCCESS",
+    details={"shards_found": 5, "query": "Thompson Sampling"}
+))
+
+# Step 3: Log feature extraction
+trace.append(WeavingStep(
+    name="Feature Extraction",
+    duration_ms=30,
+    status="SUCCESS",
+    details={"confidence": 0.85}
+))
+
+# ... more steps ...
+
+# Create Spacetime with complete trace
+spacetime = Spacetime(
+    response="Thompson Sampling balances...",
+    trace=trace,
+    confidence=0.92,
+    metadata={
+        "latency_ms": sum(step.duration_ms for step in trace),
+        "timestamp": datetime.now(),
+    }
+)</code></pre>
+
+        <h2 id="lifecycle">6. Lifecycle Management and Cleanup</h2>
+
+        <h3>Async Context Manager Pattern</h3>
+
+        <p>HoloLoom uses Python's async context managers for proper resource cleanup:</p>
+
+        <pre><code class="language-python">async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
+    # Orchestrator initialized and ready
+
+    spacetime = await orchestrator.weave(query)
+    # Query processed
+
+    # On exit, AUTOMATICALLY:
+    # 1. Cancel background tasks
+    # 2. Flush reflection buffer
+    # 3. Close database connections
+    # 4. Clean up temporary files
+    # ✓ No manual cleanup needed!</code></pre>
+
+        <h3>Lifecycle Stages</h3>
+
+        <div class="diagram"><pre>Orchestrator Lifecycle:
+
+┌────────────────────────────┐
+│ __init__()                 │
+│ ├─ Create memory backend   │
+│ ├─ Load embeddings         │
+│ ├─ Initialize policy       │
+│ └─ Setup logging           │
+└─────────────┬──────────────┘
+              │
+              ▼
+┌────────────────────────────┐
+│ __aenter__()               │
+│ ├─ Connect to databases    │
+│ ├─ Verify models loaded    │
+│ ├─ Start background tasks  │
+│ └─ Ready for queries!      │
+└─────────────┬──────────────┘
+              │
+       ┌──────┴──────┐
+       │             │
+       ▼             ▼
+   weave()        weave()
+   (query 1)      (query N)
+       │             │
+       └──────┬──────┘
+              │
+              ▼
+┌────────────────────────────┐
+│ __aexit__()                │
+│                            │
+│ Step 1: Signal shutdown    │
+│ └─ Set shutdown flag       │
+│                            │
+│ Step 2: Cancel tasks       │
+│ └─ With 5-second timeout   │
+│                            │
+│ Step 3: Flush buffer       │
+│ └─ Write metrics to disk   │
+│                            │
+│ Step 4: Close DB           │
+│ └─ Neo4j/Qdrant cleanup    │
+│                            │
+│ Step 5: Clean files        │
+│ └─ Remove temp files       │
+│                            │
+│ Step 6: Verify success     │
+│ └─ Return cleanup status   │
+└────────────────────────────┘</pre></div>
+
+        <h3>Shutdown Protocol</h3>
+
+        <pre><code class="language-python">async def __aexit__(self, exc_type, exc_val, exc_tb):
+    """Async context manager exit."""
+
+    # Step 1: Signal shutdown
+    self._shutdown_event.set()
+
+    # Step 2: Cancel background tasks
+    for task in self._background_tasks:
+        task.cancel()
+
+    # Step 3: Wait for graceful shutdown
+    # (with timeout - don't hang forever)
+    try:
+        await asyncio.wait(self._background_tasks, timeout=5.0)
+    except asyncio.TimeoutError:
+        self.logger.warning("Shutdown timeout - forcing cleanup")
+
+    # Step 4: Flush reflection buffer
+    await reflection_buffer.flush()
+
+    # Step 5: Close database connections
+    await memory_backend.close()
+
+    # Step 6: Clean up temporary files
+    # (cache files, mmap files, etc.)</code></pre>
+
+        <h3>Error Handling During Shutdown</h3>
+
+        <p>Even if an exception occurred in the with block, cleanup still happens:</p>
+
+        <pre><code class="language-python">async def __aexit__(self, exc_type, exc_val, exc_tb):
+    """Handle exceptions during shutdown."""
+
+    # If an exception occurred in the with block
+    if exc_type is not None:
+        self.logger.error(f"Exception: {exc_type.__name__}: {exc_val}")
+
+        try:
+            # Still try to cleanup (aggressive mode)
+            for task in self._background_tasks:
+                task.cancel()
+
+            try:
+                await asyncio.wait(self._background_tasks, timeout=2.0)
+            except:
+                pass  # Timeout is OK
+
+            # Force flush (ignore errors)
+            try:
+                await self.reflection_buffer.flush(force=True)
+            except:
+                pass
+
+        except Exception as cleanup_error:
+            self.logger.error(f"Cleanup failed: {cleanup_error}")
+
+        # Re-raise original exception
+        return False
+
+    # No exception - normal exit
+    return True</code></pre>
+
+        <!-- Navigation Between Parts -->
+        <div class="part-nav">
+          <a href="part4.html" class="nav-item">
+            <span class="nav-label">← Previous</span>
+            <span class="nav-title">Part 4: Advanced Topics</span>
+          </a>
+          <a href="index.html" class="nav-item">
+            <span class="nav-label">Training Hub →</span>
+            <span class="nav-title">Back to Overview</span>
+          </a>
+        </div>
+
+        <div class="callout" style="margin-top: var(--spacing-2xl);">
+          <strong>Congratulations!</strong> You've completed the HoloLoom training series. You now understand HoloLoom from first principles to production implementation. Next steps: read the source code, run the demos, and build your own applications!
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>HoloLoom Training Documentation • Part 5 of 5 • <a href="https://github.com/hololoom">GitHub</a></p>
+  </footer>
+
+  <script>
+    // Dark mode toggle
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const theme = prefersDark.matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+
+    // Smooth scroll for hash links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

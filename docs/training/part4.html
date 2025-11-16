@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HoloLoom Training Part 4: Advanced Topics - Thompson Sampling, Compositional Caching, Recursive Learning, Alignment Framework, RAG System, and Phase 5 Universal Grammar Integration.">
+  <meta name="keywords" content="Thompson Sampling, Compositional Caching, Recursive Learning, Alignment Framework, RAG, Universal Grammar, HoloLoom">
+
+  <title>Part 4: Advanced Topics - HoloLoom Training</title>
+
+  <style>
+    /* ============================================
+       CSS CUSTOM PROPERTIES & THEME SYSTEM
+       ============================================ */
+
+    :root {
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-warning: #ea580c;
+      --color-error: #dc2626;
+      --color-code-bg: #f5f5f5;
+      --color-code-text: #d73a49;
+
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 18px;
+      --font-size-sm: 16px;
+      --font-size-lg: 20px;
+      --font-size-xl: 28px;
+      --line-height: 1.6;
+
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-xl: 12px;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root[data-theme="dark"] {
+        --color-primary: #3b82f6;
+        --color-secondary: #a78bfa;
+        --color-accent: #60a5fa;
+        --color-background: #0f172a;
+        --color-surface: #1e293b;
+        --color-text: #f1f5f9;
+        --color-text-secondary: #cbd5e1;
+        --color-border: #334155;
+        --color-code-bg: #1e293b;
+        --color-code-text: #f472b6;
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: var(--line-height);
+      color: var(--color-text);
+      background-color: var(--color-background);
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    /* ============================================
+       NAVIGATION
+       ============================================ */
+
+    nav.main-nav {
+      background-color: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-lg) var(--spacing-2xl);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav.main-nav .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav.main-nav .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+
+    nav.main-nav ul {
+      list-style: none;
+      display: flex;
+      gap: var(--spacing-2xl);
+      align-items: center;
+    }
+
+    nav.main-nav a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav.main-nav a:hover,
+    nav.main-nav a.active {
+      color: var(--color-primary);
+    }
+
+    /* ============================================
+       LAYOUT
+       ============================================ */
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--spacing-lg);
+    }
+
+    .content-wrapper {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: var(--spacing-2xl);
+      margin: var(--spacing-2xl) 0;
+    }
+
+    @media (max-width: 768px) {
+      .content-wrapper {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+      }
+
+      .sidebar {
+        display: none;
+      }
+    }
+
+    /* ============================================
+       SIDEBAR
+       ============================================ */
+
+    .sidebar {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+    }
+
+    .sidebar h3 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text-secondary);
+    }
+
+    .sidebar ul {
+      list-style: none;
+    }
+
+    .sidebar li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-size: 14px;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      display: block;
+      transition: all 0.2s;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: var(--color-primary);
+      color: white;
+    }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+
+    .main-content {
+      min-width: 0;
+    }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      margin-bottom: var(--spacing-lg);
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+
+    .breadcrumbs a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    /* Header Section */
+    .page-header {
+      margin-bottom: var(--spacing-2xl);
+      padding-bottom: var(--spacing-lg);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .page-header h1 {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      line-height: 1.2;
+    }
+
+    .page-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-lg);
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .progress-bar {
+      height: 4px;
+      background-color: var(--color-border);
+      border-radius: 2px;
+      margin-top: var(--spacing-md);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--color-success);
+      width: 80%;
+    }
+
+    /* Typography */
+    h2 {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      margin-top: var(--spacing-2xl);
+      margin-bottom: var(--spacing-md);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--color-border);
+      scroll-margin-top: 100px;
+    }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      scroll-margin-top: 100px;
+    }
+
+    p {
+      margin-bottom: var(--spacing-md);
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Code Blocks */
+    pre {
+      background-color: var(--color-code-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--color-code-text);
+    }
+
+    pre code {
+      color: inherit;
+      background: none;
+      padding: 0;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    th {
+      background-color: var(--color-surface);
+      padding: var(--spacing-md);
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    td {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    tr:hover {
+      background-color: var(--color-surface);
+    }
+
+    /* Lists */
+    ul, ol {
+      margin-bottom: var(--spacing-lg);
+      margin-left: var(--spacing-xl);
+    }
+
+    li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* Blockquote */
+    blockquote {
+      border-left: 4px solid var(--color-primary);
+      padding-left: var(--spacing-lg);
+      margin-left: 0;
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-text-secondary);
+      font-style: italic;
+    }
+
+    /* Table of Contents */
+    .toc {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .toc h3 {
+      margin-top: 0;
+      font-size: 16px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .toc ul {
+      list-style: none;
+      margin: 0;
+    }
+
+    .toc li {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .toc a {
+      color: var(--color-primary);
+    }
+
+    /* Navigation Between Parts */
+    .part-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-lg);
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .nav-item.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .nav-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+      font-weight: 600;
+    }
+
+    .nav-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    /* Edit Link */
+    .edit-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .edit-link:hover {
+      color: var(--color-primary);
+    }
+
+    /* Diagrams */
+    .diagram {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    /* Collapsible Sections */
+    .collapsible {
+      cursor: pointer;
+      padding: var(--spacing-lg);
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .collapsible:hover {
+      background-color: var(--color-border);
+    }
+
+    .collapsible-content {
+      display: none;
+      padding: var(--spacing-lg);
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-top: none;
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+    }
+
+    .collapsible.active + .collapsible-content {
+      display: block;
+    }
+
+    .collapsible::after {
+      content: "▼";
+      transition: transform 0.2s;
+      font-size: 12px;
+    }
+
+    .collapsible.active::after {
+      transform: rotate(180deg);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: var(--spacing-3xl);
+      padding: var(--spacing-2xl) 0;
+      border-top: 1px solid var(--color-border);
+      text-align: center;
+      color: var(--color-text-secondary);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="main-nav">
+    <div class="nav-container">
+      <a href="/" class="logo">HoloLoom</a>
+      <ul>
+        <li><a href="/">Docs</a></li>
+        <li><a href="/training" class="active">Training</a></li>
+        <li><a href="https://github.com/hololoom/hololoom">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="content-wrapper">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <h3>Training Parts</h3>
+        <ul>
+          <li><a href="index.html">Overview</a></li>
+          <li><a href="part1.html">Part 1: Foundations</a></li>
+          <li><a href="part2.html">Part 2: Core Concepts</a></li>
+          <li><a href="part3.html">Part 3: Tutorials</a></li>
+          <li><a href="part4.html" class="active">Part 4: Advanced</a></li>
+          <li><a href="part5.html">Part 5: Implementation</a></li>
+        </ul>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+          <a href="/">Home</a> / <a href="/training">Training</a> / <strong>Part 4: Advanced Topics</strong>
+        </div>
+
+        <!-- Edit Link -->
+        <a href="https://github.com/hololoom/hololoom/edit/main/TRAINING_PART_4_ADVANCED_TOPICS.md" class="edit-link">
+          ✎ Edit on GitHub
+        </a>
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <h1>Part 4: Advanced Topics</h1>
+          <div class="page-meta">
+            <div class="meta-item">📅 November 2025</div>
+            <div class="meta-item">⏱ 45-60 minutes</div>
+            <div class="meta-item">🎯 Advanced Level</div>
+            <div class="meta-item">📍 Part 4 of 5</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+          <h3>📑 Table of Contents</h3>
+          <ul>
+            <li><a href="#thompson-sampling">1. Thompson Sampling Deep Dive</a></li>
+            <li><a href="#compositional-caching">2. Compositional Caching: The 291× Speedup</a></li>
+            <li><a href="#recursive-learning">3. Recursive Learning Loop</a></li>
+            <li><a href="#alignment-safety">4. Alignment and Safety Framework</a></li>
+            <li><a href="#rag-system">5. RAG System Architecture</a></li>
+            <li><a href="#phase5-ug">6. Phase 5: Universal Grammar Integration</a></li>
+          </ul>
+        </div>
+
+        <!-- Content Starts Here -->
+
+        <h2 id="thompson-sampling">1. Thompson Sampling Deep Dive</h2>
+
+        <h3>The Problem: Exploration vs Exploitation</h3>
+
+        <p>When you have multiple tools available, how do you decide which to use?</p>
+
+        <ul>
+          <li><strong>Exploitation</strong>: Always pick the tool that worked best in the past</li>
+          <li><strong>Exploration</strong>: Sometimes try other tools to find better ones</li>
+          <li><strong>Thompson Sampling</strong>: A Bayesian method that balances both mathematically</li>
+        </ul>
+
+        <h3>Beta Distribution Explained</h3>
+
+        <p>Thompson Sampling uses <strong>Beta distributions</strong> to represent uncertainty about each tool's success rate.</p>
+
+        <p>A Beta distribution has two parameters: <strong>α</strong> (successes) and <strong>β</strong> (failures)</p>
+
+        <pre><code>Beta(α, β)
+
+α = number of successes
+β = number of failures
+
+Expected success rate = α / (α + β)</code></pre>
+
+        <h4>Visual Example:</h4>
+
+        <div class="diagram"><pre>Tool A: 80 successes, 20 failures → Beta(80, 20)
+Tool B: 10 successes, 5 failures → Beta(10, 5)
+
+Tool A:
+E[X] = 80/100 = 0.80  (more confident - narrow distribution)
+   │
+   │     ████
+   │    ██████
+   │   ████████
+   └─────────────
+   0.0  0.5  1.0
+
+Tool B:
+E[X] = 10/15 = 0.67  (less confident - wide distribution)
+   │
+   │  ███    ███
+   │ █████  █████
+   │ █████████████
+   └─────────────
+   0.0  0.5  1.0</pre></div>
+
+        <p><strong>Key insight</strong>: Even though Tool B has lower expected success rate, its wider distribution means it might actually be better. Thompson Sampling samples from each distribution to decide.</p>
+
+        <h3>Beta Distribution Uncertainty Comparison</h3>
+
+        <p>This diagram shows how <strong>uncertainty level</strong> affects Thompson Sampling's exploration behavior. Tools with higher uncertainty get sampled more often, even if their expected value is lower.</p>
+
+        <div class="diagram"><pre>Thompson Sampling: Choosing Next Tool
+
+Tool A: Well-tested (α=50, β=10)
+Expected Success: 83% │ Uncertainty: LOW
+    │                    ▲
+    │                   ╱│╲
+    │                  ╱ │ ╲
+    │                 ╱  │  ╲
+    │________________╱___│___╲_____________
+    0%              67% 83% 90%        100%
+
+Tool B: Moderately tested (α=10, β=5)
+Expected Success: 67% │ Uncertainty: MEDIUM
+    │              ▲
+    │             ╱│╲
+    │            ╱ │ ╲
+    │           ╱  │  ╲
+    │__________╱___│___╲________________
+    0%        50% 67% 80%            100%
+
+Tool C: Barely tested (α=2, β=1)
+Expected Success: 67% │ Uncertainty: HIGH
+    │      ▲
+    │     ╱│╲
+    │    ╱ │ ╲__
+    │   ╱  │    ╲___
+    │__╱___│________╲________________
+    0%   40% 67%  90%             100%
+
+Thompson Sampling Decision:
+• Sample from each distribution
+• Tool A samples: 81% (reliable but known)
+• Tool B samples: 72% (moderate)
+• Tool C samples: 85% (high variance = exploration!)
+→ Chooses Tool C despite lower expected value!
+
+This is how Thompson Sampling balances:
+✓ Exploitation (use what works)
+✓ Exploration (try uncertain options)</pre></div>
+
+        <p><strong>Understanding the diagram:</strong></p>
+        <ul>
+          <li><strong>Tool A</strong>: Narrow distribution means confident. Most samples cluster around 83%. Rarely wins against B and C when they get lucky samples.</li>
+          <li><strong>Tool B</strong>: Medium spread. Samples range from 50% to 80%. Can win against A despite lower expected value.</li>
+          <li><strong>Tool C</strong>: Extremely wide. Could sample anywhere from 40% to 90%. Sometimes samples above both A and B!</li>
+        </ul>
+
+        <p>This is why Thompson Sampling explores more intelligently than epsilon-greedy. It <em>mathematically accounts for uncertainty</em> when making decisions.</p>
+
+        <h3>How Sampling Works</h3>
+
+        <p>At each decision point:</p>
+
+        <ol>
+          <li><strong>Sample</strong> from each tool's Beta distribution</li>
+          <li><strong>Pick</strong> the tool with highest sampled value</li>
+          <li><strong>Execute</strong> that tool</li>
+          <li><strong>Update</strong> the distribution based on success/failure</li>
+        </ol>
+
+        <pre><code class="language-python"># Thompson Sampling algorithm
+class TSBandit:
+    def __init__(self, n_tools=5):
+        # Initialize all tools with Beta(1, 1) = uniform
+        self.alpha = np.ones(n_tools)    # successes
+        self.beta = np.ones(n_tools)     # failures
+
+    def select_tool(self):
+        # Sample from each tool's Beta distribution
+        samples = [np.random.beta(self.alpha[i], self.beta[i])
+                   for i in range(len(self.alpha))]
+        # Return tool with highest sample
+        return np.argmax(samples)
+
+    def update(self, tool_idx, success):
+        # Update based on outcome
+        if success:
+            self.alpha[tool_idx] += 1     # More successes
+        else:
+            self.beta[tool_idx] += 1      # More failures</code></pre>
+
+        <h3>Comparison to Epsilon-Greedy</h3>
+
+        <p>Two common strategies in HoloLoom:</p>
+
+        <p><strong>Epsilon-Greedy</strong> (simpler):</p>
+        <pre><code>With probability ε (e.g., 0.1):
+    Pick random tool
+Otherwise:
+    Pick best tool based on past performance</code></pre>
+
+        <p><strong>Thompson Sampling</strong> (more sophisticated):</p>
+        <pre><code>For each tool:
+    Sample from Beta(successes, failures)
+Pick tool with highest sample</code></pre>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Aspect</th>
+              <th>Epsilon-Greedy</th>
+              <th>Thompson Sampling</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Exploration</strong></td>
+              <td>Random</td>
+              <td>Probabilistic</td>
+            </tr>
+            <tr>
+              <td><strong>Uncertainty</strong></td>
+              <td>Ignored</td>
+              <td>Explicitly modeled</td>
+            </tr>
+            <tr>
+              <td><strong>Efficiency</strong></td>
+              <td>Good</td>
+              <td>Better</td>
+            </tr>
+            <tr>
+              <td><strong>Complexity</strong></td>
+              <td>Simple</td>
+              <td>Moderate</td>
+            </tr>
+            <tr>
+              <td><strong>Recommended</strong></td>
+              <td>Stable, simple systems</td>
+              <td>Adaptive, complex systems</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>When Thompson Sampling Wins</h3>
+
+        <p>Thompson Sampling outperforms epsilon-greedy when:</p>
+
+        <ol>
+          <li><strong>Uncertainty varies</strong>: Tools have different confidence levels (different sample sizes)</li>
+          <li><strong>Payoff varies</strong>: Some tools give bigger rewards than others</li>
+          <li><strong>You have time to explore</strong>: Not all decisions are critical</li>
+          <li><strong>You want to learn</strong>: System improves over time</li>
+        </ol>
+
+        <h3>Bayesian Updating Formula</h3>
+
+        <p>When a tool succeeds or fails, we update its Beta distribution:</p>
+
+        <pre><code>Tool outcome observed:
+
+If success:
+    α_new = α_old + 1
+
+If failure:
+    β_new = β_old + 1
+
+Expected value updates automatically:
+    E[success] = α_new / (α_new + β_new)</code></pre>
+
+        <p><strong>Example:</strong></p>
+
+        <pre><code>Tool starts: Beta(1, 1)
+    E[success] = 1/(1+1) = 0.50
+
+Query 1: Success
+    Beta(2, 1), E[success] = 2/(2+1) = 0.67
+
+Query 2: Failure
+    Beta(2, 2), E[success] = 2/(2+2) = 0.50
+
+Query 3: Success
+    Beta(3, 2), E[success] = 3/(3+2) = 0.60</code></pre>
+
+        <h3>Code Walkthrough: BanditStrategy in HoloLoom</h3>
+
+        <pre><code class="language-python">from HoloLoom.policy.unified import NeuralPolicy, BanditStrategy
+import numpy as np
+
+class NeuralPolicy:
+    def __init__(self, bandit_strategy=BanditStrategy.EPSILON_GREEDY):
+        self.bandit = TSBandit(n_tools=5)
+        self.bandit_strategy = bandit_strategy
+        self.neural_output = None  # Will hold NN predictions
+
+    def select_tool(self, features, context):
+        """Choose which tool to use"""
+
+        # Get neural network prediction
+        self.neural_output = self.nn(features, context)  # logits over tools
+
+        if self.bandit_strategy == BanditStrategy.EPSILON_GREEDY:
+            # 90% neural, 10% Thompson
+            if np.random.random() < 0.1:
+                return self.bandit.select_tool()  # Thompson sample
+            else:
+                return np.argmax(self.neural_output)  # Neural choice
+
+        elif self.bandit_strategy == BanditStrategy.BAYESIAN_BLEND:
+            # 70% neural + 30% Thompson
+            neural_probs = softmax(self.neural_output)  # Convert to probabilities
+
+            # Get Thompson priors
+            ts_probs = np.array([
+                self.bandit.alpha[i] / (self.bandit.alpha[i] + self.bandit.beta[i])
+                for i in range(len(self.bandit.alpha))
+            ])
+
+            # Blend: 70% neural, 30% Thompson
+            blend_probs = 0.7 * neural_probs + 0.3 * ts_probs
+            return np.argmax(blend_probs)
+
+        elif self.bandit_strategy == BanditStrategy.PURE_THOMPSON:
+            # 100% Thompson, ignore neural network
+            return self.bandit.select_tool()
+
+    def update(self, tool_idx, success):
+        """Learn from outcome"""
+        # Update bandit with ACTUALLY SELECTED tool
+        if success:
+            self.bandit.alpha[tool_idx] += 1
+        else:
+            self.bandit.beta[tool_idx] += 1</code></pre>
+
+        <h2 id="compositional-caching">2. Compositional Caching: The 291× Speedup</h2>
+
+        <h3>Why Traditional Caching Fails for Language</h3>
+
+        <p>Standard caching stores full results:</p>
+
+        <pre><code>Query: "What is Thompson Sampling?"
+  → Retrieve sources
+  → Generate response
+  → Cache result
+
+Next query: "Explain Thompson Sampling"
+  → Cache MISS (different query string)
+  → Retrieve sources AGAIN
+  → Generate response AGAIN</code></pre>
+
+        <p><strong>Problem</strong>: Two semantically similar queries miss cache because they're syntactically different.</p>
+
+        <p><strong>Hit rate</strong>: ~10-20% in practice (most queries are unique)</p>
+
+        <h3>The Compositionality Insight</h3>
+
+        <p>Language is <strong>compositional</strong>: Meaning builds hierarchically from parts.</p>
+
+        <pre><code>"the big red ball"
+
+Can be decomposed:
+├─ "the" (determiner)
+├─ "big" (adjective)
+├─ "red" (adjective)
+└─ "ball" (noun)
+
+And composed:
+Step 1: Merge("red", "ball") → "red ball"
+Step 2: Merge("big", "red ball") → "big red ball"
+Step 3: Merge("the", "big red ball") → "the big red ball"</code></pre>
+
+        <p><strong>Key insight</strong>: If we cache intermediate compositions, we can reuse them:</p>
+
+        <pre><code>"a red ball"       → Uses cached "red ball" + new "a"
+"the red ball"     → Uses cached "red ball" + new "the"
+"the big red ball" → Uses cached "big red ball" + cached "red ball"</code></pre>
+
+        <p><strong>Expected hit rate</strong>: 50-80% (massive improvement!)</p>
+
+        <h3>Three-Tier Cache Architecture</h3>
+
+        <div class="diagram"><pre>┌─────────────────────────────────────────────────────────────┐
+│                   INPUT QUERY                               │
+│              "the big red ball"                              │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────┐
+        │   TIER 1: PARSE CACHE            │
+        │   Cache X-bar structures         │
+        │                                  │
+        │   "the big red ball"             │
+        │   └─ NP                          │
+        │       ├─ Det "the"               │
+        │       └─ N'                      │
+        │           ├─ A "big"             │
+        │           └─ N'                  │
+        │               ├─ A "red"         │
+        │               └─ N "ball"        │
+        │                                  │
+        │   Hit: Skip spaCy parsing        │
+        │   Speedup: 10-50×                │
+        └──────────────┬───────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────┐
+        │   TIER 2: MERGE CACHE            │
+        │   Cache compositional embeddings │
+        │                                  │
+        │   ("red", "ball") → 384D vec     │
+        │   ("big", "red ball") → 384D vec │
+        │   ("the", "big red ball") → vec  │
+        │                                  │
+        │   Hit: Skip Merge operations     │
+        │   Speedup: 5-10×                 │
+        └──────────────┬───────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────┐
+        │   TIER 3: SEMANTIC CACHE         │
+        │   Cache 244D projections         │
+        │                                  │
+        │   384D → 244D (MatryoshkaGate)   │
+        │                                  │
+        │   Hit: Skip projection           │
+        │   Speedup: 3-10×                 │
+        └──────────────┬───────────────────┘
+                       │
+                       ▼
+                  Final result
+                  (or cache miss)</pre></div>
+
+        <h3>Cache Hit Mechanics</h3>
+
+        <p>When do caches hit?</p>
+
+        <p><strong>TIER 1 (Parse Cache)</strong>:</p>
+        <ul>
+          <li>Hits when: Same character sequence appears</li>
+          <li>Hit rate: ~60% (many queries with overlapping phrases)</li>
+        </ul>
+
+        <p><strong>TIER 2 (Merge Cache)</strong>:</p>
+        <ul>
+          <li>Hits when: Same (head, dependent, merge_type) appears</li>
+          <li>Hit rate: ~70% (many queries reuse sub-phrases)</li>
+          <li>Example: "red ball" appears in "the red ball", "a red ball", "red ball analysis"</li>
+        </ul>
+
+        <p><strong>TIER 3 (Semantic Cache)</strong>:</p>
+        <ul>
+          <li>Hits when: Same embedding output appears</li>
+          <li>Hit rate: ~80% (many queries project to same 244D space)</li>
+        </ul>
+
+        <p><strong>Combined hit rate</strong> (all three tiers): ~50-80%</p>
+
+        <h3>Performance Characteristics</h3>
+
+        <pre><code>Cache lookup:         &lt;0.1ms (hash table, negligible)
+Cache storage:        ~1KB per cached item
+Memory for 10K items: ~10MB (very reasonable)
+
+Latency breakdown (typical query):
+
+Without cache:
+├─ Parse            20ms
+├─ Merge (3 levels) 45ms
+├─ Embed            60ms
+├─ Project          25ms
+└─ Total            150ms
+
+With cache (warm):
+├─ Parse (hit)      &lt;1ms
+├─ Merge (all hit)  &lt;1ms
+├─ Embed (hit)      &lt;1ms
+├─ Project (hit)    &lt;1ms
+└─ Total            &lt;1ms
+
+Speedup: 150× on warm path!</code></pre>
+
+        <h2 id="recursive-learning">3. Recursive Learning Loop</h2>
+
+        <p>The Recursive Learning System implements 5 self-improving phases that work together to continuously improve HoloLoom's decision-making.</p>
+
+        <h3>The Five Phases Explained</h3>
+
+        <pre><code>Phase 1: Scratchpad Integration
+  ↓ Tracks complete provenance
+Phase 2: Loop Engine Integration
+  ↓ Learns patterns from high-confidence queries
+Phase 3: Hot Pattern Feedback
+  ↓ Adapts based on usage frequency
+Phase 4: Advanced Refinement
+  ↓ Multiple quality improvement strategies
+Phase 5: Full Learning Loop
+  ↓ Background learning with Thompson Sampling</code></pre>
+
+        <h3>Performance Overhead</h3>
+
+        <p>Recursive learning has minimal overhead:</p>
+
+        <pre><code>Per-query overhead:
+├─ Provenance extraction (Phase 1):  &lt;1ms
+├─ Pattern extraction (Phase 2):     &lt;1ms (high-conf only)
+├─ Heat tracking (Phase 3):          &lt;0.5ms
+├─ Thompson/Policy update (Phase 4): &lt;0.5ms
+└─ Total per-query:                  &lt;3ms
+
+Background learning (async, runs every 60s):
+├─ Pattern mining:  ~500ms
+├─ Stats aggregation: ~100ms
+├─ Thompson update: ~50ms
+└─ Total per cycle: ~650ms (happens in background)</code></pre>
+
+        <h2 id="alignment-safety">4. Alignment and Safety Framework</h2>
+
+        <h3>Why Alignment Matters for Agents</h3>
+
+        <p>As systems become more agentic (making decisions autonomously), safety becomes critical.</p>
+
+        <p><strong>Risks of unaligned agents:</strong></p>
+        <ul>
+          <li>Taking unintended actions (goal misspecification)</li>
+          <li>Deceiving humans (instrumental goal pursuit)</li>
+          <li>Resource acquisition (power-seeking)</li>
+          <li>Unexpected behaviors in edge cases</li>
+        </ul>
+
+        <p><strong>HoloLoom's approach</strong>: "Safe by default, transparent by design"</p>
+
+        <p>Every decision gated by safety checks, with minimal performance cost (&lt;0.1ms).</p>
+
+        <h3>Four Core Modules</h3>
+
+        <p><strong>1. Safety Guardrails (0.039 ms)</strong> - Risk-based action gating</p>
+        <p><strong>2. Deception Detection (0.034 ms)</strong> - Goal transparency monitoring</p>
+        <p><strong>3. Instrumental Convergence Prevention (0.015 ms)</strong> - Power-seeking detection</p>
+        <p><strong>4. Audit Trail (0.015 ms)</strong> - Complete decision provenance</p>
+
+        <p><strong>Total Overhead:</strong> 0.103ms (29× faster than 3ms target!)</p>
+
+        <h3>Alignment Framework Integration Diagram</h3>
+
+        <div class="diagram"><pre>Alignment Framework: Decision Safety Pipeline
+
+User Query
+    │
+    ▼
+┌──────────────────────────────────────┐
+│  1. Safety Guardrails                │  ⏱ 0.039ms
+│  ┌────────────────────────────────┐  │
+│  │ Risk Assessment:               │  │
+│  │ • Action type analysis         │  │
+│  │ • Adversarial pattern check    │  │
+│  │ • Risk level: LOW/MED/HIGH/CRIT│  │
+│  └────────────────────────────────┘  │
+└───────────────┬──────────────────────┘
+                │
+                ├─ Risk ≥ HIGH? ──→ Human-in-Loop ──→ Approve/Reject
+                │                                           │
+                ▼                                           │
+┌──────────────────────────────────────┐                    │
+│  2. Deception Detection              │  ⏱ 0.034ms        │
+│  ┌────────────────────────────────┐  │                    │
+│  │ • Goal transparency check      │  │                    │
+│  │ • Behavioral probe system      │  │                    │
+│  │ • Hidden goal detection        │  │                    │
+│  └────────────────────────────────┘  │                    │
+└───────────────┬──────────────────────┘                    │
+                │                                           │
+                ▼                                           │
+┌──────────────────────────────────────┐                    │
+│  3. Instrumental Convergence Check   │  ⏱ 0.015ms        │
+│  ┌────────────────────────────────┐  │                    │
+│  │ • Power-seeking detection      │  │                    │
+│  │ • Resource acquisition monitor │  │                    │
+│  │ • Self-preservation check      │  │                    │
+│  └────────────────────────────────┘  │                    │
+└───────────────┬──────────────────────┘                    │
+                │                                           │
+                ▼                                           │
+┌──────────────────────────────────────┐                    │
+│  4. Audit Trail Logging              │  ⏱ 0.015ms        │
+│  ┌────────────────────────────────┐  │                    │
+│  │ • Complete provenance          │  │                    │
+│  │ • Decision lineage             │  │                    │
+│  │ • Searchable logs              │  │                    │
+│  └────────────────────────────────┘  │                    │
+└───────────────┬──────────────────────┘                    │
+                │                                           │
+                ▼                                           │
+         Action Approved ✓ ◄───────────────────────────────┘
+                │
+                ▼
+    Execute with full monitoring
+
+Total Overhead: 0.103ms (29× faster than 3ms target!)</pre></div>
+
+        <h2 id="rag-system">5. RAG System Architecture</h2>
+
+        <h3>Level 1-4 RAG Explained</h3>
+
+        <p>RAG (Retrieval-Augmented Generation) exists at multiple sophistication levels:</p>
+
+        <p><strong>Level 1: Basic Retrieval</strong></p>
+        <pre><code>Query → BM25 keyword search → Top K documents → Send to LLM</code></pre>
+
+        <p><strong>Level 2: Hybrid Search</strong></p>
+        <pre><code>Query → (BM25 + semantic similarity) → Top K → LLM</code></pre>
+
+        <p><strong>Level 3: Graph RAG</strong></p>
+        <pre><code>Query → Entity extraction → Knowledge graph → Multi-hop traversal → LLM</code></pre>
+
+        <p><strong>Level 4: Agentic RAG (HoloLoom)</strong></p>
+        <pre><code>Query → Multi-step reasoning → Verification → Research → Plan-Execute → LLM</code></pre>
+
+        <h3>RAG Levels Pyramid (1-4)</h3>
+
+        <p>This diagram shows how each RAG level <strong>builds on</strong> the previous one, creating a hierarchy of capabilities.</p>
+
+        <div class="diagram"><pre>RAG System Capability Levels:
+
+             ╱╲
+            ╱  ╲
+           ╱ L4 ╲        ← HoloLoom (Agentic + Graph)
+          ╱──────╲
+         ╱ Agentic╲      • VERIFY/RESEARCH/PLAN modes
+        ╱  + Graph ╲     • Multi-step reasoning
+       ╱────────────╲    • Entity relationships
+      ╱      L3      ╲   • Self-correction
+     ╱──────────────  ╲
+    ╱   Graph RAG     ╲  ← Knowledge graphs
+   ╱  (Relationships)  ╲ • Entity connections
+  ╱──────────────────  ╲• Multi-hop traversal
+ ╱        L2            ╲
+╱────────────────────────╲ ← Hybrid search
+╱     Hybrid Search       ╲• BM25 + semantic
+────────────────────────────• Reranking
+╱          L1              ╲
+──────────────────────────────← Basic RAG
+     Vector Similarity      • Single-pass retrieval
+                            • No reasoning
+
+Progression:
+L1 → L2: Add keyword search (BM25)
+L2 → L3: Add knowledge graph
+L3 → L4: Add agentic reasoning
+
+HoloLoom = Full L4 out of the box!</pre></div>
+
+        <h3>Four Reasoning Modes</h3>
+
+        <p>Choose reasoning depth based on query complexity:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Strategy</th>
+              <th>Latency</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>DIRECT</strong></td>
+              <td>Single retrieval + generation</td>
+              <td>~150ms</td>
+              <td>"What is X?"</td>
+            </tr>
+            <tr>
+              <td><strong>VERIFY</strong></td>
+              <td>Retrieve → Generate → Verify</td>
+              <td>~600ms</td>
+              <td>"Prove that..."</td>
+            </tr>
+            <tr>
+              <td><strong>RESEARCH</strong></td>
+              <td>Multi-query exploration</td>
+              <td>~900ms</td>
+              <td>"Explore topic..."</td>
+            </tr>
+            <tr>
+              <td><strong>PLAN_EXECUTE</strong></td>
+              <td>Decompose → Research → Synthesize</td>
+              <td>~750ms</td>
+              <td>"How to do X?"</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="phase5-ug">6. Phase 5: Universal Grammar Integration</h2>
+
+        <h3>X-bar Theory Primer</h3>
+
+        <p>X-bar theory is a linguistic principle for phrase structure:</p>
+
+        <p><strong>Core idea</strong>: All phrases have same hierarchical structure</p>
+
+        <pre><code>XP (Phrase level)
+├─ Spec(ifier)
+└─ X'   (Intermediate level)
+    ├─ X (Head)
+    └─ Comp(lement)</code></pre>
+
+        <p><strong>Examples:</strong></p>
+
+        <pre><code>Noun Phrase (NP): "the big red ball"
+NP
+├─ Det "the"
+└─ N'
+    ├─ A "big"
+    └─ N'
+        ├─ A "red"
+        └─ N "ball"
+
+Verb Phrase (VP): "run quickly"
+VP
+├─ V "run"
+└─ Adv "quickly"
+
+Prepositional Phrase (PP): "in the morning"
+PP
+├─ P "in"
+└─ NP "the morning"</code></pre>
+
+        <h3>Linguistic Matryoshka Gate</h3>
+
+        <p>Combines linguistic structure with Matryoshka embeddings:</p>
+
+        <div class="diagram"><pre>┌──────────────────────────────────┐
+│  Query: "the big red ball"       │
+└────────┬─────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────┐
+│  Linguistic Gate Analysis        │
+│                                  │
+│  Parse: NP (noun phrase)         │
+│  Head: "ball"                    │
+│  Modifiers: ["red", "big"]       │
+│  Syntactic Type: COUNT NOUN      │
+└────────┬─────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────┐
+│  Pre-filter Candidates           │
+│  (by syntactic compatibility)    │
+│                                  │
+│  Candidate 1: NP with "ball"     │ ✓ Match!
+│  Candidate 2: VP phrase          │ ✗ Skip (verb)
+│  Candidate 3: NP with adjectives │ ✓ Match!
+│                                  │
+│  Retained: 2/10 (80% reduction)  │
+└────────┬─────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────┐
+│  Embed Remaining Candidates      │
+│  (only those syntactically valid)│
+│                                  │
+│  Similarity search on reduced set│
+│  Much faster! (10x speedup)      │
+└──────────────────────────────────┘</pre></div>
+
+        <h3>10-300× Speedup (Compositional Reuse)</h3>
+
+        <p>How linguistic integration achieves massive speedup:</p>
+
+        <p><strong>Speedup sources:</strong></p>
+
+        <ol>
+          <li><strong>Parse caching</strong> (10-50×) - Cache X-bar structures, don't re-parse</li>
+          <li><strong>Syntactic pre-filtering</strong> (2-5×) - Filter candidates before embedding</li>
+          <li><strong>Compositional reuse</strong> (5-10×) - "red ball" cached and reused</li>
+        </ol>
+
+        <p><strong>Total multiplicative speedup</strong>: 10 × 2 × 5 = 100× potential</p>
+
+        <p><strong>Realistic with cache misses</strong>: 10-50× typical</p>
+
+        <p><strong>Hot path (everything cached)</strong>: 100-300×</p>
+
+        <!-- Navigation Between Parts -->
+        <div class="part-nav">
+          <a href="part3.html" class="nav-item">
+            <span class="nav-label">← Previous</span>
+            <span class="nav-title">Part 3: Tutorials</span>
+          </a>
+          <a href="part5.html" class="nav-item">
+            <span class="nav-label">Next →</span>
+            <span class="nav-title">Part 5: Implementation</span>
+          </a>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>HoloLoom Training Documentation • Part 4 of 5 • <a href="https://github.com/hololoom">GitHub</a></p>
+  </footer>
+
+  <script>
+    // Dark mode toggle
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const theme = prefersDark.matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+
+    // Smooth scroll for hash links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Collapsible sections
+    document.querySelectorAll('.collapsible').forEach(el => {
+      el.addEventListener('click', function() {
+        this.classList.toggle('active');
+      });
+    });
+  </script>
+</body>
+</html>

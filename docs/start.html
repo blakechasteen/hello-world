@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Get started with HoloLoom in 5 minutes. Learn to install and run your first neural query.">
+    <title>Getting Started - HoloLoom Documentation</title>
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        /* Getting Started specific styles */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .hero-section h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .hero-section .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 40px;
+        }
+
+        .three-step-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .step-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px 30px;
+            min-width: 150px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .step-box:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: white;
+            color: #667eea;
+            border-radius: 50%;
+            line-height: 40px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .step-box h3 {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .step-arrow {
+            font-size: 2em;
+            color: rgba(255, 255, 255, 0.5);
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2em;
+            }
+
+            .hero-section .subtitle {
+                font-size: 1.1em;
+            }
+
+            .three-step-diagram {
+                gap: 15px;
+            }
+
+            .step-box {
+                min-width: 120px;
+                padding: 15px 20px;
+            }
+
+            .step-arrow {
+                display: block;
+            }
+        }
+
+        /* Main content sections */
+        .content-section {
+            margin-bottom: 60px;
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .content-section h2 {
+            color: #2d3748;
+            font-size: 2em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            font-size: 1.4em;
+        }
+
+        /* Prerequisites */
+        .prerequisites-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .prerequisite-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            gap: 15px;
+        }
+
+        .prerequisite-icon {
+            font-size: 1.8em;
+            flex-shrink: 0;
+        }
+
+        .prerequisite-item h4 {
+            margin: 0;
+            color: #2d3748;
+        }
+
+        .prerequisite-item p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            margin-top: 30px;
+        }
+
+        .tabs-menu {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-button:hover {
+            color: #667eea;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            position: relative;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .code-block code {
+            display: block;
+            white-space: pre;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: #764ba2;
+        }
+
+        .copy-button.copied {
+            background: #48bb78;
+        }
+
+        /* Syntax highlighting */
+        .keyword { color: #f687b3; }
+        .string { color: #9ae6fe; }
+        .comment { color: #8b949e; }
+        .function { color: #79c0ff; }
+        .class-name { color: #ffa657; }
+        .number { color: #79c0ff; }
+
+        /* First query section */
+        .first-query-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            margin-top: 20px;
+        }
+
+        .execution-flow {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .execution-flow {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .flow-step {
+            display: flex;
+            gap: 15px;
+        }
+
+        .flow-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .flow-content h4 {
+            margin: 0;
+            color: #2d3748;
+        }
+
+        .flow-content p {
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+
+        /* What just happened section */
+        .layer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .layer-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .layer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.1);
+        }
+
+        .layer-card h4 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .layer-card p {
+            margin: 0;
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        /* Next steps section */
+        .next-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .next-step-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .next-step-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            transform: translateY(-8px);
+        }
+
+        .step-emoji {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .next-step-card h3 {
+            color: #2d3748;
+            margin: 0 0 10px 0;
+        }
+
+        .next-step-card p {
+            color: #666;
+            margin: 0 0 15px 0;
+            font-size: 0.95em;
+        }
+
+        .next-step-card a {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+            font-weight: 500;
+        }
+
+        .next-step-card a:hover {
+            background: #764ba2;
+        }
+
+        /* Troubleshooting section */
+        .faq-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #e0e0e0;
+            transition: border-color 0.3s ease;
+        }
+
+        .faq-item.open {
+            border-left-color: #667eea;
+        }
+
+        .faq-question {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #2d3748;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .faq-toggle {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.open .faq-toggle {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            display: none;
+            padding-top: 15px;
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .faq-item.open .faq-answer {
+            display: block;
+        }
+
+        .error-code {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        /* Container */
+        .getting-started-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Feature highlights */
+        .highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .highlight-item {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .highlight-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .highlight-item h4 {
+            margin: 0 0 5px 0;
+            color: #2d3748;
+        }
+
+        .highlight-item p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Navigation helpers */
+        .breadcrumb {
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .spacer {
+            height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html">
+                    <span class="logo-icon">🌊</span>
+                    <span class="logo-text">HoloLoom</span>
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="start.html" class="active">Getting Started</a></li>
+                <li><a href="training.html">Training</a></li>
+                <li><a href="api.html">API Reference</a></li>
+                <li><a href="examples.html">Examples</a></li>
+                <li><a href="architecture.html">Architecture</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="getting-started-container">
+            <h1>Get Started with HoloLoom</h1>
+            <p class="subtitle">From zero to your first query in 5 minutes</p>
+
+            <div class="three-step-diagram">
+                <div class="step-box">
+                    <div class="step-number">1</div>
+                    <h3>Install</h3>
+                    <p>Get up and running</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step-box">
+                    <div class="step-number">2</div>
+                    <h3>Code</h3>
+                    <p>Write your query</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step-box">
+                    <div class="step-number">3</div>
+                    <h3>Results</h3>
+                    <p>See it work</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="getting-started-container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> / Getting Started
+        </div>
+
+        <!-- Prerequisites Section -->
+        <section class="content-section">
+            <h2>
+                <span class="section-icon">✓</span>
+                Prerequisites
+            </h2>
+            <p>Make sure you have the following installed:</p>
+
+            <div class="prerequisites-list">
+                <div class="prerequisite-item">
+                    <div class="prerequisite-icon">🐍</div>
+                    <div>
+                        <h4>Python 3.9+</h4>
+                        <p>Download from <a href="https://python.org" target="_blank">python.org</a></p>
+                    </div>
+                </div>
+
+                <div class="prerequisite-item">
+                    <div class="prerequisite-icon">📦</div>
+                    <div>
+                        <h4>pip (Python Package Manager)</h4>
+                        <p>Usually comes with Python. Check with <code>pip --version</code></p>
+                    </div>
+                </div>
+
+                <div class="prerequisite-item">
+                    <div class="prerequisite-icon">🐳</div>
+                    <div>
+                        <h4>Docker (Optional)</h4>
+                        <p>For persistent memory backends. <a href="https://docker.com" target="_blank">Install Docker</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <p style="margin-top: 20px; font-style: italic; color: #666;">
+                <strong>Don't have Docker?</strong> No problem! HoloLoom works fine with in-memory storage. You can always add persistent backends later.
+            </p>
+        </section>
+
+        <div class="spacer"></div>
+
+        <!-- Installation Section -->
+        <section class="content-section">
+            <h2>
+                <span class="section-icon">⚙️</span>
+                Installation
+            </h2>
+            <p>Choose your preferred installation method:</p>
+
+            <div class="tabs-container">
+                <div class="tabs-menu">
+                    <button class="tab-button active" onclick="switchTab(event, 'tab-pip')">pip (Recommended)</button>
+                    <button class="tab-button" onclick="switchTab(event, 'tab-source')">From Source</button>
+                    <button class="tab-button" onclick="switchTab(event, 'tab-docker')">Docker</button>
+                </div>
+
+                <!-- Tab 1: pip -->
+                <div id="tab-pip" class="tab-content active">
+                    <h3>Install from PyPI</h3>
+                    <p>The easiest way to get started (assumes PyPI package available):</p>
+
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <code>pip install hololoom torch numpy gymnasium</code>
+                    </div>
+
+                    <p><strong>Next:</strong> Skip to <a href="#first-query">Your First Query</a></p>
+                </div>
+
+                <!-- Tab 2: From Source -->
+                <div id="tab-source" class="tab-content">
+                    <h3>Clone and Install from Source</h3>
+                    <p>For development or to use the latest features:</p>
+
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <code><span class="comment"># Clone the repository</span>
+git clone https://github.com/blakechasteen/mythRL
+cd mythRL
+
+<span class="comment"># Create virtual environment</span>
+python3 -m venv .venv
+source .venv/bin/activate  <span class="comment"># On Windows: .venv\Scripts\activate</span>
+
+<span class="comment"># Install dependencies</span>
+pip install --upgrade pip
+pip install torch numpy gymnasium matplotlib
+
+<span class="comment"># Optional: for full features</span>
+pip install spacy sentence-transformers scipy networkx
+python -m spacy download en_core_web_sm</code>
+                    </div>
+
+                    <p><strong>Verify installation:</strong></p>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <code>python3 -c <span class="string">"from HoloLoom import HoloLoom; print('✓ HoloLoom installed')"</span></code>
+                    </div>
+
+                    <p><strong>Next:</strong> Skip to <a href="#first-query">Your First Query</a></p>
+                </div>
+
+                <!-- Tab 3: Docker -->
+                <div id="tab-docker" class="tab-content">
+                    <h3>Docker Setup (Production)</h3>
+                    <p>For persistent memory with Neo4j and Qdrant backends:</p>
+
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <code><span class="comment"># From the mythRL directory</span>
+docker-compose up -d
+
+<span class="comment"># Wait for services to start (~30 seconds)</span>
+docker-compose ps</code>
+                    </div>
+
+                    <p><strong>Services started:</strong></p>
+                    <ul style="color: #666;">
+                        <li>Neo4j Graph Database (localhost:7687)</li>
+                        <li>Qdrant Vector Database (localhost:6333)</li>
+                        <li>HoloLoom API (localhost:8000)</li>
+                    </ul>
+
+                    <p><strong>Then install Python dependencies:</strong></p>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <code>python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install torch numpy gymnasium spacy sentence-transformers
+python -m spacy download en_core_web_sm</code>
+                    </div>
+
+                    <p><strong>Next:</strong> Skip to <a href="#first-query">Your First Query</a></p>
+                </div>
+            </div>
+        </section>
+
+        <div class="spacer"></div>
+
+        <!-- First Query Section -->
+        <section class="content-section" id="first-query">
+            <h2>
+                <span class="section-icon">🚀</span>
+                Your First Query
+            </h2>
+            <p>Write and execute your first HoloLoom query:</p>
+
+            <div class="first-query-section">
+                <h3>Step 1: Create a Python script</h3>
+                <p>Create a file called <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">first_query.py</code>:</p>
+
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code><span class="keyword">import</span> asyncio
+<span class="keyword">from</span> HoloLoom <span class="keyword">import</span> HoloLoom
+<span class="keyword">from</span> HoloLoom.config <span class="keyword">import</span> Config
+
+<span class="keyword">async def</span> <span class="function">main</span>():
+    <span class="comment"># Create HoloLoom instance with FAST mode</span>
+    <span class="keyword">async with</span> HoloLoom(config=Config.fast()) <span class="keyword">as</span> loom:
+        <span class="comment"># Your first query</span>
+        result = <span class="keyword">await</span> loom.recall(
+            <span class="string">"What is Thompson Sampling and why is it useful?"</span>
+        )
+
+        <span class="comment"># Print the result</span>
+        <span class="keyword">print</span>(<span class="string">"\n🎯 Query Result:\n"</span>)
+        <span class="keyword">print</span>(f<span class="string">"Answer: {result.response}"</span>)
+        <span class="keyword">print</span>(f<span class="string">"\nConfidence: {result.confidence:.1%}"</span>)
+        <span class="keyword">print</span>(f<span class="string">"Memories Retrieved: {len(result.sources)}"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    asyncio.run(main())</code>
+                </div>
+
+                <h3 style="margin-top: 30px;">Step 2: Run it</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code>PYTHONPATH=. python3 first_query.py</code>
+                </div>
+
+                <h3 style="margin-top: 30px;">Step 3: See the output</h3>
+                <p>You should see something like:</p>
+                <div class="code-block">
+                    <code><span class="string">🎯 Query Result:
+
+Answer: Thompson Sampling is a probabilistic method for balancing
+exploration and exploitation in decision-making...
+
+Confidence: 89%
+Memories Retrieved: 5</span></code>
+                </div>
+
+                <p style="margin-top: 20px; color: #666;">
+                    <strong>Congratulations!</strong> You just ran your first HoloLoom query. The system automatically:
+                </p>
+
+                <div class="execution-flow" style="margin-top: 20px;">
+                    <div class="flow-step">
+                        <div class="flow-number">1</div>
+                        <div class="flow-content">
+                            <h4>Analyzed Your Query</h4>
+                            <p>Detected intent and extracted key concepts</p>
+                        </div>
+                    </div>
+
+                    <div class="flow-step">
+                        <div class="flow-number">2</div>
+                        <div class="flow-content">
+                            <h4>Retrieved Memories</h4>
+                            <p>Found relevant information from the knowledge graph</p>
+                        </div>
+                    </div>
+
+                    <div class="flow-step">
+                        <div class="flow-number">3</div>
+                        <div class="flow-content">
+                            <h4>Synthesized Answer</h4>
+                            <p>Combined memories into a coherent response</p>
+                        </div>
+                    </div>
+
+                    <div class="flow-step">
+                        <div class="flow-number">4</div>
+                        <div class="flow-content">
+                            <h4>Measured Confidence</h4>
+                            <p>Calculated reliability of the response</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="spacer"></div>
+
+        <!-- What Just Happened Section -->
+        <section class="content-section">
+            <h2>
+                <span class="section-icon">🧠</span>
+                What Just Happened?
+            </h2>
+            <p>HoloLoom's 9-layer architecture worked behind the scenes. Here's a quick overview:</p>
+
+            <div class="layer-grid">
+                <div class="layer-card">
+                    <h4>1. Query Understanding</h4>
+                    <p>Extracts intent, entities, and semantic meaning from your question.</p>
+                </div>
+
+                <div class="layer-card">
+                    <h4>2. Memory Retrieval</h4>
+                    <p>Searches the knowledge graph using semantic similarity and keyword matching.</p>
+                </div>
+
+                <div class="layer-card">
+                    <h4>3. Feature Extraction</h4>
+                    <p>Creates multi-scale embeddings (Matryoshka) and spectral features from context.</p>
+                </div>
+
+                <div class="layer-card">
+                    <h4>4. Context Assembly</h4>
+                    <p>Combines retrieved memories into enriched context window.</p>
+                </div>
+
+                <div class="layer-card">
+                    <h4>5. Policy Decision</h4>
+                    <p>Neural network decides best response strategy using Thompson Sampling.</p>
+                </div>
+
+                <div class="layer-card">
+                    <h4>6. Response Generation</h4>
+                    <p>Synthesizes answer from context and selected strategy.</p>
+                </div>
+
+                <div class="layer-card">
+                    <h4>7. Quality Assurance</h4>
+                    <p>Validates response completeness and consistency.</p>
+                </div>
+
+                <div class="layer-card">
+                    <h4>8. Confidence Scoring</h4>
+                    <p>Calculates reliability metric (0.0-1.0) based on uncertainty quantification.</p>
+                </div>
+
+                <div class="layer-card">
+                    <h4>9. Reflection Learning</h4>
+                    <p>Logs interaction for continuous improvement and pattern discovery.</p>
+                </div>
+            </div>
+
+            <p style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px; border-left: 4px solid #667eea;">
+                <strong>Key Features You Just Used:</strong>
+            </p>
+
+            <div class="highlights">
+                <div class="highlight-item">
+                    <div class="highlight-icon">⚡</div>
+                    <h4>Fast Mode</h4>
+                    <p>Query processed in ~150ms with optimal quality/speed tradeoff</p>
+                </div>
+
+                <div class="highlight-item">
+                    <div class="highlight-icon">🧠</div>
+                    <h4>Neural Decision</h4>
+                    <p>Thompson Sampling balances exploration and exploitation</p>
+                </div>
+
+                <div class="highlight-item">
+                    <div class="highlight-icon">🎯</div>
+                    <h4>Confidence Measurement</h4>
+                    <p>Know how reliable each answer is</p>
+                </div>
+
+                <div class="highlight-item">
+                    <div class="highlight-icon">📚</div>
+                    <h4>Knowledge Graph</h4>
+                    <p>Built-in semantic memory with relationships</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="spacer"></div>
+
+        <!-- Next Steps Section -->
+        <section class="content-section">
+            <h2>
+                <span class="section-icon">📚</span>
+                Next Steps
+            </h2>
+            <p>You've got HoloLoom running! Here are three paths forward:</p>
+
+            <div class="next-steps-grid">
+                <div class="next-step-card">
+                    <div class="step-emoji">📖</div>
+                    <h3>Learn the Concepts</h3>
+                    <p>Understand the 9-layer architecture, Thompson Sampling, Matryoshka embeddings, and more.</p>
+                    <a href="training.html">→ Training Module</a>
+                </div>
+
+                <div class="next-step-card">
+                    <div class="step-emoji">⚙️</div>
+                    <h3>Build Something</h3>
+                    <p>Dive into the API reference and build your own HoloLoom-powered application.</p>
+                    <a href="api.html">→ API Reference</a>
+                </div>
+
+                <div class="next-step-card">
+                    <div class="step-emoji">🎬</div>
+                    <h3>See Examples</h3>
+                    <p>Explore working examples: RAG systems, agentic reasoning, knowledge graphs, and more.</p>
+                    <a href="examples.html">→ Examples Gallery</a>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px; background: white; padding: 30px; border-radius: 8px; border: 2px dashed #667eea;">
+                <h3 style="margin-top: 0; color: #667eea;">💡 Pro Tip: Configuration Modes</h3>
+                <p>You used <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">Config.fast()</code> for the best performance/quality balance. Try other modes:</p>
+
+                <div style="margin-top: 15px;">
+                    <strong>Config.bare()</strong> - Ultra-fast, minimal features (50ms)<br>
+                    <strong>Config.fast()</strong> - Balanced, recommended (150ms) ✨<br>
+                    <strong>Config.fused()</strong> - Maximum quality (300ms)<br>
+                </div>
+
+                <p style="margin-top: 15px; font-size: 0.95em;">
+                    More <a href="api.html#configuration">configuration options</a> available for advanced use cases.
+                </p>
+            </div>
+        </section>
+
+        <div class="spacer"></div>
+
+        <!-- Troubleshooting Section -->
+        <section class="content-section">
+            <h2>
+                <span class="section-icon">🔧</span>
+                Troubleshooting
+            </h2>
+            <p>Running into issues? Check the common problems below:</p>
+
+            <div style="margin-top: 30px;">
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <span><span class="error-code">ModuleNotFoundError: No module named 'HoloLoom'</span></span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Cause:</strong> Python can't find the HoloLoom package.</p>
+                        <p><strong>Solutions:</strong></p>
+                        <ul>
+                            <li>Make sure you've installed HoloLoom: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">pip install hololoom</code></li>
+                            <li>If installing from source, set <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">PYTHONPATH=.</code> before running</li>
+                            <li>Verify virtual environment is activated: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">which python3</code> should show path inside <code>.venv</code></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <span><span class="error-code">ImportError: cannot import name 'Config'</span></span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Cause:</strong> HoloLoom installed but version might be old or incomplete.</p>
+                        <p><strong>Solutions:</strong></p>
+                        <ul>
+                            <li>Upgrade HoloLoom: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">pip install --upgrade hololoom</code></li>
+                            <li>If from source, make sure all files are present: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">ls HoloLoom/config.py</code></li>
+                            <li>Clear pip cache and reinstall: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">pip install --no-cache-dir hololoom</code></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <span>The query runs but returns an empty response</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Cause:</strong> Memory system hasn't been initialized with knowledge.</p>
+                        <p><strong>Solutions:</strong></p>
+                        <ul>
+                            <li>HoloLoom comes with built-in knowledge. If empty, check if you're in the right directory</li>
+                            <li>Add your own knowledge: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">await loom.experience("Your knowledge text")</code></li>
+                            <li>Try a different query - some topics might not be covered</li>
+                            <li>Check confidence score - low confidence might indicate limited matching knowledge</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <span>Query takes too long to run (slow)</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Cause:</strong> Using FUSED mode or system is under heavy load.</p>
+                        <p><strong>Solutions:</strong></p>
+                        <ul>
+                            <li>Use faster mode: Switch to <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">Config.fast()</code> or <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">Config.bare()</code></li>
+                            <li>Check system resources: CPU and RAM might be bottlenecks</li>
+                            <li>Reduce memory size if using large knowledge base: See <a href="api.html#configuration">config options</a></li>
+                            <li>Enable caching for repeated queries (automatic in FAST/FUSED modes)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <span>Docker services won't start</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Cause:</strong> Docker not running or port conflicts.</p>
+                        <p><strong>Solutions:</strong></p>
+                        <ul>
+                            <li>Make sure Docker daemon is running: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">docker ps</code></li>
+                            <li>Check for port conflicts: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">lsof -i :7687</code> (Neo4j) and <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">lsof -i :6333</code> (Qdrant)</li>
+                            <li>Try starting fresh: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">docker-compose down && docker-compose up -d</code></li>
+                            <li><strong>Don't have Docker?</strong> Just skip Docker setup - HoloLoom works fine with in-memory storage</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <span>Low confidence scores even for simple queries</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Cause:</strong> Knowledge gap or uncertain retrieval.</p>
+                        <p><strong>Solutions:</strong></p>
+                        <ul>
+                            <li>Train the system with relevant knowledge: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">await loom.experience("Your domain knowledge")</code></li>
+                            <li>Try FUSED mode for higher quality: <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">Config.fused()</code></li>
+                            <li>Use refinement mode to improve: See <a href="training.html#refinement">refinement documentation</a></li>
+                            <li>Reformulate the query - sometimes slight rewording helps</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <span>Still stuck? Need more help?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Additional Resources:</strong></p>
+                        <ul>
+                            <li>Check the <a href="api.html">API Reference</a> for detailed configuration options</li>
+                            <li>Read the <a href="architecture.html">Architecture Guide</a> to understand how HoloLoom works</li>
+                            <li>See <a href="examples.html">Examples Gallery</a> for working code samples</li>
+                            <li>Visit the <a href="https://github.com/blakechasteen/mythRL" target="_blank">GitHub repository</a> for issues and discussions</li>
+                            <li>Check the main <a href="index.html">documentation</a> for additional guides</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="spacer"></div>
+
+        <!-- Final CTA Section -->
+        <section class="content-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-left: none;">
+            <h2 style="color: white;">
+                <span class="section-icon">🎉</span>
+                You're Ready!
+            </h2>
+            <p style="font-size: 1.1em;">You now have everything you need to start building with HoloLoom. Choose your next step:</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px;">
+                <a href="training.html" style="display: block; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; text-decoration: none; color: white; text-align: center; transition: all 0.3s ease; border: 2px solid rgba(255,255,255,0.2);">
+                    <div style="font-size: 2em; margin-bottom: 10px;">📖</div>
+                    <strong>Learn the System</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 0.95em;">Deep dive into architecture and concepts</p>
+                </a>
+
+                <a href="api.html" style="display: block; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; text-decoration: none; color: white; text-align: center; transition: all 0.3s ease; border: 2px solid rgba(255,255,255,0.2);">
+                    <div style="font-size: 2em; margin-bottom: 10px;">⚙️</div>
+                    <strong>Explore APIs</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 0.95em;">Complete API reference and configuration</p>
+                </a>
+
+                <a href="examples.html" style="display: block; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; text-decoration: none; color: white; text-align: center; transition: all 0.3s ease; border: 2px solid rgba(255,255,255,0.2);">
+                    <div style="font-size: 2em; margin-bottom: 10px;">🎬</div>
+                    <strong>See Examples</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 0.95em;">Working code samples and use cases</p>
+                </a>
+            </div>
+        </section>
+
+        <div class="spacer"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>HoloLoom</h4>
+                <p>Neural decision-making system with Matryoshka embeddings and Thompson Sampling.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="start.html">Getting Started</a></li>
+                    <li><a href="api.html">API Reference</a></li>
+                    <li><a href="examples.html">Examples</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://github.com/blakechasteen/mythRL" target="_blank">GitHub Repository</a></li>
+                    <li><a href="architecture.html">Architecture Guide</a></li>
+                    <li><a href="training.html">Training Module</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 HoloLoom. Open source neural decision-making system.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for interactivity -->
+    <script>
+        // Tab switching
+        function switchTab(event, tabId) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab and mark button as active
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Copy to clipboard
+        function copyCode(button) {
+            const codeBlock = button.parentElement;
+            const code = codeBlock.querySelector('code').textContent;
+
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = '✓ Copied!';
+                button.classList.add('copied');
+
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                button.textContent = '✗ Failed';
+            });
+        }
+
+        // FAQ toggle
+        function toggleFAQ(item) {
+            item.classList.toggle('open');
+        }
+
+        // Close FAQ when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.faq-item')) {
+                // Could add close logic here if needed
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

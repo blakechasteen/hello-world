@@ -1,0 +1,308 @@
+<!--
+  HoloLoom Documentation Search - HTML Integration Snippets
+  Copy-paste ready HTML for integrating search into your documentation site
+
+  These snippets show exactly what to add to your HTML template.
+  Date: November 16, 2025
+-->
+
+<!--
+  =============================================================================
+  SNIPPET 1: Add to <head> section
+  =============================================================================
+
+  Include the search stylesheet. Add this line to your <head> tag:
+-->
+<link rel="stylesheet" href="/assets/css/search.css">
+
+
+<!--
+  =============================================================================
+  SNIPPET 2: Search Container (add to navbar/navigation)
+  =============================================================================
+
+  Add this HTML to your navigation bar. The search-container wraps the input
+  and results dropdown. Place it in your <nav> element.
+-->
+<div class="search-container">
+  <input
+    id="search-input"
+    type="text"
+    placeholder="Search documentation (press / to focus)"
+    autocomplete="off"
+    aria-label="Search documentation"
+  >
+  <div id="search-results" role="region" aria-label="Search results"></div>
+</div>
+
+
+<!--
+  =============================================================================
+  SNIPPET 3: Script includes (add before </body> closing tag)
+  =============================================================================
+
+  Include the search JavaScript at the end of your <body>, just before
+  the closing </body> tag.
+-->
+<script src="/assets/js/search.js"></script>
+
+
+<!--
+  =============================================================================
+  COMPLETE EXAMPLE: Full navbar with search integrated
+  =============================================================================
+
+  Here's a complete example showing search integrated into a navbar:
+-->
+<nav class="main-nav" role="navigation" aria-label="Main">
+  <!-- Logo -->
+  <a href="/" class="logo">HoloLoom</a>
+
+  <!-- Search Bar -->
+  <div class="search-container">
+    <input
+      id="search-input"
+      type="text"
+      placeholder="Search documentation (press / to focus)"
+      autocomplete="off"
+      aria-label="Search documentation"
+    >
+    <div id="search-results" role="region" aria-label="Search results"></div>
+  </div>
+
+  <!-- Navigation Links -->
+  <div class="nav-links">
+    <a href="/training">Training</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/api">API</a>
+    <a href="/research">Research</a>
+  </div>
+
+  <!-- Theme Toggle (optional) -->
+  <button id="theme-toggle" aria-label="Toggle dark mode">☀️</button>
+</nav>
+
+
+<!--
+  =============================================================================
+  SNIPPET 4: Minimal HTML page with search
+  =============================================================================
+
+  A complete, minimal page showing search integration:
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HoloLoom Documentation</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/search.css">
+</head>
+<body>
+
+  <!-- Navigation with Search -->
+  <nav class="main-nav">
+    <a href="/" class="logo">HoloLoom</a>
+
+    <div class="search-container">
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search documentation (press / to focus)"
+        autocomplete="off"
+        aria-label="Search documentation"
+      >
+      <div id="search-results"></div>
+    </div>
+
+    <div class="nav-links">
+      <a href="/training">Training</a>
+      <a href="/api">API</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main>
+    <h1>Welcome to HoloLoom</h1>
+    <p>Try searching above for documentation topics.</p>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/search.js"></script>
+
+</body>
+</html>
+
+
+<!--
+  =============================================================================
+  SNIPPET 5: CSS for search container in navbar
+  =============================================================================
+
+  If you need to style the search container in your navbar CSS:
+-->
+<style>
+  /* Search container in navbar */
+  .search-container {
+    flex: 1;
+    max-width: 400px;
+    margin: 0 12px;
+  }
+
+  @media (max-width: 768px) {
+    .search-container {
+      max-width: none;
+      order: 3; /* Move to right after logo on mobile */
+    }
+  }
+
+  /* Adjust navbar layout for search */
+  .main-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+  }
+
+  .logo {
+    flex-shrink: 0;
+  }
+
+  .search-container {
+    flex: 1;
+  }
+
+  .nav-links {
+    flex-shrink: 0;
+    display: flex;
+    gap: 24px;
+  }
+</style>
+
+
+<!--
+  =============================================================================
+  SNIPPET 6: JavaScript - Access search programmatically
+  =============================================================================
+
+  If you need to interact with search from your own JavaScript:
+-->
+<script>
+  // After page loads, search is available via window.hololoomSearch
+
+  // Perform a search
+  const results = window.hololoomSearch.search('Thompson Sampling');
+  console.log('Found results:', results);
+
+  // Get autocomplete suggestions
+  const suggestions = window.hololoomSearch.getAutocomplete('Thomp');
+  console.log('Suggestions:', suggestions);
+
+  // Get search history
+  const history = window.hololoomSearch.getSearchHistory();
+  console.log('Search history:', history);
+
+  // Get statistics
+  const stats = window.hololoomSearch.getStatistics();
+  console.log('Indexed pages:', stats.indexedPages);
+
+  // Configure search behavior
+  window.hololoomSearch.config.maxResults = 20;
+  window.hololoomSearch.config.debounceDelay = 500;
+</script>
+
+
+<!--
+  =============================================================================
+  SNIPPET 7: CSS Dark Mode Setup
+  =============================================================================
+
+  The search.css file includes dark mode support via CSS variables.
+  Make sure your HTML has data-theme attribute:
+-->
+<html lang="en" data-theme="light">
+  <!-- Light theme (default) -->
+</html>
+
+<!-- Or use JavaScript to switch themes: -->
+<script>
+  // Set theme on load
+  const theme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+
+  // Toggle theme
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  }
+
+  // Listen for system preference changes
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      const theme = e.matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    });
+  }
+</script>
+
+
+<!--
+  =============================================================================
+  SNIPPET 8: HTML5 Template Element (optional, for reusable components)
+  =============================================================================
+
+  If you're using HTML templates, you can define search as a reusable component:
+-->
+<template id="search-template">
+  <div class="search-container">
+    <input
+      id="search-input"
+      type="text"
+      placeholder="Search documentation (press / to focus)"
+      autocomplete="off"
+      aria-label="Search documentation"
+    >
+    <div id="search-results"></div>
+  </div>
+</template>
+
+<script>
+  // Clone and insert template
+  const template = document.getElementById('search-template');
+  const nav = document.querySelector('nav');
+  const clone = template.content.cloneNode(true);
+  nav.insertBefore(clone, nav.querySelector('.nav-links'));
+</script>
+
+
+<!--
+  =============================================================================
+  SUMMARY
+  =============================================================================
+
+  Three essential steps:
+
+  1. Add this to <head>:
+     <link rel="stylesheet" href="/assets/css/search.css">
+
+  2. Add this to your navbar:
+     <div class="search-container">
+       <input id="search-input" type="text" placeholder="Search..." autocomplete="off">
+       <div id="search-results"></div>
+     </div>
+
+  3. Add this before </body>:
+     <script src="/assets/js/search.js"></script>
+
+  That's all you need! Search will be fully functional and ready to use.
+
+  More details: See SEARCH_INTEGRATION_GUIDE.md
+  Working example: View SEARCH_HTML_EXAMPLE.html in browser
+  Quick reference: Read SEARCH_QUICK_REFERENCE.md
+
+  =============================================================================
+-->

@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="HoloLoom: Production-Grade Neural Decision-Making & Memory System. Complete transparency. Education-first. Open source.">
+  <meta name="keywords" content="HoloLoom, neural decision-making, memory systems, RAG, Thompson Sampling, knowledge graphs, AI, production-ready">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hololoom.dev/">
+  <meta property="og:title" content="HoloLoom Documentation">
+  <meta property="og:description" content="Production-Grade Neural Decision-Making & Memory System">
+  <meta property="og:image" content="/assets/og-image.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="HoloLoom Documentation">
+  <meta name="twitter:description" content="Production-Grade Neural Decision-Making & Memory System">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "HoloLoom Documentation",
+    "url": "https://hololoom.dev",
+    "description": "Complete documentation for HoloLoom neural decision-making and memory system",
+    "publisher": {
+      "@type": "Organization",
+      "name": "HoloLoom"
+    }
+  }
+  </script>
+
+  <title>HoloLoom Documentation - Neural Decision-Making System</title>
+
+  <style>
+    /* ============================================
+       CSS CUSTOM PROPERTIES & THEME SYSTEM
+       ============================================ */
+
+    :root {
+      /* Light Theme (Default) */
+      --color-primary: #1e40af;
+      --color-secondary: #7c3aed;
+      --color-accent: #3b82f6;
+      --color-background: #ffffff;
+      --color-surface: #f8f9fa;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e5e7eb;
+      --color-success: #16a34a;
+      --color-warning: #ea580c;
+      --color-error: #dc2626;
+
+      /* Spacing Scale */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+      --spacing-3xl: 64px;
+
+      /* Typography */
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-size-base: 18px;
+      --font-size-sm: 16px;
+      --font-size-lg: 20px;
+      --font-size-xl: 28px;
+      --font-size-2xl: 32px;
+      --line-height: 1.6;
+
+      /* Border Radius */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-xl: 12px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root[data-theme="dark"] {
+        --color-primary: #3b82f6;
+        --color-secondary: #a78bfa;
+        --color-accent: #60a5fa;
+        --color-background: #0f172a;
+        --color-surface: #1e293b;
+        --color-text: #f1f5f9;
+        --color-text-secondary: #cbd5e1;
+        --color-border: #334155;
+        --color-success: #22c55e;
+        --color-warning: #fb923c;
+        --color-error: #ef4444;
+      }
+    }
+
+    /* ============================================
+       RESET & BASE STYLES
+       ============================================ */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-base);
+      line-height: var(--line-height);
+      color: var(--color-text);
+      background-color: var(--color-background);
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    /* ============================================
+       TYPOGRAPHY
+       ============================================ */
+
+    h1 {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    h2 {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: var(--spacing-md);
+      margin-top: var(--spacing-2xl);
+    }
+
+    h3 {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: var(--spacing-md);
+    }
+
+    p {
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+    }
+
+    a {
+      color: var(--color-primary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: var(--color-accent);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      background-color: var(--color-surface);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ============================================
+       LAYOUT & CONTAINERS
+       ============================================ */
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--spacing-md);
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        padding: 0 var(--spacing-lg);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .container {
+        padding: 0 var(--spacing-2xl);
+      }
+    }
+
+    /* ============================================
+       NAVIGATION
+       ============================================ */
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: var(--color-background);
+      border-bottom: 1px solid var(--color-border);
+      backdrop-filter: blur(10px);
+      transition: border-color 0.2s;
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-md);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .nav-logo {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: var(--spacing-lg);
+      align-items: center;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: var(--font-size-sm);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--color-accent);
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      padding: var(--spacing-sm);
+      transition: transform 0.2s;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+    }
+
+    /* ============================================
+       HERO SECTION
+       ============================================ */
+
+    .hero {
+      padding: var(--spacing-3xl) 0;
+      text-align: center;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @media (min-width: 768px) {
+      .hero {
+        padding: calc(var(--spacing-3xl) * 1.5) 0;
+      }
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--spacing-md);
+    }
+
+    @media (min-width: 768px) {
+      .hero h1 {
+        font-size: 3.5rem;
+      }
+    }
+
+    .hero-tagline {
+      font-size: var(--font-size-lg);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .hero-subtext {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-2xl);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @media (min-width: 640px) {
+      .hero-cta {
+        flex-direction: row;
+      }
+    }
+
+    /* ============================================
+       BUTTONS
+       ============================================ */
+
+    .btn {
+      display: inline-block;
+      padding: var(--spacing-md) var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+      font-family: var(--font-sans);
+    }
+
+    .btn:focus {
+      outline: 3px solid var(--color-secondary);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #1e3a8a;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+      background-color: var(--color-secondary);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #6d28d9;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      color: var(--color-primary);
+      border: 2px solid var(--color-primary);
+    }
+
+    .btn-outline:hover {
+      background-color: var(--color-surface);
+      transform: translateY(-2px);
+    }
+
+    /* ============================================
+       FEATURES SECTION
+       ============================================ */
+
+    .features {
+      padding: var(--spacing-3xl) 0;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .features h2 {
+      text-align: center;
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--spacing-lg);
+    }
+
+    @media (min-width: 768px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .feature-card {
+      padding: var(--spacing-lg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background-color: var(--color-surface);
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .feature-card h3 {
+      margin-top: 0;
+    }
+
+    .feature-card p {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+    }
+
+    /* ============================================
+       QUICK LINKS SECTION
+       ============================================ */
+
+    .quick-links {
+      padding: var(--spacing-3xl) 0;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .quick-links h2 {
+      text-align: center;
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--spacing-lg);
+    }
+
+    @media (min-width: 768px) {
+      .links-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .links-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .link-card {
+      padding: var(--spacing-lg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background-color: var(--color-surface);
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      color: var(--color-text);
+      display: block;
+    }
+
+    .link-card:hover {
+      border-color: var(--color-secondary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-4px);
+      color: var(--color-secondary);
+    }
+
+    .link-icon {
+      font-size: 2rem;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .link-card h3 {
+      margin-top: 0;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .link-card p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+
+    /* ============================================
+       STATISTICS SECTION
+       ============================================ */
+
+    .stats {
+      padding: var(--spacing-3xl) 0;
+      background-color: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .stats h2 {
+      text-align: center;
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--spacing-lg);
+    }
+
+    @media (min-width: 640px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: var(--spacing-lg);
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .stat-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* ============================================
+       UPDATES SECTION
+       ============================================ */
+
+    .updates {
+      padding: var(--spacing-3xl) 0;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .updates h2 {
+      text-align: center;
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .updates-list {
+      display: grid;
+      gap: var(--spacing-lg);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .update-item {
+      padding: var(--spacing-lg);
+      border-left: 4px solid var(--color-primary);
+      background-color: var(--color-surface);
+      border-radius: var(--radius-md);
+    }
+
+    .update-title {
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .update-date {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+
+    footer {
+      background-color: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      padding: var(--spacing-2xl) 0;
+      margin-top: var(--spacing-3xl);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--spacing-2xl);
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    @media (min-width: 768px) {
+      .footer-content {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .footer-section h3 {
+      font-size: var(--font-size-md);
+      margin-top: 0;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .footer-section ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .footer-section a {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+      color: var(--color-primary);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+    }
+
+    .footer-credits {
+      margin-top: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+    }
+
+    /* ============================================
+       ANIMATIONS
+       ============================================ */
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero,
+    .feature-card,
+    .link-card,
+    .stat-item,
+    .update-item {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .feature-card:nth-child(2) { animation-delay: 0.1s; }
+    .feature-card:nth-child(3) { animation-delay: 0.2s; }
+    .feature-card:nth-child(4) { animation-delay: 0.3s; }
+    .feature-card:nth-child(5) { animation-delay: 0.4s; }
+    .feature-card:nth-child(6) { animation-delay: 0.5s; }
+
+    /* ============================================
+       ACCESSIBILITY & UTILITY
+       ============================================ */
+
+    .skip-link {
+      position: absolute;
+      top: -999px;
+      left: -999px;
+    }
+
+    .skip-link:focus {
+      position: static;
+      background-color: var(--color-primary);
+      color: white;
+      padding: var(--spacing-md);
+      z-index: 2000;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav role="navigation" aria-label="Main">
+    <div class="nav-container container">
+      <div class="nav-logo">HoloLoom</div>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#quick-links">Learning</a></li>
+        <li><a href="#stats">Stats</a></li>
+        <li><a href="/training/">Training</a></li>
+      </ul>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Press 'd' to toggle">☀️</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main" role="main">
+    <!-- Hero Section -->
+    <header class="hero" role="banner">
+      <div class="container">
+        <h1>HoloLoom Documentation</h1>
+        <p class="hero-tagline">Neural Decision-Making & Memory System</p>
+        <p class="hero-subtext">Complete transparency. Education-first. Open source.</p>
+        <div class="hero-cta">
+          <a href="/start.html" class="btn btn-primary">Get Started</a>
+          <a href="/training/" class="btn btn-secondary">View Training</a>
+          <a href="/interactive/" class="btn btn-outline">Interactive Gallery</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+      <div class="container">
+        <h2>Why HoloLoom?</h2>
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3>Production-Grade RAG</h3>
+            <p>Level 4 Agentic + Graph RAG with multimodal support. Zero-config API with reasoning modes: DIRECT, VERIFY, RESEARCH, PLAN_EXECUTE.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">🔄</div>
+            <h3>Self-Improving</h3>
+            <p>Recursive learning with Thompson Sampling. 5-phase system learns from every interaction, adapts automatically, maintains complete provenance.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>Multimodal Ready</h3>
+            <p>Text, images, audio, structured data—all handled. CLIP embeddings, OCR, language processing. Graceful degradation when dependencies unavailable.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Blazingly Fast</h3>
+            <p>291× speedup via compositional caching. Universal Grammar + Matryoshka embeddings. <50ms simple queries, hot-path latency 0.03ms.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">🔐</div>
+            <h3>Aligned & Safe</h3>
+            <p>Safety guardrails, deception detection, instrumental convergence prevention. 0.103ms overhead. Complete audit trail with <10KB memory footprint.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">📚</div>
+            <h3>Beautifully Documented</h3>
+            <p>50,000+ lines of documentation. 28 visual diagrams. 5 training parts (15+ hours). Interactive visualizations. 100% educational, zero gatekeeping.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Links Section -->
+    <section class="quick-links" id="quick-links">
+      <div class="container">
+        <h2>Start Learning</h2>
+        <div class="links-grid">
+          <a href="/training/" class="link-card">
+            <div class="link-icon">📚</div>
+            <h3>Training Documentation</h3>
+            <p>5 comprehensive parts: Foundations, Core Concepts, Tutorials, Advanced Topics, Implementation</p>
+          </a>
+
+          <a href="/interactive/" class="link-card">
+            <div class="link-icon">🎨</div>
+            <h3>Interactive Diagrams</h3>
+            <p>28 visual diagrams showing architecture, algorithms, data flow, and system interactions</p>
+          </a>
+
+          <a href="/architecture/" class="link-card">
+            <div class="link-icon">🏗️</div>
+            <h3>Architecture Guide</h3>
+            <p>Deep dive into the 9-layer weaving system, components, design patterns, and principles</p>
+          </a>
+
+          <a href="/performance/" class="link-card">
+            <div class="link-icon">⚡</div>
+            <h3>Performance Benchmarks</h3>
+            <p>Detailed benchmarks: 291× speedup, <50ms latency, 77.8% cache hit rate, scaling analysis</p>
+          </a>
+
+          <a href="/contributing/" class="link-card">
+            <div class="link-icon">🤝</div>
+            <h3>Contributing Guide</h3>
+            <p>How to contribute code, documentation, or ideas. Code review process and guidelines</p>
+          </a>
+
+          <a href="/api/" class="link-card">
+            <div class="link-icon">📖</div>
+            <h3>API Reference</h3>
+            <p>Complete API documentation for core, memory systems, policy engine, and RAG system</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats" id="stats">
+      <div class="container">
+        <h2>By The Numbers</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number">302</div>
+            <div class="stat-label">Python Files</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-number">100K+</div>
+            <div class="stat-label">Lines of Code</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-number">50K+</div>
+            <div class="stat-label">Documentation Lines</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-number">28</div>
+            <div class="stat-label">Visual Diagrams</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-number">5</div>
+            <div class="stat-label">Training Parts</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-number">291×</div>
+            <div class="stat-label">Speedup (Compositional)</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-number">0.03ms</div>
+            <div class="stat-label">Hot Path Latency</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-number">0</div>
+            <div class="stat-label">External Dependencies</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Updates Section -->
+    <section class="updates">
+      <div class="container">
+        <h2>Latest Updates</h2>
+        <div class="updates-list">
+          <article class="update-item">
+            <div class="update-title">Interactive Gallery + 3 Diagrams Added</div>
+            <div class="update-date">November 16, 2025</div>
+          </article>
+
+          <article class="update-item">
+            <div class="update-title">28 Visual Diagrams Complete</div>
+            <div class="update-date">November 16, 2025</div>
+          </article>
+
+          <article class="update-item">
+            <div class="update-title">Complete Training Guide Published</div>
+            <div class="update-date">November 15, 2025</div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer role="contentinfo">
+    <div class="container">
+      <div class="footer-content">
+        <section class="footer-section">
+          <h3>Learning</h3>
+          <ul>
+            <li><a href="/training/">Training Guide</a></li>
+            <li><a href="/start.html">Getting Started</a></li>
+            <li><a href="/help/faq">FAQ</a></li>
+            <li><a href="/help/glossary">Glossary</a></li>
+          </ul>
+        </section>
+
+        <section class="footer-section">
+          <h3>Reference</h3>
+          <ul>
+            <li><a href="/api/">API Docs</a></li>
+            <li><a href="/architecture/">Architecture</a></li>
+            <li><a href="/research/">Research</a></li>
+            <li><a href="/performance/">Performance</a></li>
+          </ul>
+        </section>
+
+        <section class="footer-section">
+          <h3>Community</h3>
+          <ul>
+            <li><a href="https://github.com/hololoom" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="/contributing/">Contributing</a></li>
+            <li><a href="/community/">Community</a></li>
+            <li><a href="/about/">About</a></li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="footer-bottom">
+        <p>Open Source • MIT License • Made with ❤️ by the HoloLoom Community</p>
+        <p class="footer-credits">© 2025 HoloLoom • Built with <a href="https://claude.ai/code">Claude Code</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ============================================
+    // THEME TOGGLE
+    // ============================================
+
+    const THEME_KEY = 'hololoom-theme';
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+
+    function getInitialTheme() {
+      const stored = localStorage.getItem(THEME_KEY);
+      if (stored) return stored;
+
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function setTheme(theme) {
+      html.setAttribute('data-theme', theme);
+      localStorage.setItem(THEME_KEY, theme);
+      updateThemeButton(theme);
+    }
+
+    function updateThemeButton(theme) {
+      themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+      themeToggle.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+    }
+
+    function toggleTheme() {
+      const current = html.getAttribute('data-theme') || getInitialTheme();
+      const next = current === 'dark' ? 'light' : 'dark';
+      setTheme(next);
+    }
+
+    // Initialize theme
+    setTheme(getInitialTheme());
+
+    // Theme toggle button
+    themeToggle.addEventListener('click', toggleTheme);
+
+    // Keyboard shortcut: 'd' to toggle theme
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+
+    document.addEventListener('keydown', (e) => {
+      // Ignore if in input field
+      if (e.target.matches('input, textarea')) return;
+
+      // '/' to focus search (future feature)
+      if (e.key === '/') {
+        e.preventDefault();
+        const searchInput = document.querySelector('#search-input');
+        if (searchInput) searchInput.focus();
+      }
+
+      // '?' to show help
+      if (e.key === '?') {
+        e.preventDefault();
+        showKeyboardHelp();
+      }
+    });
+
+    function showKeyboardHelp() {
+      const help = `
+⌨️ Keyboard Shortcuts:
+─────────────────────────
+/ : Focus search (future)
+? : Show this help
+d : Toggle dark/light mode
+      `;
+      alert(help);
+    }
+
+    // ============================================
+    // SMOOTH SCROLL
+    // ============================================
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href !== '#' && document.querySelector(href)) {
+          e.preventDefault();
+          const target = document.querySelector(href);
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    // ============================================
+    // ANALYTICS (Privacy-First, LocalStorage Only)
+    // ============================================
+
+    function trackPageView() {
+      const views = JSON.parse(localStorage.getItem('hololoom-views') || '{}');
+      const today = new Date().toISOString().split('T')[0];
+      views[today] = (views[today] || 0) + 1;
+      localStorage.setItem('hololoom-views', JSON.stringify(views));
+    }
+
+    // Track on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', trackPageView);
+    } else {
+      trackPageView();
+    }
+
+    // ============================================
+    // ACCESSIBILITY ENHANCEMENTS
+    // ============================================
+
+    // Set focus outline on keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        document.body.classList.add('keyboard-nav');
+      }
+    });
+
+    document.addEventListener('mousedown', () => {
+      document.body.classList.remove('keyboard-nav');
+    });
+
+    // Add focus styles for keyboard nav
+    const style = document.createElement('style');
+    style.textContent = `
+      body.keyboard-nav button:focus,
+      body.keyboard-nav a:focus {
+        outline: 3px solid var(--color-secondary) !important;
+        outline-offset: 2px !important;
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
