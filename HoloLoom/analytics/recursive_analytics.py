@@ -521,6 +521,47 @@ class RecursiveAnalytics:
 
         return recommendations
 
+    def get_recent_executions(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """
+        Get recent executions for dashboard display.
+
+        Args:
+            limit: Maximum number of executions to return
+
+        Returns:
+            List of execution records as dictionaries
+        """
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT
+                id, strategy, query_text, iterations,
+                initial_quality, final_quality, quality_gain,
+                duration_ms, tokens_used, cost,
+                converged, timestamp
+            FROM executions
+            ORDER BY timestamp DESC
+            LIMIT ?
+        ''', (limit,))
+
+        executions = []
+        for row in cursor.fetchall():
+            executions.append({
+                'id': row[0],
+                'strategy': row[1],
+                'query_text': row[2],
+                'iterations': row[3],
+                'initial_quality': row[4],
+                'final_quality': row[5],
+                'quality_gain': row[6],
+                'duration_ms': row[7],
+                'tokens_used': row[8],
+                'cost': row[9],
+                'converged': bool(row[10]),
+                'timestamp': row[11]
+            })
+
+        return executions
+
     def export_to_csv(self, output_path: str):
         """
         Export all executions to CSV.
