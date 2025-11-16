@@ -23,7 +23,6 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Optional, Set
 from datetime import datetime
-import json
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
