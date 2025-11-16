@@ -21,9 +21,10 @@ from datetime import datetime
 from collections import defaultdict, deque
 from time import time
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
+import json
 
 from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
 # from HoloLoom.agentic.codebase_ingestion import CodebaseIndexer, Language as CodeLanguage
@@ -306,6 +307,58 @@ async def rate_limit_middleware(request: Request, call_next):
 
 
 # ============================================================================
+# WebSocket Connection Manager
+# ============================================================================
+
+class ConnectionManager:
+    """
+    Manages WebSocket connections for real-time updates.
+
+    Handles:
+    - Active connection tracking
+    - Broadcasting to all clients
+    - Sending to specific clients
+    - Connection cleanup
+    """
+
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        """Accept new WebSocket connection."""
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        logger.info(f"WebSocket connected. Total connections: {len(self.active_connections)}")
+
+    def disconnect(self, websocket: WebSocket):
+        """Remove disconnected WebSocket."""
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+        logger.info(f"WebSocket disconnected. Total connections: {len(self.active_connections)}")
+
+    async def send_message(self, message: dict, websocket: WebSocket):
+        """Send message to specific client."""
+        try:
+            await websocket.send_text(json.dumps(message))
+        except Exception as e:
+            logger.error(f"Failed to send message: {e}")
+
+    async def broadcast(self, message: dict):
+        """Broadcast message to all connected clients."""
+        disconnected = []
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(json.dumps(message))
+            except Exception as e:
+                logger.error(f"Failed to broadcast: {e}")
+                disconnected.append(connection)
+
+        # Clean up disconnected clients
+        for connection in disconnected:
+            self.disconnect(connection)
+
+
+# ============================================================================
 # Global State
 # ============================================================================
 
@@ -323,6 +376,7 @@ class ServerState:
     ml_logic_detector: Optional[MLLogicDetector] = None  # ML-based logic error detector
     rate_limiter: Optional[RateLimiter] = None  # Rate limiting
     stats: Optional[ServerStats] = None  # Server statistics
+    ws_manager: Optional[ConnectionManager] = None  # WebSocket manager
 
 
 state = ServerState()
@@ -337,10 +391,12 @@ async def startup():
     """Initialize server with persistent memory."""
     logger.info("Starting HoloLoom Agentic API server...")
 
-    # Initialize rate limiter and stats
+    # Initialize rate limiter, stats, and WebSocket manager
     state.rate_limiter = RateLimiter(max_requests=60, window_seconds=60)
     state.stats = ServerStats()
+    state.ws_manager = ConnectionManager()
     logger.info("Rate limiter: 60 requests/minute per IP")
+    logger.info("WebSocket manager initialized")
 
     # Load config
     state.config = Config.fast()
@@ -1317,6 +1373,156 @@ async def search_codebase(
     except Exception as e:
         logger.error(f"Codebase search failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# WebSocket Endpoints
+# ============================================================================
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time updates.
+
+    Provides:
+    - Query completion notifications
+    - Live metrics streaming
+    - System status changes
+    - Alert notifications
+
+    Message Format:
+    {
+        "type": "event_type",
+        "payload": {...}
+    }
+
+    Event Types:
+    - connected: Connection established
+    - query_completed: Query processing finished
+    - stats_update: Server statistics updated
+    - metrics_update: Prometheus metrics updated
+    - alert: New alert generated
+    """
+    await state.ws_manager.connect(websocket)
+
+    # Send welcome message
+    await state.ws_manager.send_message(
+        {
+            "type": "connected",
+            "payload": {
+                "message": "Connected to HoloLoom WebSocket",
+                "timestamp": datetime.now().isoformat()
+            }
+        },
+        websocket
+    )
+
+    try:
+        while True:
+            # Receive messages from client (for bidirectional communication)
+            data = await websocket.receive_text()
+
+            try:
+                message = json.loads(data)
+                message_type = message.get("type")
+
+                # Handle different message types
+                if message_type == "ping":
+                    await state.ws_manager.send_message(
+                        {"type": "pong", "payload": {"timestamp": datetime.now().isoformat()}},
+                        websocket
+                    )
+
+                elif message_type == "subscribe":
+                    # Client subscribing to specific events
+                    logger.info(f"Client subscribed to: {message.get('events')}")
+
+                elif message_type == "request_stats":
+                    # Send current stats
+                    if state.stats:
+                        await state.ws_manager.send_message(
+                            {
+                                "type": "stats_update",
+                                "payload": state.stats.get_stats_dict()
+                            },
+                            websocket
+                        )
+
+            except json.JSONDecodeError:
+                logger.warning(f"Invalid JSON received: {data}")
+
+    except WebSocketDisconnect:
+        state.ws_manager.disconnect(websocket)
+        logger.info("WebSocket client disconnected")
+
+
+@app.get("/graph/data")
+async def get_graph_data(max_nodes: int = 50):
+    """
+    Get knowledge graph data for visualization.
+
+    Args:
+        max_nodes: Maximum number of nodes to return
+
+    Returns:
+        Graph data with nodes and edges
+
+    Example:
+        GET /graph/data?max_nodes=50
+
+        Response:
+        {
+          "nodes": [
+            {"id": "node1", "label": "Node 1", "degree": 3},
+            ...
+          ],
+          "edges": [
+            {"src": "node1", "dst": "node2", "type": "is_a", "weight": 1.0},
+            ...
+          ]
+        }
+    """
+    try:
+        # Try to get real graph data from memory backend
+        if state.memory_backend:
+            from HoloLoom.memory.protocol import MemoryQuery
+
+            query = MemoryQuery(text="", limit=max_nodes)
+            result = await state.memory_backend.retrieve(query)
+
+            # Convert to graph format
+            nodes = []
+            edges = []
+
+            for memory in result.memories[:max_nodes]:
+                node_id = memory.id
+                label = memory.text[:30] if memory.text else node_id
+
+                nodes.append({
+                    "id": node_id,
+                    "label": label,
+                    "degree": 0,  # Will be calculated from edges
+                })
+
+            # For now, return nodes without edges (graph structure not fully implemented)
+            return {
+                "nodes": nodes,
+                "edges": edges
+            }
+
+        # Fallback: return empty graph (frontend will use demo data)
+        return {
+            "nodes": [],
+            "edges": []
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to get graph data: {e}")
+        # Return empty graph on error (frontend will use demo data)
+        return {
+            "nodes": [],
+            "edges": []
+        }
 
 
 # ============================================================================
