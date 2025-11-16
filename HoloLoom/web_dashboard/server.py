@@ -18,7 +18,6 @@ Then open: http://localhost:8000
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import json
 import sys
