@@ -1,3 +1,5 @@
+# Constants
+CONSTANT_768 = 768  # Extracted magic number
 """
 HoloLoom Configuration
 ======================
@@ -400,7 +402,7 @@ class Config:
     def bare(cls) -> 'Config':
         """Create a bare-mode configuration (fastest)."""
         return cls(
-            scales=[768],
+            scales=[CONSTANT_768],
             fusion_weights={768: 1.0},
             mode=ExecutionMode.BARE,
             fast_mode=True,
