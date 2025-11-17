@@ -56,11 +56,24 @@ from HoloLoom.workflows.agent_registry import (
     get_registry
 )
 
-from HoloLoom.workflows.templates import (
-    WorkflowTemplates,
-    WorkflowTemplate,
-    TemplateCategory
-)
+# Import from templates.py module (not the templates/ package directory)
+import sys
+import os
+# Temporarily add the workflows directory to import the templates.py file directly
+_templates_file = os.path.join(os.path.dirname(__file__), 'templates.py')
+if os.path.exists(_templates_file):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("workflow_templates_module", _templates_file)
+    templates_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(templates_module)
+    WorkflowTemplates = templates_module.WorkflowTemplates
+    WorkflowTemplate = templates_module.WorkflowTemplate
+    TemplateCategory = templates_module.TemplateCategory
+else:
+    # Fallback if file doesn't exist
+    WorkflowTemplates = None
+    WorkflowTemplate = None
+    TemplateCategory = None
 
 from HoloLoom.workflows.ai_generator import (
     AIWorkflowGenerator,

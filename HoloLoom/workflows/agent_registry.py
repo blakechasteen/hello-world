@@ -494,6 +494,281 @@ class AgentRegistry:
             }
         ))
 
+        # Email & Communication agents (NEW! - Nov 2025)
+        self.register_schema(AgentSchema(
+            agent_id='email_fetcher',
+            name='Email Fetcher',
+            category=AgentCategory.INTEGRATION,
+            inputs=['credentials'],
+            outputs=['emails'],
+            color='#3b82f6',
+            icon='📧',
+            description='Fetch emails from Gmail, Outlook, or IMAP',
+            config_schema={
+                'provider': AgentConfig(
+                    'provider', 'select', 'gmail',
+                    options=['gmail', 'outlook', 'imap'],
+                    description='Email provider'
+                ),
+                'fetch_unread': AgentConfig(
+                    'fetch_unread', 'boolean', True,
+                    description='Fetch only unread emails'
+                ),
+                'max_emails': AgentConfig(
+                    'max_emails', 'number', 50,
+                    min_value=1, max_value=500,
+                    description='Maximum emails to fetch'
+                ),
+                'folder': AgentConfig(
+                    'folder', 'text', 'INBOX',
+                    description='Email folder to fetch from'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='email_classifier',
+            name='Email Classifier',
+            category=AgentCategory.ML,
+            inputs=['emails'],
+            outputs=['classified'],
+            color='#8b5cf6',
+            icon='🏷️',
+            description='Classify emails by urgency, category, sentiment',
+            config_schema={
+                'categories': AgentConfig(
+                    'categories', 'text', 'urgent,respond,archive,spam',
+                    description='Comma-separated categories'
+                ),
+                'use_llm': AgentConfig(
+                    'use_llm', 'boolean', True,
+                    description='Use LLM for classification (higher quality)'
+                ),
+                'model': AgentConfig(
+                    'model', 'select', 'llama3.2:3b',
+                    options=['llama3.2:3b', 'gpt-4', 'claude-3-sonnet'],
+                    description='LLM model for classification'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='response_drafter',
+            name='Response Drafter',
+            category=AgentCategory.LLM,
+            inputs=['email'],
+            outputs=['draft'],
+            color='#9333ea',
+            icon='✍️',
+            description='Draft email responses using templates or LLM',
+            config_schema={
+                'use_templates': AgentConfig(
+                    'use_templates', 'boolean', True,
+                    description='Use pre-defined response templates'
+                ),
+                'tone': AgentConfig(
+                    'tone', 'select', 'professional',
+                    options=['professional', 'friendly', 'formal', 'casual'],
+                    description='Response tone'
+                ),
+                'max_length': AgentConfig(
+                    'max_length', 'number', 200,
+                    min_value=50, max_value=1000,
+                    description='Maximum response length (words)'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='audio_transcriber',
+            name='Audio Transcriber',
+            category=AgentCategory.DATA,
+            inputs=['audio'],
+            outputs=['transcript'],
+            color='#f59e0b',
+            icon='🎤',
+            description='Transcribe audio/video to text (Whisper/Deepgram)',
+            config_schema={
+                'provider': AgentConfig(
+                    'provider', 'select', 'whisper',
+                    options=['whisper', 'deepgram', 'assembly'],
+                    description='Transcription provider'
+                ),
+                'enable_diarization': AgentConfig(
+                    'enable_diarization', 'boolean', False,
+                    description='Speaker diarization (who said what)'
+                ),
+                'language': AgentConfig(
+                    'language', 'select', 'en',
+                    options=['en', 'es', 'fr', 'de', 'zh', 'auto'],
+                    description='Audio language (auto-detect if unsure)'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='action_item_extractor',
+            name='Action Item Extractor',
+            category=AgentCategory.PROCESS,
+            inputs=['text'],
+            outputs=['action_items'],
+            color='#f093fb',
+            icon='✅',
+            description='Extract action items from text (who/what/when)',
+            config_schema={
+                'extract_deadlines': AgentConfig(
+                    'extract_deadlines', 'boolean', True,
+                    description='Extract due dates'
+                ),
+                'extract_owners': AgentConfig(
+                    'extract_owners', 'boolean', True,
+                    description='Extract responsible people'
+                ),
+                'min_confidence': AgentConfig(
+                    'min_confidence', 'number', 0.7,
+                    min_value=0.0, max_value=1.0, step=0.1,
+                    description='Minimum confidence threshold'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='calendar_analyzer',
+            name='Calendar Analyzer',
+            category=AgentCategory.ANALYSIS,
+            inputs=['calendar'],
+            outputs=['analysis'],
+            color='#ec4899',
+            icon='📅',
+            description='Analyze calendar for optimization opportunities',
+            config_schema={
+                'provider': AgentConfig(
+                    'provider', 'select', 'google',
+                    options=['google', 'outlook', 'ical'],
+                    description='Calendar provider'
+                ),
+                'suggest_time_blocks': AgentConfig(
+                    'suggest_time_blocks', 'boolean', True,
+                    description='Suggest deep work time blocks'
+                ),
+                'detect_conflicts': AgentConfig(
+                    'detect_conflicts', 'boolean', True,
+                    description='Detect scheduling conflicts'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='ticket_fetcher',
+            name='Ticket Fetcher',
+            category=AgentCategory.INTEGRATION,
+            inputs=['credentials'],
+            outputs=['tickets'],
+            color='#06b6d4',
+            icon='🎫',
+            description='Fetch support tickets from Zendesk, Intercom, etc.',
+            config_schema={
+                'provider': AgentConfig(
+                    'provider', 'select', 'zendesk',
+                    options=['zendesk', 'intercom', 'freshdesk', 'email'],
+                    description='Support ticket provider'
+                ),
+                'status': AgentConfig(
+                    'status', 'select', 'open',
+                    options=['open', 'pending', 'all'],
+                    description='Ticket status filter'
+                ),
+                'max_tickets': AgentConfig(
+                    'max_tickets', 'number', 50,
+                    min_value=1, max_value=500,
+                    description='Maximum tickets to fetch'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='newsletter_fetcher',
+            name='Newsletter Fetcher',
+            category=AgentCategory.INTEGRATION,
+            inputs=['credentials'],
+            outputs=['newsletters'],
+            color='#3b82f6',
+            icon='📰',
+            description='Fetch email newsletters from inbox',
+            config_schema={
+                'identification_method': AgentConfig(
+                    'identification_method', 'select', 'auto',
+                    options=['auto', 'sender_list', 'keywords'],
+                    description='How to identify newsletters'
+                ),
+                'date_range': AgentConfig(
+                    'date_range', 'select', '7d',
+                    options=['1d', '7d', '30d', 'all'],
+                    description='Date range to fetch'
+                ),
+                'max_newsletters': AgentConfig(
+                    'max_newsletters', 'number', 20,
+                    min_value=1, max_value=100,
+                    description='Maximum newsletters to fetch'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='slack_notifier',
+            name='Slack Notifier',
+            category=AgentCategory.INTEGRATION,
+            inputs=['message'],
+            outputs=['sent'],
+            color='#06b6d4',
+            icon='💬',
+            description='Send notifications to Slack channels/users',
+            config_schema={
+                'webhook_url': AgentConfig(
+                    'webhook_url', 'text', '',
+                    description='Slack webhook URL'
+                ),
+                'channel': AgentConfig(
+                    'channel', 'text', '#general',
+                    description='Slack channel (e.g., #alerts)'
+                ),
+                'mention_user': AgentConfig(
+                    'mention_user', 'text', '',
+                    description='Mention user (@username or empty)'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='content_extractor',
+            name='Content Extractor',
+            category=AgentCategory.PROCESS,
+            inputs=['text'],
+            outputs=['extracted'],
+            color='#f093fb',
+            icon='📋',
+            description='Extract key content from emails/articles/documents',
+            config_schema={
+                'extract_links': AgentConfig(
+                    'extract_links', 'boolean', True,
+                    description='Extract URLs'
+                ),
+                'extract_images': AgentConfig(
+                    'extract_images', 'boolean', False,
+                    description='Extract image URLs'
+                ),
+                'summarize': AgentConfig(
+                    'summarize', 'boolean', True,
+                    description='Generate summary of content'
+                ),
+                'max_summary_length': AgentConfig(
+                    'max_summary_length', 'number', 3,
+                    min_value=1, max_value=10,
+                    description='Summary length (sentences)'
+                )
+            }
+        ))
+
         logger.info(f"Loaded {len(self.agents)} built-in agents")
 
     def register_schema(self, schema: AgentSchema):
