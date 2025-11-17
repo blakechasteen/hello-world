@@ -1,0 +1,63 @@
+# Base Templates - Foundational templates for common use cases
+
+templates:
+  - name: simple
+    category: base
+    description: Simple variable substitution template
+    content: |
+      {{ text }}
+    defaults:
+      text: ""
+    tags:
+      - base
+      - simple
+
+  - name: instruction
+    category: base
+    description: Basic instruction template with task description
+    content: |
+      {{ instruction }}
+
+      {% if context -%}
+      Context:
+      {{ context }}
+      {% endif -%}
+
+      {% if constraints -%}
+      Constraints:
+      {{ constraints }}
+      {% endif -%}
+    defaults:
+      instruction: ""
+      context: null
+      constraints: null
+    tags:
+      - base
+      - instruction
+
+  - name: conversation
+    category: base
+    description: Multi-turn conversation template
+    content: |
+      {%- for message in messages %}
+      {{ message.role | upper }}: {{ message.content }}
+      {% endfor -%}
+    defaults:
+      messages: []
+    tags:
+      - base
+      - conversation
+      - multi-turn
+
+  - name: input-output
+    category: base
+    description: Simple input-output format
+    content: |
+      Input: {{ input }}
+      Output: {{ output | default('[Generate output here]', true) }}
+    defaults:
+      input: ""
+      output: null
+    tags:
+      - base
+      - io

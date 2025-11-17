@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+"""
+Promptly Wizard entry point
+"""
+
+if __name__ == '__main__':
+    from promptly.cli.wizards import cli
+    cli()

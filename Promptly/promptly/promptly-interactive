@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+"""
+Promptly Interactive REPL entry point
+"""
+
+if __name__ == '__main__':
+    from promptly.cli.interactive import main
+    main()

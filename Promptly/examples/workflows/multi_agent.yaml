@@ -1,0 +1,241 @@
+name: multi_agent_workflow
+description: Multi-agent system with coordinator, specialists, and consensus building
+version: "1.0"
+
+variables:
+  consensus_threshold: 0.75
+  max_iterations: 3
+  agent_timeout: 30.0
+
+steps:
+  # Step 1: Parse incoming task
+  - name: parse_task
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: task
+
+  # Step 2: Coordinator analyzes task
+  - name: coordinator_analysis
+    type: retry
+    depends_on: [parse_task]
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      action:
+        type: execute
+        prompt: "As coordinator, analyze this task and determine required specialists: {task}"
+
+  # Step 3: Extract required specialists
+  - name: extract_specialists
+    type: transform
+    depends_on: [coordinator_analysis]
+    config:
+      transform_type: extract
+      method: json
+      source_field: result
+      target_field: required_specialists
+
+  # Step 4: Spawn specialist agents in parallel
+  - name: specialist_agents
+    type: parallel
+    depends_on: [extract_specialists]
+    config:
+      tasks:
+        - name: researcher
+          prompt: "As a research specialist, analyze: {task}"
+          inputs:
+            role: researcher
+        - name: critic
+          prompt: "As a critical analyst, evaluate: {task}"
+          inputs:
+            role: critic
+        - name: optimizer
+          prompt: "As an optimization specialist, improve: {task}"
+          inputs:
+            role: optimizer
+        - name: validator
+          prompt: "As a validator, verify: {task}"
+          inputs:
+            role: validator
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 30.0
+      max_workers: 4
+
+  # Step 5: Extract agent responses
+  - name: extract_agent_responses
+    type: transform
+    depends_on: [specialist_agents]
+    config:
+      transform_type: extract
+      method: json
+      source_field: parallel_results
+      target_field: agent_responses
+
+  # Step 6: Iterative consensus building
+  - name: consensus_loop
+    type: loop
+    depends_on: [extract_agent_responses]
+    config:
+      loop_type: while
+      condition: "consensus < 0.75 and iteration < 3"
+      max_iterations: 3
+      action:
+        type: sequence
+        steps:
+          # Calculate current consensus
+          - type: transform
+            config:
+              transform_type: custom
+              operation: calculate_consensus
+              source_field: agent_responses
+              target_field: consensus_score
+
+          # Check if consensus reached
+          - type: conditional
+            config:
+              conditions:
+                - type: numeric
+                  field: consensus_score
+                  operator: lt
+                  value: 0.75
+                  action:
+                    # Request agent refinements
+                    type: parallel
+                    config:
+                      tasks:
+                        - name: refine_researcher
+                          prompt: "Refine your analysis considering other agents: {agent_responses}"
+                        - name: refine_critic
+                          prompt: "Refine your critique considering: {agent_responses}"
+                        - name: refine_optimizer
+                          prompt: "Refine your optimization: {agent_responses}"
+                        - name: refine_validator
+                          prompt: "Refine validation: {agent_responses}"
+              default:
+                type: set
+                field: consensus_reached
+                value: true
+
+  # Step 7: Check consensus status
+  - name: check_consensus
+    type: conditional
+    depends_on: [consensus_loop]
+    config:
+      conditions:
+        - type: numeric
+          field: consensus_score
+          operator: ge
+          value: 0.75
+          action:
+            type: set
+            field: status
+            value: "consensus_reached"
+      default:
+        type: set
+        field: status
+        value: "consensus_failed"
+
+  # Step 8: Coordinator synthesis (if consensus reached)
+  - name: coordinator_synthesis
+    type: retry
+    depends_on: [check_consensus]
+    condition:
+      type: simple
+      field: status
+      operator: eq
+      value: "consensus_reached"
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      action:
+        type: execute
+        prompt: "Synthesize final response from agent consensus: {agent_responses}"
+
+  # Step 9: Voting mechanism (if consensus failed)
+  - name: voting_mechanism
+    type: transform
+    depends_on: [check_consensus]
+    condition:
+      type: simple
+      field: status
+      operator: eq
+      value: "consensus_failed"
+    config:
+      transform_type: aggregate
+      source_field: agent_responses
+      method: voting
+      target_field: voted_result
+
+  # Step 10: Merge results
+  - name: merge_results
+    type: conditional
+    depends_on: [coordinator_synthesis, voting_mechanism]
+    config:
+      conditions:
+        - type: keyword
+          field: status
+          keywords: ["consensus_reached"]
+          action:
+            type: set
+            field: final_result
+            value_field: synthesized_result
+      default:
+        type: set
+        field: final_result
+        value_field: voted_result
+
+  # Step 11: Validate final result
+  - name: validate_result
+    type: transform
+    depends_on: [merge_results]
+    config:
+      transform_type: validate
+      source_field: final_result
+      validation_rules:
+        - type: required
+        - type: type
+          expected_type: string
+
+  # Step 12: Generate execution report
+  - name: generate_report
+    type: transform
+    depends_on: [validate_result]
+    config:
+      transform_type: template
+      template: |
+        Multi-Agent Execution Report
+        ============================
+
+        Task: {task}
+
+        Agents Consulted:
+        {required_specialists}
+
+        Consensus Status: {status}
+        Consensus Score: {consensus_score}
+        Iterations: {iteration}
+
+        Agent Contributions:
+        {agent_responses}
+
+        Final Result:
+        {final_result}
+      target_field: execution_report
+
+  # Step 13: Format output
+  - name: format_output
+    type: transform
+    depends_on: [generate_report]
+    config:
+      transform_type: aggregate
+      fields:
+        - final_result
+        - execution_report
+        - consensus_score
+        - status
+      method: dict
+      target_field: output

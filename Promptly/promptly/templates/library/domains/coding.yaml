@@ -1,0 +1,133 @@
+# Coding Domain Templates
+
+templates:
+  - name: code-generation
+    category: domain
+    description: Code generation template
+    content: |
+      Write {{ language }} code to {{ task }}.
+
+      {% if requirements -%}
+      Requirements:
+      {{ requirements | bullet_list }}
+      {% endif -%}
+
+      {% if constraints -%}
+
+      Constraints:
+      {{ constraints | bullet_list }}
+      {% endif -%}
+
+      {% if example_input -%}
+
+      Example input:
+      {{ example_input | code_block(language) }}
+      {% endif -%}
+
+      {% if example_output -%}
+
+      Example output:
+      {{ example_output | code_block }}
+      {% endif -%}
+
+      Provide well-commented, production-ready code.
+    defaults:
+      language: "Python"
+      task: ""
+      requirements: null
+      constraints: null
+      example_input: null
+      example_output: null
+    tags:
+      - domain
+      - coding
+      - generation
+
+  - name: code-review
+    category: domain
+    description: Code review template
+    content: |
+      Review the following {{ language }} code:
+
+      {{ code | code_block(language) }}
+
+      {% if focus_areas -%}
+      Focus on:
+      {{ focus_areas | bullet_list }}
+      {% endif -%}
+
+      Provide:
+      1. Overall assessment
+      2. Potential issues or bugs
+      3. Suggestions for improvement
+      4. Best practices to apply
+    defaults:
+      code: ""
+      language: "Python"
+      focus_areas: null
+    tags:
+      - domain
+      - coding
+      - review
+
+  - name: code-explanation
+    category: domain
+    description: Code explanation template
+    content: |
+      Explain the following {{ language }} code {% if audience %}for {{ audience }}{% endif %}:
+
+      {{ code | code_block(language) }}
+
+      {% if detail_level -%}
+      Detail level: {{ detail_level }}
+      {% endif -%}
+
+      Include:
+      - What the code does
+      - How it works
+      - Key concepts used
+      {% if include_examples -%}
+      - Usage examples
+      {% endif -%}
+    defaults:
+      code: ""
+      language: "Python"
+      audience: null
+      detail_level: "medium"
+      include_examples: false
+    tags:
+      - domain
+      - coding
+      - explanation
+      - education
+
+  - name: debug-code
+    category: domain
+    description: Code debugging template
+    content: |
+      Debug the following {{ language }} code:
+
+      {{ code | code_block(language) }}
+
+      Error message:
+      {{ error_message | code_block }}
+
+      {% if expected_behavior -%}
+      Expected behavior: {{ expected_behavior }}
+      {% endif -%}
+
+      {% if actual_behavior -%}
+      Actual behavior: {{ actual_behavior }}
+      {% endif -%}
+
+      Identify the issue and provide a fix with explanation.
+    defaults:
+      code: ""
+      language: "Python"
+      error_message: ""
+      expected_behavior: null
+      actual_behavior: null
+    tags:
+      - domain
+      - coding
+      - debugging

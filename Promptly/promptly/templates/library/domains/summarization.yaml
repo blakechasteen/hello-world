@@ -1,0 +1,75 @@
+# Summarization Domain Templates
+
+templates:
+  - name: summarize-text
+    category: domain
+    description: General text summarization template
+    content: |
+      Summarize the following text in {{ max_sentences | default(3, true) }} sentences:
+
+      {{ text }}
+
+      {% if focus -%}
+      Focus on: {{ focus }}
+      {% endif -%}
+
+      {% if audience -%}
+      Audience: {{ audience }}
+      {% endif -%}
+    defaults:
+      text: ""
+      max_sentences: 3
+      focus: null
+      audience: null
+    tags:
+      - domain
+      - summarization
+      - text
+
+  - name: summarize-bullet-points
+    category: domain
+    description: Summarization with bullet points output
+    content: |
+      Create a bullet-point summary of the following {{ content_type | default('text', true) }}:
+
+      {{ content }}
+
+      Provide {{ num_points | default(5, true) }} key points.
+      {% if highlight -%}
+
+      Highlight: {{ highlight }}
+      {% endif -%}
+    defaults:
+      content: ""
+      content_type: "text"
+      num_points: 5
+      highlight: null
+    tags:
+      - domain
+      - summarization
+      - bullet-points
+
+  - name: summarize-meeting
+    category: domain
+    description: Meeting notes summarization
+    content: |
+      Summarize the following meeting notes:
+
+      {{ notes }}
+
+      Include:
+      - Key discussion points
+      - Decisions made
+      - Action items
+      {% if attendees -%}
+
+      Attendees: {{ attendees | join_with }}
+      {% endif -%}
+    defaults:
+      notes: ""
+      attendees: null
+    tags:
+      - domain
+      - summarization
+      - meeting
+      - notes

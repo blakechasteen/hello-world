@@ -181,6 +181,96 @@ advanced:
   # HoloLoom memory persistence path
   hololoom_memory_path: null
 
+# Storage Backend Configuration
+# =============================
+# Promptly supports multiple storage backends for different use cases.
+# Choose the backend that best fits your deployment requirements.
+
+storage:
+  # Active backend (sqlite, json, postgresql, mongodb, redis, git)
+  backend: sqlite
+
+  # SQLite Configuration (default, no dependencies)
+  sqlite:
+    # Path to SQLite database file
+    path: ./promptly.db
+
+  # JSON File Configuration (git-friendly, no dependencies)
+  json:
+    # Directory for JSON storage
+    path: ./promptly_data
+
+  # PostgreSQL Configuration (requires: sqlalchemy, psycopg2-binary)
+  postgresql:
+    # Connection string format: postgresql://user:password@host:port/database
+    connection_string: postgresql://promptly:password@localhost:5432/promptly_db
+
+    # Connection pool settings
+    pool_size: 5
+    max_overflow: 10
+    pool_timeout: 30
+
+    # Retry settings
+    max_retries: 3
+
+    # Enable SQL query logging (for debugging)
+    echo: false
+
+  # MongoDB Configuration (requires: pymongo)
+  mongodb:
+    # Connection string format: mongodb://[user:password@]host[:port]/database
+    # For replica sets: mongodb://host1:27017,host2:27017,host3:27017/?replicaSet=rs0
+    # For MongoDB Atlas: mongodb+srv://user:password@cluster.mongodb.net/database
+    connection_string: mongodb://localhost:27017/promptly_db
+
+    # Connection pool settings
+    max_pool_size: 100
+    timeout_ms: 5000
+
+    # Enable retryable writes
+    retry_writes: true
+
+    # Replica set name (if using replica sets)
+    replica_set: null
+
+  # Redis Configuration (requires: redis)
+  redis:
+    # Connection string format: redis://[:password@]host[:port][/database]
+    # For SSL/TLS: rediss://host:port/database
+    connection_string: redis://localhost:6379/0
+
+    # Connection pool settings
+    max_connections: 50
+    socket_timeout: 5
+    socket_connect_timeout: 5
+
+    # Decode responses from bytes to strings
+    decode_responses: true
+
+    # Default TTL for prompts in seconds (null = no expiration)
+    # Useful for temporary/ephemeral prompts
+    ttl_seconds: null
+
+  # Git Configuration (requires: gitpython)
+  git:
+    # Local repository path
+    path: ./promptly_repo
+
+    # Remote repository URL (optional)
+    # Supports GitHub, GitLab, Bitbucket, etc.
+    # Format: https://github.com/user/repo.git or git@github.com:user/repo.git
+    remote_url: null
+
+    # Git author information
+    author_name: Promptly
+    author_email: promptly@example.com
+
+    # Automatically push commits to remote
+    auto_push: false
+
+    # Automatically pull before operations
+    auto_pull: false
+
 # Example Configurations
 # ======================
 # Uncomment and customize these examples for specific use cases

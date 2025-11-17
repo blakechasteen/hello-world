@@ -1,0 +1,321 @@
+{
+  "info": {
+    "name": "Promptly API",
+    "description": "Production-ready REST API for Promptly - Advanced prompt management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "value",
+        "value": "pk_dev_key_12345",
+        "type": "string"
+      },
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "api_prefix",
+      "value": "/api/v1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Prompts",
+      "item": [
+        {
+          "name": "Create Prompt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"summarizer\",\n  \"content\": \"Summarize the following text:\\n\\n{text}\",\n  \"metadata\": {\n    \"tags\": [\"nlp\", \"summarization\"],\n    \"category\": \"text-processing\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/prompts",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["prompts"]
+            }
+          }
+        },
+        {
+          "name": "Get Prompt",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/prompts/summarizer",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["prompts", "summarizer"]
+            }
+          }
+        },
+        {
+          "name": "Get Prompt Version",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/prompts/summarizer?version=1",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["prompts", "summarizer"],
+              "query": [
+                {
+                  "key": "version",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Prompts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/prompts",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["prompts"]
+            }
+          }
+        },
+        {
+          "name": "Search Prompts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"summary\",\n  \"tags\": [\"nlp\"],\n  \"limit\": 20\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/prompts/search",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["prompts", "search"]
+            }
+          }
+        },
+        {
+          "name": "Get Prompt Diff",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/prompts/summarizer/diff?version_old=1&version_new=2",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["prompts", "summarizer", "diff"],
+              "query": [
+                {
+                  "key": "version_old",
+                  "value": "1"
+                },
+                {
+                  "key": "version_new",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Branches",
+      "item": [
+        {
+          "name": "Create Branch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"feature/new-prompts\",\n  \"from_branch\": \"main\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/branches",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["branches"]
+            }
+          }
+        },
+        {
+          "name": "List Branches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/branches",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["branches"]
+            }
+          }
+        },
+        {
+          "name": "Checkout Branch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branch_name\": \"feature/new-prompts\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/branches/checkout",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["branches", "checkout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Evaluations",
+      "item": [
+        {
+          "name": "Run Evaluation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt_name\": \"summarizer\",\n  \"test_cases\": [\n    {\n      \"inputs\": {\n        \"text\": \"Long article text here...\"\n      },\n      \"expected\": \"Expected summary\"\n    }\n  ],\n  \"evaluator\": \"semantic\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/evaluations",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["evaluations"]
+            }
+          }
+        },
+        {
+          "name": "List Evaluations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/evaluations",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["evaluations"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chains",
+      "item": [
+        {
+          "name": "Create Chain",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"research-pipeline\",\n  \"steps\": [\"query-expander\", \"searcher\", \"summarizer\"],\n  \"description\": \"Research pipeline\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/chains",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["chains"]
+            }
+          }
+        },
+        {
+          "name": "Execute Chain",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chain_name\": \"research-pipeline\",\n  \"initial_input\": {\n    \"query\": \"AI trends 2024\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/chains/execute",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["chains", "execute"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

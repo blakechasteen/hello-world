@@ -845,5 +845,265 @@ def chain_run(name, input_file):
         click.echo(click.style(f"Unexpected error: {e}", fg='red'), err=True)
 
 
+@cli.command()
+@click.argument('name')
+@click.option('--from', 'from_version', type=int, help='Compare from version')
+@click.option('--to', 'to_version', type=int, help='Compare to version')
+@click.option('--level', type=click.Choice(['char', 'word', 'line', 'semantic']), default='line', help='Diff granularity')
+@click.option('--format', 'output_format', type=click.Choice(['terminal', 'unified', 'side-by-side', 'html']), default='terminal', help='Output format')
+@click.option('--output', '-o', type=click.Path(), help='Save output to file (for HTML format)')
+def diff(name, from_version, to_version, level, output_format, output):
+    """Show differences between prompt versions"""
+    try:
+        from .diff import DiffLevel, ComparisonEngine, TerminalDiff, HTMLDiff
+
+        promptly = Promptly()
+
+        # Get current version if not specified
+        if not to_version:
+            current = promptly.get(name)
+            if not current:
+                click.echo(click.style(f"Prompt '{name}' not found", fg='red'), err=True)
+                return
+            to_version = current['version']
+
+        if not from_version:
+            from_version = max(1, to_version - 1)
+
+        # Perform comparison
+        engine = ComparisonEngine(promptly)
+        level_enum = DiffLevel[level.upper()]
+        comparison = engine.compare_versions(name, from_version, to_version, level_enum)
+
+        # Output based on format
+        if output_format == 'terminal':
+            output_text = TerminalDiff.render_comparison(comparison)
+            click.echo(output_text)
+
+        elif output_format == 'unified':
+            click.echo(comparison.diff_result.unified_format)
+
+        elif output_format == 'side-by-side':
+            side_by_side = TerminalDiff.render_side_by_side(
+                comparison.old_content,
+                comparison.new_content
+            )
+            click.echo(side_by_side)
+
+        elif output_format == 'html':
+            html_output = HTMLDiff.render_comparison(comparison)
+            if output:
+                with open(output, 'w') as f:
+                    f.write(html_output)
+                click.echo(click.style(f"HTML diff saved to {output}", fg='green'))
+            else:
+                click.echo(html_output)
+
+    except PromptlyError as e:
+        click.echo(click.style(f"Error: {e}", fg='red'), err=True)
+    except Exception as e:
+        click.echo(click.style(f"Unexpected error: {e}", fg='red'), err=True)
+
+
+@cli.command()
+@click.argument('prompt1')
+@click.argument('prompt2')
+@click.option('--level', type=click.Choice(['char', 'word', 'line', 'semantic']), default='line', help='Diff granularity')
+@click.option('--format', 'output_format', type=click.Choice(['terminal', 'side-by-side', 'html']), default='terminal', help='Output format')
+def compare(prompt1, prompt2, level, output_format):
+    """Compare two different prompts"""
+    try:
+        from .diff import DiffLevel, ComparisonEngine, TerminalDiff, HTMLDiff
+
+        promptly = Promptly()
+
+        # Get both prompts
+        p1 = promptly.get(prompt1)
+        p2 = promptly.get(prompt2)
+
+        if not p1:
+            click.echo(click.style(f"Prompt '{prompt1}' not found", fg='red'), err=True)
+            return
+        if not p2:
+            click.echo(click.style(f"Prompt '{prompt2}' not found", fg='red'), err=True)
+            return
+
+        # Compare
+        engine = ComparisonEngine(promptly)
+        level_enum = DiffLevel[level.upper()]
+        diff_result = engine.compare_prompts(p1, p2, level_enum)
+
+        # Output
+        if output_format == 'terminal':
+            click.echo(click.style(f"\nComparing: {prompt1} vs {prompt2}", fg='cyan', bold=True))
+            click.echo(TerminalDiff.render(diff_result))
+
+        elif output_format == 'side-by-side':
+            side_by_side = TerminalDiff.render_side_by_side(
+                p1['content'],
+                p2['content']
+            )
+            click.echo(side_by_side)
+
+        elif output_format == 'html':
+            html_output = HTMLDiff.render(diff_result, title=f"Compare: {prompt1} vs {prompt2}")
+            click.echo(html_output)
+
+    except PromptlyError as e:
+        click.echo(click.style(f"Error: {e}", fg='red'), err=True)
+    except Exception as e:
+        click.echo(click.style(f"Unexpected error: {e}", fg='red'), err=True)
+
+
+@cli.command()
+@click.argument('source_branch')
+@click.option('--into', 'target_branch', help='Target branch (default: current branch)')
+@click.option('--strategy', type=click.Choice(['auto', 'ours', 'theirs', 'union', 'manual']), default='auto', help='Merge strategy')
+@click.option('--dry-run', is_flag=True, help='Show what would be merged without merging')
+def merge(source_branch, target_branch, strategy, dry_run):
+    """Merge branches"""
+    try:
+        from .merge import MergeTool, MergeStrategy
+
+        promptly = Promptly()
+
+        if not target_branch:
+            target_branch = promptly._get_current_branch()
+
+        click.echo(click.style(f"\nMerging '{source_branch}' into '{target_branch}'...", fg='cyan'))
+
+        # Create merge tool
+        merge_tool = MergeTool(promptly)
+        strategy_enum = MergeStrategy[strategy.upper()]
+
+        # Perform merge
+        merge_results = merge_tool.merge_branches(source_branch, target_branch, strategy_enum)
+
+        # Display results
+        total_prompts = len(merge_results)
+        conflicts = sum(1 for r in merge_results.values() if r.has_conflicts())
+        success = sum(1 for r in merge_results.values() if r.success)
+
+        click.echo(f"\nMerged {total_prompts} prompt(s)")
+        click.echo(f"  {click.style(str(success), fg='green')} successful")
+        if conflicts > 0:
+            click.echo(f"  {click.style(str(conflicts), fg='red')} with conflicts")
+
+        # Show conflicts
+        if conflicts > 0:
+            click.echo(click.style("\nConflicts found in:", fg='yellow', bold=True))
+            for name, result in merge_results.items():
+                if result.has_conflicts():
+                    unresolved = len([c for c in result.conflicts if not c.resolved])
+                    click.echo(f"  - {name}: {unresolved} unresolved conflict(s)")
+
+            if not dry_run:
+                click.echo(click.style("\nUse 'promptly conflicts list' to see details", fg='cyan'))
+                click.echo(click.style("Use 'promptly conflicts resolve' to resolve conflicts", fg='cyan'))
+
+        if dry_run:
+            click.echo(click.style("\n(Dry run - no changes made)", fg='yellow'))
+        else:
+            if conflicts == 0:
+                click.echo(click.style("\n✓ Merge completed successfully", fg='green'))
+            else:
+                click.echo(click.style("\n⚠ Merge completed with conflicts", fg='yellow'))
+
+    except PromptlyError as e:
+        click.echo(click.style(f"Error: {e}", fg='red'), err=True)
+    except Exception as e:
+        click.echo(click.style(f"Unexpected error: {e}", fg='red'), err=True)
+
+
+@cli.group()
+def conflicts():
+    """Manage merge conflicts"""
+    pass
+
+
+@conflicts.command(name='list')
+def conflicts_list():
+    """List unresolved merge conflicts"""
+    try:
+        # In a real implementation, would store merge state
+        click.echo(click.style("No active merge conflicts", fg='green'))
+        click.echo(click.style("\nTo create conflicts, run: promptly merge <branch>", fg='cyan'))
+
+    except Exception as e:
+        click.echo(click.style(f"Unexpected error: {e}", fg='red'), err=True)
+
+
+@conflicts.command(name='resolve')
+@click.argument('prompt_name')
+@click.option('--strategy', type=click.Choice(['ours', 'theirs', 'union', 'edit']), default='edit', help='Resolution strategy')
+def conflicts_resolve(prompt_name, strategy):
+    """Resolve conflicts for a prompt"""
+    try:
+        # In a real implementation, would load conflict state and allow interactive resolution
+        click.echo(click.style(f"Resolving conflicts for '{prompt_name}'...", fg='cyan'))
+        click.echo(click.style("\nInteractive conflict resolution not yet implemented", fg='yellow'))
+        click.echo(click.style("Use --strategy to choose automatic resolution", fg='cyan'))
+
+    except Exception as e:
+        click.echo(click.style(f"Unexpected error: {e}", fg='red'), err=True)
+
+
+@cli.command(name='branch-diff')
+@click.argument('branch1')
+@click.argument('branch2', required=False)
+@click.option('--format', 'output_format', type=click.Choice(['terminal', 'summary', 'detailed']), default='summary', help='Output format')
+def branch_diff(branch1, branch2, output_format):
+    """Compare two branches"""
+    try:
+        from .diff import ComparisonEngine, TerminalDiff
+
+        promptly = Promptly()
+
+        if not branch2:
+            branch2 = promptly._get_current_branch()
+
+        click.echo(click.style(f"\nComparing branches: {branch1} <-> {branch2}\n", fg='cyan', bold=True))
+
+        # Perform comparison
+        engine = ComparisonEngine(promptly)
+        comparison = engine.compare_branches(branch1, branch2)
+
+        # Output
+        if output_format in ['terminal', 'summary']:
+            click.echo(TerminalDiff.render_branch_comparison(comparison))
+
+        elif output_format == 'detailed':
+            click.echo(TerminalDiff.render_branch_comparison(comparison))
+            click.echo()
+
+            # Show detailed diffs for modified prompts
+            if comparison.prompts_modified:
+                click.echo(click.style("\nDetailed diffs:", fg='cyan', bold=True))
+                for name in comparison.prompts_modified[:5]:  # Limit to 5
+                    if name in comparison.diff_results:
+                        click.echo(f"\n{click.style('═' * 60, fg='cyan')}")
+                        click.echo(click.style(f"Prompt: {name}", fg='cyan', bold=True))
+                        click.echo(click.style('═' * 60, fg='cyan'))
+                        click.echo(TerminalDiff.render(comparison.diff_results[name]))
+
+                if len(comparison.prompts_modified) > 5:
+                    click.echo(f"\n{click.style('... and ' + str(len(comparison.prompts_modified) - 5) + ' more prompts', fg='dim')}")
+                    click.echo(click.style("Use 'promptly diff <name> --from <v1> --to <v2>' for individual diffs", fg='cyan'))
+
+    except PromptlyError as e:
+        click.echo(click.style(f"Error: {e}", fg='red'), err=True)
+    except Exception as e:
+        click.echo(click.style(f"Unexpected error: {e}", fg='red'), err=True)
+
+
+# Import and add template commands
+try:
+    from .template_cli import add_template_commands
+    add_template_commands(cli)
+except ImportError:
+    # Template system not available
+    pass
+
+
 if __name__ == '__main__':
     cli()

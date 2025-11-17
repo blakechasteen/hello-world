@@ -1,0 +1,79 @@
+# Few-Shot Learning Templates
+
+templates:
+  - name: few-shot-basic
+    category: pattern
+    description: Basic few-shot learning template
+    content: |
+      {% if instruction -%}
+      {{ instruction }}
+
+      {% endif -%}
+      Examples:
+
+      {{ examples | few_shot }}
+
+      Now complete this:
+      Input: {{ input }}
+      Output:
+    defaults:
+      instruction: null
+      examples: []
+      input: ""
+    tags:
+      - pattern
+      - few-shot
+      - learning
+
+  - name: few-shot-classification
+    category: pattern
+    description: Few-shot classification template
+    content: |
+      Classify the following {{ item_type | default('text', true) }} into one of these categories:
+      {{ categories | join_with }}
+
+      Examples:
+      {% for example in examples -%}
+      {{ item_type | title }}: {{ example.input }}
+      Category: {{ example.category }}
+
+      {% endfor -%}
+
+      Now classify:
+      {{ item_type | title }}: {{ input }}
+      Category:
+    defaults:
+      item_type: "text"
+      categories: []
+      examples: []
+      input: ""
+    tags:
+      - pattern
+      - few-shot
+      - classification
+
+  - name: few-shot-extraction
+    category: pattern
+    description: Few-shot information extraction template
+    content: |
+      Extract {{ target }} from the following {{ source_type }}:
+
+      Examples:
+      {% for example in examples -%}
+      {{ source_type | title }}: {{ example.input }}
+      Extracted {{ target }}: {{ example.output }}
+
+      {% endfor -%}
+
+      Now extract:
+      {{ source_type | title }}: {{ input }}
+      Extracted {{ target }}:
+    defaults:
+      target: "information"
+      source_type: "text"
+      examples: []
+      input: ""
+    tags:
+      - pattern
+      - few-shot
+      - extraction

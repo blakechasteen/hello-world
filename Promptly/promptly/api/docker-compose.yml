@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # Promptly API Service
+  api:
+    build:
+      context: ../..
+      dockerfile: promptly/api/Dockerfile
+    container_name: promptly-api
+    ports:
+      - "8000:8000"
+    environment:
+      # API Configuration
+      - PROMPTLY_APP_NAME=Promptly API
+      - PROMPTLY_LOG_LEVEL=INFO
+      - PROMPTLY_HOST=0.0.0.0
+      - PROMPTLY_PORT=8000
+      - PROMPTLY_WORKERS=4
+
+      # CORS
+      - PROMPTLY_CORS_ORIGINS=["http://localhost:3000","http://localhost:8080"]
+
+      # Security
+      - PROMPTLY_SECRET_KEY=${SECRET_KEY:-change-this-in-production}
+      - PROMPTLY_API_KEY_HEADER=X-API-Key
+
+      # Rate Limiting
+      - PROMPTLY_RATE_LIMIT_ENABLED=true
+      - PROMPTLY_RATE_LIMIT_PER_MINUTE=60
+
+      # Storage
+      - PROMPTLY_ROOT_DIR=/data
+      - PROMPTLY_STORAGE_BACKEND=sqlite
+
+    volumes:
+      # Persist Promptly data
+      - promptly-data:/data
+      # Mount code for development (comment out for production)
+      # - ../../promptly:/app/promptly
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+    restart: unless-stopped
+
+    networks:
+      - promptly-network
+
+  # Redis for caching and rate limiting (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: promptly-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - promptly-network
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: promptly-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - promptly-network
+
+volumes:
+  promptly-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  promptly-network:
+    driver: bridge

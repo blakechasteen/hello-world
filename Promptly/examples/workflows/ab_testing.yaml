@@ -1,0 +1,225 @@
+name: ab_testing_workflow
+description: A/B testing framework for comparing prompt variants with statistical analysis
+version: "1.0"
+
+variables:
+  variant_a_name: "baseline"
+  variant_b_name: "optimized"
+  test_iterations: 100
+  confidence_level: 0.95
+
+steps:
+  # Step 1: Load test cases
+  - name: load_test_cases
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: test_data
+      target_field: test_cases
+
+  # Step 2: Validate test cases
+  - name: validate_tests
+    type: transform
+    depends_on: [load_test_cases]
+    config:
+      transform_type: validate
+      source_field: test_cases
+      validation_rules:
+        - type: required
+        - type: type
+          expected_type: list
+
+  # Step 3: Run variants in parallel for each test case
+  - name: execute_ab_tests
+    type: loop
+    depends_on: [validate_tests]
+    config:
+      loop_type: for_each
+      items: test_cases
+      max_iterations: 100
+      action:
+        type: parallel_test
+        config:
+          tasks:
+            - name: variant_a
+              prompt: "Baseline prompt: {item}"
+            - name: variant_b
+              prompt: "Optimized prompt: {item}"
+          aggregation: all
+          timeout: 30.0
+      accumulator: test_results
+
+  # Step 4: Extract metrics from each test
+  - name: extract_metrics
+    type: loop
+    depends_on: [execute_ab_tests]
+    config:
+      loop_type: map
+      items: test_results
+      action:
+        type: transform
+        config:
+          transform_type: extract
+          method: json
+          source_field: item
+          target_field: metrics
+      map_field: metrics
+
+  # Step 5: Aggregate metrics by variant
+  - name: aggregate_by_variant
+    type: transform
+    depends_on: [extract_metrics]
+    config:
+      transform_type: aggregate
+      source_field: mapped_results
+      method: custom
+      aggregator: group_by_variant
+
+  # Step 6: Calculate statistical significance
+  - name: calculate_statistics
+    type: transform
+    depends_on: [aggregate_by_variant]
+    config:
+      transform_type: custom
+      operation: statistical_test
+      test_type: t_test
+      variant_a_field: variant_a_metrics
+      variant_b_field: variant_b_metrics
+      confidence_level: 0.95
+
+  # Step 7: Determine winner
+  - name: determine_winner
+    type: conditional
+    depends_on: [calculate_statistics]
+    config:
+      conditions:
+        # Variant B significantly better
+        - type: numeric
+          field: p_value
+          operator: lt
+          value: 0.05
+          action:
+            type: conditional
+            conditions:
+              - type: numeric
+                field: variant_b_mean
+                operator: gt
+                value_field: variant_a_mean
+                action:
+                  type: set
+                  field: winner
+                  value: "variant_b"
+              - type: numeric
+                field: variant_a_mean
+                operator: gt
+                value_field: variant_b_mean
+                action:
+                  type: set
+                  field: winner
+                  value: "variant_a"
+      default:
+        type: set
+        field: winner
+        value: "no_significant_difference"
+
+  # Step 8: Calculate effect size
+  - name: calculate_effect_size
+    type: transform
+    depends_on: [calculate_statistics]
+    config:
+      transform_type: custom
+      operation: cohens_d
+      variant_a_field: variant_a_metrics
+      variant_b_field: variant_b_metrics
+
+  # Step 9: Generate recommendations
+  - name: generate_recommendations
+    type: conditional
+    depends_on: [determine_winner, calculate_effect_size]
+    config:
+      conditions:
+        # Large effect size + significant
+        - type: keyword
+          field: winner
+          keywords: ["variant_b"]
+          condition:
+            type: numeric
+            field: effect_size
+            operator: gt
+            value: 0.8
+          action:
+            type: set
+            field: recommendation
+            value: "Strong recommendation to adopt Variant B"
+
+        # Medium effect size + significant
+        - type: keyword
+          field: winner
+          keywords: ["variant_b"]
+          condition:
+            type: numeric
+            field: effect_size
+            operator: gt
+            value: 0.5
+          action:
+            type: set
+            field: recommendation
+            value: "Moderate recommendation to adopt Variant B"
+
+        # Variant A wins
+        - type: keyword
+          field: winner
+          keywords: ["variant_a"]
+          action:
+            type: set
+            field: recommendation
+            value: "Keep baseline - no improvement from optimization"
+
+      default:
+        type: set
+        field: recommendation
+        value: "Insufficient evidence - continue testing"
+
+  # Step 10: Format report
+  - name: format_report
+    type: transform
+    depends_on: [generate_recommendations]
+    config:
+      transform_type: template
+      template: |
+        A/B Test Report
+        ===============
+
+        Test Configuration:
+        - Variant A: {variant_a_name}
+        - Variant B: {variant_b_name}
+        - Test Iterations: {test_iterations}
+        - Confidence Level: {confidence_level}
+
+        Results:
+        - Winner: {winner}
+        - P-value: {p_value}
+        - Effect Size: {effect_size}
+
+        Variant A Metrics:
+        - Mean: {variant_a_mean}
+        - Std Dev: {variant_a_std}
+
+        Variant B Metrics:
+        - Mean: {variant_b_mean}
+        - Std Dev: {variant_b_std}
+
+        Recommendation:
+        {recommendation}
+      target_field: report
+
+  # Step 11: Export results
+  - name: export_results
+    type: transform
+    depends_on: [format_report]
+    config:
+      transform_type: convert
+      source_field: report
+      target_format: markdown
+      target_field: final_report

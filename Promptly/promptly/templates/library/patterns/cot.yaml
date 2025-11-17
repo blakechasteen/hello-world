@@ -1,0 +1,92 @@
+# Chain-of-Thought (CoT) Templates
+
+templates:
+  - name: cot-basic
+    category: pattern
+    description: Basic chain-of-thought prompting
+    content: |
+      {{ question }}
+
+      Let's think step by step:
+    defaults:
+      question: ""
+    tags:
+      - pattern
+      - cot
+      - chain-of-thought
+      - reasoning
+
+  - name: cot-with-examples
+    category: pattern
+    description: Chain-of-thought with examples
+    content: |
+      {% if instruction -%}
+      {{ instruction }}
+
+      {% endif -%}
+      {% for example in examples -%}
+      Question: {{ example.question }}
+      Let's think step by step:
+      {{ example.reasoning }}
+      Answer: {{ example.answer }}
+
+      {% endfor -%}
+
+      Question: {{ question }}
+      Let's think step by step:
+    defaults:
+      instruction: null
+      examples: []
+      question: ""
+    tags:
+      - pattern
+      - cot
+      - chain-of-thought
+      - few-shot
+
+  - name: cot-math
+    category: pattern
+    description: Chain-of-thought for math problems
+    content: |
+      Solve this math problem step by step:
+
+      {{ problem }}
+
+      {% if show_work -%}
+      Show all your work and explain each step.
+      {% endif -%}
+
+      Steps:
+      1.
+    defaults:
+      problem: ""
+      show_work: true
+    tags:
+      - pattern
+      - cot
+      - math
+      - reasoning
+
+  - name: cot-analysis
+    category: pattern
+    description: Chain-of-thought for analysis tasks
+    content: |
+      Analyze the following {{ subject }}:
+
+      {{ content }}
+
+      Think through this systematically:
+
+      1. Initial observations:
+      2. Key patterns or themes:
+      3. Supporting evidence:
+      4. Potential counterarguments:
+      5. Conclusion:
+    defaults:
+      subject: "topic"
+      content: ""
+    tags:
+      - pattern
+      - cot
+      - analysis
+      - reasoning

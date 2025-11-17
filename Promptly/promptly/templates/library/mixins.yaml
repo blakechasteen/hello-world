@@ -1,0 +1,100 @@
+# Template Mixins - Reusable components to mix into templates
+
+mixins:
+  - name: tone-professional
+    description: Add professional tone guidance
+    inject_position: start
+    priority: 10
+    content: |
+      Use a professional, formal tone. Be clear, concise, and respectful.
+
+  - name: tone-casual
+    description: Add casual/friendly tone guidance
+    inject_position: start
+    priority: 10
+    content: |
+      Use a friendly, conversational tone. Be approachable and helpful.
+
+  - name: tone-technical
+    description: Add technical tone guidance
+    inject_position: start
+    priority: 10
+    content: |
+      Use precise technical language. Include relevant terminology and specifications.
+
+  - name: format-markdown
+    description: Request markdown formatting
+    inject_position: end
+    priority: 5
+    content: |
+      Format your response using Markdown for better readability.
+
+  - name: format-json
+    description: Request JSON output format
+    inject_position: end
+    priority: 5
+    content: |
+      Provide your response as valid JSON.
+
+  - name: format-bullet-points
+    description: Request bullet point format
+    inject_position: end
+    priority: 5
+    content: |
+      Present your response as clear bullet points.
+
+  - name: length-concise
+    description: Encourage concise responses
+    inject_position: end
+    priority: 8
+    content: |
+      Keep your response concise and to the point.
+
+  - name: length-detailed
+    description: Encourage detailed responses
+    inject_position: end
+    priority: 8
+    content: |
+      Provide a comprehensive, detailed response with examples where helpful.
+
+  - name: verify-sources
+    description: Request source verification
+    inject_position: end
+    priority: 7
+    content: |
+      Verify information and cite sources where applicable.
+
+  - name: think-step-by-step
+    description: Encourage step-by-step reasoning
+    inject_position: end
+    priority: 9
+    content: |
+      Think through this step by step before providing your answer.
+
+  - name: examples-required
+    description: Request examples in response
+    inject_position: end
+    priority: 6
+    content: |
+      Include concrete examples to illustrate your points.
+
+  - name: avoid-jargon
+    description: Discourage jargon use
+    inject_position: start
+    priority: 10
+    content: |
+      Avoid jargon and explain technical terms when you use them.
+
+  - name: creative-thinking
+    description: Encourage creative approaches
+    inject_position: start
+    priority: 8
+    content: |
+      Think creatively and consider unconventional approaches.
+
+  - name: safety-check
+    description: Add safety and ethics consideration
+    inject_position: start
+    priority: 15
+    content: |
+      Consider safety, ethics, and potential misuse. Refuse inappropriate requests.

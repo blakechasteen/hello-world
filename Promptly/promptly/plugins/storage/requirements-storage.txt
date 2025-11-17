@@ -1,0 +1,73 @@
+# Promptly Storage Backend Dependencies
+# =====================================
+# Optional dependencies for production storage backends.
+# Install only the backends you need.
+
+# PostgreSQL Backend
+# ------------------
+# Requires: PostgreSQL server
+# Install with: pip install sqlalchemy psycopg2-binary
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+
+# MongoDB Backend
+# ---------------
+# Requires: MongoDB server
+# Install with: pip install pymongo
+pymongo>=4.0.0
+
+# Redis Backend
+# -------------
+# Requires: Redis server
+# Install with: pip install redis
+redis>=4.5.0
+
+# Git Backend
+# -----------
+# Requires: git command-line tool
+# Install with: pip install gitpython
+gitpython>=3.1.0
+
+# =====================================
+# Installation Examples
+# =====================================
+
+# Install all storage backends:
+# pip install -r requirements-storage.txt
+
+# Install specific backends:
+# pip install sqlalchemy psycopg2-binary  # PostgreSQL only
+# pip install pymongo                      # MongoDB only
+# pip install redis                        # Redis only
+# pip install gitpython                    # Git only
+
+# Install for production (PostgreSQL + Redis):
+# pip install sqlalchemy psycopg2-binary redis
+
+# =====================================
+# Server Installation
+# =====================================
+
+# PostgreSQL
+# ----------
+# Ubuntu/Debian: sudo apt-get install postgresql postgresql-contrib
+# macOS: brew install postgresql
+# Docker: docker run --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres
+
+# MongoDB
+# -------
+# Ubuntu/Debian: sudo apt-get install mongodb
+# macOS: brew tap mongodb/brew && brew install mongodb-community
+# Docker: docker run --name mongo -p 27017:27017 -d mongo
+
+# Redis
+# -----
+# Ubuntu/Debian: sudo apt-get install redis-server
+# macOS: brew install redis
+# Docker: docker run --name redis -p 6379:6379 -d redis
+
+# Git
+# ---
+# Ubuntu/Debian: sudo apt-get install git
+# macOS: brew install git
+# (Git is usually pre-installed on most systems)

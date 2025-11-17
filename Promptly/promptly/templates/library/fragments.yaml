@@ -1,0 +1,82 @@
+# Template Fragments - Reusable template pieces
+
+fragments:
+  - name: disclaimer
+    description: Standard AI disclaimer
+    content: |
+      Note: This is AI-generated content. Please verify important information.
+
+  - name: citation-format
+    description: Citation format instructions
+    content: |
+      When citing sources, use the format: [Source Name](URL) or [1], [2], etc.
+
+  - name: code-best-practices
+    description: Code best practices reminder
+    content: |
+      Follow these best practices:
+      - Write clean, readable code
+      - Add appropriate comments
+      - Handle errors properly
+      - Follow language conventions
+
+  - name: thinking-prompt
+    description: Encourages explicit thinking
+    content: |
+      Before answering, think through:
+      1. What is being asked?
+      2. What information do I need?
+      3. What's the best approach?
+
+  - name: output-structure
+    description: Standard output structure
+    content: |
+      Structure your response with:
+      - Summary
+      - Detailed explanation
+      - Examples (if applicable)
+      - Conclusion/recommendations
+
+  - name: confidence-level
+    description: Request confidence assessment
+    content: |
+      Indicate your confidence level: High / Medium / Low
+
+  - name: alternatives
+    description: Request alternative approaches
+    content: |
+      Consider and present alternative approaches or solutions.
+
+  - name: pros-cons
+    description: Pros and cons analysis format
+    content: |
+      Analyze with:
+      Pros:
+      -
+
+      Cons:
+      -
+
+  - name: step-by-step
+    description: Step-by-step format
+    content: |
+      Steps:
+      1.
+      2.
+      3.
+
+  - name: qa-format
+    description: Q&A format structure
+    content: |
+      Q: {{ question }}
+      A:
+
+  - name: context-reminder
+    description: Reminds to use provided context
+    content: |
+      Base your response on the provided context and information.
+
+  - name: clarification-request
+    description: Template for requesting clarification
+    content: |
+      If anything is unclear, ask for clarification before proceeding.

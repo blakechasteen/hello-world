@@ -1,0 +1,79 @@
+# Question-Answering Domain Templates
+
+templates:
+  - name: qa-basic
+    category: domain
+    description: Basic question-answering template
+    content: |
+      Answer the following question:
+
+      {{ question }}
+
+      {% if context -%}
+      Context:
+      {{ context }}
+      {% endif -%}
+
+      {% if answer_format -%}
+      Answer format: {{ answer_format }}
+      {% endif -%}
+    defaults:
+      question: ""
+      context: null
+      answer_format: null
+    tags:
+      - domain
+      - qa
+      - question-answering
+
+  - name: qa-with-sources
+    category: domain
+    description: QA with source citation requirement
+    content: |
+      Answer the following question based on the provided sources.
+      Cite your sources using [1], [2], etc.
+
+      Question: {{ question }}
+
+      Sources:
+      {% for source in sources -%}
+      [{{ loop.index }}] {{ source }}
+      {% endfor %}
+
+      {% if answer_style -%}
+      Answer style: {{ answer_style }}
+      {% endif -%}
+    defaults:
+      question: ""
+      sources: []
+      answer_style: null
+    tags:
+      - domain
+      - qa
+      - sources
+      - citation
+
+  - name: qa-multiple-choice
+    category: domain
+    description: Multiple choice question template
+    content: |
+      Question: {{ question }}
+
+      {% if context -%}
+      Context: {{ context }}
+
+      {% endif -%}
+      Options:
+      {% for option in options -%}
+      {{ loop.index }}. {{ option }}
+      {% endfor %}
+
+      Select the best answer and explain your reasoning.
+    defaults:
+      question: ""
+      options: []
+      context: null
+    tags:
+      - domain
+      - qa
+      - multiple-choice

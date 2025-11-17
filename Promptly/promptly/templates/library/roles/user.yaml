@@ -1,0 +1,45 @@
+# User Role Templates
+
+templates:
+  - name: user-question
+    category: role
+    description: User question template
+    content: |
+      {{ question }}
+      {% if additional_context -%}
+
+      Additional context: {{ additional_context }}
+      {% endif -%}
+    defaults:
+      question: ""
+      additional_context: null
+    tags:
+      - role
+      - user
+      - question
+
+  - name: user-task
+    category: role
+    description: User task request template
+    content: |
+      Please {{ action }} the following:
+
+      {{ content }}
+
+      {% if requirements -%}
+      Requirements:
+      {{ requirements | bullet_list }}
+      {% endif -%}
+
+      {% if format -%}
+      Expected format: {{ format }}
+      {% endif -%}
+    defaults:
+      action: "process"
+      content: ""
+      requirements: null
+      format: null
+    tags:
+      - role
+      - user
+      - task

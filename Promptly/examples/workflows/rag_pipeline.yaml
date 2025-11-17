@@ -1,0 +1,186 @@
+name: rag_pipeline
+description: Advanced RAG (Retrieval-Augmented Generation) pipeline with multi-stage processing
+version: "1.0"
+
+variables:
+  chunk_size: 512
+  top_k: 5
+  rerank_threshold: 0.7
+  max_retries: 3
+
+steps:
+  # Step 1: Extract and validate query
+  - name: extract_query
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: query
+
+  # Step 2: Validate query
+  - name: validate_query
+    type: transform
+    depends_on: [extract_query]
+    config:
+      transform_type: validate
+      source_field: query
+      validation_rules:
+        - type: required
+        - type: type
+          expected_type: string
+
+  # Step 3: Sanitize and normalize query
+  - name: sanitize_query
+    type: transform
+    depends_on: [validate_query]
+    config:
+      transform_type: sanitize
+      source_field: query
+      target_field: clean_query
+      sanitize_rules:
+        - type: strip
+        - type: normalize_whitespace
+        - type: lowercase
+
+  # Step 4: Parallel retrieval from multiple sources
+  - name: parallel_retrieval
+    type: parallel
+    depends_on: [sanitize_query]
+    config:
+      tasks:
+        - name: vector_search
+          prompt: "Search vector database for: {clean_query}"
+          inputs:
+            top_k: 5
+        - name: keyword_search
+          prompt: "BM25 search for: {clean_query}"
+          inputs:
+            top_k: 5
+        - name: hybrid_search
+          prompt: "Hybrid search for: {clean_query}"
+          inputs:
+            top_k: 5
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 10.0
+      max_workers: 3
+
+  # Step 5: Transform parallel results
+  - name: aggregate_results
+    type: transform
+    depends_on: [parallel_retrieval]
+    config:
+      transform_type: extract
+      method: json
+      source_field: parallel_results
+      target_field: all_chunks
+
+  # Step 6: Rerank chunks
+  - name: rerank_chunks
+    type: retry
+    depends_on: [aggregate_results]
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      initial_delay: 0.5
+      action:
+        type: execute
+        prompt: "Rerank these chunks for relevance: {all_chunks}"
+      fallback:
+        type: set
+        value: []
+
+  # Step 7: Filter by threshold
+  - name: filter_chunks
+    type: loop
+    depends_on: [rerank_chunks]
+    config:
+      loop_type: for_each
+      items: reranked_chunks
+      action:
+        type: filter
+        condition: "score > 0.7"
+      accumulator: filtered_chunks
+
+  # Step 8: Check if enough context
+  - name: check_context
+    type: conditional
+    depends_on: [filter_chunks]
+    config:
+      conditions:
+        - type: numeric
+          field: filtered_chunks.length
+          operator: ge
+          value: 3
+          action:
+            type: set
+            field: has_context
+            value: true
+      default:
+        type: set
+        field: has_context
+        value: false
+
+  # Step 9: Generate response (if context available)
+  - name: generate_response
+    type: retry
+    depends_on: [check_context]
+    condition:
+      type: simple
+      field: has_context
+      operator: eq
+      value: true
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      circuit_breaker:
+        enabled: true
+        failure_threshold: 5
+        success_threshold: 2
+        timeout: 60.0
+      action:
+        type: execute
+        prompt: "Generate answer using context: {filtered_chunks} for query: {clean_query}"
+      fallback:
+        type: set
+        value: "Unable to generate response at this time."
+
+  # Step 10: Fallback for no context
+  - name: no_context_response
+    type: transform
+    depends_on: [check_context]
+    condition:
+      type: simple
+      field: has_context
+      operator: eq
+      value: false
+    config:
+      transform_type: template
+      template: "I don't have enough information to answer: {query}"
+      target_field: result
+
+  # Step 11: Validate response quality
+  - name: validate_response
+    type: transform
+    depends_on: [generate_response, no_context_response]
+    config:
+      transform_type: validate
+      source_field: result
+      validation_rules:
+        - type: required
+        - type: type
+          expected_type: string
+
+  # Step 12: Format final output
+  - name: format_output
+    type: transform
+    depends_on: [validate_response]
+    config:
+      transform_type: aggregate
+      fields:
+        - query
+        - result
+        - filtered_chunks
+      method: dict
+      target_field: final_output

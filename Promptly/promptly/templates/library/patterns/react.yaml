@@ -1,0 +1,102 @@
+# ReAct (Reasoning + Acting) Pattern Templates
+
+templates:
+  - name: react-basic
+    category: pattern
+    description: Basic ReAct pattern for tool use
+    content: |
+      Solve this task using the ReAct (Reasoning + Acting) pattern:
+
+      Task: {{ task }}
+
+      {% if tools -%}
+      Available tools:
+      {% for tool in tools -%}
+      - {{ tool.name }}: {{ tool.description }}
+      {% endfor %}
+
+      {% endif -%}
+      Follow this format:
+      Thought: [Your reasoning about what to do next]
+      Action: [The action/tool to use]
+      Observation: [What you observe from the action]
+      ... (repeat Thought/Action/Observation as needed)
+      Thought: [Final reasoning]
+      Answer: [Final answer]
+    defaults:
+      task: ""
+      tools: null
+    tags:
+      - pattern
+      - react
+      - reasoning
+      - action
+
+  - name: react-research
+    category: pattern
+    description: ReAct pattern for research tasks
+    content: |
+      Research the following topic using the ReAct pattern:
+
+      Topic: {{ topic }}
+
+      {% if research_questions -%}
+      Research questions:
+      {{ research_questions | bullet_list }}
+      {% endif -%}
+
+      Available actions:
+      - Search: Search for information
+      - Read: Read a specific source
+      - Summarize: Summarize findings
+      - Compare: Compare different sources
+      - Conclude: Draw conclusions
+
+      Use the ReAct format:
+      Thought: [What do I need to find out?]
+      Action: [Which action to take]
+      Observation: [What did I learn?]
+      ... (continue until you have enough information)
+      Thought: [Final analysis]
+      Answer: [Comprehensive answer to the research topic]
+    defaults:
+      topic: ""
+      research_questions: null
+    tags:
+      - pattern
+      - react
+      - research
+
+  - name: react-problem-solving
+    category: pattern
+    description: ReAct pattern for complex problem solving
+    content: |
+      Solve the following problem using systematic reasoning and actions:
+
+      Problem: {{ problem }}
+
+      {% if constraints -%}
+      Constraints:
+      {{ constraints | bullet_list }}
+      {% endif -%}
+
+      {% if resources -%}
+      Available resources:
+      {{ resources | bullet_list }}
+      {% endif -%}
+
+      Use the ReAct approach:
+      Thought: [Analyze the problem]
+      Action: [Take a step toward solution]
+      Observation: [Evaluate the result]
+      ... (iterate until solved)
+      Thought: [Verify the solution]
+      Answer: [Final solution with explanation]
+    defaults:
+      problem: ""
+      constraints: null
+      resources: null
+    tags:
+      - pattern
+      - react
+      - problem-solving
