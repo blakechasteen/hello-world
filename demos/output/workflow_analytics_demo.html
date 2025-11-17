@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workflow Analytics: Demo Workflow</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            padding: 20px;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+        .metric-card.success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        .metric-card.warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .metric-card.error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .metric-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .chart {
+            height: 200px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .bottleneck {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .success-rate {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .failure-rate {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Workflow Analytics</h1>
+        <div class="subtitle">Demo Workflow (ID: demo_workflow)</div>
+
+        <div class="metrics-grid">
+            <div class="metric-card success">
+                <div class="metric-label">Total Executions</div>
+                <div class="metric-value">30</div>
+            </div>
+            <div class="metric-card warning">
+                <div class="metric-label">Success Rate</div>
+                <div class="metric-value">86.7%</div>
+                <div class="metric-label">26 / 30</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Avg Duration</div>
+                <div class="metric-value">405ms</div>
+                <div class="metric-label">P95: 581ms</div>
+            </div>
+            <div class="metric-card error">
+                <div class="metric-label">Failures</div>
+                <div class="metric-value">4</div>
+            </div>
+        </div>
+
+        <h2>⚠️ Performance Bottlenecks</h2>
+                <div class="bottleneck">
+                    <strong>node_3</strong> is taking 320ms
+                    (79% of total workflow time)
+                </div>
+                
+
+        <h2>Performance Trend</h2>
+        <div class="chart">
+            <p><strong>Duration (ms):</strong> 336, 189, 581, 264, 448, 269, 353, 496, 224, 544</p>
+        </div>
+
+        <h2>Success Rate Trend</h2>
+        <div class="chart">
+            <p><strong>Success Rate:</strong> 100.0%, 120.0%, 120.0%, 120.0%, 120.0%, 120.0%, 100.0%, 100.0%, 80.0%, 60.0%</p>
+        </div>
+
+        <h2>Node Performance</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Node ID</th>
+                    <th>Agent Type</th>
+                    <th>Executions</th>
+                    <th>Success Rate</th>
+                    <th>Avg Duration</th>
+                    <th>P95 Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr>
+                    <td>node_3</td>
+                    <td>unknown</td>
+                    <td>30</td>
+                    <td class="success-rate">100.0%</td>
+                    <td>320ms</td>
+                    <td>389ms</td>
+                </tr>
+            
+                <tr>
+                    <td>node_2</td>
+                    <td>unknown</td>
+                    <td>30</td>
+                    <td class="success-rate">100.0%</td>
+                    <td>56ms</td>
+                    <td>95ms</td>
+                </tr>
+            
+                <tr>
+                    <td>node_1</td>
+                    <td>unknown</td>
+                    <td>30</td>
+                    <td class="success-rate">100.0%</td>
+                    <td>39ms</td>
+                    <td>50ms</td>
+                </tr>
+            
+                <tr>
+                    <td>node_4</td>
+                    <td>unknown</td>
+                    <td>30</td>
+                    <td class="success-rate">100.0%</td>
+                    <td>21ms</td>
+                    <td>29ms</td>
+                </tr>
+            
+                <tr>
+                    <td>node_5</td>
+                    <td>unknown</td>
+                    <td>30</td>
+                    <td class="failure-rate">66.7%</td>
+                    <td>13ms</td>
+                    <td>20ms</td>
+                </tr>
+            
+            </tbody>
+        </table>
+
+        <h2>Recent Executions</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Nodes Executed</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="failure-rate">failure</td>
+                    <td>544ms</td>
+                    <td>5</td>
+                </tr>
+            
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="failure-rate">failure</td>
+                    <td>224ms</td>
+                    <td>5</td>
+                </tr>
+            
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="success-rate">success</td>
+                    <td>496ms</td>
+                    <td>5</td>
+                </tr>
+            
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="failure-rate">failure</td>
+                    <td>353ms</td>
+                    <td>5</td>
+                </tr>
+            
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="success-rate">success</td>
+                    <td>269ms</td>
+                    <td>5</td>
+                </tr>
+            
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="success-rate">success</td>
+                    <td>448ms</td>
+                    <td>5</td>
+                </tr>
+            
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="success-rate">success</td>
+                    <td>264ms</td>
+                    <td>5</td>
+                </tr>
+            
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="success-rate">success</td>
+                    <td>581ms</td>
+                    <td>5</td>
+                </tr>
+            
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="success-rate">success</td>
+                    <td>189ms</td>
+                    <td>5</td>
+                </tr>
+            
+                <tr>
+                    <td>2025-11-17 04:19:28</td>
+                    <td class="success-rate">success</td>
+                    <td>336ms</td>
+                    <td>5</td>
+                </tr>
+            
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
