@@ -72,6 +72,20 @@ except ImportError:
     AdaptiveBudget = None
     ComplexityLevel = None
 
+# Import outcome tracking and adaptive tuning (Phase 3)
+try:
+    from .outcome_tracker import OutcomeTracker, CompressionLevel
+    from .adaptive_threshold_tuner import AdaptiveThresholdTuner, TuningStrategy
+    from .performance_analyzer import PerformanceAnalyzer
+    OUTCOME_TRACKING_AVAILABLE = True
+except ImportError:
+    OUTCOME_TRACKING_AVAILABLE = False
+    OutcomeTracker = None
+    AdaptiveThresholdTuner = None
+    PerformanceAnalyzer = None
+    TuningStrategy = None
+    CompressionLevel = None
+
 
 @dataclass
 class QualityScore:
@@ -228,7 +242,11 @@ class LLMContextPacker(SmartContextPacker):
         # Phase 2: Adaptive budgeting
         enable_adaptive_budgeting: bool = False,
         adaptive_budget_min: int = 2_000,
-        adaptive_budget_max: int = 32_000
+        adaptive_budget_max: int = 32_000,
+        # Phase 3: Outcome tracking and adaptive tuning
+        enable_outcome_tracking: bool = False,
+        enable_adaptive_tuning: bool = False,
+        tuning_strategy: Optional[str] = "balanced"
     ):
         """
         Initialize LLM-integrated context packer.
@@ -246,6 +264,9 @@ class LLMContextPacker(SmartContextPacker):
             enable_adaptive_budgeting: Enable Phase 2 adaptive budgeting
             adaptive_budget_min: Minimum budget (if adaptive)
             adaptive_budget_max: Maximum budget (if adaptive)
+            enable_outcome_tracking: Enable Phase 3 outcome tracking
+            enable_adaptive_tuning: Enable Phase 3 adaptive threshold tuning
+            tuning_strategy: Tuning strategy ("conservative", "balanced", "aggressive")
         """
         # Initialize base packer
         super().__init__(
@@ -276,6 +297,43 @@ class LLMContextPacker(SmartContextPacker):
                     min_budget=adaptive_budget_min,
                     max_budget=adaptive_budget_max,
                     enable_learning=enable_learning
+                )
+
+        # Phase 3: Outcome tracking and adaptive tuning
+        self.enable_outcome_tracking = enable_outcome_tracking and OUTCOME_TRACKING_AVAILABLE
+        self.enable_adaptive_tuning = enable_adaptive_tuning and OUTCOME_TRACKING_AVAILABLE
+        self.outcome_tracker = None
+        self.adaptive_tuner = None
+        self.performance_analyzer = None
+
+        if self.enable_outcome_tracking or self.enable_adaptive_tuning:
+            if not OUTCOME_TRACKING_AVAILABLE:
+                logger.warning("Outcome tracking requested but not available (import failed)")
+            else:
+                # Create outcome tracker
+                self.outcome_tracker = OutcomeTracker(
+                    min_samples_for_recommendation=10,
+                    enable_persistence=False  # TODO: Add persistence support
+                )
+
+                # Create adaptive threshold tuner (if enabled)
+                if self.enable_adaptive_tuning and tuning_strategy:
+                    strategy_map = {
+                        "conservative": TuningStrategy.CONSERVATIVE,
+                        "balanced": TuningStrategy.BALANCED,
+                        "aggressive": TuningStrategy.AGGRESSIVE
+                    }
+                    strategy = strategy_map.get(tuning_strategy, TuningStrategy.BALANCED)
+
+                    self.adaptive_tuner = AdaptiveThresholdTuner(
+                        outcome_tracker=self.outcome_tracker,
+                        enable_auto_tuning=True,
+                        tuning_strategy=strategy
+                    )
+
+                # Create performance analyzer
+                self.performance_analyzer = PerformanceAnalyzer(
+                    outcome_tracker=self.outcome_tracker
                 )
 
         # Lazy-load LLM provider
