@@ -40,7 +40,10 @@ from dataclasses import dataclass, field
 from enum import Enum
 import time
 import re
+import logging
 from collections import defaultdict
+
+logger = logging.getLogger(__name__)
 
 # Import base context packer
 from .context_packer import (
@@ -57,6 +60,17 @@ from .llm_providers import (
     LLMResponse,
     LLMGenerationConfig
 )
+
+# Import adaptive budgeting (Phase 2)
+try:
+    from .adaptive_budget import AdaptiveBudgetCalculator, AdaptiveBudget
+    from .query_complexity import ComplexityLevel
+    ADAPTIVE_BUDGET_AVAILABLE = True
+except ImportError:
+    ADAPTIVE_BUDGET_AVAILABLE = False
+    # Provide dummy classes for type hints
+    AdaptiveBudget = None
+    ComplexityLevel = None
 
 
 @dataclass
@@ -210,13 +224,17 @@ class LLMContextPacker(SmartContextPacker):
         llm_config: Optional[LLMGenerationConfig] = None,
         # Learning
         enable_learning: bool = True,
-        learning_rate: float = 0.1  # How fast to adapt strategies
+        learning_rate: float = 0.1,  # How fast to adapt strategies
+        # Phase 2: Adaptive budgeting
+        enable_adaptive_budgeting: bool = False,
+        adaptive_budget_min: int = 2_000,
+        adaptive_budget_max: int = 32_000
     ):
         """
         Initialize LLM-integrated context packer.
 
         Args:
-            token_budget: Token budget constraints
+            token_budget: Token budget constraints (ignored if adaptive_budgeting=True)
             min_importance_threshold: Minimum importance to include
             use_memory_fusion: Enable multipass memory fusion
             memory_backend: Backend for memory fusion
@@ -225,6 +243,9 @@ class LLMContextPacker(SmartContextPacker):
             llm_config: LLM generation config
             enable_learning: Enable learning from outcomes
             learning_rate: How fast to adapt (0.0-1.0)
+            enable_adaptive_budgeting: Enable Phase 2 adaptive budgeting
+            adaptive_budget_min: Minimum budget (if adaptive)
+            adaptive_budget_max: Maximum budget (if adaptive)
         """
         # Initialize base packer
         super().__init__(
@@ -241,6 +262,21 @@ class LLMContextPacker(SmartContextPacker):
             max_tokens=1000,
             temperature=0.7
         )
+
+        # Phase 2: Adaptive budgeting
+        self.enable_adaptive_budgeting = enable_adaptive_budgeting and ADAPTIVE_BUDGET_AVAILABLE
+        self.adaptive_budget_calculator = None
+
+        if self.enable_adaptive_budgeting:
+            if not ADAPTIVE_BUDGET_AVAILABLE:
+                logger.warning("Adaptive budgeting requested but not available (import failed)")
+            else:
+                self.adaptive_budget_calculator = AdaptiveBudgetCalculator(
+                    model_name=llm_model or self._get_default_model(llm_provider),
+                    min_budget=adaptive_budget_min,
+                    max_budget=adaptive_budget_max,
+                    enable_learning=enable_learning
+                )
 
         # Lazy-load LLM provider
         self._llm_provider: Optional[BaseLLMProvider] = None
@@ -276,6 +312,15 @@ class LLMContextPacker(SmartContextPacker):
             )
         return self._llm_provider
 
+    def _get_default_model(self, provider: str) -> str:
+        """Get default model for provider"""
+        defaults = {
+            "anthropic": "claude-3-5-sonnet-20241022",
+            "openai": "gpt-4-turbo-preview",
+            "ollama": "llama3.2:3b"
+        }
+        return defaults.get(provider, "claude-3-5-sonnet-20241022")
+
     async def pack_and_generate(
         self,
         query: str,
@@ -300,6 +345,16 @@ class LLMContextPacker(SmartContextPacker):
         Returns:
             PackedGeneration with complete results and feedback
         """
+        # Phase 2: Calculate adaptive budget if enabled
+        if self.enable_adaptive_budgeting and self.adaptive_budget_calculator:
+            adaptive_budget = self.adaptive_budget_calculator.calculate_budget(
+                query,
+                awareness_context,
+                available_memories=len(memory_results) if memory_results else 0
+            )
+            # Override base budget with adaptive budget
+            self.budget = adaptive_budget.to_token_budget()
+
         # 1. Pack context (use base class)
         packed = await self.pack_context(
             query,
@@ -603,6 +658,25 @@ class LLMContextPacker(SmartContextPacker):
         # Track budget → quality
         budget_used = packed.total_tokens
         self._learning_stats["budget_quality"][budget_used].append(quality.overall)
+
+        # Phase 2: Feed budget performance to adaptive budget calculator
+        if self.enable_adaptive_budgeting and self.adaptive_budget_calculator:
+            # Create adaptive budget from packed context
+            adaptive_budget_used = AdaptiveBudget(
+                total=packed.total_tokens,
+                reserved_for_query=0,  # Not tracked
+                reserved_for_response=0,  # Not tracked
+                model_max=self.adaptive_budget_calculator.model_info.context_window,
+                recommended_max=self.adaptive_budget_calculator.model_info.recommended_max,
+                reasoning=[],
+                adjustments={},
+                query_complexity=ComplexityLevel.MODERATE,  # Default
+                complexity_score=0.5
+            )
+            self.adaptive_budget_calculator.learn_from_outcome(
+                adaptive_budget_used,
+                quality.overall
+            )
 
         # Increment total interactions
         self._learning_stats["total_interactions"] += 1
