@@ -1,0 +1,43 @@
+{
+  "benchmark_name": "recall_accuracy_wikipedia",
+  "version": "1.0",
+  "timestamp": "2025-11-17T04:20:26.110561",
+  "metrics": {
+    "precision_at_1": 0.7,
+    "precision_at_5": 0.33999999999999997,
+    "precision_at_10": 0.18,
+    "recall_at_5": 0.95,
+    "recall_at_10": 1.0,
+    "mrr": 0.8166666666666667,
+    "ndcg": null,
+    "latency_p50_ms": 0.02765655517578125,
+    "latency_p95_ms": 0.058650970458984375,
+    "latency_p99_ms": 0.058650970458984375,
+    "throughput_qps": 30795.18355359765,
+    "memory_mb": null,
+    "disk_mb": null,
+    "index_build_time_sec": null,
+    "accuracy_improvement": null,
+    "convergence_queries": null,
+    "adaptation_rate": null,
+    "custom": {}
+  },
+  "config": {
+    "dataset_name": "wikipedia_synthetic",
+    "num_memories": 10,
+    "num_queries": 10,
+    "seed": 42,
+    "config_mode": "fast",
+    "enable_cache": true,
+    "custom": {}
+  },
+  "dataset_info": {
+    "name": "wikipedia_synthetic",
+    "version": "1.0",
+    "num_articles": 10,
+    "num_queries": 10,
+    "source": "synthetic"
+  },
+  "errors": [],
+  "warnings": []
+}
