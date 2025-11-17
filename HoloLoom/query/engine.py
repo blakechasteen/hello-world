@@ -413,6 +413,179 @@ class SearchHandler(QueryHandler):
         }
 
 
+class BlockedHandler(QueryHandler):
+    """Handle queries about blocked tasks."""
+
+    async def handle(self, intent: QueryIntent) -> Dict[str, Any]:
+        # Find tasks with BLOCKED state or BLOCKED_BY edges
+        blocked_tasks = []
+
+        for node in self.kg.G.nodes():
+            # Check for BLOCKED_BY edges
+            blocked_by = self.kg.get_related_by_type(node, 'BLOCKED_BY', 'out')
+
+            if blocked_by:
+                blocked_tasks.append({
+                    'id': node,
+                    'title': node,
+                    'blocked_by': blocked_by,
+                    'blocker_count': len(blocked_by)
+                })
+
+            # Also check for WAITING state in change history
+            if self.monitor:
+                changes = self.monitor.get_change_history(heading_id=node)
+                for change in changes:
+                    if (change.change_type == 'todo_state_change' and
+                        change.new_value in ['WAITING', 'BLOCKED']):
+                        if node not in [t['id'] for t in blocked_tasks]:
+                            blocked_tasks.append({
+                                'id': node,
+                                'title': node,
+                                'state': change.new_value,
+                                'since': change.timestamp.isoformat()
+                            })
+
+        return {
+            'results': blocked_tasks,
+            'count': len(blocked_tasks),
+            'query_type': 'blocked'
+        }
+
+
+class PriorityHandler(QueryHandler):
+    """Handle queries about high-priority tasks."""
+
+    async def handle(self, intent: QueryIntent) -> Dict[str, Any]:
+        # Find high priority tasks
+        # Priority can come from:
+        # 1. [#A] priority markers
+        # 2. :priority: tag
+        # 3. Deadline proximity
+        # 4. Explicit HIGH_PRIORITY edges
+
+        priority_tasks = []
+
+        for node in self.kg.G.nodes():
+            priority_score = 0.0
+            reasons = []
+
+            # Check for priority edges
+            if self.kg.G.has_edge(node, 'HIGH_PRIORITY'):
+                priority_score += 10.0
+                reasons.append('marked_high_priority')
+
+            # Check for urgent deadlines
+            for src, dst, data in self.kg.G.edges(node, data=True):
+                if data.get('type') == 'DEADLINE':
+                    deadline_str = dst.replace('time::', '')
+                    try:
+                        deadline = datetime.fromisoformat(deadline_str.split()[0])
+                        days_until = (deadline - datetime.now()).days
+
+                        if days_until <= 1:
+                            priority_score += 8.0
+                            reasons.append('deadline_today_or_tomorrow')
+                        elif days_until <= 3:
+                            priority_score += 5.0
+                            reasons.append('deadline_this_week')
+                    except:
+                        pass
+
+            # Check for priority tag in node name
+            if 'priority' in node.lower():
+                priority_score += 3.0
+                reasons.append('priority_tag')
+
+            if priority_score > 0:
+                priority_tasks.append({
+                    'id': node,
+                    'title': node,
+                    'priority_score': priority_score,
+                    'reasons': reasons
+                })
+
+        # Sort by priority score
+        priority_tasks.sort(key=lambda x: -x['priority_score'])
+
+        return {
+            'results': priority_tasks,
+            'count': len(priority_tasks),
+            'query_type': 'priority'
+        }
+
+
+class CompletedHandler(QueryHandler):
+    """Handle queries about completed tasks."""
+
+    async def handle(self, intent: QueryIntent) -> Dict[str, Any]:
+        if not self.monitor:
+            return {
+                'results': [],
+                'error': 'Completed task queries require OrgLiveMonitor',
+                'query_type': 'completed'
+            }
+
+        # Find tasks that changed to DONE state
+        completed_tasks = []
+
+        transitions = self.monitor.get_todo_transitions()
+
+        for heading_id, trans_list in transitions.items():
+            # Find transitions to DONE
+            for timestamp, old_state, new_state in trans_list:
+                if new_state == 'DONE':
+                    # Check timeframe if specified
+                    if intent.timeframe:
+                        if not self._in_timeframe(timestamp, intent.timeframe):
+                            continue
+
+                    completed_tasks.append({
+                        'id': heading_id,
+                        'title': heading_id,
+                        'completed_at': timestamp.isoformat(),
+                        'duration': self._calculate_duration(heading_id, trans_list, timestamp)
+                    })
+
+        # Sort by completion time (most recent first)
+        completed_tasks.sort(key=lambda x: x['completed_at'], reverse=True)
+
+        return {
+            'results': completed_tasks,
+            'count': len(completed_tasks),
+            'query_type': 'completed'
+        }
+
+    def _in_timeframe(self, timestamp: datetime, timeframe: str) -> bool:
+        """Check if timestamp is in specified timeframe."""
+        now = datetime.now()
+
+        if timeframe == 'today':
+            return timestamp.date() == now.date()
+        elif timeframe == 'this week':
+            # Last 7 days
+            return timestamp >= now - timedelta(days=7)
+        elif timeframe == 'this month':
+            return timestamp.month == now.month and timestamp.year == now.year
+
+        return True
+
+    def _calculate_duration(self, heading_id: str, transitions: List[tuple], completion_time: datetime) -> Optional[float]:
+        """Calculate how long task took from start to completion."""
+        # Find when task was started (TODO -> IN-PROGRESS)
+        start_time = None
+        for timestamp, old_state, new_state in transitions:
+            if new_state == 'IN-PROGRESS':
+                start_time = timestamp
+                break
+
+        if start_time:
+            duration = (completion_time - start_time).total_seconds() / 3600  # hours
+            return round(duration, 1)
+
+        return None
+
+
 # ============================================================================
 # Query Engine
 # ============================================================================
@@ -434,7 +607,10 @@ class QueryEngine:
             QueryType.TEMPORAL: TemporalHandler(kg, monitor),
             QueryType.STATS: StatsHandler(kg, monitor),
             QueryType.SEARCH: SearchHandler(kg, monitor),
-            # More handlers will use similar patterns
+            QueryType.BLOCKED: BlockedHandler(kg, monitor),
+            QueryType.PRIORITY: PriorityHandler(kg, monitor),
+            QueryType.COMPLETED: CompletedHandler(kg, monitor),
+            # More handlers can be added here
         }
 
     async def query(self, query_str: str) -> Dict[str, Any]:
