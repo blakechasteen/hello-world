@@ -1,0 +1,344 @@
+{
+  "dashboard": {
+    "title": "HoloLoom Reasoning Engine",
+    "tags": ["hololoom", "reasoning", "ai"],
+    "timezone": "browser",
+    "schemaVersion": 30,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Operations Rate (req/s)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(reasoning_operations_total[1m])",
+            "legendFormat": "{{mode}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Operations/sec"},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "nullPointMode": "null",
+        "tooltip": {"shared": true, "sort": 0, "value_type": "individual"}
+      },
+      {
+        "id": 2,
+        "title": "Success Rate (%)",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "100 * (1 - (sum(rate(reasoning_errors_total[5m])) / sum(rate(reasoning_operations_total[5m]))))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Active Operations",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "reasoning_active_operations",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 90, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Latency Distribution (p50, p95, p99)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(reasoning_duration_ms_bucket[5m]))",
+            "legendFormat": "p50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(reasoning_duration_ms_bucket[5m]))",
+            "legendFormat": "p95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(reasoning_duration_ms_bucket[5m]))",
+            "legendFormat": "p99",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "ms", "label": "Latency"},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2,
+        "thresholds": [
+          {"value": 500, "colorMode": "critical", "op": "gt", "line": true, "fill": false}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Confidence Distribution",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(reasoning_confidence_bucket[5m]))",
+            "legendFormat": "p50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(reasoning_confidence_bucket[5m]))",
+            "legendFormat": "p95",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "percentunit", "label": "Confidence"},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2
+      },
+      {
+        "id": 6,
+        "title": "Mode Distribution",
+        "type": "piechart",
+        "gridPos": {"x": 0, "y": 16, "w": 8, "h": 8},
+        "targets": [
+          {
+            "expr": "sum by (mode) (rate(reasoning_operations_total[5m]))",
+            "legendFormat": "{{mode}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "pieType": "pie",
+          "displayLabels": ["name", "percent"],
+          "legend": {"displayMode": "table", "placement": "right"}
+        }
+      },
+      {
+        "id": 7,
+        "title": "Error Rate",
+        "type": "graph",
+        "gridPos": {"x": 8, "y": 16, "w": 8, "h": 8},
+        "targets": [
+          {
+            "expr": "sum by (mode) (rate(reasoning_errors_total[1m]))",
+            "legendFormat": "{{mode}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Errors/sec"},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "alert": {
+          "name": "High Error Rate",
+          "message": "Reasoning engine error rate above threshold",
+          "conditions": [
+            {
+              "evaluator": {"params": [0.05], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "avg"},
+              "type": "query"
+            }
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "title": "Memory Usage",
+        "type": "graph",
+        "gridPos": {"x": 16, "y": 16, "w": 8, "h": 8},
+        "targets": [
+          {
+            "expr": "reasoning_memory_mb",
+            "legendFormat": "Memory (MB)",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "decmbytes", "label": "Memory"},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "thresholds": [
+          {"value": 256, "colorMode": "custom", "op": "gt", "line": true, "fill": false, "fillColor": "rgba(255, 255, 0, 0.1)"},
+          {"value": 512, "colorMode": "critical", "op": "gt", "line": true, "fill": false}
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Chain Length",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(reasoning_chain_length_bucket[5m]))",
+            "legendFormat": "p50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(reasoning_chain_length_bucket[5m]))",
+            "legendFormat": "p95",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Steps"},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2
+      },
+      {
+        "id": 10,
+        "title": "Escalation Rate",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 24, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(rate(reasoning_escalations_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.1, "color": "yellow"},
+                {"value": 0.5, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Verification Failures",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 24, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(rate(reasoning_verification_failures_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.05, "color": "yellow"},
+                {"value": 0.2, "color": "red"}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {"value": "Prometheus", "text": "Prometheus"}
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Deployments",
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "tags": ["deployment"]
+        }
+      ]
+    },
+    "time": {"from": "now-1h", "to": "now"},
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"],
+      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    }
+  }
+}

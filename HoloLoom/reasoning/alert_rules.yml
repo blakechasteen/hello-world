@@ -1,0 +1,275 @@
+# Prometheus Alert Rules for HoloLoom Reasoning Engine
+# ======================================================
+# Phase 4: Advanced Observability
+#
+# Usage:
+#   Add to Prometheus configuration:
+#   rule_files:
+#     - "HoloLoom/reasoning/alert_rules.yml"
+#
+# Author: Claude Code
+# Date: 2025-11-17
+
+groups:
+  - name: reasoning_engine_critical
+    interval: 30s
+    rules:
+      # High Error Rate
+      - alert: ReasoningHighErrorRate
+        expr: |
+          (
+            sum(rate(reasoning_errors_total[5m]))
+            /
+            sum(rate(reasoning_operations_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: reasoning_engine
+        annotations:
+          summary: "High error rate in reasoning engine"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/high-error-rate"
+
+      # Service Down
+      - alert: ReasoningServiceDown
+        expr: up{job="hololoom-reasoning"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: reasoning_engine
+        annotations:
+          summary: "Reasoning engine service is down"
+          description: "Service {{ $labels.instance }} has been down for more than 1 minute"
+          runbook_url: "https://docs.hololoom.ai/runbooks/service-down"
+
+      # High Latency (p95)
+      - alert: ReasoningHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(reasoning_duration_ms_bucket[5m])
+          ) > 500
+        for: 10m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "High latency in reasoning engine"
+          description: "p95 latency is {{ $value | humanizeDuration }}ms (threshold: 500ms)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/high-latency"
+
+      # Memory Pressure
+      - alert: ReasoningMemoryPressure
+        expr: reasoning_memory_mb > 256
+        for: 5m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "High memory usage in reasoning engine"
+          description: "Memory usage is {{ $value }}MB (warning threshold: 256MB)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/memory-pressure"
+
+      # Memory Critical
+      - alert: ReasoningMemoryCritical
+        expr: reasoning_memory_mb > 450
+        for: 2m
+        labels:
+          severity: critical
+          component: reasoning_engine
+        annotations:
+          summary: "Critical memory usage in reasoning engine"
+          description: "Memory usage is {{ $value }}MB (critical threshold: 450MB, max: 512MB)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/memory-critical"
+
+  - name: reasoning_engine_warnings
+    interval: 1m
+    rules:
+      # Low Success Rate
+      - alert: ReasoningLowSuccessRate
+        expr: |
+          (
+            sum(rate(reasoning_operations_total[5m]))
+            -
+            sum(rate(reasoning_errors_total[5m]))
+          )
+          /
+          sum(rate(reasoning_operations_total[5m]))
+          < 0.99
+        for: 10m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "Low success rate in reasoning engine"
+          description: "Success rate is {{ $value | humanizePercentage }} (threshold: 99%)"
+
+      # High Escalation Rate
+      - alert: ReasoningHighEscalationRate
+        expr: |
+          sum(rate(reasoning_escalations_total[5m]))
+          /
+          sum(rate(reasoning_operations_total[5m]))
+          > 0.20
+        for: 10m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "High escalation rate in reasoning engine"
+          description: "{{ $value | humanizePercentage }} of queries are escalating to higher reasoning modes"
+
+      # High Verification Failure Rate
+      - alert: ReasoningHighVerificationFailures
+        expr: |
+          sum(rate(reasoning_verification_failures_total[5m]))
+          /
+          sum(rate(reasoning_operations_total[5m]))
+          > 0.10
+        for: 10m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "High verification failure rate"
+          description: "{{ $value | humanizePercentage }} of reasoning chains are failing verification"
+
+      # Low Confidence
+      - alert: ReasoningLowConfidence
+        expr: |
+          histogram_quantile(0.50,
+            rate(reasoning_confidence_bucket[5m])
+          ) < 0.70
+        for: 15m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "Low median confidence in reasoning results"
+          description: "Median confidence is {{ $value | humanizePercentage }} (threshold: 70%)"
+
+      # Long Chain Lengths
+      - alert: ReasoningLongChains
+        expr: |
+          histogram_quantile(0.95,
+            rate(reasoning_chain_length_bucket[5m])
+          ) > 30
+        for: 10m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "Reasoning chains are getting long"
+          description: "p95 chain length is {{ $value }} steps (threshold: 30 steps)"
+
+      # High Concurrency
+      - alert: ReasoningHighConcurrency
+        expr: reasoning_active_operations > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "High concurrent operations"
+          description: "{{ $value }} active operations (warning threshold: 80, max: 100)"
+
+  - name: reasoning_engine_capacity
+    interval: 1m
+    rules:
+      # Low Throughput
+      - alert: ReasoningLowThroughput
+        expr: |
+          sum(rate(reasoning_operations_total[5m])) < 10
+        for: 10m
+        labels:
+          severity: info
+          component: reasoning_engine
+        annotations:
+          summary: "Low reasoning throughput"
+          description: "Only {{ $value }} req/s (expected: >10 req/s in production)"
+
+      # Approaching Concurrency Limit
+      - alert: ReasoningApproachingConcurrencyLimit
+        expr: |
+          (
+            reasoning_active_operations
+            /
+            reasoning_max_concurrent_operations
+          ) > 0.90
+        for: 5m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "Approaching concurrency limit"
+          description: "Using {{ $value | humanizePercentage }} of max concurrency (90%+)"
+
+      # Mode Imbalance
+      - alert: ReasoningModeImbalance
+        expr: |
+          (
+            sum(rate(reasoning_operations_total{mode="deep"}[5m]))
+            /
+            sum(rate(reasoning_operations_total[5m]))
+          ) > 0.30
+        for: 15m
+        labels:
+          severity: info
+          component: reasoning_engine
+        annotations:
+          summary: "High proportion of DEEP mode queries"
+          description: "{{ $value | humanizePercentage }} of queries using DEEP mode (may indicate system struggling)"
+
+  - name: reasoning_engine_anomalies
+    interval: 1m
+    rules:
+      # Sudden Latency Spike
+      - alert: ReasoningLatencySpike
+        expr: |
+          (
+            histogram_quantile(0.95, rate(reasoning_duration_ms_bucket[1m]))
+            /
+            histogram_quantile(0.95, rate(reasoning_duration_ms_bucket[10m])) offset 10m
+          ) > 2.0
+        for: 2m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "Sudden latency spike detected"
+          description: "p95 latency increased by {{ $value }}x in last minute"
+
+      # Sudden Error Spike
+      - alert: ReasoningErrorSpike
+        expr: |
+          (
+            sum(rate(reasoning_errors_total[1m]))
+            /
+            sum(rate(reasoning_errors_total[10m])) offset 10m
+          ) > 5.0
+        for: 2m
+        labels:
+          severity: critical
+          component: reasoning_engine
+        annotations:
+          summary: "Sudden error spike detected"
+          description: "Error rate increased by {{ $value }}x in last minute"
+
+      # No Traffic
+      - alert: ReasoningNoTraffic
+        expr: |
+          sum(rate(reasoning_operations_total[5m])) == 0
+        for: 10m
+        labels:
+          severity: warning
+          component: reasoning_engine
+        annotations:
+          summary: "No reasoning traffic detected"
+          description: "No operations in the last 10 minutes (may indicate upstream issue)"
+
+# Runbook URLs would point to documentation explaining:
+# - What each alert means
+# - Common causes
+# - Investigation steps
+# - Remediation actions
+# - When to escalate
