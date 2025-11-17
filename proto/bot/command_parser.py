@@ -40,6 +40,11 @@ class CommandParser:
         'claude-review': r'(?:@promptly(?:bot)?\s+(?:claude\s+)?review\s+(.+)|!review\s+(.+))',
         'claude-explain': r'(?:@promptly(?:bot)?\s+(?:claude\s+)?explain\s+(.+)|!explain\s+(.+))',
         'claude-refactor': r'(?:@promptly(?:bot)?\s+(?:claude\s+)?refactor\s+(\S+)\s+"([^"]+)"|!refactor\s+(\S+)\s+"([^"]+)")',
+        # Memory commands (Week 3)
+        'memory-remember': r'(?:@(?:promptly(?:bot)?|proto)\s+remember\s+(.+)|!remember\s+(.+))',
+        'memory-recall': r'(?:@(?:promptly(?:bot)?|proto)\s+recall\s+(.+)|!recall\s+(.+))',
+        'memory-related': r'(?:@(?:promptly(?:bot)?|proto)\s+related\s+(.+)|!related\s+(.+))',
+        'memory-stats': r'(?:@(?:promptly(?:bot)?|proto)\s+memories|!memories)',
     }
 
     def parse(self, message: str) -> Optional[Dict]:
@@ -177,6 +182,31 @@ class CommandParser:
                 'file_path': file_path.strip(),
                 'instruction': instruction
             }
+
+        # Memory commands (Week 3)
+        elif cmd_type == 'memory-remember':
+            fact = groups[0] if groups[0] else groups[1]
+            return {
+                'type': 'memory-remember',
+                'fact': fact.strip()
+            }
+
+        elif cmd_type == 'memory-recall':
+            query = groups[0] if groups[0] else groups[1]
+            return {
+                'type': 'memory-recall',
+                'query': query.strip()
+            }
+
+        elif cmd_type == 'memory-related':
+            topic = groups[0] if groups[0] else groups[1]
+            return {
+                'type': 'memory-related',
+                'topic': topic.strip()
+            }
+
+        elif cmd_type == 'memory-stats':
+            return {'type': 'memory-stats'}
 
         else:
             return {'type': 'unknown'}
