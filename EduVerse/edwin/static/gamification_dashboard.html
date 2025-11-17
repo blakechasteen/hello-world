@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdWIN Gamification Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+        }
+
+        .player-details h2 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .player-title {
+            color: #667eea;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .streak-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* XP Progress Bar */
+        .xp-bar-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Daily Challenges */
+        .challenge {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .challenge-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .challenge-progress {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .challenge-progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+
+        /* Achievement Gallery */
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .achievement {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .achievement:hover {
+            transform: scale(1.05);
+        }
+
+        .achievement-icon {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .achievement-name {
+            font-size: 10px;
+            color: #666;
+        }
+
+        /* Leaderboard */
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .leaderboard-entry.me {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .rank {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .rank.gold { color: #FFD700; }
+        .rank.silver { color: #C0C0C0; }
+        .rank.bronze { color: #CD7F32; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Animations */
+        @keyframes confetti {
+            0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            animation: confetti 3s linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="player-info">
+                <div class="avatar">🎓</div>
+                <div class="player-details">
+                    <h2>Alice Johnson</h2>
+                    <div class="player-title">🧠 Knowledge Wizard</div>
+                </div>
+            </div>
+            <div class="streak-badge">
+                🔥 7-Day Streak
+            </div>
+        </div>
+
+        <!-- XP Progress Bar -->
+        <div class="xp-bar-container">
+            <div class="level-info">
+                <span>Level 15 - Dedicated Learner</span>
+                <span>750 / 1,000 XP</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 75%;">75%</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid">
+            <!-- Daily Challenges -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📋 Daily Challenges</div>
+                    <span style="color: #667eea;">2/3 Complete</span>
+                </div>
+
+                <div class="challenge">
+                    <div class="challenge-title">✅ Daily Mastery</div>
+                    <div style="font-size: 12px; color: #666;">Master 3 objectives</div>
+                    <div class="challenge-progress">
+                        <div class="challenge-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="challenge">
+                    <div class="challenge-title">✅ Curious Mind</div>
+                    <div style="font-size: 12px; color: #666;">Ask 10 questions</div>
+                    <div class="challenge-progress">
+                        <div class="challenge-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="challenge">
+                    <div class="challenge-title">Branch Out</div>
+                    <div style="font-size: 12px; color: #666;">Try a new subject</div>
+                    <div class="challenge-progress">
+                        <div class="challenge-progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Achievements -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🏆 Recent Achievements</div>
+                    <span style="color: #667eea;">18 Total</span>
+                </div>
+
+                <div class="achievement-grid">
+                    <div class="achievement">
+                        <div class="achievement-icon">🔥</div>
+                        <div class="achievement-name">7-Day Streak</div>
+                    </div>
+                    <div class="achievement">
+                        <div class="achievement-icon">🎯</div>
+                        <div class="achievement-name">First Steps</div>
+                    </div>
+                    <div class="achievement">
+                        <div class="achievement-icon">📚</div>
+                        <div class="achievement-name">Getting Started</div>
+                    </div>
+                    <div class="achievement">
+                        <div class="achievement-icon">💯</div>
+                        <div class="achievement-name">Perfectionist</div>
+                    </div>
+                    <div class="achievement">
+                        <div class="achievement-icon">🔢</div>
+                        <div class="achievement-name">Math Whiz I</div>
+                    </div>
+                    <div class="achievement">
+                        <div class="achievement-icon">🔬</div>
+                        <div class="achievement-name">Science Guru I</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🏅 Leaderboard</div>
+                    <span style="color: #667eea;">Weekly</span>
+                </div>
+
+                <div class="leaderboard-entry">
+                    <span class="rank gold">1</span>
+                    <span>Charlie</span>
+                    <span>1,450 XP</span>
+                </div>
+
+                <div class="leaderboard-entry">
+                    <span class="rank silver">2</span>
+                    <span>Alice</span>
+                    <span>1,250 XP</span>
+                </div>
+
+                <div class="leaderboard-entry me">
+                    <span class="rank">3</span>
+                    <span>You (Eve)</span>
+                    <span>1,100 XP</span>
+                </div>
+
+                <div class="leaderboard-entry">
+                    <span class="rank">4</span>
+                    <span>Bob</span>
+                    <span>980 XP</span>
+                </div>
+
+                <div class="leaderboard-entry">
+                    <span class="rank">5</span>
+                    <span>Diana</span>
+                    <span>890 XP</span>
+                </div>
+            </div>
+
+            <!-- Progress Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📊 Your Progress</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-value">32</div>
+                        <div class="stat-label">Objectives Mastered</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">7</div>
+                        <div class="stat-label">Current Streak</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">18</div>
+                        <div class="stat-label">Achievements</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">#42</div>
+                        <div class="stat-label">Global Rank</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate level up animation
+        function levelUp() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.background = ['#667eea', '#764ba2', '#ff6b6b', '#FFD700'][Math.floor(Math.random() * 4)];
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 50);
+            }
+        }
+
+        // Auto-refresh data (in production, would fetch from API)
+        function refreshData() {
+            console.log('Refreshing gamification data...');
+        }
+
+        setInterval(refreshData, 30000); // Every 30 seconds
+    </script>
+</body>
+</html>
