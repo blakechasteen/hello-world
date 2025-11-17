@@ -1,0 +1,119 @@
+#+TITLE: HoloLoom Development Notes
+#+AUTHOR: Development Team
+#+DATE: 2025-11-17
+
+* Project HoloLoom                                    :ai:loom:neural:
+  :PROPERTIES:
+  :ID: project-hololoom
+  :CREATED: <2025-01-15>
+  :END:
+
+  HoloLoom is a neural decision-making system that weaves together
+  multiple AI components using a loom metaphor.
+
+** Architecture                                       :design:
+   :PROPERTIES:
+   :ID: hololoom-architecture
+   :END:
+
+   The system consists of 9 core abstractions representing the
+   complete weaving cycle.
+
+*** Yarn Graph                                        :memory:
+    The persistent symbolic memory stored as a NetworkX MultiDiGraph.
+    See [[file:HoloLoom/memory/graph.py][graph implementation]] for details.
+
+*** Warp Space                                        :tensor:
+    Tensioned tensor field where continuous mathematics happens.
+    Lifecycle: tension() → compute() → collapse()
+
+** TODO Implement OrgModeSpinner                      :dev:priority:spinning:
+   DEADLINE: <2025-11-20 Wed>
+
+   Need to create a zero-copy integration between Emacs org-mode
+   and HoloLoom's memory systems.
+
+   Requirements:
+   - Parse org-mode syntax (headings, TODO states, tags)
+   - Extract entities and relationships
+   - Map to MemoryShard objects
+   - Support live file watching
+
+*** DONE Research org-mode syntax                     :research:
+    CLOSED: [2025-11-17 Sun 14:30]
+
+    Analyzed org-mode patterns:
+    - Headings with stars (* ** ***)
+    - TODO keywords (TODO, DONE, etc.)
+    - Tags (:tag1:tag2:)
+    - Timestamps and scheduling
+    - Properties drawers
+    - Links [[target][description]]
+
+*** IN-PROGRESS Write OrgModeSpinner implementation   :coding:
+    SCHEDULED: <2025-11-17 Sun>
+
+    Currently implementing the spinner with regex-based parsing.
+    No external dependencies needed!
+
+*** TODO Add file watcher for live updates            :enhancement:
+
+    Use inotify or watchdog to monitor org files for changes
+    and incrementally update the knowledge graph.
+
+** DONE Create weaving architecture                   :design:complete:
+   CLOSED: [2025-11-15 Fri 16:00]
+
+   Implemented all 9 core abstractions:
+   1. Yarn Graph - symbolic memory
+   2. Loom Command - pattern selection
+   3. Chrono Trigger - temporal control
+   4. Resonance Shed - feature fusion
+   5. DotPlasma - feature fluid
+   6. Warp Space - tensor manifold
+   7. Convergence Engine - decision collapse
+   8. Spacetime - woven output
+   9. Reflection Buffer - learning loop
+
+* Ideas & Notes                                        :brainstorm:
+
+** Integration with Emacs                              :tooling:
+   What if org-mode could be the primary interface for HoloLoom?
+
+   - Use org files as knowledge base
+   - TODO items become tasks in the system
+   - Links create explicit graph edges
+   - Tags map to entity metadata
+   - Timestamps feed ChronoTrigger
+
+   This would enable "thinking in org-mode" while HoloLoom
+   handles the neural processing in the background.
+
+** SOMEDAY Multi-modal integration                     :future:vision:
+   :PROPERTIES:
+   :EFFORT: 3d
+   :END:
+
+   Extend SpinningWheel to handle:
+   - Audio transcripts (already done)
+   - Images (caption generation)
+   - Code (AST parsing)
+   - Org-mode (zero-copy)
+
+   Each modality feeds into the same MemoryShard → Features → Policy pipeline.
+
+* Journal                                              :journal:daily:
+
+** <2025-11-17 Sun>                                   :log:
+
+   Made good progress today on the org-mode integration.
+   The OrgModeSpinner is coming together nicely.
+
+   Key insight: Org-mode's hierarchical structure maps perfectly
+   to graph topology. Parent-child relationships in the outliner
+   become edges in the YarnGraph.
+
+   Next steps:
+   - Test the spinner with real org files
+   - Integrate with orchestrator
+   - Add file watching for live updates
