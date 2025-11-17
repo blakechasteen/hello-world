@@ -88,6 +88,12 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 "**/tests/**" = ["S101", "PLR2004", "S105", "S106", "F841", "C416"]
 "demos/**" = ["T201"]  # Allow print statements in demos
 
+# API server uses mixedCase to match TypeScript interfaces
+"HoloLoom/server/agentic_api.py" = ["N815", "B904"]
+
+# Memory protocol has intentional exception chaining style
+"HoloLoom/memory/protocol.py" = ["B904"]
+
 [tool.ruff.lint.isort]
 known-first-party = ["HoloLoom"]
 

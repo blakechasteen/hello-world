@@ -14,20 +14,18 @@ Usage:
     uvicorn HoloLoom.server.agentic_api:app --host 0.0.0.0 --port 8000 --workers 4
 """
 
-import asyncio
 import logging
-from typing import Optional, List, Dict, Any
 from datetime import datetime
+from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.agentic import AgenticResult, ReasoningMode, create_agentic_orchestrator
 from HoloLoom.alignment.audit_trail import AuditTrail
-
+from HoloLoom.config import Config
+from HoloLoom.documentation.types import MemoryShard, Query
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,41 +35,48 @@ logger = logging.getLogger(__name__)
 # Request/Response Models (Match TypeScript interfaces)
 # ============================================================================
 
+
 class CodeContext(BaseModel):
     """Code context from VS Code editor (matches TypeScript interface)."""
-    currentFile: Optional[str] = None
-    fileName: Optional[str] = None
-    languageId: Optional[str] = None
-    selection: Optional[str] = None
-    workspace: Optional[str] = None
-    diagnostics: Optional[List[Dict]] = None
+
+    currentFile: str | None = None
+    fileName: str | None = None
+    languageId: str | None = None
+    selection: str | None = None
+    workspace: str | None = None
+    diagnostics: list[dict] | None = None
 
 
 class QueryRequest(BaseModel):
     """Query request from VS Code extension."""
+
     text: str = Field(..., description="Query text")
-    context: Optional[CodeContext] = Field(None, description="Code context from editor")
-    mode: str = Field("verify", description="Reasoning mode: direct, verify, research, plan_execute")
+    context: CodeContext | None = Field(None, description="Code context from editor")
+    mode: str = Field(
+        "verify", description="Reasoning mode: direct, verify, research, plan_execute"
+    )
     max_steps: int = Field(5, description="Maximum reasoning steps")
 
 
 class VerificationResponse(BaseModel):
     """Verification result (matches TypeScript interface)."""
+
     verified: bool
     confidence: float
-    contradictions: List[str]
-    supporting_evidence: List[str]
-    suggested_refinements: List[str]
+    contradictions: list[str]
+    supporting_evidence: list[str]
+    suggested_refinements: list[str]
 
 
 class ReasoningStepResponse(BaseModel):
     """Single reasoning step (matches TypeScript interface)."""
+
     type: str
-    query: Optional[str] = None
-    confidence: Optional[float] = None
-    finding: Optional[str] = None
-    completed: Optional[bool] = None
-    tool: Optional[str] = None
+    query: str | None = None
+    confidence: float | None = None
+    finding: str | None = None
+    completed: bool | None = None
+    tool: str | None = None
 
 
 class AgenticResponse(BaseModel):
@@ -80,13 +85,14 @@ class AgenticResponse(BaseModel):
 
     This is the main response returned to the VS Code extension.
     """
+
     response: str
     confidence: float
     reasoning_mode: str
-    steps_taken: List[ReasoningStepResponse]
+    steps_taken: list[ReasoningStepResponse]
     total_queries: int
     total_duration_ms: float
-    verification: Optional[VerificationResponse] = None
+    verification: VerificationResponse | None = None
 
     # Additional metadata
     timestamp: str
@@ -100,7 +106,7 @@ class AgenticResponse(BaseModel):
 app = FastAPI(
     title="HoloLoom Agentic API",
     description="Agentic intelligence backend for VS Code Squad extension",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # CORS for VS Code extension
@@ -116,13 +122,17 @@ app.add_middleware(
 # Global State
 # ============================================================================
 
+
 class ServerState:
     """Global server state."""
-    orchestrator: Optional[Any] = None
-    audit_trail: Optional[AuditTrail] = None
-    config: Optional[Config] = None
-    shards: List[MemoryShard] = []
-    memory_backend: Optional[Any] = None  # Persistent memory backend
+
+    orchestrator: Any | None = None
+    audit_trail: AuditTrail | None = None
+    config: Config | None = None
+    shards: list[MemoryShard] = []
+    memory_backend: Any | None = None  # Persistent memory backend
+    start_time: datetime | None = None  # Server start time for uptime tracking
+    query_count: int = 0  # Total queries processed
 
 
 state = ServerState()
@@ -132,10 +142,14 @@ state = ServerState()
 # Lifecycle
 # ============================================================================
 
+
 @app.on_event("startup")
 async def startup():
     """Initialize server with persistent memory."""
     logger.info("Starting HoloLoom Agentic API server...")
+
+    # Track server start time for uptime metrics
+    state.start_time = datetime.now()
 
     # Load config
     state.config = Config.fast()
@@ -146,8 +160,8 @@ async def startup():
 
     # ✅ Create persistent memory backend
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
         from HoloLoom.config import MemoryBackend
+        from HoloLoom.memory.backend_factory import create_memory_backend
 
         state.config.memory_backend = MemoryBackend.HYBRID  # Use persistent storage
         state.memory_backend = await create_memory_backend(state.config)
@@ -178,7 +192,8 @@ async def shutdown():
 # Helper Functions
 # ============================================================================
 
-def _load_memory_shards() -> List[MemoryShard]:
+
+def _load_memory_shards() -> list[MemoryShard]:
     """
     Load memory shards from data source (fallback when persistent backend unavailable).
 
@@ -192,12 +207,12 @@ def _load_memory_shards() -> List[MemoryShard]:
             text="HoloLoom is a neural decision-making system with multi-scale embeddings.",
             episode="hololoom_basics",
             entities=["HoloLoom", "embeddings"],
-            motifs=["definition"]
+            motifs=["definition"],
         )
     ]
 
 
-async def _load_from_persistent_backend() -> List[MemoryShard]:
+async def _load_from_persistent_backend() -> list[MemoryShard]:
     """
     Load memories from persistent backend (Neo4j/Qdrant).
 
@@ -213,8 +228,8 @@ async def _load_from_persistent_backend() -> List[MemoryShard]:
         from HoloLoom.memory.protocol import MemoryQuery
 
         query = MemoryQuery(
-            text="",  # Empty query = retrieve all
-            limit=1000  # Adjust based on your needs
+            text="",
+            limit=1000,  # Empty query = retrieve all  # Adjust based on your needs
         )
 
         result = await state.memory_backend.retrieve(query)
@@ -228,7 +243,7 @@ async def _load_from_persistent_backend() -> List[MemoryShard]:
                 episode=memory.context.get("episode", "default"),
                 entities=memory.context.get("entities", []),
                 motifs=memory.context.get("motifs", []),
-                metadata=memory.metadata
+                metadata=memory.metadata,
             )
             shards.append(shard)
 
@@ -248,14 +263,14 @@ async def get_orchestrator():
             state.shards,
             enable_verification=True,
             enable_goal_tracking=True,
-            audit_trail=state.audit_trail
+            audit_trail=state.audit_trail,
         )
         logger.info("Orchestrator ready!")
 
     return state.orchestrator
 
 
-def _format_verification(verification) -> Optional[VerificationResponse]:
+def _format_verification(verification) -> VerificationResponse | None:
     """Format verification result for API response."""
     if verification is None:
         return None
@@ -265,11 +280,11 @@ def _format_verification(verification) -> Optional[VerificationResponse]:
         confidence=verification.confidence,
         contradictions=verification.contradictions,
         supporting_evidence=verification.supporting_evidence,
-        suggested_refinements=verification.suggested_refinements
+        suggested_refinements=verification.suggested_refinements,
     )
 
 
-def _format_steps(steps: List[Dict]) -> List[ReasoningStepResponse]:
+def _format_steps(steps: list[dict]) -> list[ReasoningStepResponse]:
     """Format reasoning steps for API response."""
     return [
         ReasoningStepResponse(
@@ -278,7 +293,7 @@ def _format_steps(steps: List[Dict]) -> List[ReasoningStepResponse]:
             confidence=step.get("confidence"),
             finding=step.get("finding"),
             completed=step.get("completed"),
-            tool=step.get("tool_used") or step.get("tool")
+            tool=step.get("tool_used") or step.get("tool"),
         )
         for step in steps
     ]
@@ -287,6 +302,7 @@ def _format_steps(steps: List[Dict]) -> List[ReasoningStepResponse]:
 # ============================================================================
 # Endpoints
 # ============================================================================
+
 
 @app.get("/health")
 async def health_check():
@@ -299,7 +315,7 @@ async def health_check():
         "status": "ok",
         "service": "HoloLoom Agentic API",
         "version": "1.0.0",
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
 
@@ -360,10 +376,11 @@ async def query_endpoint(request: QueryRequest):
         # Run agentic reasoning
         logger.info(f"Query: {request.text[:100]}... (mode={request.mode})")
         result: AgenticResult = await orchestrator.reason(
-            query,
-            mode=mode,
-            max_steps=request.max_steps
+            query, mode=mode, max_steps=request.max_steps
         )
+
+        # Track successful query
+        state.query_count += 1
 
         # Extract response text
         response_text = result.spacetime.metadata.get("response", "")
@@ -381,7 +398,7 @@ async def query_endpoint(request: QueryRequest):
             total_duration_ms=result.total_duration_ms,
             verification=_format_verification(result.verification),
             timestamp=start_time.isoformat(),
-            query_id=result.spacetime.query_id
+            query_id=result.spacetime.query_id,
         )
 
     except Exception as e:
@@ -397,9 +414,23 @@ async def get_stats():
     Returns:
         Statistics about queries processed, audit trail, etc.
     """
+    # Calculate uptime
+    uptime = "unknown"
+    if state.start_time:
+        delta = datetime.now() - state.start_time
+        hours = delta.total_seconds() / 3600
+        if hours < 1:
+            minutes = delta.total_seconds() / 60
+            uptime = f"{minutes:.1f} minutes"
+        elif hours < 24:
+            uptime = f"{hours:.1f} hours"
+        else:
+            days = hours / 24
+            uptime = f"{days:.1f} days"
+
     stats = {
-        "server_uptime": "N/A",  # TODO: Track uptime
-        "total_queries": 0,  # TODO: Track queries
+        "server_uptime": uptime,
+        "total_queries": state.query_count,
         "orchestrator_ready": state.orchestrator is not None,
         "memory_shards": len(state.shards),
     }
@@ -439,12 +470,12 @@ async def get_audit_trail(limit: int = 100):
                 "confidence": log.confidence,
             }
             for log in entries
-        ]
+        ],
     }
 
 
 @app.post("/memories/add")
-async def add_memory(memory: Dict):
+async def add_memory(memory: dict):
     """
     Add new memory to persistent storage.
 
@@ -469,7 +500,7 @@ async def add_memory(memory: Dict):
             return {
                 "success": False,
                 "message": "Persistent backend not available",
-                "memory_id": None
+                "memory_id": None,
             }
 
         from HoloLoom.memory.protocol import Memory
@@ -481,9 +512,9 @@ async def add_memory(memory: Dict):
             context={
                 "episode": memory.get("episode", "default"),
                 "entities": memory.get("entities", []),
-                "motifs": memory.get("motifs", [])
+                "motifs": memory.get("motifs", []),
             },
-            metadata=memory.get("metadata", {})
+            metadata=memory.get("metadata", {}),
         )
 
         # Store in persistent backend
@@ -496,17 +527,13 @@ async def add_memory(memory: Dict):
             episode=new_memory.context.get("episode", "default"),
             entities=new_memory.context.get("entities", []),
             motifs=new_memory.context.get("motifs", []),
-            metadata=new_memory.metadata
+            metadata=new_memory.metadata,
         )
         state.shards.append(shard)
 
         logger.info(f"Added memory: {new_memory.id}")
 
-        return {
-            "success": True,
-            "message": "Memory added successfully",
-            "memory_id": new_memory.id
-        }
+        return {"success": True, "message": "Memory added successfully", "memory_id": new_memory.id}
 
     except Exception as e:
         logger.error(f"Failed to add memory: {e}")
@@ -522,9 +549,5 @@ if __name__ == "__main__":
 
     logger.info("Starting HoloLoom Agentic API server (development mode)...")
     uvicorn.run(
-        "HoloLoom.server.agentic_api:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
+        "HoloLoom.server.agentic_api:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
     )

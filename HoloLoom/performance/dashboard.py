@@ -16,21 +16,22 @@ Features:
 """
 
 import asyncio
+import statistics
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
+    from rich import box
     from rich.console import Console
     from rich.layout import Layout
+    from rich.live import Live
     from rich.panel import Panel
     from rich.table import Table
-    from rich.live import Live
-    from rich.progress import Progress, BarColumn, TextColumn
-    from rich import box
+
     HAS_RICH = True
 except ImportError:
     HAS_RICH = False
@@ -64,25 +65,14 @@ class PerformanceDashboard:
         layout = Layout()
 
         layout.split_column(
-            Layout(name="header", size=3),
-            Layout(name="body"),
-            Layout(name="footer", size=3)
+            Layout(name="header", size=3), Layout(name="body"), Layout(name="footer", size=3)
         )
 
-        layout["body"].split_row(
-            Layout(name="left"),
-            Layout(name="right")
-        )
+        layout["body"].split_row(Layout(name="left"), Layout(name="right"))
 
-        layout["left"].split_column(
-            Layout(name="latency"),
-            Layout(name="throughput")
-        )
+        layout["left"].split_column(Layout(name="latency"), Layout(name="throughput"))
 
-        layout["right"].split_column(
-            Layout(name="system"),
-            Layout(name="cache")
-        )
+        layout["right"].split_column(Layout(name="system"), Layout(name="cache"))
 
         return layout
 
@@ -99,7 +89,7 @@ class PerformanceDashboard:
         header.add_row(
             "[bold blue]HoloLoom Performance Dashboard[/]",
             "[yellow]Monitoring System Health[/]",
-            f"[green]{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}[/]"
+            f"[green]{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}[/]",
         )
 
         return Panel(header, style="white on blue")
@@ -179,14 +169,35 @@ class PerformanceDashboard:
         if not HAS_RICH:
             return "Cache Metrics"
 
-        # TODO: Hook up to actual cache stats when available
         table = Table(box=box.SIMPLE, show_header=False, expand=True)
         table.add_column("Metric", style="cyan")
         table.add_column("Value", justify="right", style="green")
 
-        table.add_row("Hit Rate", "N/A")
-        table.add_row("Size", "N/A")
-        table.add_row("Evictions", "N/A")
+        # Try to get cache stats from metrics collector
+        hit_rate = "N/A"
+        size = "N/A"
+        evictions = "N/A"
+
+        # Check if cache metrics are being recorded
+        with self.metrics.lock:
+            if "cache_hit_rate" in self.metrics.metrics:
+                recent_rates = list(self.metrics.metrics["cache_hit_rate"])
+                if recent_rates:
+                    avg_rate = statistics.mean(m.value for m in recent_rates[-10:])
+                    hit_rate = f"{avg_rate:.1f}%"
+
+            if "cache_size" in self.metrics.metrics:
+                recent_sizes = list(self.metrics.metrics["cache_size"])
+                if recent_sizes:
+                    current_size = recent_sizes[-1].value
+                    size = f"{int(current_size)}"
+
+            if "cache_evictions" in self.metrics.counters:
+                evictions = str(self.metrics.counters["cache_evictions"])
+
+        table.add_row("Hit Rate", hit_rate)
+        table.add_row("Size", size)
+        table.add_row("Evictions", evictions)
 
         return Panel(table, title="[bold]Cache Stats[/]", border_style="magenta")
 
@@ -201,9 +212,7 @@ class PerformanceDashboard:
         footer.add_column(justify="right")
 
         footer.add_row(
-            "[dim]Refresh: 1s[/]",
-            "[bold]Press Ctrl+C to exit[/]",
-            "[dim]HoloLoom v1.0[/]"
+            "[dim]Refresh: 1s[/]", "[bold]Press Ctrl+C to exit[/]", "[dim]HoloLoom v1.0[/]"
         )
 
         return Panel(footer, style="white on black")

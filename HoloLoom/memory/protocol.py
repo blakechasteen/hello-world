@@ -3,92 +3,98 @@ Memory Protocols - Protocol-based interfaces for memory backends.
 All backends implement MemoryStore protocol for easy extension.
 """
 
-from typing import List, Dict, Optional, Protocol, runtime_checkable, Any
 from dataclasses import dataclass
-from enum import Enum
 from datetime import datetime
-
+from enum import Enum
+from typing import Any, Optional, Protocol, runtime_checkable
 
 # ============================================================================
 # Data Types
 # ============================================================================
 
+
 @dataclass
 class Memory:
     """Single memory unit. Compatible with MemoryShard from SpinningWheel."""
+
     id: str
     text: str
     timestamp: datetime
-    context: Dict[str, Any]
-    metadata: Dict[str, Any]
-    embedding: Optional[Any] = None  # Vector embedding (numpy array or list)
+    context: dict[str, Any]
+    metadata: dict[str, Any]
+    embedding: Any | None = None  # Vector embedding (numpy array or list)
 
     @classmethod
-    def from_shard(cls, shard: Any, timestamp: Optional[datetime] = None) -> 'Memory':
+    def from_shard(cls, shard: Any, timestamp: datetime | None = None) -> "Memory":
         """Create Memory from MemoryShard (SpinningWheel output)."""
         return cls(
             id=shard.id,
             text=shard.text,
             timestamp=timestamp or datetime.now(),
             context={
-                'episode': getattr(shard, 'episode', None),
-                'entities': getattr(shard, 'entities', []),
-                'motifs': getattr(shard, 'motifs', []),
+                "episode": getattr(shard, "episode", None),
+                "entities": getattr(shard, "entities", []),
+                "motifs": getattr(shard, "motifs", []),
             },
-            metadata=getattr(shard, 'metadata', None) or {}
+            metadata=getattr(shard, "metadata", None) or {},
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = {
-            'id': self.id,
-            'text': self.text,
-            'timestamp': self.timestamp.isoformat(),
-            'context': self.context,
-            'metadata': self.metadata
+            "id": self.id,
+            "text": self.text,
+            "timestamp": self.timestamp.isoformat(),
+            "context": self.context,
+            "metadata": self.metadata,
         }
         # Convert embedding to list for JSON serialization
         if self.embedding is not None:
             import numpy as np
+
             if isinstance(self.embedding, np.ndarray):
-                result['embedding'] = self.embedding.tolist()
+                result["embedding"] = self.embedding.tolist()
             else:
-                result['embedding'] = self.embedding
+                result["embedding"] = self.embedding
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Memory':
+    def from_dict(cls, data: dict[str, Any]) -> "Memory":
         data = data.copy()
-        if isinstance(data['timestamp'], str):
-            data['timestamp'] = datetime.fromisoformat(data['timestamp'])
+        if isinstance(data["timestamp"], str):
+            data["timestamp"] = datetime.fromisoformat(data["timestamp"])
         # Convert embedding back to numpy array
-        if 'embedding' in data and data['embedding'] is not None:
+        if "embedding" in data and data["embedding"] is not None:
             import numpy as np
-            if isinstance(data['embedding'], list):
-                data['embedding'] = np.array(data['embedding'])
+
+            if isinstance(data["embedding"], list):
+                data["embedding"] = np.array(data["embedding"])
         return cls(**data)
 
 
 @dataclass
 class MemoryQuery:
     """Memory query."""
+
     text: str
     user_id: str = "default"
     limit: int = 5
-    filters: Optional[Dict[str, Any]] = None
-    strategy: Optional['Strategy'] = None
+    filters: dict[str, Any] | None = None
+    strategy: Optional["Strategy"] = None
 
 
 @dataclass
 class RetrievalResult:
     """Retrieval results with scores and metadata."""
-    memories: List[Memory]
-    scores: List[float]
+
+    memories: list[Memory]
+    scores: list[float]
     strategy_used: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 class Strategy(Enum):
     """Retrieval strategies."""
+
     TEMPORAL = "temporal"
     SEMANTIC = "semantic"
     GRAPH = "graph"
@@ -99,6 +105,7 @@ class Strategy(Enum):
 
 class QueryMode(Enum):
     """Query complexity modes."""
+
     FAST = "fast"
     BALANCED = "balanced"
     COMPREHENSIVE = "comprehensive"
@@ -118,27 +125,32 @@ except ImportError:
         """Memory storage backend protocol."""
 
         async def store(self, memory: Memory, user_id: str = "default") -> str: ...
-        async def store_many(self, memories: List[Memory], user_id: str = "default") -> List[str]: ...
-        async def get_by_id(self, memory_id: str) -> Optional[Memory]: ...
-        async def retrieve(self, query: MemoryQuery, strategy: Strategy = Strategy.FUSED) -> RetrievalResult: ...
+        async def store_many(
+            self, memories: list[Memory], user_id: str = "default"
+        ) -> list[str]: ...
+        async def get_by_id(self, memory_id: str) -> Memory | None: ...
+        async def retrieve(
+            self, query: MemoryQuery, strategy: Strategy = Strategy.FUSED
+        ) -> RetrievalResult: ...
         async def delete(self, memory_id: str) -> bool: ...
-        async def health_check(self) -> Dict[str, Any]: ...
+        async def health_check(self) -> dict[str, Any]: ...
 
 
 # ============================================================================
 # Helper Functions
 # ============================================================================
 
-def shards_to_memories(shards: List[Any], timestamp: Optional[datetime] = None) -> List[Memory]:
+
+def shards_to_memories(shards: list[Any], timestamp: datetime | None = None) -> list[Memory]:
     """Convert SpinningWheel shards to Memory objects."""
     return [Memory.from_shard(shard, timestamp) for shard in shards]
 
 
 async def create_unified_memory(
     user_id: str = "default",
-    backend: Optional[str] = None,
-    config: Optional[Dict[str, Any]] = None,
-    **kwargs
+    backend: str | None = None,
+    config: dict[str, Any] | None = None,
+    **kwargs,
 ):
     """
     Backwards-compatible async factory with backend detection and config support.
@@ -182,12 +194,12 @@ async def create_unified_memory(
             backend="in-memory"
         )
     """
-    import os
     import logging
-    
+    import os
+
     logger = logging.getLogger(__name__)
     config = config or {}
-    
+
     # Try to import UnifiedMemory
     try:
         from HoloLoom.memory.unified import UnifiedMemory
@@ -196,70 +208,101 @@ async def create_unified_memory(
             f"UnifiedMemory implementation not available: {e}\n"
             "Ensure HoloLoom.memory.unified exists or pass a memory backend directly."
         )
-    
+
     # Backend detection and configuration
     enable_neo4j = True
     enable_qdrant = True
-    enable_mem0 = config.get('enable_mem0', True)
-    enable_hofstadter = config.get('enable_hofstadter', True)
-    
+    enable_mem0 = config.get("enable_mem0", True)
+    enable_hofstadter = config.get("enable_hofstadter", True)
+
     if backend:
         # Explicit backend selection
         backend_lower = backend.lower()
-        
+
         if backend_lower == "in-memory":
             # Disable external backends
             enable_neo4j = False
             enable_qdrant = False
             logger.info("Using in-memory backend (no persistence)")
-            
+
         elif backend_lower == "neo4j":
             enable_qdrant = False
             logger.info("Using Neo4j backend")
-            
+
         elif backend_lower == "qdrant":
             enable_neo4j = False
             logger.info("Using Qdrant backend")
-            
+
         elif backend_lower == "hybrid":
             # Use both Neo4j and Qdrant
             logger.info("Using hybrid Neo4j + Qdrant backend")
-            
+
         else:
             logger.warning(f"Unknown backend '{backend}', falling back to auto-detect")
-    
+
     else:
         # Auto-detect available backends
         logger.info("Auto-detecting available memory backends...")
-        
+
         # Check Neo4j availability
-        neo4j_uri = config.get('neo4j_uri') or os.getenv('NEO4J_URI')
+        neo4j_uri = config.get("neo4j_uri") or os.getenv("NEO4J_URI")
         if not neo4j_uri:
             enable_neo4j = False
             logger.debug("Neo4j not configured (no URI)")
         else:
-            # Try to connect (optional health check)
+            # Try to connect (health check)
             try:
-                # TODO: Add actual Neo4j connection test
-                logger.info(f"Neo4j configured at {neo4j_uri}")
+                from neo4j import GraphDatabase
+
+                neo4j_user = config.get("neo4j_user") or os.getenv("NEO4J_USER", "neo4j")
+                neo4j_password = config.get("neo4j_password") or os.getenv("NEO4J_PASSWORD")
+
+                driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
+                # Verify connection with a simple query
+                with driver.session() as session:
+                    session.run("RETURN 1")
+                driver.close()
+
+                enable_neo4j = True
+                logger.info(f"✓ Neo4j connection verified at {neo4j_uri}")
+            except ImportError:
+                enable_neo4j = False
+                logger.debug("Neo4j driver not installed (pip install neo4j)")
             except Exception as e:
                 enable_neo4j = False
                 logger.warning(f"Neo4j unavailable: {e}")
-        
+
         # Check Qdrant availability
-        qdrant_url = config.get('qdrant_url') or os.getenv('QDRANT_URL')
+        qdrant_url = config.get("qdrant_url") or os.getenv("QDRANT_URL")
         if not qdrant_url:
             enable_qdrant = False
             logger.debug("Qdrant not configured (no URL)")
         else:
-            # Try to connect (optional health check)
+            # Try to connect (health check)
             try:
-                # TODO: Add actual Qdrant connection test
-                logger.info(f"Qdrant configured at {qdrant_url}")
+                from qdrant_client import QdrantClient
+
+                # Parse URL to determine if local or remote
+                if qdrant_url.startswith("http"):
+                    client = QdrantClient(url=qdrant_url)
+                else:
+                    # Local path
+                    client = QdrantClient(path=qdrant_url)
+
+                # Verify connection by getting collections
+                collections = client.get_collections()
+
+                enable_qdrant = True
+                logger.info(
+                    f"✓ Qdrant connection verified at {qdrant_url} ({len(collections.collections)} collections)"
+                )
+            except ImportError:
+                enable_qdrant = False
+                logger.debug("Qdrant client not installed (pip install qdrant-client)")
             except Exception as e:
                 enable_qdrant = False
                 logger.warning(f"Qdrant unavailable: {e}")
-        
+
         # Log selected backend
         if enable_neo4j and enable_qdrant:
             logger.info("✓ Using hybrid Neo4j + Qdrant backend")
@@ -269,7 +312,7 @@ async def create_unified_memory(
             logger.info("✓ Using Qdrant backend")
         else:
             logger.info("✓ Using in-memory backend (fallback)")
-    
+
     # Construct UnifiedMemory with detected/configured backends
     try:
         memory = UnifiedMemory(
@@ -278,12 +321,12 @@ async def create_unified_memory(
             enable_neo4j=enable_neo4j,
             enable_qdrant=enable_qdrant,
             enable_hofstadter=enable_hofstadter,
-            **kwargs
+            **kwargs,
         )
-        
+
         logger.info(f"✓ UnifiedMemory initialized for user '{user_id}'")
         return memory
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize UnifiedMemory: {e}")
         raise RuntimeError(
