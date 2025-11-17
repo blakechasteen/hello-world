@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Your LMS - EdWIN Teacher Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wizard {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .wizard-header {
+            background: #667eea;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .wizard-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .wizard-header p {
+            opacity: 0.9;
+        }
+
+        .wizard-body {
+            padding: 30px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .lms-choice {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .lms-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lms-option:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .lms-option.selected {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .lms-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .lms-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .wizard-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e0e0e0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            color: #28a745;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            text-align: center;
+            color: #333;
+        }
+
+        .success-message h2 {
+            margin-bottom: 10px;
+        }
+
+        .assignment-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .assignment-item {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .assignment-item:last-child {
+            border-bottom: none;
+        }
+
+        .assignment-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .assignment-points {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .map-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .map-btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="wizard">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress" style="width: 25%;"></div>
+        </div>
+
+        <div class="wizard-header">
+            <h1>Connect Your LMS</h1>
+            <p>Set up EdWIN with Canvas or Google Classroom in 3 easy steps</p>
+        </div>
+
+        <div class="wizard-body">
+            <!-- Step 1: Choose LMS -->
+            <div class="step active" id="step1">
+                <h2>Step 1: Choose Your LMS</h2>
+                <div class="lms-choice">
+                    <div class="lms-option" onclick="selectLMS('canvas')">
+                        <div class="lms-icon">📚</div>
+                        <div class="lms-name">Canvas LMS</div>
+                    </div>
+                    <div class="lms-option" onclick="selectLMS('google')">
+                        <div class="lms-icon">🎓</div>
+                        <div class="lms-name">Google Classroom</div>
+                    </div>
+                </div>
+
+                <div class="wizard-footer">
+                    <button class="btn btn-secondary" disabled>Back</button>
+                    <button class="btn btn-primary" id="next1" onclick="goToStep(2)" disabled>Next</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Import Roster -->
+            <div class="step" id="step2">
+                <h2>Step 2: Import Your Roster</h2>
+                <p>Select a course to import students:</p>
+
+                <div class="form-group">
+                    <label>Select Course</label>
+                    <select id="course-select" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px;">
+                        <option value="">Loading courses...</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="importRoster()">Import Roster</button>
+
+                <div id="roster-preview" class="hidden" style="margin-top: 20px;">
+                    <p><strong>Imported:</strong> <span id="student-count">0</span> students</p>
+                </div>
+
+                <div class="wizard-footer">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(3)">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Map Assignments -->
+            <div class="step" id="step3">
+                <h2>Step 3: Map Assignments</h2>
+                <p>Connect your LMS assignments to EdWIN objectives:</p>
+
+                <div class="assignment-list" id="assignment-list">
+                    <div class="assignment-item">
+                        <div>
+                            <div class="assignment-name">Fraction Addition Quiz</div>
+                            <div class="assignment-points">50 points</div>
+                        </div>
+                        <button class="map-btn" onclick="mapAssignment('1')">Map</button>
+                    </div>
+                    <div class="assignment-item">
+                        <div>
+                            <div class="assignment-name">Decimal Multiplication</div>
+                            <div class="assignment-points">100 points</div>
+                        </div>
+                        <button class="map-btn" onclick="mapAssignment('2')">Map</button>
+                    </div>
+                </div>
+
+                <div class="wizard-footer">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(4)">Finish</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Success -->
+            <div class="step" id="step4">
+                <div class="success-icon">✓</div>
+                <div class="success-message">
+                    <h2>All Set!</h2>
+                    <p>Your LMS is now connected to EdWIN.</p>
+                    <p style="margin-top: 15px; color: #777;">Grades will sync automatically as students complete objectives.</p>
+                </div>
+
+                <button class="btn btn-primary" style="margin-top: 30px;" onclick="window.location.href='/teacher'">Go to Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedLMS = null;
+        let currentStep = 1;
+
+        function selectLMS(lms) {
+            selectedLMS = lms;
+
+            // Update UI
+            document.querySelectorAll('.lms-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.target.closest('.lms-option').classList.add('selected');
+
+            // Enable next button
+            document.getElementById('next1').disabled = false;
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step').forEach(s => {
+                s.classList.remove('active');
+            });
+
+            // Show target step
+            document.getElementById(`step${step}`).classList.add('active');
+
+            // Update progress bar
+            const progress = (step / 4) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+
+            currentStep = step;
+
+            // Load data for step
+            if (step === 2) {
+                loadCourses();
+            } else if (step === 3) {
+                loadAssignments();
+            }
+        }
+
+        async function loadCourses() {
+            const select = document.getElementById('course-select');
+
+            try {
+                const response = await fetch(`/integrations/courses?provider=${selectedLMS}`);
+                const courses = await response.json();
+
+                select.innerHTML = courses.map(course =>
+                    `<option value="${course.id}">${course.name}</option>`
+                ).join('');
+            } catch (error) {
+                select.innerHTML = '<option value="">Error loading courses</option>';
+            }
+        }
+
+        async function importRoster() {
+            const courseId = document.getElementById('course-select').value;
+
+            if (!courseId) {
+                alert('Please select a course');
+                return;
+            }
+
+            try {
+                const response = await fetch('/integrations/roster/sync', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({course_id: courseId})
+                });
+
+                const data = await response.json();
+                document.getElementById('student-count').textContent = data.matched;
+                document.getElementById('roster-preview').classList.remove('hidden');
+
+                alert(`Imported ${data.matched} students!`);
+            } catch (error) {
+                alert('Error importing roster: ' + error);
+            }
+        }
+
+        async function loadAssignments() {
+            // Would fetch assignments from API
+            // For now, using placeholder data
+        }
+
+        function mapAssignment(assignmentId) {
+            // Would open modal to select EdWIN objectives
+            alert(`Mapping assignment ${assignmentId} to EdWIN objectives`);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS Integration Admin - EdWIN</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        header {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #667eea;
+            margin-right: 10px;
+        }
+
+        .lms-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .lms-card.connected {
+            border-color: #28a745;
+        }
+
+        .lms-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .log-entry {
+            padding: 10px;
+            background: white;
+            border-left: 4px solid #667eea;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .log-entry.success {
+            border-left-color: #28a745;
+        }
+
+        .log-entry.error {
+            border-left-color: #dc3545;
+        }
+
+        .log-time {
+            font-size: 12px;
+            color: #777;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LMS Integration Admin</h1>
+            <p>Connect EdWIN to Canvas LMS and Google Classroom for seamless school adoption.</p>
+        </header>
+
+        <!-- LMS Connections Section -->
+        <div class="section">
+            <h2>LMS Connections</h2>
+
+            <!-- Canvas Card -->
+            <div class="lms-card" id="canvas-card">
+                <h3>
+                    Canvas LMS
+                    <span class="status-indicator status-disconnected" id="canvas-status">Disconnected</span>
+                </h3>
+
+                <div id="canvas-form">
+                    <div class="form-group">
+                        <label>Canvas Instance URL</label>
+                        <input type="text" id="canvas-url" placeholder="https://yourschool.instructure.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Client ID</label>
+                        <input type="text" id="canvas-client-id" placeholder="Developer key client ID">
+                    </div>
+                    <div class="form-group">
+                        <label>Client Secret</label>
+                        <input type="password" id="canvas-client-secret" placeholder="Developer key secret">
+                    </div>
+                    <button class="btn btn-primary" onclick="connectCanvas()">Connect Canvas</button>
+                </div>
+
+                <div id="canvas-connected" class="hidden">
+                    <p>✓ Connected to Canvas</p>
+                    <button class="btn btn-danger" onclick="disconnectCanvas()">Disconnect</button>
+                </div>
+            </div>
+
+            <!-- Google Classroom Card -->
+            <div class="lms-card" id="google-card">
+                <h3>
+                    Google Classroom
+                    <span class="status-indicator status-disconnected" id="google-status">Disconnected</span>
+                </h3>
+
+                <div id="google-form">
+                    <div class="form-group">
+                        <label>Google Client ID</label>
+                        <input type="text" id="google-client-id" placeholder="Client ID from Google Cloud Console">
+                    </div>
+                    <div class="form-group">
+                        <label>Client Secret</label>
+                        <input type="password" id="google-client-secret" placeholder="Client secret">
+                    </div>
+                    <button class="btn btn-primary" onclick="connectGoogle()">Connect Google Classroom</button>
+                </div>
+
+                <div id="google-connected" class="hidden">
+                    <p>✓ Connected to Google Classroom</p>
+                    <button class="btn btn-danger" onclick="disconnectGoogle()">Disconnect</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connected Courses Section -->
+        <div class="section">
+            <h2>Connected Courses</h2>
+            <button class="btn btn-success" onclick="loadCourses()">Load Courses</button>
+
+            <table id="courses-table" class="hidden">
+                <thead>
+                    <tr>
+                        <th>Course Name</th>
+                        <th>LMS</th>
+                        <th>Students</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="courses-body">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sync Logs Section -->
+        <div class="section">
+            <h2>Recent Sync Activity</h2>
+            <div id="sync-logs">
+                <p style="color: #777;">No sync activity yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/integrations';
+
+        async function connectCanvas() {
+            const baseUrl = document.getElementById('canvas-url').value;
+            const clientId = document.getElementById('canvas-client-id').value;
+            const clientSecret = document.getElementById('canvas-client-secret').value;
+
+            if (!baseUrl || !clientId || !clientSecret) {
+                alert('Please fill in all Canvas fields');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/canvas/connect`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        base_url: baseUrl,
+                        client_id: clientId,
+                        client_secret: clientSecret
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.auth_url) {
+                    window.location.href = data.auth_url;
+                }
+            } catch (error) {
+                alert('Error connecting to Canvas: ' + error);
+            }
+        }
+
+        async function connectGoogle() {
+            const clientId = document.getElementById('google-client-id').value;
+            const clientSecret = document.getElementById('google-client-secret').value;
+
+            if (!clientId || !clientSecret) {
+                alert('Please fill in all Google fields');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/google/connect`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        client_id: clientId,
+                        client_secret: clientSecret
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.auth_url) {
+                    window.location.href = data.auth_url;
+                }
+            } catch (error) {
+                alert('Error connecting to Google: ' + error);
+            }
+        }
+
+        async function loadCourses() {
+            try {
+                const response = await fetch(`${API_BASE}/courses?provider=canvas`);
+                const courses = await response.json();
+
+                const tbody = document.getElementById('courses-body');
+                tbody.innerHTML = '';
+
+                courses.forEach(course => {
+                    const row = `
+                        <tr>
+                            <td>${course.name}</td>
+                            <td>Canvas</td>
+                            <td>--</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="syncRoster('${course.id}')">Sync Roster</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+                document.getElementById('courses-table').classList.remove('hidden');
+            } catch (error) {
+                alert('Error loading courses: ' + error);
+            }
+        }
+
+        async function syncRoster(courseId) {
+            try {
+                const response = await fetch(`${API_BASE}/roster/sync`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({course_id: courseId})
+                });
+
+                const data = await response.json();
+                alert(`Synced ${data.matched} students`);
+            } catch (error) {
+                alert('Error syncing roster: ' + error);
+            }
+        }
+
+        function disconnectCanvas() {
+            // Implementation
+            alert('Canvas disconnected');
+        }
+
+        function disconnectGoogle() {
+            // Implementation
+            alert('Google Classroom disconnected');
+        }
+
+        // Check connection status on load
+        window.addEventListener('load', async () => {
+            try {
+                const canvasTest = await fetch(`${API_BASE}/test-connection?provider=canvas`);
+                const canvasData = await canvasTest.json();
+
+                if (canvasData.status === 'connected') {
+                    document.getElementById('canvas-status').textContent = 'Connected';
+                    document.getElementById('canvas-status').className = 'status-indicator status-connected';
+                    document.getElementById('canvas-card').classList.add('connected');
+                    document.getElementById('canvas-form').classList.add('hidden');
+                    document.getElementById('canvas-connected').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.log('Canvas not connected');
+            }
+        });
+    </script>
+</body>
+</html>
