@@ -35,6 +35,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Extends HoloLoom to collaborative storytelling
    - **For world building and interactive fiction**
 
+6. **[DATA_INGESTION_EXPANSION.md](DATA_INGESTION_EXPANSION.md)** - Data ingestion expansion roadmap (NEW - Nov 17, 2025)
+   - 4 newly documented spinners (Browser History, Website, Recursive Crawler, Image Utils)
+   - Comprehensive expansion roadmap (51 → 100+ spinners by Q4 2026)
+   - Integration examples and architecture patterns
+   - **Essential for understanding data ingestion capabilities**
+
 ---
 
 ## Reliable Systems: Safety First
@@ -200,6 +206,7 @@ Real-world savings from Week 1 implementation:
 - ✅ Departments multi-department system (22 files)
 - ✅ Memory System v1.0 (123/123 tests passing)
 - ✅ Repository cleanup (93% reduction in root markdown files)
+- ✅ Data Ingestion Expansion (4 newly documented spinners, ~1,990 lines)
 
 ---
 
@@ -1681,6 +1688,201 @@ config.zero_copy_cache_size = 10000
 
 See `HoloLoom/spinningWheel/README.md` for complete adapter reference.
 
+---
+
+### SpinningWheel: Expanded Data Ingestion (November 17, 2025)
+
+**Status**: ✅ 51 Total Spinners (47 documented + 4 undocumented)
+**New Documentation**: [DATA_INGESTION_EXPANSION.md](DATA_INGESTION_EXPANSION.md)
+**Hidden Code Discovered**: ~1,990 lines of production-ready ingestion capabilities
+
+#### Newly Documented Spinners
+
+**1. Browser History Reader** (`modalities/browser_history.py` - 370 lines)
+- Reads Chrome, Firefox, Edge, Brave browsing history
+- SQLite database parsing with safe copying (no lock conflicts)
+- Visit duration tracking and timestamp normalization
+- Time-range filtering (default: 7 days)
+- **Use Case**: Auto-research workflows from browser history
+
+**Usage**:
+```python
+from HoloLoom.spinningWheel.modalities.browser_history import BrowserHistoryReader
+
+reader = BrowserHistoryReader()
+visits = reader.read_all_browsers(days_back=30, min_duration=10)
+
+for visit in visits[:10]:
+    print(f"{visit.timestamp}: {visit.title} ({visit.url})")
+```
+
+**2. Website Spinner (Multimodal)** (`modalities/website.py` - 580 lines)
+- **Multimodal image extraction** - not just text scraping!
+- Filters meaningful images (diagrams, charts) from UI elements (logos, ads)
+- Smart chunking via TextSpinner
+- Domain and URL metadata preservation
+- Visit statistics integration
+- **Use Case**: Ingest webpages with diagrams into MultimodalRAG
+
+**Usage**:
+```python
+from HoloLoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
+
+config = WebsiteSpinnerConfig(
+    extract_images=True,
+    download_images=True,
+    max_images=10,
+    min_image_width=200,
+    image_storage_dir='./data/wool/images'
+)
+
+spinner = WebsiteSpinner(config)
+result = await spinner.spin({'url': 'https://example.com/article'})
+
+# Access text shards
+for shard in result['shards']:
+    print(f"Text: {shard.text[:100]}...")
+
+# Access image shards (NEW!)
+for image_shard in result.get('image_shards', []):
+    print(f"Image: {image_shard.metadata['image_url']}")
+    print(f"Alt text: {image_shard.metadata['alt_text']}")
+```
+
+**3. Recursive Crawler** (`modalities/recursive_crawler.py` - 580 lines)
+- **Matryoshka Importance Gating** - depth-based thresholds prevent noise
+- Importance threshold increases with depth (0.6 → 0.75 → 0.85 → 0.90)
+- Creates natural funnel: broad exploration → focused drilling
+- Link scoring based on topic relevance, context, structure
+- **Use Case**: Deep research by recursively crawling related pages
+
+**Usage**:
+```python
+from HoloLoom.spinningWheel.modalities.recursive_crawler import RecursiveCrawler
+
+crawler = RecursiveCrawler(
+    max_depth=3,
+    max_pages=100,
+    importance_thresholds={
+        0: 0.6,   # Seed: permissive
+        1: 0.75,  # Direct links: moderate
+        2: 0.85,  # 2nd-level: strict
+        3: 0.90   # 3rd-level: very strict
+    }
+)
+
+results = await crawler.crawl(
+    seed_url="https://pytorch.org/tutorials/",
+    topic="PyTorch tutorials and examples"
+)
+
+print(f"Crawled {results.pages_visited} pages")
+print(f"Filtered {results.pages_filtered} low-importance pages")
+```
+
+**4. Image Utils** (`modalities/image_utils.py` - 460 lines)
+- Image download and caching
+- Format conversion (JPEG, PNG, WebP)
+- Thumbnail generation
+- EXIF metadata extraction
+- Perceptual hashing for deduplication
+- OCR preprocessing (deskew, denoise, contrast enhancement)
+- **Use Case**: Multimodal ingestion pipeline
+
+**Usage**:
+```python
+from HoloLoom.spinningWheel.modalities.image_utils import (
+    download_image,
+    extract_exif,
+    preprocess_for_ocr,
+    deduplicate_images
+)
+
+# Download and cache
+image_path = await download_image(url, cache_dir="./data/wool/images")
+
+# Extract metadata
+metadata = extract_exif(image_path)
+
+# Preprocess for OCR
+ocr_ready = preprocess_for_ocr(image_path, deskew=True, denoise=True)
+
+# Deduplicate
+unique_images = deduplicate_images(["img1.jpg", "img2.jpg", "img1_copy.jpg"])
+```
+
+#### Integration Example: Complete Research Workflow
+
+```python
+from HoloLoom import HoloLoom
+from HoloLoom.spinningWheel.modalities.browser_history import BrowserHistoryReader
+from HoloLoom.spinningWheel.modalities.recursive_crawler import RecursiveCrawler
+from HoloLoom.rag import MultimodalRAG
+
+async def research_from_browser_history(topic: str):
+    """
+    Automatic research:
+    1. Extract seed URLs from browser history
+    2. Recursively crawl related pages
+    3. Store in MultimodalRAG
+    """
+    # Find seed URLs from browser history
+    reader = BrowserHistoryReader()
+    visits = reader.read_all_browsers(days_back=30, min_duration=60)
+    seed_urls = [v.url for v in visits if topic.lower() in v.title.lower()][:5]
+
+    # Recursively crawl
+    crawler = RecursiveCrawler(max_depth=2, max_pages=50)
+    all_pages = []
+    for seed in seed_urls:
+        results = await crawler.crawl(seed_url=seed, topic=topic)
+        all_pages.extend(results.pages)
+
+    # Store in MultimodalRAG
+    async with MultimodalRAG() as rag:
+        for page in all_pages:
+            for shard in page.shards:
+                await rag.ingest(shard.text)
+            for image_shard in page.image_shards:
+                await rag.ingest_photo(
+                    image=image_shard.metadata['local_path'],
+                    tags=[topic, page.url]
+                )
+
+    print(f"Researched {topic}: {len(all_pages)} pages, {sum(len(p.shards) for p in all_pages)} shards")
+
+# Example: Research transformers
+await research_from_browser_history("transformer architecture")
+```
+
+#### Expansion Roadmap
+
+See [DATA_INGESTION_EXPANSION.md](DATA_INGESTION_EXPANSION.md) for complete roadmap including:
+
+**Phase 1 (Q1 2026)**: +5 spinners
+- GoogleCalendarSpinner
+- iCalSpinner
+- TrelloSpinner
+- JiraSpinner
+- GitHubIssuesSpinner
+
+**Phase 2 (Q2 2026)**: +10 spinners
+- SlackSpinner (enhanced)
+- DiscordSpinner
+- TwitterSpinner
+- GoogleDriveSpinner
+- DropboxSpinner
+
+**Phase 3 (Q3 2026)**: +15 spinners
+- Database CDC (Postgres, MySQL, MongoDB)
+- Log aggregation (Elasticsearch, Splunk)
+- Metrics ingestion (Prometheus, Grafana)
+- Package dependency graphs
+
+**Target**: **100+ spinners by Q4 2026**
+
+---
+
 #### 7. Training (`HoloLoom/train_agent`)
 PPO trainer for RL environments with:
 - GAE (Generalized Advantage Estimation)
@@ -3140,26 +3342,23 @@ config.enable_spring_dynamics = True  # If config flag exists
 
 **Why it's hidden**: Internal to memory retrieval, not exposed in simple API
 
-#### 4. 47 SpinningWheel Adapters
+#### 4. SpinningWheel Adapters (51+ Total)
 
-**Location**: `HoloLoom/spinningWheel/` (~5,200 lines total)
-**Status**: Most adapters production-ready
+**Location**: `HoloLoom/spinningWheel/` (~7,200 lines total)
+**Status**: ✅ **NOW DOCUMENTED** (November 17, 2025)
 
-**Undocumented adapters** (beyond Audio and YouTube):
-- **Web scraping**: RSS, API responses, HTML parsing
-- **Code repositories**: Git history, PR reviews, stack traces
-- **Documents**: PDFs, DOCX, PPTX, LaTeX, Jupyter notebooks
-- **Databases**: SQL, MongoDB, Redis queries
-- **Communication**: Email threads, Slack/Discord channels
-- **Structured data**: CSV, JSON, YAML parsers
+**Previously Undocumented (Now Documented)**:
+- ✅ **Browser History Reader** - Chrome, Firefox, Edge, Brave history ingestion
+- ✅ **Website Spinner (Multimodal)** - Web scraping with image extraction
+- ✅ **Recursive Crawler** - Matryoshka importance gating for deep research
+- ✅ **Image Utils** - Advanced image processing and deduplication
 
-**Why they're hidden**: Only Audio and YouTube are documented in main README
+**See Full Documentation**:
+- **CLAUDE.md**: "SpinningWheel: Expanded Data Ingestion" section (line ~1686)
+- **[DATA_INGESTION_EXPANSION.md](DATA_INGESTION_EXPANSION.md)**: Complete expansion guide with roadmap
+- **HoloLoom/spinningWheel/README.md**: 47 documented spinners reference
 
-**How to discover**:
-```bash
-ls HoloLoom/spinningWheel/*.py
-# Or check HoloLoom/spinningWheel/README.md (if exists)
-```
+**Expansion Roadmap**: Target **100+ spinners by Q4 2026** (Calendar, Task Management, Social Media, Cloud Storage, etc.)
 
 #### 5. Semantic Calculus 16 Axes
 
