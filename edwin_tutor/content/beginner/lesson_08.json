@@ -1,0 +1,26 @@
+{
+  "id": "beginner_08",
+  "title": "🐛 Debugging & Troubleshooting",
+  "description": "Learn to fix common HoloLoom issues and debug your projects",
+  "lesson_type": "concept",
+  "difficulty": "beginner",
+  "content": "# Debugging & Troubleshooting\n\n## Common Issues\n\n### 1. No Relevant Memories Found\n\n**Symptom**: Query returns empty or generic response\n\n**Causes**:\n- Query doesn't match shard text\n- Too few shards in knowledge base\n- Shards are too vague\n\n**Solutions**:\n```python\n# Bad: Vague shard\nMemoryShard(text=\"Python\", source=\"prog\")\n\n# Good: Detailed shard\nMemoryShard(\n    text=\"Python is a high-level interpreted programming language\",\n    source=\"prog\"\n)\n```\n\n### 2. Import Errors\n\n**Symptom**: `ModuleNotFoundError: No module named 'HoloLoom'`\n\n**Solution**:\n```bash\n# Set PYTHONPATH\nexport PYTHONPATH=/path/to/mythRL:$PYTHONPATH\n\n# Or run from correct directory\ncd /path/to/mythRL\npython your_script.py\n```\n\n### 3. Async Errors\n\n**Symptom**: `RuntimeError: asyncio.run() cannot be called from a running event loop`\n\n**Solution**:\n```python\n# In Jupyter notebooks, use await directly\nresult = await shuttle.weave(query)\n\n# In scripts, use asyncio.run()\nimport asyncio\nasyncio.run(main())\n```\n\n### 4. Slow Performance\n\n**Symptom**: Queries take >1 second\n\n**Causes**:\n- Using FUSED mode unnecessarily\n- Too many shards\n- Complex retrieval\n\n**Solutions**:\n```python\n# Switch to BARE mode for speed\nconfig = Config.bare()\n\n# Reduce retrieval depth\nconfig = Config.fast()\nconfig.max_retrieval = 3  # Default is 5\n\n# Limit timeout\nconfig.timeout_ms = 100  # Faster timeout\n```\n\n### 5. Low Quality Responses\n\n**Symptom**: Answers are generic or wrong\n\n**Causes**:\n- Using BARE mode\n- Poor quality shards\n- Not enough context\n\n**Solutions**:\n```python\n# Use FUSED for better quality\nconfig = Config.fused()\n\n# Add more detailed shards\nkb.add_knowledge(\n    \"Python uses dynamic typing, which means variables can change type at runtime\",\n    \"python_typing\"\n)\n\n# Add related shards for context\nkb.add_knowledge(\"Static typing checks types at compile time\", \"typing\")\n```\n\n## Debugging Tools\n\n### Logging\n\n```python\nimport logging\n\nlogging.basicConfig(level=logging.DEBUG)\nlogger = logging.getLogger(__name__)\n\n# In your code\nlogger.debug(f\"Shards: {len(self.shards)}\")\nlogger.debug(f\"Query: {query.text}\")\n```\n\n### Inspecting Spacetime\n\n```python\nspacetime = await shuttle.weave(query)\n\n# See what was retrieved\nprint(f\"Retrieved: {spacetime.retrieved_memories}\")\n\n# See confidence\nprint(f\"Confidence: {spacetime.confidence}\")\n\n# See full trace\nprint(f\"Trace: {spacetime.trace}\")\n```\n\n### Testing Retrieval\n\n```python\n# Test if shards are being retrieved\nfor shard in shards:\n    print(f\"Shard: {shard.text[:50]}...\")\n    # Check if it matches your query terms\n```\n\n## Best Practices\n\n1. **Start Simple**: Test with minimal shards first\n2. **Check Imports**: Verify PYTHONPATH is set\n3. **Use Logging**: Debug with print/log statements\n4. **Test Incrementally**: Add features one at a time\n5. **Read Error Messages**: They usually tell you what's wrong!\n\n## Key Takeaways\n\n- Most issues are configuration or data quality\n- Use appropriate mode for your use case\n- Logging and inspection tools are your friends\n- Test incrementally as you build\n\nNext: Best practices and common patterns!",
+  "quiz_questions": [
+    {
+      "question": "What's the most common cause of 'no relevant memories' errors?",
+      "options": [
+        "Computer is too slow",
+        "Query doesn't match shard text or shards are too vague",
+        "Wrong Python version",
+        "Network connection"
+      ],
+      "correct": 1,
+      "explanation": "Usually caused by query terms not matching shard content, or shards being too vague to match effectively."
+    }
+  ],
+  "prerequisites": ["beginner_07"],
+  "next_lessons": ["beginner_09"],
+  "xp_reward": 100,
+  "estimated_time": 15,
+  "tags": ["debugging", "troubleshooting", "errors"]
+}
