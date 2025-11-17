@@ -6,8 +6,8 @@
 
 EdWIN is a **hybrid multi-modal learning platform** that teaches you HoloLoom through:
 
-- 🖥️ **Terminal UI** - Interactive CLI lessons (start here!)
-- 🌐 **Web UI** - Visual browser-based tutorials *(coming soon!)*
+- 🖥️ **Terminal UI** - Interactive CLI lessons
+- 🌐 **Web UI** - Visual browser-based tutorials ✅ **NEW!**
 - 📓 **Jupyter Notebooks** - Code-along lessons *(coming soon!)*
 - 📚 **Markdown Docs** - Reference material *(coming soon!)*
 
@@ -30,7 +30,40 @@ cd edwin_tutor
 python edwin.py
 ```
 
-That's it! Ed WIN will guide you through the rest.
+That's it! EdWIN will guide you through the rest.
+
+---
+
+## 🌐 Quick Start (Web UI) ✨ NEW!
+
+### Prerequisites
+
+```bash
+pip install flask flask-cors
+```
+
+### Run the Web Server
+
+```bash
+cd edwin_tutor/ui/web
+python server.py
+```
+
+### Open in Browser
+
+Navigate to **http://localhost:5000** in your web browser!
+
+### Features
+
+- 🎨 **Modern, visual interface** - Beautiful gradient UI with smooth animations
+- 📊 **Real-time progress tracking** - See your XP, level, and completion rate
+- 🎯 **Interactive lessons** - Rich content rendering with syntax highlighting
+- ✅ **Instant quiz feedback** - Know immediately if you got it right
+- 🧩 **In-browser coding** - Write and submit code challenges
+- 💡 **Progressive hints** - Get help when you need it
+- 🏆 **Badge showcase** - Display your achievements with pride
+
+See [`ui/web/README.md`](ui/web/README.md) for full documentation!
 
 ---
 
@@ -127,7 +160,7 @@ EdWIN Tutor/
 │
 ├── ui/                   # Different interfaces
 │   ├── terminal/         # CLI interface (edwin.py)
-│   ├── web/             # Web UI (coming soon!)
+│   ├── web/             # Web UI (Flask server + HTML/CSS/JS)
 │   └── notebooks/       # Jupyter notebooks (coming soon!)
 │
 └── assets/              # Images, diagrams, etc.
@@ -208,11 +241,11 @@ Edit `core/progress.py` → `_define_badges()` method
 - Gamification
 - 2 beginner lessons
 
-### 🔜 Phase 2 (Next)
-- Web UI with visual editor
-- 8 more beginner lessons
-- Jupyter notebook integration
-- AI tutor (HoloLoom helps teach HoloLoom!)
+### 🚧 Phase 2 (In Progress)
+- ✅ Web UI with modern interface
+- 🔜 8 more beginner lessons
+- 🔜 Jupyter notebook integration
+- 🔜 AI tutor (HoloLoom helps teach HoloLoom!)
 
 ### 💭 Phase 3 (Future)
 - All 30 lessons (beginner → advanced)
@@ -264,6 +297,6 @@ EdWIN Tutor is built with the same welcoming spirit as HoloLoom:
 
 ---
 
-**Status**: 🎯 Alpha - Terminal UI functional, Web UI & Notebooks coming soon!
+**Status**: 🎯 Alpha - Terminal UI & Web UI functional! Notebooks coming soon.
 
 *Built with care by developers who believe learning should be interactive, fun, and accessible to everyone.*

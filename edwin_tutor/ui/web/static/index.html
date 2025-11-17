@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdWIN Tutor - Your Interactive Guide to HoloLoom</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">🎓 EdWIN Tutor</h1>
+            <p class="tagline">Your Interactive Guide to HoloLoom</p>
+        </div>
+    </header>
+
+    <!-- Progress Bar (always visible) -->
+    <div class="progress-bar-container">
+        <div class="container">
+            <div class="progress-summary">
+                <span id="learner-name">Learner</span> |
+                Level <span id="current-level">1</span> |
+                <span id="current-xp">0</span> XP |
+                <span id="completed-count">0</span> lessons completed
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="xp-progress" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container main-container">
+        <!-- Sidebar: Navigation and Progress -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h2>🗺️ Navigation</h2>
+                <button class="nav-btn active" data-view="lessons">📚 Lessons</button>
+                <button class="nav-btn" data-view="progress">📊 My Progress</button>
+                <button class="nav-btn" data-view="badges">🏆 Badges</button>
+            </div>
+
+            <div class="sidebar-section" id="lesson-list-sidebar">
+                <h2>Available Lessons</h2>
+                <div id="lesson-categories"></div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <!-- Lessons View -->
+            <div id="lessons-view" class="view active">
+                <div class="welcome-card">
+                    <h2>👋 Welcome to EdWIN!</h2>
+                    <p><strong>Ed</strong>ucational <strong>WIN</strong>dow into HoloLoom - Learn the platform your way!</p>
+                    <p>Choose a lesson from the sidebar to get started. Your progress syncs automatically!</p>
+                </div>
+
+                <!-- Lesson Detail (hidden by default) -->
+                <div id="lesson-detail" class="lesson-detail" style="display: none;">
+                    <div class="lesson-header">
+                        <h1 id="lesson-title"></h1>
+                        <div class="lesson-meta">
+                            <span class="meta-item" id="lesson-difficulty"></span>
+                            <span class="meta-item" id="lesson-type"></span>
+                            <span class="meta-item">⏱️ <span id="lesson-time"></span> min</span>
+                            <span class="meta-item">⭐ <span id="lesson-xp"></span> XP</span>
+                        </div>
+                    </div>
+
+                    <div class="lesson-content" id="lesson-content"></div>
+
+                    <!-- Code Examples -->
+                    <div id="code-examples-section" style="display: none;">
+                        <h2>📝 Code Examples</h2>
+                        <div id="code-examples"></div>
+                    </div>
+
+                    <!-- Quiz -->
+                    <div id="quiz-section" style="display: none;">
+                        <h2>📝 Quiz Time!</h2>
+                        <p>Let's test your understanding!</p>
+                        <div id="quiz-questions"></div>
+                        <button id="submit-quiz" class="btn btn-primary">Submit Answers</button>
+                        <div id="quiz-results" style="display: none;"></div>
+                    </div>
+
+                    <!-- Challenges -->
+                    <div id="challenges-section" style="display: none;">
+                        <h2>🧩 Challenges</h2>
+                        <p>Time to apply what you learned!</p>
+                        <div id="challenges"></div>
+                    </div>
+
+                    <!-- Completion -->
+                    <div id="completion-section" style="display: none;">
+                        <button id="complete-lesson" class="btn btn-success btn-large">
+                            ✓ Complete Lesson
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress View -->
+            <div id="progress-view" class="view">
+                <h1>📊 Your Progress</h1>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stats-level">1</div>
+                        <div class="stat-label">Level</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stats-xp">0</div>
+                        <div class="stat-label">Total XP</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stats-lessons">0</div>
+                        <div class="stat-label">Lessons Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stats-challenges">0</div>
+                        <div class="stat-label">Challenges Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stats-badges">0</div>
+                        <div class="stat-label">Badges Earned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stats-completion">0%</div>
+                        <div class="stat-label">Overall Completion</div>
+                    </div>
+                </div>
+
+                <h2>🏆 Recent Badges</h2>
+                <div id="recent-badges" class="badge-showcase"></div>
+            </div>
+
+            <!-- Badges View -->
+            <div id="badges-view" class="view">
+                <h1>🏆 Achievement Badges</h1>
+                <p>Earn badges as you progress through EdWIN!</p>
+                <div id="all-badges" class="badges-grid"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Level Up Modal -->
+    <div id="level-up-modal" class="modal">
+        <div class="modal-content">
+            <h2>🎉 LEVEL UP!</h2>
+            <p class="level-up-text">You've reached <strong>Level <span id="new-level"></span></strong>!</p>
+            <p>Keep up the great work!</p>
+            <button class="btn btn-primary" onclick="closeLevelUpModal()">Continue Learning</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
