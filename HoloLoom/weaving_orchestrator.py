@@ -1850,16 +1850,20 @@ class WeavingOrchestrator:
                 self._emit_stage_event(6, "Memory Retrieval", duration)
                 return shards, shard_texts, hits, duration
 
-            # Execute all three steps in parallel using asyncio.gather
+            # Execute all three steps in parallel using TaskGroup (Python 3.11+)
             self.logger.info("  [PARALLEL] Executing Steps 4-6 concurrently...")
 
             try:
-                (dot_plasma, t4), (warp_operations, t5), (shards, shard_texts, hits, t6) = await asyncio.gather(
-                    step4_feature_extraction(),
-                    step5_warp_tensioning(),
-                    step6_memory_retrieval(),
-                    return_exceptions=False  # Propagate exceptions
-                )
+                # TaskGroup provides automatic cancellation if any task fails
+                async with asyncio.TaskGroup() as tg:
+                    task4 = tg.create_task(step4_feature_extraction())
+                    task5 = tg.create_task(step5_warp_tensioning())
+                    task6 = tg.create_task(step6_memory_retrieval())
+
+                # All tasks completed successfully - extract results
+                (dot_plasma, t4) = task4.result()
+                (warp_operations, t5) = task5.result()
+                (shards, shard_texts, hits, t6) = task6.result()
 
                 # Record individual stage timings (actual parallel execution times)
                 stage_timings['feature_extraction'] = t4
