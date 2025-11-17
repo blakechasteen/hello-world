@@ -1,0 +1,331 @@
+# Configuration Examples for Custom Evaluators
+# Copy and modify for your specific use case
+
+# =============================================================================
+# Business Logic Evaluators
+# =============================================================================
+
+customer_service:
+  min_length: 50
+  max_length: 500
+  min_passing_score: 0.75
+  rules:
+    - name: greeting
+      weight: 0.8
+    - name: empathy
+      weight: 1.5
+    - name: resolution
+      weight: 2.0
+    - name: closing
+      weight: 0.8
+    - name: no_dismissive
+      weight: 2.0
+    - name: length
+      weight: 0.5
+    - name: next_steps
+      weight: 1.2
+
+financial_compliance:
+  jurisdiction: US  # US, EU, UK
+  min_passing_score: 0.9
+  required_disclaimers:
+    - risk_disclosure
+    - professional_advice
+  forbidden_claims:
+    - guaranteed_returns
+    - risk_free
+    - insider_information
+
+medical_accuracy:
+  require_disclaimer: true
+  min_passing_score: 0.85
+  check_emergency_language: true
+  forbidden_actions:
+    - diagnose
+    - prescribe
+
+# =============================================================================
+# Multi-Model Consensus Evaluator
+# =============================================================================
+
+consensus:
+  strategy: weighted  # mean, median, weighted, majority_vote, min, max, unanimous
+
+  providers:
+    # OpenAI GPT-4
+    - name: gpt-4
+      type: openai
+      model: gpt-4
+      api_key: ${OPENAI_API_KEY}
+      weight: 2.0
+
+    # Anthropic Claude
+    - name: claude-3
+      type: anthropic
+      model: claude-3-sonnet-20240229
+      api_key: ${ANTHROPIC_API_KEY}
+      weight: 1.5
+
+    # Local Ollama
+    - name: llama2
+      type: ollama
+      model: llama2
+      base_url: http://localhost:11434
+      weight: 1.0
+
+  # Disagreement detection
+  disagreement_threshold: 0.3  # Flag if std dev > 0.3
+
+  # Caching configuration
+  cache:
+    enabled: true
+    ttl: 3600  # seconds
+    backend: memory  # memory, redis
+
+  # Cost optimization
+  cost_optimization:
+    enabled: true
+    max_providers_per_call: 3
+    use_cheaper_models_for_easy_cases: true
+
+# =============================================================================
+# Structured Output Evaluators
+# =============================================================================
+
+json_validator:
+  strict: true
+  schema:
+    type: object
+    required:
+      - user
+      - timestamp
+    properties:
+      user:
+        type: object
+        required:
+          - name
+          - email
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+            format: email
+      timestamp:
+        type: string
+        format: date-time
+  required_fields:
+    - user.name
+    - user.email
+    - timestamp
+
+xml_validator:
+  xsd_schema_path: ./schemas/example.xsd
+  required_elements:
+    - title
+    - author
+    - content
+  validate_against_schema: true
+
+yaml_validator:
+  required_keys:
+    - name
+    - version
+    - dependencies
+  validate_types: true
+
+sql_validator:
+  allowed_operations:
+    - SELECT
+    - INSERT
+    - UPDATE
+  forbidden_operations:
+    - DROP
+    - DELETE
+    - TRUNCATE
+  check_parameterized: true  # Ensure queries use parameterization
+
+openapi_validator:
+  spec_path: ./openapi.yaml
+  validate_examples: true
+  strict_validation: true
+
+# =============================================================================
+# Domain-Specific Evaluators
+# =============================================================================
+
+medical_terminology:
+  terminology_database: ./medical_terms.json
+  check_professional_language: true
+  require_contraindications: false
+  min_professional_score: 0.7
+
+legal_citation:
+  citation_style: bluebook  # bluebook, alwd, oscola
+  require_case_citations: true
+  require_statute_citations: false
+  check_proper_format: true
+  min_citations: 2
+
+code_security:
+  language: python  # python, javascript, java, go, etc.
+  check_vulnerabilities:
+    - sql_injection
+    - xss
+    - hardcoded_secrets
+    - insecure_random
+  require_documentation: true
+  require_error_handling: true
+  require_type_hints: true
+  max_function_length: 50
+
+brand_voice:
+  voice_attributes:
+    - friendly
+    - professional
+    - helpful
+  key_phrases:
+    - we
+    - our customers
+    - together
+    - support
+  avoid_phrases:
+    - cheap
+    - expensive
+    - complicated
+  tone: conversational  # conversational, professional, enthusiastic
+  formality: semi-formal  # formal, semi-formal, casual
+  max_exclamations_per_100_words: 3
+
+# =============================================================================
+# Human-in-the-Loop Evaluator
+# =============================================================================
+
+hitl:
+  # Queue backend configuration
+  queue:
+    backend: sqlite  # sqlite, redis, file
+    config:
+      # SQLite
+      db_path: ./review_queue.db
+
+      # Redis
+      # host: localhost
+      # port: 6379
+      # db: 0
+
+      # File
+      # file_path: ./review_queue.json
+
+  # Auto-approval/rejection thresholds
+  auto_approve_threshold: 0.9
+  auto_reject_threshold: 0.3
+
+  # Review workflow
+  workflow:
+    require_multiple_reviewers: false
+    min_reviewers: 1
+    consensus_threshold: 0.8  # For multiple reviewers
+
+  # Reviewer assignment
+  assignment:
+    strategy: round_robin  # round_robin, random, load_balanced
+    reviewers:
+      - id: reviewer1@example.com
+        max_queue_size: 50
+      - id: reviewer2@example.com
+        max_queue_size: 50
+
+  # Inter-annotator agreement
+  agreement:
+    track_agreement: true
+    min_kappa: 0.6  # Minimum acceptable Cohen's Kappa
+    agreement_checks:
+      - percentage_agreement
+      - cohens_kappa
+
+  # Notifications
+  notifications:
+    enabled: true
+    email:
+      smtp_host: smtp.gmail.com
+      smtp_port: 587
+      from_address: reviews@example.com
+    slack:
+      webhook_url: ${SLACK_WEBHOOK_URL}
+
+  # Reporting
+  reporting:
+    enabled: true
+    frequency: daily  # daily, weekly, monthly
+    metrics:
+      - queue_size
+      - avg_review_time
+      - approval_rate
+      - reviewer_agreement
+
+# =============================================================================
+# Combined Pipeline Configuration
+# =============================================================================
+
+evaluation_pipeline:
+  stages:
+    # Stage 1: Structure validation
+    - name: structure
+      evaluator: json_validator
+      weight: 0.2
+      threshold: 0.8
+      stop_on_failure: true
+
+    # Stage 2: Business logic
+    - name: business_logic
+      evaluator: customer_service
+      weight: 0.3
+      threshold: 0.7
+      stop_on_failure: false
+
+    # Stage 3: Consensus
+    - name: consensus
+      evaluator: multi_model_consensus
+      weight: 0.3
+      threshold: 0.6
+      stop_on_failure: false
+
+    # Stage 4: Human review (if needed)
+    - name: human_review
+      evaluator: hitl
+      weight: 0.2
+      threshold: 0.5
+      trigger_condition: score < 0.8 or flagged
+
+  # Overall thresholds
+  min_passing_score: 0.7
+  enable_early_stopping: true
+
+# =============================================================================
+# Monitoring & Logging
+# =============================================================================
+
+monitoring:
+  enabled: true
+  log_level: INFO  # DEBUG, INFO, WARNING, ERROR
+
+  metrics:
+    - evaluation_time
+    - score_distribution
+    - failure_rate
+    - cache_hit_rate
+
+  storage:
+    backend: sqlite
+    db_path: ./evaluation_metrics.db
+
+  alerts:
+    - condition: failure_rate > 0.3
+      action: email
+      recipients:
+        - admin@example.com
+
+    - condition: avg_score < 0.5
+      action: slack
+      channel: "#quality-alerts"

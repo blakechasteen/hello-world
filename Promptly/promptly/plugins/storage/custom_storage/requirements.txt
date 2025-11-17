@@ -1,0 +1,29 @@
+# Requirements for Custom Storage Backends
+
+# Core dependencies (always required)
+pyyaml>=6.0
+tqdm>=4.65.0
+
+# S3/MinIO Storage Backend
+boto3>=1.26.0
+botocore>=1.29.0
+
+# Hybrid Storage Backend
+redis>=4.5.0
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.5
+# boto3 (already listed above)
+
+# Blockchain Storage Backend
+web3>=6.0.0
+ipfshttpclient>=0.8.0
+
+# Custom DB Template (Cassandra example)
+cassandra-driver>=3.28.0
+
+# Optional: For environment variable management
+python-dotenv>=1.0.0
+
+# Optional: For advanced features
+cryptography>=40.0.0  # For encryption features
+prometheus-client>=0.16.0  # For monitoring

@@ -1,0 +1,161 @@
+# Cached LLM Workflow
+# Demonstrates: Cache, API, Webhook processors
+# Use case: Reduce API costs with intelligent caching
+
+name: cached_llm_workflow
+version: 1.0
+description: LLM API calls with multi-level caching and notification
+
+inputs:
+  - name: prompt
+    type: string
+    required: true
+    description: User prompt for LLM
+  - name: model
+    type: string
+    default: "gpt-3.5-turbo"
+    description: LLM model to use
+
+outputs:
+  - name: response
+    type: string
+    description: LLM generated response
+  - name: cached
+    type: boolean
+    description: Whether response was from cache
+  - name: cost_saved
+    type: number
+    description: Estimated cost saved from caching
+
+steps:
+  # Step 1: Check cache first
+  - name: check_cache
+    type: cache
+    description: Check if we have a cached response
+    config:
+      operation: get
+      strategy: multi_level
+      levels:
+        - type: memory
+          max_size: 100
+          ttl: 300  # 5 minutes
+        - type: disk
+          cache_dir: .cache/llm_responses
+          max_size_mb: 100
+          ttl: 3600  # 1 hour
+      key:
+        fields: [prompt, model]
+        prefix: llm_cache
+        version: v1
+      metrics:
+        enabled: true
+        track_cost: true
+        cost_per_request: 0.002  # $0.002 per request
+      on_miss: continue
+      on_hit: return
+
+  # Step 2: Call LLM API (only if cache miss)
+  - name: call_llm
+    type: api
+    description: Call OpenAI API for new response
+    condition: "check_cache.cache_hit == false"
+    config:
+      api_type: rest
+      url: https://api.openai.com/v1/chat/completions
+      method: POST
+      auth:
+        type: bearer
+        token: ${OPENAI_API_KEY}
+      headers:
+        Content-Type: application/json
+      body:
+        model: "{model}"
+        messages:
+          - role: user
+            content: "{prompt}"
+        temperature: 0.7
+        max_tokens: 1000
+      timeout: 30.0
+      rate_limit:
+        enabled: true
+        requests_per_second: 3
+        burst_size: 5
+      retry:
+        enabled: true
+        max_attempts: 3
+        backoff_strategy: exponential
+        initial_delay: 1.0
+        max_delay: 30.0
+      response_mapping:
+        response: choices[0].message.content
+        usage: usage
+
+  # Step 3: Cache the new response
+  - name: cache_response
+    type: cache
+    description: Store response in cache for future use
+    condition: "call_llm.api_success == true"
+    config:
+      operation: set
+      strategy: multi_level
+      levels:
+        - type: memory
+          ttl: 300
+        - type: disk
+          ttl: 3600
+      key:
+        fields: [prompt, model]
+        prefix: llm_cache
+        version: v1
+
+  # Step 4: Validate response
+  - name: validate_response
+    type: validation
+    description: Ensure response is safe and complete
+    config:
+      validations:
+        - type: data_quality
+          checks:
+            - type: completeness
+              threshold: 0.9
+        - type: pii
+          detect: [email, phone, ssn, credit_card]
+          action: flag
+        - type: sanitize
+          rules:
+            - type: xss_filter
+      source_field: response
+      on_validation_error: log
+
+  # Step 5: Send notification
+  - name: notify_completion
+    type: webhook
+    description: Send completion notification to monitoring system
+    config:
+      url: ${MONITORING_WEBHOOK_URL}
+      method: POST
+      headers:
+        Content-Type: application/json
+      body:
+        event: llm_request_completed
+        timestamp: "{timestamp}"
+        cache_hit: "{check_cache.cache_hit}"
+        model: "{model}"
+        prompt_length: "{prompt_length}"
+        response_length: "{response_length}"
+        cost_saved: "{cost_saved}"
+      signature:
+        enabled: true
+        secret: ${WEBHOOK_SECRET}
+        algorithm: sha256
+      retry:
+        enabled: true
+        max_attempts: 2
+        backoff_strategy: linear
+      on_failure: log
+
+metadata:
+  author: Custom Processors Example
+  tags: [llm, caching, cost-optimization]
+  cost_per_request: 0.002
+  estimated_savings: 80%  # With 80% cache hit rate

@@ -1,0 +1,287 @@
+# Data Processing Pipeline Workflow
+# Demonstrates: Validation, Loop, API, Aggregation, Webhook
+# Use case: Process and enrich user data with validation
+
+name: data_processing_pipeline
+version: 1.0
+description: Validate, enrich, and process user data with quality checks
+
+inputs:
+  - name: records
+    type: array
+    required: true
+    description: Array of user records to process
+  - name: enrichment_enabled
+    type: boolean
+    default: true
+    description: Enable external enrichment
+
+outputs:
+  - name: processed_records
+    type: array
+    description: Validated and enriched records
+  - name: quality_report
+    type: object
+    description: Data quality metrics
+  - name: pii_flagged
+    type: number
+    description: Number of PII instances found
+
+steps:
+  # Step 1: Validate input schema
+  - name: validate_schema
+    type: validation
+    description: Validate record structure and required fields
+    config:
+      validations:
+        - type: schema
+          schema:
+            type: object
+            required: [records]
+            properties:
+              records:
+                type: array
+                minItems: 1
+                maxItems: 1000
+                items:
+                  type: object
+                  required: [id, email, name]
+                  properties:
+                    id:
+                      type: string
+                      pattern: "^[0-9]+$"
+                    email:
+                      type: string
+                      pattern: "^[^@]+@[^@]+\\.[^@]+$"
+                    name:
+                      type: string
+                      minLength: 1
+                      maxLength: 100
+                    age:
+                      type: integer
+                      minimum: 0
+                      maximum: 150
+                    phone:
+                      type: string
+      source_field: records
+      on_validation_error: throw
+      strict: true
+
+  # Step 2: Sanitize and detect PII
+  - name: sanitize_data
+    type: validation
+    description: Remove malicious content and flag PII
+    config:
+      validations:
+        - type: sanitize
+          rules:
+            - type: html_escape
+            - type: sql_escape
+            - type: xss_filter
+            - type: normalize_whitespace
+        - type: pii
+          detect:
+            - email
+            - phone
+            - ssn
+            - credit_card
+            - ip_address
+          action: flag  # Flag but don't redact yet
+      source_field: records
+      on_validation_error: log
+
+  # Step 3: Business rule validation
+  - name: business_rules
+    type: validation
+    description: Apply business logic rules
+    config:
+      validations:
+        - type: business_rule
+          rules:
+            - name: adult_verification
+              condition: "age >= 18"
+              message: "User must be 18 or older"
+            - name: valid_email_domain
+              condition: "email.endsWith('.com') or email.endsWith('.org')"
+              message: "Invalid email domain"
+        - type: data_quality
+          checks:
+            - type: completeness
+              threshold: 0.95
+            - type: uniqueness
+              fields: [id, email]
+      source_field: records
+      on_validation_error: log
+
+  # Step 4: Enrich data via external API (with caching)
+  - name: enrich_records
+    type: loop
+    description: Enrich each record with external data
+    condition: "enrichment_enabled == true"
+    config:
+      loop_type: for_each
+      items: "{sanitize_data.validated_data.records}"
+      max_iterations: 1000
+      step:
+        type: api
+        config:
+          api_type: rest
+          url: https://api.enrichment-service.com/v1/enrich
+          method: POST
+          auth:
+            type: api_key
+            key: X-API-Key
+            value: ${ENRICHMENT_API_KEY}
+          headers:
+            Content-Type: application/json
+          body:
+            record_id: "{item.id}"
+            email: "{item.email}"
+            name: "{item.name}"
+          timeout: 10.0
+          # Cache enrichment results
+          cache:
+            enabled: true
+            ttl: 86400  # 24 hours
+            key_fields: [item.email]
+            strategy: disk
+            cache_dir: .cache/enrichment
+          # Rate limiting
+          rate_limit:
+            enabled: true
+            requests_per_second: 10
+            burst_size: 20
+          # Retry on failure
+          retry:
+            enabled: true
+            max_attempts: 3
+            backoff_strategy: exponential
+          # Fallback if enrichment fails
+          fallback:
+            enabled: true
+            value:
+              enriched: false
+              original: "{item}"
+          response_mapping:
+            enriched_data: data
+            enrichment_score: score
+
+  # Step 5: Aggregate enriched results
+  - name: aggregate_results
+    type: aggregation
+    description: Merge enriched data back with originals
+    config:
+      strategy: merge
+      source_field: enrich_records.results
+      target_field: processed_records
+      merge_strategy:
+        conflicts: merge_nested
+        nested: true
+      quality_filter:
+        enabled: true
+        min_score: 0.5
+        field: enrichment_score
+
+  # Step 6: Final quality check
+  - name: final_quality_check
+    type: validation
+    description: Comprehensive quality assessment
+    config:
+      validations:
+        - type: data_quality
+          checks:
+            - type: completeness
+              threshold: 0.95
+            - type: consistency
+            - type: uniqueness
+              fields: [id]
+            - type: accuracy
+        - type: pii
+          detect: [email, phone, ssn, credit_card]
+          action: redact  # Now redact PII for final output
+          replacement: "[REDACTED]"
+      source_field: processed_records
+      on_validation_error: log
+
+  # Step 7: Send results via webhook
+  - name: send_results
+    type: webhook
+    description: Send processed data to destination
+    condition: "final_quality_check.is_valid == true"
+    config:
+      url: ${DESTINATION_WEBHOOK_URL}
+      method: POST
+      headers:
+        Content-Type: application/json
+        X-Pipeline-Version: "1.0"
+      body:
+        pipeline_id: "{pipeline_id}"
+        timestamp: "{timestamp}"
+        record_count: "{record_count}"
+        quality_score: "{final_quality_check.quality_score}"
+        pii_instances: "{sanitize_data.detected_pii_count}"
+        enrichment_rate: "{enrichment_rate}"
+        processed_records: "{processed_records}"
+      timeout: 60.0
+      # Sign the webhook
+      signature:
+        enabled: true
+        secret: ${WEBHOOK_SECRET}
+        algorithm: sha256
+        header: X-Signature
+      # Response validation
+      response_validation:
+        enabled: true
+        expected_status: [200, 201, 202]
+        validate_json: true
+        json_schema:
+          type: object
+          required: [status, batch_id]
+      # Retry with backoff
+      retry:
+        enabled: true
+        max_attempts: 5
+        backoff_strategy: exponential
+        initial_delay: 2.0
+        max_delay: 60.0
+        retry_on_status: [429, 500, 502, 503, 504]
+
+  # Step 8: Send quality report
+  - name: send_quality_report
+    type: webhook
+    description: Send quality metrics to analytics
+    config:
+      url: ${ANALYTICS_WEBHOOK_URL}
+      method: POST
+      body:
+        event: pipeline_completed
+        pipeline: data_processing_pipeline
+        metrics:
+          total_records: "{record_count}"
+          valid_records: "{valid_count}"
+          invalid_records: "{invalid_count}"
+          pii_flagged: "{pii_count}"
+          enrichment_success_rate: "{enrichment_rate}"
+          quality_score: "{quality_score}"
+          processing_time: "{processing_time}"
+        quality_issues: "{quality_issues}"
+      retry:
+        enabled: true
+        max_attempts: 3
+      on_failure: log
+
+metadata:
+  author: Custom Processors Example
+  tags: [data-pipeline, validation, enrichment]
+  use_cases:
+    - User onboarding
+    - Data cleaning
+    - CRM integration
+    - Compliance processing
+  sla:
+    max_processing_time: 300  # seconds
+    min_quality_score: 0.95
+  compliance:
+    - GDPR
+    - CCPA
+    - HIPAA

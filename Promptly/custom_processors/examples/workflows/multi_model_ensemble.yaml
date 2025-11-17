@@ -1,0 +1,230 @@
+# Multi-Model Ensemble Workflow
+# Demonstrates: Parallel API calls, Aggregation, Validation
+# Use case: Get consensus from multiple LLMs for higher quality
+
+name: multi_model_ensemble
+version: 1.0
+description: Aggregate responses from multiple LLM providers
+
+inputs:
+  - name: prompt
+    type: string
+    required: true
+    description: User prompt
+  - name: require_consensus
+    type: boolean
+    default: true
+    description: Require consensus (>60% agreement)
+
+outputs:
+  - name: final_response
+    type: string
+    description: Consensus response
+  - name: confidence_score
+    type: number
+    description: Agreement confidence (0-1)
+  - name: individual_responses
+    type: array
+    description: All model responses
+
+steps:
+  # Step 1: Validate input
+  - name: validate_input
+    type: validation
+    description: Validate and sanitize user input
+    config:
+      validations:
+        - type: schema
+          schema:
+            type: object
+            required: [prompt]
+            properties:
+              prompt:
+                type: string
+                minLength: 1
+                maxLength: 4000
+        - type: sanitize
+          rules:
+            - type: xss_filter
+            - type: normalize_whitespace
+            - type: html_escape
+        - type: pii
+          detect: [email, phone, ssn]
+          action: redact
+      source_field: prompt
+      on_validation_error: throw
+
+  # Step 2: Call multiple models in parallel
+  - name: parallel_models
+    type: parallel
+    description: Query multiple LLM providers simultaneously
+    config:
+      max_workers: 3
+      timeout: 30
+      error_strategy: best-effort  # Continue even if some fail
+      tasks:
+        # OpenAI GPT-3.5
+        - name: openai_gpt35
+          type: api
+          weight: 0.4
+          config:
+            api_type: rest
+            url: https://api.openai.com/v1/chat/completions
+            method: POST
+            auth:
+              type: bearer
+              token: ${OPENAI_API_KEY}
+            body:
+              model: gpt-3.5-turbo
+              messages:
+                - role: user
+                  content: "{prompt}"
+              temperature: 0.7
+            response_mapping:
+              value: choices[0].message.content
+              source: openai_gpt35
+            retry:
+              enabled: true
+              max_attempts: 2
+
+        # Anthropic Claude
+        - name: anthropic_claude
+          type: api
+          weight: 0.4
+          config:
+            api_type: rest
+            url: https://api.anthropic.com/v1/messages
+            method: POST
+            auth:
+              type: api_key
+              key: x-api-key
+              value: ${ANTHROPIC_API_KEY}
+            headers:
+              anthropic-version: "2023-06-01"
+            body:
+              model: claude-3-sonnet-20240229
+              messages:
+                - role: user
+                  content: "{prompt}"
+              max_tokens: 1024
+            response_mapping:
+              value: content[0].text
+              source: anthropic_claude
+            retry:
+              enabled: true
+              max_attempts: 2
+
+        # OpenAI GPT-4 (higher weight)
+        - name: openai_gpt4
+          type: api
+          weight: 0.2
+          config:
+            api_type: rest
+            url: https://api.openai.com/v1/chat/completions
+            method: POST
+            auth:
+              type: bearer
+              token: ${OPENAI_API_KEY}
+            body:
+              model: gpt-4
+              messages:
+                - role: user
+                  content: "{prompt}"
+              temperature: 0.7
+            response_mapping:
+              value: choices[0].message.content
+              source: openai_gpt4
+            retry:
+              enabled: true
+              max_attempts: 2
+
+  # Step 3: Aggregate responses with weighted voting
+  - name: aggregate_responses
+    type: aggregation
+    description: Find consensus using weighted voting
+    config:
+      strategy: weighted_voting
+      source_field: parallel_models.results
+      target_field: consensus_response
+      weights:
+        openai_gpt35: 0.3
+        anthropic_claude: 0.4
+        openai_gpt4: 0.3
+      statistical:
+        detect_outliers: true
+        outlier_method: iqr
+        remove_outliers: true
+      confidence:
+        enabled: true
+        method: agreement
+        threshold: 0.6
+      quality_filter:
+        enabled: true
+        min_score: 0.5
+        field: quality_score
+
+  # Step 4: Validate consensus meets threshold
+  - name: validate_consensus
+    type: validation
+    description: Ensure consensus is strong enough
+    condition: "require_consensus == true"
+    config:
+      validations:
+        - type: business_rule
+          rules:
+            - name: confidence_threshold
+              condition: "confidence_score >= 0.6"
+              message: "Insufficient consensus among models"
+        - type: data_quality
+          checks:
+            - type: completeness
+              threshold: 0.9
+      source_field: consensus_response
+      on_validation_error: throw
+
+  # Step 5: Final output validation
+  - name: validate_output
+    type: validation
+    description: Final safety and quality checks
+    config:
+      validations:
+        - type: pii
+          detect: [email, phone, ssn, credit_card]
+          action: flag
+        - type: sanitize
+          rules:
+            - type: xss_filter
+        - type: data_quality
+          checks:
+            - type: completeness
+              threshold: 0.95
+      source_field: consensus_response
+
+  # Step 6: Notify results
+  - name: notify_results
+    type: webhook
+    description: Send results to analytics system
+    config:
+      url: ${ANALYTICS_WEBHOOK_URL}
+      method: POST
+      body:
+        event: ensemble_completed
+        prompt_id: "{prompt_id}"
+        confidence_score: "{confidence_score}"
+        models_used: "{models_count}"
+        outliers_detected: "{outliers_count}"
+        consensus_achieved: "{consensus_achieved}"
+      retry:
+        enabled: true
+        max_attempts: 2
+      on_failure: log
+
+metadata:
+  author: Custom Processors Example
+  tags: [ensemble, multi-model, consensus]
+  use_cases:
+    - High-stakes decision making
+    - Fact verification
+    - Quality assurance
+  estimated_cost: 0.015  # per request
+  accuracy_improvement: 25%
