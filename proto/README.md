@@ -63,11 +63,15 @@ Turn any Matrix room into your complete development command center. Message `@pr
 
 ### Core Commands
 
-**Git Operations**:
+**Git Operations** (ChatOps Phase 1):
 ```
-@proto git status
-@proto git commit "your message"
-@proto git push
+@proto git status      # Show current branch and unstaged changes
+@proto git log         # Show recent commits (last 5)
+@proto git diff        # Show uncommitted changes
+@proto git branch      # List local branches
+@proto git commit "message"  # Create a commit with all changes
+@proto git push        # Push current branch to remote
+@proto git pull        # Pull latest from remote
 ```
 
 **Claude Code Integration**:
@@ -191,6 +195,9 @@ OPENAI_API_KEY=sk-your-key-here
 # Database passwords
 POSTGRES_PASSWORD=secure_postgres_password
 PROMPTLY_DB_PASSWORD=secure_promptly_password
+
+# Git configuration (optional - for ChatOps Phase 1)
+GIT_REPO_PATH=/path/to/git/repository
 ```
 
 ### Step 2: Start Services
@@ -314,6 +321,93 @@ flake8 bot/
 mypy bot/
 ```
 
+### Testing Git Integration
+
+```bash
+# Run git handler integration tests
+python proto/test_git_integration.py
+
+# This tests:
+# - Git command execution (status, log, diff, branch)
+# - Command parser recognition of git commands
+# - Bot method structure
+```
+
+---
+
+## Git Integration (ChatOps Phase 1)
+
+### Configuration
+
+Git commands are optional and must be explicitly enabled:
+
+```bash
+# In .env file:
+GIT_REPO_PATH=/path/to/your/repository
+```
+
+If `GIT_REPO_PATH` is not set, git commands will return a helpful error message.
+
+### Git Commands Reference
+
+**Status & Information**:
+```
+@proto git status   # Show working tree status and current branch
+@proto git log      # Show last 5 commits
+@proto git branch   # List all local branches
+@proto git diff     # Show unstaged changes
+```
+
+**Making Changes**:
+```
+@proto git commit "Update documentation"  # Stage all changes and commit
+@proto git push                            # Push to default remote
+@proto git pull                            # Pull from default remote
+```
+
+### Examples
+
+**Check repo status**:
+```
+@proto git status
+→ Git Status
+→ Branch: main
+→  M proto/README.md
+→ ?? new_file.txt
+```
+
+**View recent commits**:
+```
+@proto git log
+→ Recent Commits (main)
+→ 3a1b2c3 fix: Handle empty git output
+→ 2f4e5d6 feat: Add git log formatting
+→ 1e3c5b7 docs: Update git documentation
+```
+
+**Create and push a commit**:
+```
+@proto git commit "Add feature X"
+→ Commit Created
+→ Message: Add feature X
+→ [main 4d7a9c2] Add feature X
+```
+
+### Permissions & Safety
+
+Git commands in Proto include safety guardrails:
+
+- **Whitelist enforcement**: Only safe git commands allowed (no `reset --hard`, `rebase`, etc.)
+- **Confirmation required**: High-risk commands (push, merge, rebase) could require approval
+- **User feedback**: Clear error messages if something goes wrong
+- **Audit trail**: All git operations are logged
+
+### Requirements
+
+- Repository must be a valid git repository (has `.git` directory)
+- Bot process must have read/write access to the repository
+- For push/pull: SSH key or git credentials must be configured
+
 ---
 
 ## Troubleshooting
@@ -365,6 +459,54 @@ docker-compose logs -f promptly-bot
 # Recreate database
 docker-compose down -v
 docker-compose up -d
+```
+
+### Git commands not working
+
+**"Git not configured" error**:
+```
+Make sure GIT_REPO_PATH is set in .env
+```
+
+**Fix**:
+```bash
+# In .env:
+GIT_REPO_PATH=/path/to/git/repository
+
+# Restart bot
+docker-compose restart promptly-bot
+```
+
+**"not a git repository" error**:
+
+**Check**:
+1. Path exists: `ls -la /path/to/git/repository`
+2. Is a git repo: `ls -la /path/to/git/repository/.git`
+3. Permissions: `ls -l /path/to/git/repository`
+
+**Fix**:
+```bash
+# Make sure it's a git repository
+cd /path/to/git/repository
+git init
+
+# Or if cloned, verify:
+git status
+```
+
+**Git commands timeout or hang**:
+
+**Check**:
+1. Is repo large? Try: `git count-objects -v`
+2. Network issues? Try: `git fetch origin`
+
+**Fix**:
+```bash
+# Run test to diagnose:
+python proto/test_git_integration.py
+
+# See what's slow
+time git status
 ```
 
 ---

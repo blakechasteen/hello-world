@@ -356,6 +356,15 @@ class PromptlyBot:
 • `@promptly verify "<statement>"` - Verify claim
 • `@promptly refine` - Multi-pass refinement
 
+**Git Commands (ChatOps Phase 1):**
+• `@promptly git status` - Show git status
+• `@promptly git log` - Show recent commits
+• `@promptly git diff` - Show uncommitted changes
+• `@promptly git branch` - List branches
+• `@promptly git commit "message"` - Create commit
+• `@promptly git push` - Push to remote
+• `@promptly git pull` - Pull from remote
+
 **Examples:**
 
 Optimize a prompt:
@@ -371,6 +380,16 @@ Examples: [
 Run a workflow:
 ```
 @promptly run qa_basic "What is Thompson Sampling?"
+```
+
+Check git status:
+```
+@promptly git status
+```
+
+Create a commit:
+```
+@promptly git commit "Update documentation"
 ```
 
 **Learn More:** https://github.com/promptly/promptly
@@ -393,6 +412,17 @@ Run a workflow:
 <li><code>@promptly schema</code> - Build structured schema</li>
 <li><code>@promptly verify "&lt;statement&gt;"</code> - Verify claim</li>
 <li><code>@promptly refine</code> - Multi-pass refinement</li>
+</ul>
+
+<h4>Git Commands (ChatOps Phase 1):</h4>
+<ul>
+<li><code>@promptly git status</code> - Show git status</li>
+<li><code>@promptly git log</code> - Show recent commits (last 5)</li>
+<li><code>@promptly git diff</code> - Show uncommitted changes</li>
+<li><code>@promptly git branch</code> - List branches</li>
+<li><code>@promptly git commit "&lt;message&gt;"</code> - Create commit</li>
+<li><code>@promptly git push</code> - Push to remote</li>
+<li><code>@promptly git pull</code> - Pull from remote</li>
 </ul>
 
 <p><strong>Learn More:</strong> <a href="https://github.com/promptly/promptly">github.com/promptly/promptly</a></p>
@@ -688,186 +718,185 @@ Examples: [
 
     # ========== Git Commands (ChatOps Phase 1) ==========
 
-async def cmd_git_status(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
-    """Handle git status command"""
-    if not self.git_handler:
-        return {
-            "body": "Git not configured. Set GIT_REPO_PATH in .env",
-            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
-        }
-
-    try:
-        status = self.git_handler.status(short=True)
-        branch = self.git_handler.get_current_branch()
-
-        body = f"Git Status\n\nBranch: {branch}\n\n{status}"
-        html = f"<p><strong>Git Status</strong></p><p>Branch: <code>{branch}</code></p><pre>{status}</pre>"
-
-        return {"body": body, "html": html}
-
-    except Exception as e:
-        logger.error(f"Git status error: {e}")
-        return {
-            "body": f"Git status failed: {e}",
-            "html": f"<p>Git status failed: <code>{e}</code></p>"
-        }
-
-async def cmd_git_log(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
-    """Handle git log command"""
-    if not self.git_handler:
-        return {
-            "body": "Git not configured. Set GIT_REPO_PATH in .env",
-            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
-        }
-
-    try:
-        log = self.git_handler.log(max_count=5, oneline=True)
-        branch = self.git_handler.get_current_branch()
-
-        body = f"Recent Commits ({branch})\n\n{log}"
-        html = f"<p><strong>Recent Commits</strong> ({branch})</p><pre>{log}</pre>"
-
-        return {"body": body, "html": html}
-
-    except Exception as e:
-        logger.error(f"Git log error: {e}")
-        return {
-            "body": f"Git log failed: {e}",
-            "html": f"<p>Git log failed: <code>{e}</code></p>"
-        }
-
-async def cmd_git_diff(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
-    """Handle git diff command"""
-    if not self.git_handler:
-        return {
-            "body": "Git not configured. Set GIT_REPO_PATH in .env",
-            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
-        }
-
-    try:
-        diff = self.git_handler.diff()
-
-        if not diff:
+    async def cmd_git_status(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle git status command"""
+        if not self.git_handler:
             return {
-                "body": "No changes to show (working tree clean)",
-                "html": "<p>No changes to show (working tree clean)</p>"
+                "body": "Git not configured. Set GIT_REPO_PATH in .env",
+                "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
             }
 
-        if len(diff) > 2000:
-            diff = diff[:2000] + "\n\n... (truncated, too long for chat)"
+        try:
+            status = self.git_handler.status(short=True)
+            branch = self.git_handler.get_current_branch()
 
-        body = f"Git Diff\n\n{diff}"
-        html = f"<p><strong>Git Diff</strong></p><pre>{diff}</pre>"
+            body = f"Git Status\n\nBranch: {branch}\n\n{status}"
+            html = f"<p><strong>Git Status</strong></p><p>Branch: <code>{branch}</code></p><pre>{status}</pre>"
 
-        return {"body": body, "html": html}
+            return {"body": body, "html": html}
 
-    except Exception as e:
-        logger.error(f"Git diff error: {e}")
-        return {
-            "body": f"Git diff failed: {e}",
-            "html": f"<p>Git diff failed: <code>{e}</code></p>"
-        }
-
-async def cmd_git_branch(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
-    """Handle git branch command"""
-    if not self.git_handler:
-        return {
-            "body": "Git not configured. Set GIT_REPO_PATH in .env",
-            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
-        }
-
-    try:
-        branches = self.git_handler.branch()
-
-        body = f"Git Branches\n\n{branches}"
-        html = f"<p><strong>Git Branches</strong></p><pre>{branches}</pre>"
-
-        return {"body": body, "html": html}
-
-    except Exception as e:
-        logger.error(f"Git branch error: {e}")
-        return {
-            "body": f"Git branch failed: {e}",
-            "html": f"<p>Git branch failed: <code>{e}</code></p>"
-        }
-
-async def cmd_git_commit(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
-    """Handle git commit command"""
-    if not self.git_handler:
-        return {
-            "body": "Git not configured. Set GIT_REPO_PATH in .env",
-            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
-        }
-
-    try:
-        message = command.get('message', '')
-        if not message:
+        except Exception as e:
+            logger.error(f"Git status error: {e}")
             return {
-                "body": 'Commit message required. Usage: @promptly git commit "your message"',
-                "html": '<p>Commit message required. Usage: <code>@promptly git commit "your message"</code></p>'
+                "body": f"Git status failed: {e}",
+                "html": f"<p>Git status failed: <code>{e}</code></p>"
             }
 
-        result = self.git_handler.commit(message, add_all=True)
+    async def cmd_git_log(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle git log command"""
+        if not self.git_handler:
+            return {
+                "body": "Git not configured. Set GIT_REPO_PATH in .env",
+                "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+            }
 
-        body = f"Commit Created\n\nMessage: {message}\n\n{result}"
-        html = f"<p><strong>Commit Created</strong></p><p>Message: <code>{message}</code></p><pre>{result}</pre>"
+        try:
+            log = self.git_handler.log(max_count=5, oneline=True)
+            branch = self.git_handler.get_current_branch()
 
-        return {"body": body, "html": html}
+            body = f"Recent Commits ({branch})\n\n{log}"
+            html = f"<p><strong>Recent Commits</strong> ({branch})</p><pre>{log}</pre>"
 
-    except Exception as e:
-        logger.error(f"Git commit error: {e}")
-        return {
-            "body": f"Git commit failed: {e}",
-            "html": f"<p>Git commit failed: <code>{e}</code></p>"
-        }
+            return {"body": body, "html": html}
 
-async def cmd_git_push(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
-    """Handle git push command"""
-    if not self.git_handler:
-        return {
-            "body": "Git not configured. Set GIT_REPO_PATH in .env",
-            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
-        }
+        except Exception as e:
+            logger.error(f"Git log error: {e}")
+            return {
+                "body": f"Git log failed: {e}",
+                "html": f"<p>Git log failed: <code>{e}</code></p>"
+            }
 
-    try:
-        branch = self.git_handler.get_current_branch()
-        result = self.git_handler.push(branch=branch)
+    async def cmd_git_diff(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle git diff command"""
+        if not self.git_handler:
+            return {
+                "body": "Git not configured. Set GIT_REPO_PATH in .env",
+                "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+            }
 
-        body = f"Pushed to Remote\n\nBranch: {branch}\n\n{result}"
-        html = f"<p><strong>Pushed to Remote</strong></p><p>Branch: <code>{branch}</code></p><pre>{result}</pre>"
+        try:
+            diff = self.git_handler.diff()
 
-        return {"body": body, "html": html}
+            if not diff:
+                return {
+                    "body": "No changes to show (working tree clean)",
+                    "html": "<p>No changes to show (working tree clean)</p>"
+                }
 
-    except Exception as e:
-        logger.error(f"Git push error: {e}")
-        return {
-            "body": f"Git push failed: {e}\n\nNote: Push requires authentication",
-            "html": f"<p>Git push failed: <code>{e}</code></p><p>Note: Push requires authentication</p>"
-        }
+            if len(diff) > 2000:
+                diff = diff[:2000] + "\n\n... (truncated, too long for chat)"
 
-async def cmd_git_pull(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
-    """Handle git pull command"""
-    if not self.git_handler:
-        return {
-            "body": "Git not configured. Set GIT_REPO_PATH in .env",
-            "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
-        }
+            body = f"Git Diff\n\n{diff}"
+            html = f"<p><strong>Git Diff</strong></p><pre>{diff}</pre>"
 
-    try:
-        result = self.git_handler.pull()
+            return {"body": body, "html": html}
 
-        body = f"Pulled from Remote\n\n{result}"
-        html = f"<p><strong>Pulled from Remote</strong></p><pre>{result}</pre>"
+        except Exception as e:
+            logger.error(f"Git diff error: {e}")
+            return {
+                "body": f"Git diff failed: {e}",
+                "html": f"<p>Git diff failed: <code>{e}</code></p>"
+            }
 
-        return {"body": body, "html": html}
+    async def cmd_git_branch(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle git branch command"""
+        if not self.git_handler:
+            return {
+                "body": "Git not configured. Set GIT_REPO_PATH in .env",
+                "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+            }
 
-    except Exception as e:
-        logger.error(f"Git pull error: {e}")
-        return {
-            "body": f"Git pull failed: {e}",
-            "html": f"<p>Git pull failed: <code>{e}</code></p>"
-        }
+        try:
+            branches = self.git_handler.branch()
 
+            body = f"Git Branches\n\n{branches}"
+            html = f"<p><strong>Git Branches</strong></p><pre>{branches}</pre>"
+
+            return {"body": body, "html": html}
+
+        except Exception as e:
+            logger.error(f"Git branch error: {e}")
+            return {
+                "body": f"Git branch failed: {e}",
+                "html": f"<p>Git branch failed: <code>{e}</code></p>"
+            }
+
+    async def cmd_git_commit(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle git commit command"""
+        if not self.git_handler:
+            return {
+                "body": "Git not configured. Set GIT_REPO_PATH in .env",
+                "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+            }
+
+        try:
+            message = command.get('message', '')
+            if not message:
+                return {
+                    "body": 'Commit message required. Usage: @promptly git commit "your message"',
+                    "html": '<p>Commit message required. Usage: <code>@promptly git commit "your message"</code></p>'
+                }
+
+            result = self.git_handler.commit(message, add_all=True)
+
+            body = f"Commit Created\n\nMessage: {message}\n\n{result}"
+            html = f"<p><strong>Commit Created</strong></p><p>Message: <code>{message}</code></p><pre>{result}</pre>"
+
+            return {"body": body, "html": html}
+
+        except Exception as e:
+            logger.error(f"Git commit error: {e}")
+            return {
+                "body": f"Git commit failed: {e}",
+                "html": f"<p>Git commit failed: <code>{e}</code></p>"
+            }
+
+    async def cmd_git_push(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle git push command"""
+        if not self.git_handler:
+            return {
+                "body": "Git not configured. Set GIT_REPO_PATH in .env",
+                "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+            }
+
+        try:
+            branch = self.git_handler.get_current_branch()
+            result = self.git_handler.push(branch=branch)
+
+            body = f"Pushed to Remote\n\nBranch: {branch}\n\n{result}"
+            html = f"<p><strong>Pushed to Remote</strong></p><p>Branch: <code>{branch}</code></p><pre>{result}</pre>"
+
+            return {"body": body, "html": html}
+
+        except Exception as e:
+            logger.error(f"Git push error: {e}")
+            return {
+                "body": f"Git push failed: {e}\n\nNote: Push requires authentication",
+                "html": f"<p>Git push failed: <code>{e}</code></p><p>Note: Push requires authentication</p>"
+            }
+
+    async def cmd_git_pull(self, command: Dict, room: MatrixRoom) -> Dict[str, str]:
+        """Handle git pull command"""
+        if not self.git_handler:
+            return {
+                "body": "Git not configured. Set GIT_REPO_PATH in .env",
+                "html": "<p>Git not configured. Set <code>GIT_REPO_PATH</code> in .env</p>"
+            }
+
+        try:
+            result = self.git_handler.pull()
+
+            body = f"Pulled from Remote\n\n{result}"
+            html = f"<p><strong>Pulled from Remote</strong></p><pre>{result}</pre>"
+
+            return {"body": body, "html": html}
+
+        except Exception as e:
+            logger.error(f"Git pull error: {e}")
+            return {
+                "body": f"Git pull failed: {e}",
+                "html": f"<p>Git pull failed: <code>{e}</code></p>"
+            }
 
     async def send_message(
         self,
