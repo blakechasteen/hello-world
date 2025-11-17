@@ -14,6 +14,7 @@ import logging
 from typing import List, Optional, Dict
 import re
 
+# FIX #4: sklearn now optional in system_id.py (graceful degradation)
 from HoloLoom.documentation.types import Query, Features, Context
 from HoloLoom.reasoning.types import (
     QueryIntent,

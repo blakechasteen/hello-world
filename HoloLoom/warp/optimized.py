@@ -17,13 +17,17 @@ significant performance improvements for large-scale deployments.
 
 import logging
 import numpy as np
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional, Union, Tuple, TYPE_CHECKING
 from dataclasses import dataclass
 import warnings
 
 logger = logging.getLogger(__name__)
 
 # Optional PyTorch for GPU acceleration
+# FIX #4: Use TYPE_CHECKING for type annotations to avoid NameError
+if TYPE_CHECKING:
+    import torch  # For type checking only
+
 try:
     import torch
     import torch.nn.functional as F
@@ -33,6 +37,7 @@ try:
 except ImportError:
     HAS_TORCH = False
     DEVICE = None
+    torch = None  # Placeholder for runtime
     logger.warning("PyTorch not available. GPU acceleration disabled.")
 
 
@@ -177,7 +182,7 @@ class GPUWarpSpace:
         self,
         query_embedding: np.ndarray,
         temperature: float = 1.0
-    ) -> torch.Tensor:
+    ) -> "torch.Tensor":
         """
         Compute attention weights on GPU.
 
@@ -203,7 +208,7 @@ class GPUWarpSpace:
 
         return attention
 
-    def weighted_context(self, attention: torch.Tensor) -> np.ndarray:
+    def weighted_context(self, attention: "torch.Tensor") -> np.ndarray:
         """
         Compute weighted context vector on GPU.
 

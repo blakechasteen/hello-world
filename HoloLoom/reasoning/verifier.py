@@ -13,6 +13,7 @@ Phase: 1 (Foundation)
 import logging
 from typing import List
 
+# FIX #4: sklearn now optional in system_id.py (graceful degradation)
 from HoloLoom.documentation.types import Context
 from HoloLoom.reasoning.types import (
     ReasoningStep,

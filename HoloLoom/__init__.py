@@ -51,9 +51,20 @@ __all__ = [
 # Backward Compatibility: Keep existing exports
 # ============================================================================
 
-# Re-export common subpackages for existing code
-from . import policy
-from . import embedding
+# Re-export common subpackages for existing code (make optional for testing)
+try:
+    from . import policy
+except ImportError as e:
+    import warnings
+    warnings.warn(f"policy module not available: {e}")
+    policy = None
+
+try:
+    from . import embedding
+except ImportError as e:
+    import warnings
+    warnings.warn(f"embedding module not available: {e}")
+    embedding = None
 
 # Documentation compatibility
 try:

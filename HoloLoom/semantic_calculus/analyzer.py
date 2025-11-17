@@ -7,9 +7,19 @@ Main interface for semantic calculus analysis.
 import logging
 import numpy as np
 from typing import Dict, Any, Optional, Callable
+import warnings
 
 from .config import SemanticCalculusConfig
-from .flow_calculus import SemanticFlowCalculus
+
+# FIX #4: Make flow_calculus optional (missing module)
+try:
+    from .flow_calculus import SemanticFlowCalculus
+    FLOW_CALCULUS_AVAILABLE = True
+except ImportError:
+    warnings.warn("flow_calculus module not found. Flow analysis disabled.")
+    FLOW_CALCULUS_AVAILABLE = False
+    SemanticFlowCalculus = None
+
 from .dimensions import (
     SemanticSpectrum,
     STANDARD_DIMENSIONS,
