@@ -1,0 +1,162 @@
+# Plugin Metadata
+name: peer-review-system
+display_name: Peer Review System
+version: 1.0.0
+author: LMS Team
+author_email: team@lms.edu
+author_url: https://lms.edu
+license: MIT
+
+# Plugin Details
+category: assessment
+description: |
+  Comprehensive peer review system with rubrics, blind review, calibration,
+  and quality scoring. Integrates with knowledge graph for collaborative
+  learning analytics.
+
+keywords:
+  - peer-review
+  - assessment
+  - rubric
+  - blind-review
+  - calibration
+  - collaborative-learning
+
+# Requirements
+lms_version: ">=1.0.0"
+python_version: ">=3.11"
+node_version: ">=18.0"
+
+# Dependencies
+dependencies:
+  python:
+    - pydantic>=2.0
+    - sqlalchemy>=2.0
+    - numpy>=1.24
+  npm:
+    - react>=18.0
+    - typescript>=5.0
+    - react-beautiful-dnd>=13.0
+
+# Permissions Required
+permissions:
+  - knowledge_graph:write      # Track collaborative learning
+  - database:read              # Read assignments and submissions
+  - database:write             # Store reviews and feedback
+  - events:publish             # Publish review events
+  - events:subscribe           # Subscribe to submission events
+  - files:read                 # Read submission files
+  - email:send                 # Send review notifications
+
+# Hooks Implemented
+hooks:
+  - after_assessment_submit    # Trigger peer review workflow
+  - on_review_complete         # Update knowledge graph
+  - on_review_disputed         # Handle disputes
+  - on_calibration_required    # Calibrate reviewers
+
+# API Endpoints
+api_routes:
+  - method: POST
+    path: /api/plugins/peer-review/assignments/create
+    description: Create peer review assignment
+  - method: GET
+    path: /api/plugins/peer-review/assignments/{assignment_id}
+    description: Get assignment details
+  - method: POST
+    path: /api/plugins/peer-review/reviews/submit
+    description: Submit peer review
+  - method: GET
+    path: /api/plugins/peer-review/reviews/{review_id}
+    description: Get review details
+  - method: POST
+    path: /api/plugins/peer-review/reviews/{review_id}/dispute
+    description: Dispute a review
+  - method: GET
+    path: /api/plugins/peer-review/calibration/{student_id}
+    description: Get calibration score
+
+# UI Components
+ui_components:
+  - name: PeerReviewAssignmentCreator
+    type: instructor
+    description: Create peer review assignments with rubrics
+  - name: PeerReviewSubmitter
+    type: student
+    description: Submit work for peer review
+  - name: PeerReviewGrader
+    type: student
+    description: Review peer submissions
+  - name: PeerReviewResults
+    type: student
+    description: View feedback received
+  - name: CalibrationTrainer
+    type: student
+    description: Calibrate review skills
+
+# Configuration Options
+config_schema:
+  reviews_per_submission:
+    type: integer
+    default: 3
+    min: 2
+    max: 5
+    description: Number of peer reviews per submission
+
+  blind_review:
+    type: boolean
+    default: true
+    description: Hide author identity during review
+
+  enable_calibration:
+    type: boolean
+    default: true
+    description: Require calibration before reviewing
+
+  calibration_threshold:
+    type: float
+    default: 0.8
+    min: 0.0
+    max: 1.0
+    description: Minimum calibration score to review
+
+  review_deadline_days:
+    type: integer
+    default: 7
+    description: Days after submission to complete reviews
+
+  enable_disputes:
+    type: boolean
+    default: true
+    description: Allow students to dispute reviews
+
+  dispute_window_days:
+    type: integer
+    default: 3
+    description: Days to dispute a review
+
+  quality_weight:
+    type: float
+    default: 0.7
+    min: 0.0
+    max: 1.0
+    description: Weight of review quality in final grade
+
+# Supported Rubric Types
+rubric_types:
+  - analytical        # Multi-criteria with scales
+  - holistic          # Single overall score
+  - checklist         # Binary yes/no items
+  - single_point      # Feedback-focused
+
+# Features
+features:
+  - blind_review
+  - double_blind_review
+  - calibration_training
+  - quality_scoring
+  - dispute_resolution
+  - automated_assignment
+  - load_balancing
+  - fairness_algorithms
+  - analytics_dashboard

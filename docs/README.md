@@ -1,110 +1,68 @@
-# mythRL Documentation
+# GitHub Pages Site
 
-This directory contains all documentation for the mythRL/HoloLoom project, organized by type for easy navigation.
+This directory contains the GitHub Pages site for the LMS Orchestration Ecosystem.
 
-## Directory Structure
+## Enabling GitHub Pages
 
-### `/architecture/` (31 docs)
-System architecture, design patterns, and technical specifications.
+1. Go to your repository settings
+2. Navigate to **Pages** section
+3. Under **Source**, select:
+   - Branch: `main` (or your deployment branch)
+   - Folder: `/docs`
+4. Click **Save**
+5. Wait 1-2 minutes for deployment
 
-**Key Documents:**
-- Architecture overviews and system design
-- Roadmaps and implementation plans
-- Framework separation and integration guides
-- Semantic calculus and learning mathematics
-- Performance optimization strategies
+Your site will be available at: `https://blakechasteen.github.io/hello-world/`
 
-### `/guides/` (22 docs)
-User guides, quickstarts, and how-to documentation.
+## Local Development
 
-**Key Documents:**
-- `QUICKSTART.md` - Get started quickly
-- `README.md` - Main project README
-- `APP_DEVELOPMENT_GUIDE.md` - Building applications
-- `SEMANTIC_NUDGING_QUICKSTART.md` - Using semantic nudging
-- `WHEN_TO_USE_SEMANTIC_LEARNING.md` - Decision guide
-- `SAFETY_CHECKLIST.md` - Safety guidelines
-- `SECURITY_AUDIT.md` - Security considerations
+To preview locally:
 
-### `/completion-logs/` (43 docs)
-Development session summaries, completion reports, and progress tracking.
+```bash
+# Simple HTTP server
+cd docs
+python -m http.server 8000
 
-**Purpose:**
-- Historical record of feature completions
-- Session summaries and breakthrough documentation
-- Phase completion reports
-- Task completion tracking
+# Or use live-server (npm)
+npx live-server docs/
+```
 
-### `/archive/` (9 docs)
-Historical documentation and deprecated content.
+Then open: http://localhost:8000
 
-**Contents:**
-- Older implementation plans
-- Superseded system designs
-- Historical pitch decks and presentations
+## Features
 
-### `/sessions/`
-Session-specific documentation (if present).
+The GitHub Pages site includes:
 
-## Documentation Conventions
+- **Hero Section**: Overview and CTA buttons
+- **Features Grid**: 6 key features with icons
+- **Architecture Diagram**: Visual system overview
+- **Plugin Ecosystem**: 5 categories with examples
+- **Statistics**: Key metrics
+- **Comparison Table**: vs Canvas, Moodle, Google Classroom
+- **Roadmap**: 4-phase implementation plan
+- **Responsive Design**: Mobile-friendly
+- **Smooth Scrolling**: Anchor link navigation
+- **Animation Effects**: Fade-in on scroll
 
-### File Naming
-- **Architecture**: `FEATURE_ARCHITECTURE.md`, `SYSTEM_DESIGN.md`
-- **Guides**: `FEATURE_GUIDE.md`, `HOW_TO_*.md`
-- **Completion Logs**: `*_COMPLETE.md`, `PHASE_*.md`, `SESSION_*.md`
+## Customization
 
-### Content Types
-1. **Architecture Docs** - Technical deep-dives, system design, mathematics
-2. **Guides** - Step-by-step instructions, quickstarts, tutorials
-3. **Completion Logs** - "What we built and when" historical records
-4. **Archive** - No longer current but kept for reference
+Edit `index.html` to customize:
 
-## Finding Documentation
+- Colors: Modify CSS variables in `:root`
+- Content: Update HTML sections
+- Links: Point to your actual GitHub repo
+- Images: Add to `docs/` directory
 
-### I want to...
+## SEO
 
-**Understand the system architecture**
-→ Start with `/architecture/MYTHRL_ECOSYSTEM_ARCHITECTURE.md`
+The site includes:
 
-**Get started quickly**
-→ See `/guides/QUICKSTART.md`
+- Meta description
+- Semantic HTML
+- Proper heading hierarchy
+- Alt text for icons (emoji)
+- Mobile viewport configuration
 
-**Build an application**
-→ Read `/guides/APP_DEVELOPMENT_GUIDE.md`
+## License
 
-**Understand semantic learning**
-→ Check `/architecture/SEMANTIC_LEARNING_MATHEMATICS.md`
-
-**See what features exist**
-→ Browse `/completion-logs/` for feature completion docs
-
-**Understand a specific subsystem**
-→ Search `/architecture/` for relevant docs
-
-## Contributing to Documentation
-
-When adding new documentation:
-
-1. **Architecture changes** → `/architecture/`
-2. **User guides** → `/guides/`
-3. **Completion reports** → `/completion-logs/`
-4. **Deprecated content** → `/archive/`
-
-Keep the root directory clean - only `CLAUDE.md` and essential project files should remain in root.
-
-## Documentation Quality
-
-Good documentation should:
-- Have clear headers and structure
-- Include code examples where relevant
-- Link to related documents
-- Be dated for historical context
-- Use consistent markdown formatting
-
-## See Also
-
-- Main project: `../CLAUDE.md` (AI assistant instructions)
-- Code: `../HoloLoom/` (main package)
-- Tests: `../tests/` (test suite)
-- Demos: `../demos/` (example scripts)
-- Experiments: `../experimental/` (research code)
+Open source under MIT License (same as parent project).

@@ -1,59 +1,64 @@
 version: '3.8'
 
 services:
-  # Neo4j - Graph Database
-  neo4j:
-    image: neo4j:5.15.0
-    container_name: hololoom-neo4j
-    ports:
-      - "7474:7474"  # HTTP
-      - "7687:7687"  # Bolt
+  # Database Services
+  postgres:
+    image: postgres:15-alpine
+    container_name: lms-postgres
     environment:
-      - NEO4J_AUTH=neo4j/hololoom123
-      - NEO4J_PLUGINS=["apoc"]
-      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
-      - NEO4J_dbms_memory_heap_initial__size=512M
-      - NEO4J_dbms_memory_heap_max__size=2G
-      - NEO4J_dbms_memory_pagecache_size=1G
+      POSTGRES_DB: lms_dev
+      POSTGRES_USER: lms_user
+      POSTGRES_PASSWORD: lms_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lms_user"]
+      interval: 10s
+
+  neo4j:
+    image: neo4j:5.12
+    container_name: lms-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/lms_dev_password
+      NEO4J_PLUGINS: '["apoc"]'
+    ports:
+      - "7474:7474"
+      - "7687:7687"
     volumes:
       - neo4j_data:/data
-      - neo4j_logs:/logs
     networks:
-      - hololoom
-    healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "hololoom123", "RETURN 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - lms-network
 
-  # Qdrant - Vector Database
   qdrant:
-    image: qdrant/qdrant:v1.7.4
-    container_name: hololoom-qdrant
+    image: qdrant/qdrant:latest
+    container_name: lms-qdrant
     ports:
-      - "6333:6333"  # HTTP API
-      - "6334:6334"  # gRPC API
-    environment:
-      - QDRANT__SERVICE__HTTP_PORT=6333
-      - QDRANT__SERVICE__GRPC_PORT=6334
+      - "6333:6333"
     volumes:
-      - qdrant_data:/qdrant/storage
+      - qdrant_storage:/qdrant/storage
     networks:
-      - hololoom
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:6333/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - lms-network
 
-volumes:
-  neo4j_data:
-    driver: local
-  neo4j_logs:
-    driver: local
-  qdrant_data:
-    driver: local
+  redis:
+    image: redis:7-alpine
+    container_name: lms-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lms-network
 
 networks:
-  hololoom:
+  lms-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+  neo4j_data:
+  qdrant_storage:
+  redis_data:

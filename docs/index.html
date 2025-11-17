@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS Orchestration Ecosystem - WordPress for Education</title>
+    <meta name="description" content="An extensible Learning Management System that orchestrates educational experiences through composable plugins, similar to how WordPress democratized web publishing.">
+
+    <style>
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --white: #ffffff;
+            --text: #374151;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--white);
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 6rem 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--white);
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--white);
+            color: var(--primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Section */
+        section {
+            padding: 5rem 0;
+        }
+
+        section h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--dark);
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        /* Architecture Section */
+        .architecture {
+            background: var(--light);
+        }
+
+        .architecture-diagram {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            margin: 2rem 0;
+        }
+
+        .layer {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .layer.plugins {
+            background: linear-gradient(90deg, var(--secondary) 0%, #059669 100%);
+        }
+
+        .layer.ai {
+            background: linear-gradient(90deg, var(--accent) 0%, #d97706 100%);
+        }
+
+        /* Plugin Categories */
+        .plugin-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .plugin-category {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+        }
+
+        .plugin-category h3 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .plugin-category ul {
+            list-style: none;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .plugin-category li::before {
+            content: "→ ";
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* Stats */
+        .stats {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Code Block */
+        pre {
+            background: var(--dark);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: var(--white);
+            padding: 3rem 0 1rem;
+            margin-top: 5rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: var(--white);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            section h2 {
+                font-size: 2rem;
+            }
+
+            .features-grid,
+            .plugin-categories {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scroll Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            background: var(--white);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-table th {
+            background: var(--primary);
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--light);
+        }
+
+        .check {
+            color: var(--secondary);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .cross {
+            color: #ef4444;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(16, 185, 129, 0.1));
+            border-left: 4px solid var(--primary);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            margin: 2rem 0;
+        }
+
+        .highlight-box h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">
+                🎓 LMS Orchestration
+            </div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#plugins">Plugins</a></li>
+                <li><a href="#comparison">Comparison</a></li>
+                <li><a href="https://github.com/blakechasteen/hello-world">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>WordPress for Education</h1>
+            <p>An extensible Learning Management System that orchestrates educational experiences through composable plugins, themes, and AI-powered personalization.</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/blakechasteen/hello-world" class="btn btn-primary">View on GitHub</a>
+                <a href="#architecture" class="btn btn-secondary">Explore Architecture</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+        <div class="container">
+            <h2>Why LMS Orchestration?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <h3>Extensible Plugin System</h3>
+                    <p>Build custom functionality with a WordPress-style plugin architecture. 70% revenue share for plugin developers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Pedagogical Themes</h3>
+                    <p>Choose from lecture-based, flipped classroom, project-based, or Socratic seminar learning flows.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Knowledge Graph</h3>
+                    <p>Track student learning as a graph. Personalize content based on mastered and struggling concepts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI-Powered</h3>
+                    <p>AI teaching assistant with Thompson Sampling for adaptive content delivery and at-risk detection.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Advanced Analytics</h3>
+                    <p>Predictive analytics, engagement tracking, and automated intervention suggestions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure & Compliant</h3>
+                    <p>FERPA, GDPR, WCAG 2.1 AA compliant. Sandbox isolation for all plugins.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="architecture">
+        <div class="container">
+            <h2>System Architecture</h2>
+            <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">
+                Built with modern async/await Python, React/TypeScript frontend, and protocol-based interfaces inspired by HoloLoom.
+            </p>
+
+            <div class="architecture-diagram">
+                <div class="layer">Frontend Layer (React/TypeScript)</div>
+                <div class="layer">API Gateway (FastAPI)</div>
+                <div class="layer">Core Orchestrator (Python)</div>
+                <div class="layer plugins">Plugin Ecosystem (5 Categories)</div>
+                <div class="layer ai">AI Layer (Personalization & Analytics)</div>
+                <div class="layer">Data Layer (PostgreSQL, Neo4j, Qdrant, Redis)</div>
+            </div>
+
+            <div class="highlight-box">
+                <h3>Key Design Principles</h3>
+                <ul style="list-style: none; color: var(--text);">
+                    <li>✓ <strong>Protocol-based</strong> - Type-safe interfaces, swappable implementations</li>
+                    <li>✓ <strong>Event-driven</strong> - Hooks system for plugin communication</li>
+                    <li>✓ <strong>Theme-based</strong> - Pedagogical orchestration, not just visual themes</li>
+                    <li>✓ <strong>Knowledge-centric</strong> - Learning represented as graphs, not just grades</li>
+                    <li>✓ <strong>Async-first</strong> - High performance with async/await throughout</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Plugins Section -->
+    <section id="plugins">
+        <div class="container">
+            <h2>Plugin Ecosystem</h2>
+            <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">
+                47+ plugin types across 5 categories. Build once, sell to thousands of institutions.
+            </p>
+
+            <div class="plugin-categories">
+                <div class="plugin-category">
+                    <h3>📝 Assessment</h3>
+                    <ul>
+                        <li>Quiz Builder</li>
+                        <li>Peer Review</li>
+                        <li>Portfolio Assessment</li>
+                        <li>Adaptive Testing</li>
+                        <li>Live Polling</li>
+                    </ul>
+                </div>
+                <div class="plugin-category">
+                    <h3>📚 Content Delivery</h3>
+                    <ul>
+                        <li>Video Player</li>
+                        <li>Interactive Textbook</li>
+                        <li>Code Playground</li>
+                        <li>3D Model Viewer</li>
+                        <li>Slide Deck Pro</li>
+                    </ul>
+                </div>
+                <div class="plugin-category">
+                    <h3>📊 Analytics</h3>
+                    <ul>
+                        <li>Learning Dashboard</li>
+                        <li>Predictive Analytics</li>
+                        <li>Engagement Heatmap</li>
+                        <li>Concept Mastery Graph</li>
+                        <li>Cohort Comparison</li>
+                    </ul>
+                </div>
+                <div class="plugin-category">
+                    <h3>💬 Communication</h3>
+                    <ul>
+                        <li>Discussion Forum</li>
+                        <li>Office Hours Scheduler</li>
+                        <li>Collaborative Whiteboard</li>
+                        <li>Study Group Matcher</li>
+                        <li>Announcement System</li>
+                    </ul>
+                </div>
+                <div class="plugin-category">
+                    <h3>🔗 Integration</h3>
+                    <ul>
+                        <li>Zoom Connector</li>
+                        <li>GitHub Classroom</li>
+                        <li>Google Workspace</li>
+                        <li>Library Integration</li>
+                        <li>SIS Sync</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem; text-align: center;">
+                <h3 style="margin-bottom: 1rem;">Getting Started with Plugin Development</h3>
+                <pre style="text-align: left; max-width: 800px; margin: 0 auto;">
+# Install LMS Plugin SDK
+pip install lms-plugin-sdk
+
+# Create your first plugin
+lms-cli create-plugin \
+  --name "my-quiz" \
+  --category assessment
+
+# Test locally
+cd my-quiz
+lms-cli dev
+
+# Publish to marketplace
+lms-cli build
+lms-cli publish
+                </pre>
+                <p style="margin-top: 1rem; color: var(--text-light);">
+                    You keep 70% of plugin revenue. See <a href="https://github.com/blakechasteen/hello-world/blob/main/PLUGIN_DEVELOPMENT_GUIDE.md" style="color: var(--primary);">full documentation</a>.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>5</h3>
+                    <p>Plugin Categories</p>
+                </div>
+                <div class="stat-item">
+                    <h3>47+</h3>
+                    <p>Plugin Types</p>
+                </div>
+                <div class="stat-item">
+                    <h3>4</h3>
+                    <p>Pedagogical Themes</p>
+                </div>
+                <div class="stat-item">
+                    <h3>20+</h3>
+                    <p>Hook Events</p>
+                </div>
+                <div class="stat-item">
+                    <h3>900+</h3>
+                    <p>Lines of Prototype Code</p>
+                </div>
+                <div class="stat-item">
+                    <h3>11</h3>
+                    <p>Architecture Diagrams</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section id="comparison">
+        <div class="container">
+            <h2>How We Compare</h2>
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Canvas/Blackboard</th>
+                            <th>Moodle</th>
+                            <th>Google Classroom</th>
+                            <th style="background: var(--secondary);">LMS Orchestration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Extensible Plugins</strong></td>
+                            <td><span class="cross">✗</span> Locked</td>
+                            <td><span class="check">✓</span> Legacy</td>
+                            <td><span class="cross">✗</span> Closed</td>
+                            <td><span class="check">✓</span> Modern</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Open Source</strong></td>
+                            <td><span class="cross">✗</span> Proprietary</td>
+                            <td><span class="check">✓</span> Yes</td>
+                            <td><span class="cross">✗</span> Closed</td>
+                            <td><span class="check">✓</span> Yes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pedagogical Themes</strong></td>
+                            <td><span class="cross">✗</span> One-size</td>
+                            <td><span class="cross">✗</span> One-size</td>
+                            <td><span class="cross">✗</span> One-size</td>
+                            <td><span class="check">✓</span> 4 Themes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AI-Powered</strong></td>
+                            <td><span class="cross">✗</span> Bolted-on</td>
+                            <td><span class="cross">✗</span> Bolted-on</td>
+                            <td><span class="cross">✗</span> Basic</td>
+                            <td><span class="check">✓</span> AI-first</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Knowledge Graph</strong></td>
+                            <td><span class="cross">✗</span> Relational</td>
+                            <td><span class="cross">✗</span> Relational</td>
+                            <td><span class="cross">✗</span> Relational</td>
+                            <td><span class="check">✓</span> Neo4j</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Modern Stack</strong></td>
+                            <td><span class="cross">✗</span> Legacy</td>
+                            <td><span class="cross">✗</span> PHP</td>
+                            <td><span class="check">✓</span> Modern</td>
+                            <td><span class="check">✓</span> Python/React</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section style="background: var(--light);">
+        <div class="container">
+            <h2>Roadmap</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Phase 1: Core Platform</h3>
+                    <p><strong>Months 1-6</strong></p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Plugin architecture</li>
+                        <li>Theme system (3 base themes)</li>
+                        <li>User management</li>
+                        <li>5 essential plugins</li>
+                        <li>Mobile-responsive design</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3>Phase 2: Marketplace</h3>
+                    <p><strong>Months 7-12</strong></p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Plugin marketplace</li>
+                        <li>Developer API</li>
+                        <li>20+ curated plugins</li>
+                        <li>Payment processing</li>
+                        <li>Developer community</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3>Phase 3: AI Integration</h3>
+                    <p><strong>Months 13-18</strong></p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Knowledge graph</li>
+                        <li>AI teaching assistant</li>
+                        <li>Personalized paths</li>
+                        <li>Predictive analytics</li>
+                        <li>Adaptive content</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3>Phase 4: Enterprise</h3>
+                    <p><strong>Months 19-24</strong></p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Multi-institution</li>
+                        <li>SIS integration</li>
+                        <li>SSO & compliance</li>
+                        <li>White-label</li>
+                        <li>Advanced permissions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section style="text-align: center; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: var(--white);">
+        <div class="container">
+            <h2 style="color: var(--white);">Ready to Transform Education?</h2>
+            <p style="font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9;">
+                Join us in building the WordPress of educational technology.
+            </p>
+            <div class="cta-buttons">
+                <a href="https://github.com/blakechasteen/hello-world" class="btn btn-primary">View on GitHub</a>
+                <a href="https://github.com/blakechasteen/hello-world/blob/main/LMS_ORCHESTRATION_DESIGN.md" class="btn btn-secondary">Read Full Design Doc</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Documentation</h3>
+                    <ul>
+                        <li><a href="https://github.com/blakechasteen/hello-world/blob/main/LMS_ORCHESTRATION_DESIGN.md">Design Document</a></li>
+                        <li><a href="https://github.com/blakechasteen/hello-world/blob/main/LMS_ARCHITECTURE_DIAGRAMS.md">Architecture Diagrams</a></li>
+                        <li><a href="https://github.com/blakechasteen/hello-world/blob/main/PLUGIN_DEVELOPMENT_GUIDE.md">Plugin Development Guide</a></li>
+                        <li><a href="https://github.com/blakechasteen/hello-world/blob/main/PLUGIN_INTERFACES.md">Plugin Interfaces</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="https://github.com/blakechasteen/hello-world/blob/main/lms_orchestrator_prototype.py">Python Prototype</a></li>
+                        <li><a href="https://github.com/blakechasteen/hello-world">GitHub Repository</a></li>
+                        <li><a href="#comparison">Feature Comparison</a></li>
+                        <li><a href="#architecture">System Architecture</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Community</h3>
+                    <ul>
+                        <li><a href="https://github.com/blakechasteen/hello-world/issues">Report Issues</a></li>
+                        <li><a href="https://github.com/blakechasteen/hello-world/discussions">Discussions</a></li>
+                        <li><a href="https://github.com/blakechasteen/hello-world/pulls">Pull Requests</a></li>
+                        <li><a href="https://github.com/blakechasteen">Contributors</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#plugins">Plugin Ecosystem</a></li>
+                        <li><a href="https://github.com/blakechasteen/hello-world/blob/main/LMS_ORCHESTRATION_DESIGN.md#business-model">Business Model</a></li>
+                        <li><a href="https://github.com/blakechasteen/hello-world/blob/main/LMS_ORCHESTRATION_DESIGN.md#roadmap">Roadmap</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 LMS Orchestration Ecosystem. Built with Claude Code. Open Source under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .plugin-category, .stat-item').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
