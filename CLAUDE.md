@@ -6,30 +6,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **New to HoloLoom?** Start here:
 
-1. **[HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md](HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md)** (25,000+ lines)
+1. **[VISUAL_QUICK_START.md](VISUAL_QUICK_START.md)** ⭐ **NEW!** (7,500+ lines)
+   - Choose your journey: Beginner (5 min) → Developer (15 min) → Expert (30 min)
+   - 15 comprehensive diagrams with progressive disclosure
+   - Visual API reference and "what to build" navigator
+   - **Perfect for new users - start here!**
+
+2. **[HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md](HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md)** (25,000+ lines)
    - Complete architectural map from first principles to production
    - Learning sequence for beginners → researchers
    - All 5 phases explained with context
    - Future roadmap (Phases 6-10)
-   - **Start here for the big picture!**
+   - **Complete reference for the big picture!**
 
-2. **[CURRENT_STATUS_AND_NEXT_STEPS.md](CURRENT_STATUS_AND_NEXT_STEPS.md)**
+3. **[CURRENT_STATUS_AND_NEXT_STEPS.md](CURRENT_STATUS_AND_NEXT_STEPS.md)**
    - What works right now (snapshot)
    - What needs work (prioritized tasks)
    - Recommended next actions
    - Quick decision guide
    - **Use this to know what to build next**
 
-3. **[ARCHITECTURE_VISUAL_MAP.md](ARCHITECTURE_VISUAL_MAP.md)**
+4. **[ARCHITECTURE_VISUAL_MAP.md](ARCHITECTURE_VISUAL_MAP.md)**
    - Visual diagrams of the 9-layer system
    - Data flow illustrations
    - Component relationships
    - Quick reference to key files
    - **Best for visual learners**
 
-4. **This file (CLAUDE.md)** - Developer quick reference (below)
+5. **[docs/ANIMATED_ARCHITECTURE_FLOWS.md](docs/ANIMATED_ARCHITECTURE_FLOWS.md)** ⭐ **NEW!**
+   - 8 CSS-animated diagrams showing data flow in motion
+   - Pure CSS animations (<100ms paint time, 60 FPS)
+   - Zero dependencies, mobile-responsive
+   - **See the system in action!**
 
-5. **[DREAMWEAVER_SUMMARY.md](DREAMWEAVER_SUMMARY.md)** - Open-source world building component
+6. **This file (CLAUDE.md)** - Developer quick reference (below)
+
+7. **[DREAMWEAVER_SUMMARY.md](DREAMWEAVER_SUMMARY.md)** - Open-source world building component
    - Phase 0 complete (architecture)
    - 6-phase roadmap (18 months)
    - Extends HoloLoom to collaborative storytelling
