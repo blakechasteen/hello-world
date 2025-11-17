@@ -36,9 +36,16 @@ try:
 except ImportError:
     SYNTHESIS_AVAILABLE = False
 
+try:
+    from .chatbot import main as run_chatbot
+    CHATBOT_AVAILABLE = True
+except ImportError:
+    CHATBOT_AVAILABLE = False
+
 __all__ = [
     'PDFIngestionPipeline',
     'ResearchPaper',
     'PaperMemorySystem',
-    'ResearchSynthesisEngine'
+    'ResearchSynthesisEngine',
+    'run_chatbot'
 ]
