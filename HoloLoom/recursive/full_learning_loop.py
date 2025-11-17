@@ -404,6 +404,9 @@ class FullLearningEngine:
         self.enable_background_learning = enable_background_learning
         self.learning_update_interval = learning_update_interval
 
+        # Cleanup tracking
+        self._closed = False  # Idempotency flag for close()
+
     async def __aenter__(self):
         """Async context manager entry"""
         # Initialize orchestrator
@@ -451,7 +454,15 @@ class FullLearningEngine:
         return self
 
     async def close(self):
-        """Cleanup resources (called by AgenticOrchestrator)."""
+        """
+        Cleanup resources (called by AgenticOrchestrator).
+        Safe to call multiple times (idempotent).
+        """
+        if self._closed:
+            return  # Already closed
+
+        self._closed = True
+
         # Stop background learner
         if self.background_learner:
             await self.background_learner.stop()

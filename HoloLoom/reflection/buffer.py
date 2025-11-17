@@ -178,6 +178,9 @@ class ReflectionBuffer:
         # Concurrency control
         self._lock = asyncio.Lock()  # Protect concurrent access to episodes and metrics
 
+        # Cleanup tracking
+        self._closed = False  # Idempotency flag for close()
+
         self.logger = logging.getLogger(__name__)
         self.logger.info(f"ReflectionBuffer initialized (capacity={capacity}, window={learning_window})")
 
@@ -912,7 +915,12 @@ class ReflectionBuffer:
 
         Called automatically when using async context manager,
         or can be called manually for explicit cleanup.
+        Safe to call multiple times (idempotent).
         """
+        if self._closed:
+            return  # Already closed
+
+        self._closed = True
         self.logger.info(f"Closing ReflectionBuffer ({len(self.episodes)} episodes)")
 
         # Clear in-memory buffer (data already persisted)
