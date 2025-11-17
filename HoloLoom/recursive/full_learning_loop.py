@@ -17,6 +17,7 @@ that learns from every interaction and continuously adapts.
 
 import asyncio
 import logging
+import time
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Set
 from datetime import datetime, timedelta
@@ -164,6 +165,10 @@ class BackgroundLearner:
         self.running = False
         self.task: Optional[asyncio.Task] = None
 
+        # Health check (heartbeat tracking)
+        self._last_heartbeat: float = 0.0
+        self._heartbeat_max_age: float = update_interval * 3  # 3x update interval
+
     async def start(self):
         """Start background learning loop"""
         if self.running:
@@ -189,6 +194,59 @@ class BackgroundLearner:
 
         self.logger.info("Background learner stopped")
 
+    def is_healthy(self) -> bool:
+        """
+        Check if background loop is healthy (responding with recent heartbeats).
+
+        Returns:
+            bool: True if last heartbeat was recent enough, False if stuck
+
+        Notes:
+            - Heartbeat must be within 3x the update_interval
+            - Returns False if loop never started (heartbeat == 0)
+            - Use for monitoring/alerting on stuck background tasks
+        """
+        if not self.running:
+            return True  # Not running is not "unhealthy", just stopped
+
+        if self._last_heartbeat == 0.0:
+            # Loop started but hasn't heartbeat yet
+            return True  # Give it a chance to start
+
+        age = time.time() - self._last_heartbeat
+        is_healthy = age < self._heartbeat_max_age
+
+        if not is_healthy:
+            self.logger.warning(
+                f"Background learner unhealthy: heartbeat age {age:.1f}s "
+                f"exceeds max {self._heartbeat_max_age:.1f}s"
+            )
+
+        return is_healthy
+
+    def get_health_status(self) -> Dict[str, Any]:
+        """
+        Get detailed health status for monitoring.
+
+        Returns:
+            Dict with:
+                - healthy: bool
+                - running: bool
+                - last_heartbeat_age: float (seconds since last heartbeat)
+                - max_heartbeat_age: float (threshold for unhealthy)
+                - recent_spacetimes_count: int
+        """
+        age = time.time() - self._last_heartbeat if self._last_heartbeat > 0 else None
+
+        return {
+            'healthy': self.is_healthy(),
+            'running': self.running,
+            'last_heartbeat_age': age,
+            'max_heartbeat_age': self._heartbeat_max_age,
+            'recent_spacetimes_count': len(self.recent_spacetimes),
+            'update_interval': self.update_interval
+        }
+
     def record_spacetime(self, spacetime: Spacetime):
         """Record spacetime for learning"""
         self.recent_spacetimes.append(spacetime)
@@ -197,6 +255,9 @@ class BackgroundLearner:
         """Main background learning loop"""
         while self.running:
             try:
+                # Update heartbeat for health checks
+                self._last_heartbeat = time.time()
+
                 await asyncio.sleep(self.update_interval)
 
                 if not self.recent_spacetimes:
