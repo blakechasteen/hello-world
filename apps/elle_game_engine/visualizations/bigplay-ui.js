@@ -388,6 +388,367 @@
     };
 
     // ========================================
+    // Touch Enhancements (Mobile)
+    // ========================================
+
+    class TouchEnhancements {
+        constructor() {
+            if (!('ontouchstart' in window)) {
+                return; // Desktop - skip touch enhancements
+            }
+
+            this.addSwipeGestures();
+            this.addBottomSheets();
+            this.enlargeTouchTargets();
+            this.addPullToRefresh();
+        }
+
+        addSwipeGestures() {
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchStartTime = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                touchStartTime = Date.now();
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const touchEndTime = Date.now();
+
+                const diffX = touchStartX - touchEndX;
+                const diffY = touchStartY - touchEndY;
+                const duration = touchEndTime - touchStartTime;
+
+                // Only trigger if swipe was quick (<300ms)
+                if (duration > 300) return;
+
+                // Horizontal swipe (left/right)
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                    const event = new CustomEvent(diffX > 0 ? 'swipe-left' : 'swipe-right', {
+                        detail: { distance: Math.abs(diffX) }
+                    });
+                    document.dispatchEvent(event);
+
+                    // Navigate in tour if active
+                    if (window.GuidedTour && diffX > 0) {
+                        // Swipe left = next (if tour exists)
+                    }
+                }
+
+                // Vertical swipe down to dismiss panels
+                if (diffY < -100 && Math.abs(diffY) > Math.abs(diffX)) {
+                    this.dismissOpenPanels();
+                }
+            }, { passive: true });
+        }
+
+        addBottomSheets() {
+            // Convert side panels to bottom sheets on mobile
+            if (window.innerWidth < 768) {
+                const panels = document.querySelectorAll('.detail-panel, .sidebar, .controls-panel');
+                panels.forEach(panel => {
+                    if (!panel.classList.contains('mobile-optimized')) {
+                        panel.classList.add('mobile-bottom-sheet');
+                        panel.classList.add('mobile-optimized');
+                    }
+                });
+
+                // Add CSS for bottom sheets
+                const style = document.createElement('style');
+                style.textContent = `
+                    @media (max-width: 768px) {
+                        .mobile-bottom-sheet {
+                            position: fixed !important;
+                            bottom: 0 !important;
+                            left: 0 !important;
+                            right: 0 !important;
+                            top: auto !important;
+                            max-height: 70vh !important;
+                            overflow-y: auto !important;
+                            border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+                            transform: translateY(100%);
+                            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        }
+
+                        .mobile-bottom-sheet.active {
+                            transform: translateY(0);
+                        }
+
+                        .mobile-bottom-sheet::before {
+                            content: '';
+                            display: block;
+                            width: 40px;
+                            height: 4px;
+                            background: var(--color-text-tertiary);
+                            border-radius: 2px;
+                            margin: var(--space-3) auto;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        dismissOpenPanels() {
+            document.querySelectorAll('.mobile-bottom-sheet.active, .detail-panel.active').forEach(panel => {
+                panel.classList.remove('active');
+
+                // Announce dismissal
+                if (window.BigPlayUI?.accessibility) {
+                    window.BigPlayUI.accessibility.announce('Panel dismissed');
+                }
+            });
+        }
+
+        enlargeTouchTargets() {
+            // Ensure all interactive elements are at least 44x44px (Apple HIG)
+            const selectors = 'button, a, [role="button"], .component, .viz-card, .npc-card, .quest-option';
+            document.querySelectorAll(selectors).forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.width > 0 && (rect.width < 44 || rect.height < 44)) {
+                    const currentPadding = window.getComputedStyle(el).padding;
+                    if (currentPadding === '0px' || !currentPadding.includes('px')) {
+                        el.style.minWidth = '44px';
+                        el.style.minHeight = '44px';
+                        el.style.padding = 'var(--space-3) var(--space-4)';
+                    }
+                }
+            });
+        }
+
+        addPullToRefresh() {
+            // Simple pull-to-refresh for mobile
+            let startY = 0;
+            let pulling = false;
+
+            document.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0) {
+                    startY = e.touches[0].clientY;
+                    pulling = true;
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchmove', (e) => {
+                if (pulling) {
+                    const currentY = e.touches[0].clientY;
+                    const pullDistance = currentY - startY;
+
+                    if (pullDistance > 80) {
+                        // Show refresh indicator
+                        this.showRefreshIndicator();
+                    }
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                if (pulling) {
+                    const currentY = e.changedTouches[0].clientY;
+                    const pullDistance = currentY - startY;
+
+                    if (pullDistance > 80) {
+                        // Trigger refresh
+                        window.location.reload();
+                    } else {
+                        this.hideRefreshIndicator();
+                    }
+                }
+                pulling = false;
+            }, { passive: true });
+        }
+
+        showRefreshIndicator() {
+            if (!document.getElementById('refresh-indicator')) {
+                const indicator = document.createElement('div');
+                indicator.id = 'refresh-indicator';
+                indicator.innerHTML = '<div class="spinner"></div>';
+                indicator.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    padding: var(--space-4);
+                    background: var(--color-bg-elevated);
+                    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+                    box-shadow: var(--shadow-lg);
+                    z-index: 9999;
+                `;
+                document.body.appendChild(indicator);
+            }
+        }
+
+        hideRefreshIndicator() {
+            const indicator = document.getElementById('refresh-indicator');
+            if (indicator) {
+                indicator.style.opacity = '0';
+                setTimeout(() => indicator.remove(), 300);
+            }
+        }
+    }
+
+    // ========================================
+    // Page Transitions & Animations
+    // ========================================
+
+    class PageTransitions {
+        constructor() {
+            this.addPageLoader();
+            this.addFadeInAnimations();
+            this.addScrollAnimations();
+        }
+
+        addPageLoader() {
+            // Show loader on page load
+            const loader = document.createElement('div');
+            loader.id = 'page-loader';
+            loader.innerHTML = `
+                <div style="text-align: center;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: var(--space-4); font-size: var(--font-size-lg);">
+                        Loading BigPlay...
+                    </p>
+                </div>
+            `;
+            loader.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--color-bg-primary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 99999;
+                transition: opacity 0.3s ease;
+            `;
+            document.body.appendChild(loader);
+
+            // Hide loader when page is loaded
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 300);
+                }, 500); // Minimum 500ms to avoid flash
+            });
+        }
+
+        addFadeInAnimations() {
+            // Fade in elements as they appear
+            const elements = document.querySelectorAll('.viz-card, .card, .stat-card, .npc-card, .quest-option');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    el.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 50); // Stagger by 50ms
+            });
+        }
+
+        addScrollAnimations() {
+            // Animate elements as they enter viewport
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Observe elements with .animate-on-scroll class
+            document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                observer.observe(el);
+            });
+        }
+
+        static fadeIn(elements, delay = 100) {
+            const els = Array.isArray(elements) ? elements : [elements];
+            els.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    el.style.transition = 'all 0.6s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, delay * index);
+            });
+        }
+
+        static fadeOut(elements, callback) {
+            const els = Array.isArray(elements) ? elements : [elements];
+            els.forEach(el => {
+                el.style.transition = 'all 0.3s ease';
+                el.style.opacity = '0';
+            });
+            if (callback) {
+                setTimeout(callback, 300);
+            }
+        }
+    }
+
+    // Enhanced LoadingManager methods
+    LoadingManager.showPageLoader = function() {
+        const loader = document.createElement('div');
+        loader.id = 'big-page-loader';
+        loader.innerHTML = `
+            <div class="loader-content" style="text-align: center;">
+                <div class="spinner"></div>
+                <p style="margin-top: var(--space-4);">Loading...</p>
+            </div>
+        `;
+        loader.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        `;
+        document.body.appendChild(loader);
+
+        return () => {
+            loader.style.transition = 'opacity 0.3s ease';
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 300);
+        };
+    };
+
+    LoadingManager.showContentLoader = function(container, message = 'Loading...') {
+        const loader = document.createElement('div');
+        loader.className = 'content-loader';
+        loader.innerHTML = `
+            <div class="spinner"></div>
+            <p style="margin-top: var(--space-2); color: var(--color-text-secondary);">${message}</p>
+        `;
+        loader.style.cssText = `
+            text-align: center;
+            padding: var(--space-8);
+        `;
+        container.appendChild(loader);
+        return loader;
+    };
+
+    // ========================================
     // Initialize BigPlayUI
     // ========================================
 
@@ -398,12 +759,24 @@
         analytics: new Analytics(),
         accessibility: AccessibilityManager,
         utils: utils,
+        touch: null,          // Initialized if touch device detected
+        transitions: null,    // Page transitions and animations
 
         init() {
             console.log('%c🎮 BigPlay UI loaded', 'color: #667eea; font-weight: bold; font-size: 14px;');
 
             // Initialize accessibility enhancements
             AccessibilityManager.init();
+
+            // Initialize touch enhancements (mobile only)
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                this.touch = new TouchEnhancements();
+                console.log('%c📱 Touch enhancements enabled', 'color: #4CAF50; font-weight: bold;');
+            }
+
+            // Initialize page transitions
+            this.transitions = new PageTransitions();
+            console.log('%c✨ Page transitions enabled', 'color: #9C27B0; font-weight: bold;');
 
             // Track page view
             this.analytics.track('page_view', {

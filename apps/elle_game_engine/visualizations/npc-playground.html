@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live NPC Playground - BigPlay Engine</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="design-system.css">
+
+    <!-- Three.js for 3D emotion visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            padding: var(--space-4);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: var(--space-6);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: var(--space-2);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        .playground-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr 300px;
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .panel {
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            font-size: 1.3em;
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+
+        /* Emotion Panel */
+        #emotion-canvas {
+            width: 100%;
+            height: 300px;
+            border-radius: var(--radius-lg);
+            background: var(--color-bg-tertiary);
+            margin-bottom: var(--space-4);
+        }
+
+        .emotion-sliders {
+            margin-top: var(--space-4);
+        }
+
+        .slider-group {
+            margin-bottom: var(--space-3);
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-2);
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .slider-value {
+            color: var(--color-primary);
+            font-family: var(--font-mono);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--color-bg-tertiary);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px var(--color-primary);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            cursor: pointer;
+            border: none;
+        }
+
+        .emotion-label {
+            text-align: center;
+            font-size: 1.5em;
+            margin-top: var(--space-2);
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+
+        /* Conversation Panel */
+        .conversation {
+            display: flex;
+            flex-direction: column;
+            height: 700px;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: var(--space-4);
+            padding: var(--space-3);
+            background: var(--color-bg-tertiary);
+            border-radius: var(--radius-lg);
+        }
+
+        .message {
+            margin-bottom: var(--space-3);
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            animation: messageSlideIn 0.3s ease;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.player {
+            background: var(--color-primary);
+            color: white;
+            margin-left: 20%;
+            text-align: right;
+        }
+
+        .message.npc {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            margin-right: 20%;
+        }
+
+        .message-header {
+            font-size: 0.85em;
+            opacity: 0.7;
+            margin-bottom: var(--space-2);
+            font-weight: 600;
+        }
+
+        .message-content {
+            line-height: 1.5;
+        }
+
+        .message-emotions {
+            margin-top: var(--space-2);
+            padding-top: var(--space-2);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.85em;
+            opacity: 0.8;
+            font-family: var(--font-mono);
+        }
+
+        .input-area {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: var(--space-3);
+            background: var(--color-bg-tertiary);
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-md);
+            color: var(--color-text-primary);
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        /* Settings Panel */
+        .settings-group {
+            margin-bottom: var(--space-4);
+        }
+
+        .settings-group h3 {
+            font-size: 1em;
+            margin-bottom: var(--space-2);
+            color: var(--color-text-secondary);
+        }
+
+        .npc-card {
+            padding: var(--space-3);
+            background: var(--color-bg-tertiary);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-3);
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .npc-card:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+        }
+
+        .npc-card.active {
+            border-color: var(--color-primary);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .npc-name {
+            font-weight: 700;
+            margin-bottom: var(--space-1);
+        }
+
+        .npc-role {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        select {
+            width: 100%;
+            padding: var(--space-2);
+            background: var(--color-bg-tertiary);
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-md);
+            color: var(--color-text-primary);
+            font-size: 0.95em;
+            margin-bottom: var(--space-3);
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .stats-panel {
+            background: var(--color-bg-tertiary);
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            font-size: 0.9em;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-1);
+        }
+
+        .stat-label {
+            opacity: 0.7;
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        @media (max-width: 1200px) {
+            .playground-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .conversation {
+                height: 500px;
+            }
+
+            .message.player {
+                margin-left: 10%;
+            }
+
+            .message.npc {
+                margin-right: 10%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .message.player,
+            .message.npc {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Live NPC Playground</h1>
+            <p class="subtitle">Interact with NPCs in real-time and watch their emotions evolve</p>
+        </header>
+
+        <div class="playground-grid">
+            <!-- Emotion Panel -->
+            <div class="panel">
+                <h2>😊 Emotional State</h2>
+
+                <canvas id="emotion-canvas"></canvas>
+
+                <div class="emotion-label" id="emotion-label">Neutral</div>
+
+                <div class="emotion-sliders">
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Valence (Pleasure)</span>
+                            <span class="slider-value" id="valence-value">0.00</span>
+                        </div>
+                        <input type="range" id="valence-slider" min="-1" max="1" step="0.01" value="0">
+                        <div style="font-size: 0.75em; opacity: 0.6; margin-top: 4px;">
+                            -1 = Unpleasant, +1 = Pleasant
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Arousal (Energy)</span>
+                            <span class="slider-value" id="arousal-value">0.50</span>
+                        </div>
+                        <input type="range" id="arousal-slider" min="0" max="1" step="0.01" value="0.5">
+                        <div style="font-size: 0.75em; opacity: 0.6; margin-top: 4px;">
+                            0 = Calm, 1 = Excited
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Dominance (Control)</span>
+                            <span class="slider-value" id="dominance-value">0.50</span>
+                        </div>
+                        <input type="range" id="dominance-slider" min="0" max="1" step="0.01" value="0.5">
+                        <div style="font-size: 0.75em; opacity: 0.6; margin-top: 4px;">
+                            0 = Submissive, 1 = Dominant
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Trust</span>
+                            <span class="slider-value" id="trust-value">0.50</span>
+                        </div>
+                        <input type="range" id="trust-slider" min="0" max="1" step="0.01" value="0.5">
+                        <div style="font-size: 0.75em; opacity: 0.6; margin-top: 4px;">
+                            0 = Distrustful, 1 = Trusting
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversation Panel -->
+            <div class="panel conversation">
+                <h2>💬 Conversation</h2>
+
+                <div class="messages" id="messages">
+                    <div class="message npc">
+                        <div class="message-header">NPC</div>
+                        <div class="message-content">
+                            Hello, traveler. I'm Alice, the innkeeper. How can I help you today?
+                        </div>
+                        <div class="message-emotions">
+                            V: 0.30 | A: 0.50 | D: 0.60 | T: 0.50
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <input type="text" id="message-input" placeholder="Type your message..." autofocus>
+                    <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+
+            <!-- Settings Panel -->
+            <div class="panel">
+                <h2>⚙️ Settings</h2>
+
+                <div class="settings-group">
+                    <h3>Select NPC</h3>
+                    <div class="npc-card active" data-npc="alice">
+                        <div class="npc-name">Alice</div>
+                        <div class="npc-role">Innkeeper • Friendly</div>
+                    </div>
+                    <div class="npc-card" data-npc="guard">
+                        <div class="npc-name">Guard Bob</div>
+                        <div class="npc-role">Town Guard • Stern</div>
+                    </div>
+                    <div class="npc-card" data-npc="wizard">
+                        <div class="npc-name">Wizard Merrick</div>
+                        <div class="npc-role">Archmage • Mysterious</div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>LLM Provider</h3>
+                    <select id="llm-provider">
+                        <option value="demo">Demo Mode (No API)</option>
+                        <option value="openai">OpenAI GPT-4</option>
+                        <option value="anthropic">Anthropic Claude</option>
+                        <option value="local">Local Ollama</option>
+                    </select>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Model</h3>
+                    <select id="llm-model">
+                        <option value="demo">Simulated Responses</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+                        <option value="llama3.2:3b">Llama 3.2 3B</option>
+                    </select>
+                </div>
+
+                <div class="stats-panel">
+                    <strong>Session Stats</strong>
+                    <div class="stat-row">
+                        <span class="stat-label">Messages:</span>
+                        <span class="stat-value" id="stat-messages">1</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Avg Response:</span>
+                        <span class="stat-value" id="stat-latency">~150ms</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Emotion Changes:</span>
+                        <span class="stat-value" id="stat-changes">0</span>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="clearConversation()">
+                        Clear Conversation
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportConversation()">
+                        Export JSON
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetEmotions()">
+                        Reset Emotions
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 How to Use the Playground</h2>
+
+            <h3>Real-Time Interaction</h3>
+            <p>Type messages to the NPC and watch their emotional state evolve based on the conversation. The 3D emotion sphere visualizes their current emotional state in the PAD (Pleasure-Arousal-Dominance) model.</p>
+
+            <h3>Manual Emotion Control</h3>
+            <p>Use the sliders to manually adjust the NPC's emotional state and see how it affects their personality:</p>
+            <ul>
+                <li><strong>Valence</strong>: Pleasant (+1) ↔ Unpleasant (-1)</li>
+                <li><strong>Arousal</strong>: Calm (0) → Excited (1)</li>
+                <li><strong>Dominance</strong>: Submissive (0) → Dominant (1)</li>
+                <li><strong>Trust</strong>: Distrustful (0) → Trusting (1)</li>
+            </ul>
+
+            <h3>Demo Mode vs Live LLM</h3>
+            <p>In <strong>Demo Mode</strong>, responses are simulated based on keyword matching. Connect to a real LLM provider for genuine AI-powered conversations that adapt to context and emotion.</p>
+
+            <h3>Export & Analysis</h3>
+            <p>Export your conversation as JSON to analyze how emotions evolved over time or to import into the BigPlay engine for further processing.</p>
+        </div>
+    </div>
+
+    <!-- BigPlay UI Utilities -->
+    <script src="bigplay-ui.js"></script>
+
+    <script>
+        // NPC configurations
+        const npcs = {
+            alice: {
+                name: 'Alice',
+                role: 'Innkeeper',
+                personality: 'friendly, warm, protective of her tavern',
+                initialEmotions: { valence: 0.3, arousal: 0.5, dominance: 0.6, trust: 0.5 },
+                responses: {
+                    greeting: ["Hello! Welcome to my tavern. What can I get you?", "Good to see you! Care for a drink?"],
+                    dragon: ["*nervous* The dragon... that's dangerous talk. But I suppose you should know.", "*lowers voice* The dragon has been seen near the mountains. People are scared."],
+                    help: ["Of course! I'm always happy to help travelers.", "What do you need? I know this town well."],
+                    default: ["Interesting... tell me more.", "I see. And what brings you here?"]
+                }
+            },
+            guard: {
+                name: 'Guard Bob',
+                role: 'Town Guard',
+                personality: 'stern, dutiful, protective',
+                initialEmotions: { valence: 0.0, arousal: 0.7, dominance: 0.8, trust: 0.3 },
+                responses: {
+                    greeting: ["State your business.", "Move along, citizen."],
+                    trouble: ["No trouble on my watch!", "I'll handle this. Step back."],
+                    help: ["I'm here to keep the peace, not answer questions.", "If you have a complaint, file it with the captain."],
+                    default: ["Hmm.", "I'm watching you."]
+                }
+            },
+            wizard: {
+                name: 'Wizard Merrick',
+                role: 'Archmage',
+                personality: 'mysterious, knowledgeable, cryptic',
+                initialEmotions: { valence: 0.1, arousal: 0.4, dominance: 0.9, trust: 0.4 },
+                responses: {
+                    greeting: ["Ah, a visitor. The threads of fate have brought you here.", "Welcome, seeker of knowledge."],
+                    magic: ["Magic is the fabric of reality itself. Few understand its true nature.", "I sense potential in you... or perhaps danger."],
+                    help: ["Help? Time itself is the greatest teacher.", "Knowledge comes at a price. Are you prepared to pay it?"],
+                    default: ["Curious...", "The stars whisper your name..."]
+                }
+            }
+        };
+
+        // State
+        let currentNPC = 'alice';
+        let conversation = [];
+        let emotions = { ...npcs.alice.initialEmotions };
+        let messageCount = 1;
+        let emotionChanges = 0;
+
+        // Three.js scene
+        let scene, camera, renderer, sphere;
+
+        function initThreeJS() {
+            const canvas = document.getElementById('emotion-canvas');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            renderer.setSize(width, height);
+
+            // Create emotion sphere
+            const geometry = new THREE.SphereGeometry(1, 32, 32);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x667eea,
+                emissive: 0x667eea,
+                emissiveIntensity: 0.2,
+                shininess: 100
+            });
+            sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
+
+            camera.position.z = 3;
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate sphere
+            sphere.rotation.x += 0.005;
+            sphere.rotation.y += 0.01;
+
+            // Update based on emotions
+            const v = emotions.valence;
+            const a = emotions.arousal;
+            const d = emotions.dominance;
+
+            // Color based on valence
+            const color = new THREE.Color();
+            if (v > 0) {
+                color.setHSL(0.55, 0.7, 0.5 + v * 0.2); // Blue-green for positive
+            } else {
+                color.setHSL(0.0, 0.7, 0.5 + v * 0.2); // Red for negative
+            }
+            sphere.material.color = color;
+            sphere.material.emissive = color;
+
+            // Scale based on arousal
+            const scale = 1 + a * 0.5;
+            sphere.scale.set(scale, scale, scale);
+
+            // Emissive intensity based on dominance
+            sphere.material.emissiveIntensity = 0.2 + d * 0.3;
+
+            renderer.render(scene, camera);
+        }
+
+        // Initialize sliders
+        function initSliders() {
+            const sliders = ['valence', 'arousal', 'dominance', 'trust'];
+
+            sliders.forEach(name => {
+                const slider = document.getElementById(`${name}-slider`);
+                const valueSpan = document.getElementById(`${name}-value`);
+
+                slider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    emotions[name] = value;
+                    valueSpan.textContent = value.toFixed(2);
+                    updateEmotionLabel();
+                    emotionChanges++;
+                    updateStats();
+                });
+
+                // Set initial value
+                slider.value = emotions[name];
+                valueSpan.textContent = emotions[name].toFixed(2);
+            });
+        }
+
+        // Update emotion label
+        function updateEmotionLabel() {
+            const { valence, arousal, dominance } = emotions;
+            let label = '';
+
+            // Determine emotion based on PAD
+            if (valence > 0.5 && arousal > 0.6) label = 'Happy & Excited';
+            else if (valence > 0.5 && arousal < 0.4) label = 'Content & Calm';
+            else if (valence < -0.3 && arousal > 0.6) label = 'Angry';
+            else if (valence < -0.3 && arousal < 0.4) label = 'Sad';
+            else if (arousal > 0.7) label = 'Anxious';
+            else if (arousal < 0.3) label = 'Bored';
+            else if (dominance > 0.7) label = 'Confident';
+            else if (dominance < 0.3) label = 'Timid';
+            else label = 'Neutral';
+
+            document.getElementById('emotion-label').textContent = label;
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            // Add player message
+            addMessage('player', text);
+
+            // Get NPC response (demo mode)
+            setTimeout(() => {
+                const response = getNPCResponse(text);
+                addMessage('npc', response);
+
+                // Update emotions based on message
+                updateEmotionsFromMessage(text);
+            }, 500 + Math.random() * 1000);
+
+            input.value = '';
+            messageCount++;
+            updateStats();
+        }
+
+        // Add message to conversation
+        function addMessage(sender, text) {
+            const messagesDiv = document.getElementById('messages');
+            const msg = document.createElement('div');
+            msg.className = `message ${sender}`;
+
+            const header = document.createElement('div');
+            header.className = 'message-header';
+            header.textContent = sender === 'player' ? 'You' : npcs[currentNPC].name;
+
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+
+            msg.appendChild(header);
+            msg.appendChild(content);
+
+            if (sender === 'npc') {
+                const emotionsDiv = document.createElement('div');
+                emotionsDiv.className = 'message-emotions';
+                emotionsDiv.textContent = `V: ${emotions.valence.toFixed(2)} | A: ${emotions.arousal.toFixed(2)} | D: ${emotions.dominance.toFixed(2)} | T: ${emotions.trust.toFixed(2)}`;
+                msg.appendChild(emotionsDiv);
+            }
+
+            messagesDiv.appendChild(msg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            conversation.push({
+                sender,
+                text,
+                emotions: sender === 'npc' ? { ...emotions } : null,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // Get NPC response (demo mode)
+        function getNPCResponse(playerMessage) {
+            const npc = npcs[currentNPC];
+            const lower = playerMessage.toLowerCase();
+
+            // Keyword matching
+            if (lower.includes('hello') || lower.includes('hi') || lower.includes('greet')) {
+                return npc.responses.greeting[Math.floor(Math.random() * npc.responses.greeting.length)];
+            } else if (lower.includes('dragon') && npc.responses.dragon) {
+                return npc.responses.dragon[Math.floor(Math.random() * npc.responses.dragon.length)];
+            } else if (lower.includes('help') && npc.responses.help) {
+                return npc.responses.help[Math.floor(Math.random() * npc.responses.help.length)];
+            } else if (lower.includes('magic') && npc.responses.magic) {
+                return npc.responses.magic[Math.floor(Math.random() * npc.responses.magic.length)];
+            } else {
+                return npc.responses.default[Math.floor(Math.random() * npc.responses.default.length)];
+            }
+        }
+
+        // Update emotions based on message
+        function updateEmotionsFromMessage(text) {
+            const lower = text.toLowerCase();
+
+            // Positive keywords increase valence
+            if (lower.includes('thank') || lower.includes('please') || lower.includes('help')) {
+                emotions.valence = Math.min(1, emotions.valence + 0.1);
+                emotions.trust = Math.min(1, emotions.trust + 0.05);
+            }
+
+            // Negative keywords decrease valence
+            if (lower.includes('threat') || lower.includes('attack') || lower.includes('hate')) {
+                emotions.valence = Math.max(-1, emotions.valence - 0.2);
+                emotions.arousal = Math.min(1, emotions.arousal + 0.15);
+                emotions.trust = Math.max(0, emotions.trust - 0.1);
+            }
+
+            // Dragon mention increases arousal
+            if (lower.includes('dragon')) {
+                emotions.arousal = Math.min(1, emotions.arousal + 0.2);
+                emotions.valence = Math.max(-1, emotions.valence - 0.1);
+            }
+
+            updateSlidersFromEmotions();
+            emotionChanges++;
+            updateStats();
+        }
+
+        // Update sliders from emotions
+        function updateSlidersFromEmotions() {
+            ['valence', 'arousal', 'dominance', 'trust'].forEach(name => {
+                document.getElementById(`${name}-slider`).value = emotions[name];
+                document.getElementById(`${name}-value`).textContent = emotions[name].toFixed(2);
+            });
+            updateEmotionLabel();
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('stat-messages').textContent = messageCount;
+            document.getElementById('stat-changes').textContent = emotionChanges;
+        }
+
+        // NPC selection
+        document.querySelectorAll('.npc-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.npc-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+
+                currentNPC = card.dataset.npc;
+                emotions = { ...npcs[currentNPC].initialEmotions };
+                updateSlidersFromEmotions();
+
+                clearConversation();
+                addMessage('npc', `Hello, traveler. I'm ${npcs[currentNPC].name}, ${npcs[currentNPC].role}.`);
+            });
+        });
+
+        // Clear conversation
+        function clearConversation() {
+            document.getElementById('messages').innerHTML = '';
+            conversation = [];
+            messageCount = 1;
+            emotionChanges = 0;
+            updateStats();
+        }
+
+        // Export conversation
+        function exportConversation() {
+            const data = {
+                npc: npcs[currentNPC],
+                conversation,
+                finalEmotions: emotions,
+                stats: {
+                    messages: messageCount,
+                    emotionChanges
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `conversation_${currentNPC}_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            if (window.BigPlayUI) {
+                window.BigPlayUI.analytics.track('conversation_exported', {
+                    npc: currentNPC,
+                    messages: messageCount
+                });
+            }
+        }
+
+        // Reset emotions
+        function resetEmotions() {
+            emotions = { ...npcs[currentNPC].initialEmotions };
+            updateSlidersFromEmotions();
+        }
+
+        // Enter to send
+        document.getElementById('message-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initialize
+        initThreeJS();
+        initSliders();
+        updateEmotionLabel();
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('emotion-canvas');
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>

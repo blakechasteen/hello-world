@@ -263,36 +263,52 @@
                 <a href="quest-flow.html" class="viz-link btn btn-primary">Explore Quests →</a>
             </div>
 
-            <div class="viz-card">
+            <div class="viz-card" onclick="window.location.href='multiplayer-architecture.html'">
                 <div class="viz-icon">🌐</div>
                 <div class="viz-title">Multiplayer Architecture</div>
                 <div class="viz-description">
                     WebSocket connections, shared state, and real-time synchronization.
                 </div>
                 <ul class="viz-features">
-                    <li>Connection flow diagrams</li>
-                    <li>Player presence tracking</li>
-                    <li>NPC conversation locking</li>
-                    <li>Broadcast patterns</li>
+                    <li>Animated sequence diagrams</li>
+                    <li>4 interactive scenarios</li>
+                    <li>NPC conversation locking flow</li>
+                    <li>Broadcast patterns visualization</li>
                 </ul>
-                <span class="badge">Coming Soon</span>
-                <a href="#" class="viz-link" style="opacity: 0.5; pointer-events: none;">Coming Soon</a>
+                <span class="badge badge-success" data-tooltip="Interactive sequence diagrams with animations">Animated SVG</span>
+                <a href="multiplayer-architecture.html" class="viz-link btn btn-primary">Explore Multiplayer →</a>
             </div>
 
-            <div class="viz-card">
+            <div class="viz-card" onclick="window.location.href='npc-relationships.html'">
                 <div class="viz-icon">🕸️</div>
                 <div class="viz-title">NPC Relationship Graph</div>
                 <div class="viz-description">
                     Network graph showing NPC relationships, alliances, and rivalries.
                 </div>
                 <ul class="viz-features">
-                    <li>Force-directed graph layout</li>
-                    <li>Relationship type coloring</li>
-                    <li>Trust/friendship strength indicators</li>
-                    <li>Interactive exploration</li>
+                    <li>D3.js force-directed layout</li>
+                    <li>7 relationship types (friend, enemy, romance, etc.)</li>
+                    <li>3 different worlds to explore</li>
+                    <li>Drag nodes, zoom, filter by type</li>
                 </ul>
-                <span class="badge">Coming Soon</span>
-                <a href="#" class="viz-link" style="opacity: 0.5; pointer-events: none;">Coming Soon</a>
+                <span class="badge badge-success" data-tooltip="Drag nodes to explore - filter by relationship type">D3.js Interactive</span>
+                <a href="npc-relationships.html" class="viz-link btn btn-primary">Explore Relationships →</a>
+            </div>
+
+            <div class="viz-card" onclick="window.location.href='npc-playground.html'">
+                <div class="viz-icon">🎮</div>
+                <div class="viz-title">Live NPC Playground</div>
+                <div class="viz-description">
+                    Interactive environment to chat with NPCs and watch emotions evolve in real-time.
+                </div>
+                <ul class="viz-features">
+                    <li>3D emotion sphere (Three.js WebGL)</li>
+                    <li>Real-time PAD emotion sliders</li>
+                    <li>3 different NPC personalities</li>
+                    <li>Export conversation as JSON</li>
+                </ul>
+                <span class="badge badge-success" data-tooltip="Chat with NPCs and see their emotions change">Interactive Playground</span>
+                <a href="npc-playground.html" class="viz-link btn btn-primary">Try Playground →</a>
             </div>
 
             <div class="viz-card">
