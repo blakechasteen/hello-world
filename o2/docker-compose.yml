@@ -1,0 +1,204 @@
+version: '3.8'
+
+services:
+  # Matrix Homeserver (Synapse)
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: o2-synapse
+    restart: unless-stopped
+    environment:
+      - SYNAPSE_SERVER_NAME=${MATRIX_SERVER_NAME:-matrix.localhost}
+      - SYNAPSE_REPORT_STATS=no
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=synapse
+      - POSTGRES_USER=synapse
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./synapse-data:/data
+      - ./synapse-config:/config
+    ports:
+      - "8008:8008"  # Client-server API
+      - "8448:8448"  # Server-server federation
+    depends_on:
+      - postgres
+    networks:
+      - o2-network
+
+  # PostgreSQL (Synapse state + O2 state)
+  postgres:
+    image: postgres:15-alpine
+    container_name: o2-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=synapse
+      - POSTGRES_USER=synapse
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - o2-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synapse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (sessions, caching)
+  redis:
+    image: redis:7-alpine
+    container_name: o2-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - o2-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # O2 Bot (Main application)
+  o2-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: o2-bot
+    restart: unless-stopped
+    environment:
+      # Matrix configuration
+      - MATRIX_HOMESERVER=http://synapse:8008
+      - MATRIX_USER_ID=@o2:${MATRIX_SERVER_NAME:-matrix.localhost}
+      - MATRIX_PASSWORD=${O2_BOT_PASSWORD}
+      - MATRIX_SERVER_NAME=${MATRIX_SERVER_NAME:-matrix.localhost}
+
+      # HoloLoom configuration
+      - HOLOLOOM_CONFIG=${HOLOLOOM_CONFIG:-fast}
+      - HOLOLOOM_MEMORY_BACKEND=${HOLOLOOM_MEMORY_BACKEND:-inmemory}
+
+      # LLM configuration
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+
+      # Database configuration
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=o2
+      - POSTGRES_USER=o2
+      - POSTGRES_PASSWORD=${O2_DB_PASSWORD}
+
+      # Redis configuration
+      - REDIS_URL=redis://redis:6379/0
+
+      # O2 configuration
+      - O2_ENABLE_GOVERNANCE=${O2_ENABLE_GOVERNANCE:-true}
+      - O2_ENABLE_SWARM=${O2_ENABLE_SWARM:-true}
+      - O2_ENABLE_ALIGNMENT=${O2_ENABLE_ALIGNMENT:-true}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./o2-data:/app/data
+      - ./o2-config:/app/config
+      - ./user-memories:/app/memories  # User-owned memory graphs
+    depends_on:
+      - synapse
+      - postgres
+      - redis
+    networks:
+      - o2-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8080/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Neo4j (Optional - for production knowledge graphs)
+  neo4j:
+    image: neo4j:5-community
+    container_name: o2-neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-changeme}
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - ./neo4j-data:/data
+      - ./neo4j-logs:/logs
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    networks:
+      - o2-network
+    profiles:
+      - production
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p ${NEO4J_PASSWORD:-changeme} 'RETURN 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Qdrant (Optional - for production vector store)
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: o2-qdrant
+    restart: unless-stopped
+    volumes:
+      - ./qdrant-data:/qdrant/storage
+    ports:
+      - "6333:6333"  # HTTP API
+      - "6334:6334"  # gRPC
+    networks:
+      - o2-network
+    profiles:
+      - production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx (Reverse proxy for production)
+  nginx:
+    image: nginx:alpine
+    container_name: o2-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-config:/etc/nginx/conf.d
+      - ./certbot-data:/var/www/certbot
+      - ./certbot-certs:/etc/letsencrypt
+    depends_on:
+      - synapse
+      - o2-bot
+    networks:
+      - o2-network
+    profiles:
+      - production
+
+  # Certbot (SSL certificates for production)
+  certbot:
+    image: certbot/certbot
+    container_name: o2-certbot
+    volumes:
+      - ./certbot-data:/var/www/certbot
+      - ./certbot-certs:/etc/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    profiles:
+      - production
+
+networks:
+  o2-network:
+    driver: bridge
+
+volumes:
+  synapse-data:
+  postgres-data:
+  redis-data:
+  o2-data:
+  neo4j-data:
+  qdrant-data:
+  user-memories:
