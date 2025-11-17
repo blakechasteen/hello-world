@@ -11,7 +11,7 @@ Design Pattern:
 - Optional callbacks for real-time monitoring
 
 Usage:
-    from HoloLoom.utils.timing import TimingContext
+    from HoloLoom.Utils.timing import TimingContext
 
     # Simple timing
     async with TimingContext("operation_name") as timer:

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 
-from HoloLoom.utils.time_bucket import time_bucket, to_utc_datetime
+from HoloLoom.Utils.time_bucket import time_bucket, to_utc_datetime
 from HoloLoom.memory.graph import KG
 
 

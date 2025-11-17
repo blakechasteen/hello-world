@@ -26,7 +26,7 @@ from pathlib import Path
 import numpy as np
 import networkx as nx
 
-from HoloLoom.utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
+from HoloLoom.Utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
 
 # ============================================================================
 # Data Structures
