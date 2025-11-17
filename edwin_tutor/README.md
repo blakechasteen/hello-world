@@ -145,9 +145,11 @@ See [`ui/markdown/README.md`](ui/markdown/README.md) for full documentation!
 ### Beginner Lessons (1-10)
 - ✅ Lesson 1: What is HoloLoom?
 - ✅ Lesson 2: Your First Query
-- 🔜 Lesson 3: Understanding Memory Shards *(coming soon)*
-- 🔜 Lesson 4: Configuration Modes *(coming soon)*
-- 🔜 And more...
+- ✅ Lesson 3: Understanding Memory Shards
+- ✅ Lesson 4: Configuration Modes Explained
+- ✅ Lesson 5: Knowledge Graphs - How Memories Connect
+- 🔜 Lesson 6: Thompson Sampling & Exploration
+- 🔜 Lessons 7-10 *(coming soon)*
 
 ### Intermediate Lessons (11-20)
 - 🔜 Memory Backends
@@ -319,11 +321,14 @@ Edit `core/progress.py` → `_define_badges()` method
 - ✅ Web UI with modern interface
 - ✅ Jupyter notebook integration (2 lessons)
 - ✅ Markdown reference documentation
-- 🔜 8 more beginner lessons (coming in Phase 3)
+
+### 🚧 Phase 3 (In Progress) - 50% Complete!
+- ✅ 3 more beginner lessons added (Lessons 3-5)
+- 🔜 5 more beginner lessons (6-10)
 - 🔜 AI tutor (HoloLoom helps teach HoloLoom!)
 
-### 💭 Phase 3 (Future)
-- All 30 lessons (beginner → advanced)
+### 💭 Phase 4 & Beyond (Future)
+- Complete all 30 lessons (beginner → intermediate → advanced)
 - Video tutorials
 - Community lesson sharing
 - Multi-language support

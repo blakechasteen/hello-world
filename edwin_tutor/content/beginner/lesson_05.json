@@ -1,0 +1,62 @@
+{
+  "id": "beginner_05",
+  "title": "🕸️ Knowledge Graphs - How Memories Connect",
+  "description": "Discover how HoloLoom connects related memories to build understanding",
+  "lesson_type": "concept",
+  "difficulty": "beginner",
+  "content": "# Knowledge Graphs - How Memories Connect\n\n## What is a Knowledge Graph?\n\nA knowledge graph is like a **web of connected ideas**. Instead of storing facts in isolation, HoloLoom connects related memories together.\n\n### Visual Example\n\n```\n    Python ─────IS_A────► Programming Language\n      │                         │\n      │                         │\n     USES                     USES\n      │                         │\n      ▼                         ▼\n  Dynamic Typing          Neural Networks\n      │                         │\n      │                         │\n   PART_OF                   USED_BY\n      │                         │\n      ▼                         ▼\n   Type System              HoloLoom\n```\n\nEach box is a **memory shard**, and arrows are **relationships**!\n\n## Why Knowledge Graphs?\n\n### Traditional Storage (Flat List)\n\n```\n[\n  \"Python is a programming language\",\n  \"Python uses dynamic typing\",\n  \"HoloLoom uses neural networks\",\n  \"Neural networks are ML models\"\n]\n```\n\n**Problem:** No connections! Each fact is isolated.\n\n### Knowledge Graph (Connected Web)\n\n```\nPython ───IS_A──► Programming Language\n  │\n  └───USES──► Dynamic Typing\n\nHoloLoom ───USES──► Neural Networks\n  │                     │\n  │                  IS_A\n  │                     │\n  └───────────────► ML Model\n```\n\n**Benefit:** Connections reveal relationships!\n\n## Types of Relationships\n\nHoloLoom uses **7 relationship types**:\n\n### 1. IS_A (Taxonomy)\n\"X is a type of Y\"\n\n```\nPython ───IS_A──► Programming Language\nDog ───IS_A──► Animal\nThompson Sampling ───IS_A──► Bandit Algorithm\n```\n\n### 2. USES (Functional)\n\"X uses Y\"\n\n```\nHoloLoom ───USES──► Neural Networks\nPython ───USES──► Dynamic Typing\nRL ───USES──► Rewards\n```\n\n### 3. MENTIONS (Reference)\n\"X mentions Y\"\n\n```\nPaper ───MENTIONS──► Algorithm\nDocumentation ───MENTIONS──► API\n```\n\n### 4. LEADS_TO (Causal)\n\"X causes Y\"\n\n```\nOverfitting ───LEADS_TO──► Poor Generalization\nExploration ───LEADS_TO──► Discovery\n```\n\n### 5. PART_OF (Composition)\n\"X is part of Y\"\n\n```\nNeuron ───PART_OF──► Neural Network\nChapter ───PART_OF──► Book\n```\n\n### 6. IN_TIME (Temporal)\n\"X happens at/during Y\"\n\n```\nEvent ───IN_TIME──► 2024\nMeeting ───IN_TIME──► Morning\n```\n\n### 7. OCCURRED_AT (Event Location)\n\"X happened at Y\"\n\n```\nConference ───OCCURRED_AT──► San Francisco\nBattle ───OCCURRED_AT──► Waterloo\n```\n\n## How HoloLoom Builds the Graph\n\n### Automatic Connection\n\nWhen you add memory shards, HoloLoom automatically:\n\n1. **Extracts entities** (nouns, key concepts)\n2. **Detects relationships** (verbs, connections)\n3. **Creates edges** between related shards\n4. **Builds the graph** over time\n\n### Example: Adding Shards\n\n```python\nshards = [\n    MemoryShard(\n        text=\"Thompson Sampling is a Bayesian approach to exploration\",\n        source=\"rl\"\n    ),\n    MemoryShard(\n        text=\"Bayesian methods use probability distributions\",\n        source=\"stats\"\n    ),\n    MemoryShard(\n        text=\"Exploration helps discover new strategies\",\n        source=\"rl\"\n    )\n]\n\n# HoloLoom automatically connects:\n# Thompson Sampling ───IS_A──► Bayesian Method\n# Thompson Sampling ───USES──► Exploration\n# Bayesian Methods ───USES──► Probability Distributions\n```\n\n## Graph Traversal\n\nWhen you query HoloLoom, it **traverses the graph**:\n\n### Query: \"How does Thompson Sampling work?\"\n\n**Step 1:** Find starting node\n```\nThompson Sampling ◄── Start here\n```\n\n**Step 2:** Follow relationships\n```\nThompson Sampling\n    ├─IS_A─► Bayesian Method ───USES──► Probability\n    ├─USES─► Exploration ───LEADS_TO──► Discovery\n    └─PART_OF─► Bandit Algorithms ───USES──► Rewards\n```\n\n**Step 3:** Synthesize answer\nCombines all connected knowledge into coherent response!\n\n## Multi-Hop Reasoning\n\nKnowledge graphs enable **multi-hop queries**:\n\n### Example: \"What's the connection between Python and HoloLoom?\"\n\n```\nPython\n  └─IS_A─► Programming Language\n      └─USED_BY─► HoloLoom\n\n✓ Found connection in 2 hops!\n```\n\n### Example: \"How does exploration relate to better models?\"\n\n```\nExploration\n  └─LEADS_TO─► Discovery\n      └─LEADS_TO─► Better Strategies\n          └─LEADS_TO─► Improved Models\n\n✓ Found connection in 3 hops!\n```\n\n## Graph Features\n\n### Spectral Features\n\nHoloLoom analyzes the **shape** of your knowledge graph:\n\n- **Degree centrality:** Which concepts are most connected?\n- **Clustering coefficient:** How tightly connected are neighborhoods?\n- **Shortest paths:** What's the quickest connection between concepts?\n\n### Example:\n\n```\nMost connected concepts in your graph:\n1. Neural Networks (25 connections)\n2. Machine Learning (22 connections)\n3. Python (18 connections)\n```\n\n## Building a Rich Knowledge Graph\n\n### Tips for Better Graphs\n\n**1. Add related shards together:**\n```python\n# Good: Related concepts in sequence\nshards = [\n    MemoryShard(text=\"Supervised learning uses labeled data\", source=\"ml\"),\n    MemoryShard(text=\"Labeled data includes correct answers\", source=\"ml\"),\n    MemoryShard(text=\"Correct answers guide model training\", source=\"ml\")\n]\n# Creates: Supervised Learning → Labeled Data → Correct Answers → Training\n```\n\n**2. Use consistent terminology:**\n```python\n# Good: Consistent terms\nMemoryShard(text=\"Neural networks learn patterns\", source=\"ml\")\nMemoryShard(text=\"Neural networks use backpropagation\", source=\"ml\")\n\n# Bad: Inconsistent (won't connect well)\nMemoryShard(text=\"Neural nets learn patterns\", source=\"ml\")\nMemoryShard(text=\"NNs use backprop\", source=\"ml\")\n```\n\n**3. Make relationships explicit:**\n```python\n# Good: Clear relationship\nMemoryShard(\n    text=\"Thompson Sampling is a type of bandit algorithm\",\n    source=\"rl\"\n)\n\n# Less clear:\nMemoryShard(\n    text=\"Thompson Sampling - bandit algorithm\",\n    source=\"rl\"\n)\n```\n\n## Viewing Your Graph\n\nYou can inspect HoloLoom's knowledge graph:\n\n```python\nfrom HoloLoom.memory.graph import KG\n\n# Create a knowledge graph\nkg = KG()\n\n# Add some edges (relationships)\nkg.add_edge(\"Python\", \"Programming Language\", \"IS_A\")\nkg.add_edge(\"Python\", \"Dynamic Typing\", \"USES\")\nkg.add_edge(\"HoloLoom\", \"Python\", \"USES\")\n\n# Query the graph\nconnections = kg.get_neighbors(\"Python\")\nprint(connections)  # Shows all connected concepts\n\n# Find paths\npath = kg.find_path(\"HoloLoom\", \"Programming Language\")\nprint(path)  # HoloLoom → Python → Programming Language\n```\n\n## Real-World Example\n\nLet's build a small knowledge graph about machine learning:\n\n```python\nml_shards = [\n    # Core concept\n    MemoryShard(\n        text=\"Machine learning is a subset of artificial intelligence\",\n        source=\"ml_basics\"\n    ),\n    \n    # Types\n    MemoryShard(\n        text=\"Supervised learning is a type of machine learning\",\n        source=\"ml_basics\"\n    ),\n    MemoryShard(\n        text=\"Unsupervised learning is a type of machine learning\",\n        source=\"ml_basics\"\n    ),\n    \n    # Methods\n    MemoryShard(\n        text=\"Neural networks are used in deep learning\",\n        source=\"deep_learning\"\n    ),\n    MemoryShard(\n        text=\"Deep learning is a type of machine learning\",\n        source=\"deep_learning\"\n    ),\n    \n    # Applications\n    MemoryShard(\n        text=\"Computer vision uses convolutional neural networks\",\n        source=\"cv\"\n    )\n]\n\n# HoloLoom builds:\n# AI\n#  └─ Machine Learning\n#       ├─ Supervised Learning\n#       ├─ Unsupervised Learning\n#       └─ Deep Learning ──► Neural Networks ──► Computer Vision\n```\n\n## Key Takeaways\n\n1. **Knowledge graphs** connect related memories\n2. **7 relationship types** describe different connections\n3. **Graph traversal** enables multi-hop reasoning\n4. **Automatic connection** happens as you add shards\n5. **Rich graphs** come from consistent, related shards\n\n## What's Next?\n\nNow you understand:\n- ✅ Memory shards (individual facts)\n- ✅ Configuration modes (speed vs quality)\n- ✅ Knowledge graphs (how memories connect)\n\nNext lesson: Thompson Sampling and exploration!",
+  "code_examples": [
+    "from HoloLoom.memory.graph import KG\n\n# Create a knowledge graph\nkg = KG()\n\n# Add relationships\nkg.add_edge(\"Python\", \"Programming Language\", \"IS_A\")\nkg.add_edge(\"Python\", \"Dynamic Typing\", \"USES\")\nkg.add_edge(\"HoloLoom\", \"Python\", \"USES\")\nkg.add_edge(\"HoloLoom\", \"Neural Networks\", \"USES\")\n\n# Query connections\nneighbors = kg.get_neighbors(\"Python\")\nprint(f\"Python connects to: {neighbors}\")\n\n# Find paths\npath = kg.find_path(\"HoloLoom\", \"Dynamic Typing\")\nprint(f\"Path: {' → '.join(path)}\")"
+  ],
+  "quiz_questions": [
+    {
+      "question": "What is a knowledge graph?",
+      "options": [
+        "A type of bar chart",
+        "A web of connected memories showing relationships",
+        "A list of facts",
+        "A neural network"
+      ],
+      "correct": 1,
+      "explanation": "A knowledge graph connects related memories together, showing how concepts relate to each other through different types of relationships."
+    },
+    {
+      "question": "What does the IS_A relationship represent?",
+      "options": [
+        "Location",
+        "Time",
+        "Taxonomy (X is a type of Y)",
+        "Causation"
+      ],
+      "correct": 2,
+      "explanation": "IS_A represents taxonomy - it shows that one concept is a type of another. For example, 'Python IS_A Programming Language'."
+    },
+    {
+      "question": "How does HoloLoom use the knowledge graph?",
+      "options": [
+        "It doesn't, graphs are just for visualization",
+        "Only for storage",
+        "To traverse connections and synthesize answers from related memories",
+        "To delete old memories"
+      ],
+      "correct": 2,
+      "explanation": "HoloLoom traverses the knowledge graph to find related memories and synthesize them into comprehensive answers. This enables multi-hop reasoning."
+    },
+    {
+      "question": "What makes a good knowledge graph?",
+      "options": [
+        "As many isolated nodes as possible",
+        "Related shards with consistent terminology and clear relationships",
+        "Random connections between unrelated concepts",
+        "Only using one type of relationship"
+      ],
+      "correct": 1,
+      "explanation": "Good knowledge graphs come from adding related shards with consistent terminology and making relationships explicit. This creates meaningful connections."
+    }
+  ],
+  "prerequisites": ["beginner_01", "beginner_02", "beginner_03", "beginner_04"],
+  "next_lessons": ["beginner_06"],
+  "xp_reward": 100,
+  "estimated_time": 18,
+  "tags": ["knowledge-graph", "connections", "relationships", "graph-theory"]
+}

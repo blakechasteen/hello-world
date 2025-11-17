@@ -1,0 +1,85 @@
+{
+  "id": "beginner_04",
+  "title": "⚙️ Configuration Modes Explained",
+  "description": "Master BARE, FAST, and FUSED modes - choose the right speed/quality balance",
+  "lesson_type": "concept",
+  "difficulty": "beginner",
+  "content": "# Configuration Modes Explained\n\n## The Speed vs Quality Tradeoff\n\nHoloLoom offers three modes, each balancing **speed** and **quality** differently:\n\n```\nBARE  ──────► Fastest (~50ms)  │ Simplest processing\nFAST  ──────► Balanced (~150ms) │ Good quality + speed ⭐\nFUSED ──────► Smartest (~300ms) │ Full analysis\n```\n\n## The Three Modes\n\n### 🏃 BARE Mode (~50ms)\n\n**What it does:**\n- Uses regex-based motif detection (no ML)\n- Single-scale embeddings (384D only)\n- Simple policy network\n- Minimal retrieval\n\n**When to use:**\n- Simple factual lookups\n- Quick queries\n- When speed is critical\n- Prototyping and testing\n\n**Example queries:**\n- \"What is the capital of France?\"\n- \"Define recursion\"\n- \"Who created Python?\"\n\n**Code:**\n```python\nconfig = Config.bare()\n```\n\n### ⚡ FAST Mode (~150ms) ⭐ **RECOMMENDED**\n\n**What it does:**\n- Hybrid motif detection (regex + basic ML)\n- Two-scale embeddings (192D + 384D)\n- Neural policy with basic Thompson Sampling\n- Moderate retrieval depth\n\n**When to use:**\n- Most queries (this is the default!)\n- Good balance of speed and quality\n- Day-to-day usage\n- When in doubt\n\n**Example queries:**\n- \"Explain Thompson Sampling\"\n- \"How does memory retrieval work?\"\n- \"Compare supervised and unsupervised learning\"\n\n**Code:**\n```python\nconfig = Config.fast()  # Most common choice!\n```\n\n### 🧠 FUSED Mode (~300ms)\n\n**What it does:**\n- Full ML-based motif detection\n- Three-scale embeddings (96D + 192D + 384D)\n- Advanced policy with full Thompson Sampling\n- Deep multi-scale retrieval\n- Graph traversal and spectral features\n\n**When to use:**\n- Complex reasoning tasks\n- Deep analysis required\n- Research queries\n- When quality matters more than speed\n\n**Example queries:**\n- \"Compare three different RL algorithms and their tradeoffs\"\n- \"Analyze the relationship between X and Y\"\n- \"Explain this complex concept with examples\"\n\n**Code:**\n```python\nconfig = Config.fused()\n```\n\n## Performance Comparison\n\n| Feature | BARE | FAST | FUSED |\n|---------|------|------|-------|\n| **Latency** | ~50ms | ~150ms | ~300ms |\n| **Motif Detection** | Regex only | Hybrid | Full ML |\n| **Embedding Scales** | 1 (384D) | 2 (192D, 384D) | 3 (96D, 192D, 384D) |\n| **Policy** | Simple | Neural + TS | Advanced + Full TS |\n| **Retrieval Depth** | Shallow | Medium | Deep |\n| **Quality** | Good | Great | Excellent |\n| **Use Case** | Quick lookups | Daily use | Complex analysis |\n\n## How to Choose?\n\n### Decision Tree\n\n```\nIs it a simple factual query?\n├─ YES → Use BARE\n└─ NO\n   │\n   Is speed more important than perfect accuracy?\n   ├─ YES → Use FAST\n   └─ NO → Use FUSED\n```\n\n### Rule of Thumb\n\n**Start with FAST** (it's the default for a reason!)\n\n- Too slow? → Try BARE\n- Need more depth? → Try FUSED\n\n## Customizing Configuration\n\nYou can customize any mode:\n\n```python\nconfig = Config.fast()\n\n# Adjust retrieval\nconfig.max_retrieval = 10  # Get top 10 memories (default: 5)\n\n# Adjust exploration\nconfig.temperature = 0.8  # More exploration (default: 0.7)\n\n# Adjust timeout\nconfig.timeout_ms = 500  # Allow up to 500ms\n```\n\n## Real-World Examples\n\n### Example 1: Quick Lookup (BARE)\n\n```python\nfrom HoloLoom.config import Config\nfrom HoloLoom.weaving_orchestrator import WeavingOrchestrator\nfrom HoloLoom.documentation.types import Query, MemoryShard\n\nshards = [\n    MemoryShard(text=\"Paris is the capital of France\", source=\"geography\")\n]\n\nconfig = Config.bare()  # Fast!\n\nasync with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:\n    result = await shuttle.weave(Query(text=\"What is the capital of France?\"))\n    # Returns in ~50ms\n```\n\n### Example 2: Standard Query (FAST)\n\n```python\nshards = [\n    MemoryShard(text=\"Thompson Sampling is a Bayesian approach\", source=\"rl\"),\n    MemoryShard(text=\"It balances exploration and exploitation\", source=\"rl\"),\n    MemoryShard(text=\"Thompson Sampling uses prior distributions\", source=\"rl\")\n]\n\nconfig = Config.fast()  # Balanced\n\nasync with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:\n    result = await shuttle.weave(Query(text=\"Explain Thompson Sampling\"))\n    # Returns in ~150ms with good synthesis\n```\n\n### Example 3: Complex Analysis (FUSED)\n\n```python\nshards = [\n    MemoryShard(text=\"Q-learning is model-free RL\", source=\"rl\"),\n    MemoryShard(text=\"SARSA is on-policy RL\", source=\"rl\"),\n    MemoryShard(text=\"PPO is policy gradient method\", source=\"rl\"),\n    # ... many more shards\n]\n\nconfig = Config.fused()  # Maximum quality\n\nasync with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:\n    result = await shuttle.weave(\n        Query(text=\"Compare Q-learning, SARSA, and PPO - which is best for sparse rewards?\")\n    )\n    # Returns in ~300ms with deep analysis\n```\n\n## Performance Tips\n\n### 💡 Optimization Strategies\n\n1. **Use BARE for batch processing** - When processing many simple queries\n2. **Use FAST as default** - Best bang for your buck\n3. **Use FUSED selectively** - Only when you need deep analysis\n4. **Profile your queries** - Measure actual latency in your use case\n5. **Consider caching** - Repeated queries can be cached\n\n### 🚀 Speeding Up FUSED Mode\n\nIf you need FUSED quality but faster:\n\n```python\nconfig = Config.fused()\nconfig.max_retrieval = 3  # Reduce from default 7\nconfig.timeout_ms = 200    # Set tighter timeout\n```\n\n## Advanced: Mode Switching\n\nYou can switch modes based on query characteristics:\n\n```python\ndef choose_mode(query_text):\n    \"\"\"Intelligently choose mode based on query.\"\"\"\n    # Simple heuristics\n    if len(query_text.split()) < 5:\n        return Config.bare()  # Short query = simple\n    elif \"compare\" in query_text.lower() or \"analyze\" in query_text.lower():\n        return Config.fused()  # Complex query\n    else:\n        return Config.fast()  # Default\n\nquery = Query(text=\"Compare X and Y\")\nconfig = choose_mode(query.text)  # Returns Config.fused()\n```\n\n## Key Takeaways\n\n1. **BARE** (~50ms) = Fast and simple\n2. **FAST** (~150ms) = Balanced and recommended ⭐\n3. **FUSED** (~300ms) = Slow but thorough\n4. **Start with FAST** and adjust as needed\n5. **Customize** any mode for your specific needs\n\nNext lesson: Knowledge Graphs and Memory Connections!",
+  "code_examples": [
+    "from HoloLoom.config import Config\n\n# Three ways to create configs\nbare_config = Config.bare()    # ~50ms\nfast_config = Config.fast()    # ~150ms (recommended)\nfused_config = Config.fused()  # ~300ms\n\n# Customize a config\ncustom_config = Config.fast()\ncustom_config.max_retrieval = 10\ncustom_config.temperature = 0.9",
+    "import asyncio\nfrom HoloLoom.config import Config\nfrom HoloLoom.weaving_orchestrator import WeavingOrchestrator\nfrom HoloLoom.documentation.types import Query, MemoryShard\n\nasync def compare_modes():\n    shards = [MemoryShard(text=\"Test shard\", source=\"test\")]\n    query = Query(text=\"What is this?\")\n    \n    # Try all three modes\n    for mode_name, config in [\n        (\"BARE\", Config.bare()),\n        (\"FAST\", Config.fast()),\n        (\"FUSED\", Config.fused())\n    ]:\n        async with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:\n            result = await shuttle.weave(query)\n            print(f\"{mode_name}: {result.response}\")\n\nasyncio.run(compare_modes())"
+  ],
+  "quiz_questions": [
+    {
+      "question": "Which mode should you use for most queries?",
+      "options": [
+        "BARE - It's fastest",
+        "FAST - Good balance of speed and quality",
+        "FUSED - It's most accurate",
+        "It doesn't matter"
+      ],
+      "correct": 1,
+      "explanation": "FAST mode (~150ms) is recommended for most queries because it balances speed and quality. Use BARE when speed is critical, FUSED when quality is critical."
+    },
+    {
+      "question": "What's the main difference between modes?",
+      "options": [
+        "The color of the output",
+        "The tradeoff between speed and processing depth",
+        "The programming language used",
+        "The number of memory shards"
+      ],
+      "correct": 1,
+      "explanation": "The modes differ in how deeply they process queries - BARE is fast but simple, FAST is balanced, FUSED is slow but thorough."
+    },
+    {
+      "question": "When should you use FUSED mode?",
+      "options": [
+        "Always, it's the best",
+        "Never, it's too slow",
+        "For complex analysis where quality matters more than speed",
+        "Only on Tuesdays"
+      ],
+      "correct": 2,
+      "explanation": "FUSED mode is best for complex queries requiring deep analysis, like comparing multiple concepts or analyzing relationships."
+    },
+    {
+      "question": "How can you customize a configuration?",
+      "options": [
+        "You can't, they're fixed",
+        "Set properties like max_retrieval and temperature",
+        "Recompile HoloLoom from source",
+        "Only through environment variables"
+      ],
+      "correct": 1,
+      "explanation": "After creating a config, you can set properties like config.max_retrieval, config.temperature, config.timeout_ms to customize behavior."
+    }
+  ],
+  "challenges": [
+    {
+      "description": "Create a FAST configuration and set max_retrieval to 8",
+      "starter_code": "from HoloLoom.config import Config\n\n# Create FAST config and customize it\nconfig = # YOUR CODE HERE\n",
+      "solution": "from HoloLoom.config import Config\n\nconfig = Config.fast()\nconfig.max_retrieval = 8",
+      "hints": [
+        {
+          "level": 1,
+          "text": "Use Config.fast() to create a FAST mode configuration"
+        },
+        {
+          "level": 2,
+          "text": "Set the max_retrieval property on the config object"
+        },
+        {
+          "level": 3,
+          "text": "config = Config.fast()\\nconfig.max_retrieval = 8"
+        }
+      ],
+      "points": 25
+    }
+  ],
+  "prerequisites": ["beginner_01", "beginner_02", "beginner_03"],
+  "next_lessons": ["beginner_05"],
+  "xp_reward": 100,
+  "estimated_time": 15,
+  "tags": ["configuration", "performance", "modes"]
+}
