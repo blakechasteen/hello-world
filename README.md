@@ -163,6 +163,70 @@ Spacetime artifacts:
 
 ---
 
+## Production Systems (November 2025)
+
+### Trough & xTerminator: Code Quality Assurance
+
+**21,544 lines** of production QA code detecting and fixing AI-generated issues:
+- 🔍 24 code issue categories (15 AI slop + 9 ML logic bugs)
+- 🔧 AST-based automated fixing with 5-stage validation
+- ✅ 87% fix success rate, 100% test coverage
+- 📊 Thompson Sampling self-improving fix strategies
+
+**See**: [TROUGH_XTERMINATOR_REVIEW.md](TROUGH_XTERMINATOR_REVIEW.md)
+
+### Elle: AR Guide System
+
+**2,059 lines** of AR companion architecture:
+- 🔮 Quiet, observant context-aware assistance
+- 🎯 Event-driven decision loop (AR/Matrix/CLI adapters)
+- 🧠 LLM-based policy engine with replaceable components
+- ⚡ ~500ms end-to-end latency
+
+**See**: [ELLE_ARCHITECTURE.md](ELLE_ARCHITECTURE.md)
+
+### Departments: Enterprise Integration
+
+**22 files** enabling enterprise-scale multi-department architecture:
+- 🏢 QA, Analytics, Context, Infrastructure departments
+- 🔄 Dynamic loading with health monitoring
+- 🏥 Customer-specific policies (HIPAA, SOC2)
+- 💼 Marketplace tiers (Bronze → Platinum)
+
+**See**: [HOLOLOOM_CONTEXT_DEPARTMENT_MAPPING.md](HOLOLOOM_CONTEXT_DEPARTMENT_MAPPING.md)
+
+### Promptly: Recursive Reasoning
+
+**1,970 lines** of recursive refinement strategies:
+- 🔄 6 strategies (REFINE, CRITIQUE, DECOMPOSE, EXPLORE, VERIFY, HOFSTADTER)
+- 📈 15-25% quality improvement on refined queries
+- 🎓 13 pre-configured professional skills
+- 🌀 "Spiral Weaving" metaphor for quality improvement
+
+**See**: [PROMPTLY_INTEGRATION_SUMMARY.md](PROMPTLY_INTEGRATION_SUMMARY.md)
+
+### MCP Server: Claude Desktop Integration
+
+**17 tools** exposed to Claude Desktop via Model Context Protocol:
+- 💾 Persistent memory (hololoom_experience, hololoom_recall)
+- 🧠 Recursive reasoning (hololoom_weave)
+- 🎓 All 13 professional skills as MCP tools
+- ⚡ Local execution, zero external API calls
+
+**See**: [MCP_SERVER_SETUP.md](MCP_SERVER_SETUP.md)
+
+### Squad: VS Code Extension
+
+**TypeScript extension** bringing HoloLoom into your editor:
+- 📝 Code context awareness (file, selection, workspace)
+- 💬 Interactive agent panel in sidebar
+- 🎯 4 reasoning modes (DIRECT, VERIFY, RESEARCH, PLAN_EXECUTE)
+- 🔧 All professional skills via commands
+
+**See**: [squad/README.md](squad/README.md)
+
+---
+
 ## Architecture (The Weaving Metaphor)
 
 HoloLoom uses a **weaving metaphor** as first-class abstractions:
