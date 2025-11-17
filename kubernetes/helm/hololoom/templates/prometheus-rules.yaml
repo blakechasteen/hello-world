@@ -1,0 +1,180 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheus.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hololoom.fullname" . }}-prometheus-rules
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: prometheus
+data:
+  hololoom-alerts.yml: |
+    groups:
+      - name: hololoom_api
+        interval: 30s
+        rules:
+          - alert: APIHighErrorRate
+            expr: rate(http_requests_total{job="hololoom-api",status=~"5.."}[5m]) > 0.05
+            for: 5m
+            labels:
+              severity: critical
+              component: api
+            annotations:
+              summary: "High error rate on API ({{ $value }})"
+              description: "API error rate is above 5% for 5 minutes"
+
+          - alert: APIHighLatency
+            expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="hololoom-api"}[5m])) > 1
+            for: 5m
+            labels:
+              severity: warning
+              component: api
+            annotations:
+              summary: "High latency on API ({{ $value }}s)"
+              description: "API 95th percentile latency is above 1 second"
+
+          - alert: APIDown
+            expr: up{job="hololoom-api"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: api
+            annotations:
+              summary: "API is down"
+              description: "API has been down for 1 minute"
+
+      - name: hololoom_workers
+        interval: 30s
+        rules:
+          - alert: WorkerQueueDepthHigh
+            expr: rabbitmq_queue_messages{queue=~"hololoom.*"} > 1000
+            for: 10m
+            labels:
+              severity: warning
+              component: worker
+            annotations:
+              summary: "High queue depth ({{ $value }} messages)"
+              description: "Worker queue depth is above 1000 for 10 minutes"
+
+          - alert: WorkerDown
+            expr: up{job="hololoom-worker"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: worker
+            annotations:
+              summary: "Worker is down"
+              description: "Worker has been down for 1 minute"
+
+          - alert: WorkerHighCPU
+            expr: rate(container_cpu_usage_seconds_total{pod=~".*worker.*"}[5m]) > 0.9
+            for: 10m
+            labels:
+              severity: warning
+              component: worker
+            annotations:
+              summary: "Worker high CPU usage ({{ $value }})"
+              description: "Worker CPU usage is above 90% for 10 minutes"
+
+      - name: hololoom_neo4j
+        interval: 30s
+        rules:
+          - alert: Neo4jDown
+            expr: up{job="neo4j"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: neo4j
+            annotations:
+              summary: "Neo4j is down"
+              description: "Neo4j has been down for 1 minute"
+
+          - alert: Neo4jHighMemory
+            expr: neo4j_database_pool_total_size{pool_type="page_cache"} / neo4j_database_pool_total_used{pool_type="page_cache"} < 1.2
+            for: 15m
+            labels:
+              severity: warning
+              component: neo4j
+            annotations:
+              summary: "Neo4j high memory usage"
+              description: "Neo4j page cache is nearly full"
+
+          - alert: Neo4jSlowQueries
+            expr: rate(neo4j_database_cypher_query_duration_seconds_sum[5m]) / rate(neo4j_database_cypher_query_duration_seconds_count[5m]) > 2
+            for: 10m
+            labels:
+              severity: warning
+              component: neo4j
+            annotations:
+              summary: "Neo4j slow queries detected"
+              description: "Average query duration is above 2 seconds"
+
+      - name: hololoom_qdrant
+        interval: 30s
+        rules:
+          - alert: QdrantDown
+            expr: up{job="qdrant"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: qdrant
+            annotations:
+              summary: "Qdrant is down"
+              description: "Qdrant has been down for 1 minute"
+
+      - name: hololoom_redis
+        interval: 30s
+        rules:
+          - alert: RedisDown
+            expr: up{job="redis"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: redis
+            annotations:
+              summary: "Redis is down"
+              description: "Redis has been down for 1 minute"
+
+          - alert: RedisHighMemory
+            expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+            for: 5m
+            labels:
+              severity: warning
+              component: redis
+            annotations:
+              summary: "Redis high memory usage ({{ $value }})"
+              description: "Redis memory usage is above 90%"
+
+      - name: hololoom_rabbitmq
+        interval: 30s
+        rules:
+          - alert: RabbitMQDown
+            expr: up{job="rabbitmq"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: rabbitmq
+            annotations:
+              summary: "RabbitMQ is down"
+              description: "RabbitMQ has been down for 1 minute"
+
+          - alert: RabbitMQHighMemory
+            expr: rabbitmq_process_resident_memory_bytes / rabbitmq_resident_memory_limit_bytes > 0.9
+            for: 5m
+            labels:
+              severity: warning
+              component: rabbitmq
+            annotations:
+              summary: "RabbitMQ high memory usage"
+              description: "RabbitMQ memory usage is above 90%"
+
+          - alert: RabbitMQDiskSpaceLow
+            expr: rabbitmq_disk_space_available_bytes < 1073741824
+            for: 5m
+            labels:
+              severity: warning
+              component: rabbitmq
+            annotations:
+              summary: "RabbitMQ low disk space"
+              description: "RabbitMQ has less than 1GB disk space available"
+{{- end }}

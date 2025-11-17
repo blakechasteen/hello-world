@@ -1,0 +1,50 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.alertmanager.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hololoom.fullname" . }}-alertmanager-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alertmanager
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+
+    route:
+      group_by: ['alertname', 'cluster', 'severity']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      receiver: 'default'
+      routes:
+        - match:
+            severity: critical
+          receiver: 'critical-alerts'
+          continue: true
+        - match:
+            severity: warning
+          receiver: 'warning-alerts'
+
+    receivers:
+      - name: 'default'
+        # Add webhook, email, or Slack configuration here
+
+      - name: 'critical-alerts'
+        # Add critical alert routing here
+        # webhook_configs:
+        #   - url: 'http://your-webhook-url/critical'
+
+      - name: 'warning-alerts'
+        # Add warning alert routing here
+        # webhook_configs:
+        #   - url: 'http://your-webhook-url/warning'
+
+    inhibit_rules:
+      - source_match:
+          severity: 'critical'
+        target_match:
+          severity: 'warning'
+        equal: ['alertname', 'component']
+{{- end }}

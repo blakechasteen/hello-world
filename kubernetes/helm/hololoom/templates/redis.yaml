@@ -1,0 +1,237 @@
+{{- if .Values.redis.enabled }}
+# Redis Master StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hololoom.fullname" . }}-redis-master
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis-master
+spec:
+  serviceName: {{ include "hololoom.fullname" . }}-redis-master
+  replicas: {{ .Values.redis.master.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "hololoom.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: redis-master
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      labels:
+        {{- include "hololoom.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: redis-master
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "hololoom.serviceAccountName" . }}
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+        runAsNonRoot: true
+      containers:
+        - name: redis
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.redis.master.image.repository }}:{{ .Values.redis.master.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.master.image.pullPolicy }}
+          command:
+            - redis-server
+            - /etc/redis/redis.conf
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+          env:
+            {{- if .Values.secrets.redis.password }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hololoom.fullname" . }}-secrets
+                  key: redis-password
+            {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.redis.master.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /etc/redis
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "hololoom.fullname" . }}-redis-config
+  {{- if .Values.redis.master.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          {{- include "hololoom.labels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - {{ .Values.redis.master.persistence.accessMode }}
+        {{- if .Values.redis.master.persistence.storageClass }}
+        {{- if (eq "-" .Values.redis.master.persistence.storageClass) }}
+        storageClassName: ""
+        {{- else }}
+        storageClassName: {{ .Values.redis.master.persistence.storageClass }}
+        {{- end }}
+        {{- else }}
+        storageClassName: {{ .Values.global.storageClass }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.redis.master.persistence.size }}
+  {{- else }}
+        - name: data
+          emptyDir: {}
+  {{- end }}
+---
+{{- if eq .Values.redis.architecture "replication" }}
+# Redis Replica Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hololoom.fullname" . }}-redis-replica
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis-replica
+spec:
+  replicas: {{ .Values.redis.replica.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "hololoom.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: redis-replica
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      labels:
+        {{- include "hololoom.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: redis-replica
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "hololoom.serviceAccountName" . }}
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+        runAsNonRoot: true
+      containers:
+        - name: redis
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.redis.master.image.repository }}:{{ .Values.redis.master.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.master.image.pullPolicy }}
+          command:
+            - redis-server
+            - /etc/redis/redis.conf
+            - --replicaof
+            - {{ include "hololoom.fullname" . }}-redis-master
+            - "6379"
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+          env:
+            {{- if .Values.secrets.redis.password }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hololoom.fullname" . }}-secrets
+                  key: redis-password
+            - name: REDIS_MASTER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hololoom.fullname" . }}-secrets
+                  key: redis-password
+            {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.redis.replica.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/redis
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "hololoom.fullname" . }}-redis-config
+        - name: data
+          emptyDir: {}
+{{- end }}
+---
+# Redis ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hololoom.fullname" . }}-redis-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+data:
+  redis.conf: |
+    # Redis configuration
+    bind 0.0.0.0
+    port 6379
+    protected-mode no
+
+    # Memory management
+    maxmemory {{ .Values.redis.config.maxmemory }}
+    maxmemory-policy {{ .Values.redis.config["maxmemory-policy"] }}
+
+    # Persistence
+    save {{ .Values.redis.config.save }}
+    appendonly {{ .Values.redis.config.appendonly }}
+    appendfsync everysec
+
+    # Logging
+    loglevel notice
+    logfile ""
+
+    # Performance tuning
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+
+    # Slow log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 128
+{{- end }}

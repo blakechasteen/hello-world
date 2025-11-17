@@ -1,0 +1,82 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.grafana.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hololoom.fullname" . }}-grafana-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  grafana.ini: |
+    [server]
+    http_port = 3000
+    root_url = https://grafana.hololoom.io
+
+    [database]
+    type = sqlite3
+    path = /var/lib/grafana/grafana.db
+
+    [security]
+    admin_user = {{ .Values.monitoring.grafana.adminUser }}
+
+    [users]
+    allow_sign_up = false
+    auto_assign_org = true
+    auto_assign_org_role = Viewer
+
+    [auth.anonymous]
+    enabled = false
+
+    [dashboards]
+    default_home_dashboard_path = /var/lib/grafana/dashboards/hololoom-overview.json
+
+    [log]
+    mode = console
+    level = info
+
+    [metrics]
+    enabled = true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hololoom.fullname" . }}-grafana-datasources
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://{{ include "hololoom.fullname" . }}-prometheus:9090
+        isDefault: true
+        editable: true
+        jsonData:
+          timeInterval: 15s
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hololoom.fullname" . }}-grafana-dashboard-provider
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'hololoom'
+        orgId: 1
+        folder: 'HoloLoom'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards
+{{- end }}

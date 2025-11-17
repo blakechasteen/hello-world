@@ -1,0 +1,218 @@
+version: '3.8'
+
+services:
+  # Neo4j Database
+  neo4j:
+    image: neo4j:5.13.0-enterprise
+    environment:
+      - NEO4J_AUTH=neo4j/hololoom-test-password
+      - NEO4J_dbms_memory_heap_initial__size=1g
+      - NEO4J_dbms_memory_heap_max__size=2g
+      - NEO4J_dbms_memory_pagecache_size=1g
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    networks:
+      - hololoom-net
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "hololoom-test-password", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - hololoom-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:6333/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7.2-alpine
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - hololoom-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Message Queue
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=hololoom
+      - RABBITMQ_DEFAULT_PASS=hololoom-test-password
+      - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=0.7
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - hololoom-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Gateway
+  api:
+    build:
+      context: ../../
+      dockerfile: kubernetes/docker/Dockerfile.api
+    image: hololoom/api:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - EXECUTION_MODE=FUSED
+      - NEO4J_URI=neo4j://neo4j:7687
+      - NEO4J_PASSWORD=hololoom-test-password
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://hololoom:hololoom-test-password@rabbitmq:5672
+      - CELERY_BROKER_URL=amqp://hololoom:hololoom-test-password@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - LOG_LEVEL=INFO
+      - PROMETHEUS_ENABLED=true
+      - METRICS_PORT=8001
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - hololoom-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Worker Node 1
+  worker-1:
+    build:
+      context: ../../
+      dockerfile: kubernetes/docker/Dockerfile.worker
+    image: hololoom/worker:latest
+    environment:
+      - EXECUTION_MODE=FUSED
+      - NEO4J_URI=neo4j://neo4j:7687
+      - NEO4J_PASSWORD=hololoom-test-password
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://hololoom:hololoom-test-password@rabbitmq:5672
+      - CELERY_BROKER_URL=amqp://hololoom:hololoom-test-password@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - WORKER_CONCURRENCY=4
+      - WORKER_POOL=prefork
+      - WORKER_LOG_LEVEL=INFO
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - hololoom-net
+
+  # Worker Node 2
+  worker-2:
+    build:
+      context: ../../
+      dockerfile: kubernetes/docker/Dockerfile.worker
+    image: hololoom/worker:latest
+    environment:
+      - EXECUTION_MODE=FUSED
+      - NEO4J_URI=neo4j://neo4j:7687
+      - NEO4J_PASSWORD=hololoom-test-password
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://hololoom:hololoom-test-password@rabbitmq:5672
+      - CELERY_BROKER_URL=amqp://hololoom:hololoom-test-password@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - WORKER_CONCURRENCY=4
+      - WORKER_POOL=prefork
+      - WORKER_LOG_LEVEL=INFO
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - hololoom-net
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - hololoom-net
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:10.2.2
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - hololoom-net
+
+volumes:
+  neo4j-data:
+  neo4j-logs:
+  qdrant-data:
+  redis-data:
+  rabbitmq-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  hololoom-net:
+    driver: bridge

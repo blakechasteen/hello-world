@@ -1,0 +1,21 @@
+# Worker Requirements for HoloLoom
+
+# Celery and message queue
+celery[redis,librabbitmq]>=5.3.4
+kombu>=5.3.2
+amqp>=5.1.1
+vine>=5.0.0
+
+# Redis support
+redis>=5.0.0
+hiredis>=2.2.3
+
+# Monitoring
+prometheus-client>=0.18.0
+flower>=2.0.1  # Celery monitoring
+
+# Task scheduling
+celery-beat>=2.5.0
+
+# Serialization
+msgpack>=1.0.7

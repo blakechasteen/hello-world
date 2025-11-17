@@ -1,0 +1,216 @@
+{{- if .Values.workers.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hololoom.fullname" . }}-worker
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  {{- if not .Values.workers.autoscaling.enabled }}
+  replicas: {{ .Values.workers.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "hololoom.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.configMap.monitoring.METRICS_PORT }}"
+        prometheus.io/path: "/metrics"
+      labels:
+        {{- include "hololoom.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+        app: hololoom-worker
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "hololoom.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      {{- if .Values.initContainers.enabled }}
+      initContainers:
+        - name: wait-for-neo4j
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z hololoom-neo4j 7687; do
+                echo "Waiting for Neo4j..."
+                sleep 5
+              done
+              echo "Neo4j is ready!"
+        - name: wait-for-qdrant
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z hololoom-qdrant 6333; do
+                echo "Waiting for Qdrant..."
+                sleep 5
+              done
+              echo "Qdrant is ready!"
+        - name: wait-for-redis
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z hololoom-redis-master 6379; do
+                echo "Waiting for Redis..."
+                sleep 5
+              done
+              echo "Redis is ready!"
+        - name: wait-for-rabbitmq
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z hololoom-rabbitmq 5672; do
+                echo "Waiting for RabbitMQ..."
+                sleep 5
+              done
+              echo "RabbitMQ is ready!"
+      {{- end }}
+      containers:
+        - name: worker
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: false
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.workers.image.repository }}:{{ .Values.workers.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.workers.image.pullPolicy }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.configMap.monitoring.METRICS_PORT }}
+              protocol: TCP
+          env:
+            # Worker configuration
+            {{- range $key, $value := .Values.workers.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: WORKER_TYPE
+              value: {{ .Values.workers.workerType | quote }}
+            - name: WORKER_CONCURRENCY
+              value: {{ .Values.workers.concurrency | quote }}
+            - name: WORKER_PREFETCH_MULTIPLIER
+              value: {{ .Values.workers.prefetchMultiplier | quote }}
+            # ConfigMap values
+            {{- range $key, $value := .Values.configMap.app }}
+            - name: {{ $key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hololoom.fullname" $ }}-config
+                  key: {{ $key }}
+            {{- end }}
+            {{- range $key, $value := .Values.configMap.database }}
+            - name: {{ $key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hololoom.fullname" $ }}-config
+                  key: {{ $key }}
+            {{- end }}
+            {{- range $key, $value := .Values.configMap.queue }}
+            - name: {{ $key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hololoom.fullname" $ }}-config
+                  key: {{ $key }}
+            {{- end }}
+            {{- range $key, $value := .Values.configMap.monitoring }}
+            - name: {{ $key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hololoom.fullname" $ }}-config
+                  key: {{ $key }}
+            {{- end }}
+            # Secrets
+            - name: NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hololoom.fullname" . }}-secrets
+                  key: neo4j-password
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hololoom.fullname" . }}-secrets
+                  key: redis-password
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hololoom.fullname" . }}-secrets
+                  key: rabbitmq-password
+          # Worker health check via Celery inspect
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - hololoom.distributed.worker
+                - inspect
+                - ping
+                - --destination
+                - celery@$HOSTNAME
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - hololoom.distributed.worker
+                - inspect
+                - active
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.workers.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: worker-data
+              mountPath: /data
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: worker-data
+          emptyDir: {}
+      {{- with .Values.workers.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workers.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workers.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Graceful shutdown
+      terminationGracePeriodSeconds: 300
+{{- end }}

@@ -1,0 +1,75 @@
+# Multi-stage build for HoloLoom Worker
+FROM python:3.11-slim as builder
+
+# Set working directory
+WORKDIR /build
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+COPY requirements-worker.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements-worker.txt
+
+# Final stage
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app \
+    C_FORCE_ROOT=true \
+    WORKER_CONCURRENCY=4 \
+    WORKER_POOL=prefork \
+    WORKER_LOG_LEVEL=INFO
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r hololoom && useradd -r -g hololoom -u 1000 hololoom
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy application code
+COPY holoLoom/ /app/holoLoom/
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /tmp && \
+    chown -R hololoom:hololoom /app /tmp
+
+# Switch to non-root user
+USER hololoom
+
+# Health check via Celery inspect
+HEALTHCHECK --interval=60s --timeout=10s --start-period=60s --retries=3 \
+    CMD celery -A holoLoom.distributed.worker inspect ping --destination celery@$HOSTNAME || exit 1
+
+# Run Celery worker
+CMD ["celery", "-A", "holoLoom.distributed.worker", "worker", \
+     "--loglevel=${WORKER_LOG_LEVEL}", \
+     "--concurrency=${WORKER_CONCURRENCY}", \
+     "--pool=${WORKER_POOL}", \
+     "--max-tasks-per-child=1000", \
+     "--max-memory-per-child=200000", \
+     "--time-limit=3600", \
+     "--soft-time-limit=3300"]

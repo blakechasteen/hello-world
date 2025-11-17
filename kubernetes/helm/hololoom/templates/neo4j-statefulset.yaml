@@ -1,0 +1,163 @@
+{{- if .Values.neo4j.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hololoom.fullname" . }}-neo4j
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: neo4j
+spec:
+  serviceName: {{ include "hololoom.fullname" . }}-neo4j
+  replicas: {{ .Values.neo4j.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "hololoom.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: neo4j
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      labels:
+        {{- include "hololoom.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: neo4j
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "hololoom.serviceAccountName" . }}
+      securityContext:
+        fsGroup: 7474
+        runAsUser: 7474
+        runAsNonRoot: true
+      initContainers:
+        - name: init-plugins
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.neo4j.image.repository }}:{{ .Values.neo4j.image.tag }}"
+          imagePullPolicy: {{ .Values.neo4j.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              # Download APOC and Graph Data Science plugins
+              wget -O /plugins/apoc.jar https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/5.13.0/apoc-5.13.0-core.jar || true
+              wget -O /plugins/gds.jar https://github.com/neo4j/graph-data-science/releases/download/2.5.0/neo4j-graph-data-science-2.5.0.jar || true
+          volumeMounts:
+            - name: plugins
+              mountPath: /plugins
+      containers:
+        - name: neo4j
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.neo4j.image.repository }}:{{ .Values.neo4j.image.tag }}"
+          imagePullPolicy: {{ .Values.neo4j.image.pullPolicy }}
+          ports:
+            - name: bolt
+              containerPort: 7687
+              protocol: TCP
+            - name: http
+              containerPort: 7474
+              protocol: TCP
+            - name: https
+              containerPort: 7473
+              protocol: TCP
+            - name: backup
+              containerPort: 6000
+              protocol: TCP
+            - name: discovery
+              containerPort: 7688
+              protocol: TCP
+          env:
+            # Authentication
+            - name: NEO4J_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hololoom.fullname" . }}-secrets
+                  key: neo4j-auth
+            # Basic configuration
+            {{- range $key, $value := .Values.neo4j.config }}
+            - name: NEO4J_{{ $key | replace "." "_" | upper }}
+              value: {{ $value | quote }}
+            {{- end }}
+            # Cluster configuration
+            {{- if .Values.neo4j.cluster.enabled }}
+            - name: NEO4J_dbms_mode
+              value: {{ .Values.neo4j.cluster.mode }}
+            - name: NEO4J_causal__clustering_minimum__core__cluster__size__at__formation
+              value: {{ .Values.neo4j.cluster.discovery.minimumClusterSize | quote }}
+            - name: NEO4J_causal__clustering_minimum__core__cluster__size__at__runtime
+              value: {{ .Values.neo4j.cluster.discovery.minimumClusterSize | quote }}
+            - name: NEO4J_causal__clustering_initial__discovery__members
+              value: {{ include "hololoom.fullname" . }}-neo4j-0.{{ include "hololoom.fullname" . }}-neo4j:5000,{{ include "hololoom.fullname" . }}-neo4j-1.{{ include "hololoom.fullname" . }}-neo4j:5000,{{ include "hololoom.fullname" . }}-neo4j-2.{{ include "hololoom.fullname" . }}-neo4j:5000
+            - name: NEO4J_causal__clustering_discovery__advertised__address
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            {{- end }}
+            # Plugin configuration
+            - name: NEO4J_dbms_security_procedures_unrestricted
+              value: "apoc.*,gds.*"
+            - name: NEO4J_dbms_security_procedures_allowlist
+              value: "apoc.*,gds.*"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 7474
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7474
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.neo4j.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: logs
+              mountPath: /logs
+            - name: plugins
+              mountPath: /plugins
+            - name: import
+              mountPath: /import
+      volumes:
+        - name: plugins
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+        - name: import
+          emptyDir: {}
+  {{- if .Values.neo4j.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          {{- include "hololoom.labels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - {{ .Values.neo4j.persistence.accessMode }}
+        {{- if .Values.neo4j.persistence.storageClass }}
+        {{- if (eq "-" .Values.neo4j.persistence.storageClass) }}
+        storageClassName: ""
+        {{- else }}
+        storageClassName: {{ .Values.neo4j.persistence.storageClass }}
+        {{- end }}
+        {{- else }}
+        storageClassName: {{ .Values.global.storageClass }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.neo4j.persistence.size }}
+  {{- else }}
+        - name: data
+          emptyDir: {}
+  {{- end }}
+{{- end }}

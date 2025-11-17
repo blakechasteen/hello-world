@@ -1,0 +1,135 @@
+{{- if .Values.qdrant.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hololoom.fullname" . }}-qdrant
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
+spec:
+  serviceName: {{ include "hololoom.fullname" . }}-qdrant
+  replicas: {{ .Values.qdrant.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "hololoom.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: qdrant
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "hololoom.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: qdrant
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "hololoom.serviceAccountName" . }}
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      containers:
+        - name: qdrant
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.qdrant.image.repository }}:{{ .Values.qdrant.image.tag }}"
+          imagePullPolicy: {{ .Values.qdrant.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 6333
+              protocol: TCP
+            - name: grpc
+              containerPort: 6334
+              protocol: TCP
+            - name: p2p
+              containerPort: 6335
+              protocol: TCP
+          env:
+            # Qdrant configuration
+            - name: QDRANT__LOG_LEVEL
+              value: {{ .Values.qdrant.config.log_level | quote }}
+            - name: QDRANT__SERVICE__HTTP_PORT
+              value: {{ .Values.qdrant.config.service.http_port | quote }}
+            - name: QDRANT__SERVICE__GRPC_PORT
+              value: {{ .Values.qdrant.config.service.grpc_port | quote }}
+            - name: QDRANT__STORAGE__ON_DISK_PAYLOAD
+              value: {{ .Values.qdrant.config.storage.on_disk_payload | quote }}
+            - name: QDRANT__STORAGE__PERFORMANCE__MAX_SEARCH_THREADS
+              value: {{ .Values.qdrant.config.storage.performance.max_search_threads | quote }}
+            {{- if .Values.qdrant.cluster.enabled }}
+            # Cluster configuration
+            - name: QDRANT__CLUSTER__ENABLED
+              value: "true"
+            - name: QDRANT__CLUSTER__P2P__PORT
+              value: "6335"
+            - name: QDRANT__CLUSTER__CONSENSUS__TICK_PERIOD_MS
+              value: "100"
+            # Pod identity for cluster formation
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            # Bootstrap nodes for cluster discovery
+            - name: QDRANT__CLUSTER__P2P__PEERS
+              value: {{ include "hololoom.fullname" . }}-qdrant-0.{{ include "hololoom.fullname" . }}-qdrant.{{ .Values.global.namespace }}.svc.cluster.local:6335,{{ include "hololoom.fullname" . }}-qdrant-1.{{ include "hololoom.fullname" . }}-qdrant.{{ .Values.global.namespace }}.svc.cluster.local:6335,{{ include "hololoom.fullname" . }}-qdrant-2.{{ include "hololoom.fullname" . }}-qdrant.{{ .Values.global.namespace }}.svc.cluster.local:6335
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 6333
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 6333
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.qdrant.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /qdrant/storage
+            - name: snapshots
+              mountPath: /qdrant/snapshots
+      volumes:
+        - name: snapshots
+          emptyDir: {}
+  {{- if .Values.qdrant.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          {{- include "hololoom.labels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - {{ .Values.qdrant.persistence.accessMode }}
+        {{- if .Values.qdrant.persistence.storageClass }}
+        {{- if (eq "-" .Values.qdrant.persistence.storageClass) }}
+        storageClassName: ""
+        {{- else }}
+        storageClassName: {{ .Values.qdrant.persistence.storageClass }}
+        {{- end }}
+        {{- else }}
+        storageClassName: {{ .Values.global.storageClass }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.qdrant.persistence.size }}
+  {{- else }}
+        - name: data
+          emptyDir: {}
+  {{- end }}
+{{- end }}

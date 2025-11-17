@@ -1,0 +1,70 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }} -n {{ .Values.global.namespace }}
+  $ helm get all {{ .Release.Name }} -n {{ .Values.global.namespace }}
+
+{{- if .Values.ingress.enabled }}
+
+The application is accessible via:
+{{- range .Values.ingress.hosts }}
+  - https://{{ .host }}
+{{- end }}
+{{- else }}
+
+Get the application URL by running:
+  export POD_NAME=$(kubectl get pods -n {{ .Values.global.namespace }} -l "app.kubernetes.io/name={{ include "hololoom.name" . }},app.kubernetes.io/component=api" -o jsonpath="{.items[0].metadata.name}")
+  kubectl -n {{ .Values.global.namespace }} port-forward $POD_NAME 8000:8000
+  echo "Visit http://127.0.0.1:8000 to use your application"
+{{- end }}
+
+{{- if and .Values.monitoring.enabled .Values.monitoring.grafana.enabled }}
+
+Access Grafana dashboard:
+{{- if .Values.ingress.enabled }}
+  https://grafana.hololoom.io
+{{- else }}
+  export POD_NAME=$(kubectl get pods -n {{ .Values.global.namespace }} -l "app.kubernetes.io/component=grafana" -o jsonpath="{.items[0].metadata.name}")
+  kubectl -n {{ .Values.global.namespace }} port-forward $POD_NAME 3000:3000
+  echo "Visit http://127.0.0.1:3000 to access Grafana"
+{{- end }}
+
+  Username: {{ .Values.monitoring.grafana.adminUser }}
+  Password: (stored in secret {{ include "hololoom.fullname" . }}-secrets)
+{{- end }}
+
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheus.enabled }}
+
+Access Prometheus:
+{{- if .Values.ingress.enabled }}
+  https://prometheus.hololoom.io
+{{- else }}
+  export POD_NAME=$(kubectl get pods -n {{ .Values.global.namespace }} -l "app.kubernetes.io/component=prometheus" -o jsonpath="{.items[0].metadata.name}")
+  kubectl -n {{ .Values.global.namespace }} port-forward $POD_NAME 9090:9090
+  echo "Visit http://127.0.0.1:9090 to access Prometheus"
+{{- end }}
+{{- end }}
+
+To check the status of your deployment:
+  kubectl get pods -n {{ .Values.global.namespace }}
+  kubectl get svc -n {{ .Values.global.namespace }}
+
+To view logs:
+  kubectl logs -f -n {{ .Values.global.namespace }} -l app.kubernetes.io/component=api
+  kubectl logs -f -n {{ .Values.global.namespace }} -l app.kubernetes.io/component=worker
+
+To scale workers:
+  kubectl scale deployment {{ include "hololoom.fullname" . }}-worker -n {{ .Values.global.namespace }} --replicas=5
+
+IMPORTANT SECURITY NOTES:
+- Change all default passwords in values.yaml before deploying to production
+- Use Sealed Secrets or external secret management for sensitive data
+- Enable network policies for production deployments
+- Configure proper ingress TLS certificates
+
+For more information, see:
+  - Documentation: /docs/KUBERNETES.md
+  - GitHub: https://github.com/hololoom/hololoom

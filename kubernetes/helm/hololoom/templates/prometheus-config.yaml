@@ -1,0 +1,151 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheus.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hololoom.fullname" . }}-prometheus-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.monitoring.prometheus.scrapeInterval }}
+      evaluation_interval: {{ .Values.monitoring.prometheus.evaluationInterval }}
+      external_labels:
+        cluster: 'hololoom'
+        environment: '{{ .Values.global.environment }}'
+
+    # Alertmanager configuration
+    {{- if .Values.monitoring.alertmanager.enabled }}
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - {{ include "hololoom.fullname" . }}-alertmanager:9093
+    {{- end }}
+
+    # Rule files
+    rule_files:
+      - /etc/prometheus/rules/*.yml
+
+    # Scrape configurations
+    scrape_configs:
+      # Prometheus self-monitoring
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # API Gateway scraping
+      - job_name: 'hololoom-api'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - {{ .Values.global.namespace }}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: hololoom-api
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+
+      # Worker scraping
+      - job_name: 'hololoom-worker'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - {{ .Values.global.namespace }}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: hololoom-worker
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+
+      # Neo4j metrics
+      - job_name: 'neo4j'
+        static_configs:
+          - targets:
+              - {{ include "hololoom.fullname" . }}-neo4j-0.{{ include "hololoom.fullname" . }}-neo4j:7474
+              - {{ include "hololoom.fullname" . }}-neo4j-1.{{ include "hololoom.fullname" . }}-neo4j:7474
+              - {{ include "hololoom.fullname" . }}-neo4j-2.{{ include "hololoom.fullname" . }}-neo4j:7474
+        metrics_path: /metrics
+
+      # Qdrant metrics (if available)
+      - job_name: 'qdrant'
+        static_configs:
+          - targets:
+              - {{ include "hololoom.fullname" . }}-qdrant-0.{{ include "hololoom.fullname" . }}-qdrant:6333
+              - {{ include "hololoom.fullname" . }}-qdrant-1.{{ include "hololoom.fullname" . }}-qdrant:6333
+              - {{ include "hololoom.fullname" . }}-qdrant-2.{{ include "hololoom.fullname" . }}-qdrant:6333
+        metrics_path: /metrics
+
+      # Redis metrics
+      - job_name: 'redis'
+        static_configs:
+          - targets:
+              - {{ include "hololoom.fullname" . }}-redis-master:6379
+
+      # RabbitMQ metrics
+      - job_name: 'rabbitmq'
+        static_configs:
+          - targets:
+              - {{ include "hololoom.fullname" . }}-rabbitmq-0.{{ include "hololoom.fullname" . }}-rabbitmq:15692
+              - {{ include "hololoom.fullname" . }}-rabbitmq-1.{{ include "hololoom.fullname" . }}-rabbitmq:15692
+              - {{ include "hololoom.fullname" . }}-rabbitmq-2.{{ include "hololoom.fullname" . }}-rabbitmq:15692
+
+      # Kubernetes metrics
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - {{ .Values.global.namespace }}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+{{- end }}

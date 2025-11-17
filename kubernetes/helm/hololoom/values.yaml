@@ -1,0 +1,609 @@
+# Default values for HoloLoom Kubernetes deployment
+# This is a YAML-formatted file.
+
+# Global configuration
+global:
+  # Namespace for all resources
+  namespace: hololoom
+
+  # Image registry
+  imageRegistry: docker.io
+  imagePullSecrets: []
+
+  # Storage class for persistent volumes
+  storageClass: standard
+
+  # Environment (development, staging, production)
+  environment: production
+
+# API Gateway configuration
+api:
+  enabled: true
+  replicaCount: 3
+
+  image:
+    repository: hololoom/api
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: 8000
+    annotations: {}
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "2000m"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  # Liveness and readiness probes
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  # Environment variables
+  env:
+    LOG_LEVEL: "INFO"
+    WORKERS_PER_CORE: "2"
+    MAX_WORKERS: "8"
+    TIMEOUT: "300"
+
+  # Node selector
+  nodeSelector: {}
+
+  # Tolerations
+  tolerations: []
+
+  # Affinity rules
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - hololoom-api
+            topologyKey: kubernetes.io/hostname
+
+# Worker pool configuration
+workers:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    repository: hololoom/worker
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "1000m"
+    limits:
+      memory: "4Gi"
+      cpu: "4000m"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 80
+    # Custom metrics for scaling
+    customMetrics:
+      - type: Pods
+        pods:
+          metric:
+            name: queue_depth
+          target:
+            type: AverageValue
+            averageValue: "30"
+
+  # Worker type (celery, custom)
+  workerType: celery
+
+  # Concurrency settings
+  concurrency: 4
+  prefetchMultiplier: 4
+
+  # Environment variables
+  env:
+    LOG_LEVEL: "INFO"
+    WORKER_POOL: "prefork"
+    WORKER_MAX_TASKS_PER_CHILD: "1000"
+    WORKER_MAX_MEMORY_PER_CHILD: "200000"
+
+  # Node selector
+  nodeSelector: {}
+
+  # Tolerations
+  tolerations: []
+
+  # Affinity rules
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - hololoom-worker
+            topologyKey: kubernetes.io/hostname
+
+# Neo4j StatefulSet configuration
+neo4j:
+  enabled: true
+  replicaCount: 3
+
+  image:
+    repository: neo4j
+    tag: "5.13.0-enterprise"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 7687
+    httpPort: 7474
+    httpsPort: 7473
+
+  # Cluster mode configuration
+  cluster:
+    enabled: true
+    mode: CORE
+    discovery:
+      minimumClusterSize: 3
+
+  # Persistence
+  persistence:
+    enabled: true
+    storageClass: ""  # Uses global.storageClass if empty
+    size: 50Gi
+    accessMode: ReadWriteOnce
+
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "8Gi"
+      cpu: "4000m"
+
+  # Neo4j configuration
+  config:
+    dbms.memory.heap.initial_size: "2g"
+    dbms.memory.heap.max_size: "4g"
+    dbms.memory.pagecache.size: "2g"
+    dbms.default_listen_address: "0.0.0.0"
+    dbms.connector.bolt.listen_address: "0.0.0.0:7687"
+    dbms.connector.http.listen_address: "0.0.0.0:7474"
+
+  # Auth (stored in secrets)
+  auth:
+    enabled: true
+    username: neo4j
+    # Password should be in secrets
+
+# Qdrant StatefulSet configuration
+qdrant:
+  enabled: true
+  replicaCount: 3
+
+  image:
+    repository: qdrant/qdrant
+    tag: "v1.7.0"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 6333
+    grpcPort: 6334
+
+  # Cluster mode
+  cluster:
+    enabled: true
+
+  # Persistence
+  persistence:
+    enabled: true
+    storageClass: ""  # Uses global.storageClass if empty
+    size: 30Gi
+    accessMode: ReadWriteOnce
+
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+
+  # Qdrant configuration
+  config:
+    log_level: INFO
+    storage:
+      on_disk_payload: true
+      performance:
+        max_search_threads: 4
+    service:
+      grpc_port: 6334
+      http_port: 6333
+
+# Redis configuration
+redis:
+  enabled: true
+
+  # Master/Replica configuration
+  architecture: replication
+
+  master:
+    replicaCount: 1
+
+    image:
+      repository: redis
+      tag: "7.2-alpine"
+      pullPolicy: IfNotPresent
+
+    service:
+      type: ClusterIP
+      port: 6379
+
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 8Gi
+      accessMode: ReadWriteOnce
+
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  replica:
+    replicaCount: 2
+
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  # Redis configuration
+  config:
+    maxmemory: "768mb"
+    maxmemory-policy: "allkeys-lru"
+    save: "900 1 300 10 60 10000"
+    appendonly: "yes"
+
+# RabbitMQ configuration
+rabbitmq:
+  enabled: true
+  replicaCount: 3
+
+  image:
+    repository: rabbitmq
+    tag: "3.12-management-alpine"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    amqpPort: 5672
+    managementPort: 15672
+    epmdPort: 4369
+
+  # Cluster configuration
+  cluster:
+    enabled: true
+    name: hololoom-rabbitmq
+
+  # Persistence
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 10Gi
+    accessMode: ReadWriteOnce
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "2000m"
+
+  # RabbitMQ configuration
+  config:
+    vm_memory_high_watermark: "0.7"
+    disk_free_limit: "1GB"
+    cluster_partition_handling: "autoheal"
+
+  # Default queues to create
+  queues:
+    - name: hololoom.tasks.default
+      durable: true
+      auto_delete: false
+    - name: hololoom.tasks.priority
+      durable: true
+      auto_delete: false
+    - name: hololoom.results
+      durable: true
+      auto_delete: false
+
+# Monitoring stack
+monitoring:
+  enabled: true
+
+  # Prometheus configuration
+  prometheus:
+    enabled: true
+
+    image:
+      repository: prom/prometheus
+      tag: "v2.48.0"
+      pullPolicy: IfNotPresent
+
+    service:
+      type: ClusterIP
+      port: 9090
+
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 20Gi
+      accessMode: ReadWriteOnce
+
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+
+    # Scrape interval
+    scrapeInterval: 15s
+    evaluationInterval: 15s
+
+    # Retention
+    retention: 15d
+    retentionSize: 15GB
+
+  # Grafana configuration
+  grafana:
+    enabled: true
+
+    image:
+      repository: grafana/grafana
+      tag: "10.2.2"
+      pullPolicy: IfNotPresent
+
+    service:
+      type: ClusterIP
+      port: 3000
+
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 5Gi
+      accessMode: ReadWriteOnce
+
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+    # Admin credentials (should be in secrets)
+    adminUser: admin
+    # adminPassword in secrets
+
+  # AlertManager configuration
+  alertmanager:
+    enabled: true
+
+    image:
+      repository: prom/alertmanager
+      tag: "v0.26.0"
+      pullPolicy: IfNotPresent
+
+    service:
+      type: ClusterIP
+      port: 9093
+
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+
+  hosts:
+    - host: api.hololoom.io
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: hololoom-api
+              port: 8000
+
+    - host: grafana.hololoom.io
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: hololoom-grafana
+              port: 3000
+
+    - host: prometheus.hololoom.io
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: hololoom-prometheus
+              port: 9090
+
+  tls:
+    - secretName: hololoom-tls
+      hosts:
+        - api.hololoom.io
+        - grafana.hololoom.io
+        - prometheus.hololoom.io
+
+# ConfigMap settings
+configMap:
+  # Application configuration
+  app:
+    EXECUTION_MODE: "FUSED"
+    EMBEDDING_SCALES: "96,192,384"
+    MAX_CONTEXT_SHARDS: "10"
+    THOMPSON_SAMPLING_ENABLED: "true"
+    BANDIT_STRATEGY: "EPSILON_GREEDY"
+    EPSILON: "0.1"
+
+  # Database configuration
+  database:
+    NEO4J_URI: "neo4j://hololoom-neo4j:7687"
+    NEO4J_DATABASE: "hololoom"
+    QDRANT_URL: "http://hololoom-qdrant:6333"
+    QDRANT_GRPC_PORT: "6334"
+    REDIS_URL: "redis://hololoom-redis-master:6379/0"
+
+  # Queue configuration
+  queue:
+    RABBITMQ_URL: "amqp://hololoom-rabbitmq:5672"
+    CELERY_BROKER_URL: "amqp://hololoom-rabbitmq:5672//"
+    CELERY_RESULT_BACKEND: "redis://hololoom-redis-master:6379/1"
+
+  # Monitoring configuration
+  monitoring:
+    PROMETHEUS_ENABLED: "true"
+    METRICS_PORT: "8001"
+    HEALTH_CHECK_INTERVAL: "30"
+
+# Secrets (use Sealed Secrets in production)
+secrets:
+  # Neo4j credentials
+  neo4j:
+    password: "change-me-in-production"
+
+  # Redis password
+  redis:
+    password: ""
+
+  # RabbitMQ credentials
+  rabbitmq:
+    username: "hololoom"
+    password: "change-me-in-production"
+    erlangCookie: "change-me-in-production"
+
+  # Grafana admin password
+  grafana:
+    adminPassword: "change-me-in-production"
+
+  # API keys and tokens
+  api:
+    secretKey: "change-me-in-production-use-random-string"
+    jwtSecret: "change-me-in-production-use-random-string"
+
+# Network policies
+networkPolicy:
+  enabled: false
+  policyTypes:
+    - Ingress
+    - Egress
+
+# Pod Security Policy
+podSecurityPolicy:
+  enabled: false
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: hololoom
+
+# RBAC
+rbac:
+  create: true
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  api:
+    minAvailable: 2
+  workers:
+    minAvailable: 1
+
+# Init containers for database migrations
+initContainers:
+  enabled: true
+
+  migrations:
+    image:
+      repository: hololoom/migrations
+      tag: "1.0.0"
+      pullPolicy: IfNotPresent
+
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"

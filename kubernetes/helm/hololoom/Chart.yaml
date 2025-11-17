@@ -1,0 +1,22 @@
+apiVersion: v2
+name: hololoom
+description: A Helm chart for HoloLoom - Neural Decision-Making System
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - hololoom
+  - neural-networks
+  - decision-making
+  - knowledge-graph
+  - machine-learning
+home: https://github.com/hololoom/hololoom
+sources:
+  - https://github.com/hololoom/hololoom
+maintainers:
+  - name: HoloLoom Team
+    email: team@hololoom.io
+dependencies: []
+annotations:
+  category: AI/ML
+  licenses: MIT

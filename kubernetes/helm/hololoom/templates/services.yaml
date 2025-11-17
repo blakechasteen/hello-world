@@ -1,0 +1,319 @@
+# API Service
+{{- if .Values.api.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-api
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+  {{- with .Values.api.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.api.service.type }}
+  ports:
+    - port: {{ .Values.api.service.port }}
+      targetPort: {{ .Values.api.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+{{- end }}
+---
+# Neo4j Headless Service for StatefulSet
+{{- if .Values.neo4j.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-neo4j
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: neo4j
+spec:
+  clusterIP: None
+  ports:
+    - port: {{ .Values.neo4j.service.port }}
+      targetPort: 7687
+      protocol: TCP
+      name: bolt
+    - port: {{ .Values.neo4j.service.httpPort }}
+      targetPort: 7474
+      protocol: TCP
+      name: http
+    - port: {{ .Values.neo4j.service.httpsPort }}
+      targetPort: 7473
+      protocol: TCP
+      name: https
+    - port: 6000
+      targetPort: 6000
+      protocol: TCP
+      name: backup
+    - port: 7688
+      targetPort: 7688
+      protocol: TCP
+      name: discovery
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: neo4j
+{{- end }}
+---
+# Neo4j Client Service
+{{- if .Values.neo4j.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-neo4j-client
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: neo4j
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.neo4j.service.port }}
+      targetPort: 7687
+      protocol: TCP
+      name: bolt
+    - port: {{ .Values.neo4j.service.httpPort }}
+      targetPort: 7474
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: neo4j
+{{- end }}
+---
+# Qdrant Headless Service for StatefulSet
+{{- if .Values.qdrant.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-qdrant
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
+spec:
+  clusterIP: None
+  ports:
+    - port: {{ .Values.qdrant.service.port }}
+      targetPort: 6333
+      protocol: TCP
+      name: http
+    - port: {{ .Values.qdrant.service.grpcPort }}
+      targetPort: 6334
+      protocol: TCP
+      name: grpc
+    - port: 6335
+      targetPort: 6335
+      protocol: TCP
+      name: p2p
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
+{{- end }}
+---
+# Qdrant Client Service
+{{- if .Values.qdrant.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-qdrant-client
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.qdrant.service.port }}
+      targetPort: 6333
+      protocol: TCP
+      name: http
+    - port: {{ .Values.qdrant.service.grpcPort }}
+      targetPort: 6334
+      protocol: TCP
+      name: grpc
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
+{{- end }}
+---
+# Redis Master Service
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-redis-master
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis-master
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.redis.master.service.port }}
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: redis-master
+{{- end }}
+---
+# Redis Replica Service
+{{- if and .Values.redis.enabled (eq .Values.redis.architecture "replication") }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-redis-replica
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis-replica
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.redis.master.service.port }}
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: redis-replica
+{{- end }}
+---
+# RabbitMQ Headless Service
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-rabbitmq
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+spec:
+  clusterIP: None
+  ports:
+    - port: {{ .Values.rabbitmq.service.amqpPort }}
+      targetPort: 5672
+      protocol: TCP
+      name: amqp
+    - port: {{ .Values.rabbitmq.service.managementPort }}
+      targetPort: 15672
+      protocol: TCP
+      name: management
+    - port: {{ .Values.rabbitmq.service.epmdPort }}
+      targetPort: 4369
+      protocol: TCP
+      name: epmd
+    - port: 25672
+      targetPort: 25672
+      protocol: TCP
+      name: dist
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+{{- end }}
+---
+# RabbitMQ Client Service
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-rabbitmq-client
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.rabbitmq.service.amqpPort }}
+      targetPort: 5672
+      protocol: TCP
+      name: amqp
+    - port: {{ .Values.rabbitmq.service.managementPort }}
+      targetPort: 15672
+      protocol: TCP
+      name: management
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+{{- end }}
+---
+# Prometheus Service
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheus.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-prometheus
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: prometheus
+spec:
+  type: {{ .Values.monitoring.prometheus.service.type }}
+  ports:
+    - port: {{ .Values.monitoring.prometheus.service.port }}
+      targetPort: 9090
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: prometheus
+{{- end }}
+---
+# Grafana Service
+{{- if and .Values.monitoring.enabled .Values.monitoring.grafana.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-grafana
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+spec:
+  type: {{ .Values.monitoring.grafana.service.type }}
+  ports:
+    - port: {{ .Values.monitoring.grafana.service.port }}
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+{{- end }}
+---
+# AlertManager Service
+{{- if and .Values.monitoring.enabled .Values.monitoring.alertmanager.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hololoom.fullname" . }}-alertmanager
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alertmanager
+spec:
+  type: {{ .Values.monitoring.alertmanager.service.type }}
+  ports:
+    - port: {{ .Values.monitoring.alertmanager.service.port }}
+      targetPort: 9093
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "hololoom.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: alertmanager
+{{- end }}
