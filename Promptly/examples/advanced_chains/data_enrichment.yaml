@@ -1,0 +1,140 @@
+name: data_enrichment_pipeline
+description: Comprehensive data enrichment with schema validation, missing data detection, parallel API enrichment, fuzzy deduplication, and quality scoring
+version: "1.0"
+
+variables:
+  quality_threshold: 0.75
+  dedup_similarity_threshold: 0.9
+  max_api_retries: 3
+  enrichment_apis: ["company_data", "geo_location", "social_profiles", "industry_classification"]
+
+steps:
+  - name: parse_input_data
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: raw_data
+
+  - name: validate_schema
+    type: transform
+    depends_on: [parse_input_data]
+    config:
+      transform_type: validate
+      source_field: raw_data
+      validation_rules:
+        - type: schema
+          schema_definition: input_schema
+        - type: required_fields
+          fields: [id, primary_field]
+
+  - name: detect_missing_data
+    type: loop
+    depends_on: [validate_schema]
+    config:
+      loop_type: for_each
+      items: raw_data
+      action:
+        type: execute
+        prompt: |
+          Analyze record for missing/incomplete data:
+          {item}
+
+          Identify:
+          - Empty fields
+          - Invalid formats
+          - Suspicious values
+          - Completeness score (0-1)
+      accumulator: missing_data_analysis
+
+  - name: parallel_api_enrichment
+    type: parallel
+    depends_on: [detect_missing_data]
+    config:
+      tasks:
+        - name: enrich_company_data
+          prompt: "Enrich company information for: {item.company_name}"
+        - name: enrich_location
+          prompt: "Geocode and enrich location: {item.address}"
+        - name: enrich_social
+          prompt: "Find social profiles for: {item.domain}"
+        - name: enrich_industry
+          prompt: "Classify industry for: {item.description}"
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 45.0
+      max_workers: 4
+
+  - name: merge_enrichment_data
+    type: transform
+    depends_on: [parallel_api_enrichment]
+    config:
+      transform_type: custom
+      operation: merge_records
+      source_field: enrichment_results
+      target_field: enriched_data
+      merge_strategy: prefer_enriched
+
+  - name: deduplicate_records
+    type: retry
+    depends_on: [merge_enrichment_data]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Perform fuzzy deduplication:
+          Records: {enriched_data}
+          Similarity threshold: {dedup_similarity_threshold}
+
+          Use:
+          - Levenshtein distance for names
+          - Jaccard similarity for text fields
+          - Exact match for IDs
+
+          Output: deduplicated records with merge history
+
+  - name: calculate_quality_scores
+    type: loop
+    depends_on: [deduplicate_records]
+    config:
+      loop_type: for_each
+      items: deduplicated_records
+      action:
+        type: execute
+        prompt: |
+          Calculate quality score:
+          Record: {item}
+
+          Score based on:
+          - Completeness (% fields filled)
+          - Accuracy (validated formats)
+          - Freshness (data age)
+          - Source credibility
+
+          Output: quality_score (0-1)
+      accumulator: scored_records
+
+  - name: filter_by_quality
+    type: loop
+    depends_on: [calculate_quality_scores]
+    config:
+      loop_type: for_each
+      items: scored_records
+      action:
+        type: filter
+        condition: "quality_score >= 0.75"
+      accumulator: high_quality_records
+
+  - name: assemble_output
+    type: transform
+    depends_on: [filter_by_quality]
+    config:
+      transform_type: aggregate
+      fields:
+        - high_quality_records
+        - quality_statistics
+        - enrichment_summary
+      method: dict
+      target_field: output

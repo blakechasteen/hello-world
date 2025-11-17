@@ -1,0 +1,241 @@
+name: dynamic_workflow_router
+description: Dynamic routing to specialized chains based on input classification, with fallback and result aggregation
+version: "1.0"
+
+variables:
+  classification_confidence_threshold: 0.7
+  max_route_attempts: 3
+  enable_fallback: true
+
+steps:
+  - name: parse_input
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: request_data
+
+  - name: analyze_and_classify
+    type: retry
+    depends_on: [parse_input]
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      action:
+        type: execute
+        prompt: |
+          Classify this request to determine routing:
+          {request_data}
+
+          Classification categories:
+          - technical_support: technical issues, debugging
+          - content_generation: writing, creative tasks
+          - data_analysis: analytics, reporting, insights
+          - code_review: code quality, refactoring
+          - research: information gathering, synthesis
+          - customer_service: support, inquiries
+
+          Output JSON with:
+          - primary_category
+          - confidence (0-1)
+          - secondary_categories (array)
+          - complexity (low/medium/high)
+          - estimated_time
+
+  - name: validate_classification
+    type: conditional
+    depends_on: [analyze_and_classify]
+    config:
+      conditions:
+        - type: numeric
+          field: classification.confidence
+          operator: ge
+          value: 0.7
+          action:
+            type: set
+            field: classification_valid
+            value: true
+      default:
+        type: set
+        field: classification_valid
+        value: false
+
+  - name: route_to_specialized_chain
+    type: conditional
+    depends_on: [validate_classification]
+    condition:
+      type: simple
+      field: classification_valid
+      operator: eq
+      value: true
+    config:
+      conditions:
+        # Technical support chain
+        - type: keyword
+          field: classification.primary_category
+          keywords: ["technical_support"]
+          action:
+            type: execute
+            prompt: |
+              TECHNICAL SUPPORT CHAIN:
+              Issue: {request_data}
+
+              Steps:
+              1. Diagnose issue
+              2. Check knowledge base
+              3. Provide solution steps
+              4. Test recommendations
+              5. Follow-up actions
+
+        # Content generation chain
+        - type: keyword
+          field: classification.primary_category
+          keywords: ["content_generation"]
+          action:
+            type: execute
+            prompt: |
+              CONTENT GENERATION CHAIN:
+              Request: {request_data}
+
+              Steps:
+              1. Understand audience
+              2. Research topic
+              3. Create outline
+              4. Generate draft
+              5. Refine and polish
+
+        # Data analysis chain
+        - type: keyword
+          field: classification.primary_category
+          keywords: ["data_analysis"]
+          action:
+            type: execute
+            prompt: |
+              DATA ANALYSIS CHAIN:
+              Data: {request_data}
+
+              Steps:
+              1. Validate data
+              2. Exploratory analysis
+              3. Statistical tests
+              4. Visualizations
+              5. Insights and recommendations
+
+        # Code review chain
+        - type: keyword
+          field: classification.primary_category
+          keywords: ["code_review"]
+          action:
+            type: execute
+            prompt: |
+              CODE REVIEW CHAIN:
+              Code: {request_data}
+
+              Steps:
+              1. Parse code structure
+              2. Security scan
+              3. Performance analysis
+              4. Best practices check
+              5. Refactoring suggestions
+
+        # Research chain
+        - type: keyword
+          field: classification.primary_category
+          keywords: ["research"]
+          action:
+            type: execute
+            prompt: |
+              RESEARCH CHAIN:
+              Query: {request_data}
+
+              Steps:
+              1. Decompose query
+              2. Parallel research
+              3. Synthesize findings
+              4. Verify accuracy
+              5. Generate report
+
+        # Customer service chain
+        - type: keyword
+          field: classification.primary_category
+          keywords: ["customer_service"]
+          action:
+            type: execute
+            prompt: |
+              CUSTOMER SERVICE CHAIN:
+              Request: {request_data}
+
+              Steps:
+              1. Classify intent
+              2. Analyze sentiment
+              3. Search knowledge base
+              4. Generate response
+              5. Quality check
+
+      default:
+        type: set
+        field: route_result
+        value: "No matching specialized chain"
+
+  - name: fallback_general_chain
+    type: retry
+    depends_on: [validate_classification]
+    condition:
+      type: simple
+      field: classification_valid
+      operator: eq
+      value: false
+    config:
+      max_attempts: 3
+      action:
+        type: execute
+        prompt: |
+          GENERAL PROCESSING CHAIN:
+          Request: {request_data}
+
+          Classification uncertain: {classification}
+
+          Provide general-purpose response:
+          1. Understand request
+          2. Gather context
+          3. Generate helpful response
+          4. Ensure quality
+
+  - name: aggregate_results
+    type: transform
+    depends_on: [route_to_specialized_chain, fallback_general_chain]
+    config:
+      transform_type: conditional_merge
+      sources:
+        - field: route_result
+          priority: 1
+        - field: fallback_result
+          priority: 2
+      target_field: final_result
+
+  - name: generate_routing_metadata
+    type: transform
+    depends_on: [aggregate_results]
+    config:
+      transform_type: aggregate
+      fields:
+        - classification
+        - route_taken: "{classification.primary_category}"
+        - confidence: "{classification.confidence}"
+        - processing_time
+        - fallback_used: "{not classification_valid}"
+      method: dict
+      target_field: routing_metadata
+
+  - name: assemble_output
+    type: transform
+    depends_on: [generate_routing_metadata]
+    config:
+      transform_type: aggregate
+      fields:
+        - final_result
+        - routing_metadata
+        - classification
+      method: dict
+      target_field: output

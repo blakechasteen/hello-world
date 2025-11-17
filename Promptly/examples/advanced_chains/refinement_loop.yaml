@@ -1,0 +1,157 @@
+name: iterative_refinement_loop
+description: Iterative refinement with critique, revision, quality thresholds, diff tracking, and improvement metrics
+version: "1.0"
+
+variables:
+  quality_threshold: 0.85
+  max_iterations: 5
+  improvement_threshold: 0.05  # Minimum improvement to continue
+
+steps:
+  - name: parse_task
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: task_data
+
+  - name: generate_initial_version
+    type: retry
+    depends_on: [parse_task]
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      action:
+        type: execute
+        prompt: |
+          Generate initial response:
+          Task: {task}
+          Requirements: {requirements}
+          Context: {context}
+
+  - name: refinement_loop
+    type: loop
+    depends_on: [generate_initial_version]
+    config:
+      loop_type: while
+      condition: "quality_score < 0.85 and iteration < 5 and improvement > 0.05"
+      max_iterations: 5
+      state:
+        quality_score: 0
+        iteration: 0
+        content: "{initial_version}"
+        previous_score: 0
+        improvement: 1.0
+        version_history: []
+      action:
+        type: sequence
+        steps:
+          # Critique current version
+          - type: retry
+            config:
+              max_attempts: 2
+              action:
+                type: execute
+                prompt: |
+                  Provide detailed critique:
+                  Content: {content}
+                  Requirements: {requirements}
+
+                  Evaluate:
+                  - Clarity (0-1)
+                  - Completeness (0-1)
+                  - Accuracy (0-1)
+                  - Structure (0-1)
+                  - Style (0-1)
+
+                  Overall quality: average
+                  Specific issues: array of problems
+                  Improvement suggestions: array
+
+          # Generate revision
+          - type: retry
+            config:
+              max_attempts: 2
+              action:
+                type: execute
+                prompt: |
+                  Revise based on critique:
+                  Current version: {content}
+                  Critique: {critique}
+                  Issues: {critique.specific_issues}
+                  Suggestions: {critique.improvement_suggestions}
+
+                  Create improved version addressing all points.
+
+          # Calculate diff
+          - type: execute
+            prompt: |
+              Generate diff between versions:
+              Previous: {content}
+              Current: {revised_content}
+
+              Output:
+              - Changes made (array)
+              - Lines added/removed/modified
+              - Significance of changes
+
+          # Update state
+          - type: transform
+            config:
+              transform_type: custom
+              operation: update_loop_state
+              updates:
+                previous_score: "{quality_score}"
+                quality_score: "{critique.overall_quality}"
+                improvement: "calculate({critique.overall_quality} - {quality_score})"
+                content: "{revised_content}"
+                iteration: "increment"
+                version_history: "append({iteration: {iteration}, score: {quality_score}, diff: {diff}})"
+
+  - name: extract_final_version
+    type: transform
+    depends_on: [refinement_loop]
+    config:
+      transform_type: extract
+      method: json
+      source_field: refinement_loop.final_state
+      target_field: final_version
+
+  - name: generate_improvement_report
+    type: transform
+    depends_on: [extract_final_version]
+    config:
+      transform_type: template
+      template: |
+        # Iterative Refinement Report
+
+        ## Iterations: {refinement_loop.iterations}
+
+        ## Quality Progression
+        {refinement_loop.final_state.version_history}
+
+        ## Initial Quality: {initial_version.quality_score}
+        ## Final Quality: {final_version.quality_score}
+        ## Total Improvement: {improvement_delta}
+
+        ## Final Version
+        {final_version.content}
+
+        ## Change Summary
+        {refinement_loop.final_state.version_history}
+      target_field: improvement_report
+
+  - name: assemble_output
+    type: transform
+    depends_on: [generate_improvement_report]
+    config:
+      transform_type: aggregate
+      fields:
+        - final_version
+        - improvement_report
+        - iterations: "{refinement_loop.iterations}"
+        - version_history
+        - quality_progression
+      method: dict
+      target_field: output

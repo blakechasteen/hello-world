@@ -1,0 +1,595 @@
+name: adaptive_content_generation
+description: Adaptive content generation with audience detection, dynamic template selection, iterative refinement, and multi-format output
+version: "1.0"
+
+# Configuration variables
+variables:
+  max_refinement_iterations: 5
+  style_consistency_threshold: 0.85
+  readability_target: "intermediate"
+  ab_variants: 3
+  output_formats: ["blog", "social", "email"]
+
+steps:
+  # ==== STAGE 1: INPUT ANALYSIS ====
+
+  # Step 1: Parse content request
+  - name: parse_request
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: content_request
+      validation:
+        required: true
+        fields:
+          - topic
+          - purpose
+
+  # Step 2: Detect audience characteristics
+  - name: detect_audience
+    type: retry
+    depends_on: [parse_request]
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      action:
+        type: execute
+        prompt: |
+          Analyze the target audience for this content:
+          Topic: {topic}
+          Purpose: {purpose}
+          Context: {context}
+
+          Determine:
+          1. Technical level (novice/intermediate/expert)
+          2. Industry background
+          3. Reading preferences (formal/casual/technical)
+          4. Likely pain points
+          5. Preferred content length
+          6. Engagement style (analytical/emotional/practical)
+
+          Output as JSON with these fields.
+
+  # Step 3: Analyze audience preferences
+  - name: analyze_preferences
+    type: transform
+    depends_on: [detect_audience]
+    config:
+      transform_type: custom
+      operation: analyze_audience_profile
+      source_field: audience
+      target_field: audience_profile
+      analysis_dimensions:
+        - technical_level
+        - tone_preference
+        - content_depth
+        - engagement_style
+
+  # ==== STAGE 2: DYNAMIC TEMPLATE SELECTION ====
+
+  # Step 4: Select optimal content template
+  - name: select_template
+    type: conditional
+    depends_on: [analyze_preferences]
+    config:
+      conditions:
+        # Expert audience - technical template
+        - type: keyword
+          field: audience.technical_level
+          keywords: ["expert"]
+          action:
+            type: set
+            field: template_type
+            value: technical_deep_dive
+
+        # Intermediate - balanced template
+        - type: keyword
+          field: audience.technical_level
+          keywords: ["intermediate"]
+          action:
+            type: set
+            field: template_type
+            value: balanced_explainer
+
+        # Novice - simple template
+        - type: keyword
+          field: audience.technical_level
+          keywords: ["novice", "beginner"]
+          action:
+            type: set
+            field: template_type
+            value: simple_introduction
+
+      default:
+        type: set
+        field: template_type
+        value: balanced_explainer
+
+  # Step 5: Load template configuration
+  - name: load_template
+    type: transform
+    depends_on: [select_template]
+    config:
+      transform_type: custom
+      operation: load_template_config
+      source_field: template_type
+      target_field: template_config
+      include:
+        - structure
+        - tone_guidelines
+        - example_phrases
+        - formatting_rules
+
+  # ==== STAGE 3: CONTENT GENERATION ====
+
+  # Step 6: Generate initial content draft
+  - name: generate_initial_draft
+    type: retry
+    depends_on: [load_template]
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      circuit_breaker:
+        enabled: true
+        failure_threshold: 3
+        success_threshold: 2
+        timeout: 45.0
+      action:
+        type: execute
+        prompt: |
+          Generate content using this template:
+
+          Topic: {topic}
+          Purpose: {purpose}
+          Audience: {audience_profile}
+          Template: {template_config}
+
+          Requirements:
+          - Follow template structure exactly
+          - Match audience technical level
+          - Use appropriate tone
+          - Include relevant examples
+          - Target length: {audience.preferred_content_length}
+
+  # ==== STAGE 4: ITERATIVE REFINEMENT ====
+
+  # Step 7: Initial quality assessment
+  - name: assess_quality
+    type: retry
+    depends_on: [generate_initial_draft]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Assess this content draft:
+          {draft_content}
+
+          Evaluate:
+          1. Clarity (0-1)
+          2. Engagement (0-1)
+          3. Accuracy (0-1)
+          4. Tone appropriateness (0-1)
+          5. Structure quality (0-1)
+          6. Readability score
+
+          Output JSON with scores and specific improvement suggestions.
+
+  # Step 8: Iterative refinement loop
+  - name: refinement_loop
+    depends_on: [assess_quality]
+    type: loop
+    config:
+      loop_type: while
+      condition: "quality_score < 0.85 and iteration < 5"
+      max_iterations: 5
+      state:
+        quality_score: 0
+        iteration: 0
+        content: "{draft_content}"
+      action:
+        type: sequence
+        steps:
+          # Generate critique
+          - type: execute
+            prompt: |
+              Critique this content:
+              {content}
+
+              Focus on:
+              {quality_assessment.improvement_suggestions}
+
+              Provide specific, actionable feedback.
+
+          # Apply improvements
+          - type: execute
+            prompt: |
+              Improve the content based on this critique:
+
+              Original: {content}
+              Critique: {critique}
+              Target audience: {audience_profile}
+
+              Maintain the core message while addressing all critique points.
+
+          # Re-assess quality
+          - type: execute
+            prompt: |
+              Re-assess quality after improvements:
+              {improved_content}
+
+              Output JSON with updated quality scores.
+
+          # Update state
+          - type: transform
+            config:
+              transform_type: custom
+              operation: update_loop_state
+              updates:
+                content: "{improved_content}"
+                quality_score: "{updated_assessment.overall_score}"
+                iteration: "increment"
+
+  # Step 9: Extract final refined content
+  - name: extract_refined_content
+    type: transform
+    depends_on: [refinement_loop]
+    config:
+      transform_type: extract
+      method: json
+      source_field: refinement_loop.final_state
+      target_field: refined_content
+
+  # ==== STAGE 5: STYLE CONSISTENCY CHECK ====
+
+  # Step 10: Check style consistency
+  - name: check_style_consistency
+    type: retry
+    depends_on: [extract_refined_content]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Check style consistency throughout the content:
+          {refined_content}
+
+          Verify:
+          - Consistent tone
+          - Consistent terminology
+          - Consistent formatting
+          - Consistent voice (1st/2nd/3rd person)
+          - Consistent technical depth
+
+          Output JSON with:
+          - consistency_score (0-1)
+          - inconsistencies_found (array)
+          - correction_suggestions (array)
+
+  # Step 11: Apply style corrections if needed
+  - name: apply_style_corrections
+    type: conditional
+    depends_on: [check_style_consistency]
+    config:
+      conditions:
+        - type: numeric
+          field: style_consistency.consistency_score
+          operator: lt
+          value: 0.85
+          action:
+            type: execute
+            prompt: |
+              Apply these style corrections:
+              Content: {refined_content}
+              Corrections needed: {style_consistency.correction_suggestions}
+
+              Ensure perfect consistency throughout.
+
+      default:
+        type: set
+        field: final_content
+        value_field: refined_content
+
+  # ==== STAGE 6: A/B VARIANT GENERATION ====
+
+  # Step 12: Generate A/B test variants
+  - name: generate_ab_variants
+    type: parallel
+    depends_on: [apply_style_corrections]
+    config:
+      tasks:
+        # Variant A: Emotional appeal
+        - name: variant_emotional
+          prompt: |
+            Create variant emphasizing emotional appeal:
+            Base content: {final_content}
+            Audience: {audience_profile}
+
+            Increase emotional resonance while maintaining accuracy.
+          inputs:
+            variant_type: emotional
+            focus: engagement
+
+        # Variant B: Data-driven
+        - name: variant_analytical
+          prompt: |
+            Create variant emphasizing data and analytics:
+            Base content: {final_content}
+            Audience: {audience_profile}
+
+            Increase factual density and data points.
+          inputs:
+            variant_type: analytical
+            focus: credibility
+
+        # Variant C: Action-oriented
+        - name: variant_actionable
+          prompt: |
+            Create variant emphasizing actionable takeaways:
+            Base content: {final_content}
+            Audience: {audience_profile}
+
+            Increase practical, actionable advice.
+          inputs:
+            variant_type: actionable
+            focus: utility
+
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 45.0
+      max_workers: 3
+
+  # Step 13: Score variants for predicted performance
+  - name: score_variants
+    type: loop
+    depends_on: [generate_ab_variants]
+    config:
+      loop_type: for_each
+      items: ab_variants
+      action:
+        type: execute
+        prompt: |
+          Predict performance metrics for this variant:
+          {item}
+
+          Audience: {audience_profile}
+
+          Score for:
+          - Click-through likelihood (0-1)
+          - Engagement potential (0-1)
+          - Share-worthiness (0-1)
+          - Conversion potential (0-1)
+
+          Output JSON with scores and reasoning.
+      accumulator: scored_variants
+
+  # ==== STAGE 7: MULTI-FORMAT OUTPUT ====
+
+  # Step 14: Generate blog format
+  - name: generate_blog_format
+    type: retry
+    depends_on: [score_variants]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Format content for blog post:
+          Content: {final_content}
+
+          Requirements:
+          - Compelling headline
+          - Subheadings every 200-300 words
+          - Short paragraphs (3-4 sentences)
+          - Bullet points for key takeaways
+          - Clear call-to-action
+          - SEO-optimized structure
+          - Meta description
+
+  # Step 15: Generate social media formats
+  - name: generate_social_formats
+    type: parallel
+    depends_on: [score_variants]
+    config:
+      tasks:
+        # Twitter/X thread
+        - name: twitter_thread
+          prompt: |
+            Create Twitter/X thread from content:
+            {final_content}
+
+            Requirements:
+            - 5-10 tweets
+            - Hook in first tweet
+            - Numbered for easy following
+            - Each tweet standalone value
+            - CTA in last tweet
+            - Character limits: 280 per tweet
+
+        # LinkedIn post
+        - name: linkedin_post
+          prompt: |
+            Create LinkedIn post:
+            {final_content}
+
+            Requirements:
+            - Professional tone
+            - 1300-1500 characters
+            - Thought leadership angle
+            - Industry insights
+            - Engagement question at end
+
+        # Instagram caption
+        - name: instagram_caption
+          prompt: |
+            Create Instagram caption:
+            {final_content}
+
+            Requirements:
+            - Conversational tone
+            - Front-load value
+            - Strategic hashtags (5-10)
+            - Line breaks for readability
+            - Clear CTA
+
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 30.0
+      max_workers: 3
+
+  # Step 16: Generate email formats
+  - name: generate_email_formats
+    type: parallel
+    depends_on: [score_variants]
+    config:
+      tasks:
+        # Newsletter format
+        - name: email_newsletter
+          prompt: |
+            Create email newsletter:
+            {final_content}
+
+            Requirements:
+            - Attention-grabbing subject line
+            - Personalized greeting
+            - Scannable structure
+            - Visual hierarchy
+            - Single clear CTA
+            - Mobile-responsive structure
+            - Unsubscribe-friendly footer
+
+        # Cold outreach format
+        - name: email_outreach
+          prompt: |
+            Create cold outreach email:
+            {final_content}
+
+            Requirements:
+            - Personalized opening
+            - Quick value proposition
+            - Social proof
+            - Soft CTA
+            - Professional signature
+            - Under 150 words
+
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 20.0
+      max_workers: 2
+
+  # ==== STAGE 8: OUTPUT ASSEMBLY ====
+
+  # Step 17: Assemble all formats
+  - name: assemble_formats
+    type: transform
+    depends_on: [generate_blog_format, generate_social_formats, generate_email_formats]
+    config:
+      transform_type: aggregate
+      fields:
+        - blog_format
+        - social_formats
+        - email_formats
+      method: dict
+      target_field: all_formats
+
+  # Step 18: Generate content metadata
+  - name: generate_content_metadata
+    type: transform
+    depends_on: [assemble_formats]
+    config:
+      transform_type: aggregate
+      fields:
+        - topic
+        - purpose
+        - audience_profile
+        - template_type
+        - refinement_loop.iterations
+        - style_consistency.consistency_score
+        - scored_variants
+      method: dict
+      target_field: content_metadata
+
+  # Step 19: Create performance recommendations
+  - name: create_recommendations
+    type: retry
+    depends_on: [generate_content_metadata]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Generate content performance recommendations:
+
+          Metadata: {content_metadata}
+          Variants: {scored_variants}
+
+          Recommend:
+          1. Best variant for this audience
+          2. Optimal posting times
+          3. Distribution channels
+          4. A/B test strategy
+          5. Expected performance metrics
+
+          Output as JSON.
+
+  # Step 20: Final output package
+  - name: package_output
+    type: transform
+    depends_on: [create_recommendations]
+    config:
+      transform_type: template
+      template: |
+        # Adaptive Content Generation Report
+
+        ## Original Request
+        - Topic: {topic}
+        - Purpose: {purpose}
+
+        ## Audience Analysis
+        {audience_profile}
+
+        ## Template Used
+        {template_type}
+
+        ## Content Quality
+        - Refinement iterations: {refinement_loop.iterations}
+        - Final quality score: {refinement_loop.final_quality_score}
+        - Style consistency: {style_consistency.consistency_score}
+
+        ## Generated Formats
+
+        ### Blog Post
+        {blog_format}
+
+        ### Social Media
+        {social_formats}
+
+        ### Email
+        {email_formats}
+
+        ## A/B Test Variants
+        {scored_variants}
+
+        ## Performance Recommendations
+        {recommendations}
+
+        ## Metadata
+        {content_metadata}
+      target_field: final_package
+
+  # Step 21: Create final output
+  - name: create_output
+    type: transform
+    depends_on: [package_output]
+    config:
+      transform_type: aggregate
+      fields:
+        - final_package
+        - all_formats
+        - scored_variants
+        - recommendations
+        - content_metadata
+      method: dict
+      target_field: output

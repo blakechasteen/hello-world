@@ -1,0 +1,181 @@
+name: multi_model_consensus
+description: Multi-model consensus with parallel execution across 5+ models, response normalization, agreement scoring, outlier detection, and cost tracking
+version: "1.0"
+
+variables:
+  models: ["gpt-4", "claude-3", "gemini-pro", "mixtral", "llama-3"]
+  consensus_threshold: 0.7
+  timeout_per_model: 30.0
+  cost_budget: 1.0  # dollars
+
+steps:
+  - name: parse_prompt
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: prompt_data
+
+  - name: execute_parallel_models
+    type: parallel
+    depends_on: [parse_prompt]
+    config:
+      tasks:
+        - name: gpt4_response
+          prompt: "{prompt}"
+          inputs: {model: "gpt-4", temperature: 0.7}
+        - name: claude_response
+          prompt: "{prompt}"
+          inputs: {model: "claude-3-sonnet", temperature: 0.7}
+        - name: gemini_response
+          prompt: "{prompt}"
+          inputs: {model: "gemini-pro", temperature: 0.7}
+        - name: mixtral_response
+          prompt: "{prompt}"
+          inputs: {model: "mixtral-8x7b", temperature: 0.7}
+        - name: llama_response
+          prompt: "{prompt}"
+          inputs: {model: "llama-3-70b", temperature: 0.7}
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 30.0
+      max_workers: 5
+
+  - name: normalize_responses
+    type: loop
+    depends_on: [execute_parallel_models]
+    config:
+      loop_type: for_each
+      items: model_responses
+      action:
+        type: execute
+        prompt: |
+          Normalize this response to structured format:
+          {item.response}
+
+          Extract:
+          - Main answer
+          - Confidence level
+          - Reasoning
+          - Key points
+
+          Output as JSON.
+      accumulator: normalized_responses
+
+  - name: calculate_agreement_scores
+    type: retry
+    depends_on: [normalize_responses]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Calculate agreement between responses:
+          {normalized_responses}
+
+          For each pair:
+          - Semantic similarity (0-1)
+          - Factual agreement (0-1)
+          - Conclusion alignment (0-1)
+
+          Output:
+          - Pairwise agreement matrix
+          - Overall consensus score (0-1)
+          - Points of agreement (array)
+          - Points of disagreement (array)
+
+  - name: detect_outliers
+    type: retry
+    depends_on: [calculate_agreement_scores]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Identify outlier responses:
+          Responses: {normalized_responses}
+          Agreement scores: {agreement_scores}
+
+          Flag responses that:
+          - Disagree with majority
+          - Have unique conclusions
+          - Contradict other responses
+
+          Output:
+          - Outlier responses (array)
+          - Reasons for outlier status
+          - Majority position
+
+  - name: resolve_disagreements
+    type: conditional
+    depends_on: [detect_outliers]
+    config:
+      conditions:
+        # Strong consensus - use majority
+        - type: numeric
+          field: agreement_scores.overall_consensus
+          operator: ge
+          value: 0.7
+          action:
+            type: execute
+            prompt: |
+              Synthesize consensus answer:
+              Majority responses: {majority_responses}
+              Points of agreement: {agreement_scores.points_of_agreement}
+
+              Create coherent answer reflecting consensus.
+
+        # Weak consensus - tie-breaking
+        - type: numeric
+          field: agreement_scores.overall_consensus
+          operator: lt
+          value: 0.7
+          action:
+            type: execute
+            prompt: |
+              Break tie between divergent responses:
+              Responses: {normalized_responses}
+              Disagreements: {agreement_scores.points_of_disagreement}
+
+              Strategies:
+              - Favor response with strongest reasoning
+              - Look for factual accuracy
+              - Consider model reliability
+              - Identify common ground
+
+              Output: final answer with explanation
+
+      default:
+        type: set
+        field: final_answer
+        value: "Unable to reach consensus across models."
+
+  - name: track_costs
+    type: transform
+    depends_on: [execute_parallel_models]
+    config:
+      transform_type: custom
+      operation: calculate_costs
+      source_field: model_responses
+      target_field: cost_breakdown
+      include:
+        - model_name
+        - tokens_used
+        - cost_per_model
+        - total_cost
+
+  - name: assemble_output
+    type: transform
+    depends_on: [resolve_disagreements, track_costs]
+    config:
+      transform_type: aggregate
+      fields:
+        - final_answer
+        - consensus_score: "{agreement_scores.overall_consensus}"
+        - model_responses
+        - agreement_analysis
+        - outliers
+        - cost_breakdown
+      method: dict
+      target_field: output

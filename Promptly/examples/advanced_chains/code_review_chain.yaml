@@ -1,0 +1,673 @@
+name: code_review_refactoring_chain
+description: Comprehensive code review with multi-language support, security scanning, performance analysis, refactoring suggestions, test generation, and documentation
+version: "1.0"
+
+# Configuration variables
+variables:
+  supported_languages: ["python", "javascript", "typescript", "java", "go", "rust", "cpp"]
+  security_scan_depth: "comprehensive"
+  performance_threshold: 0.7
+  test_coverage_target: 80
+  max_refactoring_suggestions: 10
+
+steps:
+  # ==== STAGE 1: CODE PARSING ====
+
+  # Step 1: Parse code submission
+  - name: parse_code_submission
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: code_submission
+      validation:
+        required: true
+        fields:
+          - code
+          - language
+
+  # Step 2: Detect programming language
+  - name: detect_language
+    type: conditional
+    depends_on: [parse_code_submission]
+    config:
+      conditions:
+        # Check if language is explicitly specified
+        - type: keyword
+          field: language
+          keywords: ["python", "javascript", "typescript", "java", "go", "rust", "cpp"]
+          action:
+            type: set
+            field: detected_language
+            value_field: language
+
+      default:
+        # Auto-detect language from code
+        type: execute
+        prompt: |
+          Detect the programming language of this code:
+          {code}
+
+          Supported: {supported_languages}
+          Output JSON with: language, confidence
+
+  # Step 3: Validate language is supported
+  - name: validate_language
+    type: conditional
+    depends_on: [detect_language]
+    config:
+      conditions:
+        - type: keyword
+          field: detected_language
+          keywords: ["python", "javascript", "typescript", "java", "go", "rust", "cpp"]
+          action:
+            type: set
+            field: language_supported
+            value: true
+
+      default:
+        type: set
+        field: language_supported
+        value: false
+
+  # Step 4: Parse code structure
+  - name: parse_code_structure
+    type: retry
+    depends_on: [validate_language]
+    condition:
+      type: simple
+      field: language_supported
+      operator: eq
+      value: true
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      action:
+        type: execute
+        prompt: |
+          Parse the structure of this {detected_language} code:
+          {code}
+
+          Extract:
+          - Functions/methods and their signatures
+          - Classes and inheritance
+          - Imports/dependencies
+          - Global variables
+          - Entry points
+          - Complexity metrics (cyclomatic complexity)
+
+          Output as JSON.
+
+  # ==== STAGE 2: PARALLEL ANALYSIS ====
+
+  # Step 5: Run comprehensive analysis in parallel
+  - name: comprehensive_analysis
+    type: parallel
+    depends_on: [parse_code_structure]
+    condition:
+      type: simple
+      field: language_supported
+      operator: eq
+      value: true
+    config:
+      tasks:
+        # Security vulnerability scanning
+        - name: security_scan
+          prompt: |
+            Perform security vulnerability scan:
+            Language: {detected_language}
+            Code: {code}
+            Structure: {code_structure}
+
+            Check for:
+            - SQL injection vulnerabilities
+            - XSS vulnerabilities
+            - CSRF vulnerabilities
+            - Hardcoded secrets/credentials
+            - Insecure cryptography
+            - Path traversal issues
+            - Command injection
+            - Unsafe deserialization
+            - Authentication/authorization flaws
+            - Dependency vulnerabilities
+
+            Output JSON with:
+            - vulnerabilities (array with severity, description, location, fix)
+            - security_score (0-1)
+            - critical_count
+            - high_count
+            - medium_count
+            - low_count
+          inputs:
+            scan_type: security
+            depth: comprehensive
+
+        # Performance analysis
+        - name: performance_analysis
+          prompt: |
+            Analyze performance characteristics:
+            Language: {detected_language}
+            Code: {code}
+            Structure: {code_structure}
+
+            Check for:
+            - Time complexity issues (O(n²) or worse)
+            - Space complexity issues
+            - Unnecessary loops
+            - Inefficient data structures
+            - Blocking I/O operations
+            - Memory leaks
+            - Resource management issues
+            - Database query optimization
+            - Caching opportunities
+
+            Output JSON with:
+            - performance_issues (array)
+            - performance_score (0-1)
+            - optimization_opportunities
+            - estimated_improvement_potential
+          inputs:
+            analysis_type: performance
+            focus: optimization
+
+        # Best practices checking
+        - name: best_practices_check
+          prompt: |
+            Check adherence to best practices:
+            Language: {detected_language}
+            Code: {code}
+            Structure: {code_structure}
+
+            Verify:
+            - Naming conventions
+            - Code organization
+            - Error handling patterns
+            - Logging practices
+            - Code duplication (DRY principle)
+            - Single Responsibility Principle
+            - Dependency injection
+            - Design patterns usage
+            - API design (if applicable)
+            - Concurrency safety
+
+            Output JSON with:
+            - violations (array)
+            - best_practices_score (0-1)
+            - recommendations
+          inputs:
+            check_type: best_practices
+            standard: language_specific
+
+        # Code quality metrics
+        - name: quality_metrics
+          prompt: |
+            Calculate code quality metrics:
+            Language: {detected_language}
+            Code: {code}
+            Structure: {code_structure}
+
+            Calculate:
+            - Lines of code (LOC)
+            - Cyclomatic complexity per function
+            - Maintainability index
+            - Technical debt ratio
+            - Code duplication percentage
+            - Comment density
+            - Function length distribution
+            - Nesting depth
+
+            Output JSON with all metrics.
+          inputs:
+            metrics_type: quality
+            granularity: detailed
+
+        # Documentation analysis
+        - name: documentation_analysis
+          prompt: |
+            Analyze code documentation:
+            Language: {detected_language}
+            Code: {code}
+            Structure: {code_structure}
+
+            Check:
+            - Function/method documentation
+            - Class documentation
+            - Parameter documentation
+            - Return value documentation
+            - Exception documentation
+            - Module-level documentation
+            - README presence
+            - Comment quality
+
+            Output JSON with:
+            - documentation_score (0-1)
+            - missing_documentation (array)
+            - suggestions
+          inputs:
+            analysis_type: documentation
+            depth: comprehensive
+
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 90.0
+      max_workers: 5
+
+  # ==== STAGE 3: ISSUE AGGREGATION ====
+
+  # Step 6: Aggregate and prioritize issues
+  - name: aggregate_issues
+    type: transform
+    depends_on: [comprehensive_analysis]
+    config:
+      transform_type: custom
+      operation: aggregate_code_issues
+      source_field: analysis_results
+      target_field: aggregated_issues
+      prioritization:
+        - critical_security_issues
+        - high_security_issues
+        - major_performance_issues
+        - best_practice_violations
+        - documentation_gaps
+
+  # Step 7: Calculate overall code health score
+  - name: calculate_health_score
+    type: retry
+    depends_on: [aggregate_issues]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Calculate overall code health score:
+
+          Security: {security_scan.security_score}
+          Performance: {performance_analysis.performance_score}
+          Best Practices: {best_practices_check.best_practices_score}
+          Quality Metrics: {quality_metrics}
+          Documentation: {documentation_analysis.documentation_score}
+
+          Weights:
+          - Security: 30%
+          - Performance: 25%
+          - Best Practices: 20%
+          - Quality: 15%
+          - Documentation: 10%
+
+          Output JSON with:
+          - overall_score (0-100)
+          - grade (A-F)
+          - strengths (array)
+          - weaknesses (array)
+
+  # ==== STAGE 4: REFACTORING SUGGESTIONS ====
+
+  # Step 8: Generate refactoring suggestions
+  - name: generate_refactoring_suggestions
+    type: retry
+    depends_on: [calculate_health_score]
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      action:
+        type: execute
+        prompt: |
+          Generate prioritized refactoring suggestions:
+
+          Code: {code}
+          Language: {detected_language}
+          Issues: {aggregated_issues}
+          Health Score: {health_score}
+
+          For top {max_refactoring_suggestions} issues, provide:
+          1. Issue description
+          2. Impact (high/medium/low)
+          3. Effort to fix (hours)
+          4. Priority score (impact vs effort)
+          5. Specific refactoring steps
+          6. Code example (before/after)
+          7. Testing requirements
+          8. Potential risks
+
+          Output as JSON array.
+
+  # Step 9: Generate automated refactoring code
+  - name: generate_refactored_code
+    type: loop
+    depends_on: [generate_refactoring_suggestions]
+    config:
+      loop_type: for_each
+      items: refactoring_suggestions
+      condition: "item.priority_score > 7 and item.effort < 4"  # High priority, low effort
+      action:
+        type: execute
+        prompt: |
+          Generate refactored code for this suggestion:
+          {item}
+
+          Original code: {code}
+          Language: {detected_language}
+
+          Requirements:
+          - Preserve functionality
+          - Fix the identified issue
+          - Follow {detected_language} best practices
+          - Include inline comments explaining changes
+          - Ensure backwards compatibility where possible
+      accumulator: refactored_code_snippets
+      max_iterations: 10
+      timeout_per_iteration: 30.0
+
+  # ==== STAGE 5: TEST GENERATION ====
+
+  # Step 10: Identify testable components
+  - name: identify_testable_components
+    type: transform
+    depends_on: [parse_code_structure]
+    config:
+      transform_type: custom
+      operation: extract_testable_components
+      source_field: code_structure
+      target_field: testable_components
+      criteria:
+        - public_functions
+        - public_methods
+        - classes
+        - edge_cases
+
+  # Step 11: Generate unit tests
+  - name: generate_unit_tests
+    type: loop
+    depends_on: [identify_testable_components]
+    config:
+      loop_type: for_each
+      items: testable_components
+      action:
+        type: execute
+        prompt: |
+          Generate comprehensive unit tests:
+          Component: {item}
+          Language: {detected_language}
+          Original code: {code}
+
+          Test requirements:
+          - Happy path tests
+          - Edge case tests
+          - Error condition tests
+          - Input validation tests
+          - Mock external dependencies
+          - Target: {test_coverage_target}% coverage
+
+          Use appropriate testing framework:
+          - Python: pytest
+          - JavaScript/TypeScript: Jest
+          - Java: JUnit
+          - Go: testing package
+          - Rust: built-in test framework
+          - C++: Google Test
+
+          Output complete test file with:
+          - Setup/teardown
+          - Test cases
+          - Assertions
+          - Comments
+      accumulator: generated_tests
+      max_iterations: 20
+      timeout_per_iteration: 25.0
+
+  # Step 12: Generate integration tests
+  - name: generate_integration_tests
+    type: retry
+    depends_on: [identify_testable_components]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Generate integration tests:
+          Code: {code}
+          Language: {detected_language}
+          Structure: {code_structure}
+
+          Test:
+          - Component interactions
+          - Data flow
+          - External dependencies
+          - API endpoints (if applicable)
+          - Database operations (if applicable)
+
+          Output complete integration test suite.
+
+  # ==== STAGE 6: DOCUMENTATION GENERATION ====
+
+  # Step 13: Generate missing documentation
+  - name: generate_documentation
+    type: parallel
+    depends_on: [documentation_analysis]
+    config:
+      tasks:
+        # Function/method documentation
+        - name: function_docs
+          prompt: |
+            Generate documentation for undocumented functions:
+            Code: {code}
+            Language: {detected_language}
+            Missing docs: {documentation_analysis.missing_documentation}
+
+            Format based on language:
+            - Python: Google/NumPy style docstrings
+            - JavaScript/TypeScript: JSDoc
+            - Java: Javadoc
+            - Go: Go doc comments
+            - Rust: Rustdoc
+            - C++: Doxygen
+
+            Include:
+            - Brief description
+            - Parameters (type, description)
+            - Return value (type, description)
+            - Exceptions/errors
+            - Example usage
+
+        # Module/package documentation
+        - name: module_docs
+          prompt: |
+            Generate module-level documentation:
+            Code: {code}
+            Language: {detected_language}
+            Structure: {code_structure}
+
+            Include:
+            - Module purpose
+            - Public API
+            - Usage examples
+            - Dependencies
+            - Installation (if applicable)
+
+        # README generation
+        - name: readme_generation
+          prompt: |
+            Generate README.md:
+            Code: {code}
+            Language: {detected_language}
+
+            Include:
+            - Project description
+            - Features
+            - Installation instructions
+            - Usage examples
+            - API reference
+            - Testing instructions
+            - Contributing guidelines
+            - License information
+
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 45.0
+      max_workers: 3
+
+  # ==== STAGE 7: QUALITY VALIDATION ====
+
+  # Step 14: Validate refactored code quality
+  - name: validate_refactored_code
+    type: loop
+    depends_on: [generate_refactored_code]
+    config:
+      loop_type: for_each
+      items: refactored_code_snippets
+      action:
+        type: execute
+        prompt: |
+          Validate refactored code quality:
+          Original: {code}
+          Refactored: {item}
+
+          Verify:
+          - Functionality preserved
+          - No new bugs introduced
+          - Improved metrics
+          - Passes all tests
+          - Follows best practices
+
+          Output JSON with:
+          - is_valid (boolean)
+          - improvements (metrics delta)
+          - potential_issues (array)
+          - recommendation (approve/revise)
+      accumulator: validation_results
+      max_iterations: 10
+
+  # ==== STAGE 8: COMPREHENSIVE REPORT ====
+
+  # Step 15: Generate code review summary
+  - name: generate_review_summary
+    type: retry
+    depends_on: [calculate_health_score, aggregate_issues]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Generate executive summary of code review:
+
+          Overall Health: {health_score}
+          Issues Found: {aggregated_issues.length}
+          Critical Issues: {security_scan.critical_count}
+
+          Summarize:
+          - Key findings (top 5)
+          - Critical action items
+          - Risk assessment
+          - Estimated effort to address
+          - Recommendations
+
+          Keep concise (< 300 words).
+
+  # Step 16: Create comprehensive report
+  - name: create_comprehensive_report
+    type: transform
+    depends_on: [generate_review_summary, validation_results, generate_documentation]
+    config:
+      transform_type: template
+      template: |
+        # Code Review & Refactoring Report
+
+        ## Executive Summary
+        {review_summary}
+
+        ## Overall Health Score
+        - Score: {health_score.overall_score}/100
+        - Grade: {health_score.grade}
+        - Strengths: {health_score.strengths}
+        - Weaknesses: {health_score.weaknesses}
+
+        ## Security Analysis
+        - Security Score: {security_scan.security_score}
+        - Critical Vulnerabilities: {security_scan.critical_count}
+        - High Vulnerabilities: {security_scan.high_count}
+        - Medium Vulnerabilities: {security_scan.medium_count}
+        - Low Vulnerabilities: {security_scan.low_count}
+
+        ### Vulnerabilities
+        {security_scan.vulnerabilities}
+
+        ## Performance Analysis
+        - Performance Score: {performance_analysis.performance_score}
+        - Issues Found: {performance_analysis.performance_issues}
+        - Optimization Opportunities: {performance_analysis.optimization_opportunities}
+        - Estimated Improvement: {performance_analysis.estimated_improvement_potential}
+
+        ## Best Practices
+        - Best Practices Score: {best_practices_check.best_practices_score}
+        - Violations: {best_practices_check.violations}
+        - Recommendations: {best_practices_check.recommendations}
+
+        ## Code Quality Metrics
+        {quality_metrics}
+
+        ## Documentation
+        - Documentation Score: {documentation_analysis.documentation_score}
+        - Missing Documentation: {documentation_analysis.missing_documentation}
+
+        ## Refactoring Suggestions
+        {refactoring_suggestions}
+
+        ## Refactored Code
+        {refactored_code_snippets}
+
+        ## Generated Tests
+        - Unit Tests: {generated_tests.length}
+        - Integration Tests: {integration_tests}
+
+        ## Generated Documentation
+        {generated_documentation}
+
+        ## Validation Results
+        {validation_results}
+
+        ## Next Steps
+        1. Address critical security vulnerabilities immediately
+        2. Review and apply high-priority refactorings
+        3. Run generated test suite
+        4. Update documentation
+        5. Schedule follow-up review
+      target_field: comprehensive_report
+
+  # Step 17: Unsupported language handler
+  - name: handle_unsupported_language
+    type: transform
+    depends_on: [validate_language]
+    condition:
+      type: simple
+      field: language_supported
+      operator: eq
+      value: false
+    config:
+      transform_type: template
+      template: |
+        Language Not Supported
+
+        Detected language: {detected_language}
+        Supported languages: {supported_languages}
+
+        Please submit code in one of the supported languages.
+      target_field: output
+
+  # Step 18: Final output assembly
+  - name: assemble_final_output
+    type: transform
+    depends_on: [create_comprehensive_report, handle_unsupported_language]
+    config:
+      transform_type: aggregate
+      fields:
+        - comprehensive_report
+        - health_score
+        - aggregated_issues
+        - refactoring_suggestions
+        - refactored_code_snippets
+        - generated_tests
+        - generated_documentation
+        - validation_results
+      method: dict
+      target_field: output

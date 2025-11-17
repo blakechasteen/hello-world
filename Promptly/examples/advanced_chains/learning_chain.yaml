@@ -1,0 +1,319 @@
+name: real_time_learning_chain
+description: Self-improving chain with feedback collection, pattern caching, A/B testing, and continuous optimization
+version: "1.0"
+
+variables:
+  learning_rate: 0.1
+  feedback_window: 100  # interactions
+  ab_test_duration: 50  # interactions
+  min_confidence_for_update: 0.7
+
+steps:
+  - name: parse_request
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: request_data
+
+  - name: check_cached_patterns
+    type: retry
+    depends_on: [parse_request]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Check if request matches cached successful patterns:
+          Request: {request_data}
+          Pattern cache: {pattern_cache}
+
+          If match found (similarity > 0.8):
+          - Return cached approach
+          - Include pattern ID
+          - Confidence score
+
+          Output JSON with: matched, pattern_id, confidence, approach
+
+  - name: determine_execution_strategy
+    type: conditional
+    depends_on: [check_cached_patterns]
+    config:
+      conditions:
+        # High-confidence match - use cached pattern
+        - type: numeric
+          field: cache_check.confidence
+          operator: ge
+          value: 0.8
+          action:
+            type: set
+            field: strategy
+            value: use_cached_pattern
+
+        # A/B test in progress - random assignment
+        - type: keyword
+          field: ab_test_status
+          keywords: ["active"]
+          action:
+            type: execute
+            prompt: |
+              Assign to A/B test variant:
+              Current test: {active_ab_test}
+              Request: {request_data}
+
+              Random assignment with:
+              - 50% variant A
+              - 50% variant B
+
+        # Default - use current best approach
+      default:
+        type: set
+        field: strategy
+        value: current_best
+
+  - name: execute_with_strategy
+    type: conditional
+    depends_on: [determine_execution_strategy]
+    config:
+      conditions:
+        # Use cached pattern
+        - type: keyword
+          field: strategy
+          keywords: ["use_cached_pattern"]
+          action:
+            type: execute
+            prompt: |
+              Execute using cached pattern:
+              Pattern: {cache_check.approach}
+              Request: {request_data}
+
+        # A/B test variant A
+        - type: keyword
+          field: strategy
+          keywords: ["ab_variant_a"]
+          action:
+            type: execute
+            prompt: |
+              Execute variant A:
+              {ab_test.variant_a.approach}
+              Request: {request_data}
+
+        # A/B test variant B
+        - type: keyword
+          field: strategy
+          keywords: ["ab_variant_b"]
+          action:
+            type: execute
+            prompt: |
+              Execute variant B:
+              {ab_test.variant_b.approach}
+              Request: {request_data}
+
+      default:
+        type: execute
+        prompt: |
+          Execute with current best approach:
+          {current_best_approach}
+          Request: {request_data}
+
+  - name: collect_feedback
+    type: retry
+    depends_on: [execute_with_strategy]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Collect implicit feedback signals:
+          Response: {execution_result}
+          Request: {request_data}
+
+          Measure:
+          - Response quality (0-1)
+          - Execution time
+          - Error count
+          - User satisfaction (if available)
+          - Task completion
+
+          Output feedback metrics as JSON.
+
+  - name: update_pattern_cache
+    type: conditional
+    depends_on: [collect_feedback]
+    config:
+      conditions:
+        # High quality - cache the pattern
+        - type: numeric
+          field: feedback.quality_score
+          operator: ge
+          value: 0.8
+          action:
+            type: execute
+            prompt: |
+              Add successful pattern to cache:
+              Request pattern: {request_data}
+              Approach used: {strategy}
+              Quality: {feedback.quality_score}
+
+              Extract:
+              - Request features
+              - Successful approach
+              - Context factors
+
+              Store in pattern cache.
+
+        # Low quality - learn what to avoid
+        - type: numeric
+          field: feedback.quality_score
+          operator: lt
+          value: 0.5
+          action:
+            type: execute
+            prompt: |
+              Record failed pattern:
+              Request: {request_data}
+              Approach: {strategy}
+              Quality: {feedback.quality_score}
+
+              Add to negative examples.
+
+  - name: update_ab_test_results
+    type: conditional
+    depends_on: [collect_feedback]
+    condition:
+      type: keyword
+      field: strategy
+      keywords: ["ab_variant_a", "ab_variant_b"]
+    config:
+      conditions:
+        - type: always
+          action:
+            type: execute
+            prompt: |
+              Update A/B test results:
+              Variant: {strategy}
+              Quality: {feedback.quality_score}
+              Execution time: {feedback.execution_time}
+
+              Update statistical analysis:
+              - Mean quality per variant
+              - Confidence intervals
+              - Statistical significance
+
+  - name: check_ab_test_completion
+    type: conditional
+    depends_on: [update_ab_test_results]
+    condition:
+      type: keyword
+      field: ab_test_status
+      keywords: ["active"]
+    config:
+      conditions:
+        # Sufficient data collected
+        - type: numeric
+          field: ab_test.interactions
+          operator: ge
+          value: 50
+          action:
+            type: execute
+            prompt: |
+              Analyze A/B test results:
+              Variant A: {ab_test.variant_a.stats}
+              Variant B: {ab_test.variant_b.stats}
+
+              Determine:
+              - Winner (if significant difference)
+              - Confidence level
+              - Performance delta
+              - Recommendation: adopt/continue/abort
+
+  - name: update_current_best
+    type: conditional
+    depends_on: [check_ab_test_completion]
+    config:
+      conditions:
+        - type: keyword
+          field: ab_test_result.recommendation
+          keywords: ["adopt"]
+          action:
+            type: execute
+            prompt: |
+              Adopt winning variant as new current_best:
+              Winner: {ab_test_result.winner}
+              Improvement: {ab_test_result.performance_delta}
+
+              Update current_best_approach and retire old approach.
+
+  - name: trigger_new_ab_test
+    type: conditional
+    depends_on: [update_current_best]
+    config:
+      conditions:
+        # Periodically test new variations
+        - type: numeric
+          field: interactions_since_last_test
+          operator: ge
+          value: 100
+          action:
+            type: execute
+            prompt: |
+              Generate new A/B test:
+              Current best: {current_best_approach}
+
+              Create variant that:
+              - Modifies one aspect
+              - Has clear hypothesis
+              - Can be measured
+
+              Define:
+              - Variant A (control): {current_best_approach}
+              - Variant B (experiment): new variation
+              - Success metrics
+              - Test duration
+
+  - name: generate_learning_report
+    type: transform
+    depends_on: [trigger_new_ab_test]
+    config:
+      transform_type: template
+      template: |
+        # Learning Chain Report
+
+        ## Execution
+        - Strategy used: {strategy}
+        - Quality score: {feedback.quality_score}
+        - Execution time: {feedback.execution_time}
+
+        ## Pattern Cache
+        - Total patterns: {pattern_cache.size}
+        - Cache hit rate: {cache_hit_rate}
+        - Top patterns: {pattern_cache.top_5}
+
+        ## A/B Testing
+        - Current test: {ab_test_status}
+        - Interactions: {ab_test.interactions}
+        - Leading variant: {ab_test.leader}
+
+        ## Continuous Improvement
+        - Total interactions: {total_interactions}
+        - Average quality trend: {quality_trend}
+        - Improvements deployed: {improvement_count}
+
+        ## Next Steps
+        {next_steps}
+      target_field: learning_report
+
+  - name: assemble_output
+    type: transform
+    depends_on: [generate_learning_report]
+    config:
+      transform_type: aggregate
+      fields:
+        - execution_result
+        - learning_report
+        - feedback
+        - pattern_cache_update
+        - ab_test_status
+      method: dict
+      target_field: output

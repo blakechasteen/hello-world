@@ -1,0 +1,382 @@
+name: customer_support_orchestration
+description: Intelligent customer support with intent classification, sentiment analysis, knowledge base search, tone-matched responses, and escalation logic
+version: "1.0"
+
+variables:
+  sentiment_threshold: -0.5  # Negative sentiment threshold for escalation
+  response_quality_threshold: 0.8
+  max_kb_results: 5
+  escalation_triggers: ["urgent", "complaint", "legal", "refund", "cancel"]
+
+steps:
+  # ==== STAGE 1: INTAKE & CLASSIFICATION ====
+
+  - name: parse_customer_message
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: customer_message
+      validation:
+        required: true
+        fields: [message, customer_id]
+
+  - name: parallel_initial_analysis
+    type: parallel
+    depends_on: [parse_customer_message]
+    config:
+      tasks:
+        # Intent classification
+        - name: classify_intent
+          prompt: |
+            Classify customer intent:
+            Message: {message}
+
+            Categories:
+            - question: seeking information
+            - complaint: expressing dissatisfaction
+            - feedback: providing feedback
+            - request: requesting action
+            - urgent: time-sensitive issue
+            - technical_issue: technical problem
+
+            Output JSON with: primary_intent, confidence, secondary_intents
+
+        # Sentiment analysis
+        - name: analyze_sentiment
+          prompt: |
+            Analyze sentiment and emotion:
+            Message: {message}
+
+            Output JSON with:
+            - sentiment_score (-1 to 1)
+            - primary_emotion (angry/frustrated/confused/happy/neutral)
+            - intensity (0-1)
+            - tone (aggressive/polite/formal/casual)
+            - urgency_indicators (array)
+
+        # Extract key entities
+        - name: extract_entities
+          prompt: |
+            Extract key entities:
+            Message: {message}
+
+            Extract:
+            - Product names
+            - Order numbers
+            - Account details
+            - Dates/times mentioned
+            - Error messages
+            - Feature names
+
+            Output as JSON.
+
+      aggregation: all
+      error_strategy: best_effort
+      timeout: 15.0
+      max_workers: 3
+
+  # ==== STAGE 2: CONTEXT GATHERING ====
+
+  - name: build_context
+    type: parallel
+    depends_on: [parallel_initial_analysis]
+    config:
+      tasks:
+        # Search knowledge base
+        - name: search_knowledge_base
+          prompt: |
+            Search knowledge base:
+            Query: {message}
+            Intent: {intent_classification.primary_intent}
+            Entities: {extracted_entities}
+
+            Return top {max_kb_results} relevant articles with:
+            - Article title
+            - Summary
+            - Full content
+            - Relevance score
+
+        # Retrieve customer history
+        - name: get_customer_history
+          prompt: |
+            Retrieve customer history:
+            Customer ID: {customer_id}
+
+            Get:
+            - Previous interactions (last 10)
+            - Purchase history
+            - Support tickets
+            - Account status
+            - Preferences
+
+        # Check system status
+        - name: check_system_status
+          prompt: |
+            Check for relevant system status:
+            Product/Feature: {extracted_entities.products}
+
+            Check:
+            - Known outages
+            - Ongoing incidents
+            - Scheduled maintenance
+            - Recent deployments
+
+      aggregation: all
+      error_strategy: continue_on_partial
+      timeout: 20.0
+      max_workers: 3
+
+  # ==== STAGE 3: RESPONSE GENERATION ====
+
+  - name: determine_response_strategy
+    type: conditional
+    depends_on: [build_context]
+    config:
+      conditions:
+        # High urgency + negative sentiment = escalate
+        - type: keyword
+          field: intent_classification.primary_intent
+          keywords: ["urgent", "complaint"]
+          action:
+            type: set
+            field: response_strategy
+            value: escalate_to_human
+
+        # Knowledge base has good answer
+        - type: numeric
+          field: kb_results.0.relevance_score
+          operator: gt
+          value: 0.8
+          action:
+            type: set
+            field: response_strategy
+            value: knowledge_base_answer
+
+        # Technical issue detected
+        - type: keyword
+          field: intent_classification.primary_intent
+          keywords: ["technical_issue"]
+          action:
+            type: set
+            field: response_strategy
+            value: technical_support
+
+      default:
+        type: set
+        field: response_strategy
+        value: general_response
+
+  - name: generate_response
+    type: conditional
+    depends_on: [determine_response_strategy]
+    config:
+      conditions:
+        # Knowledge base answer
+        - type: keyword
+          field: response_strategy
+          keywords: ["knowledge_base_answer"]
+          action:
+            type: execute
+            prompt: |
+              Generate response using knowledge base:
+              Customer message: {message}
+              KB articles: {kb_results}
+              Customer tone: {sentiment_analysis.tone}
+
+              Requirements:
+              - Match customer's tone
+              - Reference KB article
+              - Be conversational
+              - Offer additional help
+
+        # Technical support response
+        - type: keyword
+          field: response_strategy
+          keywords: ["technical_support"]
+          action:
+            type: execute
+            prompt: |
+              Generate technical support response:
+              Issue: {message}
+              Entities: {extracted_entities}
+              System status: {system_status}
+
+              Provide:
+              - Acknowledge the issue
+              - Explain what might be happening
+              - Step-by-step troubleshooting
+              - Escalation path if needed
+
+        # General response
+        - type: keyword
+          field: response_strategy
+          keywords: ["general_response"]
+          action:
+            type: execute
+            prompt: |
+              Generate helpful response:
+              Message: {message}
+              Context: {customer_history}
+              Intent: {intent_classification}
+
+              Be:
+              - Empathetic
+              - Solution-oriented
+              - Clear and concise
+
+      default:
+        type: set
+        field: draft_response
+        value: "I'll escalate this to a specialist who can better assist you."
+
+  # ==== STAGE 4: QUALITY CHECK ====
+
+  - name: check_response_quality
+    type: retry
+    depends_on: [generate_response]
+    condition:
+      type: simple
+      field: response_strategy
+      operator: ne
+      value: escalate_to_human
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Evaluate response quality:
+          Customer message: {message}
+          Sentiment: {sentiment_analysis}
+          Draft response: {draft_response}
+
+          Check for:
+          - Empathy (0-1)
+          - Clarity (0-1)
+          - Completeness (0-1)
+          - Tone appropriateness (0-1)
+          - Actionability (0-1)
+
+          Overall quality score: average of above
+          Issues: array of problems found
+
+          Output as JSON.
+
+  - name: refine_if_needed
+    type: conditional
+    depends_on: [check_response_quality]
+    config:
+      conditions:
+        - type: numeric
+          field: quality_check.overall_score
+          operator: lt
+          value: 0.8
+          action:
+            type: execute
+            prompt: |
+              Refine response to address quality issues:
+              Original: {draft_response}
+              Issues: {quality_check.issues}
+              Target sentiment: {sentiment_analysis.tone}
+
+              Improve while maintaining core message.
+
+      default:
+        type: set
+        field: final_response
+        value_field: draft_response
+
+  # ==== STAGE 5: ESCALATION LOGIC ====
+
+  - name: check_escalation_needed
+    type: conditional
+    depends_on: [refine_if_needed]
+    config:
+      conditions:
+        # Negative sentiment + low quality
+        - type: numeric
+          field: sentiment_analysis.sentiment_score
+          operator: lt
+          value: -0.5
+          action:
+            type: set
+            field: escalate
+            value: true
+
+        # Escalation keywords detected
+        - type: keyword
+          field: message
+          keywords: ["legal", "lawsuit", "lawyer", "refund", "cancel subscription"]
+          action:
+            type: set
+            field: escalate
+            value: true
+
+        # Complex technical issue
+        - type: keyword
+          field: intent_classification.primary_intent
+          keywords: ["urgent"]
+          action:
+            type: conditional
+            config:
+              conditions:
+                - type: numeric
+                  field: quality_check.overall_score
+                  operator: lt
+                  value: 0.7
+                  action:
+                    type: set
+                    field: escalate
+                    value: true
+
+      default:
+        type: set
+        field: escalate
+        value: false
+
+  - name: prepare_escalation
+    type: transform
+    depends_on: [check_escalation_needed]
+    condition:
+      type: simple
+      field: escalate
+      operator: eq
+      value: true
+    config:
+      transform_type: template
+      template: |
+        ESCALATION REQUIRED
+
+        Customer: {customer_id}
+        Intent: {intent_classification.primary_intent}
+        Sentiment: {sentiment_analysis.sentiment_score}
+        Emotion: {sentiment_analysis.primary_emotion}
+
+        Message: {message}
+
+        Context:
+        {customer_history}
+
+        Reason for escalation:
+        {escalation_reason}
+
+        Recommended specialist: {recommended_specialist}
+      target_field: escalation_ticket
+
+  # ==== STAGE 6: OUTPUT ASSEMBLY ====
+
+  - name: assemble_output
+    type: transform
+    depends_on: [prepare_escalation, refine_if_needed]
+    config:
+      transform_type: aggregate
+      fields:
+        - final_response
+        - escalate
+        - escalation_ticket
+        - intent_classification
+        - sentiment_analysis
+        - quality_check
+      method: dict
+      target_field: output

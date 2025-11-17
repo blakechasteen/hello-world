@@ -1,0 +1,241 @@
+name: hierarchical_planning_chain
+description: High-level planning with task decomposition, dependency graphs, parallel execution, progress tracking, and dynamic replanning
+version: "1.0"
+
+variables:
+  max_decomposition_depth: 3
+  max_parallel_tasks: 5
+  checkpoint_interval: 5  # tasks
+  replan_on_failure: true
+
+steps:
+  - name: parse_high_level_goal
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: goal_data
+
+  - name: decompose_goal
+    type: retry
+    depends_on: [parse_high_level_goal]
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      action:
+        type: execute
+        prompt: |
+          Decompose high-level goal into tasks:
+          Goal: {goal}
+          Context: {context}
+          Constraints: {constraints}
+
+          Create hierarchical task breakdown:
+          - Level 1: Major phases
+          - Level 2: Sub-tasks
+          - Level 3: Actionable steps
+
+          For each task:
+          - ID
+          - Description
+          - Dependencies (array of IDs)
+          - Estimated effort (hours)
+          - Priority (1-5)
+          - Required resources
+          - Success criteria
+
+          Output as JSON tree structure.
+
+  - name: build_dependency_graph
+    type: transform
+    depends_on: [decompose_goal]
+    config:
+      transform_type: custom
+      operation: build_task_graph
+      source_field: task_tree
+      target_field: dependency_graph
+      include:
+        - nodes
+        - edges
+        - critical_path
+        - parallel_groups
+
+  - name: identify_parallel_opportunities
+    type: retry
+    depends_on: [build_dependency_graph]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Identify tasks that can run in parallel:
+          Dependency graph: {dependency_graph}
+
+          Find:
+          - Tasks with no dependencies
+          - Tasks depending only on completed tasks
+          - Maximum parallelization opportunities
+
+          Group into batches (max {max_parallel_tasks} per batch).
+
+  - name: allocate_resources
+    type: retry
+    depends_on: [identify_parallel_opportunities]
+    config:
+      max_attempts: 2
+      action:
+        type: execute
+        prompt: |
+          Allocate resources to tasks:
+          Tasks: {task_tree}
+          Available resources: {available_resources}
+          Parallel batches: {parallel_batches}
+
+          For each task:
+          - Assign resources
+          - Check conflicts
+          - Optimize allocation
+
+          Output resource allocation plan.
+
+  - name: execute_tasks_loop
+    type: loop
+    depends_on: [allocate_resources]
+    config:
+      loop_type: while
+      condition: "has_pending_tasks and not critical_failure"
+      max_iterations: 50
+      state:
+        completed_tasks: []
+        failed_tasks: []
+        current_batch: 0
+        has_pending_tasks: true
+        critical_failure: false
+      action:
+        type: sequence
+        steps:
+          # Get next batch of parallel tasks
+          - type: transform
+            config:
+              transform_type: custom
+              operation: get_next_batch
+              source_field: parallel_batches
+              current_batch: "{current_batch}"
+              target_field: current_tasks
+
+          # Execute batch in parallel
+          - type: parallel
+            config:
+              tasks_from: current_tasks
+              prompt_template: "Execute task: {task.description}"
+              aggregation: all
+              error_strategy: continue
+              timeout: 300.0
+
+          # Track progress
+          - type: transform
+            config:
+              transform_type: custom
+              operation: update_progress
+              completed: "{batch_results.successful}"
+              failed: "{batch_results.failed}"
+
+          # Save checkpoint
+          - type: conditional
+            config:
+              conditions:
+                - type: numeric
+                  field: completed_tasks.length
+                  operator: modulo
+                  value: 5
+                  equals: 0
+                  action:
+                    type: execute
+                    prompt: "Save checkpoint: {state}"
+
+          # Check for failures and replan if needed
+          - type: conditional
+            config:
+              conditions:
+                - type: numeric
+                  field: failed_tasks.length
+                  operator: gt
+                  value: 0
+                  action:
+                    type: execute
+                    prompt: |
+                      Replan based on failures:
+                      Failed tasks: {failed_tasks}
+                      Completed: {completed_tasks}
+                      Remaining: {pending_tasks}
+
+                      Options:
+                      - Retry failed tasks
+                      - Skip non-critical
+                      - Find alternatives
+                      - Escalate critical failures
+
+          # Update state
+          - type: transform
+            config:
+              transform_type: custom
+              operation: update_loop_state
+              updates:
+                completed_tasks: "append({batch_results.successful})"
+                failed_tasks: "append({batch_results.failed})"
+                current_batch: "increment"
+                has_pending_tasks: "{pending_tasks.length > 0}"
+                critical_failure: "{critical_tasks_failed}"
+
+  - name: generate_execution_report
+    type: transform
+    depends_on: [execute_tasks_loop]
+    config:
+      transform_type: template
+      template: |
+        # Hierarchical Planning Execution Report
+
+        ## Goal
+        {goal}
+
+        ## Execution Summary
+        - Total tasks: {task_tree.total_count}
+        - Completed: {completed_tasks.length}
+        - Failed: {failed_tasks.length}
+        - Success rate: {success_rate}%
+
+        ## Task Breakdown
+        {task_tree}
+
+        ## Dependency Graph
+        {dependency_graph}
+
+        ## Execution Timeline
+        {execution_timeline}
+
+        ## Parallel Efficiency
+        - Batches executed: {current_batch}
+        - Average parallelization: {avg_parallel_tasks}
+        - Time saved: {time_saved}
+
+        ## Failed Tasks
+        {failed_tasks}
+
+        ## Checkpoints
+        {checkpoint_history}
+      target_field: execution_report
+
+  - name: assemble_output
+    type: transform
+    depends_on: [generate_execution_report]
+    config:
+      transform_type: aggregate
+      fields:
+        - execution_report
+        - completed_tasks
+        - failed_tasks
+        - success_rate
+        - execution_timeline
+      method: dict
+      target_field: output

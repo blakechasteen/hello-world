@@ -1,0 +1,469 @@
+name: research_pipeline
+description: Multi-stage research pipeline with query decomposition, parallel research, evidence synthesis, and verification
+version: "1.0"
+
+# Configuration variables
+variables:
+  max_subquestions: 5
+  research_timeout: 60.0
+  confidence_threshold: 0.8
+  max_verification_attempts: 3
+  citation_format: "apa"
+
+steps:
+  # ==== STAGE 1: QUERY DECOMPOSITION ====
+
+  # Step 1: Parse and validate input query
+  - name: parse_query
+    type: transform
+    config:
+      transform_type: extract
+      method: json
+      source_field: input
+      target_field: query
+      validation:
+        required: true
+        min_length: 10
+
+  # Step 2: Decompose query into sub-questions
+  - name: decompose_query
+    type: retry
+    depends_on: [parse_query]
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      initial_delay: 0.5
+      action:
+        type: execute
+        prompt: |
+          Decompose this research query into 3-5 specific sub-questions:
+          Query: {query}
+
+          Output as JSON array of sub-questions with:
+          - question: the sub-question text
+          - priority: 1-5 (5 = highest)
+          - estimated_complexity: low|medium|high
+      fallback:
+        type: set
+        value:
+          sub_questions: [{question: "{query}", priority: 5, estimated_complexity: "medium"}]
+
+  # Step 3: Validate decomposition
+  - name: validate_decomposition
+    type: transform
+    depends_on: [decompose_query]
+    config:
+      transform_type: validate
+      source_field: sub_questions
+      validation_rules:
+        - type: required
+        - type: array
+        - type: max_length
+          value: 5
+        - type: custom
+          validator: has_valid_structure
+
+  # ==== STAGE 2: PARALLEL RESEARCH ====
+
+  # Step 4: Research each sub-question in parallel across multiple sources
+  - name: parallel_research
+    type: parallel
+    depends_on: [validate_decomposition]
+    config:
+      tasks:
+        # Academic sources
+        - name: academic_search
+          prompt: |
+            Research using academic sources:
+            Questions: {sub_questions}
+            Focus on: peer-reviewed papers, scholarly articles
+          inputs:
+            source_type: academic
+            depth: comprehensive
+
+        # Web search
+        - name: web_search
+          prompt: |
+            Research using web search:
+            Questions: {sub_questions}
+            Focus on: recent articles, news, authoritative websites
+          inputs:
+            source_type: web
+            depth: broad
+
+        # Knowledge base lookup
+        - name: knowledge_base
+          prompt: |
+            Search internal knowledge base:
+            Questions: {sub_questions}
+            Focus on: documented facts, previous research
+          inputs:
+            source_type: internal
+            depth: targeted
+
+        # Expert systems
+        - name: expert_consultation
+          prompt: |
+            Consult expert systems:
+            Questions: {sub_questions}
+            Focus on: domain expertise, specialized knowledge
+          inputs:
+            source_type: expert
+            depth: deep
+
+      aggregation: all
+      error_strategy: best_effort  # Continue even if some sources fail
+      timeout: 60.0
+      max_workers: 4
+
+  # Step 5: Extract and normalize research results
+  - name: normalize_results
+    type: transform
+    depends_on: [parallel_research]
+    config:
+      transform_type: custom
+      operation: normalize_research_results
+      source_field: parallel_results
+      target_field: normalized_evidence
+      normalization_rules:
+        - extract_citations
+        - score_confidence
+        - deduplicate_sources
+        - extract_key_facts
+
+  # ==== STAGE 3: EVIDENCE SYNTHESIS ====
+
+  # Step 6: Score evidence by confidence and relevance
+  - name: score_evidence
+    type: loop
+    depends_on: [normalize_results]
+    config:
+      loop_type: for_each
+      items: normalized_evidence
+      action:
+        type: execute
+        prompt: |
+          Score this evidence for:
+          1. Confidence (0-1): How reliable is the source?
+          2. Relevance (0-1): How relevant to original query?
+          3. Recency (0-1): How recent is the information?
+
+          Evidence: {item}
+          Original Query: {query}
+      accumulator: scored_evidence
+      max_iterations: 20
+      timeout_per_iteration: 5.0
+
+  # Step 7: Filter low-confidence evidence
+  - name: filter_evidence
+    type: loop
+    depends_on: [score_evidence]
+    config:
+      loop_type: for_each
+      items: scored_evidence
+      action:
+        type: filter
+        condition: "confidence >= 0.8 and relevance >= 0.7"
+      accumulator: high_quality_evidence
+
+  # Step 8: Check if sufficient evidence exists
+  - name: check_evidence_quality
+    type: conditional
+    depends_on: [filter_evidence]
+    config:
+      conditions:
+        # Sufficient high-quality evidence
+        - type: numeric
+          field: high_quality_evidence.length
+          operator: ge
+          value: 3
+          action:
+            type: set
+            field: evidence_status
+            value: sufficient
+
+        # Some evidence but not enough high-quality
+        - type: numeric
+          field: high_quality_evidence.length
+          operator: gt
+          value: 0
+          action:
+            type: set
+            field: evidence_status
+            value: partial
+
+      default:
+        type: set
+        field: evidence_status
+        value: insufficient
+
+  # Step 9: Synthesize evidence into coherent narrative
+  - name: synthesize_evidence
+    type: retry
+    depends_on: [check_evidence_quality]
+    condition:
+      type: simple
+      field: evidence_status
+      operator: ne
+      value: insufficient
+    config:
+      max_attempts: 3
+      backoff_strategy: exponential
+      circuit_breaker:
+        enabled: true
+        failure_threshold: 3
+        success_threshold: 2
+        timeout: 30.0
+      action:
+        type: execute
+        prompt: |
+          Synthesize a comprehensive answer from this evidence:
+
+          Original Query: {query}
+          Sub-questions researched: {sub_questions}
+          Evidence: {high_quality_evidence}
+
+          Requirements:
+          - Provide a clear, well-structured answer
+          - Cite sources for key claims
+          - Acknowledge uncertainties or conflicting evidence
+          - Highlight confidence level
+          - Use {citation_format} citation style
+      fallback:
+        type: set
+        value: "Unable to synthesize evidence at this time."
+
+  # ==== STAGE 4: CITATION GENERATION ====
+
+  # Step 10: Generate properly formatted citations
+  - name: generate_citations
+    type: loop
+    depends_on: [synthesize_evidence]
+    condition:
+      type: simple
+      field: evidence_status
+      operator: ne
+      value: insufficient
+    config:
+      loop_type: for_each
+      items: high_quality_evidence
+      action:
+        type: execute
+        prompt: |
+          Generate {citation_format} citation for this source:
+          {item}
+      accumulator: formatted_citations
+      max_iterations: 20
+
+  # ==== STAGE 5: VERIFICATION LOOP ====
+
+  # Step 11: Verify answer accuracy
+  - name: verify_answer
+    type: retry
+    depends_on: [generate_citations]
+    condition:
+      type: simple
+      field: evidence_status
+      operator: ne
+      value: insufficient
+    config:
+      max_attempts: 3
+      backoff_strategy: linear
+      initial_delay: 1.0
+      action:
+        type: execute
+        prompt: |
+          Verify this answer for:
+          1. Factual accuracy against sources
+          2. Citation correctness
+          3. Logical consistency
+          4. Completeness relative to query
+
+          Query: {query}
+          Answer: {synthesized_answer}
+          Citations: {formatted_citations}
+
+          Output JSON with:
+          - is_accurate: boolean
+          - issues_found: array of issues
+          - confidence_score: 0-1
+          - recommendations: array of improvements
+
+  # Step 12: Check verification result
+  - name: check_verification
+    type: conditional
+    depends_on: [verify_answer]
+    config:
+      conditions:
+        # Verification passed
+        - type: numeric
+          field: verification.confidence_score
+          operator: ge
+          value: 0.9
+          action:
+            type: set
+            field: verification_status
+            value: passed
+
+        # Verification needs refinement
+        - type: numeric
+          field: verification.confidence_score
+          operator: ge
+          value: 0.7
+          action:
+            type: set
+            field: verification_status
+            value: needs_refinement
+
+      default:
+        type: set
+        field: verification_status
+        value: failed
+
+  # Step 13: Refine answer if needed
+  - name: refine_answer
+    type: retry
+    depends_on: [check_verification]
+    condition:
+      type: simple
+      field: verification_status
+      operator: eq
+      value: needs_refinement
+    config:
+      max_attempts: 2
+      backoff_strategy: exponential
+      action:
+        type: execute
+        prompt: |
+          Refine this answer based on verification feedback:
+
+          Original Answer: {synthesized_answer}
+          Issues Found: {verification.issues_found}
+          Recommendations: {verification.recommendations}
+          Evidence: {high_quality_evidence}
+
+  # ==== STAGE 6: QUALITY GATE ====
+
+  # Step 14: Final quality check
+  - name: quality_gate
+    type: conditional
+    depends_on: [refine_answer, check_verification]
+    config:
+      conditions:
+        # High quality answer
+        - type: keyword
+          field: verification_status
+          keywords: ["passed"]
+          action:
+            type: set
+            field: final_answer
+            value_field: synthesized_answer
+
+        # Refined answer
+        - type: keyword
+          field: verification_status
+          keywords: ["needs_refinement"]
+          action:
+            type: set
+            field: final_answer
+            value_field: refined_answer
+
+      default:
+        # Low quality - provide limited answer with caveats
+        type: execute
+        prompt: |
+          Provide a limited answer with strong caveats:
+          Query: {query}
+          Available Evidence: {high_quality_evidence}
+
+  # Step 15: Insufficient evidence handler
+  - name: handle_insufficient_evidence
+    type: transform
+    depends_on: [check_evidence_quality]
+    condition:
+      type: simple
+      field: evidence_status
+      operator: eq
+      value: insufficient
+    config:
+      transform_type: template
+      template: |
+        Unable to provide a comprehensive answer to: {query}
+
+        Reason: Insufficient high-quality evidence found
+        Sub-questions attempted: {sub_questions}
+        Evidence collected: {normalized_evidence.length} sources
+        High-quality evidence: {high_quality_evidence.length} sources
+
+        Suggestion: Try refining your query or providing more context.
+      target_field: final_answer
+
+  # ==== STAGE 7: OUTPUT FORMATTING ====
+
+  # Step 16: Format comprehensive research report
+  - name: format_report
+    type: transform
+    depends_on: [quality_gate, handle_insufficient_evidence]
+    config:
+      transform_type: template
+      template: |
+        # Research Report
+
+        ## Query
+        {query}
+
+        ## Sub-Questions Investigated
+        {sub_questions}
+
+        ## Answer
+        {final_answer}
+
+        ## Evidence Quality
+        - Total sources consulted: {normalized_evidence.length}
+        - High-quality sources: {high_quality_evidence.length}
+        - Confidence score: {verification.confidence_score}
+        - Status: {evidence_status}
+
+        ## Citations
+        {formatted_citations}
+
+        ## Verification
+        - Status: {verification_status}
+        - Issues found: {verification.issues_found}
+
+        ## Research Methodology
+        - Sources: Academic, Web, Knowledge Base, Expert Systems
+        - Parallel research streams: 4
+        - Citation format: {citation_format}
+      target_field: research_report
+
+  # Step 17: Generate metadata
+  - name: generate_metadata
+    type: transform
+    depends_on: [format_report]
+    config:
+      transform_type: aggregate
+      fields:
+        - query
+        - evidence_status
+        - verification_status
+        - verification.confidence_score
+        - high_quality_evidence.length
+        - normalized_evidence.length
+      method: dict
+      target_field: metadata
+
+  # Step 18: Final output assembly
+  - name: assemble_output
+    type: transform
+    depends_on: [generate_metadata]
+    config:
+      transform_type: aggregate
+      fields:
+        - final_answer
+        - research_report
+        - metadata
+        - formatted_citations
+        - verification
+      method: dict
+      target_field: output
