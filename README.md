@@ -81,72 +81,242 @@ That's HoloLoom.
 
 ## Quick Start (5 Minutes)
 
-> **New to Python?** Don't worry! We'll walk through each step. If you get stuck, there are detailed guides in our [docs/guides/](docs/guides/) folder.
+> **Never coded before?** No problem! We'll explain everything. Just follow along step-by-step.
 
-### Installation
+### Before You Start
 
-**Step 1: Get the code**
+**What you'll need:**
+- ✅ A computer (Windows, Mac, or Linux all work)
+- ✅ Python 3.10 or newer installed ([Download Python here](https://www.python.org/downloads/))
+- ✅ A terminal/command prompt (don't worry, we'll show you where to find it)
+- ✅ About 2GB of free disk space
+
+**How to check if you have Python:**
+1. Open your terminal (Mac: search for "Terminal", Windows: search for "Command Prompt")
+2. Type `python3 --version` and press Enter
+3. If you see "Python 3.10" or higher, you're good! If not, [install Python first](https://www.python.org/downloads/)
+
+**What's a terminal?** It's a text-based way to talk to your computer. Think of it like a chat window where you type commands instead of clicking buttons.
+
+---
+
+### Installation Roadmap
+
+Here's the journey from zero to running HoloLoom:
+
+```
+Start Here → Install Python → Download HoloLoom → Set up workspace → Install libraries → Run your first query!
+   (5 min)      (If needed)        (1 min)            (1 min)           (2-3 min)           (30 sec)
+```
+
+### Installation Steps
+
+**Step 1: Download HoloLoom**
+
+**Option A - Using Git** (recommended if you have it):
 ```bash
-# Download HoloLoom to your computer
 git clone https://github.com/yourusername/mythRL.git
 cd mythRL
 ```
 
-**Step 2: Set up a safe workspace** (this keeps HoloLoom's files separate from other Python projects)
+**Option B - No Git? No problem!**
+1. Go to https://github.com/yourusername/mythRL
+2. Click the green "Code" button
+3. Click "Download ZIP"
+4. Unzip the file to a folder you can find (like your Desktop or Documents)
+5. Open your terminal and navigate to that folder (type `cd ` then drag the folder into the terminal window)
+
+*What is Git?* It's a tool for downloading and managing code. Don't worry if you don't have it - Option B works just fine!
+
+---
+
+**Step 2: Create a safe workspace**
+
+This creates a "bubble" so HoloLoom doesn't interfere with other Python programs on your computer.
+
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate  # Windows users: .venv\Scripts\activate
 ```
 
-**Step 3: Install required libraries**
+Then activate it (this step is different for Windows vs Mac/Linux):
+
+**Mac/Linux:**
+```bash
+source .venv/bin/activate
+```
+
+**Windows:**
+```bash
+.venv\Scripts\activate
+```
+
+*How do I know it worked?* You'll see `(.venv)` at the start of your terminal prompt. That means you're in the safe workspace!
+
+---
+
+**Step 3: Install the required tools**
+
+Copy and paste this command into your terminal:
+
 ```bash
 pip install torch numpy networkx sentence-transformers
 ```
 
-*What just happened?* You installed the building blocks HoloLoom needs:
-- `torch` = Neural network library (the "brain")
-- `numpy` = Math operations (the "calculator")
-- `networkx` = Graph/connection library (the "memory web")
-- `sentence-transformers` = Text understanding (the "language processor")
+*This will take 2-3 minutes.* You'll see lots of text scrolling by - that's normal! Wait until you see a line that says "Successfully installed..."
 
-### Basic Usage
+**What did we just install?**
+- `torch` → The AI "brain" (neural networks)
+- `numpy` → The "calculator" (math operations)
+- `networkx` → The "memory web" (knowledge graph)
+- `sentence-transformers` → The "language processor" (understanding text)
 
-**Here's the simplest possible example** (don't worry, we'll explain each part):
+**Troubleshooting:**
+- **"pip: command not found"** → Try `pip3` instead of `pip`
+- **"Permission denied"** → Don't use `sudo`! Make sure you activated the virtual environment in Step 2
+- **Download is slow** → This is normal! The AI models are large (about 1-2GB)
+
+### Your First Query
+
+**Let's run a simple test!** We'll teach HoloLoom some facts and ask it a question.
+
+**Step 1: Create a test file**
+
+1. Open a text editor (Notepad on Windows, TextEdit on Mac, or any code editor)
+2. Copy and paste this code:
 
 ```python
+# my_first_hololoom.py
+import asyncio
 from HoloLoom.config import Config
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.documentation.types import Query, MemoryShard
 
-# Step 1: Give HoloLoom some knowledge to remember
-# Think of these as "facts" you're teaching it
+async def main():
+    # Teach HoloLoom some facts
+    print("📚 Teaching HoloLoom some facts...")
+    shards = [
+        MemoryShard(text="Python is a programming language", source="knowledge_base"),
+        MemoryShard(text="Thompson Sampling balances exploration and exploitation", source="research"),
+    ]
+
+    # Set up HoloLoom (fast = good balance of speed and smarts)
+    config = Config.fast()
+
+    # Ask a question!
+    print("🤔 Asking: 'What is Thompson Sampling?'\n")
+    async with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:
+        result = await shuttle.weave(Query(text="What is Thompson Sampling?"))
+        print("💡 HoloLoom's answer:")
+        print(result.response)
+        print(f"\n✨ Confidence: {result.confidence:.0%}")
+
+# Run it!
+asyncio.run(main())
+```
+
+3. Save it as `my_first_hololoom.py` in your mythRL folder
+
+**Step 2: Run it!**
+
+In your terminal (with the `.venv` activated), type:
+
+```bash
+python my_first_hololoom.py
+```
+
+**Step 3: See the magic!**
+
+You should see something like:
+```
+📚 Teaching HoloLoom some facts...
+🤔 Asking: 'What is Thompson Sampling?'
+
+💡 HoloLoom's answer:
+Thompson Sampling is a technique that balances exploration and exploitation...
+
+✨ Confidence: 87%
+```
+
+**Congratulations!** 🎉 You just ran your first HoloLoom query!
+
+---
+
+### Understanding the Code (Line by Line)
+
+**For those who want to understand what just happened:**
+
+```python
+# Line 1-3: Import the tools we need
+import asyncio  # ← Handles "async" operations (multiple things at once)
+from HoloLoom.config import Config  # ← Settings for HoloLoom
+from HoloLoom.weaving_orchestrator import WeavingOrchestrator  # ← The main brain
+from HoloLoom.documentation.types import Query, MemoryShard  # ← Data types
+
+# Line 6-10: Teach HoloLoom some facts
 shards = [
     MemoryShard(text="Python is a programming language", source="knowledge_base"),
     MemoryShard(text="Thompson Sampling balances exploration and exploitation", source="research"),
 ]
+# ↑ Think of each MemoryShard as a flashcard HoloLoom can remember
 
-# Step 2: Choose how "smart" you want it to be
-# "fast" = good balance of speed and intelligence
+# Line 13: Choose how smart/fast you want it
 config = Config.fast()
+# ↑ Options: Config.bare() (fastest), Config.fast() (balanced), Config.fused() (smartest)
 
-# Step 3: Ask it questions!
-# It will search its memory and give you answers
+# Line 16-18: Ask a question and get an answer
 async with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:
     result = await shuttle.weave(Query(text="What is Thompson Sampling?"))
-    print(result.response)  # The answer!
+    print(result.response)
+# ↑ "weave" means "search memory, think, and answer"
 ```
 
-**What's happening behind the scenes?**
+**What's happening behind the scenes:**
+1. 🔍 **Searches its memory** for relevant facts (finds the Thompson Sampling fact)
+2. 🧠 **Thinks about the answer** (decides the best way to explain it)
+3. 📝 **Learns from this interaction** (remembers what worked)
+4. 📊 **Tracks everything** (you can see why it gave this answer)
 
-When you run this code, HoloLoom automatically:
-1. **Searches its memory** for relevant information (like a super-smart search engine)
-2. **Decides how to answer** (balances trying new approaches vs. sticking to what works)
-3. **Learns from the result** (gets smarter for next time)
-4. **Tracks everything** (you can see exactly why it gave this answer)
+**The magic?** Ask the same question again and HoloLoom will be slightly better at answering!
 
-**The magic?** Each time you ask a question, HoloLoom gets a little bit better at helping you.
+---
 
-> **For non-coders**: You can skip the code and just understand the concept: HoloLoom is a system that remembers what you teach it and improves itself over time. The code above is just one way to use it—developers can integrate it into their own applications!
+### What About Non-Coders?
+
+> **Not a programmer?** That's totally fine! Here's what you should know:
+>
+> HoloLoom is a memory system that:
+> - Remembers everything you teach it
+> - Gets smarter with every question
+> - Can explain its reasoning
+>
+> **Right now**, you need some Python knowledge to use it. **In the future**, we're building:
+> - Web interface (point and click, no code!)
+> - Desktop app (drag and drop your files)
+> - Browser extension (chat with your bookmarks and history)
+>
+> **Want updates?** Star this repository to follow along as we make HoloLoom more accessible!
+
+---
+
+### Common Issues & Solutions
+
+**Problem: "ModuleNotFoundError: No module named 'HoloLoom'"**
+- ✅ **Solution**: Make sure you're in the mythRL folder. Type `pwd` (Mac/Linux) or `cd` (Windows) to check your location.
+
+**Problem: "async/await" error**
+- ✅ **Solution**: You need Python 3.10 or newer. Check your version with `python3 --version`
+
+**Problem: Code runs but takes forever**
+- ✅ **This is normal!** The first run downloads AI models (1-2GB). Subsequent runs are much faster (under 1 second).
+
+**Problem: "Permission denied" when installing**
+- ✅ **Solution**: Don't use `sudo`! Make sure you activated the virtual environment (you should see `(.venv)` in your prompt)
+
+**Problem: "Out of memory" error**
+- ✅ **Solution**: Use `Config.bare()` instead of `Config.fast()` - it uses less RAM
+
+**Problem: I'm stuck and need help!**
+- ✅ **We're here for you!** Ask in [GitHub Discussions](https://github.com/yourusername/mythRL/discussions) or email blakechasteen@gmail.com
 
 ---
 
@@ -629,6 +799,28 @@ Inspired by:
 - Noam Chomsky (Universal Grammar)
 - Thompson Sampling (bandit algorithms)
 - Recursive self-improvement (AI safety research)
+
+---
+
+## Beginner's Glossary
+
+**Confused by the technical terms?** Here's a quick reference:
+
+| Term | What it means (simple) | Example |
+|------|----------------------|---------|
+| **API** | A way for programs to talk to each other | "HoloLoom has an API so other apps can use its memory" |
+| **Async/Await** | Doing multiple things at once without waiting | Like cooking pasta while the sauce simmers |
+| **Config** | Settings that control how HoloLoom behaves | Like adjusting your car's AC: fast/medium/slow |
+| **Embedding** | Converting text into numbers AI can understand | "cat" becomes [0.2, 0.8, 0.1, ...] |
+| **Knowledge Graph** | A web of connected facts | "Python" → "programming" → "software" (all linked) |
+| **Memory Shard** | One piece of information HoloLoom remembers | Like a single note card in a deck |
+| **Neural Network** | An AI "brain" that learns patterns | Like learning to recognize cats after seeing 1000 photos |
+| **Query** | A question you ask HoloLoom | "What is Thompson Sampling?" |
+| **Recursive Learning** | Learning from what worked before | Like a chef tweaking a recipe based on feedback |
+| **Thompson Sampling** | Smart way to try new things vs. stick to what works | Like balancing new restaurants vs. your favorite spot |
+| **Virtual Environment** | A safe "bubble" for your Python project | Keeps HoloLoom's tools separate from other projects |
+
+**Still confused about a term?** Ask in [GitHub Discussions](https://github.com/yourusername/mythRL/discussions)!
 
 ---
 
