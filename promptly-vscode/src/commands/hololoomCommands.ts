@@ -1,5 +1,20 @@
 import * as vscode from 'vscode';
 
+interface IngestResponse {
+    success: boolean;
+    files_indexed?: number;
+    code_elements?: number;
+    comments?: number;
+    todos?: number;
+    entities_created?: number;
+    error?: string;
+    stats?: {
+        files: number;
+        entities: number;
+        [key: string]: any;
+    };
+}
+
 export class HoloLoomCommands {
     private baseUrl: string;
 
@@ -31,6 +46,85 @@ export class HoloLoomCommands {
                 return `❌ HoloLoom server not running at ${this.baseUrl}\n\nStart it with:\n\`\`\`\ncd HoloLoom/server\npython agentic_api.py\n\`\`\``;
             }
             return `❌ Failed to save: ${error.message}`;
+        }
+    }
+
+    /**
+     * Ingest multiple files incrementally (batch update from file watcher)
+     * This is used for auto-updating the knowledge graph when files change.
+     */
+    async ingestFilesIncremental(
+        filePaths: string[],
+        workspacePath: string
+    ): Promise<IngestResponse> {
+        try {
+            const axios = require('axios');
+
+            const response = await axios.post(
+                `${this.baseUrl}/ingest/workspace/incremental`,
+                {
+                    files: filePaths,
+                    workspace_path: workspacePath
+                },
+                {
+                    timeout: 30000  // 30 second timeout for batch operation
+                }
+            );
+
+            return response.data;
+        } catch (error: any) {
+            if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
+                return {
+                    success: false,
+                    error: `HoloLoom server not running at ${this.baseUrl}`
+                };
+            }
+            return {
+                success: false,
+                error: error.message || 'Unknown error'
+            };
+        }
+    }
+
+    /**
+     * Ingest entire workspace (full index operation)
+     * Used for initial workspace indexing or manual re-indexing.
+     */
+    async ingestWorkspaceFull(workspacePath: string): Promise<IngestResponse> {
+        try {
+            const axios = require('axios');
+
+            const response = await axios.post(
+                `${this.baseUrl}/ingest/workspace`,
+                {
+                    workspace_path: workspacePath,
+                    languages: ['python', 'typescript', 'javascript'],
+                    exclude_patterns: [
+                        '**/node_modules/**',
+                        '**/.git/**',
+                        '**/.venv/**',
+                        '**/dist/**',
+                        '**/build/**',
+                        '**/__pycache__/**'
+                    ]
+                },
+                {
+                    timeout: 120000  // 2 minute timeout for full workspace
+                }
+            );
+
+            return response.data;
+        } catch (error: any) {
+            if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
+                return {
+                    success: false,
+                    error: `HoloLoom server not running at ${this.baseUrl}`
+                };
+            }
+            return {
+                success: false,
+                error: error.message || 'Unknown error'
+            };
         }
     }
 

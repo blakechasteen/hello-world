@@ -1127,6 +1127,119 @@ async def ingest_workspace(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/ingest/workspace/incremental")
+async def ingest_workspace_incremental(
+    files: List[str],
+    workspace_path: str
+):
+    """
+    Incrementally ingest changed files into knowledge graph (from file watcher).
+
+    Called by VS Code file watcher when files change. Supports batch processing
+    of multiple file changes collected during the 2-second debounce window.
+
+    Args:
+        files: List of file paths to index (absolute paths)
+        workspace_path: Path to workspace root
+
+    Returns:
+        Statistics about ingestion including file count, entities created, TODOs found
+
+    Example:
+        POST /ingest/workspace/incremental
+        {
+          "files": ["/path/to/file1.py", "/path/to/file2.ts"],
+          "workspace_path": "/path/to/workspace"
+        }
+
+    Implemented: 2025-11-17 (Phase 5 Wave 1 - File Watcher Integration)
+    Replaces: Per-file indexing with batch processing for better performance
+    """
+    try:
+        from pathlib import Path
+        from HoloLoom.spinningWheel.workspace import WorkspaceSpinner
+        from HoloLoom import HoloLoom
+
+        if not files:
+            return {
+                "success": True,
+                "files_indexed": 0,
+                "code_elements": 0,
+                "comments": 0,
+                "todos": 0,
+                "entities_created": 0
+            }
+
+        logger.info(f"Incremental workspace ingestion: {len(files)} files")
+
+        workspace_path_obj = Path(workspace_path)
+        if not workspace_path_obj.exists():
+            raise ValueError(f"Workspace path does not exist: {workspace_path}")
+
+        # Create workspace spinner
+        spinner = WorkspaceSpinner()
+
+        # Process only specified files
+        shards = []
+        for file_path in files:
+            try:
+                file_path_obj = Path(file_path)
+
+                # Skip if file doesn't exist (might have been deleted)
+                if not file_path_obj.exists():
+                    logger.warning(f"File not found during indexing: {file_path}")
+                    continue
+
+                # Process this single file
+                shard = await spinner._process_file(file_path_obj, workspace_path_obj)
+                if shard:
+                    shards.append(shard)
+                    logger.info(f"Indexed: {file_path_obj.relative_to(workspace_path_obj)}")
+            except Exception as e:
+                logger.warning(f"Failed to process {file_path}: {e}")
+                continue
+
+        # Store shards in HoloLoom
+        if shards:
+            async with HoloLoom(config=state.config) as loom:
+                for shard in shards:
+                    await loom.experience(
+                        content=shard.text,
+                        context=shard.metadata
+                    )
+
+            # Also add to server's in-memory shards
+            state.shards.extend(shards)
+
+        # Calculate statistics
+        total_files = len(shards)
+        total_elements = sum(shard.metadata.get('element_count', 0) for shard in shards)
+        total_comments = sum(shard.metadata.get('comment_count', 0) for shard in shards)
+        total_todos = sum(shard.metadata.get('todo_count', 0) for shard in shards)
+
+        logger.info(
+            f"Incremental ingestion complete: {total_files} files, "
+            f"{total_elements} elements, {total_todos} TODOs"
+        )
+
+        return {
+            "success": True,
+            "files_indexed": total_files,
+            "code_elements": total_elements,
+            "comments": total_comments,
+            "todos": total_todos,
+            "entities_created": total_elements,
+            "stats": {
+                "files": total_files,
+                "entities": total_elements
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Incremental workspace ingestion failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Legacy code (commented out - replaced by WorkspaceSpinner above)
 @app.post("/ingest/workspace/legacy")
 async def ingest_workspace_legacy(

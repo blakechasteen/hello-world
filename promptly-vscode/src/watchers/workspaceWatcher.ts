@@ -5,16 +5,36 @@ interface IndexingProgress {
     filesProcessed: number;
     filesTotal: number;
     currentFile: string;
+    status: 'idle' | 'indexing' | 'error';
+    lastError?: string;
+}
+
+interface HoloLoomIngestResponse {
+    success: boolean;
+    files_indexed?: number;
+    code_elements?: number;
+    comments?: number;
+    todos?: number;
+    entities_created?: number;
+    error?: string;
+    stats?: {
+        files: number;
+        entities: number;
+        [key: string]: any;
+    };
 }
 
 export class WorkspaceWatcher {
     private fileWatcher: vscode.FileSystemWatcher | undefined;
     private hololoomCommands: HoloLoomCommands;
-    private debounceTimers: Map<string, NodeJS.Timeout> = new Map();
     private isIndexing: boolean = false;
     private indexingProgress: IndexingProgress | null = null;
 
-    // Debounce delay (ms) - wait this long after last change before re-indexing
+    // Batch-based debouncing
+    private pendingFiles: Set<string> = new Set();
+    private batchDebounceTimer: NodeJS.Timeout | undefined;
+
+    // Debounce delay (ms) - wait this long after last change before batch indexing
     private static readonly DEBOUNCE_DELAY = 2000; // 2 seconds
 
     // File patterns to watch
@@ -62,83 +82,154 @@ export class WorkspaceWatcher {
             this.fileWatcher = undefined;
         }
 
-        // Clear all debounce timers
-        this.debounceTimers.forEach(timer => clearTimeout(timer));
-        this.debounceTimers.clear();
+        // Clear batch debounce timer
+        if (this.batchDebounceTimer) {
+            clearTimeout(this.batchDebounceTimer);
+            this.batchDebounceTimer = undefined;
+        }
+
+        // Clear pending files
+        this.pendingFiles.clear();
 
         console.log('WorkspaceWatcher: File system watcher stopped');
     }
 
     private async onFileChanged(uri: vscode.Uri) {
-        console.log(`WorkspaceWatcher: File changed: ${uri.fsPath}`);
+        const filePath = uri.fsPath;
+        console.log(`WorkspaceWatcher: File changed: ${filePath}`);
 
-        // Debounce: Wait for user to stop typing
-        this.debounceFileIndexing(uri);
+        // Add to batch (deduplicated via Set)
+        this.pendingFiles.add(filePath);
+
+        // Reset batch debounce timer
+        this.resetBatchDebounceTimer();
     }
 
     private async onFileCreated(uri: vscode.Uri) {
-        console.log(`WorkspaceWatcher: File created: ${uri.fsPath}`);
+        const filePath = uri.fsPath;
+        console.log(`WorkspaceWatcher: File created: ${filePath}`);
 
-        // Index immediately (no debounce for new files)
-        await this.indexFile(uri);
+        // New files are high priority - index immediately
+        this.pendingFiles.add(filePath);
+
+        // Use shorter debounce for new files (100ms)
+        if (this.batchDebounceTimer) {
+            clearTimeout(this.batchDebounceTimer);
+        }
+
+        this.batchDebounceTimer = setTimeout(async () => {
+            await this.indexPendingFiles();
+        }, 100);
     }
 
     private async onFileDeleted(uri: vscode.Uri) {
-        console.log(`WorkspaceWatcher: File deleted: ${uri.fsPath}`);
+        const filePath = uri.fsPath;
+        console.log(`WorkspaceWatcher: File deleted: ${filePath}`);
+
+        // Remove from pending batch if it was there
+        this.pendingFiles.delete(filePath);
 
         // TODO: Call /api/forget endpoint to remove from knowledge graph
         // For now, just log
     }
 
-    private debounceFileIndexing(uri: vscode.Uri) {
-        const filePath = uri.fsPath;
-
-        // Clear existing timer for this file
-        const existingTimer = this.debounceTimers.get(filePath);
-        if (existingTimer) {
-            clearTimeout(existingTimer);
+    private resetBatchDebounceTimer(): void {
+        // Clear existing timer
+        if (this.batchDebounceTimer) {
+            clearTimeout(this.batchDebounceTimer);
         }
 
         // Set new timer
-        const timer = setTimeout(async () => {
-            await this.indexFile(uri);
-            this.debounceTimers.delete(filePath);
+        this.batchDebounceTimer = setTimeout(async () => {
+            await this.indexPendingFiles();
         }, WorkspaceWatcher.DEBOUNCE_DELAY);
-
-        this.debounceTimers.set(filePath, timer);
     }
 
-    private async indexFile(uri: vscode.Uri) {
+    private async indexPendingFiles(): Promise<void> {
+        if (this.pendingFiles.size === 0) {
+            return;
+        }
+
+        const files = Array.from(this.pendingFiles);
+        this.pendingFiles.clear();
+
+        if (this.isIndexing) {
+            console.log('WorkspaceWatcher: Indexing already in progress, queueing files');
+            // Re-add files back to pending for next batch
+            files.forEach(f => this.pendingFiles.add(f));
+            return;
+        }
+
+        this.isIndexing = true;
+
         try {
-            // Read file content
-            const content = await vscode.workspace.fs.readFile(uri);
-            const text = Buffer.from(content).toString('utf-8');
-
-            // Get workspace folder
-            const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
-            const workspace = workspaceFolder?.name || 'unknown';
-
-            // Get relative path
-            const relativePath = workspaceFolder
-                ? uri.fsPath.replace(workspaceFolder.uri.fsPath, '')
-                : uri.fsPath;
-
-            // Store to HoloLoom
-            await this.hololoomCommands.remember(
-                `File indexed: ${relativePath}\n\n${text.substring(0, 500)}...`,
-                {
-                    workspace,
-                    file: relativePath,
-                    timestamp: new Date().toISOString(),
-                    source: 'file_watcher'
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: `Updating HoloLoom knowledge graph (${files.length} file${files.length === 1 ? '' : 's'})...`,
+                cancellable: false
+            }, async (progress) => {
+                // Get workspace root
+                const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+                if (!workspaceFolder) {
+                    throw new Error('No workspace folder open');
                 }
-            );
 
-            console.log(`WorkspaceWatcher: Indexed file: ${relativePath}`);
+                // Call batch update endpoint
+                const response = await this.hololoomCommands.ingestFilesIncremental(
+                    files,
+                    workspaceFolder.uri.fsPath
+                );
+
+                if (!response.success) {
+                    throw new Error(response.error || 'Unknown error');
+                }
+
+                // Log statistics
+                const filesIndexed = response.files_indexed || files.length;
+                const entities = response.entities_created || 0;
+                console.log(
+                    `WorkspaceWatcher: Indexed ${filesIndexed} file(s), ` +
+                    `created ${entities} entities, ` +
+                    `${response.todos || 0} TODOs found`
+                );
+
+                // Show success notification only for significant updates
+                if (entities > 10 || (response.todos || 0) > 2) {
+                    vscode.window.showInformationMessage(
+                        `HoloLoom: Updated ${entities} entities from ${filesIndexed} file(s)`
+                    );
+                }
+            });
         } catch (error: any) {
-            console.error(`WorkspaceWatcher: Failed to index file: ${error.message}`);
+            const errorMsg = error.message || String(error);
+            console.error('WorkspaceWatcher: Failed to index files:', errorMsg);
+
+            // Update progress with error
+            if (this.indexingProgress) {
+                this.indexingProgress.status = 'error';
+                this.indexingProgress.lastError = errorMsg;
+            }
+
+            // Show warning (not error - don't disrupt user workflow)
+            if (errorMsg.includes('ECONNREFUSED') || errorMsg.includes('connection')) {
+                vscode.window.showWarningMessage(
+                    'HoloLoom: Server not running. Knowledge graph updates paused.',
+                    'Start Server'
+                ).then(selection => {
+                    if (selection === 'Start Server') {
+                        vscode.commands.executeCommand('promptly.startHoloLoomServer');
+                    }
+                });
+            } else {
+                vscode.window.showWarningMessage(
+                    `HoloLoom: Indexing failed (${errorMsg.substring(0, 50)}...)`
+                );
+            }
+        } finally {
+            this.isIndexing = false;
         }
     }
+
 
     public async indexWorkspace(showProgress: boolean = true) {
         if (this.isIndexing) {
@@ -155,20 +246,28 @@ export class WorkspaceWatcher {
         this.isIndexing = true;
 
         try {
-            for (const folder of workspaceFolders) {
-                await this.indexWorkspaceFolder(folder, showProgress);
-            }
+            // Index first workspace folder (most common case)
+            const folder = workspaceFolders[0];
+            await this.indexWorkspaceFolder(folder, showProgress);
 
             if (showProgress) {
                 vscode.window.showInformationMessage(
                     `HoloLoom: Workspace indexed successfully! (${this.indexingProgress?.filesProcessed || 0} files)`
                 );
             }
+
+            // Index additional folders if present
+            if (workspaceFolders.length > 1) {
+                for (const folder of workspaceFolders.slice(1)) {
+                    await this.indexWorkspaceFolder(folder, false);
+                }
+            }
         } catch (error: any) {
-            vscode.window.showErrorMessage(`Workspace indexing failed: ${error.message}`);
+            const errorMsg = error.message || String(error);
+            console.error('WorkspaceWatcher: Workspace indexing failed:', errorMsg);
+            vscode.window.showErrorMessage(`Workspace indexing failed: ${errorMsg.substring(0, 100)}`);
         } finally {
             this.isIndexing = false;
-            this.indexingProgress = null;
         }
     }
 
@@ -189,43 +288,57 @@ export class WorkspaceWatcher {
         this.indexingProgress = {
             filesProcessed: 0,
             filesTotal: files.length,
-            currentFile: ''
+            currentFile: '',
+            status: 'indexing'
         };
 
         if (showProgress) {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: "Indexing workspace with HoloLoom",
+                title: `Indexing workspace with HoloLoom (${files.length} files)`,
                 cancellable: false
             }, async (progress) => {
-                for (const file of files) {
-                    this.indexingProgress!.currentFile = file.fsPath;
+                try {
+                    // Call batch API endpoint
+                    const response = await this.hololoomCommands.ingestWorkspaceFull(
+                        folder.uri.fsPath
+                    );
 
-                    progress.report({
-                        message: `${this.indexingProgress!.filesProcessed}/${files.length} files`,
-                        increment: (1 / files.length) * 100
-                    });
-
-                    await this.indexFile(file);
-                    this.indexingProgress!.filesProcessed++;
-
-                    // Small delay to avoid overwhelming the server
-                    await new Promise(resolve => setTimeout(resolve, 50));
+                    if (response.success) {
+                        this.indexingProgress!.filesProcessed = response.files_indexed || files.length;
+                        console.log(
+                            `WorkspaceWatcher: Full workspace indexed - ` +
+                            `${response.files_indexed} files, ` +
+                            `${response.code_elements} elements, ` +
+                            `${response.todos} TODOs`
+                        );
+                    } else {
+                        throw new Error(response.error || 'Unknown error during indexing');
+                    }
+                } catch (error: any) {
+                    this.indexingProgress!.status = 'error';
+                    this.indexingProgress!.lastError = error.message;
+                    throw error;
                 }
             });
         } else {
-            // Index without progress UI (background)
-            for (const file of files) {
-                this.indexingProgress!.currentFile = file.fsPath;
-                await this.indexFile(file);
-                this.indexingProgress!.filesProcessed++;
+            try {
+                // Background indexing without progress UI
+                const response = await this.hololoomCommands.ingestWorkspaceFull(
+                    folder.uri.fsPath
+                );
 
-                // Small delay
-                await new Promise(resolve => setTimeout(resolve, 50));
+                if (response.success) {
+                    this.indexingProgress!.filesProcessed = response.files_indexed || files.length;
+                } else {
+                    throw new Error(response.error || 'Workspace indexing failed');
+                }
+            } catch (error: any) {
+                console.error(`WorkspaceWatcher: Background indexing failed: ${error.message}`);
+                this.indexingProgress!.status = 'error';
+                this.indexingProgress!.lastError = error.message;
             }
         }
-
-        console.log(`WorkspaceWatcher: Indexed ${files.length} files from ${folder.name}`);
     }
 
     public getIndexingProgress(): IndexingProgress | null {
