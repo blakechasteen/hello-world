@@ -68,18 +68,24 @@ cd mythRL
 python3 -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# 4. Install in development mode
-pip install -e ".[dev]"  # Includes dev dependencies
+# 4. Install development tools
+pip install black ruff pre-commit pytest mypy
 
-# 5. Install optional dependencies (if needed)
+# 5. Set up pre-commit hooks (recommended)
+pre-commit install
+
+# 6. Install in development mode
+pip install -e ".[dev]"  # Includes dev dependencies (if setup.py exists)
+
+# 7. Install optional dependencies (if needed)
 pip install -e ".[nlp]"        # For Phase 5 Universal Grammar
 pip install -e ".[production]" # For Neo4j + Qdrant
 pip install -e ".[all]"        # Everything
 
-# 6. Download spaCy model (if using NLP features)
+# 8. Download spaCy model (if using NLP features)
 python -m spacy download en_core_web_sm
 
-# 7. Run tests to verify setup
+# 9. Run tests to verify setup
 pytest HoloLoom/tests/ -v
 ```
 
@@ -292,7 +298,49 @@ def encode_texts(
     pass
 ```
 
-### Formatting Tools
+### Pre-Commit Hooks (Recommended)
+
+HoloLoom uses **pre-commit hooks** to automatically check code quality before every commit.
+
+**Install pre-commit hooks**:
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+**What the hooks do**:
+- ✅ **Black**: Auto-formats code to 100-char lines
+- ✅ **Ruff**: Lints and auto-fixes issues (imports, simplifications, etc.)
+- ✅ **Trailing whitespace**: Removes trailing whitespace
+- ✅ **End of files**: Ensures files end with newline
+- ✅ **YAML/JSON**: Validates config files
+- ✅ **Python AST**: Ensures valid Python syntax
+- ✅ **Docstrings**: Checks docstring placement
+- ✅ **Debug statements**: Catches `pdb.set_trace()` and similar
+
+**Usage**:
+```bash
+# Automatic on commit (recommended workflow)
+git add .
+git commit -m "feat: Add new feature"
+# Hooks run automatically, fix issues, then commit proceeds
+
+# Manual run (check all files)
+pre-commit run --all-files
+
+# Manual run (check staged files only)
+pre-commit run
+```
+
+**What if hooks fail?**
+- Hooks will auto-fix most issues (formatting, imports, whitespace)
+- Review the changes: `git diff`
+- If changes look good, stage them: `git add .`
+- Retry commit: `git commit -m "..."`
+
+### Formatting Tools (Manual)
+
+If you prefer manual formatting (not using pre-commit hooks):
 
 **Use Black** (official HoloLoom formatter):
 ```bash
