@@ -1,0 +1,2446 @@
+{
+  "prompts": [
+    {
+      "id": "84097b7ae133",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.813112",
+      "updated_at": "2025-11-17T06:19:06.813115",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "c69584414597",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.813591",
+      "updated_at": "2025-11-17T06:19:06.813592",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "fcfd2d220261",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.814045",
+      "updated_at": "2025-11-17T06:19:06.814047",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "54875f6569ec",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.814400",
+      "updated_at": "2025-11-17T06:19:06.814401",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "ffce566b0366",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.814784",
+      "updated_at": "2025-11-17T06:19:06.814786",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "6dd169de3414",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.815225",
+      "updated_at": "2025-11-17T06:19:06.815227",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "d4460a715816",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.815657",
+      "updated_at": "2025-11-17T06:19:06.815659",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "5d011dc3c705",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.817813",
+      "updated_at": "2025-11-17T06:19:06.817814",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "d4ba3cd4ed95",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.818396",
+      "updated_at": "2025-11-17T06:19:06.818397",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "d74e9f47b379",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.819039",
+      "updated_at": "2025-11-17T06:19:06.819040",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "3c4f081b7e26",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.819665",
+      "updated_at": "2025-11-17T06:19:06.819666",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "676e0286547e",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.820290",
+      "updated_at": "2025-11-17T06:19:06.820292",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "ac3299e92622",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.821084",
+      "updated_at": "2025-11-17T06:19:06.821085",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "065cf0055b86",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:06.821801",
+      "updated_at": "2025-11-17T06:19:06.821802",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8396804cc02c",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.351977",
+      "updated_at": "2025-11-17T06:19:07.351978",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "1625a03b43c7",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.352916",
+      "updated_at": "2025-11-17T06:19:07.352917",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "12792cdb4e9c",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.354154",
+      "updated_at": "2025-11-17T06:19:07.354157",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "84eae33affc5",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.355427",
+      "updated_at": "2025-11-17T06:19:07.355429",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "f95dc53df512",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.356473",
+      "updated_at": "2025-11-17T06:19:07.356475",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "14c60272b6af",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.357402",
+      "updated_at": "2025-11-17T06:19:07.357403",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "d355c9fba56d",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.358309",
+      "updated_at": "2025-11-17T06:19:07.358310",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "5d36ce5d6efe",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.361177",
+      "updated_at": "2025-11-17T06:19:07.361178",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "31264fc8d709",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.362233",
+      "updated_at": "2025-11-17T06:19:07.362235",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "b9bc53f8ef3e",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.363686",
+      "updated_at": "2025-11-17T06:19:07.363687",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "b753a22852fc",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.365030",
+      "updated_at": "2025-11-17T06:19:07.365032",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "4aca33cf848e",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.366062",
+      "updated_at": "2025-11-17T06:19:07.366063",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "e7145d8c3268",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.367137",
+      "updated_at": "2025-11-17T06:19:07.367138",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "233ccc1914ba",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.368622",
+      "updated_at": "2025-11-17T06:19:07.368623",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "aeb9b8388c48",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.371021",
+      "updated_at": "2025-11-17T06:19:07.371022",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "7637a6cbc039",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.372223",
+      "updated_at": "2025-11-17T06:19:07.372225",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "bb3089661c44",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.373430",
+      "updated_at": "2025-11-17T06:19:07.373431",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "5f25001fb54f",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.375322",
+      "updated_at": "2025-11-17T06:19:07.375324",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8fcb68eacb6f",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.377504",
+      "updated_at": "2025-11-17T06:19:07.377505",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "25b7e2bc4058",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.378992",
+      "updated_at": "2025-11-17T06:19:07.378994",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "313a8171f0c3",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:19:07.380334",
+      "updated_at": "2025-11-17T06:19:07.380335",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "1cde6f0e2397",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.873586",
+      "updated_at": "2025-11-17T06:20:11.873588",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "bf954326b1d5",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.875408",
+      "updated_at": "2025-11-17T06:20:11.875409",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "09431ae42695",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.877247",
+      "updated_at": "2025-11-17T06:20:11.877248",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "bd68af0ac099",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.879024",
+      "updated_at": "2025-11-17T06:20:11.879025",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "b42cdec9bb5a",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.880999",
+      "updated_at": "2025-11-17T06:20:11.881001",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "0da75e184490",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.882789",
+      "updated_at": "2025-11-17T06:20:11.882790",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "ae63a42fd816",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.884578",
+      "updated_at": "2025-11-17T06:20:11.884581",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "18f172b23b5d",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.888061",
+      "updated_at": "2025-11-17T06:20:11.888063",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "806f3fa79632",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.889860",
+      "updated_at": "2025-11-17T06:20:11.889861",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "29f22d375ca5",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.891416",
+      "updated_at": "2025-11-17T06:20:11.891417",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "f65fc6e8a7c9",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.893045",
+      "updated_at": "2025-11-17T06:20:11.893046",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8588acbc4aa2",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.894898",
+      "updated_at": "2025-11-17T06:20:11.894899",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "aa5c4d3929df",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.896753",
+      "updated_at": "2025-11-17T06:20:11.896755",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "cab86d002677",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:11.898713",
+      "updated_at": "2025-11-17T06:20:11.898714",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "f156bd2eee00",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.412364",
+      "updated_at": "2025-11-17T06:20:12.433678",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 3
+    },
+    {
+      "id": "0c6c6c2b6331",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.414879",
+      "updated_at": "2025-11-17T06:20:12.414880",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8adfb02f22d7",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.417263",
+      "updated_at": "2025-11-17T06:20:12.417264",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "e5a17441c928",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.420292",
+      "updated_at": "2025-11-17T06:20:12.420294",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "d0a65edd6700",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.422595",
+      "updated_at": "2025-11-17T06:20:12.438410",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 2
+    },
+    {
+      "id": "680aa61565d4",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.424994",
+      "updated_at": "2025-11-17T06:20:12.440750",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 1
+    },
+    {
+      "id": "6127783966e4",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.426932",
+      "updated_at": "2025-11-17T06:20:12.426934",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "be062f73eedc",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.445403",
+      "updated_at": "2025-11-17T06:20:12.445405",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "c8563fd1c380",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.447569",
+      "updated_at": "2025-11-17T06:20:12.447571",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "2262fa9de8c1",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.449898",
+      "updated_at": "2025-11-17T06:20:12.449900",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "7dbee276d85c",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.452396",
+      "updated_at": "2025-11-17T06:20:12.452397",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "e8eef1df099d",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.455542",
+      "updated_at": "2025-11-17T06:20:12.455543",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "9e0e35bc4e16",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.458696",
+      "updated_at": "2025-11-17T06:20:12.458697",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "615338051aec",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.461314",
+      "updated_at": "2025-11-17T06:20:12.461315",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "6dd3a49f53e0",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.465385",
+      "updated_at": "2025-11-17T06:20:12.465386",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "1ff8d3c4a27d",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.468007",
+      "updated_at": "2025-11-17T06:20:12.468009",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "9e339461686b",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.470518",
+      "updated_at": "2025-11-17T06:20:12.470519",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "14be309aabf3",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.472859",
+      "updated_at": "2025-11-17T06:20:12.472860",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "cebc4fc99fe5",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.476116",
+      "updated_at": "2025-11-17T06:20:12.476117",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "c3108df6628b",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.478807",
+      "updated_at": "2025-11-17T06:20:12.478808",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "4a46959de098",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:12.481686",
+      "updated_at": "2025-11-17T06:20:12.481688",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "e246ad81208c",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.317871",
+      "updated_at": "2025-11-17T06:20:52.317872",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "01d51aa1f813",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.321068",
+      "updated_at": "2025-11-17T06:20:52.321070",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "b96cd9870c13",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.323731",
+      "updated_at": "2025-11-17T06:20:52.323732",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "65c4d5795de3",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.327104",
+      "updated_at": "2025-11-17T06:20:52.327105",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "3988900015c0",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.329931",
+      "updated_at": "2025-11-17T06:20:52.329932",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "404841d634e4",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.332667",
+      "updated_at": "2025-11-17T06:20:52.332668",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "da2d8a1306a6",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.335366",
+      "updated_at": "2025-11-17T06:20:52.335368",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "15ad7a3c3964",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.339092",
+      "updated_at": "2025-11-17T06:20:52.339093",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "1148232d6e15",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.342789",
+      "updated_at": "2025-11-17T06:20:52.342791",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "792fef30810a",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.346495",
+      "updated_at": "2025-11-17T06:20:52.346496",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "deeb3296b0c0",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.349479",
+      "updated_at": "2025-11-17T06:20:52.349480",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "611fa6f0020d",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.352346",
+      "updated_at": "2025-11-17T06:20:52.352347",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "a897ac356fc3",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.355139",
+      "updated_at": "2025-11-17T06:20:52.355140",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "1ecc3214f822",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.358567",
+      "updated_at": "2025-11-17T06:20:52.358569",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "c0e7ed7f422e",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.894734",
+      "updated_at": "2025-11-17T06:20:52.928272",
+      "metadata": {},
+      "performance_score": 0.9166666666666666,
+      "usage_count": 3
+    },
+    {
+      "id": "f54f1876b3e8",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.898565",
+      "updated_at": "2025-11-17T06:20:52.898567",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "15ccc8c128ce",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.901989",
+      "updated_at": "2025-11-17T06:20:52.901990",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "d6f71e4d3cb1",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.905676",
+      "updated_at": "2025-11-17T06:20:52.905677",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "1aec7f6a0123",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.908894",
+      "updated_at": "2025-11-17T06:20:52.936441",
+      "metadata": {},
+      "performance_score": 0.88,
+      "usage_count": 2
+    },
+    {
+      "id": "ba02c6b11ab0",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.913222",
+      "updated_at": "2025-11-17T06:20:52.940230",
+      "metadata": {},
+      "performance_score": 0.78,
+      "usage_count": 1
+    },
+    {
+      "id": "5774103bca98",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.916363",
+      "updated_at": "2025-11-17T06:20:52.916364",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "df6395444c6d",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.945220",
+      "updated_at": "2025-11-17T06:20:52.945222",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "c814ef50f05d",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.948831",
+      "updated_at": "2025-11-17T06:20:52.948832",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "ddb9d73ab469",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.952324",
+      "updated_at": "2025-11-17T06:20:52.952325",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "c0b93c4a0d0b",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.956186",
+      "updated_at": "2025-11-17T06:20:52.956187",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "c28fd2def8eb",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.960282",
+      "updated_at": "2025-11-17T06:20:52.960283",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "a77e4bfdf1b2",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.963829",
+      "updated_at": "2025-11-17T06:20:52.963830",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "64592629e64c",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.967105",
+      "updated_at": "2025-11-17T06:20:52.967106",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "cfc1e1ec69c0",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.973328",
+      "updated_at": "2025-11-17T06:20:52.973330",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "54c9f9e6916e",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.977046",
+      "updated_at": "2025-11-17T06:20:52.977047",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "c94220af5853",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.981003",
+      "updated_at": "2025-11-17T06:20:52.981004",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "22174ca2770c",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.985123",
+      "updated_at": "2025-11-17T06:20:52.985124",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8feb210e2f62",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.988583",
+      "updated_at": "2025-11-17T06:20:52.988585",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "ad74e6baaa71",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.992847",
+      "updated_at": "2025-11-17T06:20:52.992847",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "26b6f0b3eefd",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:20:52.996445",
+      "updated_at": "2025-11-17T06:20:52.996446",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "15a6e99e3084",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.516220",
+      "updated_at": "2025-11-17T06:21:42.516221",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "09f771412920",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.519842",
+      "updated_at": "2025-11-17T06:21:42.519843",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "1686556da67a",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.523214",
+      "updated_at": "2025-11-17T06:21:42.523215",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "9cc3d77b074b",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.526580",
+      "updated_at": "2025-11-17T06:21:42.526581",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "6642596cf7f2",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.529975",
+      "updated_at": "2025-11-17T06:21:42.529976",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8da42c2d7063",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.533351",
+      "updated_at": "2025-11-17T06:21:42.533352",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "4ddd1e990dfd",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.536750",
+      "updated_at": "2025-11-17T06:21:42.536751",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8a0fc33582b9",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.541332",
+      "updated_at": "2025-11-17T06:21:42.541333",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8892c3cd6c90",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.545393",
+      "updated_at": "2025-11-17T06:21:42.545394",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8d1aec59b536",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.549080",
+      "updated_at": "2025-11-17T06:21:42.549081",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "0878ed789889",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.552656",
+      "updated_at": "2025-11-17T06:21:42.552657",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "5d2e7e88eaa2",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.556342",
+      "updated_at": "2025-11-17T06:21:42.556343",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "48ab70d05463",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.560061",
+      "updated_at": "2025-11-17T06:21:42.560062",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "5bb68f8a5250",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.563775",
+      "updated_at": "2025-11-17T06:21:42.563776",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "8d31ffa88568",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.956062",
+      "updated_at": "2025-11-17T06:21:42.993480",
+      "metadata": {},
+      "performance_score": 0.9166666666666666,
+      "usage_count": 3
+    },
+    {
+      "id": "64b522f2b6b0",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.960381",
+      "updated_at": "2025-11-17T06:21:42.960382",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "df9d3e435ae3",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.964382",
+      "updated_at": "2025-11-17T06:21:42.964383",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "b63caa384029",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.968346",
+      "updated_at": "2025-11-17T06:21:42.968347",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "28a02b9ecab6",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.972600",
+      "updated_at": "2025-11-17T06:21:43.001509",
+      "metadata": {},
+      "performance_score": 0.88,
+      "usage_count": 2
+    },
+    {
+      "id": "768d10d1b2bc",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.976710",
+      "updated_at": "2025-11-17T06:21:43.005443",
+      "metadata": {},
+      "performance_score": 0.78,
+      "usage_count": 1
+    },
+    {
+      "id": "e04f3fd22df9",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:42.980692",
+      "updated_at": "2025-11-17T06:21:42.980693",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "70e29e121476",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.010683",
+      "updated_at": "2025-11-17T06:21:43.010684",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "274fbf61258e",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.014884",
+      "updated_at": "2025-11-17T06:21:43.014885",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "5cc8f074a61a",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.019128",
+      "updated_at": "2025-11-17T06:21:43.019130",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "5531c4dcdcf8",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.023188",
+      "updated_at": "2025-11-17T06:21:43.023189",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "cf2f9d762145",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.027350",
+      "updated_at": "2025-11-17T06:21:43.027351",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "b120ecf861b2",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.031411",
+      "updated_at": "2025-11-17T06:21:43.031412",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "6fbcd0022208",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.035529",
+      "updated_at": "2025-11-17T06:21:43.035530",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "e0b68c72ac97",
+      "name": "code_generation_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code generation assistant. Your task is to generate high-quality, production-ready code based on user descriptions.\n\nFollow these principles:\n1. Write clean, readable, well-documented code\n2. Follow language-specific best practices\n3. Include type hints where applicable\n4. Add error handling\n5. Write idiomatic code for the target language\n6. Include usage examples when helpful\n\nLanguage: {language}\nTask Type: {task_type}\n\nGenerate code that is:\n- Correct and functional\n- Well-structured and maintainable\n- Properly documented\n- Following modern best practices",
+      "variables": [
+        "language",
+        "task_type"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.040838",
+      "updated_at": "2025-11-17T06:21:43.040840",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "175dab2918d4",
+      "name": "rag_context_formatting",
+      "type": "context",
+      "provider": "universal",
+      "template": "# Relevant Context from Project\n\nThe following context has been retrieved from your codebase, APIs, documentation, and forums. Use this to inform your code generation.\n\n{context_items}\n\n# User Request\n\n{user_request}\n\nPlease generate code that follows the patterns and conventions shown in the context above.",
+      "variables": [
+        "context_items",
+        "user_request"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.045212",
+      "updated_at": "2025-11-17T06:21:43.045213",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "e4e73b74c0cd",
+      "name": "code_review_system",
+      "type": "system",
+      "provider": "universal",
+      "template": "You are an expert code reviewer. Analyze the provided code and identify:\n\n1. **Bugs and Errors**: Logical errors, edge cases, potential crashes\n2. **Security Issues**: SQL injection, XSS, auth problems, etc.\n3. **Performance**: Inefficient algorithms, memory leaks, bottlenecks\n4. **Best Practices**: Code style, naming, structure\n5. **Suggestions**: How to improve the code\n\nBe specific and constructive. For each issue:\n- Explain what's wrong\n- Why it's a problem\n- How to fix it\n\nLanguage: {language}",
+      "variables": [
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.049456",
+      "updated_at": "2025-11-17T06:21:43.049457",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "b21e0d7dc565",
+      "name": "code_refactoring",
+      "type": "task",
+      "provider": "universal",
+      "template": "Refactor the following code according to these instructions:\n\n**Instructions**: {instructions}\n\n**Original Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Refactored code\n2. Explanation of changes\n3. Unified diff showing modifications\n\nFocus on:\n- Maintaining functionality\n- Improving readability\n- Following {language} best practices\n- Applying the requested changes",
+      "variables": [
+        "instructions",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.053630",
+      "updated_at": "2025-11-17T06:21:43.053631",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "48f3cc1282c7",
+      "name": "bug_fixing",
+      "type": "task",
+      "provider": "universal",
+      "template": "Fix the bug in the following code:\n\n**Error Message**: {error_message}\n\n**Code**:\n```{language}\n{code}\n```\n\nProvide:\n1. Fixed code\n2. Explanation of the bug\n3. How the fix works\n4. How to prevent similar bugs in the future\n\nThe fix should:\n- Resolve the error\n- Maintain existing functionality\n- Add appropriate error handling\n- Follow {language} best practices",
+      "variables": [
+        "error_message",
+        "code",
+        "language"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.058100",
+      "updated_at": "2025-11-17T06:21:43.058101",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "85662d6753f0",
+      "name": "test_generation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Generate comprehensive tests for the following code:\n\n**Code**:\n```{language}\n{code}\n```\n\n**Test Framework**: {test_framework}\n\nGenerate tests that cover:\n1. Normal cases (happy path)\n2. Edge cases\n3. Error cases\n4. Boundary conditions\n\nInclude:\n- Setup/teardown if needed\n- Clear test names\n- Assertions for expected behavior\n- Comments explaining test purpose",
+      "variables": [
+        "code",
+        "language",
+        "test_framework"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.062506",
+      "updated_at": "2025-11-17T06:21:43.062507",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    },
+    {
+      "id": "bd830f8fbee0",
+      "name": "code_explanation",
+      "type": "task",
+      "provider": "universal",
+      "template": "Explain the following code in detail:\n\n```{language}\n{code}\n```\n\n{question}\n\nProvide:\n1. **High-level overview**: What the code does\n2. **Step-by-step breakdown**: How it works\n3. **Key concepts**: Important algorithms/patterns used\n4. **Complexity analysis**: Time/space complexity if applicable\n\nMake the explanation:\n- Clear and accessible\n- Technically accurate\n- With concrete examples where helpful",
+      "variables": [
+        "code",
+        "language",
+        "question"
+      ],
+      "version": "1.0.0",
+      "created_at": "2025-11-17T06:21:43.066896",
+      "updated_at": "2025-11-17T06:21:43.066898",
+      "metadata": {},
+      "performance_score": 0.0,
+      "usage_count": 0
+    }
+  ],
+  "ab_tests": {},
+  "updated_at": "2025-11-17T06:21:43.069073"
+}
