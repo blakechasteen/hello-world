@@ -39,6 +39,15 @@ try:
     from HoloLoom.config import Config
     from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel
     from HoloLoom.recursive.full_learning_loop import FullLearningEngine
+
+    # New workflow features
+    from HoloLoom.workflows import (
+        get_registry,
+        WorkflowTemplates,
+        AIWorkflowGenerator,
+        WorkflowAnalytics,
+        CollaborationManager
+    )
 except ImportError as e:
     print(f"HoloLoom imports failed: {e}")
     print("Make sure PYTHONPATH is set to repository root")
@@ -121,6 +130,13 @@ version_counter = 0
 branch_store: Dict[str, Dict[str, Any]] = {
     'main': {'versions': [], 'head': None}
 }
+
+# Initialize workflow features
+agent_registry = get_registry()
+workflow_templates = WorkflowTemplates()
+ai_generator = AIWorkflowGenerator(registry=agent_registry)
+analytics = WorkflowAnalytics()
+collaboration_manager = CollaborationManager()
 
 
 class WorkflowExecutor:
@@ -743,15 +759,364 @@ async def list_branches():
     return {'branches': branches}
 
 
+# ============================================================================
+# NEW: AI Workflow Generation Endpoints
+# ============================================================================
+
+@app.post("/api/workflow/generate")
+async def generate_workflow(request: Dict[str, Any]):
+    """Generate workflow from natural language description."""
+    try:
+        description = request.get('description', '')
+        use_llm = request.get('use_llm', False)
+
+        workflow = await ai_generator.generate(description, use_llm=use_llm)
+
+        return {
+            'status': 'success',
+            'workflow': workflow
+        }
+
+    except Exception as e:
+        logger.error(f"Workflow generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/workflow/refine")
+async def refine_workflow(request: Dict[str, Any]):
+    """Refine existing workflow based on natural language feedback."""
+    try:
+        workflow = request.get('workflow', {})
+        refinement = request.get('refinement', '')
+
+        refined = await ai_generator.refine(workflow, refinement)
+
+        # Validate
+        valid, errors = ai_generator.validate(refined)
+
+        return {
+            'status': 'success',
+            'workflow': refined,
+            'valid': valid,
+            'errors': errors
+        }
+
+    except Exception as e:
+        logger.error(f"Workflow refinement failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# NEW: Template Endpoints
+# ============================================================================
+
+@app.get("/api/templates/list")
+async def list_templates():
+    """List all available workflow templates."""
+    templates = workflow_templates.list_all()
+
+    return {
+        'templates': [
+            {
+                'template_id': t.template_id,
+                'name': t.name,
+                'category': t.category.value,
+                'description': t.description,
+                'difficulty': t.difficulty,
+                'nodes_count': len(t.nodes),
+                'connections_count': len(t.connections),
+                'tags': t.tags,
+                'use_cases': t.use_cases
+            }
+            for t in templates
+        ]
+    }
+
+
+@app.get("/api/templates/{template_id}")
+async def get_template(template_id: str):
+    """Get specific template by ID."""
+    template = workflow_templates.get(template_id)
+
+    if not template:
+        raise HTTPException(status_code=404, detail=f"Template not found: {template_id}")
+
+    return {
+        'template_id': template.template_id,
+        'name': template.name,
+        'category': template.category.value,
+        'description': template.description,
+        'difficulty': template.difficulty,
+        'nodes': template.nodes,
+        'connections': template.connections,
+        'default_inputs': template.default_inputs,
+        'tags': template.tags,
+        'use_cases': template.use_cases
+    }
+
+
+@app.post("/api/templates/search")
+async def search_templates(request: Dict[str, Any]):
+    """Search templates by keyword."""
+    query = request.get('query', '')
+
+    results = workflow_templates.search(query)
+
+    return {
+        'results': [
+            {
+                'template_id': t.template_id,
+                'name': t.name,
+                'category': t.category.value,
+                'description': t.description,
+                'difficulty': t.difficulty
+            }
+            for t in results
+        ]
+    }
+
+
+# ============================================================================
+# NEW: Analytics Endpoints
+# ============================================================================
+
+@app.post("/api/analytics/track")
+async def track_execution(request: Dict[str, Any]):
+    """Track workflow execution for analytics."""
+    try:
+        analytics.track_execution(request)
+
+        return {'status': 'success', 'execution_id': request.get('execution_id')}
+
+    except Exception as e:
+        logger.error(f"Analytics tracking failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/analytics/{workflow_id}")
+async def get_analytics(workflow_id: str):
+    """Get analytics for a workflow."""
+    metrics = analytics.get_metrics(workflow_id)
+
+    if not metrics:
+        raise HTTPException(status_code=404, detail=f"No analytics data for workflow: {workflow_id}")
+
+    return analytics.export_metrics(workflow_id)
+
+
+@app.get("/api/analytics/{workflow_id}/dashboard")
+async def get_analytics_dashboard(workflow_id: str):
+    """Get HTML analytics dashboard."""
+    metrics = analytics.get_metrics(workflow_id)
+
+    if not metrics:
+        raise HTTPException(status_code=404, detail=f"No analytics data for workflow: {workflow_id}")
+
+    html = analytics.generate_dashboard(workflow_id)
+
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=html)
+
+
+# ============================================================================
+# NEW: Agent Registry Endpoints
+# ============================================================================
+
+@app.get("/api/agents/registry")
+async def get_agent_registry():
+    """Get complete agent registry with schemas."""
+    return agent_registry.export_schema()
+
+
+@app.get("/api/agents/search")
+async def search_agents(query: str, category: Optional[str] = None):
+    """Search agents by keyword."""
+    from HoloLoom.workflows.agent_registry import AgentCategory
+
+    cat = AgentCategory(category) if category else None
+    results = agent_registry.search(query, category=cat)
+
+    return {
+        'agents': [
+            {
+                'agent_id': a.agent_id,
+                'name': a.name,
+                'category': a.category.value,
+                'description': a.description,
+                'inputs': a.inputs,
+                'outputs': a.outputs,
+                'color': a.color,
+                'icon': a.icon
+            }
+            for a in results
+        ]
+    }
+
+
+@app.get("/api/agents/stats")
+async def get_agent_stats():
+    """Get agent registry statistics."""
+    return agent_registry.get_stats()
+
+
+# ============================================================================
+# NEW: Collaborative Editing Endpoints
+# ============================================================================
+
+@app.get("/api/collaborate/sessions")
+async def list_collaborative_sessions():
+    """List active collaborative sessions."""
+    return {'sessions': collaboration_manager.get_active_sessions()}
+
+
+@app.websocket("/ws/collaborate/{workflow_id}")
+async def collaborate_websocket(websocket: WebSocket, workflow_id: str):
+    """WebSocket for collaborative workflow editing."""
+    await websocket.accept()
+
+    # Extract user info from query params
+    user_id = websocket.query_params.get('user_id', f'user_{id(websocket)}')
+    display_name = websocket.query_params.get('display_name', user_id)
+
+    # Get or create session
+    session = collaboration_manager.get_or_create_session(workflow_id)
+
+    # Add user to session
+    await session.add_user(user_id, display_name, websocket)
+
+    logger.info(f"User {display_name} joined collaborative session {workflow_id}")
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            message = json.loads(data)
+
+            msg_type = message.get('type')
+
+            if msg_type == 'operation':
+                # Apply operation
+                result = await session.apply_operation(message)
+
+            elif msg_type == 'cursor_move':
+                # Update cursor
+                x = message.get('x', 0)
+                y = message.get('y', 0)
+                await session.update_cursor(user_id, x, y)
+
+            elif msg_type == 'lock_node':
+                # Lock node
+                node_id = message.get('node_id')
+                success = await session.lock_node(user_id, node_id)
+
+                await websocket.send_json({
+                    'type': 'lock_response',
+                    'node_id': node_id,
+                    'success': success
+                })
+
+            elif msg_type == 'unlock_node':
+                # Unlock node
+                node_id = message.get('node_id')
+                await session.unlock_node(user_id, node_id)
+
+    except WebSocketDisconnect:
+        await session.remove_user(user_id)
+        logger.info(f"User {display_name} left collaborative session {workflow_id}")
+
+
+# ============================================================================
+# NEW: Marketplace Endpoints (Basic Implementation)
+# ============================================================================
+
+# Simple in-memory marketplace (replace with database in production)
+marketplace_workflows: Dict[str, Dict[str, Any]] = {}
+
+@app.get("/api/marketplace/list")
+async def list_marketplace_workflows():
+    """List all workflows in marketplace."""
+    return {
+        'workflows': list(marketplace_workflows.values())
+    }
+
+
+@app.post("/api/marketplace/publish")
+async def publish_workflow(request: Dict[str, Any]):
+    """Publish workflow to marketplace."""
+    try:
+        workflow_id = request.get('workflow_id', f'workflow_{len(marketplace_workflows)}')
+        workflow = request.get('workflow', {})
+        metadata = request.get('metadata', {})
+
+        marketplace_workflows[workflow_id] = {
+            'workflow_id': workflow_id,
+            'workflow': workflow,
+            'metadata': {
+                'name': metadata.get('name', 'Untitled Workflow'),
+                'description': metadata.get('description', ''),
+                'author': metadata.get('author', 'Anonymous'),
+                'category': metadata.get('category', 'custom'),
+                'tags': metadata.get('tags', []),
+                'downloads': 0,
+                'rating': 0.0,
+                'published_at': datetime.now().isoformat()
+            }
+        }
+
+        return {
+            'status': 'success',
+            'workflow_id': workflow_id
+        }
+
+    except Exception as e:
+        logger.error(f"Workflow publish failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/marketplace/{workflow_id}")
+async def get_marketplace_workflow(workflow_id: str):
+    """Get workflow from marketplace."""
+    if workflow_id not in marketplace_workflows:
+        raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
+
+    # Increment downloads
+    marketplace_workflows[workflow_id]['metadata']['downloads'] += 1
+
+    return marketplace_workflows[workflow_id]
+
+
+@app.post("/api/marketplace/{workflow_id}/rate")
+async def rate_marketplace_workflow(workflow_id: str, request: Dict[str, Any]):
+    """Rate a marketplace workflow."""
+    if workflow_id not in marketplace_workflows:
+        raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
+
+    rating = request.get('rating', 0)
+    if not 1 <= rating <= 5:
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+
+    # Simple average (in production, use proper rating system)
+    current_rating = marketplace_workflows[workflow_id]['metadata']['rating']
+    marketplace_workflows[workflow_id]['metadata']['rating'] = (current_rating + rating) / 2
+
+    return {'status': 'success', 'new_rating': marketplace_workflows[workflow_id]['metadata']['rating']}
+
+
 if __name__ == "__main__":
     import uvicorn
 
     print("=" * 80)
-    print("HoloLoom Workflow Executor")
+    print("HoloLoom Workflow Executor (Enhanced)")
     print("=" * 80)
     print("\nStarting server...")
     print("Open workflow_builder.html in your browser to design workflows")
-    print("\nAPI documentation: http://localhost:8001/docs")
+    print("\n📚 NEW FEATURES:")
+    print("  • AI Workflow Generation (natural language → workflow)")
+    print("  • 5 Pre-built Templates (RAG, code review, data pipeline, etc.)")
+    print("  • Real-time Analytics Dashboard")
+    print("  • 22+ Agent Types (query, process, memory, decision, LLM, RAG, code, data)")
+    print("  • Collaborative Editing (multi-user via WebSocket)")
+    print("  • Workflow Marketplace (share and discover)")
+    print("\n📖 API documentation: http://localhost:8001/docs")
     print("=" * 80)
 
     uvicorn.run(
