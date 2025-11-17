@@ -749,6 +749,181 @@
     };
 
     // ========================================
+    // WebSocket Client (Real-Time Integration)
+    // ========================================
+
+    class WebSocketClient {
+        constructor(options = {}) {
+            this.url = options.url || 'ws://localhost:8000/ws';
+            this.reconnectInterval = options.reconnectInterval || 3000;
+            this.maxReconnectAttempts = options.maxReconnectAttempts || 10;
+            this.heartbeatInterval = options.heartbeatInterval || 30000;
+
+            this.ws = null;
+            this.reconnectAttempts = 0;
+            this.isConnected = false;
+            this.messageBuffer = [];
+            this.listeners = {};
+            this.heartbeatTimer = null;
+            this.reconnectTimer = null;
+        }
+
+        connect() {
+            try {
+                this.ws = new WebSocket(this.url);
+
+                this.ws.onopen = () => {
+                    console.log('[WebSocket] Connected to', this.url);
+                    this.isConnected = true;
+                    this.reconnectAttempts = 0;
+
+                    // Flush buffered messages
+                    this.flushBuffer();
+
+                    // Start heartbeat
+                    this.startHeartbeat();
+
+                    this.emit('connected');
+                };
+
+                this.ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+
+                        // Handle heartbeat
+                        if (data.type === 'pong') {
+                            return;
+                        }
+
+                        this.emit('message', data);
+
+                        // Type-specific handlers
+                        if (data.type) {
+                            this.emit(data.type, data);
+                        }
+                    } catch (error) {
+                        console.error('[WebSocket] Failed to parse message:', error);
+                    }
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('[WebSocket] Error:', error);
+                    this.emit('error', error);
+                };
+
+                this.ws.onclose = () => {
+                    console.log('[WebSocket] Disconnected');
+                    this.isConnected = false;
+                    this.stopHeartbeat();
+                    this.emit('disconnected');
+
+                    // Attempt reconnection
+                    this.scheduleReconnect();
+                };
+
+            } catch (error) {
+                console.error('[WebSocket] Connection failed:', error);
+                this.scheduleReconnect();
+            }
+        }
+
+        disconnect() {
+            if (this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
+            }
+            this.stopHeartbeat();
+
+            if (this.ws) {
+                this.ws.close();
+                this.ws = null;
+            }
+
+            this.isConnected = false;
+        }
+
+        send(data) {
+            const message = typeof data === 'string' ? data : JSON.stringify(data);
+
+            if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(message);
+            } else {
+                // Buffer message for later
+                this.messageBuffer.push(message);
+                console.warn('[WebSocket] Message buffered (not connected)');
+            }
+        }
+
+        flushBuffer() {
+            if (this.messageBuffer.length > 0) {
+                console.log(`[WebSocket] Flushing ${this.messageBuffer.length} buffered messages`);
+                this.messageBuffer.forEach(msg => this.send(msg));
+                this.messageBuffer = [];
+            }
+        }
+
+        scheduleReconnect() {
+            if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                console.error('[WebSocket] Max reconnect attempts reached');
+                this.emit('reconnect_failed');
+                return;
+            }
+
+            this.reconnectAttempts++;
+            const delay = this.reconnectInterval * Math.pow(1.5, this.reconnectAttempts - 1);
+
+            console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+
+            this.reconnectTimer = setTimeout(() => {
+                this.emit('reconnecting', this.reconnectAttempts);
+                this.connect();
+            }, delay);
+        }
+
+        startHeartbeat() {
+            this.heartbeatTimer = setInterval(() => {
+                if (this.isConnected) {
+                    this.send({ type: 'ping', timestamp: Date.now() });
+                }
+            }, this.heartbeatInterval);
+        }
+
+        stopHeartbeat() {
+            if (this.heartbeatTimer) {
+                clearInterval(this.heartbeatTimer);
+                this.heartbeatTimer = null;
+            }
+        }
+
+        on(event, callback) {
+            if (!this.listeners[event]) {
+                this.listeners[event] = [];
+            }
+            this.listeners[event].push(callback);
+        }
+
+        off(event, callback) {
+            if (this.listeners[event]) {
+                this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+            }
+        }
+
+        emit(event, data) {
+            if (this.listeners[event]) {
+                this.listeners[event].forEach(callback => callback(data));
+            }
+        }
+
+        getStatus() {
+            return {
+                connected: this.isConnected,
+                url: this.url,
+                reconnectAttempts: this.reconnectAttempts,
+                bufferedMessages: this.messageBuffer.length
+            };
+        }
+    }
+
+    // ========================================
     // Initialize BigPlayUI
     // ========================================
 
@@ -761,6 +936,7 @@
         utils: utils,
         touch: null,          // Initialized if touch device detected
         transitions: null,    // Page transitions and animations
+        WebSocketClient: WebSocketClient,  // WebSocket client class (for real-time integration)
 
         init() {
             console.log('%c🎮 BigPlay UI loaded', 'color: #667eea; font-weight: bold; font-size: 14px;');
