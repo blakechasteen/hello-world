@@ -9,9 +9,10 @@ Verifies:
 5. Metrics are accurate
 """
 
-import pytest
-import numpy as np
 import networkx as nx
+import numpy as np
+import pytest
+
 from HoloLoom.memory.activation_field import ActivationField
 
 
@@ -34,11 +35,7 @@ def test_activate_region_single_node():
     field.update_spatial_index("node1", center)
 
     # Activate region at origin
-    activated = field.activate_region(
-        center=center,
-        radius=0.5,
-        node_ids=["node1"]
-    )
+    activated = field.activate_region(center=center, radius=0.5, node_ids=["node1"])
 
     assert "node1" in activated
     assert field.levels["node1"] == 1.0  # At center, full activation
@@ -51,18 +48,14 @@ def test_activate_region_distance_decay():
     # Add nodes at different distances
     center = np.zeros(244)
     near = np.ones(244) * 0.1  # Close
-    far = np.ones(244) * 0.4   # Farther
+    far = np.ones(244) * 0.4  # Farther
 
     field.update_spatial_index("center", center)
     field.update_spatial_index("near", near)
     field.update_spatial_index("far", far)
 
     # Activate with radius 0.5
-    activated = field.activate_region(
-        center=center,
-        radius=0.5,
-        node_ids=["center", "near", "far"]
-    )
+    activated = field.activate_region(center=center, radius=0.5, node_ids=["center", "near", "far"])
 
     # All should be activated (within radius)
     assert len(activated) == 3
@@ -85,11 +78,7 @@ def test_activate_region_respects_radius():
     field.update_spatial_index("far", far)
 
     # Activate with small radius
-    activated = field.activate_region(
-        center=center,
-        radius=0.5,
-        node_ids=["center", "near", "far"]
-    )
+    activated = field.activate_region(center=center, radius=0.5, node_ids=["center", "near", "far"])
 
     # Only center and near should be activated
     assert "center" in activated
@@ -157,12 +146,7 @@ def test_above_threshold():
     field = ActivationField()
 
     # Set various activation levels
-    field.levels = {
-        "high": 0.9,
-        "medium": 0.5,
-        "low": 0.2,
-        "verylow": 0.05
-    }
+    field.levels = {"high": 0.9, "medium": 0.5, "low": 0.2, "verylow": 0.05}
 
     # Filter with threshold 0.3
     above = field.above_threshold(0.3)
@@ -183,13 +167,7 @@ def test_top_k():
     field = ActivationField()
 
     # Set activation levels
-    field.levels = {
-        "node1": 0.9,
-        "node2": 0.7,
-        "node3": 0.5,
-        "node4": 0.3,
-        "node5": 0.1
-    }
+    field.levels = {"node1": 0.9, "node2": 0.7, "node3": 0.5, "node4": 0.3, "node5": 0.1}
 
     # Get top 3
     top = field.top_k(3)
@@ -205,10 +183,7 @@ def test_decay():
     field = ActivationField()
 
     # Set initial activation
-    field.levels = {
-        "node1": 1.0,
-        "node2": 0.5
-    }
+    field.levels = {"node1": 1.0, "node2": 0.5}
 
     # Decay by 50%
     field.decay(rate=0.5)
@@ -223,10 +198,7 @@ def test_decay_removes_weak_activation():
     field = ActivationField()
 
     # Set very weak activation
-    field.levels = {
-        "node1": 0.02,
-        "node2": 0.5
-    }
+    field.levels = {"node1": 0.02, "node2": 0.5}
 
     # Decay
     field.decay(rate=0.5)
@@ -247,15 +219,11 @@ def test_metrics():
     field.update_spatial_index("node3", np.ones(244) * 2)
 
     # Set activations
-    field.levels = {
-        "node1": 0.9,
-        "node2": 0.5,
-        "node3": 0.05  # Below default threshold
-    }
+    field.levels = {"node1": 0.9, "node2": 0.5, "node3": 0.05}  # Below default threshold
 
     # Check metrics
     assert field.n_active(threshold=0.1) == 2  # node1, node2
-    assert field.density() == pytest.approx(2/3)  # 2 active of 3 total
+    assert field.density() == pytest.approx(2 / 3)  # 2 active of 3 total
     assert field.total_activation() == pytest.approx(1.45)
 
 

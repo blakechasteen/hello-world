@@ -4,14 +4,15 @@ Unit tests for HoloLoom configuration module.
 Tests config enums, dataclasses, and factory methods.
 Fast, isolated, no external dependencies.
 """
+
 import pytest
+
 from HoloLoom.config import (
     Config,
-    ExecutionMode,
-    MemoryBackend,
     Environment,
+    ExecutionMode,
     KGBackend,
-    BanditStrategy,
+    MemoryBackend,
 )
 
 
@@ -79,6 +80,7 @@ class TestConfigModification:
 
         # Create new config with override
         from dataclasses import replace
+
         cfg2 = replace(cfg, n_transformer_layers=10)
 
         assert cfg.n_transformer_layers == original_layers
@@ -90,6 +92,7 @@ class TestConfigModification:
         assert cfg.memory_backend == MemoryBackend.INMEMORY
 
         from dataclasses import replace
+
         cfg_hybrid = replace(cfg, memory_backend=MemoryBackend.HYBRID)
         assert cfg_hybrid.memory_backend == MemoryBackend.HYBRID
 
@@ -98,6 +101,7 @@ class TestConfigModification:
         cfg = Config.fast()
 
         from dataclasses import replace
+
         cfg_prod = replace(cfg, environment=Environment.PRODUCTION)
         assert cfg_prod.environment == Environment.PRODUCTION
 

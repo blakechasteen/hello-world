@@ -4,9 +4,10 @@ Unit tests for memory system core components.
 Tests graph operations, cache, and retrieval.
 All tests isolated with mocked IO operations.
 """
+
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
-from datetime import datetime
 
 
 class TestKnowledgeGraph:
@@ -25,9 +26,7 @@ class TestKnowledgeGraph:
         from HoloLoom.memory.graph import KG, KGEdge
 
         kg = KG()
-        edge = KGEdge(
-            source="python", target="programming", rel_type="IS_A", weight=1.0
-        )
+        edge = KGEdge(source="python", target="programming", rel_type="IS_A", weight=1.0)
 
         kg.add_edges([edge])
 
@@ -86,13 +85,14 @@ class TestKnowledgeGraph:
     def test_kg_performance(self):
         """Graph operations should be fast."""
         import time
+
         from HoloLoom.memory.graph import KG, KGEdge
 
         kg = KG()
 
         # Add 100 edges
         start = time.perf_counter()
-        edges = [KGEdge(f"node_{i}", f"node_{i+1}", "NEXT", 1.0) for i in range(100)]
+        edges = [KGEdge(f"node_{i}", f"node_{i + 1}", "NEXT", 1.0) for i in range(100)]
         kg.add_edges(edges)
         elapsed = (time.perf_counter() - start) * 1000
 
@@ -113,8 +113,8 @@ class TestMemoryCache:
     @pytest.mark.asyncio
     async def test_cache_store_recall(self):
         """Should store and recall memories."""
-        from HoloLoom.memory.cache import MemoryManager
         from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.memory.cache import MemoryManager
 
         cache = MemoryManager(capacity=100)
         shard = MemoryShard(text="test memory", source="unit_test")
@@ -128,8 +128,8 @@ class TestMemoryCache:
     @pytest.mark.asyncio
     async def test_cache_capacity_limit(self):
         """Cache should respect capacity limits."""
-        from HoloLoom.memory.cache import MemoryManager
         from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.memory.cache import MemoryManager
 
         cache = MemoryManager(capacity=10)
 
@@ -144,8 +144,9 @@ class TestMemoryCache:
     async def test_cache_performance(self):
         """Cache operations should be fast."""
         import time
-        from HoloLoom.memory.cache import MemoryManager
+
         from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.memory.cache import MemoryManager
 
         cache = MemoryManager(capacity=1000)
 
@@ -162,8 +163,9 @@ class TestMemoryCache:
     async def test_cache_concurrent_access(self):
         """Cache should handle concurrent access."""
         import asyncio
-        from HoloLoom.memory.cache import MemoryManager
+
         from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.memory.cache import MemoryManager
 
         cache = MemoryManager(capacity=100)
 
@@ -184,14 +186,13 @@ class TestRetrievalStrategies:
     @patch("HoloLoom.memory.retrieval_strategies.SpectralEmbedding")
     async def test_semantic_retrieval(self, mock_embed):
         """Semantic retrieval should work."""
-        from HoloLoom.memory.retrieval_strategies import semantic_retrieval
-        from HoloLoom.Documentation.types import MemoryShard
         import torch
 
+        from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.memory.retrieval_strategies import semantic_retrieval
+
         # Mock embeddings
-        mock_embed.return_value.encode_multi_scale = Mock(
-            return_value=[torch.randn(1, 768)]
-        )
+        mock_embed.return_value.encode_multi_scale = Mock(return_value=[torch.randn(1, 768)])
 
         shards = [
             MemoryShard(text="python programming", source="test"),
@@ -207,8 +208,8 @@ class TestRetrievalStrategies:
     @pytest.mark.asyncio
     async def test_bm25_retrieval(self):
         """BM25 retrieval should work."""
-        from HoloLoom.memory.retrieval_strategies import bm25_retrieval
         from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.memory.retrieval_strategies import bm25_retrieval
 
         shards = [
             MemoryShard(text="python is a programming language", source="test"),
@@ -225,8 +226,8 @@ class TestRetrievalStrategies:
     @pytest.mark.asyncio
     async def test_hybrid_retrieval(self):
         """Hybrid retrieval should combine strategies."""
-        from HoloLoom.memory.retrieval_strategies import hybrid_retrieval
         from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.memory.retrieval_strategies import hybrid_retrieval
 
         shards = [MemoryShard(text="test", source="test")]
         query = "test query"
@@ -259,11 +260,12 @@ class TestSpectralFeatures:
 
     def test_laplacian_eigenvalues(self):
         """Should compute Laplacian eigenvalues."""
-        from HoloLoom.memory.graph import KG, KGEdge
         import networkx as nx
 
+        from HoloLoom.memory.graph import KG, KGEdge
+
         kg = KG()
-        edges = [KGEdge(f"n{i}", f"n{i+1}", "NEXT", 1.0) for i in range(5)]
+        edges = [KGEdge(f"n{i}", f"n{i + 1}", "NEXT", 1.0) for i in range(5)]
         kg.add_edges(edges)
 
         # Compute Laplacian
@@ -324,8 +326,8 @@ class TestMemoryEdgeCases:
     @pytest.mark.asyncio
     async def test_large_shard(self):
         """Should handle large memory shards."""
-        from HoloLoom.memory.cache import MemoryManager
         from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.memory.cache import MemoryManager
 
         cache = MemoryManager(capacity=100)
         large_text = "test " * 10000  # 40KB text

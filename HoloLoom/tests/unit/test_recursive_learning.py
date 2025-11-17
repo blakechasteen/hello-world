@@ -4,9 +4,11 @@ Unit tests for recursive learning system.
 Tests scratchpad, pattern learning, and Thompson Sampling.
 Fast, isolated tests with mocked dependencies.
 """
-import pytest
-from unittest.mock import Mock, patch, AsyncMock
+
 from datetime import datetime
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 
 class TestScratchpadIntegration:
@@ -16,9 +18,9 @@ class TestScratchpadIntegration:
     @patch("HoloLoom.recursive.weaving_orchestrator.WeavingOrchestrator")
     async def test_scratchpad_creation(self, mock_orchestrator):
         """Scratchpad should track provenance."""
-        from HoloLoom.recursive import weave_with_scratchpad
         from HoloLoom.config import Config
-        from HoloLoom.Documentation.types import Query, MemoryShard
+        from HoloLoom.Documentation.types import MemoryShard, Query
+        from HoloLoom.recursive import weave_with_scratchpad
 
         # Mock orchestrator
         mock_result = Mock()
@@ -41,9 +43,9 @@ class TestScratchpadIntegration:
     @patch("HoloLoom.recursive.weaving_orchestrator.WeavingOrchestrator")
     async def test_scratchpad_history(self, mock_orchestrator):
         """Scratchpad should maintain history."""
-        from HoloLoom.recursive import weave_with_scratchpad
         from HoloLoom.config import Config
         from HoloLoom.Documentation.types import Query
+        from HoloLoom.recursive import weave_with_scratchpad
 
         mock_result = Mock(response="test", confidence=0.9)
         mock_orchestrator.return_value.__aenter__.return_value.weave = AsyncMock(
@@ -100,8 +102,9 @@ class TestPatternLearning:
 
     def test_pattern_pruning(self):
         """Stale patterns should be pruned."""
+        from datetime import timedelta
+
         from HoloLoom.recursive.pattern_learner import PatternLearner
-        from datetime import datetime, timedelta
 
         learner = PatternLearner()
 
@@ -135,8 +138,8 @@ class TestHotPatternFeedback:
 
     def test_heat_decay(self):
         """Heat should decay over time."""
+
         from HoloLoom.recursive.hot_tracker import HotPatternTracker
-        from datetime import datetime, timedelta
 
         tracker = HotPatternTracker()
 
@@ -198,8 +201,9 @@ class TestThompsonSampling:
 
     def test_thompson_exploration(self):
         """Thompson sampling should explore."""
-        from HoloLoom.recursive.bandit import ThompsonBandit
         import torch
+
+        from HoloLoom.recursive.bandit import ThompsonBandit
 
         bandit = ThompsonBandit(n_tools=5)
 
@@ -216,8 +220,9 @@ class TestThompsonSampling:
 
     def test_thompson_exploitation(self):
         """Should exploit after learning."""
-        from HoloLoom.recursive.bandit import ThompsonBandit
         import torch
+
+        from HoloLoom.recursive.bandit import ThompsonBandit
 
         bandit = ThompsonBandit(n_tools=3)
 
@@ -244,7 +249,6 @@ class TestRefinementStrategies:
     @patch("HoloLoom.recursive.AdvancedRefiner")
     async def test_refinement_triggered(self, mock_refiner):
         """Refinement should trigger on low confidence."""
-        from HoloLoom.recursive import weave_with_scratchpad
         from HoloLoom.config import Config
         from HoloLoom.Documentation.types import Query
 
@@ -293,7 +297,6 @@ class TestBackgroundLearning:
     @pytest.mark.asyncio
     async def test_learning_state_persistence(self):
         """Learning state should persist."""
-        from HoloLoom.recursive import FullLearningEngine
         from HoloLoom.config import Config
 
         cfg = Config.fast()
@@ -309,6 +312,7 @@ class TestPerformanceOverhead:
     async def test_provenance_overhead(self):
         """Provenance tracking should be <1ms."""
         import time
+
         from HoloLoom.recursive.scratchpad import Scratchpad
 
         pad = Scratchpad()
@@ -324,6 +328,7 @@ class TestPerformanceOverhead:
     def test_pattern_extraction_overhead(self):
         """Pattern extraction should be <1ms."""
         import time
+
         from HoloLoom.recursive.pattern_learner import PatternLearner
 
         learner = PatternLearner()
@@ -341,6 +346,7 @@ class TestPerformanceOverhead:
     def test_heat_tracking_overhead(self):
         """Heat tracking should be <0.5ms."""
         import time
+
         from HoloLoom.recursive.hot_tracker import HotPatternTracker
 
         tracker = HotPatternTracker()

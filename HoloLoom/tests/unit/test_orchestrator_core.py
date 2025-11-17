@@ -4,10 +4,11 @@ Unit tests for WeavingOrchestrator core functionality.
 Tests orchestration logic with all external dependencies mocked.
 Target: <150ms per test, isolated, no network calls.
 """
-import pytest
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from datetime import datetime
+
 import asyncio
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 
 class TestOrchestratorCreation:
@@ -20,9 +21,10 @@ class TestOrchestratorCreation:
     async def test_orchestrator_init_fast(self, mock_policy, mock_embed, mock_backend):
         """Orchestrator should initialize quickly."""
         import time
+
         from HoloLoom.config import Config
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
         from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
         # Mock all dependencies
         mock_backend.return_value = AsyncMock()
@@ -76,10 +78,11 @@ class TestOrchestratorWeaving:
     @patch("HoloLoom.weaving_orchestrator.create_policy")
     async def test_weave_basic_query(self, mock_policy, mock_embed, mock_backend):
         """Should handle basic query."""
-        from HoloLoom.config import Config
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.Documentation.types import Query, MemoryShard
         import torch
+
+        from HoloLoom.config import Config
+        from HoloLoom.Documentation.types import MemoryShard, Query
+        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
         # Setup mocks
         mock_backend_instance = AsyncMock()
@@ -88,9 +91,7 @@ class TestOrchestratorWeaving:
 
         mock_embed_instance = Mock()
         mock_embed_instance.embedding_dim = 768
-        mock_embed_instance.encode_multi_scale = Mock(
-            return_value=[torch.randn(1, 768)]
-        )
+        mock_embed_instance.encode_multi_scale = Mock(return_value=[torch.randn(1, 768)])
         mock_embed.return_value = mock_embed_instance
 
         mock_policy_instance = Mock()
@@ -117,9 +118,10 @@ class TestOrchestratorWeaving:
     async def test_weave_performance_target(self, mock_backend):
         """Weaving should meet performance targets."""
         import time
+
         from HoloLoom.config import Config
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
         from HoloLoom.Documentation.types import Query
+        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
         # Mock everything for speed
         mock_backend.return_value = AsyncMock()
@@ -144,8 +146,8 @@ class TestOrchestratorWeaving:
     async def test_weave_concurrent_queries(self, mock_backend):
         """Should handle concurrent queries."""
         from HoloLoom.config import Config
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
         from HoloLoom.Documentation.types import Query
+        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
         mock_backend.return_value = AsyncMock()
         cfg = Config.fast()
@@ -178,9 +180,7 @@ class TestOrchestratorReflection:
         mock_backend.return_value = AsyncMock()
         cfg = Config.fast()
 
-        async with WeavingOrchestrator(
-            cfg=cfg, shards=[], enable_reflection=True
-        ) as shuttle:
+        async with WeavingOrchestrator(cfg=cfg, shards=[], enable_reflection=True) as shuttle:
             assert hasattr(shuttle, "reflection_buffer") or hasattr(shuttle, "reflect")
 
     @pytest.mark.asyncio
@@ -193,9 +193,7 @@ class TestOrchestratorReflection:
         mock_backend.return_value = AsyncMock()
         cfg = Config.bare()
 
-        async with WeavingOrchestrator(
-            cfg=cfg, shards=[], enable_reflection=False
-        ) as shuttle:
+        async with WeavingOrchestrator(cfg=cfg, shards=[], enable_reflection=False) as shuttle:
             assert shuttle is not None
 
 
@@ -247,8 +245,8 @@ class TestOrchestratorEdgeCases:
     async def test_empty_query(self, mock_backend):
         """Should handle empty query text."""
         from HoloLoom.config import Config
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
         from HoloLoom.Documentation.types import Query
+        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
         mock_backend.return_value = AsyncMock()
         cfg = Config.fast()
@@ -267,8 +265,8 @@ class TestOrchestratorEdgeCases:
     async def test_very_long_query(self, mock_backend):
         """Should handle very long queries."""
         from HoloLoom.config import Config
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
         from HoloLoom.Documentation.types import Query
+        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
         mock_backend.return_value = AsyncMock()
         cfg = Config.fast()

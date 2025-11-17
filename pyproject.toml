@@ -83,9 +83,9 @@ unfixable = []
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.ruff.lint.per-file-ignores]
-# Tests can use magic values, assertions, etc.
-"test_*.py" = ["S101", "PLR2004", "S105", "S106"]
-"**/tests/**" = ["S101", "PLR2004", "S105", "S106"]
+# Tests can use magic values, assertions, unused variables, etc.
+"test_*.py" = ["S101", "PLR2004", "S105", "S106", "F841", "C416"]
+"**/tests/**" = ["S101", "PLR2004", "S105", "S106", "F841", "C416"]
 "demos/**" = ["T201"]  # Allow print statements in demos
 
 [tool.ruff.lint.isort]

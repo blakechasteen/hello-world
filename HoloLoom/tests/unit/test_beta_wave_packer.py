@@ -12,33 +12,31 @@ Test Coverage:
 6. Edge cases (empty inputs, Unicode, etc.)
 """
 
-import pytest
-import asyncio
-import numpy as np
-from dataclasses import dataclass, field
-from typing import Dict, List
-
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
+
+import numpy as np
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from HoloLoom.awareness.beta_wave_packer import (
     BetaWaveContextPacker,
-    TokenBudget,
     ContextElement,
-    PackedContext
+    TokenBudget,
 )
 from HoloLoom.memory.spring_dynamics_engine import (
+    BetaWaveRecallResult,
+    MemoryNode,
     SpringDynamicsEngine,
     SpringEngineConfig,
-    MemoryNode,
-    BetaWaveRecallResult
 )
-
 
 # ============================================================================
 # Test Fixtures
 # ============================================================================
+
 
 @dataclass
 class MockAwarenessContext:
@@ -70,35 +68,35 @@ def spring_engine():
     # Add test memories
     test_memories = [
         {
-            'id': 'high_activation',
-            'content': 'High activation memory - very relevant',
-            'embedding': np.random.randn(128),
-            'k': 2.0
+            "id": "high_activation",
+            "content": "High activation memory - very relevant",
+            "embedding": np.random.randn(128),
+            "k": 2.0,
         },
         {
-            'id': 'medium_activation',
-            'content': 'Medium activation memory - somewhat relevant',
-            'embedding': np.random.randn(128),
-            'k': 1.0
+            "id": "medium_activation",
+            "content": "Medium activation memory - somewhat relevant",
+            "embedding": np.random.randn(128),
+            "k": 1.0,
         },
         {
-            'id': 'low_activation',
-            'content': 'Low activation memory - barely relevant',
-            'embedding': np.random.randn(128),
-            'k': 0.3
-        }
+            "id": "low_activation",
+            "content": "Low activation memory - barely relevant",
+            "embedding": np.random.randn(128),
+            "k": 0.3,
+        },
     ]
 
     for mem in test_memories:
         node = MemoryNode(
-            node_id=mem['id'],
-            content=mem['content'],
-            embedding=mem['embedding'],
-            spring_constant=mem['k'],
+            node_id=mem["id"],
+            content=mem["content"],
+            embedding=mem["embedding"],
+            spring_constant=mem["k"],
             max_spring_constant=10.0,
-            mass=1.0
+            mass=1.0,
         )
-        engine.nodes[mem['id']] = node
+        engine.nodes[mem["id"]] = node
 
     return engine
 
@@ -119,6 +117,7 @@ def awareness_context():
 # Test 1: Activation Threshold Logic
 # ============================================================================
 
+
 class TestActivationThresholds:
     """Test that activation thresholds work correctly"""
 
@@ -129,7 +128,7 @@ class TestActivationThresholds:
             spring_engine=spring_engine,
             token_budget=token_budget,
             activation_threshold=0.3,
-            compression_threshold=0.7
+            compression_threshold=0.7,
         )
 
         # Create element with high activation
@@ -137,7 +136,7 @@ class TestActivationThresholds:
             content="A" * 400,  # 400 chars = ~100 tokens
             activation=0.9,  # High activation
             token_count=100,
-            source="memory"
+            source="memory",
         )
 
         # Manually add to engine for testing
@@ -147,7 +146,7 @@ class TestActivationThresholds:
             embedding=np.random.randn(128),
             spring_constant=2.0,
             max_spring_constant=10.0,
-            mass=1.0
+            mass=1.0,
         )
         spring_engine.nodes["test_high"] = node
 
@@ -157,14 +156,12 @@ class TestActivationThresholds:
             all_activations={"test_high": 0.9},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
         packed = await packer.pack_context(
-            query_text="Test query",
-            query_embedding=query_embedding,
-            top_k=10
+            query_text="Test query", query_embedding=query_embedding, top_k=10
         )
 
         # Should be included at full size (not compressed)
@@ -178,7 +175,7 @@ class TestActivationThresholds:
             spring_engine=spring_engine,
             token_budget=token_budget,
             activation_threshold=0.3,
-            compression_threshold=0.7
+            compression_threshold=0.7,
         )
 
         # Mock retrieval with medium activation
@@ -187,14 +184,12 @@ class TestActivationThresholds:
             all_activations={"medium_activation": 0.5},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
         packed = await packer.pack_context(
-            query_text="Test query",
-            query_embedding=query_embedding,
-            top_k=10
+            query_text="Test query", query_embedding=query_embedding, top_k=10
         )
 
         # Should have compression
@@ -207,7 +202,7 @@ class TestActivationThresholds:
             spring_engine=spring_engine,
             token_budget=token_budget,
             activation_threshold=0.3,
-            compression_threshold=0.7
+            compression_threshold=0.7,
         )
 
         # Mock retrieval with only low activation
@@ -216,14 +211,12 @@ class TestActivationThresholds:
             all_activations={"low_activation": 0.2},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
         packed = await packer.pack_context(
-            query_text="Test query",
-            query_embedding=query_embedding,
-            top_k=10
+            query_text="Test query", query_embedding=query_embedding, top_k=10
         )
 
         # Query should be only element (activation <0.3 excluded)
@@ -234,6 +227,7 @@ class TestActivationThresholds:
 # ============================================================================
 # Test 2: Budget Exhaustion
 # ============================================================================
+
 
 class TestBudgetExhaustion:
     """Test token budget constraints"""
@@ -248,24 +242,22 @@ class TestBudgetExhaustion:
             spring_engine=spring_engine,
             token_budget=tight_budget,
             activation_threshold=0.3,
-            compression_threshold=0.7
+            compression_threshold=0.7,
         )
 
         # Mock retrieval with many high-activation memories
-        mock_memories = [(f"mem_{i}", 0.9 - i*0.05) for i in range(20)]
+        mock_memories = [(f"mem_{i}", 0.9 - i * 0.05) for i in range(20)]
         spring_engine.retrieve_memories = lambda *args, **kwargs: BetaWaveRecallResult(
             recalled_memories=mock_memories,
             all_activations={nid: act for nid, act in mock_memories},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
         packed = await packer.pack_context(
-            query_text="Test query",
-            query_embedding=query_embedding,
-            top_k=20
+            query_text="Test query", query_embedding=query_embedding, top_k=20
         )
 
         # Should not exceed available budget
@@ -284,7 +276,7 @@ class TestBudgetExhaustion:
             all_activations={nid: 0.8 for nid, _ in mock_memories},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
@@ -303,16 +295,14 @@ class TestBudgetExhaustion:
 # Test 3: Creative Insights
 # ============================================================================
 
+
 class TestCreativeInsights:
     """Test handling of cross-domain creative insights"""
 
     @pytest.mark.asyncio
     async def test_creative_insights_included(self, spring_engine, token_budget):
         """Creative insights should be included with slightly lower priority"""
-        packer = BetaWaveContextPacker(
-            spring_engine=spring_engine,
-            token_budget=token_budget
-        )
+        packer = BetaWaveContextPacker(spring_engine=spring_engine, token_budget=token_budget)
 
         # Add creative insight node
         insight_node = MemoryNode(
@@ -321,7 +311,7 @@ class TestCreativeInsights:
             embedding=np.random.randn(128),
             spring_constant=1.5,
             max_spring_constant=10.0,
-            mass=1.0
+            mass=1.0,
         )
         spring_engine.nodes["creative_insight"] = insight_node
 
@@ -331,14 +321,12 @@ class TestCreativeInsights:
             all_activations={"high_activation": 0.9, "creative_insight": 0.75},
             creative_insights=[("creative_insight", 0.75, 2.5)],  # (node_id, activation, distance)
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
         packed = await packer.pack_context(
-            query_text="Test query",
-            query_embedding=query_embedding,
-            top_k=10
+            query_text="Test query", query_embedding=query_embedding, top_k=10
         )
 
         # Should have creative insights section
@@ -349,16 +337,14 @@ class TestCreativeInsights:
 # Test 4: Awareness Integration
 # ============================================================================
 
+
 class TestAwarenessIntegration:
     """Test integration with awareness context"""
 
     @pytest.mark.asyncio
     async def test_awareness_context_included(self, spring_engine, token_budget, awareness_context):
         """Awareness signals should be included in packed context"""
-        packer = BetaWaveContextPacker(
-            spring_engine=spring_engine,
-            token_budget=token_budget
-        )
+        packer = BetaWaveContextPacker(spring_engine=spring_engine, token_budget=token_budget)
 
         # Mock retrieval
         spring_engine.retrieve_memories = lambda *args, **kwargs: BetaWaveRecallResult(
@@ -366,7 +352,7 @@ class TestAwarenessIntegration:
             all_activations={},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
@@ -374,7 +360,7 @@ class TestAwarenessIntegration:
             query_text="Test query",
             query_embedding=query_embedding,
             awareness_context=awareness_context,
-            top_k=10
+            top_k=10,
         )
 
         # Should have awareness section
@@ -384,17 +370,14 @@ class TestAwarenessIntegration:
     @pytest.mark.asyncio
     async def test_works_without_awareness(self, spring_engine, token_budget):
         """Should work gracefully without awareness context"""
-        packer = BetaWaveContextPacker(
-            spring_engine=spring_engine,
-            token_budget=token_budget
-        )
+        packer = BetaWaveContextPacker(spring_engine=spring_engine, token_budget=token_budget)
 
         spring_engine.retrieve_memories = lambda *args, **kwargs: BetaWaveRecallResult(
             recalled_memories=[("high_activation", 0.9)],
             all_activations={"high_activation": 0.9},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
@@ -402,7 +385,7 @@ class TestAwarenessIntegration:
             query_text="Test query",
             query_embedding=query_embedding,
             awareness_context=None,  # No awareness
-            top_k=10
+            top_k=10,
         )
 
         # Should still work
@@ -413,6 +396,7 @@ class TestAwarenessIntegration:
 # ============================================================================
 # Test 5: Compression Strategies
 # ============================================================================
+
 
 class TestCompressionStrategies:
     """Test compression logic"""
@@ -447,16 +431,14 @@ class TestCompressionStrategies:
 # Test 6: Edge Cases
 # ============================================================================
 
+
 class TestEdgeCases:
     """Test edge cases and error handling"""
 
     @pytest.mark.asyncio
     async def test_empty_memories(self, spring_engine, token_budget):
         """Should handle case with no memories gracefully"""
-        packer = BetaWaveContextPacker(
-            spring_engine=spring_engine,
-            token_budget=token_budget
-        )
+        packer = BetaWaveContextPacker(spring_engine=spring_engine, token_budget=token_budget)
 
         # Empty retrieval
         spring_engine.retrieve_memories = lambda *args, **kwargs: BetaWaveRecallResult(
@@ -464,14 +446,12 @@ class TestEdgeCases:
             all_activations={},
             creative_insights=[],
             seed_nodes=[],
-            iterations=0
+            iterations=0,
         )
 
         query_embedding = np.random.randn(128)
         packed = await packer.pack_context(
-            query_text="Test query",
-            query_embedding=query_embedding,
-            top_k=10
+            query_text="Test query", query_embedding=query_embedding, top_k=10
         )
 
         # Should still have query
@@ -481,10 +461,7 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_unicode_content(self, spring_engine, token_budget):
         """Should handle Unicode content correctly"""
-        packer = BetaWaveContextPacker(
-            spring_engine=spring_engine,
-            token_budget=token_budget
-        )
+        packer = BetaWaveContextPacker(spring_engine=spring_engine, token_budget=token_budget)
 
         # Add Unicode node
         unicode_node = MemoryNode(
@@ -493,7 +470,7 @@ class TestEdgeCases:
             embedding=np.random.randn(128),
             spring_constant=2.0,
             max_spring_constant=10.0,
-            mass=1.0
+            mass=1.0,
         )
         spring_engine.nodes["unicode_test"] = unicode_node
 
@@ -502,14 +479,12 @@ class TestEdgeCases:
             all_activations={"unicode_test": 0.9},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
         packed = await packer.pack_context(
-            query_text="Test 测试",
-            query_embedding=query_embedding,
-            top_k=10
+            query_text="Test 测试", query_embedding=query_embedding, top_k=10
         )
 
         # Should handle Unicode without errors
@@ -520,10 +495,7 @@ class TestEdgeCases:
     async def test_very_long_content(self, spring_engine):
         """Should handle very long content (>10K tokens)"""
         large_budget = TokenBudget(total=20000, reserved_for_query=1000, reserved_for_response=2000)
-        packer = BetaWaveContextPacker(
-            spring_engine=spring_engine,
-            token_budget=large_budget
-        )
+        packer = BetaWaveContextPacker(spring_engine=spring_engine, token_budget=large_budget)
 
         # Add very long node
         long_node = MemoryNode(
@@ -532,7 +504,7 @@ class TestEdgeCases:
             embedding=np.random.randn(128),
             spring_constant=2.0,
             max_spring_constant=10.0,
-            mass=1.0
+            mass=1.0,
         )
         spring_engine.nodes["long_content"] = long_node
 
@@ -541,14 +513,12 @@ class TestEdgeCases:
             all_activations={"long_content": 0.9},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
         packed = await packer.pack_context(
-            query_text="Test",
-            query_embedding=query_embedding,
-            top_k=10
+            query_text="Test", query_embedding=query_embedding, top_k=10
         )
 
         # Should not exceed budget even with very long content
@@ -559,16 +529,14 @@ class TestEdgeCases:
 # Test 7: Activation Statistics
 # ============================================================================
 
+
 class TestActivationStatistics:
     """Test activation statistics tracking"""
 
     @pytest.mark.asyncio
     async def test_activation_distribution_tracked(self, spring_engine, token_budget):
         """Should track activation distribution correctly"""
-        packer = BetaWaveContextPacker(
-            spring_engine=spring_engine,
-            token_budget=token_budget
-        )
+        packer = BetaWaveContextPacker(spring_engine=spring_engine, token_budget=token_budget)
 
         # Mock retrieval with mixed activations
         spring_engine.retrieve_memories = lambda *args, **kwargs: BetaWaveRecallResult(
@@ -577,33 +545,25 @@ class TestActivationStatistics:
                 ("high2", 0.8),
                 ("med1", 0.5),
                 ("med2", 0.4),
-                ("low1", 0.3)
+                ("low1", 0.3),
             ],
-            all_activations={
-                "high1": 0.9,
-                "high2": 0.8,
-                "med1": 0.5,
-                "med2": 0.4,
-                "low1": 0.3
-            },
+            all_activations={"high1": 0.9, "high2": 0.8, "med1": 0.5, "med2": 0.4, "low1": 0.3},
             creative_insights=[],
             seed_nodes=[],
-            iterations=10
+            iterations=10,
         )
 
         query_embedding = np.random.randn(128)
         packed = await packer.pack_context(
-            query_text="Test",
-            query_embedding=query_embedding,
-            top_k=10
+            query_text="Test", query_embedding=query_embedding, top_k=10
         )
 
         # Should have distribution stats
-        assert 'activation_distribution' in packed.activation_stats
-        dist = packed.activation_stats['activation_distribution']
+        assert "activation_distribution" in packed.activation_stats
+        dist = packed.activation_stats["activation_distribution"]
 
         # Should categorize correctly
-        assert 'high (>0.7)' in dist or 'medium (0.3-0.7)' in dist
+        assert "high (>0.7)" in dist or "medium (0.3-0.7)" in dist
 
 
 if __name__ == "__main__":

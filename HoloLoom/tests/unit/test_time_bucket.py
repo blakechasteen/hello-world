@@ -1,7 +1,7 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
-from HoloLoom.utils.time_bucket import time_bucket, to_utc_datetime
 from HoloLoom.memory.graph import KG
+from HoloLoom.utils.time_bucket import time_bucket, to_utc_datetime
 
 
 def test_time_bucket_from_iso_string():
@@ -56,4 +56,3 @@ def test_connect_entity_to_time_reuses_thread_node():
     assert "episode:1" in kg._entity_index[thread_id]
     assert "episode:2" in kg._entity_index[thread_id]
     assert kg.G.number_of_nodes() == 3  # two entities + one time thread
-

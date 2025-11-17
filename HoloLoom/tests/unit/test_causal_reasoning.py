@@ -7,15 +7,21 @@ Tests all three levels of Pearl's causal hierarchy:
 3. Counterfactual (twin networks)
 """
 
-import pytest
 import sys
-sys.path.insert(0, '.')
+
+import pytest
+
+sys.path.insert(0, ".")
 
 from HoloLoom.causal import (
-    CausalNode, CausalEdge, CausalDAG,
-    CausalQuery, QueryType,
-    InterventionEngine, CounterfactualEngine,
-    NodeType
+    CausalDAG,
+    CausalEdge,
+    CausalNode,
+    CausalQuery,
+    CounterfactualEngine,
+    InterventionEngine,
+    NodeType,
+    QueryType,
 )
 
 
@@ -214,8 +220,8 @@ class TestCausalDAG:
 
         # Serialize
         data = dag.to_dict()
-        assert len(data['nodes']) == 2
-        assert len(data['edges']) == 1
+        assert len(data["nodes"]) == 2
+        assert len(data["edges"]) == 1
 
         # Deserialize
         dag2 = CausalDAG.from_dict(data)
@@ -285,7 +291,8 @@ class TestInterventionEngine:
         # Check if identified
         if result.identifiable:
             assert "M" in result.adjustment_set or result.identification_method in [
-                "backdoor adjustment", "frontdoor adjustment"
+                "backdoor adjustment",
+                "frontdoor adjustment",
             ]
 
     def test_intervention_query(self):
@@ -299,10 +306,7 @@ class TestInterventionEngine:
         engine = InterventionEngine(dag)
 
         query = CausalQuery(
-            query_type=QueryType.INTERVENTION,
-            treatment="X",
-            outcome="Y",
-            treatment_value=1
+            query_type=QueryType.INTERVENTION, treatment="X", outcome="Y", treatment_value=1
         )
 
         answer = engine.query(query)
@@ -344,11 +348,7 @@ class TestCounterfactualEngine:
         engine = CounterfactualEngine(dag)
 
         # "Would Y=1 if X had been 0?" (given X=1, Y=1)
-        result = engine.counterfactual(
-            intervention={"X": 0},
-            evidence={"X": 1, "Y": 1},
-            query="Y"
-        )
+        result = engine.counterfactual(intervention={"X": 0}, evidence={"X": 1, "Y": 1}, query="Y")
 
         # Should return a result
         assert result.factual_outcome == 1
@@ -367,9 +367,7 @@ class TestCounterfactualEngine:
 
         # PN: Was X necessary for Y?
         necessity = engine.probability_of_necessity(
-            treatment="X",
-            outcome="Y",
-            evidence={"X": 1, "Y": 1}
+            treatment="X", outcome="Y", evidence={"X": 1, "Y": 1}
         )
 
         assert 0 <= necessity <= 1
@@ -386,9 +384,7 @@ class TestCounterfactualEngine:
 
         # PS: Is X sufficient for Y?
         sufficiency = engine.probability_of_sufficiency(
-            treatment="X",
-            outcome="Y",
-            evidence={"X": 0, "Y": 0}
+            treatment="X", outcome="Y", evidence={"X": 0, "Y": 0}
         )
 
         assert 0 <= sufficiency <= 1
@@ -408,7 +404,7 @@ class TestCounterfactualEngine:
             treatment="X",
             outcome="Y",
             treatment_value=0,
-            evidence={"X": 1, "Y": 1}
+            evidence={"X": 1, "Y": 1},
         )
 
         answer = engine.query(query)
@@ -427,11 +423,7 @@ class TestCounterfactualEngine:
 
         engine = CounterfactualEngine(dag)
 
-        result = engine.counterfactual(
-            intervention={"X": 0},
-            evidence={"X": 1, "Y": 1},
-            query="Y"
-        )
+        result = engine.counterfactual(intervention={"X": 0}, evidence={"X": 1, "Y": 1}, query="Y")
 
         # Twin network should exist
         assert result.twin_network is not None
@@ -462,7 +454,7 @@ class TestCausalQuery:
             query_type=QueryType.INTERVENTION,
             outcome="recovery",
             treatment="drug_A",
-            treatment_value=1
+            treatment_value=1,
         )
 
         nl = q.to_natural_language()
@@ -506,7 +498,7 @@ def test_clinical_trial_example():
     result = cf_engine.counterfactual(
         intervention={"treatment": 0},
         evidence={"treatment": 1, "recovery": 1, "age": "elderly"},
-        query="recovery"
+        query="recovery",
     )
 
     assert result.factual_outcome == 1

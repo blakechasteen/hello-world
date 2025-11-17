@@ -4,12 +4,14 @@ Unit tests for memory backend factory.
 Tests backend creation, fallback logic, and isolation.
 All network calls mocked for speed (<150ms target).
 """
+
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
+
 from HoloLoom.config import Config, MemoryBackend
 from HoloLoom.memory.backend_factory import (
     create_memory_backend,
-    _create_inmemory_backend,
 )
 
 
@@ -30,6 +32,7 @@ class TestBackendCreation:
     async def test_inmemory_backend_fast(self):
         """INMEMORY backend creation should be fast."""
         import time
+
         cfg = Config.fast()
         cfg.memory_backend = MemoryBackend.INMEMORY
 
@@ -94,6 +97,7 @@ class TestBackendIsolation:
     async def test_backend_memory_usage(self):
         """Backend should have reasonable memory footprint."""
         import sys
+
         cfg = Config.bare()
         cfg.memory_backend = MemoryBackend.INMEMORY
 
@@ -111,6 +115,7 @@ class TestBackendPerformance:
     async def test_inmemory_latency(self):
         """INMEMORY operations should be <10ms."""
         import time
+
         cfg = Config.bare()
         cfg.memory_backend = MemoryBackend.INMEMORY
 
@@ -120,6 +125,7 @@ class TestBackendPerformance:
         start = time.perf_counter()
         if hasattr(backend, "add_shard"):
             from HoloLoom.Documentation.types import MemoryShard
+
             shard = MemoryShard(text="test", source="unit_test")
             await backend.add_shard(shard)
         elapsed = (time.perf_counter() - start) * 1000
@@ -130,6 +136,7 @@ class TestBackendPerformance:
     async def test_backend_concurrent_access(self):
         """Backend should handle concurrent operations."""
         import asyncio
+
         cfg = Config.fast()
         cfg.memory_backend = MemoryBackend.INMEMORY
 
@@ -139,6 +146,7 @@ class TestBackendPerformance:
         async def add_mock_shard(i):
             if hasattr(backend, "add_shard"):
                 from HoloLoom.Documentation.types import MemoryShard
+
                 shard = MemoryShard(text=f"test_{i}", source="concurrent_test")
                 await backend.add_shard(shard)
 
