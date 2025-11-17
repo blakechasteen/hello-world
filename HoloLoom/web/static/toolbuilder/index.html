@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Tool Builder - No-Code Interface</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/toolbuilder.css">
+
+    <!-- React and dependencies -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="app-root"></div>
+
+    <!-- Components -->
+    <script type="text/babel" src="components/ComponentLibrary.jsx"></script>
+    <script type="text/babel" src="components/ParameterConfig.jsx"></script>
+    <script type="text/babel" src="components/LogicBuilder.jsx"></script>
+    <script type="text/babel" src="components/TestRunner.jsx"></script>
+    <script type="text/babel" src="components/CodePreview.jsx"></script>
+    <script type="text/babel" src="components/ToolList.jsx"></script>
+
+    <!-- Main app -->
+    <script type="text/babel" src="js/editor.js"></script>
+
+    <script type="text/babel">
+        const { createElement } = React;
+        const { createRoot } = ReactDOM;
+
+        // Main App Component
+        function ToolBuilderApp() {
+            const [activeView, setActiveView] = React.useState('builder');
+            const [currentTool, setCurrentTool] = React.useState(null);
+            const [tools, setTools] = React.useState([]);
+
+            React.useEffect(() => {
+                loadTools();
+            }, []);
+
+            async function loadTools() {
+                try {
+                    const response = await fetch('/api/toolbuilder/tools');
+                    const data = await response.json();
+                    setTools(data.tools);
+                } catch (error) {
+                    console.error('Error loading tools:', error);
+                }
+            }
+
+            return (
+                <div className="toolbuilder-app">
+                    <header className="app-header">
+                        <div className="header-left">
+                            <h1>
+                                <i className="fas fa-tools"></i>
+                                HoloLoom Tool Builder
+                            </h1>
+                            <p className="subtitle">Create custom MCP tools with no-code</p>
+                        </div>
+                        <div className="header-right">
+                            <button
+                                className={`view-btn ${activeView === 'list' ? 'active' : ''}`}
+                                onClick={() => setActiveView('list')}
+                            >
+                                <i className="fas fa-list"></i> My Tools
+                            </button>
+                            <button
+                                className={`view-btn ${activeView === 'builder' ? 'active' : ''}`}
+                                onClick={() => setActiveView('builder')}
+                            >
+                                <i className="fas fa-hammer"></i> Builder
+                            </button>
+                            <button
+                                className={`view-btn ${activeView === 'templates' ? 'active' : ''}`}
+                                onClick={() => setActiveView('templates')}
+                            >
+                                <i className="fas fa-file-code"></i> Templates
+                            </button>
+                        </div>
+                    </header>
+
+                    <main className="app-main">
+                        {activeView === 'list' && (
+                            <ToolList
+                                tools={tools}
+                                onEdit={(tool) => {
+                                    setCurrentTool(tool);
+                                    setActiveView('builder');
+                                }}
+                                onRefresh={loadTools}
+                            />
+                        )}
+
+                        {activeView === 'builder' && (
+                            <ToolEditor
+                                tool={currentTool}
+                                onSave={(tool) => {
+                                    setCurrentTool(tool);
+                                    loadTools();
+                                }}
+                            />
+                        )}
+
+                        {activeView === 'templates' && (
+                            <TemplateGallery
+                                onSelect={(template) => {
+                                    setCurrentTool(template);
+                                    setActiveView('builder');
+                                }}
+                            />
+                        )}
+                    </main>
+                </div>
+            );
+        }
+
+        // Template Gallery Component
+        function TemplateGallery({ onSelect }) {
+            const [templates, setTemplates] = React.useState([]);
+            const [loading, setLoading] = React.useState(true);
+
+            React.useEffect(() => {
+                loadTemplates();
+            }, []);
+
+            async function loadTemplates() {
+                try {
+                    const response = await fetch('/api/toolbuilder/templates');
+                    const data = await response.json();
+                    setTemplates(data.templates);
+                } catch (error) {
+                    console.error('Error loading templates:', error);
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            if (loading) {
+                return <div className="loading">Loading templates...</div>;
+            }
+
+            return (
+                <div className="template-gallery">
+                    <h2>Tool Templates</h2>
+                    <p className="description">Start with a pre-built template and customize it to your needs</p>
+
+                    <div className="template-grid">
+                        {templates.map(template => (
+                            <div key={template.id} className="template-card">
+                                <div className="template-header">
+                                    <h3>{template.name}</h3>
+                                    <span className="template-category">{template.category}</span>
+                                </div>
+                                <p className="template-description">{template.description}</p>
+                                <div className="template-tags">
+                                    {template.tags.map(tag => (
+                                        <span key={tag} className="tag">{tag}</span>
+                                    ))}
+                                </div>
+                                <button
+                                    className="btn-use-template"
+                                    onClick={() => onSelect(template)}
+                                >
+                                    Use Template
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // Main Tool Editor Component
+        function ToolEditor({ tool, onSave }) {
+            const [toolDef, setToolDef] = React.useState(tool || {
+                id: `tool_${Date.now()}`,
+                name: '',
+                description: '',
+                version: '1.0.0',
+                category: 'custom',
+                tags: [],
+                parameters: [],
+                logic_blocks: [],
+                output_format: 'json',
+                enabled: true
+            });
+
+            const [activeTab, setActiveTab] = React.useState('info');
+            const [saving, setSaving] = React.useState(false);
+            const [error, setError] = React.useState(null);
+            const [generatedCode, setGeneratedCode] = React.useState('');
+
+            React.useEffect(() => {
+                if (tool) {
+                    setToolDef(tool);
+                }
+            }, [tool]);
+
+            async function handleSave() {
+                setSaving(true);
+                setError(null);
+
+                try {
+                    const response = await fetch('/api/toolbuilder/tools', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ definition: toolDef })
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.detail || 'Failed to save tool');
+                    }
+
+                    const data = await response.json();
+                    alert(`Tool saved successfully! ID: ${data.tool_id}`);
+
+                    if (onSave) {
+                        onSave({ ...toolDef, id: data.tool_id });
+                    }
+
+                    // Load generated code
+                    await loadGeneratedCode(data.tool_id);
+
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setSaving(false);
+                }
+            }
+
+            async function loadGeneratedCode(toolId) {
+                try {
+                    const response = await fetch(`/api/toolbuilder/tools/${toolId}/code`);
+                    const data = await response.json();
+                    setGeneratedCode(data.code);
+                } catch (err) {
+                    console.error('Error loading code:', err);
+                }
+            }
+
+            return (
+                <div className="tool-editor">
+                    <div className="editor-sidebar">
+                        <div className="sidebar-section">
+                            <h3>Tool Builder</h3>
+                            <nav className="editor-nav">
+                                <button
+                                    className={`nav-btn ${activeTab === 'info' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('info')}
+                                >
+                                    <i className="fas fa-info-circle"></i> Basic Info
+                                </button>
+                                <button
+                                    className={`nav-btn ${activeTab === 'parameters' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('parameters')}
+                                >
+                                    <i className="fas fa-sliders-h"></i> Parameters
+                                </button>
+                                <button
+                                    className={`nav-btn ${activeTab === 'logic' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('logic')}
+                                >
+                                    <i className="fas fa-project-diagram"></i> Logic Flow
+                                </button>
+                                <button
+                                    className={`nav-btn ${activeTab === 'test' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('test')}
+                                >
+                                    <i className="fas fa-flask"></i> Test
+                                </button>
+                                <button
+                                    className={`nav-btn ${activeTab === 'code' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('code')}
+                                >
+                                    <i className="fas fa-code"></i> Code Preview
+                                </button>
+                            </nav>
+                        </div>
+
+                        <div className="sidebar-actions">
+                            <button
+                                className="btn-save"
+                                onClick={handleSave}
+                                disabled={saving}
+                            >
+                                <i className="fas fa-save"></i>
+                                {saving ? 'Saving...' : 'Save Tool'}
+                            </button>
+                            {error && <div className="error-message">{error}</div>}
+                        </div>
+                    </div>
+
+                    <div className="editor-main">
+                        {activeTab === 'info' && (
+                            <BasicInfoEditor toolDef={toolDef} onChange={setToolDef} />
+                        )}
+
+                        {activeTab === 'parameters' && (
+                            <ParameterConfig toolDef={toolDef} onChange={setToolDef} />
+                        )}
+
+                        {activeTab === 'logic' && (
+                            <LogicBuilder toolDef={toolDef} onChange={setToolDef} />
+                        )}
+
+                        {activeTab === 'test' && (
+                            <TestRunner toolDef={toolDef} />
+                        )}
+
+                        {activeTab === 'code' && (
+                            <CodePreview code={generatedCode} toolId={toolDef.id} />
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Basic Info Editor
+        function BasicInfoEditor({ toolDef, onChange }) {
+            function updateField(field, value) {
+                onChange({ ...toolDef, [field]: value });
+            }
+
+            function addTag() {
+                const tag = prompt('Enter tag name:');
+                if (tag && !toolDef.tags.includes(tag)) {
+                    onChange({ ...toolDef, tags: [...toolDef.tags, tag] });
+                }
+            }
+
+            function removeTag(tag) {
+                onChange({
+                    ...toolDef,
+                    tags: toolDef.tags.filter(t => t !== tag)
+                });
+            }
+
+            return (
+                <div className="basic-info-editor">
+                    <h2>Basic Information</h2>
+
+                    <div className="form-group">
+                        <label>Tool Name *</label>
+                        <input
+                            type="text"
+                            value={toolDef.name}
+                            onChange={(e) => updateField('name', e.target.value)}
+                            placeholder="my_custom_tool"
+                        />
+                        <small>Must start with letter, use only letters, numbers, hyphens, underscores</small>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Description *</label>
+                        <textarea
+                            value={toolDef.description}
+                            onChange={(e) => updateField('description', e.target.value)}
+                            placeholder="Describe what this tool does..."
+                            rows="3"
+                        />
+                    </div>
+
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Version</label>
+                            <input
+                                type="text"
+                                value={toolDef.version}
+                                onChange={(e) => updateField('version', e.target.value)}
+                                placeholder="1.0.0"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Category</label>
+                            <select
+                                value={toolDef.category}
+                                onChange={(e) => updateField('category', e.target.value)}
+                            >
+                                <option value="custom">Custom</option>
+                                <option value="utility">Utility</option>
+                                <option value="integration">Integration</option>
+                                <option value="data">Data Processing</option>
+                                <option value="communication">Communication</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Tags</label>
+                        <div className="tag-list">
+                            {toolDef.tags.map(tag => (
+                                <span key={tag} className="tag">
+                                    {tag}
+                                    <button onClick={() => removeTag(tag)}>
+                                        <i className="fas fa-times"></i>
+                                    </button>
+                                </span>
+                            ))}
+                            <button className="btn-add-tag" onClick={addTag}>
+                                <i className="fas fa-plus"></i> Add Tag
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Author</label>
+                        <input
+                            type="text"
+                            value={toolDef.author || ''}
+                            onChange={(e) => updateField('author', e.target.value)}
+                            placeholder="Your name"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Output Format</label>
+                        <select
+                            value={toolDef.output_format}
+                            onChange={(e) => updateField('output_format', e.target.value)}
+                        >
+                            <option value="json">JSON</option>
+                            <option value="text">Text</option>
+                            <option value="file">File</option>
+                            <option value="memory">Memory</option>
+                        </select>
+                    </div>
+                </div>
+            );
+        }
+
+        // Mount the app
+        const root = createRoot(document.getElementById('app-root'));
+        root.render(<ToolBuilderApp />);
+    </script>
+</body>
+</html>
