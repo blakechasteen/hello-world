@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { HoloLoomCommands } from '../commands/hololoomCommands';
+import { HoloLoomLSPClient } from '../lsp/client';
+import { CompletionParams, Position as LSPPosition } from 'vscode-languageclient';
 
 interface RelatedMemory {
     content: string;
@@ -10,11 +12,13 @@ interface RelatedMemory {
 
 export class HoloLoomCodeLensProvider implements vscode.CodeLensProvider {
     private hololoomCommands: HoloLoomCommands;
+    private lspClient: HoloLoomLSPClient | undefined;
     private _onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
     public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
 
-    constructor() {
-        this.hololoomCommands = new HoloLoomCommands();
+    constructor(lspClient?: HoloLoomLSPClient) {
+        this.lspClient = lspClient;
+        this.hololoomCommands = new HoloLoomCommands(lspClient);
 
         // Refresh CodeLens when configuration changes
         vscode.workspace.onDidChangeConfiguration(() => {
@@ -85,7 +89,44 @@ export class HoloLoomCodeLensProvider implements vscode.CodeLensProvider {
         }
 
         try {
-            // Query HoloLoom for related memories
+            // Try LSP completion first for better context awareness
+            if (this.lspClient && this.lspClient.isRunning()) {
+                try {
+                    const editor = vscode.window.activeTextEditor;
+                    if (editor) {
+                        const position = editor.selection.active;
+                        const params: CompletionParams = {
+                            textDocument: {
+                                uri: editor.document.uri.toString()
+                            },
+                            position: {
+                                line: position.line,
+                                character: position.character
+                            },
+                            context: {
+                                triggerKind: 1 // Invoked
+                            }
+                        };
+
+                        const completions = await this.lspClient.sendRequest<any>('textDocument/completion', params);
+
+                        if (completions && completions.items && completions.items.length > 0) {
+                            // Convert completions to memories
+                            return completions.items.slice(0, 5).map((item: any) => ({
+                                content: item.label || item.insertText || '',
+                                confidence: 0.8, // High confidence from LSP
+                                source: 'LSP',
+                                timestamp: new Date().toISOString()
+                            })).filter((m: RelatedMemory) => m.content.length > 0);
+                        }
+                    }
+                } catch (error) {
+                    console.error('LSP completion failed:', error);
+                    // Fall through to HTTP API
+                }
+            }
+
+            // Fallback to HTTP API
             const result = await this.hololoomCommands.recall(commentText);
 
             // Parse result (it's a formatted string from recall command)
@@ -117,8 +158,8 @@ export class HoloLoomCodeLensProvider implements vscode.CodeLensProvider {
     }
 }
 
-export function registerCodeLensCommands(context: vscode.ExtensionContext) {
-    const hololoomCommands = new HoloLoomCommands();
+export function registerCodeLensCommands(context: vscode.ExtensionContext, lspClient?: HoloLoomLSPClient) {
+    const hololoomCommands = new HoloLoomCommands(lspClient);
 
     // Command: Show related notes
     context.subscriptions.push(

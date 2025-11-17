@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import { HoloLoomLSPClient } from '../lsp/client';
+import { CompletionParams, WorkspaceSymbolParams } from 'vscode-languageclient';
 
 interface IngestResponse {
     success: boolean;
@@ -17,13 +19,35 @@ interface IngestResponse {
 
 export class HoloLoomCommands {
     private baseUrl: string;
+    private lspClient: HoloLoomLSPClient | undefined;
 
-    constructor() {
+    constructor(lspClient?: HoloLoomLSPClient) {
         const config = vscode.workspace.getConfiguration('promptly');
         this.baseUrl = config.get<string>('hololoomUrl') || 'http://localhost:8000';
+        this.lspClient = lspClient;
     }
 
     async remember(content: string): Promise<string> {
+        // Try LSP first if available
+        if (this.lspClient && this.lspClient.isRunning()) {
+            try {
+                // Use LSP custom request for memory storage
+                await this.lspClient.sendRequest('hololoom/remember', {
+                    content,
+                    context: {
+                        workspace: vscode.workspace.name,
+                        file: vscode.window.activeTextEditor?.document.fileName,
+                        timestamp: new Date().toISOString()
+                    }
+                });
+                return `✅ **Saved to HoloLoom memory (LSP)**\n\n_"${content}"_`;
+            } catch (error: any) {
+                console.error('LSP remember failed, falling back to HTTP:', error);
+                // Fall through to HTTP API
+            }
+        }
+
+        // Fallback to HTTP API
         try {
             const axios = require('axios');
             const response = await axios.post(`${this.baseUrl}/api/remember`, {
@@ -129,6 +153,35 @@ export class HoloLoomCommands {
     }
 
     async recall(query: string): Promise<string> {
+        // Try LSP first if available
+        if (this.lspClient && this.lspClient.isRunning()) {
+            try {
+                // Use LSP workspace/symbol for semantic search
+                const params: WorkspaceSymbolParams = {
+                    query: query
+                };
+
+                const symbols = await this.lspClient.sendRequest<any[]>('workspace/symbol', params);
+
+                if (symbols && symbols.length > 0) {
+                    let result = `**HoloLoom Recall Results (LSP):**\n\n`;
+
+                    symbols.slice(0, 5).forEach((symbol: any, i: number) => {
+                        const name = symbol.name || symbol.label || 'Unknown';
+                        const location = symbol.location?.uri || '';
+                        result += `**${i + 1}.** ${name}\n`;
+                        result += `   _Location: ${location}_\n\n`;
+                    });
+
+                    return result;
+                }
+            } catch (error: any) {
+                console.error('LSP recall failed, falling back to HTTP:', error);
+                // Fall through to HTTP API
+            }
+        }
+
+        // Fallback to HTTP API
         try {
             const axios = require('axios');
             const response = await axios.post(`${this.baseUrl}/api/recall`, {

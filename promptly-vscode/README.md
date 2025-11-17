@@ -68,6 +68,32 @@ Bot: ✅ Saved to memory
 
 ## 🚀 Quick Start
 
+### For Users (Install Extension)
+
+1. **Install Extension**
+   - Open VS Code
+   - Extensions: `Ctrl+Shift+X`
+   - Search: "Promptly"
+   - Click "Install"
+
+2. **Configure (Optional)**
+   - Press `Ctrl+,` → Search "HoloLoom"
+   - Set options if needed (usually auto-detects)
+   - See [docs/SETUP_LSP.md](docs/SETUP_LSP.md) for details
+
+3. **Verify Connection**
+   - Check status bar (bottom-right) for "🧠 HoloLoom LSP: Connected" ✅
+   - If not connected, see [docs/SETUP_LSP.md#troubleshooting](docs/SETUP_LSP.md#common-setup-problems)
+
+4. **Start Using Features**
+   - **Open Sidebar:** Click 🧠 brain icon in Activity Bar
+   - **Open Chat:** Press `Ctrl+Alt+P`
+   - **Quick Capture:** Type in sidebar → Click "💾 Remember"
+   - **Search Memory:** Type in sidebar → Click "Search"
+   - **Use Commands:** In chat, type `/` then choose command
+
+### For Developers (Development Mode)
+
 1. **Install dependencies:**
    ```bash
    cd promptly-vscode
@@ -87,11 +113,51 @@ Bot: ✅ Saved to memory
 
 ## ⚙️ Configuration
 
-Settings (`Ctrl+,` → search "Promptly"):
+Promptly v2.0.0+ uses LSP (Language Server Protocol) which auto-detects Python and HoloLoom.
 
-- **`promptly.hololoomUrl`**: HoloLoom server URL (default: `http://localhost:8000`)
+**No configuration needed in most cases!** VS Code auto-starts the LSP server.
+
+### Basic Configuration
+
+Press `Ctrl+,` → search "HoloLoom":
+
+- **`hololoom.lsp.enabled`**: Enable LSP integration (default: `true`)
+- **`hololoom.lsp.pythonPath`**: Custom Python path (optional, auto-detected)
+- **`hololoom.lsp.hololoomPath`**: Custom HoloLoom path (optional, auto-detected)
+- **`hololoom.lsp.logLevel`**: Log level (default: `"info"`)
+
+### Other Settings
+
 - **`promptly.claudeApiKey`**: Anthropic API key (optional)
 - **`promptly.enableAutocomplete`**: Show/hide autocomplete (default: `true`)
+
+### Examples
+
+**Minimal (auto-detect everything):**
+```json
+{
+  "hololoom.lsp.enabled": true
+}
+```
+
+**Custom Python path:**
+```json
+{
+  "hololoom.lsp.enabled": true,
+  "hololoom.lsp.pythonPath": "/usr/local/bin/python3.11"
+}
+```
+
+**Custom HoloLoom location:**
+```json
+{
+  "hololoom.lsp.enabled": true,
+  "hololoom.lsp.pythonPath": "/usr/local/bin/python3.11",
+  "hololoom.lsp.hololoomPath": "/home/user/HoloLoom"
+}
+```
+
+See [docs/LSP_CONFIG_EXAMPLES.md](docs/LSP_CONFIG_EXAMPLES.md) for more examples.
 
 ## 🎮 Usage
 
@@ -166,19 +232,36 @@ Add comments to your code and get automatic suggestions:
 
 ## 🔗 Integration with HoloLoom
 
-Start the HoloLoom server:
+Promptly v2.0.0 uses **LSP (Language Server Protocol)** to communicate with HoloLoom.
 
-```bash
-cd HoloLoom/server
-python agentic_api.py
-```
+**No manual server startup needed!** VS Code auto-starts the LSP server automatically.
 
-The extension connects to `http://localhost:8000` by default.
+### How It Works
 
-### Server Endpoints Used:
-- `POST /query` - Natural language queries
-- `POST /api/remember` - Save memories
-- `POST /api/recall` - Query memories
+1. Extension initializes LSP client on startup
+2. LSP client spawns Python subprocess with HoloLoom
+3. LSP server manages all communication with HoloLoom memory
+4. Server auto-restarts if it crashes
+
+### Requirements
+
+- **Python 3.8+** installed and on PATH
+- **HoloLoom package** installed: `pip install HoloLoom`
+
+### Verify Connection
+
+- Check status bar: "🧠 HoloLoom LSP: Connected" ✅
+- View logs: `Ctrl+Shift+U` → "HoloLoom Language Server"
+
+### Troubleshooting Connection
+
+If LSP doesn't connect:
+1. Check Python installed: `python3 --version`
+2. Check HoloLoom installed: `python3 -c "import HoloLoom"`
+3. Configure paths in settings (see [Configuration](#configuration))
+4. Check logs in Output panel for errors
+
+See [docs/SETUP_LSP.md](docs/SETUP_LSP.md) for detailed setup and troubleshooting.
 
 ## 🛠️ Development
 
@@ -225,22 +308,36 @@ The autocomplete is **smart and beautiful**:
 
 ## 🔍 Troubleshooting
 
-**Autocomplete not appearing?**
+### "HoloLoom LSP: Disconnected" in status bar
+
+**Problem:** Extension shows "Disconnected" instead of "Connected"
+
+**Solutions:**
+1. Check Python: `python3 --version` (must be 3.8+)
+2. Check HoloLoom: `python3 -c "import HoloLoom"`
+3. Configure paths in settings (see [Configuration](#configuration))
+4. Restart VS Code: `Ctrl+Shift+P` → "Reload Window"
+5. Check logs: `Ctrl+Shift+U` → "HoloLoom Language Server"
+
+See [docs/SETUP_LSP.md](docs/SETUP_LSP.md) for complete troubleshooting guide.
+
+### Autocomplete not appearing?
 - Make sure you typed `/` at the start
 - Check `promptly.enableAutocomplete` is true
 - Try typing `/he` to trigger it
 
-**HoloLoom connection failed?**
-- Check server is running: `http://localhost:8000/health`
-- Update URL in settings if using different port
-- Server logs will show connection attempts
+### Commands working slowly (>100ms)?
+- First request may take ~50-100ms to establish LSP connection
+- Subsequent requests should be <50ms
+- Run 2-3 test commands to "warm up" connection
+- Check system load: `top`
 
-**Claude commands not working?**
+### Claude commands not working?
 - Set `promptly.claudeApiKey` in VS Code settings
 - Or use natural language (routes to HoloLoom instead)
 - Check API key is valid at https://console.anthropic.com
 
-**Git commands failing?**
+### Git commands failing?
 - Make sure you're in a git repository
 - Check terminal access (extension needs to run git commands)
 
@@ -263,14 +360,51 @@ The autocomplete is **smart and beautiful**:
 | Complete | `Tab` | `Tab` |
 | Cancel | `Esc` | `Esc` |
 
+## 📚 Documentation
+
+**v2.0.0 Migration from HTTP to LSP?** Start here:
+
+- **[MIGRATION_HTTP_TO_LSP.md](docs/MIGRATION_HTTP_TO_LSP.md)** - Complete migration guide
+  - Before/after examples
+  - Breaking changes
+  - Troubleshooting tips
+
+- **[SETUP_LSP.md](docs/SETUP_LSP.md)** - Installation and configuration
+  - Prerequisites
+  - Step-by-step setup
+  - Common setup problems
+
+- **[BREAKING_CHANGES.md](BREAKING_CHANGES.md)** - What changed in v2.0.0
+  - Impact on users and developers
+  - Deprecation timeline
+  - Migration checklists
+
+- **[LSP_ARCHITECTURE.md](docs/LSP_ARCHITECTURE.md)** - How LSP works
+  - Architecture diagrams
+  - Component responsibilities
+  - Message flow details
+
+- **[LSP_CONFIG_EXAMPLES.md](docs/LSP_CONFIG_EXAMPLES.md)** - Configuration examples
+  - Basic setup
+  - Custom paths
+  - Production configurations
+
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
+  - What's new in each release
+  - Upgrade instructions
+
 ## 🚀 What's Next?
 
 Future features:
+- **v2.1.0:** Enhanced LSP features and performance improvements
+- **v3.0.0:** LSP-only codebase (HTTP API removed)
 - **Multi-file operations** (review entire folders)
 - **Workflow automation** (custom slash command chains)
 - **Team collaboration** (shared HoloLoom memories)
 - **Matrix bot integration** (chat from anywhere)
 - **Custom slash commands** (user-defined via config)
+
+See [CHANGELOG.md](CHANGELOG.md) for complete roadmap.
 
 ## 📝 License
 

@@ -1,16 +1,20 @@
 import * as vscode from 'vscode';
 import { HoloLoomCommands } from '../commands/hololoomCommands';
+import { HoloLoomLSPClient } from '../lsp/client';
 
 export class HoloLoomSidebarProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'promptly.hololoomSidebar';
 
     private _view?: vscode.WebviewView;
     private hololoomCommands: HoloLoomCommands;
+    private lspClient: HoloLoomLSPClient | undefined;
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
+        lspClient?: HoloLoomLSPClient
     ) {
-        this.hololoomCommands = new HoloLoomCommands();
+        this.lspClient = lspClient;
+        this.hololoomCommands = new HoloLoomCommands(lspClient);
     }
 
     public resolveWebviewView(

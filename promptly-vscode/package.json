@@ -7,8 +7,12 @@
   "engines": {
     "vscode": "^1.80.0"
   },
-  "categories": ["Other"],
-  "activationEvents": ["onStartupFinished"],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -79,6 +83,14 @@
       {
         "command": "promptly.showGraph",
         "title": "HoloLoom: Show Knowledge Graph"
+      },
+      {
+        "command": "promptly.restartLSP",
+        "title": "HoloLoom: Restart LSP Server"
+      },
+      {
+        "command": "promptly.lspStatus",
+        "title": "HoloLoom: Show LSP Status"
       }
     ],
     "keybindings": [
@@ -105,6 +117,32 @@
           "type": "boolean",
           "default": true,
           "description": "Enable slash command autocomplete in chat"
+        },
+        "hololoom.lsp.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable HoloLoom Language Server Protocol client"
+        },
+        "hololoom.lsp.pythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Python interpreter for LSP server (auto-detected if not set)"
+        },
+        "hololoom.lsp.hololoomPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to HoloLoom installation (auto-detected if not set)"
+        },
+        "hololoom.lsp.logLevel": {
+          "type": "string",
+          "enum": [
+            "DEBUG",
+            "INFO",
+            "WARNING",
+            "ERROR"
+          ],
+          "default": "INFO",
+          "description": "LSP server log level"
         }
       }
     }
@@ -116,11 +154,13 @@
     "pretest": "npm run compile"
   },
   "devDependencies": {
-    "@types/vscode": "^1.80.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "vscode-languageclient": "^9.0.1"
   }
 }

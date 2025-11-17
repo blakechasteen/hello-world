@@ -5,10 +5,10 @@ HoloLoom LSP Server
 Language Server Protocol (LSP) implementation for HoloLoom neural memory system.
 
 This server provides:
-- Code completion from HoloLoom memories
+- Code completion from HoloLoom knowledge graph
 - Hover information with entity context
 - Go-to-definition via knowledge graph relationships
-- Workspace symbol search (semantic)
+- Workspace symbol search (semantic + graph-based)
 - Diagnostic reports from alignment framework
 
 The server uses the Language Server Protocol (LSP) to communicate with editors
@@ -22,16 +22,23 @@ Architecture:
 
 Usage:
     python -m HoloLoom.lsp.server [--port 8080] [--log-level DEBUG]
+
+Wave 2 Integration (Phase 5 Wave 2 - Nov 2025):
+- Real knowledge graph queries (no more placeholder data)
+- Entity metadata from workspace indexer
+- Graph traversal (DEFINES, USES, IS_A edges)
+- Proper LSP protocol compliance
 """
 
 import asyncio
 import logging
 import sys
 import re
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from pathlib import Path
 import argparse
 from datetime import datetime
+from urllib.parse import urlparse, unquote
 
 from pygls.lsp.server import LanguageServer
 from lsprotocol.types import (
@@ -106,14 +113,323 @@ class HoloLoomLanguageServer(LanguageServer):
 # Initialize server with LSP capabilities
 server = HoloLoomLanguageServer(
     name="hololoom-lsp",
-    version="0.1.0",
+    version="0.2.0",  # Wave 2: Real KG integration
 )
 
 logger = logging.getLogger("hololoom-lsp")
 
 
 # ============================================================================
-# HELPER FUNCTIONS
+# HELPER FUNCTIONS - Knowledge Graph Queries (Wave 2)
+# ============================================================================
+
+def _uri_to_file_path(uri: str) -> str:
+    """
+    Convert LSP file URI to filesystem path.
+
+    Args:
+        uri: File URI (e.g., "file:///home/user/project/file.py")
+
+    Returns:
+        Filesystem path (e.g., "/home/user/project/file.py")
+    """
+    parsed = urlparse(uri)
+    path = unquote(parsed.path)
+
+    # On Windows, remove leading slash (file:///C:/... -> C:/...)
+    if sys.platform == 'win32' and path.startswith('/'):
+        path = path[1:]
+
+    return path
+
+
+def _file_path_to_uri(file_path: str) -> str:
+    """
+    Convert filesystem path to LSP file URI.
+
+    Args:
+        file_path: Filesystem path
+
+    Returns:
+        File URI
+    """
+    # Convert to Path for normalization
+    p = Path(file_path)
+
+    # Get absolute path
+    if not p.is_absolute():
+        p = p.resolve()
+
+    # Convert to URI
+    uri = p.as_uri()
+    return uri
+
+
+def _find_entity_by_name(kg, name: str) -> Optional[Tuple[str, Dict]]:
+    """
+    Find entity node by name in knowledge graph.
+
+    Searches all nodes for exact name match.
+
+    Args:
+        kg: NetworkX MultiDiGraph
+        name: Entity name to search for
+
+    Returns:
+        Tuple of (node_id, node_data) or None if not found
+
+    Example:
+        >>> node_id, entity = _find_entity_by_name(kg, "MyClass")
+        >>> print(entity['type'])  # 'class'
+        >>> print(entity['file_path'])  # 'src/mymodule.py'
+    """
+    for node_id in kg.nodes():
+        node_data = kg.nodes[node_id]
+        if node_data.get('name') == name:
+            return node_id, node_data
+
+    return None
+
+
+def _find_entities_fuzzy(kg, query: str, limit: int = 20) -> List[Tuple[str, Dict]]:
+    """
+    Find entities by fuzzy name matching.
+
+    Args:
+        kg: NetworkX MultiDiGraph
+        query: Search query
+        limit: Maximum results
+
+    Returns:
+        List of (node_id, node_data) tuples
+    """
+    query_lower = query.lower()
+    matches = []
+
+    for node_id in kg.nodes():
+        node_data = kg.nodes[node_id]
+        name = node_data.get('name', '')
+
+        # Skip file nodes (we want code entities)
+        if node_data.get('type') == 'file':
+            continue
+
+        # Fuzzy match
+        if query_lower in name.lower():
+            matches.append((node_id, node_data))
+
+            if len(matches) >= limit:
+                break
+
+    return matches
+
+
+def _get_file_entities(kg, file_path: str) -> List[Tuple[str, Dict]]:
+    """
+    Get all entities defined in a file.
+
+    Traverses DEFINES edges from file node to entity nodes.
+
+    Args:
+        kg: NetworkX MultiDiGraph
+        file_path: Relative file path (e.g., "src/mymodule.py")
+
+    Returns:
+        List of (node_id, entity_data) tuples
+
+    Example:
+        >>> entities = _get_file_entities(kg, "src/mymodule.py")
+        >>> for node_id, entity in entities:
+        ...     print(f"{entity['name']} ({entity['type']})")
+    """
+    file_id = f"file::{file_path}"
+    entities = []
+
+    if not kg.has_node(file_id):
+        logger.debug(f"File node not found: {file_id}")
+        return []
+
+    # Find all neighbors connected by DEFINES edge
+    for neighbor in kg.neighbors(file_id):
+        # Get all edges between file and neighbor (MultiDiGraph can have multiple)
+        edge_data = kg.get_edge_data(file_id, neighbor)
+
+        if edge_data:
+            # Check each edge key (MultiDiGraph stores edges as {key: attrs})
+            for key, attrs in edge_data.items():
+                if attrs.get('type') == 'DEFINES':
+                    entity = kg.nodes[neighbor]
+                    entities.append((neighbor, entity))
+                    break  # Only need to add entity once
+
+    return entities
+
+
+def _entity_to_completion_item(entity: Dict, node_id: str, rank: int = 0) -> CompletionItem:
+    """
+    Convert KG entity to LSP CompletionItem.
+
+    Args:
+        entity: Entity node data
+        node_id: Entity node ID
+        rank: Rank/priority (lower = higher priority)
+
+    Returns:
+        CompletionItem for LSP client
+    """
+    entity_type = entity.get('type', 'entity')
+
+    # Map entity type to CompletionItemKind
+    kind_map = {
+        'class': CompletionItemKind.Class,
+        'function': CompletionItemKind.Function,
+        'method': CompletionItemKind.Method,
+        'import': CompletionItemKind.Module,
+        'variable': CompletionItemKind.Variable,
+        'entity': CompletionItemKind.Text,
+        'file': CompletionItemKind.File,
+    }
+    kind = kind_map.get(entity_type, CompletionItemKind.Text)
+
+    # Build detail string
+    file_path = entity.get('file_path', 'unknown')
+    detail = f"{entity_type} from {file_path}"
+
+    # Build documentation
+    doc_parts = []
+
+    if entity.get('docstring'):
+        doc_parts.append(entity['docstring'])
+        doc_parts.append("")
+
+    doc_parts.append(f"**Type**: {entity_type}")
+    doc_parts.append(f"**File**: {file_path}")
+
+    if entity.get('line_number'):
+        doc_parts.append(f"**Line**: {entity['line_number']}")
+
+    if entity.get('language'):
+        doc_parts.append(f"**Language**: {entity['language']}")
+
+    documentation = "\n".join(doc_parts)
+
+    # Sort text (lower = higher priority)
+    # Prefix with rank: "0_name" for high priority, "9_name" for low priority
+    name = entity.get('name', node_id.split('::')[-1])
+    sort_text = f"{rank}_{name}"
+
+    return CompletionItem(
+        label=name,
+        kind=kind,
+        detail=detail,
+        documentation=MarkupContent(
+            kind=MarkupKind.Markdown,
+            value=documentation
+        ),
+        insert_text=name,
+        sort_text=sort_text
+    )
+
+
+def _entity_to_symbol_info(entity: Dict, node_id: str) -> SymbolInformation:
+    """
+    Convert KG entity to LSP SymbolInformation.
+
+    Args:
+        entity: Entity node data
+        node_id: Entity node ID
+
+    Returns:
+        SymbolInformation for workspace symbol search
+    """
+    entity_type = entity.get('type', 'entity')
+
+    # Map entity type to SymbolKind
+    kind_map = {
+        'class': SymbolKind.Class,
+        'function': SymbolKind.Function,
+        'method': SymbolKind.Method,
+        'import': SymbolKind.Module,
+        'variable': SymbolKind.Variable,
+        'entity': SymbolKind.Variable,
+        'file': SymbolKind.File,
+    }
+    kind = kind_map.get(entity_type, SymbolKind.Variable)
+
+    # Build location
+    file_path = entity.get('file_path')
+    line_number = entity.get('line_number', 0)
+
+    if file_path:
+        file_uri = _file_path_to_uri(file_path)
+    else:
+        file_uri = "file:///unknown"
+
+    location = Location(
+        uri=file_uri,
+        range=Range(
+            start=Position(line=int(line_number), character=0),
+            end=Position(line=int(line_number), character=100)
+        )
+    )
+
+    name = entity.get('name', node_id.split('::')[-1])
+
+    return SymbolInformation(
+        name=name,
+        kind=kind,
+        location=location
+    )
+
+
+def _get_related_entities(kg, entity_id: str, max_depth: int = 2) -> List[Tuple[str, Dict]]:
+    """
+    Get entities related to given entity via graph edges.
+
+    Traverses edges (USES, IS_A, PART_OF, MENTIONS) to find related entities.
+
+    Args:
+        kg: NetworkX MultiDiGraph
+        entity_id: Starting entity node ID
+        max_depth: Maximum traversal depth
+
+    Returns:
+        List of (node_id, entity_data) tuples
+    """
+    if not kg.has_node(entity_id):
+        return []
+
+    # BFS traversal
+    visited = set()
+    queue = [(entity_id, 0)]
+    related = []
+
+    while queue:
+        current_id, depth = queue.pop(0)
+
+        if current_id in visited or depth >= max_depth:
+            continue
+
+        visited.add(current_id)
+
+        # Add to results (skip starting entity)
+        if current_id != entity_id:
+            entity_data = kg.nodes[current_id]
+
+            # Skip file nodes
+            if entity_data.get('type') != 'file':
+                related.append((current_id, entity_data))
+
+        # Traverse neighbors
+        for neighbor in kg.neighbors(current_id):
+            if neighbor not in visited:
+                queue.append((neighbor, depth + 1))
+
+    return related
+
+
+# ============================================================================
+# TEXT POSITION HELPERS
 # ============================================================================
 
 def extract_word_at_position(line: str, character: int) -> str:
@@ -272,6 +588,8 @@ async def on_initialized(params):
         logger.info("  - Config mode: FAST")
         logger.info("  - Memory backend: In-memory (NetworkX)")
         logger.info("  - Embedding scales: %s", config.scales)
+        logger.info("  - Knowledge graph nodes: %d", server.hololoom.graph.number_of_nodes())
+        logger.info("  - Knowledge graph edges: %d", server.hololoom.graph.number_of_edges())
 
     except Exception as e:
         logger.error(f"Failed to initialize HoloLoom: {e}", exc_info=True)
@@ -303,21 +621,23 @@ async def shutdown(params):
 
 
 # ============================================================================
-# TEXT DOCUMENT HANDLERS
+# TEXT DOCUMENT HANDLERS - Real KG Integration (Wave 2)
 # ============================================================================
 
 @server.feature("textDocument/completion")
 async def completion(params: CompletionParams) -> CompletionList:
-    """Provide code completion items.
+    """Provide code completion items from knowledge graph.
 
-    Called when the user triggers completion (e.g., Ctrl+Space or typing '.').
-    Returns a list of completion items from HoloLoom memories.
+    Wave 2 Implementation:
+    - Queries real KG for entities in current file
+    - Ranks by relevance (same file > related > others)
+    - Returns entities with metadata (type, docstring, location)
 
     Args:
         params: Completion parameters (position, document, trigger char)
 
     Returns:
-        List of completion items
+        List of completion items from KG
     """
     document_uri = params.text_document.uri
     line_num = params.position.line
@@ -331,6 +651,13 @@ async def completion(params: CompletionParams) -> CompletionList:
         return CompletionList(is_incomplete=False, items=[])
 
     try:
+        # Get knowledge graph
+        kg = server.hololoom.graph
+
+        if kg.number_of_nodes() == 0:
+            logger.debug("Knowledge graph is empty (no workspace indexed)")
+            return CompletionList(is_incomplete=False, items=[])
+
         # Get document
         doc = server.workspace.get_text_document(document_uri)
 
@@ -344,43 +671,88 @@ async def completion(params: CompletionParams) -> CompletionList:
         # Get word before cursor
         query = extract_word_at_position(line, character)
 
-        if not query:
-            logger.debug("No query extracted, using current line as context")
-            query = line.strip()[:50]  # Use line as fallback
-
         logger.debug(f"Completion query: '{query}'")
 
-        # Query HoloLoom for relevant memories
-        memories = await server.hololoom.recall(query, limit=10)
+        # Convert URI to file path
+        file_path = _uri_to_file_path(document_uri)
 
-        logger.debug(f"Retrieved {len(memories)} memories from HoloLoom")
+        # Try to find relative path (assume workspace root is parent of several dirs)
+        # This is a heuristic - in production, we'd get workspace root from client
+        file_path_obj = Path(file_path)
 
-        # Convert memories to CompletionItems
+        # Try common patterns for relative path
+        relative_path = None
+        for i in range(1, min(5, len(file_path_obj.parts))):
+            candidate = str(Path(*file_path_obj.parts[-i:]))
+            file_entity_id = f"file::{candidate}"
+
+            if kg.has_node(file_entity_id):
+                relative_path = candidate
+                break
+
+        # Get entities from current file
         items = []
-        for i, mem in enumerate(memories):
-            # Extract a meaningful label (first line or first 50 chars)
-            label = mem.text.split('\n')[0][:50]
 
-            # Determine kind based on content
-            kind = CompletionItemKind.Text
-            if any(keyword in mem.text.lower() for keyword in ['function', 'def', 'method']):
-                kind = CompletionItemKind.Function
-            elif any(keyword in mem.text.lower() for keyword in ['class', 'interface']):
-                kind = CompletionItemKind.Class
-            elif any(keyword in mem.text.lower() for keyword in ['import', 'module', 'package']):
-                kind = CompletionItemKind.Module
+        if relative_path:
+            logger.debug(f"Found file node: {relative_path}")
 
-            # Create completion item
-            items.append(CompletionItem(
-                label=label,
-                kind=kind,
-                detail=f"HoloLoom memory (rank {i+1})",
-                documentation=MarkupContent(
-                    kind=MarkupKind.Markdown,
-                    value=format_memory_as_markdown(mem)
-                ),
-                insert_text=mem.text[:200]  # Limit insertion length
-            ))
+            # Get all entities defined in current file (highest priority)
+            file_entities = _get_file_entities(kg, relative_path)
+
+            for node_id, entity in file_entities:
+                # Filter by query if provided
+                if query and query.lower() not in entity.get('name', '').lower():
+                    continue
+
+                item = _entity_to_completion_item(entity, node_id, rank=0)
+                items.append(item)
+
+            logger.debug(f"Found {len(items)} entities in current file")
+
+        # Also search globally by fuzzy match (lower priority)
+        if query:
+            fuzzy_matches = _find_entities_fuzzy(kg, query, limit=10)
+
+            for node_id, entity in fuzzy_matches:
+                # Skip if already in items (from current file)
+                if any(item.label == entity.get('name') for item in items):
+                    continue
+
+                item = _entity_to_completion_item(entity, node_id, rank=5)
+                items.append(item)
+
+            logger.debug(f"Found {len(fuzzy_matches)} fuzzy matches")
+
+        # Fallback: Use semantic search via HoloLoom.recall() if no KG results
+        if not items and query:
+            logger.debug("No KG results, falling back to semantic search")
+            memories = await server.hololoom.recall(query, limit=5)
+
+            for i, mem in enumerate(memories):
+                # Extract entity info from memory context
+                if mem.context.get('entity_id'):
+                    # This is a stored entity
+                    entity_id = mem.context['entity_id']
+
+                    if kg.has_node(entity_id):
+                        entity = kg.nodes[entity_id]
+                        item = _entity_to_completion_item(entity, entity_id, rank=8)
+                        items.append(item)
+                else:
+                    # Generic memory (not from workspace indexer)
+                    label = mem.text.split('\n')[0][:50]
+
+                    items.append(CompletionItem(
+                        label=label,
+                        kind=CompletionItemKind.Text,
+                        detail=f"HoloLoom memory (rank {i+1})",
+                        documentation=MarkupContent(
+                            kind=MarkupKind.Markdown,
+                            value=format_memory_as_markdown(mem)
+                        ),
+                        insert_text=mem.text[:200],
+                        sort_text=f"9_{i}"  # Lowest priority
+                    ))
 
         logger.debug(f"Returning {len(items)} completion items")
         return CompletionList(is_incomplete=False, items=items)
@@ -392,10 +764,12 @@ async def completion(params: CompletionParams) -> CompletionList:
 
 @server.feature("textDocument/hover")
 async def hover(params: HoverParams) -> Optional[Hover]:
-    """Provide hover information for symbols.
+    """Provide hover information from knowledge graph.
 
-    Called when the user hovers over a symbol.
-    Returns documentation, type information, etc. from HoloLoom knowledge graph.
+    Wave 2 Implementation:
+    - Finds entity in KG by name
+    - Returns entity metadata (type, file, line, docstring)
+    - Shows related entities via graph traversal
 
     Args:
         params: Hover parameters (position, document)
@@ -415,6 +789,13 @@ async def hover(params: HoverParams) -> Optional[Hover]:
         return None
 
     try:
+        # Get knowledge graph
+        kg = server.hololoom.graph
+
+        if kg.number_of_nodes() == 0:
+            logger.debug("Knowledge graph is empty (no workspace indexed)")
+            return None
+
         # Get document
         doc = server.workspace.get_text_document(document_uri)
 
@@ -432,28 +813,92 @@ async def hover(params: HoverParams) -> Optional[Hover]:
 
         logger.debug(f"Hover query for symbol: '{symbol}'")
 
-        # Query HoloLoom for information about this symbol
-        memories = await server.hololoom.recall(symbol, limit=5)
+        # Find entity in KG
+        result = _find_entity_by_name(kg, symbol)
 
-        if not memories:
-            logger.debug("No memories found for symbol")
-            return None
+        if not result:
+            logger.debug(f"Entity '{symbol}' not found in KG")
 
-        # Format as Markdown
+            # Fallback: Use semantic search
+            memories = await server.hololoom.recall(symbol, limit=3)
+
+            if not memories:
+                return None
+
+            # Format as Markdown
+            lines = [
+                f"# {symbol}",
+                "",
+                "## Related Information (from memories)",
+                "",
+            ]
+
+            for i, mem in enumerate(memories):
+                lines.append(f"### Memory {i+1}")
+                lines.append("")
+                lines.append(mem.text[:300])
+                lines.append("")
+                lines.append("---")
+                lines.append("")
+
+            content = MarkupContent(
+                kind=MarkupKind.Markdown,
+                value="\n".join(lines)
+            )
+
+            return Hover(contents=content)
+
+        # Entity found in KG
+        entity_id, entity = result
+
+        # Build hover content
         lines = [
-            f"# {symbol}",
-            "",
-            "## Related Information",
+            f"# {entity.get('name', symbol)}",
             "",
         ]
 
-        for i, mem in enumerate(memories[:3]):  # Show top 3
-            lines.append(f"### Memory {i+1}")
+        # Entity type
+        entity_type = entity.get('type', 'entity')
+        lines.append(f"**Type**: `{entity_type}`")
+        lines.append("")
+
+        # Docstring
+        if entity.get('docstring'):
+            lines.append("## Documentation")
             lines.append("")
-            lines.append(mem.text[:300])
+            lines.append(entity['docstring'])
             lines.append("")
-            lines.append("---")
+
+        # Location
+        lines.append("## Location")
+        lines.append("")
+        lines.append(f"**File**: `{entity.get('file_path', 'unknown')}`")
+
+        if entity.get('line_number'):
+            lines.append(f"**Line**: {entity['line_number']}")
+
+        if entity.get('language'):
+            lines.append(f"**Language**: {entity['language']}")
+
+        lines.append("")
+
+        # Related entities (via graph traversal)
+        related = _get_related_entities(kg, entity_id, max_depth=1)
+
+        if related:
+            lines.append("## Related Entities")
             lines.append("")
+
+            for rel_id, rel_entity in related[:5]:  # Limit to 5
+                rel_name = rel_entity.get('name', rel_id.split('::')[-1])
+                rel_type = rel_entity.get('type', 'entity')
+                lines.append(f"- `{rel_name}` ({rel_type})")
+
+            lines.append("")
+
+        # Metadata
+        if entity.get('indexed_at'):
+            lines.append(f"*Indexed at: {entity['indexed_at']}*")
 
         content = MarkupContent(
             kind=MarkupKind.Markdown,
@@ -470,10 +915,12 @@ async def hover(params: HoverParams) -> Optional[Hover]:
 
 @server.feature("textDocument/definition")
 async def definition(params: DefinitionParams) -> Optional[List[Location]]:
-    """Provide go-to-definition functionality.
+    """Provide go-to-definition via knowledge graph.
 
-    Called when the user requests "Go to Definition" (Ctrl+Click, etc.).
-    Returns the definition location(s) from the knowledge graph.
+    Wave 2 Implementation:
+    - Finds entity in KG by name
+    - Returns file path and line number
+    - Converts to LSP Location
 
     Args:
         params: Definition parameters (position, document)
@@ -493,6 +940,13 @@ async def definition(params: DefinitionParams) -> Optional[List[Location]]:
         return None
 
     try:
+        # Get knowledge graph
+        kg = server.hololoom.graph
+
+        if kg.number_of_nodes() == 0:
+            logger.debug("Knowledge graph is empty (no workspace indexed)")
+            return None
+
         # Get document
         doc = server.workspace.get_text_document(document_uri)
 
@@ -510,50 +964,36 @@ async def definition(params: DefinitionParams) -> Optional[List[Location]]:
 
         logger.debug(f"Definition query for symbol: '{symbol}'")
 
-        # Query HoloLoom for definition
-        # Look for memories that contain "def", "class", or "define" with the symbol
-        query = f"definition of {symbol}"
-        memories = await server.hololoom.recall(query, limit=5)
+        # Find entity in KG
+        result = _find_entity_by_name(kg, symbol)
 
-        if not memories:
-            logger.debug("No definition found")
+        if not result:
+            logger.debug(f"Entity '{symbol}' not found in KG")
             return None
 
-        # Try to extract location from memory metadata
-        locations = []
-        for mem in memories:
-            # Check if memory has file location metadata
-            if hasattr(mem, 'metadata') and mem.metadata:
-                file_path = mem.metadata.get('file_path') or mem.metadata.get('source_file')
-                line_number = mem.metadata.get('line_number') or mem.metadata.get('line', 0)
+        entity_id, entity = result
 
-                if file_path:
-                    # Convert to URI if needed
-                    if not file_path.startswith('file://'):
-                        file_path = f"file://{file_path}"
+        # Extract location from entity metadata
+        file_path = entity.get('file_path')
+        line_number = entity.get('line_number', 0)
 
-                    locations.append(Location(
-                        uri=file_path,
-                        range=Range(
-                            start=Position(line=int(line_number), character=0),
-                            end=Position(line=int(line_number), character=100)
-                        )
-                    ))
+        if not file_path:
+            logger.debug("Entity has no file_path metadata")
+            return None
 
-        if locations:
-            logger.debug(f"Found {len(locations)} definition locations")
-            return locations
+        # Convert to absolute path and URI
+        file_uri = _file_path_to_uri(file_path)
 
-        # Fallback: if no metadata, return current file location
-        # (This is a placeholder - in production, we'd index the codebase)
-        logger.debug("No location metadata found, returning placeholder")
-        return [Location(
-            uri=document_uri,
+        location = Location(
+            uri=file_uri,
             range=Range(
-                start=Position(line=0, character=0),
-                end=Position(line=0, character=10)
+                start=Position(line=int(line_number), character=0),
+                end=Position(line=int(line_number), character=100)
             )
-        )]
+        )
+
+        logger.debug(f"Found definition at {file_uri}:{line_number}")
+        return [location]
 
     except Exception as e:
         logger.error(f"Error in definition handler: {e}", exc_info=True)
@@ -562,10 +1002,12 @@ async def definition(params: DefinitionParams) -> Optional[List[Location]]:
 
 @server.feature("workspace/symbol")
 async def workspace_symbol(params: WorkspaceSymbolParams) -> List[SymbolInformation]:
-    """Search for symbols in the workspace.
+    """Search for symbols via knowledge graph + semantic search.
 
-    Called when the user searches for symbols (Ctrl+T in VSCode, etc.).
-    Returns matching symbols from HoloLoom knowledge graph.
+    Wave 2 Implementation:
+    - Fuzzy search in KG by name
+    - Falls back to semantic search via HoloLoom.recall()
+    - Returns symbols with locations
 
     Args:
         params: Workspace symbol parameters (query)
@@ -582,51 +1024,70 @@ async def workspace_symbol(params: WorkspaceSymbolParams) -> List[SymbolInformat
         return []
 
     try:
-        # Query HoloLoom for symbols
-        memories = await server.hololoom.recall(query, limit=20)
+        # Get knowledge graph
+        kg = server.hololoom.graph
 
-        logger.debug(f"Retrieved {len(memories)} memories for symbol search")
+        if kg.number_of_nodes() == 0:
+            logger.debug("Knowledge graph is empty (no workspace indexed)")
+            return []
 
-        # Convert memories to SymbolInformation
         symbols = []
-        for mem in memories:
-            # Extract name (first word or first 30 chars)
-            name = mem.text.split()[0] if mem.text.split() else mem.text[:30]
 
-            # Determine kind based on content
-            kind = SymbolKind.Variable
-            if any(keyword in mem.text.lower() for keyword in ['function', 'def', 'method']):
-                kind = SymbolKind.Function
-            elif any(keyword in mem.text.lower() for keyword in ['class', 'interface']):
-                kind = SymbolKind.Class
-            elif any(keyword in mem.text.lower() for keyword in ['module', 'package']):
-                kind = SymbolKind.Module
+        # Option 1: Fuzzy search in KG
+        if query:
+            fuzzy_matches = _find_entities_fuzzy(kg, query, limit=20)
 
-            # Extract location from metadata or use placeholder
-            file_uri = "file:///unknown"
-            line_number = 0
+            for node_id, entity in fuzzy_matches:
+                symbol = _entity_to_symbol_info(entity, node_id)
+                symbols.append(symbol)
 
-            if hasattr(mem, 'metadata') and mem.metadata:
-                file_path = mem.metadata.get('file_path') or mem.metadata.get('source_file')
-                if file_path:
-                    if not file_path.startswith('file://'):
-                        file_uri = f"file://{file_path}"
+            logger.debug(f"Found {len(fuzzy_matches)} fuzzy matches in KG")
+
+        # Option 2: Semantic search via HoloLoom.recall()
+        if not symbols and query:
+            logger.debug("No KG results, using semantic search")
+            memories = await server.hololoom.recall(query, limit=20)
+
+            for mem in memories:
+                # Try to extract entity from memory context
+                entity_id = mem.context.get('entity_id')
+
+                if entity_id and kg.has_node(entity_id):
+                    # This is a known entity
+                    entity = kg.nodes[entity_id]
+                    symbol = _entity_to_symbol_info(entity, entity_id)
+                    symbols.append(symbol)
+                else:
+                    # Generic memory (extract from metadata)
+                    name = mem.text.split()[0] if mem.text.split() else mem.text[:30]
+
+                    # Determine kind
+                    kind = SymbolKind.Variable
+                    if any(keyword in mem.text.lower() for keyword in ['function', 'def', 'method']):
+                        kind = SymbolKind.Function
+                    elif any(keyword in mem.text.lower() for keyword in ['class', 'interface']):
+                        kind = SymbolKind.Class
+
+                    # Extract location
+                    file_path = mem.context.get('file_path') or mem.metadata.get('file_path')
+                    line_number = mem.context.get('line_number', 0) or mem.metadata.get('line_number', 0)
+
+                    if file_path:
+                        file_uri = _file_path_to_uri(file_path)
                     else:
-                        file_uri = file_path
+                        file_uri = "file:///unknown"
 
-                line_number = int(mem.metadata.get('line_number', 0) or mem.metadata.get('line', 0))
-
-            symbols.append(SymbolInformation(
-                name=name,
-                kind=kind,
-                location=Location(
-                    uri=file_uri,
-                    range=Range(
-                        start=Position(line=line_number, character=0),
-                        end=Position(line=line_number, character=100)
-                    )
-                )
-            ))
+                    symbols.append(SymbolInformation(
+                        name=name,
+                        kind=kind,
+                        location=Location(
+                            uri=file_uri,
+                            range=Range(
+                                start=Position(line=int(line_number), character=0),
+                                end=Position(line=int(line_number), character=100)
+                            )
+                        )
+                    ))
 
         logger.debug(f"Returning {len(symbols)} matching symbols")
         return symbols
@@ -700,7 +1161,7 @@ Examples:
     global logger
     logger = setup_logging(args.log_level)
     logger.info("=" * 70)
-    logger.info("HoloLoom Language Server (LSP) v0.1.0")
+    logger.info("HoloLoom Language Server (LSP) v0.2.0 (Wave 2: Real KG)")
     logger.info("=" * 70)
     logger.info(f"Starting server...")
     logger.info(f"Log level: {args.log_level}")

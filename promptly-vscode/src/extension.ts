@@ -7,17 +7,35 @@ import { HoloLoomSidebarProvider } from './views/sidebarProvider';
 import { GraphViewProvider } from './views/graphViewProvider';
 import { HoloLoomCodeLensProvider, registerCodeLensCommands } from './providers/codeLensProvider';
 import { WorkspaceWatcher, registerWorkspaceCommands } from './watchers/workspaceWatcher';
+import { HoloLoomLSPClient } from './lsp/client';
+
+// Global LSP client instance
+let lspClient: HoloLoomLSPClient | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Promptly extension activated');
 
+    // Initialize LSP client
+    lspClient = new HoloLoomLSPClient(context);
+
+    // Start LSP client asynchronously (non-blocking)
+    lspClient.start().then(success => {
+        if (success) {
+            console.log('HoloLoom LSP client started successfully');
+        } else {
+            console.log('HoloLoom LSP client failed to start - using HTTP API fallback');
+        }
+    }).catch(error => {
+        console.error('Error starting LSP client:', error);
+    });
+
     const chatView = new PromptlyChatView(context);
     const gitCommands = new GitCommands();
     const claudeCommands = new ClaudeCommands();
-    const hololoomCommands = new HoloLoomCommands();
+    const hololoomCommands = new HoloLoomCommands(lspClient);
 
     // Register HoloLoom sidebar
-    const sidebarProvider = new HoloLoomSidebarProvider(context.extensionUri);
+    const sidebarProvider = new HoloLoomSidebarProvider(context.extensionUri, lspClient);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(
             HoloLoomSidebarProvider.viewType,
@@ -29,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
     const graphViewProvider = new GraphViewProvider(context);
 
     // Register CodeLens provider for inline suggestions
-    const codeLensProvider = new HoloLoomCodeLensProvider();
+    const codeLensProvider = new HoloLoomCodeLensProvider(lspClient);
     context.subscriptions.push(
         vscode.languages.registerCodeLensProvider(
             { scheme: 'file' }, // All file types
@@ -38,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     // Register CodeLens commands
-    registerCodeLensCommands(context);
+    registerCodeLensCommands(context, lspClient);
 
     // Start workspace watcher (auto-indexing)
     const workspaceWatcher = new WorkspaceWatcher();
@@ -119,6 +137,27 @@ export function activate(context: vscode.ExtensionContext) {
         // Knowledge Graph
         vscode.commands.registerCommand('promptly.showGraph', async () => {
             await graphViewProvider.show();
+        }),
+
+        // LSP Client Management
+        vscode.commands.registerCommand('promptly.restartLSP', async () => {
+            if (lspClient) {
+                vscode.window.showInformationMessage('Restarting HoloLoom LSP server...');
+                const success = await lspClient.restart();
+                if (success) {
+                    vscode.window.showInformationMessage('HoloLoom LSP server restarted successfully');
+                } else {
+                    vscode.window.showErrorMessage('Failed to restart HoloLoom LSP server');
+                }
+            }
+        }),
+
+        vscode.commands.registerCommand('promptly.lspStatus', async () => {
+            if (lspClient && lspClient.isRunning()) {
+                vscode.window.showInformationMessage('HoloLoom LSP: Connected');
+            } else {
+                vscode.window.showWarningMessage('HoloLoom LSP: Not connected (using HTTP API fallback)');
+            }
         })
     );
 
@@ -145,4 +184,16 @@ export function activate(context: vscode.ExtensionContext) {
     }
 }
 
-export function deactivate() {}
+export async function deactivate() {
+    // Gracefully stop LSP client
+    if (lspClient) {
+        console.log('Deactivating HoloLoom LSP client...');
+        await lspClient.stop();
+        lspClient = undefined;
+    }
+}
+
+// Export LSP client for use in other modules
+export function getLSPClient(): HoloLoomLSPClient | undefined {
+    return lspClient;
+}
