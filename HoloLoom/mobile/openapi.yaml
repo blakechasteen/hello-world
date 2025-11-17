@@ -1,0 +1,1087 @@
+openapi: 3.0.3
+info:
+  title: HoloLoom Mobile API
+  description: |
+    REST API for HoloLoom iOS and Android mobile clients.
+
+    **Features:**
+    - JWT-based authentication
+    - Real-time chat via WebSocket
+    - Offline sync support
+    - File uploads (images, audio)
+    - Push notifications
+
+    **Base URL:** `https://api.hololoom.ai/v1`
+
+  version: 1.0.0
+  contact:
+    name: HoloLoom Team
+    email: support@hololoom.ai
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.hololoom.ai/v1
+    description: Production server
+  - url: https://staging.hololoom.ai/v1
+    description: Staging server
+  - url: http://localhost:8000
+    description: Local development
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Chat
+    description: Chat messages and conversations
+  - name: History
+    description: Conversation history
+  - name: Files
+    description: File upload and management
+  - name: Sync
+    description: Offline data synchronization
+  - name: Push
+    description: Push notification management
+  - name: User
+    description: User profile and settings
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ========================================================================
+  # Authentication
+  # ========================================================================
+
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register new user
+      description: Create a new user account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password, email]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                  example: john_doe
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: SecurePass123!
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                full_name:
+                  type: string
+                  example: John Doe
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Username or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login user
+      description: Authenticate user and receive JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  format: password
+                  example: admin123
+                device_id:
+                  type: string
+                  description: Unique device identifier for push notifications
+                  example: "ios-device-abc123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: JWT access token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refresh_token:
+                    type: string
+                    description: Refresh token for obtaining new access tokens
+                    example: a1b2c3d4e5f6...
+                  token_type:
+                    type: string
+                    example: bearer
+                  expires_in:
+                    type: integer
+                    description: Token expiration time in seconds
+                    example: 86400
+                  username:
+                    type: string
+                    example: admin
+                  session_id:
+                    type: string
+                    description: Session identifier for WebSocket
+                    example: admin_1234567890.123
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      description: Get new access token using refresh token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+                  example: a1b2c3d4e5f6...
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Logout user
+      description: Invalidate current session and tokens
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: logged_out
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get current user
+      description: Retrieve authenticated user information
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ========================================================================
+  # Chat
+  # ========================================================================
+
+  /chat/sessions:
+    get:
+      tags: [Chat]
+      summary: List chat sessions
+      description: Get all chat sessions for the authenticated user
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of chat sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatSession'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+    post:
+      tags: [Chat]
+      summary: Create chat session
+      description: Start a new chat session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "New conversation"
+                metadata:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatSession'
+
+  /chat/sessions/{session_id}:
+    get:
+      tags: [Chat]
+      summary: Get chat session
+      description: Retrieve a specific chat session
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chat session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatSession'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Chat]
+      summary: Delete chat session
+      description: Permanently delete a chat session
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Session deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /chat/sessions/{session_id}/messages:
+    get:
+      tags: [Chat]
+      summary: Get messages
+      description: Retrieve messages from a chat session
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+        - name: before
+          in: query
+          description: Get messages before this timestamp
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+                  has_more:
+                    type: boolean
+
+    post:
+      tags: [Chat]
+      summary: Send message
+      description: Send a message in a chat session (non-streaming)
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  example: "What is Thompson Sampling?"
+                metadata:
+                  type: object
+                  additionalProperties: true
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    description: File IDs from upload endpoint
+      responses:
+        '200':
+          description: Message sent and response received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_message:
+                    $ref: '#/components/schemas/Message'
+                  assistant_message:
+                    $ref: '#/components/schemas/Message'
+                  trace:
+                    $ref: '#/components/schemas/WeavingTrace'
+
+  /chat/messages/{message_id}:
+    get:
+      tags: [Chat]
+      summary: Get message
+      description: Retrieve a specific message
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Message details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ========================================================================
+  # Files
+  # ========================================================================
+
+  /files/upload:
+    post:
+      tags: [Files]
+      summary: Upload file
+      description: Upload a file (image, audio, document)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload
+                type:
+                  type: string
+                  enum: [image, audio, document, other]
+                  default: other
+                metadata:
+                  type: object
+                  description: Optional metadata (JSON string)
+      responses:
+        '201':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUpload'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /files/{file_id}:
+    get:
+      tags: [Files]
+      summary: Get file
+      description: Download a file
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File data
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Files]
+      summary: Delete file
+      description: Delete an uploaded file
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: File deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ========================================================================
+  # Sync
+  # ========================================================================
+
+  /sync/pull:
+    post:
+      tags: [Sync]
+      summary: Pull updates
+      description: Sync data from server (for offline support)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                last_sync:
+                  type: string
+                  format: date-time
+                  description: Last sync timestamp
+                entity_types:
+                  type: array
+                  items:
+                    type: string
+                    enum: [messages, sessions, files]
+                  default: [messages, sessions]
+      responses:
+        '200':
+          description: Sync data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatSession'
+                  deleted_ids:
+                    type: object
+                    properties:
+                      messages:
+                        type: array
+                        items:
+                          type: string
+                      sessions:
+                        type: array
+                        items:
+                          type: string
+                  sync_timestamp:
+                    type: string
+                    format: date-time
+
+  /sync/push:
+    post:
+      tags: [Sync]
+      summary: Push updates
+      description: Upload local changes to server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messages:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Message'
+                sessions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChatSession'
+      responses:
+        '200':
+          description: Sync successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: synced
+                  conflicts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        entity_type:
+                          type: string
+                        entity_id:
+                          type: string
+                        resolution:
+                          type: string
+                          enum: [server_wins, client_wins, merged]
+
+  # ========================================================================
+  # Push Notifications
+  # ========================================================================
+
+  /push/register:
+    post:
+      tags: [Push]
+      summary: Register device
+      description: Register device for push notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_token, platform]
+              properties:
+                device_token:
+                  type: string
+                  description: FCM token (Android) or APNs token (iOS)
+                  example: "fSomeDeviceToken123..."
+                platform:
+                  type: string
+                  enum: [ios, android]
+                  example: ios
+                device_id:
+                  type: string
+                  description: Unique device identifier
+                  example: "ios-device-abc123"
+      responses:
+        '200':
+          description: Device registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: registered
+                  device_id:
+                    type: string
+
+  /push/unregister:
+    post:
+      tags: [Push]
+      summary: Unregister device
+      description: Remove device from push notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_id]
+              properties:
+                device_id:
+                  type: string
+      responses:
+        '200':
+          description: Device unregistered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: unregistered
+
+  /push/preferences:
+    get:
+      tags: [Push]
+      summary: Get notification preferences
+      description: Retrieve user's push notification settings
+      responses:
+        '200':
+          description: Notification preferences
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+
+    put:
+      tags: [Push]
+      summary: Update notification preferences
+      description: Update user's push notification settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreferences'
+      responses:
+        '200':
+          description: Preferences updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+
+  # ========================================================================
+  # User
+  # ========================================================================
+
+  /user/profile:
+    get:
+      tags: [User]
+      summary: Get user profile
+      description: Retrieve user profile information
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+    put:
+      tags: [User]
+      summary: Update user profile
+      description: Update user profile information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                avatar_url:
+                  type: string
+                  format: uri
+                preferences:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /user/settings:
+    get:
+      tags: [User]
+      summary: Get user settings
+      description: Retrieve user application settings
+      responses:
+        '200':
+          description: User settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettings'
+
+    put:
+      tags: [User]
+      summary: Update user settings
+      description: Update user application settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSettings'
+      responses:
+        '200':
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettings'
+
+  # ========================================================================
+  # Health & System
+  # ========================================================================
+
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      description: Check API health status
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: "1.0.0"
+
+# ============================================================================
+# Components
+# ============================================================================
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token from /auth/login
+
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: admin
+        email:
+          type: string
+          format: email
+          example: admin@hololoom.ai
+        full_name:
+          type: string
+          example: Admin User
+        created_at:
+          type: string
+          format: date-time
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+
+    UserResponse:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            id:
+              type: string
+              example: user_123abc
+
+    UserProfile:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            bio:
+              type: string
+              nullable: true
+            preferences:
+              type: object
+              additionalProperties: true
+
+    UserSettings:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [light, dark, auto]
+          default: auto
+        language:
+          type: string
+          example: en
+        notifications_enabled:
+          type: boolean
+          default: true
+        sound_enabled:
+          type: boolean
+          default: true
+        typing_indicators:
+          type: boolean
+          default: true
+
+    ChatSession:
+      type: object
+      properties:
+        session_id:
+          type: string
+          example: admin_1234567890.123
+        title:
+          type: string
+          example: "Conversation about Thompson Sampling"
+        created_at:
+          type: string
+          format: date-time
+        last_activity:
+          type: string
+          format: date-time
+        message_count:
+          type: integer
+          example: 42
+        metadata:
+          type: object
+          additionalProperties: true
+
+    Message:
+      type: object
+      properties:
+        message_id:
+          type: string
+          example: msg_abc123
+        session_id:
+          type: string
+          example: admin_1234567890.123
+        role:
+          type: string
+          enum: [user, assistant, system]
+          example: user
+        content:
+          type: string
+          example: "What is Thompson Sampling?"
+        timestamp:
+          type: string
+          format: date-time
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+        metadata:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          enum: [sending, sent, delivered, failed]
+          default: sent
+
+    Attachment:
+      type: object
+      properties:
+        file_id:
+          type: string
+          example: file_xyz789
+        file_type:
+          type: string
+          enum: [image, audio, document, other]
+        file_name:
+          type: string
+          example: photo.jpg
+        file_size:
+          type: integer
+          description: File size in bytes
+          example: 1048576
+        url:
+          type: string
+          format: uri
+          description: Download URL
+
+    FileUpload:
+      type: object
+      properties:
+        file_id:
+          type: string
+          example: file_xyz789
+        file_name:
+          type: string
+          example: photo.jpg
+        file_type:
+          type: string
+        file_size:
+          type: integer
+        url:
+          type: string
+          format: uri
+        upload_time:
+          type: string
+          format: date-time
+
+    WeavingTrace:
+      type: object
+      description: Computational provenance from HoloLoom processing
+      properties:
+        motifs:
+          type: array
+          items:
+            type: string
+          example: ["question", "technical", "algorithm"]
+        embeddings:
+          type: object
+          properties:
+            scales:
+              type: array
+              items:
+                type: integer
+              example: [96, 192, 384]
+            similarity_scores:
+              type: array
+              items:
+                type: number
+        tool_selection:
+          type: object
+          properties:
+            selected_tool:
+              type: string
+              example: knowledge_search
+            confidence:
+              type: number
+              example: 0.87
+            strategy:
+              type: string
+              example: epsilon_greedy
+        execution_time_ms:
+          type: number
+          example: 234.5
+
+    NotificationPreferences:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: true
+        new_messages:
+          type: boolean
+          default: true
+        mentions:
+          type: boolean
+          default: true
+        quiet_hours:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            start_time:
+              type: string
+              example: "22:00"
+            end_time:
+              type: string
+              example: "08:00"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid credentials"
+        error_code:
+          type: string
+          example: AUTH_FAILED
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
