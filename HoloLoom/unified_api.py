@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HoloLoom Unified API
 ====================
@@ -39,18 +38,18 @@ Usage:
 
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional, Union
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 try:
     from HoloLoom.config import Config
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.spinning_wheel.website import WebsiteSpinnerConfig, WebsiteSpinner
-    from HoloLoom.spinning_wheel.youtube import YouTubeSpinnerConfig, YouTubeSpinner
-    from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
-    from HoloLoom.fabric.spacetime import Spacetime
     from HoloLoom.convergence.engine import CollapseStrategy
+    from HoloLoom.fabric.spacetime import Spacetime
+    from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
+    from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+    from HoloLoom.spinning_wheel.youtube import YouTubeSpinner, YouTubeSpinnerConfig
+    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run from repository root with PYTHONPATH set")
@@ -62,6 +61,7 @@ logger = logging.getLogger(__name__)
 # Narrative depth intelligence (optional app)
 try:
     from mythy.cache import CachedMatryoshkaDepth, NarrativeCache
+
     NARRATIVE_DEPTH_AVAILABLE = True
 except ImportError:
     NARRATIVE_DEPTH_AVAILABLE = False
@@ -93,10 +93,10 @@ class HoloLoom:
     def __init__(
         self,
         weaver: WeavingOrchestrator,
-        memory: Optional[Any] = None,
-        config: Optional[Config] = None,
+        memory: Any | None = None,
+        config: Config | None = None,
         enable_synthesis: bool = True,
-        enable_narrative_depth: bool = False
+        enable_narrative_depth: bool = False,
     ):
         """
         Initialize HoloLoom (use create() factory instead).
@@ -124,7 +124,7 @@ class HoloLoom:
             self.depth_analyzer = None
 
         # Conversation history (for chat mode)
-        self.conversation_history: List[Dict] = []
+        self.conversation_history: list[dict] = []
         self.conversation_mode = False
 
         # Statistics
@@ -145,7 +145,7 @@ class HoloLoom:
         memory_backend: str = "simple",
         enable_synthesis: bool = True,
         enable_narrative_depth: bool = False,
-        collapse_strategy: str = "epsilon_greedy"
+        collapse_strategy: str = "epsilon_greedy",
     ) -> "HoloLoom":
         """
         Create HoloLoom instance (async factory).
@@ -162,7 +162,7 @@ class HoloLoom:
 
         Example:
             loom = await HoloLoom.create(
-                pattern="fused", 
+                pattern="fused",
                 memory_backend="neo4j",
                 enable_narrative_depth=True  # Enable deep meaning extraction
             )
@@ -189,16 +189,12 @@ class HoloLoom:
 
         # Create weaving orchestrator
         try:
-            strategy = CollapseStrategy(collapse_strategy)
+            _strategy = CollapseStrategy(collapse_strategy)
         except ValueError:
             logger.warning(f"Invalid strategy: {collapse_strategy}, using epsilon_greedy")
-            strategy = CollapseStrategy.EPSILON_GREEDY
+            _strategy = CollapseStrategy.EPSILON_GREEDY
 
-        weaver = WeavingOrchestrator(
-            cfg=config,
-            memory=memory,
-            enable_reflection=True
-        )
+        weaver = WeavingOrchestrator(cfg=config, memory=memory, enable_reflection=True)
 
         # Create HoloLoom instance
         return cls(
@@ -206,15 +202,12 @@ class HoloLoom:
             memory=memory,
             config=config,
             enable_synthesis=enable_synthesis,
-            enable_narrative_depth=enable_narrative_depth
+            enable_narrative_depth=enable_narrative_depth,
         )
 
     async def query(
-        self,
-        text: str,
-        pattern: Optional[str] = None,
-        return_trace: bool = True
-    ) -> Union[Spacetime, str]:
+        self, text: str, pattern: str | None = None, return_trace: bool = True
+    ) -> Spacetime | str:
         """
         Process a single query (one-shot, no conversation context).
 
@@ -235,40 +228,24 @@ class HoloLoom:
         logger.info(f"Query #{self.query_count}: '{text[:50]}...'")
 
         # Execute weaving cycle
-        spacetime = await self.weaver.weave(
-            query=text,
-            user_pattern=pattern
-        )
+        spacetime = await self.weaver.weave(query=text, user_pattern=pattern)
 
         # Store in memory if available
         if self.memory:
             try:
-                # Create memory from query + response
-                memory_obj = {
-                    'id': f'query_{datetime.now().timestamp()}',
-                    'text': f"Q: {text}\nA: {spacetime.response}",
-                    'timestamp': datetime.now().isoformat(),
-                    'importance': 0.8,
-                    'metadata': {
-                        'user_input': text,
-                        'system_output': spacetime.response,
-                        'tool_used': spacetime.tool_used,
-                        'confidence': spacetime.confidence
-                    }
-                }
-                # Note: Actual storage would need proper Memory object conversion
-                logger.debug("Query stored in memory")
+                # Note: Memory storage would require proper Memory object conversion
+                # Currently just logging for future implementation
+                logger.debug(
+                    f"Query result: tool={spacetime.tool_used}, confidence={spacetime.confidence}"
+                )
             except Exception as e:
-                logger.warning(f"Failed to store query in memory: {e}")
+                logger.warning(f"Failed to log query metadata: {e}")
 
         return spacetime if return_trace else spacetime.response
 
     async def chat(
-        self,
-        message: str,
-        pattern: Optional[str] = None,
-        return_trace: bool = False
-    ) -> Union[Spacetime, str]:
+        self, message: str, pattern: str | None = None, return_trace: bool = False
+    ) -> Spacetime | str:
         """
         Conversational chat (maintains context across turns).
 
@@ -289,30 +266,41 @@ class HoloLoom:
 
         logger.info(f"Chat #{self.chat_count}: '{message[:50]}...'")
 
-        # TODO: Build conversation context from history
-        # For now, just use weaver
-        spacetime = await self.weaver.weave(
-            query=message,
-            user_pattern=pattern
+        # Build conversation context from history
+        conversation_context = self._build_conversation_context(
+            recent_turns=5  # Include last 5 turns for context
         )
 
+        # Create Query with conversation context in metadata
+        from HoloLoom.Documentation.types import Query
+
+        query_obj = Query(
+            text=message,
+            metadata={
+                "conversation_context": conversation_context,
+                "turn_number": self.chat_count,
+                "conversation_mode": True,
+            },
+        )
+
+        # Use weaver with conversation-enriched query
+        spacetime = await self.weaver.weave(query=query_obj, pattern_override=pattern)
+
         # Record in conversation history
-        self.conversation_history.append({
-            'turn': self.chat_count,
-            'user': message,
-            'assistant': spacetime.response,
-            'tool': spacetime.tool_used,
-            'confidence': spacetime.confidence,
-            'timestamp': datetime.now()
-        })
+        self.conversation_history.append(
+            {
+                "turn": self.chat_count,
+                "user": message,
+                "assistant": spacetime.response,
+                "tool": spacetime.tool_used,
+                "confidence": spacetime.confidence,
+                "timestamp": datetime.now(),
+            }
+        )
 
         return spacetime if return_trace else spacetime.response
 
-    async def ingest_text(
-        self,
-        text: str,
-        metadata: Optional[Dict] = None
-    ) -> int:
+    async def ingest_text(self, text: str, metadata: dict | None = None) -> int:
         """
         Ingest plain text into memory.
 
@@ -335,12 +323,12 @@ class HoloLoom:
 
         try:
             # Use TextSpinner to create shards
-            from HoloLoom.spinning_wheel import TextSpinnerConfig, TextSpinner
+            from HoloLoom.spinning_wheel import TextSpinner, TextSpinnerConfig
 
-            config = TextSpinnerConfig(chunk_size=500, chunk_by='paragraph')
+            config = TextSpinnerConfig(chunk_size=500, chunk_by="paragraph")
             spinner = TextSpinner(config)
 
-            shards = await spinner.spin({'text': text, 'metadata': metadata or {}})
+            shards = await spinner.spin({"text": text, "metadata": metadata or {}})
             logger.info(f"Created {len(shards)} shards from text")
 
             # Convert to memories and store
@@ -354,12 +342,7 @@ class HoloLoom:
             logger.error(f"Text ingestion failed: {e}")
             return 0
 
-    async def ingest_web(
-        self,
-        url: str,
-        extract_images: bool = False,
-        max_depth: int = 0
-    ) -> int:
+    async def ingest_web(self, url: str, extract_images: bool = False, max_depth: int = 0) -> int:
         """
         Ingest webpage(s) into memory.
 
@@ -383,13 +366,11 @@ class HoloLoom:
 
         try:
             config = WebsiteSpinnerConfig(
-                extract_images=extract_images,
-                chunk_by='paragraph',
-                chunk_size=500
+                extract_images=extract_images, chunk_by="paragraph", chunk_size=500
             )
             spinner = WebsiteSpinner(config)
 
-            shards = await spinner.spin({'url': url})
+            shards = await spinner.spin({"url": url})
             logger.info(f"Scraped {len(shards)} shards from {url}")
 
             # Store in memory
@@ -404,10 +385,7 @@ class HoloLoom:
             return 0
 
     async def ingest_youtube(
-        self,
-        video_id: str,
-        languages: Optional[List[str]] = None,
-        chunk_duration: float = 60.0
+        self, video_id: str, languages: list[str] | None = None, chunk_duration: float = 60.0
     ) -> int:
         """
         Ingest YouTube video transcript into memory.
@@ -432,12 +410,11 @@ class HoloLoom:
 
         try:
             config = YouTubeSpinnerConfig(
-                chunk_duration=chunk_duration,
-                languages=languages or ['en']
+                chunk_duration=chunk_duration, languages=languages or ["en"]
             )
             spinner = YouTubeSpinner(config)
 
-            shards = await spinner.spin({'url': video_id, 'languages': languages or ['en']})
+            shards = await spinner.spin({"url": video_id, "languages": languages or ["en"]})
             logger.info(f"Transcribed {len(shards)} shards from video")
 
             # Store in memory
@@ -451,7 +428,7 @@ class HoloLoom:
             logger.error(f"YouTube ingestion failed: {e}")
             return 0
 
-    async def ingest_file(self, file_path: Union[str, Path]) -> int:
+    async def ingest_file(self, file_path: str | Path) -> int:
         """
         Ingest file into memory (auto-detects type).
 
@@ -471,33 +448,31 @@ class HoloLoom:
             return 0
 
         # Read file
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             text = f.read()
 
-        return await self.ingest_text(text, metadata={'source_file': str(path)})
+        return await self.ingest_text(text, metadata={"source_file": str(path)})
 
     async def analyze_narrative_depth(
-        self,
-        text: str,
-        include_full_result: bool = False
-    ) -> Dict[str, Any]:
+        self, text: str, include_full_result: bool = False
+    ) -> dict[str, Any]:
         """
         Analyze narrative depth of text using Matryoshka progressive gating.
-        
+
         This is a NEW feature that provides deep narrative intelligence:
         - Progressive depth levels (Surface → Symbolic → Archetypal → Mythic → Cosmic)
         - Joseph Campbell Hero's Journey stage detection
         - Universal character recognition
         - Archetypal pattern identification
         - Mythic truth extraction
-        
+
         Args:
             text: Text to analyze
             include_full_result: Include complete depth analysis result
-            
+
         Returns:
             Dict with depth analysis summary
-            
+
         Example:
             depth = await loom.analyze_narrative_depth(
                 "Odysseus met Athena at the crossroads..."
@@ -507,63 +482,105 @@ class HoloLoom:
         """
         if not self.enable_narrative_depth:
             return {
-                'error': 'Narrative depth not enabled',
-                'hint': 'Create HoloLoom with enable_narrative_depth=True'
+                "error": "Narrative depth not enabled",
+                "hint": "Create HoloLoom with enable_narrative_depth=True",
             }
-        
+
         try:
             # Analyze depth (with caching)
             result = await self.depth_analyzer.analyze_depth(text)
-            
+
             self.narrative_depth_count += 1
-            
+
             # Build summary
             summary = {
-                'max_depth': result.max_depth_achieved.name,
-                'complexity': result.total_complexity,
-                'confidence': result.bayesian_confidence,
-                'gates_unlocked': len([g for g in result.gates_unlocked if g]),
-                'deepest_meaning': result.deepest_meaning
+                "max_depth": result.max_depth_achieved.name,
+                "complexity": result.total_complexity,
+                "confidence": result.bayesian_confidence,
+                "gates_unlocked": len([g for g in result.gates_unlocked if g]),
+                "deepest_meaning": result.deepest_meaning,
             }
-            
+
             # Add symbolic elements
             if result.symbolic_layer and result.symbolic_layer.symbolic_elements:
-                summary['symbolic_elements'] = result.symbolic_layer.symbolic_elements
-            
+                summary["symbolic_elements"] = result.symbolic_layer.symbolic_elements
+
             # Add archetypal resonance
             if result.archetypal_layer and result.archetypal_layer.archetypal_resonance:
                 top_archetypes = sorted(
                     result.archetypal_layer.archetypal_resonance.items(),
                     key=lambda x: x[1],
-                    reverse=True
+                    reverse=True,
                 )[:5]
-                summary['top_archetypes'] = dict(top_archetypes)
-            
+                summary["top_archetypes"] = dict(top_archetypes)
+
             # Add mythic truths
             if result.mythic_layer and result.mythic_layer.universal_truths:
-                summary['mythic_truths'] = result.mythic_layer.universal_truths
-            
+                summary["mythic_truths"] = result.mythic_layer.universal_truths
+
             # Add cosmic truth
             if result.cosmic_truth:
-                summary['cosmic_truth'] = result.cosmic_truth
-            
+                summary["cosmic_truth"] = result.cosmic_truth
+
             # Add transformation journey
-            summary['transformation_journey'] = result.transformation_journey
-            
+            summary["transformation_journey"] = result.transformation_journey
+
             # Include full result if requested
             if include_full_result:
-                summary['full_result'] = result
-            
-            logger.info(f"Narrative depth analyzed: {summary['max_depth']} "
-                       f"(complexity: {summary['complexity']:.3f})")
-            
+                summary["full_result"] = result
+
+            logger.info(
+                f"Narrative depth analyzed: {summary['max_depth']} "
+                f"(complexity: {summary['complexity']:.3f})"
+            )
+
             return summary
-            
+
         except Exception as e:
             logger.error(f"Narrative depth analysis failed: {e}")
-            return {'error': str(e)}
+            return {"error": str(e)}
 
-    def get_stats(self) -> Dict[str, Any]:
+    def _build_conversation_context(self, recent_turns: int = 5) -> str:
+        """
+        Build conversation context string from recent chat history.
+
+        Args:
+            recent_turns: Number of recent turns to include
+
+        Returns:
+            Formatted conversation context string
+
+        Example context:
+            "Previous conversation:
+            User: What is Thompson Sampling?
+            Assistant: Thompson Sampling is a Bayesian exploration strategy...
+            User: How does it work?
+            Assistant: It maintains Beta distributions for each option..."
+        """
+        if not self.conversation_history:
+            return ""
+
+        # Get recent turns
+        recent = (
+            self.conversation_history[-recent_turns:]
+            if len(self.conversation_history) > recent_turns
+            else self.conversation_history
+        )
+
+        if not recent:
+            return ""
+
+        # Format as conversation
+        context_lines = ["Previous conversation:"]
+        for turn in recent:
+            context_lines.append(f"User: {turn['user']}")
+            context_lines.append(
+                f"Assistant: {turn['assistant'][:200]}..."
+            )  # Truncate long responses
+
+        return "\n".join(context_lines)
+
+    def get_stats(self) -> dict[str, Any]:
         """
         Get HoloLoom usage statistics.
 
@@ -575,15 +592,15 @@ class HoloLoom:
             print(f"Queries: {stats['query_count']}")
         """
         stats = {
-            'query_count': self.query_count,
-            'chat_count': self.chat_count,
-            'ingest_count': self.ingest_count,
-            'narrative_depth_count': self.narrative_depth_count,
-            'conversation_turns': len(self.conversation_history),
-            'conversation_mode': self.conversation_mode,
-            'pattern': self.config.mode.value,
-            'synthesis_enabled': self.enable_synthesis,
-            'narrative_depth_enabled': self.enable_narrative_depth
+            "query_count": self.query_count,
+            "chat_count": self.chat_count,
+            "ingest_count": self.ingest_count,
+            "narrative_depth_count": self.narrative_depth_count,
+            "conversation_turns": len(self.conversation_history),
+            "conversation_mode": self.conversation_mode,
+            "pattern": self.config.mode.value,
+            "synthesis_enabled": self.enable_synthesis,
+            "narrative_depth_enabled": self.enable_narrative_depth,
         }
 
         # Add narrative cache stats if available
@@ -591,23 +608,22 @@ class HoloLoom:
             try:
                 # Try to get cache stats if running in async context
                 import asyncio
+
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
-                    # Cannot await in sync context, create task
-                    task = asyncio.create_task(self.narrative_cache.get_stats())
-                    # Don't wait for it in sync context, skip
+                    # Cannot await in sync context, skip cache stats
                     pass
                 else:
                     # Can run_until_complete
                     cache_stats = loop.run_until_complete(self.narrative_cache.get_stats())
-                    stats['narrative_cache'] = cache_stats
+                    stats["narrative_cache"] = cache_stats
             except Exception as e:
                 logger.debug(f"Could not get cache stats: {e}")
                 pass
 
         # Add weaver stats
-        if hasattr(self.weaver, 'get_statistics'):
-            stats['weaving'] = self.weaver.get_statistics()
+        if hasattr(self.weaver, "get_statistics"):
+            stats["weaving"] = self.weaver.get_statistics()
 
         return stats
 
@@ -619,7 +635,7 @@ class HoloLoom:
 
     async def close(self):
         """Clean up resources."""
-        if hasattr(self.weaver, 'stop'):
+        if hasattr(self.weaver, "stop"):
             self.weaver.stop()
         logger.info("HoloLoom closed")
 
@@ -628,10 +644,9 @@ class HoloLoom:
 # Convenience Functions
 # ============================================================================
 
+
 async def create_hololoom(
-    pattern: str = "fast",
-    memory: str = "simple",
-    synthesis: bool = True
+    pattern: str = "fast", memory: str = "simple", synthesis: bool = True
 ) -> HoloLoom:
     """
     Convenience function to create HoloLoom instance.
@@ -644,11 +659,7 @@ async def create_hololoom(
     Returns:
         HoloLoom instance
     """
-    return await HoloLoom.create(
-        pattern=pattern,
-        memory_backend=memory,
-        enable_synthesis=synthesis
-    )
+    return await HoloLoom.create(pattern=pattern, memory_backend=memory, enable_synthesis=synthesis)
 
 
 # ============================================================================
@@ -656,30 +667,27 @@ async def create_hololoom(
 # ============================================================================
 
 if __name__ == "__main__":
+
     async def demo():
-        print("="*80)
+        print("=" * 80)
         print("HOLOLOOM UNIFIED API DEMO")
-        print("="*80)
+        print("=" * 80)
 
         # Create HoloLoom
         print("\nCreating HoloLoom...")
-        loom = await HoloLoom.create(
-            pattern="fast",
-            memory_backend="simple",
-            enable_synthesis=True
-        )
+        loom = await HoloLoom.create(pattern="fast", memory_backend="simple", enable_synthesis=True)
 
         print("HoloLoom created\n")
 
         # Query mode
-        print("="*80)
+        print("=" * 80)
         print("QUERY MODE")
-        print("="*80)
+        print("=" * 80)
 
         queries = [
             "What is HoloLoom?",
             "What is Thompson Sampling?",
-            "How does the weaving metaphor work?"
+            "How does the weaving metaphor work?",
         ]
 
         for query in queries:
@@ -688,20 +696,20 @@ if __name__ == "__main__":
             print(f"Response: {result.response[:100]}...")
             print(f"Tool: {result.tool_used}")
             print(f"Confidence: {result.confidence:.1%}")
-            if hasattr(result.trace, 'synthesis_result'):
+            if hasattr(result.trace, "synthesis_result"):
                 syn = result.trace.synthesis_result
                 print(f"Entities: {syn.get('entities', [])[:5]}")
                 print(f"Reasoning: {syn.get('reasoning_type', 'unknown')}")
 
         # Chat mode
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("CHAT MODE")
-        print("="*80)
+        print("=" * 80)
 
         messages = [
             "Tell me about the weaving architecture",
             "What are the stages?",
-            "How does synthesis work?"
+            "How does synthesis work?",
         ]
 
         for msg in messages:
@@ -710,9 +718,9 @@ if __name__ == "__main__":
             print(f"HoloLoom: {response[:150]}...")
 
         # Statistics
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("STATISTICS")
-        print("="*80)
+        print("=" * 80)
 
         stats = loom.get_stats()
         print(f"  Queries: {stats['query_count']}")
