@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from llm_providers import LLMClient
+from promptly_integration import PromptRegistry, PromptType
 
 logger = logging.getLogger(__name__)
 
@@ -66,15 +67,24 @@ class CodeGenerationEngine:
     Designed to be elegant, extensible, and production-ready.
     """
 
-    def __init__(self, llm_client: LLMClient):
+    def __init__(self, llm_client: LLMClient, prompt_registry: Optional[PromptRegistry] = None):
         """
         Initialize code generation engine.
 
         Args:
             llm_client: Initialized LLM client
+            prompt_registry: Optional Promptly registry (uses defaults if not provided)
         """
         self.llm = llm_client
-        self._system_prompts = self._initialize_system_prompts()
+        self.prompt_registry = prompt_registry
+
+        # Use Promptly if available, otherwise fallback to hardcoded prompts
+        if self.prompt_registry:
+            logger.info("Using Promptly prompt registry for code generation")
+            self._system_prompts = None  # Will fetch from registry on demand
+        else:
+            logger.warning("No prompt registry provided, using hardcoded prompts")
+            self._system_prompts = self._initialize_system_prompts()
 
     def _initialize_system_prompts(self) -> Dict[CodeTask, str]:
         """Initialize task-specific system prompts"""
@@ -204,6 +214,41 @@ Output format:
 <issues_or_edge_cases>"""
         }
 
+    def _get_system_prompt(self, task_type: CodeTask) -> str:
+        """
+        Get system prompt for task type.
+
+        Uses Promptly registry if available, otherwise fallback to hardcoded prompts.
+
+        Args:
+            task_type: Type of code generation task
+
+        Returns:
+            System prompt string
+        """
+        if self.prompt_registry:
+            # Map CodeTask to prompt name
+            prompt_name_map = {
+                CodeTask.GENERATE: "code_generation_system",
+                CodeTask.REFACTOR: "code_refactoring",
+                CodeTask.FIX: "bug_fixing",
+                CodeTask.TEST: "test_generation",
+                CodeTask.REVIEW: "code_review_system",
+                CodeTask.EXPLAIN: "code_explanation"
+            }
+
+            prompt_name = prompt_name_map.get(task_type, "code_generation_system")
+            prompt_template = self.prompt_registry.get(prompt_name)
+
+            if prompt_template:
+                return prompt_template.template
+            else:
+                logger.warning(f"Prompt '{prompt_name}' not found in registry, using fallback")
+                return self._system_prompts.get(task_type, self._system_prompts[CodeTask.GENERATE])
+        else:
+            # Fallback to hardcoded prompts
+            return self._system_prompts.get(task_type, self._system_prompts[CodeTask.GENERATE])
+
     async def generate(
         self,
         task: str,
@@ -224,8 +269,8 @@ Output format:
         # Build prompt from task and context
         prompt = self._build_prompt(task, context, task_type)
 
-        # Get system prompt for task type
-        system_prompt = self._system_prompts.get(task_type, self._system_prompts[CodeTask.GENERATE])
+        # Get system prompt for task type (from Promptly or fallback)
+        system_prompt = self._get_system_prompt(task_type)
 
         # Generate with LLM
         logger.info(f"Generating code: {task_type.value} - {task[:50]}...")

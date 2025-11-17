@@ -38,6 +38,7 @@ from api_connector import APIConnector, APIMetadata
 from documentation_crawler import DocumentationCrawler
 from forum_search import ForumSearchEngine
 from hololoom_rag_integration import HoloLoomRAGIntegration
+from promptly_integration import PromptRegistry, initialize_squad_prompts
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -212,6 +213,7 @@ forum_search: Optional[ForumSearchEngine] = None
 config: Optional[Config] = None
 audit_trail: Optional[AuditTrail] = None
 hololoom_rag: Optional[HoloLoomRAGIntegration] = None  # NEW: HoloLoom RAG integration
+prompt_registry: Optional[PromptRegistry] = None  # NEW: Promptly integration
 
 # In-memory storage for ingested context (legacy, now also stored in HoloLoom)
 ingested_shards: List[MemoryShard] = []
@@ -230,18 +232,23 @@ context_metadata: Dict[str, Any] = {
 @app.on_event("startup")
 async def startup():
     """Initialize Squad server with LLM and all engines"""
-    global llm_client, code_engine, codebase_engine, api_connector, doc_crawler, forum_search, config, audit_trail, hololoom_rag
+    global llm_client, code_engine, codebase_engine, api_connector, doc_crawler, forum_search, config, audit_trail, hololoom_rag, prompt_registry
 
-    logger.info("Starting Squad server (Enhanced with RAG + HoloLoom)...")
+    logger.info("Starting Squad server (Enhanced with RAG + HoloLoom + Promptly)...")
+
+    # Initialize Promptly prompt registry
+    prompt_registry = PromptRegistry()
+    initialize_squad_prompts(prompt_registry)
+    logger.info(f"Promptly registry initialized with {len(prompt_registry.prompts)} prompts")
 
     # Initialize LLM client (auto-selects best provider)
     llm_client = LLMClient()
     provider_info = llm_client.get_provider_info()
     logger.info(f"LLM Provider: {provider_info['provider']} ({provider_info['model']})")
 
-    # Initialize code generation engine
-    code_engine = CodeGenerationEngine(llm_client)
-    logger.info("Code generation engine initialized")
+    # Initialize code generation engine with prompt registry
+    code_engine = CodeGenerationEngine(llm_client, prompt_registry=prompt_registry)
+    logger.info("Code generation engine initialized with Promptly")
 
     # Initialize RAG engines
     codebase_engine = CodebaseIngestionEngine()
@@ -361,6 +368,18 @@ async def generate_code(request: CodeGenerationRequest):
             language=request.language,
             context=context
         )
+
+        # Track prompt performance in Promptly registry
+        if prompt_registry:
+            try:
+                prompt_name = "code_generation_system"  # Default
+                prompt_registry.update_performance(
+                    prompt_name=prompt_name,
+                    quality_score=result.confidence
+                )
+                logger.info(f"Tracked prompt performance: {prompt_name} = {result.confidence:.2f}")
+            except Exception as e:
+                logger.warning(f"Failed to track prompt performance: {e}")
 
         return CodeGenerationResponse(
             code=result.code,
@@ -910,6 +929,135 @@ async def get_context_summary():
         "forum_searches": len(context_metadata["forum_posts"]),
         "metadata": context_metadata
     }
+
+
+# ============================================================================
+# API Endpoints - Prompt Management (Promptly)
+# ============================================================================
+
+@app.get("/prompts")
+async def list_prompts():
+    """List all prompts in the registry"""
+    if not prompt_registry:
+        raise HTTPException(status_code=503, detail="Prompt registry not initialized")
+
+    prompts = []
+    for prompt_id, prompt in prompt_registry.prompts.items():
+        prompts.append({
+            "id": prompt.id,
+            "name": prompt.name,
+            "type": prompt.type.value,
+            "provider": prompt.provider.value,
+            "version": prompt.version,
+            "created_at": prompt.created_at,
+            "updated_at": prompt.updated_at
+        })
+
+    return {
+        "total": len(prompts),
+        "prompts": prompts
+    }
+
+
+@app.get("/prompts/{prompt_id}")
+async def get_prompt(prompt_id: str):
+    """Get a specific prompt by ID"""
+    if not prompt_registry:
+        raise HTTPException(status_code=503, detail="Prompt registry not initialized")
+
+    prompt = prompt_registry.get_prompt_by_id(prompt_id)
+    if not prompt:
+        raise HTTPException(status_code=404, detail=f"Prompt {prompt_id} not found")
+
+    return {
+        "id": prompt.id,
+        "name": prompt.name,
+        "type": prompt.type.value,
+        "provider": prompt.provider.value,
+        "template": prompt.template,
+        "variables": prompt.variables,
+        "version": prompt.version,
+        "created_at": prompt.created_at,
+        "updated_at": prompt.updated_at,
+        "metadata": prompt.metadata
+    }
+
+
+@app.get("/prompts/performance/leaderboard")
+async def get_prompt_leaderboard():
+    """Get prompt performance leaderboard"""
+    if not prompt_registry:
+        raise HTTPException(status_code=503, detail="Prompt registry not initialized")
+
+    leaderboard = prompt_registry.get_leaderboard(limit=20)
+
+    return {
+        "total": len(leaderboard),
+        "leaderboard": leaderboard
+    }
+
+
+class PromptCreateRequest(BaseModel):
+    """Request to create a new prompt"""
+    name: str
+    template: str
+    type: str = "system"  # system, user, rag_context
+    provider: str = "universal"  # universal, ollama, anthropic, openai
+    variables: Optional[List[str]] = None
+
+
+@app.post("/prompts")
+async def create_prompt(request: PromptCreateRequest):
+    """Create a new prompt in the registry"""
+    if not prompt_registry:
+        raise HTTPException(status_code=503, detail="Prompt registry not initialized")
+
+    try:
+        from promptly_integration import PromptType, PromptProvider
+
+        # Convert strings to enums
+        prompt_type = PromptType[request.type.upper()]
+        prompt_provider = PromptProvider[request.provider.upper()]
+
+        prompt = prompt_registry.register(
+            name=request.name,
+            template=request.template,
+            type=prompt_type,
+            provider=prompt_provider,
+            variables=request.variables
+        )
+
+        return {
+            "success": True,
+            "prompt_id": prompt.id,
+            "name": prompt.name,
+            "version": prompt.version
+        }
+
+    except KeyError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid type or provider: {e}")
+    except Exception as e:
+        logger.error(f"Failed to create prompt: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class PromptUpdateRequest(BaseModel):
+    """Request to update a prompt"""
+    template: str
+    change_summary: str
+
+
+@app.put("/prompts/{prompt_id}")
+async def update_prompt(prompt_id: str, request: PromptUpdateRequest):
+    """Update an existing prompt (creates new version)"""
+    if not prompt_registry:
+        raise HTTPException(status_code=503, detail="Prompt registry not initialized")
+
+    # TODO: Implement update_prompt in PromptRegistry
+    raise HTTPException(
+        status_code=501,
+        detail="Prompt versioning not yet implemented. Use POST /prompts to create a new prompt variant."
+    )
 
 
 # ============================================================================

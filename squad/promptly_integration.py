@@ -225,21 +225,48 @@ class PromptRegistry:
 
         return None
 
+    def get_prompt_by_id(self, prompt_id: str) -> Optional[PromptTemplate]:
+        """
+        Get prompt by ID.
+
+        Args:
+            prompt_id: Prompt ID
+
+        Returns:
+            PromptTemplate or None
+        """
+        return self.prompts.get(prompt_id)
+
     def update_performance(
         self,
-        prompt_id: str,
-        score: float,
+        prompt_name: Optional[str] = None,
+        prompt_id: Optional[str] = None,
+        score: float = 0.0,
+        quality_score: Optional[float] = None,  # Alias for score
         feedback: Optional[Dict[str, Any]] = None
     ):
         """
         Update prompt performance based on usage.
 
         Args:
-            prompt_id: Prompt ID
+            prompt_name: Prompt name (alternative to prompt_id)
+            prompt_id: Prompt ID (alternative to prompt_name)
             score: Performance score (0.0-1.0)
+            quality_score: Alias for score parameter
             feedback: Optional feedback data
         """
-        if prompt_id not in self.prompts:
+        # Use quality_score if provided (for backwards compatibility)
+        if quality_score is not None:
+            score = quality_score
+
+        # Get prompt by name or ID
+        if prompt_name:
+            prompt_template = self.get(prompt_name)
+            if not prompt_template:
+                return
+            prompt_id = prompt_template.id
+
+        if not prompt_id or prompt_id not in self.prompts:
             return
 
         prompt = self.prompts[prompt_id]
