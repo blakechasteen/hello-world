@@ -222,7 +222,7 @@ Performance: ~1ms overhead per request
 **Engine Integrations:**
 - ✅ **Unity** (C# client, 650+ lines)
 - ✅ **Godot** (GDScript client, 650+ lines, plugin system)
-- 🔜 **Unreal Engine** (C++ client, Blueprint support)
+- ✅ **Unreal Engine** (C++ client, Blueprint support, production ready)
 
 **Deployment Options:**
 - ✅ Docker (one-command deployment)
@@ -239,6 +239,11 @@ Performance: ~1ms overhead per request
 | **Dynamic Quests** | ✅ LLM-generated | ❌ Scripted | ❌ Scripted | ❌ Scripted |
 | **Voice Synthesis** | ✅ 4 backends | 🟡 DIY | 🟡 DIY | 🟡 DIY |
 | **Session Memory** | ✅ Knowledge graph | ❌ Manual DB | ❌ Manual DB | ❌ Manual DB |
+| **Multi-NPC Conversations** | ✅ Built-in | ❌ Manual | ❌ Manual | ❌ Manual |
+| **Fine-Tuning Support** | ✅ Built-in pipeline | ❌ Manual | ❌ Manual | ❌ Manual |
+| **Unreal Support** | ✅ C++ + Blueprint | N/A | N/A | 🟡 Custom |
+| **Unity Support** | ✅ C# client | ✅ Native | ❌ | ❌ |
+| **Godot Support** | ✅ GDScript + addon | ❌ | ✅ Native | ❌ |
 | **Multi-Platform** | ✅ HTTP API | 🟡 Unity only | 🟡 Godot only | 🟡 Unreal only |
 | **Performance** | ✅ 380 req/min | 🟡 Varies | 🟡 Varies | 🟡 Varies |
 | **Safety** | ✅ Built-in | ❌ Manual | ❌ Manual | ❌ Manual |
@@ -433,10 +438,13 @@ func _on_action_received(action: ElleModels.ElleGameAction):
 - Safety & alignment (guardrails, audit trail)
 - Demo game (The Rusty Mug Tavern)
 
-### 🚧 Phase 3: Advanced Features (In Progress)
-- [ ] Unreal Engine integration
+### ✅ Phase 3: Advanced Features (Complete - v1.0)
+- [x] Unreal Engine integration (C++ client, Blueprint support)
+- [x] Multi-NPC conversations (3 modes: TWO_NPC, GROUP, PLAYER_MEDIATED)
+- [x] LLM fine-tuning pipeline (data export, model versioning, A/B testing)
+
+### 🚧 Phase 4: Multiplayer & Autonomy (In Progress)
 - [ ] Multiplayer support (Redis-backed shared world)
-- [ ] LLM fine-tuning pipeline
 - [ ] Advanced NPC autonomy (GOAP, daily routines)
 - [ ] Visual workflow builder
 

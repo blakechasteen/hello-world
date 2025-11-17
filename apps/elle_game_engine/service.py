@@ -785,6 +785,391 @@ def create_app() -> FastAPI:
         _voice_engine.clear_cache()
         return {"status": "success", "message": "Voice cache cleared"}
 
+    # ========================================================================
+    # Multi-NPC Conversation Endpoints
+    # ========================================================================
+
+    from .conversation import ConversationCoordinator, ConversationMode
+
+    _conversation_coordinator: Optional[ConversationCoordinator] = None
+
+    def _get_conversation_coordinator() -> ConversationCoordinator:
+        """Get or create conversation coordinator."""
+        nonlocal _conversation_coordinator
+        if _conversation_coordinator is None:
+            _conversation_coordinator = ConversationCoordinator(_policy)
+        return _conversation_coordinator
+
+    @app.post("/elle/game/conversation/start")
+    async def start_conversation(
+        npc_ids: List[str],
+        topic: Optional[str] = None,
+        mode: Optional[str] = None
+    ):
+        """
+        Start a multi-NPC conversation.
+
+        Args:
+            npc_ids: List of NPC IDs (2+)
+            topic: Optional conversation topic
+            mode: Optional mode ("two_npc", "group", "player_mediated")
+
+        Returns:
+            Conversation ID and initial state
+        """
+        coordinator = _get_conversation_coordinator()
+
+        # Parse mode
+        conv_mode = None
+        if mode:
+            try:
+                conv_mode = ConversationMode(mode)
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid mode: {mode}"
+                )
+
+        try:
+            conversation_id = coordinator.start_conversation(
+                npc_ids=npc_ids,
+                topic=topic,
+                mode=conv_mode
+            )
+
+            conversation = coordinator.get_conversation(conversation_id)
+
+            return {
+                "conversation_id": conversation_id,
+                "participant_npc_ids": list(conversation.participant_npc_ids),
+                "mode": conversation.mode.value,
+                "topic": conversation.topic,
+                "status": "active"
+            }
+
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+
+    @app.post("/elle/game/conversation/{conversation_id}/turn")
+    async def conversation_turn(
+        conversation_id: str,
+        request: GameActionRequest,
+        player_input: Optional[str] = None
+    ):
+        """
+        Get next turn in conversation.
+
+        Args:
+            conversation_id: Conversation identifier
+            request: Game state
+            player_input: Optional player input
+
+        Returns:
+            Next NPC's dialogue and updated conversation state
+        """
+        coordinator = _get_conversation_coordinator()
+
+        conversation = coordinator.get_conversation(conversation_id)
+        if not conversation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation {conversation_id} not found"
+            )
+
+        if not conversation.is_active():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Conversation {conversation_id} is no longer active"
+            )
+
+        try:
+            game_state = _pydantic_to_game_state(request.game_state)
+            action = await coordinator.next_turn(
+                conversation_id,
+                game_state,
+                player_input
+            )
+
+            return {
+                "action": _game_action_to_response(action),
+                "turn_number": len(conversation.turns),
+                "is_active": conversation.is_active(),
+                "conversation_id": conversation_id
+            }
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error generating turn: {str(e)}"
+            )
+
+    @app.get("/elle/game/conversation/{conversation_id}")
+    async def get_conversation(conversation_id: str):
+        """
+        Get conversation state.
+
+        Args:
+            conversation_id: Conversation identifier
+
+        Returns:
+            Conversation state including all turns
+        """
+        coordinator = _get_conversation_coordinator()
+
+        conversation = coordinator.get_conversation(conversation_id)
+        if not conversation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation {conversation_id} not found"
+            )
+
+        return {
+            "conversation_id": conversation.conversation_id,
+            "participant_npc_ids": list(conversation.participant_npc_ids),
+            "mode": conversation.mode.value,
+            "topic": conversation.topic,
+            "turn_count": len(conversation.turns),
+            "is_active": conversation.is_active(),
+            "turns": [
+                {
+                    "speaker_npc_id": turn.speaker_npc_id,
+                    "listener_npc_ids": turn.listener_npc_ids,
+                    "text": turn.text,
+                    "tone": turn.tone,
+                    "timestamp": turn.timestamp.isoformat(),
+                    "is_player": turn.is_player
+                }
+                for turn in conversation.turns
+            ],
+            "started_at": conversation.started_at.isoformat(),
+            "last_activity": conversation.last_activity.isoformat()
+        }
+
+    @app.post("/elle/game/conversation/{conversation_id}/end")
+    async def end_conversation(conversation_id: str):
+        """
+        End a conversation.
+
+        Args:
+            conversation_id: Conversation identifier
+
+        Returns:
+            Success message and final conversation state
+        """
+        coordinator = _get_conversation_coordinator()
+
+        conversation = coordinator.get_conversation(conversation_id)
+        if not conversation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation {conversation_id} not found"
+            )
+
+        success = coordinator.end_conversation(conversation_id)
+
+        return {
+            "status": "ended",
+            "conversation_id": conversation_id,
+            "total_turns": len(conversation.turns),
+            "success": success
+        }
+
+    @app.get("/elle/game/conversation/active")
+    async def list_active_conversations():
+        """
+        List all active conversations.
+
+        Returns:
+            List of active conversation IDs and participant counts
+        """
+        coordinator = _get_conversation_coordinator()
+
+        # Cleanup inactive first
+        coordinator.cleanup_inactive_conversations()
+
+        return {
+            "active_conversations": [
+                {
+                    "conversation_id": conv_id,
+                    "participant_count": len(conv.participant_npc_ids),
+                    "turn_count": len(conv.turns),
+                    "mode": conv.mode.value,
+                    "is_active": conv.is_active()
+                }
+                for conv_id, conv in coordinator.active_conversations.items()
+            ],
+            "total_active": len(coordinator.active_conversations)
+        }
+
+    # ========================================================================
+    # Fine-Tuning Export Endpoints
+    # ========================================================================
+
+    from .fine_tuning import (
+        FineTuningExporter,
+        FineTuningDataset,
+        DatasetQuality,
+        ModelVersionManager
+    )
+
+    _finetuning_exporter = FineTuningExporter()
+    _model_version_manager = ModelVersionManager()
+
+    @app.post("/elle/game/fine-tuning/export")
+    async def export_for_finetuning(
+        game_state: GameStateRequest,
+        player_message: str,
+        npc_response: str,
+        npc_id: str,
+        quality: str = "medium"
+    ):
+        """
+        Export single conversation for fine-tuning.
+
+        Args:
+            game_state: Game state context
+            player_message: Player's message
+            npc_response: NPC's response
+            npc_id: NPC identifier
+            quality: Quality rating ("high", "medium", "low")
+
+        Returns:
+            Formatted training example
+        """
+        try:
+            quality_enum = DatasetQuality(quality)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid quality: {quality}"
+            )
+
+        example = _finetuning_exporter.export_conversation(
+            game_state=game_state.dict(),
+            player_message=player_message,
+            npc_response=npc_response,
+            npc_id=npc_id,
+            quality=quality_enum
+        )
+
+        return {
+            "messages": example.messages,
+            "quality": example.quality.value,
+            "metadata": example.metadata,
+            "openai_format": example.to_jsonl(),
+            "anthropic_format": example.to_anthropic_format()
+        }
+
+    @app.post("/elle/game/fine-tuning/dataset/create")
+    async def create_dataset(
+        name: str,
+        examples: List[Dict[str, Any]],
+        provider: str = "openai"
+    ):
+        """
+        Create fine-tuning dataset from examples.
+
+        Args:
+            name: Dataset name
+            examples: List of conversation examples
+            provider: "openai" or "anthropic"
+
+        Returns:
+            Dataset statistics and export path
+        """
+        dataset = FineTuningDataset(name=name)
+
+        for ex_data in examples:
+            from .fine_tuning import ConversationExample
+            example = ConversationExample(
+                messages=ex_data["messages"],
+                quality=DatasetQuality(ex_data.get("quality", "medium"))
+            )
+            dataset.add_example(example)
+
+        # Export
+        output_dir = _finetuning_exporter.output_dir
+        output_file = output_dir / f"{name}_{provider}.jsonl"
+
+        if provider == "openai":
+            dataset.export_openai_jsonl(str(output_file))
+        else:
+            dataset.export_anthropic_jsonl(str(output_file))
+
+        return {
+            "dataset_name": name,
+            "output_file": str(output_file),
+            "statistics": dataset.get_statistics(),
+            "provider": provider
+        }
+
+    @app.get("/elle/game/fine-tuning/models/active")
+    async def get_active_model():
+        """Get currently active fine-tuned model."""
+        active = _model_version_manager.get_active_model()
+
+        if not active:
+            return {"active_model": None}
+
+        return {
+            "active_model": active.to_dict()
+        }
+
+    @app.get("/elle/game/fine-tuning/models/list")
+    async def list_models():
+        """List all fine-tuned model versions."""
+        return {
+            "models": [
+                version.to_dict()
+                for version in _model_version_manager.versions.values()
+            ]
+        }
+
+    @app.post("/elle/game/fine-tuning/models/{model_id}/activate")
+    async def activate_model(model_id: str):
+        """Set model as active for production use."""
+        _model_version_manager.set_active(model_id)
+
+        return {
+            "status": "success",
+            "active_model_id": model_id
+        }
+
+    @app.post("/elle/game/fine-tuning/models/{model_id}/metrics")
+    async def update_model_metrics(
+        model_id: str,
+        metrics: Dict[str, float]
+    ):
+        """
+        Update model performance metrics.
+
+        Args:
+            model_id: Model identifier
+            metrics: Performance metrics (e.g., {"accuracy": 0.95, "latency_ms": 150})
+        """
+        _model_version_manager.update_metrics(model_id, metrics)
+
+        return {
+            "status": "success",
+            "model_id": model_id,
+            "updated_metrics": metrics
+        }
+
+    @app.get("/elle/game/fine-tuning/models/compare")
+    async def compare_models(model_a: str, model_b: str):
+        """Compare two model versions."""
+        try:
+            comparison = _model_version_manager.compare_models(model_a, model_b)
+            return comparison
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+            )
+
     return app
 
 
