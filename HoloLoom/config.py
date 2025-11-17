@@ -102,6 +102,13 @@ class Config:
     zero_copy_cache_path: str = '.cache/embeddings.mmap'  # Persistent cache location
     zero_copy_cache_size: int = 10000  # Maximum embeddings to cache
 
+    # Wool Storage Layer (November 17, 2025) - Content-addressable zero-copy storage
+    enable_wool_storage: bool = True  # Enable wool storage layer (4.5x memory savings)
+    wool_storage_path: str = './data/wool'  # Wool storage base directory
+    wool_mmap_cache_size: int = 1000  # Number of mmap handles to cache
+    enable_zerocopy_shards: bool = False  # Use ZeroCopyMemoryShard instead of MemoryShard (gradual rollout)
+    auto_convert_legacy: bool = False  # Automatically convert legacy shards to zero-copy on add
+
     # Smart Query Routing (November 2025) - 100% accuracy, <1ms latency
     enable_smart_routing: bool = True  # Enable smart query routing with fast paths
     routing_classifier: str = "moonshot"  # "baseline" or "moonshot"
@@ -427,7 +434,11 @@ class Config:
             linguistic_mode="both",
             use_compositional_cache=True,
             # Zero-copy embeddings (1.4x speedup, 50% memory savings)
-            enable_zero_copy_embeddings=True
+            enable_zero_copy_embeddings=True,
+            # Wool storage (4.5x memory savings per node)
+            enable_wool_storage=True,
+            enable_zerocopy_shards=False,  # Gradual rollout
+            auto_convert_legacy=False
         )
 
     @classmethod
@@ -448,7 +459,11 @@ class Config:
             linguistic_mode="both",
             use_compositional_cache=True,
             # Zero-copy embeddings (1.4x speedup, 50% memory savings)
-            enable_zero_copy_embeddings=True
+            enable_zero_copy_embeddings=True,
+            # Wool storage (4.5x memory savings per node)
+            enable_wool_storage=True,
+            enable_zerocopy_shards=False,  # Gradual rollout
+            auto_convert_legacy=False
         )
     
     def to_dict(self) -> Dict:

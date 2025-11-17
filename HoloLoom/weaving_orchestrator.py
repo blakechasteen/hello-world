@@ -65,6 +65,10 @@ from HoloLoom.memory.graph import KG  # Yarn Graph for thread storage
 from HoloLoom.policy.unified import create_policy
 from HoloLoom.alignment.safety_guardrails import create_guardrails, SafetyGuardrails
 
+# Wool Storage Layer (November 17, 2025 - Zero-Copy Architecture)
+from HoloLoom.wool import WoolStorage
+from HoloLoom.wool.hybrid_kg import HybridKG
+
 # Production Hardening (Part 5: Days 21-25)
 try:
     from HoloLoom.context import (
@@ -566,6 +570,16 @@ class WeavingOrchestrator:
         self.yarn_graph_param = yarn_graph  # User-provided Yarn Graph (KG)
         self.shards = shards or []  # Static shards (backward compatibility)
 
+        # Initialize Wool Storage Layer (Phase 1: November 17, 2025)
+        self.wool: Optional[WoolStorage] = None
+        if self.cfg.enable_wool_storage:
+            from pathlib import Path
+            self.wool = WoolStorage(
+                base_path=Path(self.cfg.wool_storage_path),
+                enable_cache=True
+            )
+            self.logger.info(f"Initialized WoolStorage at {self.cfg.wool_storage_path}")
+
         # mythRL Protocol-based architecture
         self.enable_complexity_auto_detect = enable_complexity_auto_detect
         self._protocols: Dict[str, Any] = {}  # Registered protocol implementations
@@ -800,13 +814,31 @@ class WeavingOrchestrator:
                 self.yarn_graph = WeavingMemoryAdapter(backend=self.memory, backend_type="factory")
             self.logger.info("Using persistent memory backend")
         elif self.yarn_graph_param:
-            # Use KG instance directly (preferred modern API)
-            self.yarn_graph = self.yarn_graph_param
-            self.logger.info(f"Using Yarn Graph (KG) with {self.yarn_graph.G.number_of_nodes()} nodes")
+            # Use KG instance (preferred modern API)
+            # Wrap with HybridKG if wool storage enabled (Phase 1)
+            if self.wool:
+                self.yarn_graph = HybridKG(
+                    wool_storage=self.wool,
+                    base_kg=self.yarn_graph_param
+                )
+                self.logger.info(f"Using HybridKG (zero-copy enabled) with {self.yarn_graph_param.G.number_of_nodes()} nodes")
+            else:
+                self.yarn_graph = self.yarn_graph_param
+                self.logger.info(f"Using Yarn Graph (KG) with {self.yarn_graph.G.number_of_nodes()} nodes")
         else:
             # Use in-memory YarnGraph with shards (backward compatibility)
-            self.yarn_graph = YarnGraph(self.shards)
-            self.logger.info(f"Using in-memory YarnGraph (legacy) with {len(self.shards)} shards")
+            # Wrap with HybridKG if wool storage enabled (Phase 1)
+            from HoloLoom.memory.yarn_graph import YarnGraph
+            base_yarn = YarnGraph(self.shards)
+            if self.wool:
+                self.yarn_graph = HybridKG(
+                    wool_storage=self.wool,
+                    base_kg=base_yarn.kg  # Extract KG from YarnGraph
+                )
+                self.logger.info(f"Using HybridKG (zero-copy enabled) with {len(self.shards)} shards")
+            else:
+                self.yarn_graph = base_yarn
+                self.logger.info(f"Using in-memory YarnGraph (legacy) with {len(self.shards)} shards")
 
         # 3. Component factories (will be instantiated per-query with pattern spec)
         self.embedder = MatryoshkaEmbeddings(
@@ -3191,6 +3223,11 @@ class WeavingOrchestrator:
             self.logger.info("Closing reflection buffer...")
             await self.reflection_buffer.flush()
             await self.reflection_buffer.close()
+
+        # Close wool storage (Phase 1: November 17, 2025)
+        if self.wool:
+            self.logger.info("Closing wool storage...")
+            self.wool.close()
 
         # Close memory backend connections
         if self.memory:
