@@ -1,0 +1,116 @@
+# HoloLoom Phase 3A Dependencies - Multi-Modal Embeddings
+# ==========================================================
+# Install with: pip install -r requirements-phase3.txt
+#
+# This adds multi-modal support (images, audio, video) to HoloLoom.
+# All dependencies support graceful degradation - the system will work
+# with partial installations, just with reduced functionality.
+
+# ============================================================================
+# Vision / Image Processing
+# ============================================================================
+
+# CLIP for vision-language embeddings
+transformers>=4.35.0                 # Hugging Face transformers (includes CLIP)
+torch>=2.1.0                         # PyTorch (required for transformers)
+
+# Image processing
+pillow>=10.0.0                       # PIL for image loading
+opencv-python>=4.8.0                 # OpenCV for advanced image/video processing
+
+# OCR (optional but recommended)
+pytesseract>=0.3.10                  # Tesseract OCR wrapper
+# NOTE: Requires tesseract binary installed separately:
+#   Ubuntu/Debian: sudo apt-get install tesseract-ocr
+#   macOS: brew install tesseract
+#   Windows: Download from https://github.com/UB-Mannheim/tesseract/wiki
+
+# ============================================================================
+# Audio Processing
+# ============================================================================
+
+# Whisper for speech-to-text
+openai-whisper>=20231117             # OpenAI Whisper (includes torch)
+
+# Audio feature extraction
+librosa>=0.10.0                      # Audio analysis and feature extraction
+soundfile>=0.12.0                    # Audio file I/O
+
+# Optional: Advanced audio processing
+# pyannote-audio>=3.0.0              # Speaker diarization (requires signup)
+# noisereduce>=3.0.0                 # Noise reduction
+
+# ============================================================================
+# Video Processing
+# ============================================================================
+
+# Scene detection (optional but recommended)
+scenedetect[opencv]>=0.6.2           # Scene change detection
+
+# Video manipulation (optional)
+# moviepy>=1.0.3                     # Video editing and processing
+# ffmpeg-python>=0.2.0               # FFmpeg wrapper
+
+# NOTE: Video processing requires ffmpeg binary installed separately:
+#   Ubuntu/Debian: sudo apt-get install ffmpeg
+#   macOS: brew install ffmpeg
+#   Windows: Download from https://ffmpeg.org/download.html
+
+# ============================================================================
+# Core Dependencies (likely already installed from Phase 1-2)
+# ============================================================================
+
+numpy>=1.24.0                        # Numerical computing
+scipy>=1.11.0                        # Scientific computing (for spectral features)
+
+# These should already be installed from previous phases:
+# networkx>=3.0                      # Graph algorithms
+# sentence-transformers>=2.2.0       # Text embeddings
+# qdrant-client>=1.7.0               # Vector database
+
+# ============================================================================
+# Development / Testing (optional)
+# ============================================================================
+
+# pytest>=7.4.0                      # Testing framework
+# pytest-asyncio>=0.21.0             # Async testing support
+# pytest-cov>=4.1.0                  # Coverage reporting
+
+# ============================================================================
+# Installation Notes
+# ============================================================================
+#
+# Minimal installation (text + basic image):
+#   pip install transformers torch pillow
+#
+# Recommended installation (all modalities):
+#   pip install -r requirements-phase3.txt
+#
+# GPU support (for faster encoding):
+#   - Install CUDA toolkit from https://developer.nvidia.com/cuda-downloads
+#   - Install PyTorch with CUDA:
+#     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+#
+# System requirements:
+#   - RAM: 8GB minimum, 16GB recommended
+#   - Storage: 5GB for models (CLIP, Whisper)
+#   - GPU: Optional but recommended for video processing
+#
+# Model downloads:
+#   - CLIP models (~350MB): Downloaded automatically on first use
+#   - Whisper models (39MB-2.9GB): Downloaded automatically, size depends on model
+#     - tiny: 39MB (fastest, lowest quality)
+#     - base: 74MB (recommended for most use cases)
+#     - small: 244MB
+#     - medium: 769MB
+#     - large: 2.9GB (best quality, slowest)
+#
+# ============================================================================
+# Compatibility
+# ============================================================================
+#
+# Python: 3.8+ (3.10+ recommended)
+# OS: Linux, macOS, Windows
+# Architecture: x86_64, ARM64 (Apple Silicon supported)
+#
+# ============================================================================
