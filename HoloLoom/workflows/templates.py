@@ -477,6 +477,683 @@ class WorkflowTemplates:
             default_inputs={'query': 'What is Thompson Sampling?'}
         ))
 
+        # 6. SQL Query Pipeline
+        self.register(WorkflowTemplate(
+            template_id='sql_pipeline',
+            name='SQL Query Pipeline',
+            category=TemplateCategory.DATA,
+            description='Database query execution with validation and formatting',
+            tags=['sql', 'database', 'data', 'query'],
+            use_cases=[
+                'Execute and validate SQL queries',
+                'Transform database results',
+                'Query performance analysis'
+            ],
+            difficulty='intermediate',
+            nodes=[
+                {
+                    'id': 'node_1',
+                    'agentType': 'llm_prompt',
+                    'x': 100,
+                    'y': 200,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.2,
+                        'max_tokens': 500,
+                        'prompt_type': 'sql_generator'
+                    }
+                },
+                {
+                    'id': 'node_2',
+                    'agentType': 'safety',
+                    'x': 300,
+                    'y': 200,
+                    'config': {
+                        'risk_threshold': 'HIGH',
+                        'enable_human_in_loop': True,
+                        'check_sql_injection': True
+                    }
+                },
+                {
+                    'id': 'node_3',
+                    'agentType': 'data_transformer',
+                    'x': 500,
+                    'y': 200,
+                    'config': {
+                        'operations': ['validate', 'transform', 'normalize'],
+                        'format': 'json'
+                    }
+                },
+                {
+                    'id': 'node_4',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 200,
+                    'config': {
+                        'format': 'json'
+                    }
+                }
+            ],
+            connections=[
+                {'id': 'conn_1', 'from': 'node_1', 'to': 'node_2'},
+                {'id': 'conn_2', 'from': 'node_2', 'to': 'node_3'},
+                {'id': 'conn_3', 'from': 'node_3', 'to': 'node_4'}
+            ],
+            default_inputs={'table': 'users', 'query': 'Get active users from last 30 days'}
+        ))
+
+        # 7. Email Analysis
+        self.register(WorkflowTemplate(
+            template_id='email_analysis',
+            name='Email Analysis Pipeline',
+            category=TemplateCategory.ANALYSIS,
+            description='Parse, classify, and extract insights from emails',
+            tags=['email', 'analysis', 'nlp', 'classification'],
+            use_cases=[
+                'Email spam detection',
+                'Sentiment analysis of customer emails',
+                'Automated email categorization'
+            ],
+            difficulty='intermediate',
+            nodes=[
+                {
+                    'id': 'node_1',
+                    'agentType': 'data_transformer',
+                    'x': 100,
+                    'y': 200,
+                    'config': {
+                        'operations': ['parse', 'extract_metadata'],
+                        'format': 'json'
+                    }
+                },
+                {
+                    'id': 'node_2',
+                    'agentType': 'sentiment_analyzer',
+                    'x': 300,
+                    'y': 100,
+                    'config': {
+                        'model': 'distilbert',
+                        'return_all_scores': True
+                    }
+                },
+                {
+                    'id': 'node_3',
+                    'agentType': 'llm_prompt',
+                    'x': 300,
+                    'y': 300,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.3,
+                        'prompt_type': 'email_classifier'
+                    }
+                },
+                {
+                    'id': 'node_4',
+                    'agentType': 'synthesizer',
+                    'x': 500,
+                    'y': 200,
+                    'config': {
+                        'extract_entities': True,
+                        'extract_actions': True
+                    }
+                },
+                {
+                    'id': 'node_5',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 200,
+                    'config': {
+                        'format': 'json'
+                    }
+                }
+            ],
+            connections=[
+                {'id': 'conn_1', 'from': 'node_1', 'to': 'node_2'},
+                {'id': 'conn_2', 'from': 'node_1', 'to': 'node_3'},
+                {'id': 'conn_3', 'from': 'node_2', 'to': 'node_4'},
+                {'id': 'conn_4', 'from': 'node_3', 'to': 'node_4'},
+                {'id': 'conn_5', 'from': 'node_4', 'to': 'node_5'}
+            ],
+            default_inputs={'email_text': 'Customer email content'}
+        ))
+
+        # 8. Document QA
+        self.register(WorkflowTemplate(
+            template_id='doc_qa',
+            name='Document Q&A Pipeline',
+            category=TemplateCategory.RAG,
+            description='Question answering over documents with chunking and retrieval',
+            tags=['rag', 'documents', 'qa', 'retrieval'],
+            use_cases=[
+                'Answer questions about PDF documents',
+                'Research paper analysis',
+                'Technical documentation lookup'
+            ],
+            difficulty='intermediate',
+            nodes=[
+                {
+                    'id': 'node_1',
+                    'agentType': 'data_transformer',
+                    'x': 100,
+                    'y': 200,
+                    'config': {
+                        'operations': ['chunk', 'extract_sections'],
+                        'chunk_size': 512,
+                        'overlap': 50
+                    }
+                },
+                {
+                    'id': 'node_2',
+                    'agentType': 'embedder',
+                    'x': 300,
+                    'y': 200,
+                    'config': {
+                        'model': 'sentence-transformers/all-MiniLM-L6-v2',
+                        'batch_size': 32
+                    }
+                },
+                {
+                    'id': 'node_3',
+                    'agentType': 'rag_query',
+                    'x': 500,
+                    'y': 200,
+                    'config': {
+                        'mode': 'research',
+                        'max_sources': 5,
+                        'retrieval_type': 'semantic'
+                    }
+                },
+                {
+                    'id': 'node_4',
+                    'agentType': 'llm_prompt',
+                    'x': 700,
+                    'y': 200,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.5,
+                        'prompt_type': 'qa_with_context'
+                    }
+                },
+                {
+                    'id': 'node_5',
+                    'agentType': 'response',
+                    'x': 900,
+                    'y': 200,
+                    'config': {
+                        'format': 'markdown'
+                    }
+                }
+            ],
+            connections=[
+                {'id': 'conn_1', 'from': 'node_1', 'to': 'node_2'},
+                {'id': 'conn_2', 'from': 'node_2', 'to': 'node_3'},
+                {'id': 'conn_3', 'from': 'node_3', 'to': 'node_4'},
+                {'id': 'conn_4', 'from': 'node_4', 'to': 'node_5'}
+            ],
+            default_inputs={'document': 'PDF content', 'question': 'What is the main topic?'}
+        ))
+
+        # 9. Sentiment Analysis
+        self.register(WorkflowTemplate(
+            template_id='sentiment_analysis',
+            name='Sentiment Analysis Pipeline',
+            category=TemplateCategory.ANALYSIS,
+            description='Multi-model sentiment analysis with visualization',
+            tags=['sentiment', 'nlp', 'analysis', 'visualization'],
+            use_cases=[
+                'Social media sentiment tracking',
+                'Customer feedback analysis',
+                'Review sentiment scoring'
+            ],
+            difficulty='beginner',
+            nodes=[
+                {
+                    'id': 'node_1',
+                    'agentType': 'data_transformer',
+                    'x': 100,
+                    'y': 200,
+                    'config': {
+                        'operations': ['clean', 'normalize', 'tokenize'],
+                        'format': 'json'
+                    }
+                },
+                {
+                    'id': 'node_2',
+                    'agentType': 'sentiment_analyzer',
+                    'x': 300,
+                    'y': 100,
+                    'config': {
+                        'model': 'distilbert',
+                        'return_all_scores': True
+                    }
+                },
+                {
+                    'id': 'node_3',
+                    'agentType': 'sentiment_analyzer',
+                    'x': 300,
+                    'y': 300,
+                    'config': {
+                        'model': 'vader',
+                        'return_all_scores': False
+                    }
+                },
+                {
+                    'id': 'node_4',
+                    'agentType': 'thompson',
+                    'x': 500,
+                    'y': 200,
+                    'config': {
+                        'exploration_rate': 0.0,
+                        'aggregation': 'average'
+                    }
+                },
+                {
+                    'id': 'node_5',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 200,
+                    'config': {
+                        'format': 'json'
+                    }
+                }
+            ],
+            connections=[
+                {'id': 'conn_1', 'from': 'node_1', 'to': 'node_2'},
+                {'id': 'conn_2', 'from': 'node_1', 'to': 'node_3'},
+                {'id': 'conn_3', 'from': 'node_2', 'to': 'node_4'},
+                {'id': 'conn_4', 'from': 'node_3', 'to': 'node_4'},
+                {'id': 'conn_5', 'from': 'node_4', 'to': 'node_5'}
+            ],
+            default_inputs={'text': 'Customer review or social media post'}
+        ))
+
+        # 10. Translation Pipeline
+        self.register(WorkflowTemplate(
+            template_id='translation',
+            name='Translation Pipeline',
+            category=TemplateCategory.DATA,
+            description='Multi-language detection, translation, and validation',
+            tags=['nlp', 'translation', 'multilingual', 'validation'],
+            use_cases=[
+                'Translate documents to multiple languages',
+                'Auto-detect and translate incoming content',
+                'Quality assurance for translations'
+            ],
+            difficulty='intermediate',
+            nodes=[
+                {
+                    'id': 'node_1',
+                    'agentType': 'llm_prompt',
+                    'x': 100,
+                    'y': 200,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.1,
+                        'prompt_type': 'language_detector'
+                    }
+                },
+                {
+                    'id': 'node_2',
+                    'agentType': 'llm_prompt',
+                    'x': 300,
+                    'y': 100,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.0,
+                        'prompt_type': 'translator'
+                    }
+                },
+                {
+                    'id': 'node_3',
+                    'agentType': 'llm_prompt',
+                    'x': 300,
+                    'y': 300,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.2,
+                        'prompt_type': 'quality_check'
+                    }
+                },
+                {
+                    'id': 'node_4',
+                    'agentType': 'conditional',
+                    'x': 500,
+                    'y': 200,
+                    'config': {
+                        'condition_type': 'threshold',
+                        'threshold': 0.85
+                    }
+                },
+                {
+                    'id': 'node_5',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 100,
+                    'config': {
+                        'format': 'json'
+                    }
+                },
+                {
+                    'id': 'node_6',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 300,
+                    'config': {
+                        'format': 'json'
+                    }
+                }
+            ],
+            connections=[
+                {'id': 'conn_1', 'from': 'node_1', 'to': 'node_2'},
+                {'id': 'conn_2', 'from': 'node_2', 'to': 'node_3'},
+                {'id': 'conn_3', 'from': 'node_3', 'to': 'node_4'},
+                {'id': 'conn_4', 'from': 'node_4', 'to': 'node_5'},
+                {'id': 'conn_5', 'from': 'node_4', 'to': 'node_6'}
+            ],
+            default_inputs={'text': 'Text to translate', 'target_language': 'Spanish'}
+        ))
+
+        # 11. Bug Triage
+        self.register(WorkflowTemplate(
+            template_id='bug_triage',
+            name='Bug Triage Workflow',
+            category=TemplateCategory.CODE,
+            description='Automatic bug classification, severity assessment, and assignment',
+            tags=['code', 'bugs', 'triage', 'automation'],
+            use_cases=[
+                'Classify bug reports',
+                'Assign bugs to team members',
+                'Prioritize bug fixes'
+            ],
+            difficulty='intermediate',
+            nodes=[
+                {
+                    'id': 'node_1',
+                    'agentType': 'data_transformer',
+                    'x': 100,
+                    'y': 200,
+                    'config': {
+                        'operations': ['parse', 'extract_fields'],
+                        'format': 'json'
+                    }
+                },
+                {
+                    'id': 'node_2',
+                    'agentType': 'llm_prompt',
+                    'x': 300,
+                    'y': 100,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.3,
+                        'prompt_type': 'bug_classifier'
+                    }
+                },
+                {
+                    'id': 'node_3',
+                    'agentType': 'llm_prompt',
+                    'x': 300,
+                    'y': 300,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.3,
+                        'prompt_type': 'severity_assessor'
+                    }
+                },
+                {
+                    'id': 'node_4',
+                    'agentType': 'synthesizer',
+                    'x': 500,
+                    'y': 200,
+                    'config': {
+                        'extract_entities': True,
+                        'extract_keywords': True
+                    }
+                },
+                {
+                    'id': 'node_5',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 200,
+                    'config': {
+                        'format': 'json'
+                    }
+                }
+            ],
+            connections=[
+                {'id': 'conn_1', 'from': 'node_1', 'to': 'node_2'},
+                {'id': 'conn_2', 'from': 'node_1', 'to': 'node_3'},
+                {'id': 'conn_3', 'from': 'node_2', 'to': 'node_4'},
+                {'id': 'conn_4', 'from': 'node_3', 'to': 'node_4'},
+                {'id': 'conn_5', 'from': 'node_4', 'to': 'node_5'}
+            ],
+            default_inputs={'bug_report': 'Bug description and stack trace'}
+        ))
+
+        # 12. Meeting Summarization
+        self.register(WorkflowTemplate(
+            template_id='meeting_summary',
+            name='Meeting Summarization Pipeline',
+            category=TemplateCategory.ANALYSIS,
+            description='Transcribe, extract action items, and summarize meetings',
+            tags=['meetings', 'audio', 'summarization', 'action_items'],
+            use_cases=[
+                'Automatic meeting note generation',
+                'Extract action items',
+                'Multi-participant synthesis'
+            ],
+            difficulty='advanced',
+            nodes=[
+                {
+                    'id': 'node_1',
+                    'agentType': 'data_transformer',
+                    'x': 100,
+                    'y': 200,
+                    'config': {
+                        'operations': ['transcribe', 'diarize'],
+                        'format': 'json'
+                    }
+                },
+                {
+                    'id': 'node_2',
+                    'agentType': 'llm_prompt',
+                    'x': 300,
+                    'y': 100,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.3,
+                        'prompt_type': 'summarizer'
+                    }
+                },
+                {
+                    'id': 'node_3',
+                    'agentType': 'llm_prompt',
+                    'x': 300,
+                    'y': 300,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.2,
+                        'prompt_type': 'action_item_extractor'
+                    }
+                },
+                {
+                    'id': 'node_4',
+                    'agentType': 'synthesizer',
+                    'x': 500,
+                    'y': 200,
+                    'config': {
+                        'extract_entities': True,
+                        'extract_decisions': True
+                    }
+                },
+                {
+                    'id': 'node_5',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 200,
+                    'config': {
+                        'format': 'markdown'
+                    }
+                }
+            ],
+            connections=[
+                {'id': 'conn_1', 'from': 'node_1', 'to': 'node_2'},
+                {'id': 'conn_2', 'from': 'node_1', 'to': 'node_3'},
+                {'id': 'conn_3', 'from': 'node_2', 'to': 'node_4'},
+                {'id': 'conn_4', 'from': 'node_3', 'to': 'node_4'},
+                {'id': 'conn_5', 'from': 'node_4', 'to': 'node_5'}
+            ],
+            default_inputs={'audio_file': 'Meeting recording'}
+        ))
+
+        # 13. Product Recommendation
+        self.register(WorkflowTemplate(
+            template_id='product_recommendation',
+            name='Product Recommendation Engine',
+            category=TemplateCategory.ANALYSIS,
+            description='Personalized product recommendations with reasoning',
+            tags=['recommendation', 'personalization', 'ml', 'collaborative'],
+            use_cases=[
+                'E-commerce product suggestions',
+                'Content recommendations',
+                'Personalized marketing'
+            ],
+            difficulty='advanced',
+            nodes=[
+                {
+                    'id': 'node_1',
+                    'agentType': 'embedder',
+                    'x': 100,
+                    'y': 200,
+                    'config': {
+                        'model': 'sentence-transformers/all-MiniLM-L6-v2',
+                        'target': 'user_profile'
+                    }
+                },
+                {
+                    'id': 'node_2',
+                    'agentType': 'rag_query',
+                    'x': 300,
+                    'y': 200,
+                    'config': {
+                        'mode': 'research',
+                        'max_sources': 10,
+                        'retrieval_type': 'collaborative'
+                    }
+                },
+                {
+                    'id': 'node_3',
+                    'agentType': 'llm_prompt',
+                    'x': 500,
+                    'y': 200,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.5,
+                        'prompt_type': 'ranking_and_explanation'
+                    }
+                },
+                {
+                    'id': 'node_4',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 200,
+                    'config': {
+                        'format': 'json'
+                    }
+                }
+            ],
+            connections=[
+                {'id': 'conn_1', 'from': 'node_1', 'to': 'node_2'},
+                {'id': 'conn_2', 'from': 'node_2', 'to': 'node_3'},
+                {'id': 'conn_3', 'from': 'node_3', 'to': 'node_4'}
+            ],
+            default_inputs={'user_id': 'user_123', 'num_recommendations': 5}
+        ))
+
+        # 14. Content Moderation
+        self.register(WorkflowTemplate(
+            template_id='content_moderation',
+            name='Content Moderation Pipeline',
+            category=TemplateCategory.ANALYSIS,
+            description='Multi-model content analysis with escalation',
+            tags=['moderation', 'safety', 'nlp', 'classification'],
+            use_cases=[
+                'User-generated content moderation',
+                'Spam detection',
+                'Offensive content filtering'
+            ],
+            difficulty='intermediate',
+            nodes=[
+                {
+                    'id': 'node_1',
+                    'agentType': 'data_transformer',
+                    'x': 100,
+                    'y': 200,
+                    'config': {
+                        'operations': ['clean', 'normalize'],
+                        'format': 'json'
+                    }
+                },
+                {
+                    'id': 'node_2',
+                    'agentType': 'llm_prompt',
+                    'x': 300,
+                    'y': 100,
+                    'config': {
+                        'model': 'gpt-4',
+                        'temperature': 0.0,
+                        'prompt_type': 'content_classifier'
+                    }
+                },
+                {
+                    'id': 'node_3',
+                    'agentType': 'safety',
+                    'x': 300,
+                    'y': 300,
+                    'config': {
+                        'risk_threshold': 'LOW',
+                        'enable_human_in_loop': True
+                    }
+                },
+                {
+                    'id': 'node_4',
+                    'agentType': 'conditional',
+                    'x': 500,
+                    'y': 200,
+                    'config': {
+                        'condition_type': 'risk_level',
+                        'threshold': 0.7
+                    }
+                },
+                {
+                    'id': 'node_5',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 100,
+                    'config': {
+                        'format': 'json'
+                    }
+                },
+                {
+                    'id': 'node_6',
+                    'agentType': 'response',
+                    'x': 700,
+                    'y': 300,
+                    'config': {
+                        'format': 'json'
+                    }
+                }
+            ],
+            connections=[
+                {'id': 'conn_1', 'from': 'node_1', 'to': 'node_2'},
+                {'id': 'conn_2', 'from': 'node_1', 'to': 'node_3'},
+                {'id': 'conn_3', 'from': 'node_2', 'to': 'node_4'},
+                {'id': 'conn_4', 'from': 'node_3', 'to': 'node_4'},
+                {'id': 'conn_5', 'from': 'node_4', 'to': 'node_5'},
+                {'id': 'conn_6', 'from': 'node_4', 'to': 'node_6'}
+            ],
+            default_inputs={'content': 'User-generated content to moderate'}
+        ))
+
         logger.info(f"Loaded {len(self.templates)} built-in templates")
 
     def register(self, template: WorkflowTemplate):

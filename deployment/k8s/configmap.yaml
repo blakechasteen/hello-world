@@ -1,0 +1,33 @@
+---
+# HoloLoom ConfigMap
+# ==================
+# Application configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hololoom-config
+  namespace: hololoom
+  labels:
+    app: hololoom
+data:
+  # Application config
+  HOLOLOOM_ENV: "production"
+  PYTHONUNBUFFERED: "1"
+  LOGLEVEL: "INFO"
+
+  # Database URIs (non-sensitive)
+  NEO4J_URI: "bolt://neo4j-service:7687"
+  QDRANT_URI: "http://qdrant-service:6333"
+  REDIS_URI: "redis://redis-service:6379/0"
+
+  # Performance tuning
+  UVICORN_WORKERS: "4"
+  UVICORN_BACKLOG: "2048"
+  UVICORN_TIMEOUT: "60"
+
+  # Memory backend
+  HOLOLOOM_MEMORY_BACKEND: "HYBRID"
+
+  # Prometheus
+  PROMETHEUS_MULTIPROC_DIR: "/app/.prometheus"

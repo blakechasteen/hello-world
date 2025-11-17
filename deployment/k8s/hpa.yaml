@@ -1,0 +1,103 @@
+---
+# HoloLoom Horizontal Pod Autoscaler
+# ====================================
+# Auto-scales based on CPU and memory utilization
+# Target: 10,000 concurrent users
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hololoom-api-hpa
+  namespace: hololoom
+  labels:
+    app: hololoom
+    component: api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hololoom-api
+
+  minReplicas: 3
+  maxReplicas: 20
+
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # Scale when avg CPU > 70%
+
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # Scale when avg memory > 80%
+
+    # Custom metric: Query latency (requires custom metrics API)
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: hololoom_query_latency_p95
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "500"  # Scale when p95 latency > 500ms
+
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # Wait 5 minutes before scaling down
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      selectPolicy: Min
+
+    scaleUp:
+      stabilizationWindowSeconds: 0  # Scale up immediately
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+        - type: Pods
+          value: 4
+          periodSeconds: 30
+      selectPolicy: Max
+
+---
+# VPA (Vertical Pod Autoscaler) - Optional
+# Automatically adjusts resource requests/limits
+# Requires VPA to be installed in cluster
+
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: hololoom-api-vpa
+  namespace: hololoom
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hololoom-api
+
+  updatePolicy:
+    updateMode: "Auto"  # Automatically apply recommendations
+
+  resourcePolicy:
+    containerPolicies:
+      - containerName: hololoom-api
+        minAllowed:
+          cpu: 500m
+          memory: 1Gi
+        maxAllowed:
+          cpu: 4000m
+          memory: 8Gi
+        controlledResources:
+          - cpu
+          - memory

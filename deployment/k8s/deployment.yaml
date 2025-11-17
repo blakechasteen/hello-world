@@ -1,0 +1,169 @@
+---
+# HoloLoom Main Deployment
+# =========================
+# Main application deployment with auto-scaling and health checks
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hololoom-api
+  namespace: hololoom
+  labels:
+    app: hololoom
+    component: api
+    version: v1
+spec:
+  replicas: 3  # Start with 3 replicas for HA
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero-downtime deployment
+  selector:
+    matchLabels:
+      app: hololoom
+      component: api
+  template:
+    metadata:
+      labels:
+        app: hololoom
+        component: api
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      # Init container: Wait for databases
+      initContainers:
+        - name: wait-for-neo4j
+          image: busybox:latest
+          command: ['sh', '-c', 'until nc -z neo4j-service 7687; do echo waiting for neo4j; sleep 2; done;']
+
+        - name: wait-for-qdrant
+          image: busybox:latest
+          command: ['sh', '-c', 'until nc -z qdrant-service 6333; do echo waiting for qdrant; sleep 2; done;']
+
+      # Main container
+      containers:
+        - name: hololoom-api
+          image: hololoom/hololoom-api:latest  # Replace with your registry
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          # Environment variables from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: hololoom-config
+
+          # Environment variables from Secret
+          env:
+            - name: NEO4J_USER
+              valueFrom:
+                secretKeyRef:
+                  name: hololoom-secrets
+                  key: NEO4J_USER
+            - name: NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hololoom-secrets
+                  key: NEO4J_PASSWORD
+            - name: POSTGRES_URI
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres-service:5432/$(POSTGRES_DB)"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: hololoom-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hololoom-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: hololoom-secrets
+                  key: POSTGRES_DB
+
+          # Resource limits (adjust based on load testing)
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+
+          # Liveness probe
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          # Readiness probe
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+
+          # Startup probe (for slow startup)
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 30  # 5 minutes max startup time
+
+          # Volume mounts
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: data
+              mountPath: /app/data
+            - name: cache
+              mountPath: /app/.cache
+
+      # Volumes
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: data
+          persistentVolumeClaim:
+            claimName: hololoom-data-pvc
+        - name: cache
+          emptyDir:
+            sizeLimit: 2Gi
+
+      # Affinity rules (spread across nodes)
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - hololoom
+                topologyKey: kubernetes.io/hostname

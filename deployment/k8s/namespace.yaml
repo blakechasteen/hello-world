@@ -1,0 +1,14 @@
+---
+# HoloLoom Kubernetes Namespace
+# ==============================
+# Isolates HoloLoom resources in dedicated namespace
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hololoom
+  labels:
+    name: hololoom
+    environment: production
+    app: hololoom
+    monitoring: enabled

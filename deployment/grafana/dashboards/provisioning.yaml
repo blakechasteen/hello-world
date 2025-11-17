@@ -1,0 +1,17 @@
+# Grafana Dashboard Provisioning
+# ================================
+# Auto-load dashboards on startup
+
+apiVersion: 1
+
+providers:
+  - name: 'HoloLoom Dashboards'
+    orgId: 1
+    folder: 'HoloLoom'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: true

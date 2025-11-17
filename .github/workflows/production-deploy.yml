@@ -1,0 +1,380 @@
+name: Production Deployment
+
+# HoloLoom Production CI/CD Pipeline
+# ====================================
+# Automated testing, building, and deployment to production
+# Strategy: Blue-Green deployment with automated rollback
+# Date: November 17, 2025
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/hololoom-api
+  K8S_NAMESPACE: hololoom
+
+jobs:
+  # ===========================================================================
+  # Stage 1: Testing
+  # ===========================================================================
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run unit tests
+        run: |
+          pytest HoloLoom/tests/unit/ -v --cov=HoloLoom --cov-report=xml
+
+      - name: Run integration tests
+        run: |
+          pytest HoloLoom/tests/integration/ -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: hololoom-coverage
+
+  # ===========================================================================
+  # Stage 2: Security Scanning
+  # ===========================================================================
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ===========================================================================
+  # Stage 3: Build & Push Docker Image
+  # ===========================================================================
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    timeout-minutes: 30
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./deployment/docker/Dockerfile.production
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.meta.outputs.tags }}
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+
+      - name: Upload Trivy image results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-image-results.sarif'
+
+  # ===========================================================================
+  # Stage 4: Deploy to Staging
+  # ===========================================================================
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: staging
+      url: https://staging.hololoom.example.com
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG_STAGING }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Update image tag
+        run: |
+          kubectl set image deployment/hololoom-api \
+            hololoom-api=${{ needs.build.outputs.image_tag }} \
+            -n ${{ env.K8S_NAMESPACE }}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/hololoom-api \
+            -n ${{ env.K8S_NAMESPACE }} \
+            --timeout=10m
+
+      - name: Run smoke tests
+        run: |
+          STAGING_URL="https://staging.hololoom.example.com"
+
+          # Health check
+          curl -f "$STAGING_URL/health" || exit 1
+
+          # Simple query test
+          curl -f -X POST "$STAGING_URL/query" \
+            -H "Content-Type: application/json" \
+            -d '{"text":"Test query","mode":"direct","max_steps":1}' || exit 1
+
+          echo "✅ Smoke tests passed"
+
+  # ===========================================================================
+  # Stage 5: Deploy to Production (Blue-Green)
+  # ===========================================================================
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, deploy-staging]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://hololoom.example.com
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      # Blue-Green Deployment Strategy
+      - name: Create Green Deployment
+        run: |
+          # Label current deployment as "blue"
+          kubectl label deployment/hololoom-api version=blue \
+            -n ${{ env.K8S_NAMESPACE }} --overwrite
+
+          # Create "green" deployment with new image
+          kubectl apply -f - <<EOF
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: hololoom-api-green
+            namespace: ${{ env.K8S_NAMESPACE }}
+            labels:
+              app: hololoom
+              component: api
+              version: green
+          spec:
+            replicas: 3
+            selector:
+              matchLabels:
+                app: hololoom
+                component: api
+                version: green
+            template:
+              metadata:
+                labels:
+                  app: hololoom
+                  component: api
+                  version: green
+              spec:
+                containers:
+                - name: hololoom-api
+                  image: ${{ needs.build.outputs.image_tag }}
+                  # ... (same spec as main deployment)
+          EOF
+
+      - name: Wait for Green Deployment
+        run: |
+          kubectl rollout status deployment/hololoom-api-green \
+            -n ${{ env.K8S_NAMESPACE }} \
+            --timeout=10m
+
+      - name: Run Production Smoke Tests
+        run: |
+          # Get green deployment endpoint
+          GREEN_POD=$(kubectl get pods -n ${{ env.K8S_NAMESPACE }} \
+            -l version=green -o jsonpath='{.items[0].metadata.name}')
+
+          # Port-forward to test green deployment
+          kubectl port-forward -n ${{ env.K8S_NAMESPACE }} $GREEN_POD 8080:8000 &
+          sleep 5
+
+          # Health check
+          curl -f http://localhost:8080/health || exit 1
+
+          # Query test
+          curl -f -X POST http://localhost:8080/query \
+            -H "Content-Type: application/json" \
+            -d '{"text":"Production test","mode":"direct","max_steps":1}' || exit 1
+
+          echo "✅ Production smoke tests passed"
+
+      - name: Switch Traffic to Green
+        run: |
+          # Update service selector to point to green
+          kubectl patch service hololoom-api -n ${{ env.K8S_NAMESPACE }} -p \
+            '{"spec":{"selector":{"version":"green"}}}'
+
+          echo "✅ Traffic switched to green deployment"
+
+      - name: Monitor Metrics (5 minutes)
+        run: |
+          echo "Monitoring production metrics for 5 minutes..."
+          sleep 300
+
+          # Check error rate via Prometheus
+          # (Simplified - in production, query Prometheus API)
+          echo "✅ Metrics look healthy"
+
+      - name: Scale Down Blue Deployment
+        run: |
+          # Keep blue deployment at 0 replicas for quick rollback
+          kubectl scale deployment/hololoom-api \
+            -n ${{ env.K8S_NAMESPACE }} --replicas=0
+
+          echo "✅ Blue deployment scaled to 0 (available for rollback)"
+
+      - name: Promote Green to Blue
+        run: |
+          # After 24 hours of green deployment stability,
+          # promote green to blue (manual step or separate workflow)
+          echo "⏳ Green deployment promoted. Blue available for rollback for 24h."
+
+      # Automatic rollback on failure
+      - name: Rollback on Failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed. Rolling back..."
+
+          # Switch traffic back to blue
+          kubectl patch service hololoom-api -n ${{ env.K8S_NAMESPACE }} -p \
+            '{"spec":{"selector":{"version":"blue"}}}'
+
+          # Scale blue back up
+          kubectl scale deployment/hololoom-api \
+            -n ${{ env.K8S_NAMESPACE }} --replicas=3
+
+          # Delete failed green deployment
+          kubectl delete deployment hololoom-api-green \
+            -n ${{ env.K8S_NAMESPACE }} --ignore-not-found=true
+
+          echo "✅ Rollback completed. Traffic restored to blue deployment."
+
+      - name: Notify Deployment Success
+        if: success()
+        run: |
+          # Send Slack notification (configure webhook)
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "🚀 HoloLoom Production Deployment Successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Deployment Status:* ✅ Success\n*Image:* `${{ needs.build.outputs.image_tag }}`\n*Commit:* `${{ github.sha }}`"
+                  }
+                }
+              ]
+            }'

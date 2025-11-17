@@ -59,6 +59,8 @@ class WorkflowIntent:
     input_type: Optional[str] = None
     output_format: Optional[str] = None
     complexity: str = 'medium'  # simple, medium, complex
+    confidence: float = 0.0  # 0.0-1.0 confidence in detected intent
+    explanation: str = ""  # Why this intent was detected
 
 
 class AIWorkflowGenerator:
@@ -73,29 +75,53 @@ class AIWorkflowGenerator:
         self.registry = registry or get_registry()
         self.templates = WorkflowTemplates() if WorkflowTemplates else None
 
-        # Intent keywords
+        # Intent keywords (expanded with more patterns)
         self.intent_patterns = {
-            'analyze': ['analyze', 'analysis', 'review', 'check', 'inspect', 'examine'],
-            'transform': ['transform', 'convert', 'process', 'clean', 'normalize'],
-            'query': ['query', 'search', 'find', 'retrieve', 'lookup', 'ask'],
-            'generate': ['generate', 'create', 'produce', 'synthesize', 'make'],
-            'decide': ['decide', 'choose', 'select', 'vote', 'consensus'],
-            'validate': ['validate', 'verify', 'check', 'confirm', 'test'],
-            'store': ['store', 'save', 'persist', 'keep', 'cache'],
-            'parallel': ['parallel', 'concurrent', 'simultaneous', 'together'],
-            'sequential': ['sequential', 'series', 'chain', 'pipeline']
+            'analyze': ['analyze', 'analysis', 'review', 'check', 'inspect', 'examine', 'evaluate', 'assess', 'audit'],
+            'transform': ['transform', 'convert', 'process', 'clean', 'normalize', 'format', 'restructure', 'parse'],
+            'query': ['query', 'search', 'find', 'retrieve', 'lookup', 'ask', 'research', 'investigate'],
+            'generate': ['generate', 'create', 'produce', 'synthesize', 'make', 'compose', 'build'],
+            'decide': ['decide', 'choose', 'select', 'vote', 'consensus', 'recommend', 'rank'],
+            'validate': ['validate', 'verify', 'check', 'confirm', 'test', 'quality', 'ensure'],
+            'store': ['store', 'save', 'persist', 'keep', 'cache', 'database', 'archive'],
+            'parallel': ['parallel', 'concurrent', 'simultaneous', 'together', 'async', 'distributed'],
+            'sequential': ['sequential', 'series', 'chain', 'pipeline', 'step-by-step', 'ordered'],
+            'summarize': ['summarize', 'summary', 'extract', 'abstract', 'condense', 'aggregate'],
+            'classify': ['classify', 'categorize', 'label', 'tag', 'bucket', 'sort', 'organize'],
+            'detect': ['detect', 'identify', 'find', 'discover', 'locate', 'spot', 'recognize']
         }
 
-        # Agent type mappings
+        # Enhanced agent type mappings
         self.agent_mappings = {
             'code': ['code_analyzer', 'llm_prompt'],
-            'security': ['code_analyzer', 'safety'],
-            'data': ['data_transformer', 'store'],
+            'security': ['code_analyzer', 'safety', 'llm_prompt'],
+            'data': ['data_transformer', 'store', 'embedder'],
             'llm': ['llm_prompt', 'structured_llm'],
-            'rag': ['rag_query', 'multiquery'],
-            'research': ['multiquery', 'rag_query', 'synthesizer'],
-            'sentiment': ['sentiment_analyzer'],
-            'web': ['web_scraper']
+            'rag': ['rag_query', 'multiquery', 'embedder'],
+            'research': ['multiquery', 'rag_query', 'synthesizer', 'refiner'],
+            'sentiment': ['sentiment_analyzer', 'data_transformer'],
+            'web': ['web_scraper', 'data_transformer'],
+            'email': ['data_transformer', 'sentiment_analyzer', 'llm_prompt'],
+            'sql': ['llm_prompt', 'safety', 'data_transformer'],
+            'translation': ['llm_prompt', 'data_transformer', 'conditional'],
+            'bug': ['data_transformer', 'llm_prompt', 'synthesizer'],
+            'audio': ['data_transformer', 'llm_prompt', 'synthesizer'],
+            'recommendation': ['embedder', 'rag_query', 'llm_prompt'],
+            'moderation': ['data_transformer', 'llm_prompt', 'safety', 'conditional']
+        }
+
+        # Domain keywords
+        self.domain_keywords = {
+            'code': ['code', 'python', 'javascript', 'java', 'program', 'bug', 'security', 'vulnerab'],
+            'data': ['data', 'csv', 'json', 'database', 'sql', 'table', 'transform', 'clean'],
+            'email': ['email', 'mail', 'message', 'inbox', 'spam', 'classification'],
+            'document': ['document', 'pdf', 'text', 'page', 'paragraph', 'chunk', 'qa'],
+            'sentiment': ['sentiment', 'emotion', 'review', 'opinion', 'feedback', 'social'],
+            'translation': ['translate', 'language', 'multilingual', 'international'],
+            'audio': ['audio', 'meeting', 'transcribe', 'voice', 'recording'],
+            'image': ['image', 'photo', 'visual', 'caption', 'ocr', 'detect'],
+            'recommendation': ['recommend', 'suggestion', 'product', 'personali', 'collaborat'],
+            'moderation': ['moderate', 'filter', 'block', 'offensive', 'spam', 'abuse']
         }
 
     async def generate(
@@ -135,54 +161,77 @@ class AIWorkflowGenerator:
 
     def detect_intent(self, description: str) -> WorkflowIntent:
         """
-        Detect user intent from natural language description.
+        Detect user intent from natural language description with confidence scoring.
 
         Uses keyword matching and patterns to identify:
         - Primary goal (analyze, transform, query, etc.)
         - Required agents
         - Constraints (parallel, error handling, etc.)
         - Input/output types
+        - Confidence score (0.0-1.0)
         """
         desc_lower = description.lower()
+        confidence_scores = {}
+        matched_keywords = []
 
-        # Find primary goal
-        primary_goal = 'query'  # default
+        # Score each intent pattern
         for goal, keywords in self.intent_patterns.items():
-            if any(kw in desc_lower for kw in keywords):
-                primary_goal = goal
-                break
+            matches = sum(1 for kw in keywords if kw in desc_lower)
+            if matches > 0:
+                confidence_scores[goal] = matches / len(keywords)
+                matched_keywords.extend([kw for kw in keywords if kw in desc_lower])
+
+        # Find primary goal with highest confidence
+        primary_goal = max(confidence_scores, key=confidence_scores.get) if confidence_scores else 'query'
+        primary_confidence = confidence_scores.get(primary_goal, 0.0)
 
         # Find secondary goals
-        secondary_goals = []
-        for goal, keywords in self.intent_patterns.items():
-            if goal != primary_goal and any(kw in desc_lower for kw in keywords):
-                secondary_goals.append(goal)
+        secondary_goals = [g for g, conf in confidence_scores.items()
+                          if g != primary_goal and conf >= 0.4]
 
-        # Find needed agents
+        # Find needed agents by domain
         agents_needed = []
-        for domain, agent_types in self.agent_mappings.items():
-            if domain in desc_lower:
-                agents_needed.extend(agent_types)
+        matched_domains = []
+        for domain, keywords in self.domain_keywords.items():
+            if any(kw in desc_lower for kw in keywords):
+                if domain in self.agent_mappings:
+                    agents_needed.extend(self.agent_mappings.get(domain, []))
+                    matched_domains.append(domain)
 
-        # Remove duplicates
+        # Fallback: use primary goal to select agents
+        if not agents_needed and primary_goal in self.agent_mappings:
+            agents_needed.extend(self.agent_mappings[primary_goal])
+
+        # Remove duplicates and invalid agents
         agents_needed = list(set(agents_needed))
+        if self.registry:
+            valid_agents = set(self.registry.agents.keys())
+            agents_needed = [a for a in agents_needed if a in valid_agents]
 
         # Detect constraints
         constraints = []
         if any(kw in desc_lower for kw in self.intent_patterns['parallel']):
             constraints.append('parallel')
-        if 'error' in desc_lower or 'safe' in desc_lower:
+        if any(word in desc_lower for word in ['error', 'safe', 'protection', 'secure']):
             constraints.append('error_handling')
-        if 'refine' in desc_lower or 'improve' in desc_lower:
+        if any(word in desc_lower for word in ['refine', 'improve', 'quality', 'enhance']):
             constraints.append('refinement')
+        if any(word in desc_lower for word in ['batch', 'multiple', 'many']):
+            constraints.append('batching')
 
         # Detect input/output types
         input_type = None
-        if 'code' in desc_lower:
+        if any(domain in matched_domains for domain in ['code', 'program']):
             input_type = 'code'
-        elif 'data' in desc_lower or 'json' in desc_lower:
+        elif any(domain in matched_domains for domain in ['data', 'database']):
             input_type = 'data'
-        elif 'text' in desc_lower or 'query' in desc_lower:
+        elif any(domain in matched_domains for domain in ['audio', 'meeting']):
+            input_type = 'audio'
+        elif any(domain in matched_domains for domain in ['image', 'photo']):
+            input_type = 'image'
+        elif any(domain in matched_domains for domain in ['document', 'text']):
+            input_type = 'document'
+        else:
             input_type = 'text'
 
         output_format = None
@@ -190,13 +239,39 @@ class AIWorkflowGenerator:
             output_format = 'json'
         elif 'markdown' in desc_lower:
             output_format = 'markdown'
+        elif 'html' in desc_lower:
+            output_format = 'html'
+        else:
+            output_format = 'text'
 
         # Complexity estimation
         complexity = 'simple'
-        if len(agents_needed) > 3 or len(secondary_goals) > 2:
+        complexity_score = 0.0
+
+        if len(agents_needed) > 4:
             complexity = 'complex'
-        elif len(agents_needed) > 1:
+            complexity_score = 1.0
+        elif len(agents_needed) > 2:
             complexity = 'medium'
+            complexity_score = 0.6
+        else:
+            complexity = 'simple'
+            complexity_score = 0.3
+
+        if len(secondary_goals) > 2:
+            complexity = 'complex'
+            complexity_score = max(complexity_score, 0.9)
+        elif len(secondary_goals) > 0:
+            complexity_score = max(complexity_score, 0.5)
+
+        # Overall confidence: primary goal confidence + agent matching
+        domain_confidence = len(matched_domains) / len(self.domain_keywords) if self.domain_keywords else 0.5
+        agent_confidence = min(len(agents_needed) / 3.0, 1.0)  # Good if 3+ agents found
+        overall_confidence = (primary_confidence * 0.4 +
+                            domain_confidence * 0.3 +
+                            agent_confidence * 0.3)
+
+        explanation = f"Detected {primary_goal} intent ({primary_confidence:.0%}) with {len(agents_needed)} agents needed. Matched domains: {', '.join(matched_domains) if matched_domains else 'general'}."
 
         return WorkflowIntent(
             primary_goal=primary_goal,
@@ -205,7 +280,9 @@ class AIWorkflowGenerator:
             constraints=constraints,
             input_type=input_type,
             output_format=output_format,
-            complexity=complexity
+            complexity=complexity,
+            confidence=overall_confidence,
+            explanation=explanation
         )
 
     def _generate_heuristic(self, description: str, intent: WorkflowIntent) -> Dict[str, Any]:

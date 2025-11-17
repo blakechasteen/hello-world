@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Workflow Builder - Enhanced</title>
+    <link rel="stylesheet" href="workflow_builder_enhanced.css">
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Top Navigation Bar -->
+        <div class="top-nav">
+            <div class="nav-left">
+                <h1 class="logo">🧵 HoloLoom Workflow Builder</h1>
+                <div class="workflow-title-container">
+                    <input type="text" id="workflowName" class="workflow-name-input" value="Untitled Workflow" />
+                    <span class="version-badge">v<span id="versionNumber">1</span></span>
+                    <span class="branch-badge">🔀 <span id="currentBranch">main</span></span>
+                </div>
+            </div>
+
+            <div class="nav-center">
+                <!-- Tab Navigation -->
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-panel="canvas" onclick="switchPanel('canvas')">
+                        🎨 Canvas
+                    </button>
+                    <button class="tab-btn" data-panel="ai-gen" onclick="switchPanel('ai-gen')">
+                        🤖 AI Generator
+                    </button>
+                    <button class="tab-btn" data-panel="analytics" onclick="switchPanel('analytics')">
+                        📊 Analytics
+                    </button>
+                    <button class="tab-btn" data-panel="collaborate" onclick="switchPanel('collaborate')">
+                        👥 Collaborate
+                    </button>
+                    <button class="tab-btn" data-panel="marketplace" onclick="switchPanel('marketplace')">
+                        🏪 Marketplace
+                    </button>
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <button class="icon-btn" onclick="showTemplatesModal()" title="Templates">
+                    📚
+                </button>
+                <button class="icon-btn" onclick="showVersionHistoryModal()" title="Version History">
+                    📜
+                </button>
+                <button class="icon-btn" onclick="exportWorkflow()" title="Export">
+                    💾
+                </button>
+                <button class="btn-primary" onclick="executeWorkflow()">
+                    ▶️ Execute
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Left Sidebar - Agent Palette -->
+            <div class="left-sidebar">
+                <div class="sidebar-header">
+                    <h3>🎯 Agent Library</h3>
+                    <input type="text" id="agentSearch" class="search-input" placeholder="Search agents..." oninput="filterAgents()" />
+                </div>
+
+                <div class="agent-categories" id="agentPalette">
+                    <!-- Agent categories will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Center Panel - Switches between Canvas, AI Gen, Analytics, Collaborate, Marketplace -->
+            <div class="center-panel">
+                <!-- PANEL 1: Canvas (existing) -->
+                <div id="canvas-panel" class="panel-content active">
+                    <div class="canvas-toolbar">
+                        <button class="toolbar-btn" onclick="clearCanvas()">
+                            🗑️ Clear
+                        </button>
+                        <button class="toolbar-btn" onclick="zoomOut()">
+                            🔍-
+                        </button>
+                        <span id="zoomLevel" class="zoom-display">100%</span>
+                        <button class="toolbar-btn" onclick="zoomIn()">
+                            🔍+
+                        </button>
+                        <button class="toolbar-btn" onclick="resetZoom()">
+                            ⊙ Reset
+                        </button>
+                        <div class="toolbar-spacer"></div>
+                        <div class="status-indicator">
+                            <span class="status-dot" id="statusDot"></span>
+                            <span id="statusText">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="canvas-viewport" id="canvasViewport">
+                        <svg class="connections-layer" id="connectionsLayer">
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7"
+                                        refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#667eea" />
+                                </marker>
+                            </defs>
+                        </svg>
+                        <div class="canvas" id="canvas"></div>
+                    </div>
+
+                    <div class="minimap" id="minimap">
+                        <div class="minimap-canvas" id="minimapCanvas"></div>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: AI Generator -->
+                <div id="ai-gen-panel" class="panel-content">
+                    <div class="panel-header">
+                        <h2>🤖 AI Workflow Generator</h2>
+                        <p class="panel-subtitle">Describe your workflow in natural language and let AI build it</p>
+                    </div>
+
+                    <div class="ai-gen-content">
+                        <div class="input-section">
+                            <label for="aiDescription">Workflow Description</label>
+                            <textarea id="aiDescription" class="ai-textarea"
+                                placeholder="Example: Create a workflow that analyzes code for security vulnerabilities, then generates a report with recommendations..."></textarea>
+
+                            <div class="ai-options">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="useLLM" />
+                                    Use LLM for smarter generation (slower)
+                                </label>
+                            </div>
+
+                            <button class="btn-generate" onclick="generateWorkflowAI()">
+                                ✨ Generate Workflow
+                            </button>
+                        </div>
+
+                        <div class="divider">
+                            <span>OR</span>
+                        </div>
+
+                        <div class="refine-section">
+                            <label for="aiRefinement">Refine Current Workflow</label>
+                            <textarea id="aiRefinement" class="ai-textarea"
+                                placeholder="Example: Add error handling to all nodes and make processing parallel..."></textarea>
+
+                            <button class="btn-refine" onclick="refineWorkflowAI()">
+                                🔧 Refine Workflow
+                            </button>
+                        </div>
+
+                        <div class="ai-preview" id="aiPreview" style="display: none;">
+                            <h3>Generated Workflow Preview</h3>
+                            <div class="preview-stats">
+                                <span id="previewNodes">0 nodes</span>
+                                <span id="previewConnections">0 connections</span>
+                            </div>
+                            <div class="preview-actions">
+                                <button class="btn-primary" onclick="applyGeneratedWorkflow()">
+                                    ✅ Apply to Canvas
+                                </button>
+                                <button class="btn-secondary" onclick="cancelGenerated()">
+                                    ❌ Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 3: Analytics Dashboard -->
+                <div id="analytics-panel" class="panel-content">
+                    <div class="panel-header">
+                        <h2>📊 Analytics Dashboard</h2>
+                        <p class="panel-subtitle">Performance metrics and bottleneck analysis</p>
+                    </div>
+
+                    <div class="analytics-content">
+                        <div class="analytics-summary">
+                            <div class="metric-card">
+                                <div class="metric-label">Total Executions</div>
+                                <div class="metric-value" id="totalExecutions">0</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Success Rate</div>
+                                <div class="metric-value" id="successRate">0%</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Avg Duration</div>
+                                <div class="metric-value" id="avgDuration">0ms</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">P95 Duration</div>
+                                <div class="metric-value" id="p95Duration">0ms</div>
+                            </div>
+                        </div>
+
+                        <div class="analytics-charts">
+                            <div class="chart-container">
+                                <h3>Execution Timeline</h3>
+                                <div id="executionTimeline" class="chart"></div>
+                            </div>
+
+                            <div class="chart-container">
+                                <h3>Node Performance</h3>
+                                <table id="nodePerformanceTable" class="performance-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Node</th>
+                                            <th>Avg Duration</th>
+                                            <th>Success Rate</th>
+                                            <th>P95</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="nodePerformanceBody">
+                                        <tr>
+                                            <td colspan="5" class="empty-state">No execution data yet. Execute workflow to see analytics.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="bottleneck-warnings" id="bottleneckWarnings">
+                                <!-- Bottleneck warnings will be populated here -->
+                            </div>
+                        </div>
+
+                        <div class="analytics-actions">
+                            <button class="btn-primary" onclick="refreshAnalytics()">
+                                🔄 Refresh Analytics
+                            </button>
+                            <button class="btn-secondary" onclick="exportAnalytics()">
+                                📥 Export CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 4: Collaboration -->
+                <div id="collaborate-panel" class="panel-content">
+                    <div class="panel-header">
+                        <h2>👥 Collaborative Editing</h2>
+                        <p class="panel-subtitle">Work together in real-time</p>
+                    </div>
+
+                    <div class="collaborate-content">
+                        <div class="session-setup" id="sessionSetup">
+                            <label for="displayName">Your Name</label>
+                            <input type="text" id="displayName" class="input-field" placeholder="Enter your name" />
+
+                            <label for="sessionId">Session ID</label>
+                            <input type="text" id="sessionId" class="input-field" placeholder="Enter session ID or leave blank for new" />
+
+                            <button class="btn-primary" onclick="joinCollaborativeSession()">
+                                🚀 Start/Join Session
+                            </button>
+                        </div>
+
+                        <div class="session-active" id="sessionActive" style="display: none;">
+                            <div class="session-info">
+                                <div class="info-row">
+                                    <span class="info-label">Session ID:</span>
+                                    <span class="info-value" id="activeSessionId">-</span>
+                                    <button class="btn-copy" onclick="copySessionId()">📋 Copy</button>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Status:</span>
+                                    <span class="connection-status">
+                                        <span class="status-dot connected"></span>
+                                        <span id="connectionStatus">Connected</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="active-users">
+                                <h3>Active Users (<span id="userCount">0</span>)</h3>
+                                <div id="userList" class="user-list">
+                                    <!-- Active users will be populated here -->
+                                </div>
+                            </div>
+
+                            <div class="activity-feed">
+                                <h3>Recent Activity</h3>
+                                <div id="activityLog" class="activity-log">
+                                    <!-- Activity items will be populated here -->
+                                </div>
+                            </div>
+
+                            <div class="collaborate-actions">
+                                <button class="btn-secondary" onclick="leaveCollaborativeSession()">
+                                    🚪 Leave Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 5: Marketplace -->
+                <div id="marketplace-panel" class="panel-content">
+                    <div class="panel-header">
+                        <h2>🏪 Workflow Marketplace</h2>
+                        <p class="panel-subtitle">Discover and share workflows</p>
+                    </div>
+
+                    <div class="marketplace-content">
+                        <div class="marketplace-toolbar">
+                            <input type="text" id="marketplaceSearch" class="search-input"
+                                placeholder="Search workflows..." oninput="searchMarketplace()" />
+
+                            <select id="marketplaceCategory" class="select-input" onchange="filterMarketplace()">
+                                <option value="all">All Categories</option>
+                                <option value="rag">RAG</option>
+                                <option value="code">Code Analysis</option>
+                                <option value="llm">LLM Workflows</option>
+                                <option value="data">Data Pipeline</option>
+                                <option value="research">Research</option>
+                                <option value="automation">Automation</option>
+                            </select>
+
+                            <button class="btn-primary" onclick="showPublishModal()">
+                                📤 Publish Current Workflow
+                            </button>
+                        </div>
+
+                        <div class="marketplace-grid" id="marketplaceGrid">
+                            <!-- Marketplace items will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - Properties -->
+            <div class="right-sidebar">
+                <div class="sidebar-header">
+                    <h3>⚙️ Properties</h3>
+                </div>
+
+                <div id="propertiesContent" class="properties-content">
+                    <div class="empty-state">
+                        <div class="empty-icon">👈</div>
+                        <p>Select a node to view properties</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Modals -->
+    <!-- Templates Modal -->
+    <div id="templatesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 Workflow Templates</h2>
+                <button class="modal-close" onclick="closeModal('templatesModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="template-filters">
+                    <input type="text" id="templateSearch" class="search-input"
+                        placeholder="Search templates..." oninput="filterTemplates()" />
+                    <select id="templateCategory" class="select-input" onchange="filterTemplates()">
+                        <option value="all">All Categories</option>
+                        <option value="rag">RAG</option>
+                        <option value="code">Code</option>
+                        <option value="llm">LLM</option>
+                        <option value="research">Research</option>
+                    </select>
+                </div>
+                <div id="templatesList" class="templates-list">
+                    <!-- Templates will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('templatesModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Publish Workflow Modal -->
+    <div id="publishModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📤 Publish to Marketplace</h2>
+                <button class="modal-close" onclick="closeModal('publishModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <label for="publishName">Workflow Name</label>
+                <input type="text" id="publishName" class="input-field" placeholder="My Amazing Workflow" />
+
+                <label for="publishDescription">Description</label>
+                <textarea id="publishDescription" class="textarea-field"
+                    placeholder="Describe what your workflow does..."></textarea>
+
+                <label for="publishAuthor">Author</label>
+                <input type="text" id="publishAuthor" class="input-field" placeholder="Your name" />
+
+                <label for="publishCategory">Category</label>
+                <select id="publishCategory" class="select-input">
+                    <option value="rag">RAG</option>
+                    <option value="code">Code Analysis</option>
+                    <option value="llm">LLM Workflows</option>
+                    <option value="data">Data Pipeline</option>
+                    <option value="research">Research</option>
+                    <option value="automation">Automation</option>
+                    <option value="custom">Custom</option>
+                </select>
+
+                <label for="publishTags">Tags (comma-separated)</label>
+                <input type="text" id="publishTags" class="input-field"
+                    placeholder="rag, research, analysis" />
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('publishModal')">Cancel</button>
+                <button class="btn-primary" onclick="publishToMarketplace()">Publish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version History Modal -->
+    <div id="versionHistoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📜 Version History</h2>
+                <button class="modal-close" onclick="closeModal('versionHistoryModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <ul id="versionList" class="version-list">
+                    <!-- Version history will be populated here -->
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('versionHistoryModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p id="loadingText">Loading...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="workflow_builder_core.js"></script>
+    <script src="workflow_builder_enhanced.js"></script>
+</body>
+</html>

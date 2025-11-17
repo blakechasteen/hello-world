@@ -1,0 +1,270 @@
+# HoloLoom Alerting Rules
+# ========================
+# Prometheus alert rules for production monitoring
+# Target SLA: 99.9% uptime
+# Date: November 17, 2025
+
+groups:
+  # ===========================================================================
+  # Application Alerts
+  # ===========================================================================
+
+  - name: hololoom_application
+    interval: 30s
+    rules:
+      # High Latency (p95 > 500ms)
+      - alert: HighQueryLatency
+        expr: histogram_quantile(0.95, rate(hololoom_query_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High query latency detected"
+          description: "P95 query latency is {{ $value | humanizeDuration }} (threshold: 500ms)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/high-latency"
+
+      # Critical Latency (p95 > 1000ms)
+      - alert: CriticalQueryLatency
+        expr: histogram_quantile(0.95, rate(hololoom_query_duration_seconds_bucket[5m])) > 1.0
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Critical query latency detected"
+          description: "P95 query latency is {{ $value | humanizeDuration }} (threshold: 1000ms)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/critical-latency"
+
+      # Low Cache Hit Rate
+      - alert: LowCacheHitRate
+        expr: rate(hololoom_cache_hits_total[10m]) / rate(hololoom_cache_requests_total[10m]) < 0.6
+        for: 10m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} (threshold: 60%)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/low-cache-hit-rate"
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: rate(hololoom_errors_total[5m]) / rate(hololoom_requests_total[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 1%)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/high-error-rate"
+
+      # Critical Error Rate
+      - alert: CriticalErrorRate
+        expr: rate(hololoom_errors_total[5m]) / rate(hololoom_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Critical error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/critical-error-rate"
+
+      # Memory Leak Detection
+      - alert: MemoryLeakDetected
+        expr: |
+          (
+            avg_over_time(container_memory_usage_bytes{pod=~"hololoom-api.*"}[1h])
+            - avg_over_time(container_memory_usage_bytes{pod=~"hololoom-api.*"}[1h] offset 1h)
+          ) > 100000000  # 100MB increase per hour
+        for: 3h
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "Potential memory leak detected"
+          description: "Memory usage increasing by {{ $value | humanize1024 }}B/hour"
+          runbook_url: "https://docs.hololoom.ai/runbooks/memory-leak"
+
+      # Service Down
+      - alert: HoloLoomServiceDown
+        expr: up{job="hololoom-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "HoloLoom service is down"
+          description: "HoloLoom API has been down for more than 1 minute"
+          runbook_url: "https://docs.hololoom.ai/runbooks/service-down"
+
+      # Pod Restart Loop
+      - alert: PodRestartLoop
+        expr: rate(kube_pod_container_status_restarts_total{pod=~"hololoom-api.*"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "Pod restart loop detected"
+          description: "Pod {{ $labels.pod }} is restarting frequently"
+          runbook_url: "https://docs.hololoom.ai/runbooks/pod-restart-loop"
+
+  # ===========================================================================
+  # Database Alerts
+  # ===========================================================================
+
+  - name: hololoom_databases
+    interval: 30s
+    rules:
+      # Neo4j Connection Issues
+      - alert: Neo4jConnectionFailure
+        expr: neo4j_bolt_connections_opened_total == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: neo4j
+        annotations:
+          summary: "Neo4j connection failure"
+          description: "No active Bolt connections to Neo4j"
+          runbook_url: "https://docs.hololoom.ai/runbooks/neo4j-connection"
+
+      # Neo4j High Memory Usage
+      - alert: Neo4jHighMemoryUsage
+        expr: neo4j_dbms_memory_heap_used_bytes / neo4j_dbms_memory_heap_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: neo4j
+        annotations:
+          summary: "Neo4j high memory usage"
+          description: "Neo4j heap usage is {{ $value | humanizePercentage }}"
+          runbook_url: "https://docs.hololoom.ai/runbooks/neo4j-memory"
+
+      # Qdrant Unavailable
+      - alert: QdrantUnavailable
+        expr: up{job="qdrant"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: qdrant
+        annotations:
+          summary: "Qdrant vector database is unavailable"
+          description: "Qdrant has been down for more than 2 minutes"
+          runbook_url: "https://docs.hololoom.ai/runbooks/qdrant-down"
+
+      # PostgreSQL Connection Pool Exhaustion
+      - alert: PostgresConnectionPoolExhausted
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: postgres
+        annotations:
+          summary: "PostgreSQL connection pool near exhaustion"
+          description: "{{ $value | humanizePercentage }} of connections in use"
+          runbook_url: "https://docs.hololoom.ai/runbooks/postgres-connections"
+
+      # Redis Memory Usage
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is {{ $value | humanizePercentage }}"
+          runbook_url: "https://docs.hololoom.ai/runbooks/redis-memory"
+
+  # ===========================================================================
+  # Infrastructure Alerts
+  # ===========================================================================
+
+  - name: hololoom_infrastructure
+    interval: 30s
+    rules:
+      # Node CPU Usage
+      - alert: NodeHighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High CPU usage on node"
+          description: "Node {{ $labels.instance }} CPU usage is {{ $value }}%"
+          runbook_url: "https://docs.hololoom.ai/runbooks/high-cpu"
+
+      # Node Memory Usage
+      - alert: NodeHighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High memory usage on node"
+          description: "Node {{ $labels.instance }} memory usage is {{ $value }}%"
+          runbook_url: "https://docs.hololoom.ai/runbooks/high-memory"
+
+      # Disk Space Low
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "Low disk space on node"
+          description: "Node {{ $labels.instance }} has {{ $value }}% disk space remaining"
+          runbook_url: "https://docs.hololoom.ai/runbooks/low-disk-space"
+
+      # Disk Space Critical
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 5
+        for: 1m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Critical disk space on node"
+          description: "Node {{ $labels.instance }} has only {{ $value }}% disk space remaining"
+          runbook_url: "https://docs.hololoom.ai/runbooks/critical-disk-space"
+
+  # ===========================================================================
+  # SLO Alerts (Service Level Objectives)
+  # ===========================================================================
+
+  - name: hololoom_slo
+    interval: 1m
+    rules:
+      # SLO: 99.9% Uptime (8.76 hours downtime/year)
+      - alert: SLOUptimeViolation
+        expr: |
+          (
+            sum(rate(hololoom_requests_total[30d]))
+            - sum(rate(hololoom_errors_total[30d]))
+          ) / sum(rate(hololoom_requests_total[30d])) < 0.999
+        for: 5m
+        labels:
+          severity: critical
+          component: slo
+        annotations:
+          summary: "SLO uptime violation"
+          description: "30-day uptime is {{ $value | humanizePercentage }} (SLO: 99.9%)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/slo-uptime"
+
+      # SLO: p95 Latency < 500ms
+      - alert: SLOLatencyViolation
+        expr: histogram_quantile(0.95, rate(hololoom_query_duration_seconds_bucket[30d])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          component: slo
+        annotations:
+          summary: "SLO latency violation"
+          description: "30-day p95 latency is {{ $value | humanizeDuration }} (SLO: 500ms)"
+          runbook_url: "https://docs.hololoom.ai/runbooks/slo-latency"
