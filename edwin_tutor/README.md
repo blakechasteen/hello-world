@@ -6,10 +6,10 @@
 
 EdWIN is a **hybrid multi-modal learning platform** that teaches you HoloLoom through:
 
-- 🖥️ **Terminal UI** - Interactive CLI lessons
-- 🌐 **Web UI** - Visual browser-based tutorials ✅ **NEW!**
-- 📓 **Jupyter Notebooks** - Code-along lessons *(coming soon!)*
-- 📚 **Markdown Docs** - Reference material *(coming soon!)*
+- 🖥️ **Terminal UI** - Interactive CLI lessons ✅
+- 🌐 **Web UI** - Visual browser-based tutorials ✅
+- 📓 **Jupyter Notebooks** - Code-along lessons ✅ **NEW!**
+- 📚 **Markdown Docs** - Reference material ✅ **NEW!**
 
 **The magic?** Your progress syncs across ALL interfaces. Start in the terminal, continue in a notebook, reference the docs - it's all tracked!
 
@@ -64,6 +64,79 @@ Navigate to **http://localhost:5000** in your web browser!
 - 🏆 **Badge showcase** - Display your achievements with pride
 
 See [`ui/web/README.md`](ui/web/README.md) for full documentation!
+
+---
+
+## 📓 Quick Start (Jupyter Notebooks) ✨ NEW!
+
+### Prerequisites
+
+```bash
+pip install jupyter notebook
+# Or for JupyterLab:
+pip install jupyterlab
+```
+
+### Launch Jupyter
+
+```bash
+cd edwin_tutor/ui/notebooks
+jupyter notebook
+# Or: jupyter lab
+```
+
+Your browser will open showing the notebook list!
+
+### Features
+
+- 💻 **Interactive coding** - Run Python code directly in your browser
+- 📝 **Rich explanations** - Markdown cells with full formatting
+- 🧩 **Built-in challenges** - Write code and see instant results
+- 📊 **Progress tracking** - Syncs with other interfaces
+- 🎯 **Quiz cells** - Test your understanding interactively
+- 💡 **Progressive hints** - Get help when stuck
+
+**Available notebooks:**
+- `Lesson_01_What_is_HoloLoom.ipynb` - Introduction with interactive quiz
+- `Lesson_02_Your_First_Query.ipynb` - Hands-on coding lesson with challenge
+
+See [`ui/notebooks/README.md`](ui/notebooks/README.md) for full documentation!
+
+---
+
+## 📚 Quick Start (Markdown Docs) ✨ NEW!
+
+### No Installation Needed!
+
+Markdown docs work offline - just read the files!
+
+### Access Documentation
+
+```bash
+cd edwin_tutor/ui/markdown
+
+# Read in terminal
+less 01_Quick_Reference.md
+cat 02_FAQ.md
+
+# Or open in your editor
+code 01_Quick_Reference.md
+```
+
+### Features
+
+- ⚡ **Instant access** - No server or dependencies needed
+- 🔍 **Searchable** - Use grep, find-in-page, or editor search
+- 📖 **Quick reference** - Fast lookup while coding
+- ❓ **FAQ** - Common questions and troubleshooting
+- 📋 **Copy-friendly** - Easy to copy code examples
+- 🌐 **Offline** - Works without internet
+
+**Available docs:**
+- `01_Quick_Reference.md` - Fast lookup guide with code cheat sheet
+- `02_FAQ.md` - Common questions and troubleshooting
+
+See [`ui/markdown/README.md`](ui/markdown/README.md) for full documentation!
 
 ---
 
@@ -161,7 +234,8 @@ EdWIN Tutor/
 ├── ui/                   # Different interfaces
 │   ├── terminal/         # CLI interface (edwin.py)
 │   ├── web/             # Web UI (Flask server + HTML/CSS/JS)
-│   └── notebooks/       # Jupyter notebooks (coming soon!)
+│   ├── notebooks/       # Jupyter notebooks (.ipynb files)
+│   └── markdown/        # Reference docs (.md files)
 │
 └── assets/              # Images, diagrams, etc.
 ```
@@ -241,10 +315,11 @@ Edit `core/progress.py` → `_define_badges()` method
 - Gamification
 - 2 beginner lessons
 
-### 🚧 Phase 2 (In Progress)
+### ✅ Phase 2 (Complete)
 - ✅ Web UI with modern interface
-- 🔜 8 more beginner lessons
-- 🔜 Jupyter notebook integration
+- ✅ Jupyter notebook integration (2 lessons)
+- ✅ Markdown reference documentation
+- 🔜 8 more beginner lessons (coming in Phase 3)
 - 🔜 AI tutor (HoloLoom helps teach HoloLoom!)
 
 ### 💭 Phase 3 (Future)
@@ -297,6 +372,6 @@ EdWIN Tutor is built with the same welcoming spirit as HoloLoom:
 
 ---
 
-**Status**: 🎯 Alpha - Terminal UI & Web UI functional! Notebooks coming soon.
+**Status**: 🎯 Beta - All 4 interfaces complete (Terminal, Web, Notebooks, Markdown)!
 
 *Built with care by developers who believe learning should be interactive, fun, and accessible to everyone.*
