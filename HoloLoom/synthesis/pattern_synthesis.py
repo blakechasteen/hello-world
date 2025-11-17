@@ -15,7 +15,6 @@ Date: 2025-11-17
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-import numpy as np
 
 from HoloLoom.synthesis.types import (
     SyntheticMemory,
@@ -34,7 +33,7 @@ class PatternSynthesisConfig:
     enabled: bool = True
     confidence_threshold: float = 0.85  # Minimum confidence
     min_cluster_size: int = 3  # Min queries to form pattern
-    similarity_threshold: float = 0.7  # Semantic similarity
+    similarity_threshold: float = 0.1  # Word overlap similarity (Jaccard, very permissive for MVP)
     window_size: int = 100  # Look at last N queries
     trigger_interval: int = 100  # Run every N queries
 
