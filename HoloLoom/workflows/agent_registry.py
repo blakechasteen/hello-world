@@ -769,6 +769,689 @@ class AgentRegistry:
             }
         ))
 
+        # Data & Analytics agents (NEW! - Week 2 - Nov 2025)
+        self.register_schema(AgentSchema(
+            agent_id='data_fetcher',
+            name='Data Fetcher',
+            category=AgentCategory.DATA,
+            inputs=['query'],
+            outputs=['data'],
+            color='#f59e0b',
+            icon='📥',
+            description='Fetch data from PostgreSQL, Google Sheets, APIs',
+            config_schema={
+                'source': AgentConfig(
+                    'source', 'select', 'postgresql',
+                    options=['postgresql', 'mysql', 'google_sheets', 'api', 'csv'],
+                    description='Data source type'
+                ),
+                'connection_string': AgentConfig(
+                    'connection_string', 'text', '',
+                    description='Database connection string or API endpoint'
+                ),
+                'query': AgentConfig(
+                    'query', 'text', 'SELECT * FROM table',
+                    description='SQL query or API parameters'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='data_analyzer',
+            name='Data Analyzer',
+            category=AgentCategory.DATA,
+            inputs=['data'],
+            outputs=['analysis'],
+            color='#f59e0b',
+            icon='📊',
+            description='Statistical analysis and insights from data',
+            config_schema={
+                'analysis_type': AgentConfig(
+                    'analysis_type', 'multiselect', ['summary', 'trends'],
+                    options=['summary', 'trends', 'correlations', 'outliers', 'forecasts'],
+                    description='Types of analysis to perform'
+                ),
+                'confidence_threshold': AgentConfig(
+                    'confidence_threshold', 'number', 0.95,
+                    min_value=0.5, max_value=1.0, step=0.05,
+                    description='Statistical confidence level'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='data_visualizer',
+            name='Data Visualizer',
+            category=AgentCategory.DATA,
+            inputs=['data'],
+            outputs=['visualization'],
+            color='#f59e0b',
+            icon='📈',
+            description='Create charts and visualizations',
+            config_schema={
+                'chart_type': AgentConfig(
+                    'chart_type', 'select', 'line',
+                    options=['line', 'bar', 'pie', 'scatter', 'heatmap', 'dashboard'],
+                    description='Type of visualization'
+                ),
+                'format': AgentConfig(
+                    'format', 'select', 'png',
+                    options=['png', 'svg', 'html', 'interactive'],
+                    description='Output format'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='pdf_generator',
+            name='PDF Generator',
+            category=AgentCategory.OUTPUT,
+            inputs=['content'],
+            outputs=['pdf'],
+            color='#fa709a',
+            icon='📄',
+            description='Generate PDF reports with charts',
+            config_schema={
+                'template': AgentConfig(
+                    'template', 'select', 'professional',
+                    options=['professional', 'minimal', 'colorful', 'corporate'],
+                    description='PDF template style'
+                ),
+                'include_toc': AgentConfig(
+                    'include_toc', 'boolean', True,
+                    description='Include table of contents'
+                ),
+                'page_size': AgentConfig(
+                    'page_size', 'select', 'letter',
+                    options=['letter', 'a4', 'legal'],
+                    description='PDF page size'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='anomaly_detector',
+            name='Anomaly Detector',
+            category=AgentCategory.ML,
+            inputs=['data'],
+            outputs=['anomalies'],
+            color='#8b5cf6',
+            icon='🚨',
+            description='Detect outliers and anomalies in data',
+            config_schema={
+                'method': AgentConfig(
+                    'method', 'select', 'isolation_forest',
+                    options=['isolation_forest', 'z_score', 'iqr', 'dbscan'],
+                    description='Anomaly detection algorithm'
+                ),
+                'sensitivity': AgentConfig(
+                    'sensitivity', 'number', 0.1,
+                    min_value=0.01, max_value=0.5, step=0.01,
+                    description='Detection sensitivity (lower = more sensitive)'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='data_standardizer',
+            name='Data Standardizer',
+            category=AgentCategory.DATA,
+            inputs=['data'],
+            outputs=['standardized'],
+            color='#f59e0b',
+            icon='⚙️',
+            description='Standardize data formats and values',
+            config_schema={
+                'operations': AgentConfig(
+                    'operations', 'multiselect', ['normalize', 'encode'],
+                    options=['normalize', 'encode', 'scale', 'format_dates', 'clean_text'],
+                    description='Standardization operations'
+                ),
+                'encoding': AgentConfig(
+                    'encoding', 'select', 'utf-8',
+                    options=['utf-8', 'ascii', 'latin1'],
+                    description='Character encoding'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='missing_value_filler',
+            name='Missing Value Filler',
+            category=AgentCategory.DATA,
+            inputs=['data'],
+            outputs=['filled'],
+            color='#f59e0b',
+            icon='🔧',
+            description='Fill missing values in datasets',
+            config_schema={
+                'strategy': AgentConfig(
+                    'strategy', 'select', 'mean',
+                    options=['mean', 'median', 'mode', 'forward_fill', 'interpolate', 'drop'],
+                    description='Missing value strategy'
+                ),
+                'threshold': AgentConfig(
+                    'threshold', 'number', 0.5,
+                    min_value=0.0, max_value=1.0, step=0.1,
+                    description='Max proportion of missing values before dropping column'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='web_scraper',
+            name='Web Scraper',
+            category=AgentCategory.INTEGRATION,
+            inputs=['url'],
+            outputs=['content'],
+            color='#06b6d4',
+            icon='🌐',
+            description='Scrape content from websites',
+            config_schema={
+                'selectors': AgentConfig(
+                    'selectors', 'text', '',
+                    description='CSS selectors (comma-separated)'
+                ),
+                'wait_for': AgentConfig(
+                    'wait_for', 'text', '',
+                    description='Element to wait for before scraping'
+                ),
+                'javascript': AgentConfig(
+                    'javascript', 'boolean', False,
+                    description='Execute JavaScript (use for dynamic content)'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='change_detector',
+            name='Change Detector',
+            category=AgentCategory.ANALYSIS,
+            inputs=['old_data', 'new_data'],
+            outputs=['changes'],
+            color='#ec4899',
+            icon='🔍',
+            description='Detect changes between data snapshots',
+            config_schema={
+                'ignore_fields': AgentConfig(
+                    'ignore_fields', 'text', '',
+                    description='Fields to ignore (comma-separated)'
+                ),
+                'threshold': AgentConfig(
+                    'threshold', 'number', 0.05,
+                    min_value=0.0, max_value=1.0, step=0.01,
+                    description='Minimum change % to report'
+                ),
+                'notify_on_change': AgentConfig(
+                    'notify_on_change', 'boolean', True,
+                    description='Send notification when changes detected'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='natural_language_parser',
+            name='Natural Language Parser',
+            category=AgentCategory.LLM,
+            inputs=['natural_language'],
+            outputs=['parsed'],
+            color='#9333ea',
+            icon='💬',
+            description='Parse natural language into structured queries',
+            config_schema={
+                'target_format': AgentConfig(
+                    'target_format', 'select', 'sql',
+                    options=['sql', 'json', 'graphql', 'mongodb'],
+                    description='Target query format'
+                ),
+                'validation': AgentConfig(
+                    'validation', 'boolean', True,
+                    description='Validate generated query syntax'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='sql_generator',
+            name='SQL Generator',
+            category=AgentCategory.CODE,
+            inputs=['description'],
+            outputs=['sql'],
+            color='#10b981',
+            icon='📝',
+            description='Generate SQL from natural language',
+            config_schema={
+                'dialect': AgentConfig(
+                    'dialect', 'select', 'postgresql',
+                    options=['postgresql', 'mysql', 'sqlite', 'mssql', 'oracle'],
+                    description='SQL dialect'
+                ),
+                'include_explain': AgentConfig(
+                    'include_explain', 'boolean', False,
+                    description='Include EXPLAIN plan'
+                ),
+                'optimize': AgentConfig(
+                    'optimize', 'boolean', True,
+                    description='Optimize query performance'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='sql_validator',
+            name='SQL Validator',
+            category=AgentCategory.CODE,
+            inputs=['sql'],
+            outputs=['validation'],
+            color='#10b981',
+            icon='✅',
+            description='Validate SQL syntax and safety',
+            config_schema={
+                'check_injection': AgentConfig(
+                    'check_injection', 'boolean', True,
+                    description='Check for SQL injection risks'
+                ),
+                'check_performance': AgentConfig(
+                    'check_performance', 'boolean', True,
+                    description='Check for performance issues'
+                ),
+                'max_rows': AgentConfig(
+                    'max_rows', 'number', 1000,
+                    min_value=1, max_value=1000000,
+                    description='Maximum allowed rows'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='metric_calculator',
+            name='Metric Calculator',
+            category=AgentCategory.DATA,
+            inputs=['data'],
+            outputs=['metrics'],
+            color='#f59e0b',
+            icon='📐',
+            description='Calculate business and statistical metrics',
+            config_schema={
+                'metrics': AgentConfig(
+                    'metrics', 'multiselect', ['mean', 'median'],
+                    options=['mean', 'median', 'std', 'percentiles', 'growth_rate', 'kpis'],
+                    description='Metrics to calculate'
+                ),
+                'period': AgentConfig(
+                    'period', 'select', 'day',
+                    options=['hour', 'day', 'week', 'month', 'quarter', 'year'],
+                    description='Time period for aggregation'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='chart_updater',
+            name='Chart Updater',
+            category=AgentCategory.INTEGRATION,
+            inputs=['data', 'chart_id'],
+            outputs=['updated'],
+            color='#06b6d4',
+            icon='📊',
+            description='Update existing charts/dashboards',
+            config_schema={
+                'platform': AgentConfig(
+                    'platform', 'select', 'grafana',
+                    options=['grafana', 'tableau', 'metabase', 'looker', 'custom'],
+                    description='Dashboard platform'
+                ),
+                'api_endpoint': AgentConfig(
+                    'api_endpoint', 'text', '',
+                    description='API endpoint URL'
+                ),
+                'refresh_interval': AgentConfig(
+                    'refresh_interval', 'number', 300,
+                    min_value=60, max_value=86400,
+                    description='Refresh interval (seconds)'
+                )
+            }
+        ))
+
+        # Developer Tools agents (NEW! - Week 2 - Nov 2025)
+        self.register_schema(AgentSchema(
+            agent_id='bug_parser',
+            name='Bug Parser',
+            category=AgentCategory.CODE,
+            inputs=['bug_report'],
+            outputs=['parsed'],
+            color='#10b981',
+            icon='🐛',
+            description='Parse bug reports into structured data',
+            config_schema={
+                'extract_stack_trace': AgentConfig(
+                    'extract_stack_trace', 'boolean', True,
+                    description='Extract and parse stack traces'
+                ),
+                'extract_steps': AgentConfig(
+                    'extract_steps', 'boolean', True,
+                    description='Extract reproduction steps'
+                ),
+                'detect_duplicates': AgentConfig(
+                    'detect_duplicates', 'boolean', True,
+                    description='Check for duplicate bugs'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='severity_classifier',
+            name='Severity Classifier',
+            category=AgentCategory.ML,
+            inputs=['bug'],
+            outputs=['severity'],
+            color='#8b5cf6',
+            icon='⚠️',
+            description='Classify bug severity (critical/high/medium/low)',
+            config_schema={
+                'model': AgentConfig(
+                    'model', 'select', 'ml_classifier',
+                    options=['ml_classifier', 'rule_based', 'llm'],
+                    description='Classification method'
+                ),
+                'consider_impact': AgentConfig(
+                    'consider_impact', 'boolean', True,
+                    description='Consider business impact'
+                ),
+                'auto_escalate': AgentConfig(
+                    'auto_escalate', 'boolean', False,
+                    description='Auto-escalate critical bugs'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='team_assigner',
+            name='Team Assigner',
+            category=AgentCategory.INTEGRATION,
+            inputs=['issue'],
+            outputs=['assignment'],
+            color='#06b6d4',
+            icon='👥',
+            description='Assign issues to teams/individuals',
+            config_schema={
+                'routing_rules': AgentConfig(
+                    'routing_rules', 'text', '',
+                    description='JSON routing rules'
+                ),
+                'load_balance': AgentConfig(
+                    'load_balance', 'boolean', True,
+                    description='Balance workload across team'
+                ),
+                'skill_match': AgentConfig(
+                    'skill_match', 'boolean', True,
+                    description='Match to team member skills'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='style_checker',
+            name='Style Checker',
+            category=AgentCategory.CODE,
+            inputs=['code'],
+            outputs=['style_issues'],
+            color='#10b981',
+            icon='✨',
+            description='Check code style and formatting',
+            config_schema={
+                'standard': AgentConfig(
+                    'standard', 'select', 'pep8',
+                    options=['pep8', 'google', 'airbnb', 'standard', 'prettier'],
+                    description='Style guide'
+                ),
+                'auto_fix': AgentConfig(
+                    'auto_fix', 'boolean', False,
+                    description='Auto-fix style issues'
+                ),
+                'ignore_rules': AgentConfig(
+                    'ignore_rules', 'text', '',
+                    description='Rules to ignore (comma-separated)'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='security_scanner',
+            name='Security Scanner',
+            category=AgentCategory.CODE,
+            inputs=['code'],
+            outputs=['vulnerabilities'],
+            color='#10b981',
+            icon='🔒',
+            description='Scan for security vulnerabilities',
+            config_schema={
+                'scan_depth': AgentConfig(
+                    'scan_depth', 'select', 'standard',
+                    options=['quick', 'standard', 'deep'],
+                    description='Scan depth'
+                ),
+                'check_dependencies': AgentConfig(
+                    'check_dependencies', 'boolean', True,
+                    description='Scan dependencies for CVEs'
+                ),
+                'severity_threshold': AgentConfig(
+                    'severity_threshold', 'select', 'MEDIUM',
+                    options=['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
+                    description='Minimum severity to report'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='dependency_scanner',
+            name='Dependency Scanner',
+            category=AgentCategory.CODE,
+            inputs=['project'],
+            outputs=['dependencies'],
+            color='#10b981',
+            icon='📦',
+            description='Scan project dependencies',
+            config_schema={
+                'package_manager': AgentConfig(
+                    'package_manager', 'select', 'npm',
+                    options=['npm', 'pip', 'cargo', 'maven', 'gradle'],
+                    description='Package manager'
+                ),
+                'include_dev': AgentConfig(
+                    'include_dev', 'boolean', True,
+                    description='Include dev dependencies'
+                ),
+                'check_licenses': AgentConfig(
+                    'check_licenses', 'boolean', False,
+                    description='Check license compatibility'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='version_checker',
+            name='Version Checker',
+            category=AgentCategory.CODE,
+            inputs=['dependencies'],
+            outputs=['updates'],
+            color='#10b981',
+            icon='🔄',
+            description='Check for dependency updates',
+            config_schema={
+                'update_type': AgentConfig(
+                    'update_type', 'select', 'minor',
+                    options=['major', 'minor', 'patch', 'all'],
+                    description='Types of updates to check'
+                ),
+                'check_security': AgentConfig(
+                    'check_security', 'boolean', True,
+                    description='Prioritize security updates'
+                ),
+                'auto_pr': AgentConfig(
+                    'auto_pr', 'boolean', False,
+                    description='Create PRs for updates'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='compatibility_tester',
+            name='Compatibility Tester',
+            category=AgentCategory.CODE,
+            inputs=['code', 'dependencies'],
+            outputs=['compatibility'],
+            color='#10b981',
+            icon='🧪',
+            description='Test dependency compatibility',
+            config_schema={
+                'run_tests': AgentConfig(
+                    'run_tests', 'boolean', True,
+                    description='Run test suite'
+                ),
+                'check_breaking': AgentConfig(
+                    'check_breaking', 'boolean', True,
+                    description='Check for breaking changes'
+                ),
+                'rollback_on_failure': AgentConfig(
+                    'rollback_on_failure', 'boolean', True,
+                    description='Rollback if tests fail'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='test_template_selector',
+            name='Test Template Selector',
+            category=AgentCategory.CODE,
+            inputs=['code'],
+            outputs=['template'],
+            color='#10b981',
+            icon='📋',
+            description='Select appropriate test template',
+            config_schema={
+                'test_type': AgentConfig(
+                    'test_type', 'select', 'unit',
+                    options=['unit', 'integration', 'e2e', 'performance', 'security'],
+                    description='Type of tests to generate'
+                ),
+                'framework': AgentConfig(
+                    'framework', 'select', 'pytest',
+                    options=['pytest', 'jest', 'junit', 'go_test', 'rspec'],
+                    description='Test framework'
+                ),
+                'coverage_target': AgentConfig(
+                    'coverage_target', 'number', 80,
+                    min_value=0, max_value=100,
+                    description='Target code coverage %'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='test_generator',
+            name='Test Generator',
+            category=AgentCategory.CODE,
+            inputs=['code', 'template'],
+            outputs=['tests'],
+            color='#10b981',
+            icon='🧪',
+            description='Generate test cases',
+            config_schema={
+                'include_edge_cases': AgentConfig(
+                    'include_edge_cases', 'boolean', True,
+                    description='Generate edge case tests'
+                ),
+                'include_mocks': AgentConfig(
+                    'include_mocks', 'boolean', True,
+                    description='Generate mock objects'
+                ),
+                'assertions_per_test': AgentConfig(
+                    'assertions_per_test', 'number', 3,
+                    min_value=1, max_value=10,
+                    description='Target assertions per test'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='code_parser',
+            name='Code Parser',
+            category=AgentCategory.CODE,
+            inputs=['code'],
+            outputs=['ast'],
+            color='#10b981',
+            icon='🌳',
+            description='Parse code into AST',
+            config_schema={
+                'language': AgentConfig(
+                    'language', 'select', 'python',
+                    options=['python', 'javascript', 'typescript', 'go', 'rust', 'java'],
+                    description='Programming language'
+                ),
+                'extract_docstrings': AgentConfig(
+                    'extract_docstrings', 'boolean', True,
+                    description='Extract documentation strings'
+                ),
+                'extract_types': AgentConfig(
+                    'extract_types', 'boolean', True,
+                    description='Extract type annotations'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='api_extractor',
+            name='API Extractor',
+            category=AgentCategory.CODE,
+            inputs=['code'],
+            outputs=['api_spec'],
+            color='#10b981',
+            icon='📡',
+            description='Extract API specification from code',
+            config_schema={
+                'format': AgentConfig(
+                    'format', 'select', 'openapi',
+                    options=['openapi', 'swagger', 'graphql', 'custom'],
+                    description='API spec format'
+                ),
+                'include_examples': AgentConfig(
+                    'include_examples', 'boolean', True,
+                    description='Include request/response examples'
+                ),
+                'include_auth': AgentConfig(
+                    'include_auth', 'boolean', True,
+                    description='Document authentication'
+                )
+            }
+        ))
+
+        self.register_schema(AgentSchema(
+            agent_id='markdown_generator',
+            name='Markdown Generator',
+            category=AgentCategory.OUTPUT,
+            inputs=['spec'],
+            outputs=['markdown'],
+            color='#fa709a',
+            icon='📝',
+            description='Generate Markdown documentation',
+            config_schema={
+                'template': AgentConfig(
+                    'template', 'select', 'github',
+                    options=['github', 'readthedocs', 'gitbook', 'custom'],
+                    description='Markdown template'
+                ),
+                'include_toc': AgentConfig(
+                    'include_toc', 'boolean', True,
+                    description='Include table of contents'
+                ),
+                'include_diagrams': AgentConfig(
+                    'include_diagrams', 'boolean', False,
+                    description='Generate Mermaid diagrams'
+                )
+            }
+        ))
+
         logger.info(f"Loaded {len(self.agents)} built-in agents")
 
     def register_schema(self, schema: AgentSchema):
