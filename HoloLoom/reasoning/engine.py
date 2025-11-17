@@ -30,6 +30,16 @@ from HoloLoom.reasoning.types import (
     StepType,
     DEFAULT_CONFIDENCE_THRESHOLDS,
 )
+from HoloLoom.reasoning.resource_limits import (
+    ResourceMonitor,
+    ResourceLimits,
+    ResourceLimitError,
+    ChainLengthLimitError,
+)
+from HoloLoom.reasoning.metrics import (
+    ReasoningMetrics,
+    track_reasoning,
+)
 
 # Optional scratchpad integration
 try:
@@ -73,7 +83,8 @@ class ReasoningEngine:
         max_thinking_steps: int = 5,
         verification_threshold: float = 0.75,
         timeout_ms: float = 500.0,
-        enable_fallback: bool = True
+        enable_fallback: bool = True,
+        resource_limits: Optional[ResourceLimits] = None
     ):
         """
         Initialize reasoning engine with dependency injection.
@@ -89,6 +100,7 @@ class ReasoningEngine:
             verification_threshold: Minimum confidence for passing
             timeout_ms: Timeout for reasoning operations (DoS protection)
             enable_fallback: Enable graceful degradation on errors
+            resource_limits: Custom resource limits (optional)
         """
         # Validation
         if not 1 <= max_thinking_steps <= 50:
@@ -104,6 +116,18 @@ class ReasoningEngine:
         self.verification_threshold = verification_threshold
         self.timeout_ms = timeout_ms
         self.enable_fallback = enable_fallback
+
+        # PHASE 2: Resource monitoring and limits
+        if resource_limits is None:
+            resource_limits = ResourceLimits(
+                max_chain_steps=max_thinking_steps,
+                max_memory_mb=512.0,
+                max_concurrent_operations=100
+            )
+        self.resource_monitor = ResourceMonitor(resource_limits)
+
+        # PHASE 2: Metrics tracking
+        self.metrics = ReasoningMetrics()
 
         # Lazy import to avoid circular dependencies
         from HoloLoom.reasoning.planner import QueryPlanner
@@ -155,12 +179,23 @@ class ReasoningEngine:
         timeout = (timeout_ms or self.timeout_ms) / 1000  # Convert to seconds
 
         try:
-            # FIX #2: TIMEOUT - Wrap with asyncio.wait_for()
-            result = await asyncio.wait_for(
-                self._reason_impl(query, features, context, mode),
-                timeout=timeout
-            )
-            return result
+            # PHASE 2: Resource limiting - Track concurrent operations
+            async with self.resource_monitor.operation_context():
+                # Check memory before starting
+                if not self.resource_monitor.check_memory_limit():
+                    raise ResourceLimitError("Memory limit exceeded before reasoning")
+
+                # Check context size
+                context_size = len(context.shards) if hasattr(context, 'shards') else 0
+                if not self.resource_monitor.check_context_size(context_size):
+                    raise ResourceLimitError(f"Context too large: {context_size} shards")
+
+                # FIX #2: TIMEOUT - Wrap with asyncio.wait_for()
+                result = await asyncio.wait_for(
+                    self._reason_impl(query, features, context, mode),
+                    timeout=timeout
+                )
+                return result
 
         except asyncio.TimeoutError:
             self.logger.error(
@@ -204,6 +239,15 @@ class ReasoningEngine:
             duration_ms = (time.time() - start_time) * 1000
             result.duration_ms = duration_ms
 
+            # PHASE 2: Track metrics
+            self.metrics.track_operation(
+                mode=result.mode.value,
+                duration_ms=duration_ms,
+                confidence=result.total_confidence,
+                chain_length=len(result.chain),
+                success=True
+            )
+
             self.logger.info(
                 f"Reasoning complete: mode={result.mode.value}, "
                 f"steps={len(result.chain)}, confidence={result.total_confidence:.2f}, "
@@ -214,6 +258,16 @@ class ReasoningEngine:
 
         except Exception as e:
             self.logger.error(f"Reasoning failed: {e}", exc_info=True)
+
+            # PHASE 2: Track error metrics
+            duration_ms = (time.time() - start_time) * 1000
+            self.metrics.track_operation(
+                mode=reasoning_mode.value,
+                duration_ms=duration_ms,
+                confidence=0.0,
+                chain_length=0,
+                success=False
+            )
 
             if self.enable_fallback:
                 # FIX #3: ERROR BOUNDARY - Graceful degradation
@@ -326,7 +380,14 @@ class ReasoningEngine:
                     )
                 ]
 
-            # Limit to max steps
+            # PHASE 2: Check chain length resource limit
+            if not self.resource_monitor.check_chain_length(len(chain)):
+                self.logger.warning(
+                    f"Chain length {len(chain)} exceeds limit, truncating"
+                )
+                chain = chain[:self.max_steps]
+
+            # Limit to max steps (legacy check for backward compat)
             if len(chain) > self.max_steps:
                 self.logger.warning(
                     f"Chain has {len(chain)} steps, truncating to {self.max_steps}"
@@ -672,6 +733,17 @@ class ReasoningEngine:
         except Exception as e:
             self.logger.error(f"Mode selection failed: {e}, defaulting to STANDARD")
             return ReasoningMode.STANDARD
+
+    def get_resource_stats(self) -> Dict[str, Any]:
+        """
+        Get resource usage statistics.
+
+        PHASE 2: Resource monitoring
+
+        Returns:
+            Dictionary with resource usage stats
+        """
+        return self.resource_monitor.get_stats()
 
 
 # ============================================================================
