@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdWIN Parent Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .child-selector {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 30px;
+        }
+
+        /* Quick Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .label {
+            color: #9ca3af;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .unit {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* Progress Chart */
+        .chart-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .chart-card h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        .chart-placeholder {
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 16px;
+        }
+
+        /* Achievements */
+        .achievements {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .achievement-item:last-child {
+            border-bottom: none;
+        }
+
+        .achievement-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 16px;
+        }
+
+        .achievement-content {
+            flex: 1;
+        }
+
+        .achievement-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .achievement-date {
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        /* Goals */
+        .goal-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 16px;
+        }
+
+        .goal-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        /* Messages */
+        .message-item {
+            display: flex;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .message-item:hover {
+            background: #f9fafb;
+        }
+
+        .message-item.unread {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .message-sender {
+            font-weight: 600;
+        }
+
+        .message-time {
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        .message-preview {
+            color: #6b7280;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Notifications */
+        .notification-item {
+            display: flex;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .notification-icon.achievement {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .notification-icon.alert {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .notification-icon.info {
+            background: #dbeafe;
+            color: #3b82f6;
+        }
+
+        /* Grid Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>👨‍👩‍👧‍👦 EdWIN Parent Dashboard</h1>
+            <select class="child-selector" id="childSelector">
+                <option value="student_001">Emma Johnson</option>
+                <option value="student_002">Liam Johnson</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">Total XP Earned</div>
+                <div class="value" style="color: #10b981;" id="totalXP">2,450</div>
+                <div class="unit">Experience Points</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="label">Objectives Mastered</div>
+                <div class="value" style="color: #3b82f6;" id="masteredCount">42</div>
+                <div class="unit">of 220 total</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="label">Current Streak</div>
+                <div class="value" style="color: #f59e0b;" id="streakDays">7</div>
+                <div class="unit">🔥 Days</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="label">Engagement Score</div>
+                <div class="value" style="color: #8b5cf6;" id="engagementScore">85%</div>
+                <div class="unit">Overall Performance</div>
+            </div>
+        </div>
+
+        <!-- Progress Chart -->
+        <div class="chart-card">
+            <h2>📈 Progress Over Last 30 Days</h2>
+            <div class="chart-placeholder">
+                Chart.js visualization would go here
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="two-column">
+            <!-- Left Column -->
+            <div>
+                <!-- Recent Achievements -->
+                <div class="achievements">
+                    <div class="section-header">
+                        <h2>🏆 Recent Achievements</h2>
+                        <button class="btn btn-primary">View All</button>
+                    </div>
+
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🎯</div>
+                        <div class="achievement-content">
+                            <div class="achievement-title">First Algebra Master</div>
+                            <div class="achievement-date">2 hours ago</div>
+                        </div>
+                    </div>
+
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🔥</div>
+                        <div class="achievement-content">
+                            <div class="achievement-title">7-Day Streak!</div>
+                            <div class="achievement-date">Today</div>
+                        </div>
+                    </div>
+
+                    <div class="achievement-item">
+                        <div class="achievement-icon">⭐</div>
+                        <div class="achievement-content">
+                            <div class="achievement-title">Level 5 Unlocked</div>
+                            <div class="achievement-date">Yesterday</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Goals -->
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2>🎯 Active Goals</h2>
+                        <button class="btn btn-primary">New Goal</button>
+                    </div>
+
+                    <div class="goal-card">
+                        <div class="goal-title">Master 10 Algebra Objectives</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 70%;"></div>
+                        </div>
+                        <div class="progress-label">
+                            <span>7 of 10 completed</span>
+                            <span>70%</span>
+                        </div>
+                    </div>
+
+                    <div class="goal-card">
+                        <div class="goal-title">Maintain 30-Day Streak</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 23%;"></div>
+                        </div>
+                        <div class="progress-label">
+                            <span>7 of 30 days</span>
+                            <span>23%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teacher Messages -->
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2>💬 Teacher Messages</h2>
+                        <button class="btn btn-primary">Compose</button>
+                    </div>
+
+                    <div class="message-item unread">
+                        <div class="message-avatar">MS</div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-sender">Ms. Smith</span>
+                                <span class="message-time">10:30 AM</span>
+                            </div>
+                            <div class="message-preview">Great progress on algebra this week! Emma is...</div>
+                        </div>
+                    </div>
+
+                    <div class="message-item">
+                        <div class="message-avatar">MJ</div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-sender">Mr. Johnson</span>
+                                <span class="message-time">Yesterday</span>
+                            </div>
+                            <div class="message-preview">Thanks for your question about the science...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <!-- Upcoming Milestones -->
+                <div class="chart-card">
+                    <h2>🎯 Upcoming Milestones</h2>
+
+                    <div style="padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                        <div style="font-weight: 600; margin-bottom: 4px;">Level 6</div>
+                        <div style="color: #6b7280; font-size: 13px;">550 XP needed</div>
+                    </div>
+
+                    <div style="padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                        <div style="font-weight: 600; margin-bottom: 4px;">50 Objectives</div>
+                        <div style="color: #6b7280; font-size: 13px;">8 more to go</div>
+                    </div>
+
+                    <div style="padding: 12px 0;">
+                        <div style="font-weight: 600; margin-bottom: 4px;">10-Day Streak</div>
+                        <div style="color: #6b7280; font-size: 13px;">3 days away</div>
+                    </div>
+                </div>
+
+                <!-- Notifications Feed -->
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2>🔔 Notifications</h2>
+                        <button class="btn btn-primary" style="font-size: 12px; padding: 6px 12px;">Mark All Read</button>
+                    </div>
+
+                    <div class="notification-item">
+                        <div class="notification-icon achievement">🎉</div>
+                        <div class="notification-content">
+                            <div style="font-weight: 600; margin-bottom: 4px;">New achievement unlocked!</div>
+                            <div style="color: #6b7280; font-size: 13px;">Emma earned "Algebra Master"</div>
+                        </div>
+                    </div>
+
+                    <div class="notification-item">
+                        <div class="notification-icon info">📊</div>
+                        <div class="notification-content">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Weekly report ready</div>
+                            <div style="color: #6b7280; font-size: 13px;">View Emma's weekly progress</div>
+                        </div>
+                    </div>
+
+                    <div class="notification-item">
+                        <div class="notification-icon alert">⚠️</div>
+                        <div class="notification-content">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Attention needed</div>
+                            <div style="color: #6b7280; font-size: 13px;">Emma struggling with geometry</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection for real-time updates
+        let ws;
+
+        function connectWebSocket() {
+            ws = new WebSocket('ws://localhost:8000/ws/parent');
+
+            ws.onopen = () => {
+                console.log('✅ Connected to EdWIN Parent Portal');
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('📩 Received:', data);
+
+                if (data.type === 'notification') {
+                    // Handle new notification
+                    showNotification(data.notification);
+                } else if (data.type === 'achievement') {
+                    // Handle new achievement
+                    updateAchievements(data.achievement);
+                } else if (data.type === 'progress_update') {
+                    // Update progress stats
+                    updateStats(data.stats);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('❌ WebSocket error:', error);
+            };
+
+            ws.onclose = () => {
+                console.log('🔌 Disconnected from EdWIN Parent Portal');
+                // Reconnect after 5 seconds
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+
+        function showNotification(notification) {
+            // Add notification to feed
+            console.log('🔔 New notification:', notification.title);
+        }
+
+        function updateAchievements(achievement) {
+            // Add achievement to list
+            console.log('🏆 New achievement:', achievement.title);
+        }
+
+        function updateStats(stats) {
+            // Update dashboard stats
+            if (stats.totalXP) document.getElementById('totalXP').textContent = stats.totalXP;
+            if (stats.masteredCount) document.getElementById('masteredCount').textContent = stats.masteredCount;
+            if (stats.streakDays) document.getElementById('streakDays').textContent = stats.streakDays;
+            if (stats.engagementScore) document.getElementById('engagementScore').textContent = stats.engagementScore + '%';
+        }
+
+        // Connect on page load
+        // connectWebSocket();
+
+        // Child selector
+        document.getElementById('childSelector').addEventListener('change', (e) => {
+            console.log('👧 Switched to child:', e.target.value);
+            // Load data for selected child
+        });
+    </script>
+</body>
+</html>
