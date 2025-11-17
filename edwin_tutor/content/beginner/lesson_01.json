@@ -1,0 +1,57 @@
+{
+  "id": "beginner_01",
+  "title": "🌟 Welcome to HoloLoom!",
+  "description": "Learn what HoloLoom is and why it's special",
+  "lesson_type": "concept",
+  "difficulty": "beginner",
+  "content": "# Welcome to HoloLoom!\n\n## What is HoloLoom?\n\nImagine an AI assistant with a **photographic memory** that **gets smarter every time you use it**.\n\nMost AI assistants (like ChatGPT) forget everything between conversations. HoloLoom is different:\n\n- 📝 **Remembers everything** across all sessions\n- 🧠 **Gets smarter** with each query\n- 🔍 **Explains its reasoning** (no black box!)\n- 🎯 **Balances exploration** (trying new things) with **exploitation** (using what works)\n\n## The Library Analogy\n\nThink of HoloLoom like a library with a super-smart librarian:\n\n1. **The Library** = Your knowledge stored as connected facts\n2. **The Librarian** = The decision engine that retrieves information\n3. **The Notebook** = Complete provenance of every decision\n4. **The Learning** = The librarian gets better at knowing what you need\n\n## Why is this useful?\n\n- Build a personal knowledge base that never forgets\n- Research assistant that connects ideas across papers\n- Code helper that learns your style\n- Learning companion that adapts to you\n\n---\n\n**You just learned the core concept!** Ready to see it in action?",
+  "code_examples": [],
+  "challenges": [
+    {
+      "description": "Think about how you'd use HoloLoom. What would you teach it? (Type your answer)",
+      "starter_code": null,
+      "solution": null,
+      "hints": [
+        {
+          "level": 1,
+          "text": "Think about information you need to remember often - research notes, code patterns, meeting notes, etc."
+        },
+        {
+          "level": 2,
+          "text": "There's no wrong answer! HoloLoom is designed to learn from YOUR data and YOUR needs."
+        }
+      ],
+      "points": 10
+    }
+  ],
+  "quiz_questions": [
+    {
+      "question": "What makes HoloLoom different from ChatGPT?",
+      "options": [
+        "It's faster",
+        "It remembers everything across sessions",
+        "It uses more RAM",
+        "It requires internet"
+      ],
+      "correct": 1,
+      "explanation": "HoloLoom's persistent memory means it remembers everything you teach it, unlike ChatGPT which forgets between conversations."
+    },
+    {
+      "question": "What does HoloLoom's 'librarian' represent?",
+      "options": [
+        "The user interface",
+        "The memory storage",
+        "The decision engine that retrieves information",
+        "The database"
+      ],
+      "correct": 2,
+      "explanation": "The librarian metaphor represents HoloLoom's decision engine - it searches for relevant information and learns what you need over time."
+    }
+  ],
+  "prerequisites": [],
+  "next_lessons": ["beginner_02"],
+  "xp_reward": 50,
+  "badges": ["first_lesson"],
+  "estimated_time": 5,
+  "tags": ["introduction", "concepts", "theory"]
+}

@@ -1,0 +1,75 @@
+{
+  "id": "beginner_02",
+  "title": "🚀 Your First HoloLoom Query",
+  "description": "Write your first code to teach HoloLoom and ask it questions!",
+  "lesson_type": "code_along",
+  "difficulty": "beginner",
+  "content": "# Your First HoloLoom Query\n\nLet's make HoloLoom learn something and ask it a question!\n\n## The Basic Pattern\n\nEvery HoloLoom interaction follows this pattern:\n\n```python\n1. Import the tools (Config, WeavingOrchestrator, Query, MemoryShard)\n2. Create memory shards (facts to teach)\n3. Configure HoloLoom (how smart/fast?)\n4. Ask a question (weave a query)\n5. Get an answer!\n```\n\n## Step-by-Step Code\n\nHere's the complete code with explanations:\n\n```python\nimport asyncio\nfrom HoloLoom.config import Config\nfrom HoloLoom.weaving_orchestrator import WeavingOrchestrator\nfrom HoloLoom.documentation.types import Query, MemoryShard\n\nasync def main():\n    # Step 1: Teach HoloLoom some facts\n    shards = [\n        MemoryShard(text=\"Python is a programming language\", source=\"basics\"),\n        MemoryShard(text=\"HoloLoom uses neural networks\", source=\"tech\")\n    ]\n\n    # Step 2: Configure (fast = balanced speed/quality)\n    config = Config.fast()\n\n    # Step 3: Ask a question!\n    async with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:\n        result = await shuttle.weave(Query(text=\"What is Python?\"))\n        print(result.response)\n\nasyncio.run(main())\n```\n\n## What's Happening?\n\n1. **MemoryShard** = One fact HoloLoom remembers (like a flashcard)\n2. **Config.fast()** = Balanced mode (also try `.bare()` or `.fused()`)\n3. **shuttle.weave()** = Search memory + think + answer\n4. **result.response** = The answer!\n\n## Try It Yourself!\n\nNow you'll write your own first query in the challenge below.",
+  "code_examples": [
+    "from HoloLoom.documentation.types import MemoryShard\n\n# Creating a memory shard\nshard = MemoryShard(\n    text=\"Thompson Sampling balances exploration and exploitation\",\n    source=\"ai_research\"\n)",
+    "from HoloLoom.config import Config\n\n# Three configuration modes:\nconfig_fast = Config.bare()   # Fastest (~50ms)\nconfig_balanced = Config.fast()  # Balanced (~150ms)\nconfig_smart = Config.fused()  # Smartest (~300ms)"
+  ],
+  "challenges": [
+    {
+      "description": "Create a memory shard teaching HoloLoom that 'Paris is the capital of France'",
+      "starter_code": "from HoloLoom.documentation.types import MemoryShard\n\nshard = MemoryShard(\n    text=\"\",  # Your fact here!\n    source=\"geography\"\n)",
+      "solution": "from HoloLoom.documentation.types import MemoryShard\n\nshard = MemoryShard(text=\"Paris is the capital of France\", source=\"geography\")",
+      "hints": [
+        {
+          "level": 1,
+          "text": "Fill in the text parameter with the fact about Paris"
+        },
+        {
+          "level": 2,
+          "text": "The complete fact should be: 'Paris is the capital of France'"
+        },
+        {
+          "level": 3,
+          "text": "text=\"Paris is the capital of France\""
+        }
+      ],
+      "points": 20
+    }
+  ],
+  "quiz_questions": [
+    {
+      "question": "What does Config.fast() do?",
+      "options": [
+        "Makes HoloLoom download faster",
+        "Sets balanced speed/quality mode",
+        "Only searches the fastest memories",
+        "Skips learning"
+      ],
+      "correct": 1,
+      "explanation": "Config.fast() configures HoloLoom for balanced performance - good quality answers in ~150ms."
+    },
+    {
+      "question": "What is a MemoryShard?",
+      "options": [
+        "A piece of broken memory",
+        "One fact that HoloLoom remembers",
+        "A database table",
+        "An error message"
+      ],
+      "correct": 1,
+      "explanation": "A MemoryShard is one piece of information (like a flashcard) that HoloLoom stores in its memory."
+    },
+    {
+      "question": "What does shuttle.weave() do?",
+      "options": [
+        "Creates a new thread",
+        "Searches memory, thinks, and answers",
+        "Saves to disk",
+        "Deletes old memories"
+      ],
+      "correct": 1,
+      "explanation": "weave() is the core operation: it searches HoloLoom's memory, processes the query, and returns an answer."
+    }
+  ],
+  "prerequisites": ["beginner_01"],
+  "next_lessons": ["beginner_03"],
+  "xp_reward": 100,
+  "badges": [],
+  "estimated_time": 10,
+  "tags": ["coding", "basics", "first_query", "hands-on"]
+}
