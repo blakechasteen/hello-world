@@ -971,6 +971,258 @@ result = await dept.process({
 
 ---
 
+## Proto: Conversational Intelligence Hub
+
+**Status**: 🚧 Active Development (November 2025)
+**Location**: `proto/`
+**Documentation**: [proto/PROTO_VISION.md](proto/PROTO_VISION.md)
+
+### Overview
+
+**Proto** (formerly promptly-matrix-bot) is a Matrix-based conversational intelligence hub that transforms chat rooms into complete development command centers. It provides natural language interfaces to Git operations, Claude Code integration, HoloLoom memory, and multi-system workflows.
+
+**Core Philosophy**: *"All development operations accessible via conversation, backed by institutional memory."*
+
+### Architecture
+
+```
+Matrix Room (@proto)
+    ↓
+Proto Bot (Python)
+    ├─ Git Bridge → Version control operations
+    ├─ Claude Bridge → AI code analysis & refactoring
+    ├─ HoloLoom Bridge → Knowledge graph memory
+    ├─ Elle Bridge → AR observations (future)
+    └─ Department Bridge → Multi-system orchestration
+    ↓
+Backend Services (Git, Claude Code, HoloLoom, Elle)
+```
+
+### The Three Foundational Bridges
+
+#### 1. Git Bridge (80% Complete)
+
+Version control operations directly from Matrix chat:
+
+```
+User: @proto git status
+Proto: 📊 Branch: main
+      Modified: 2 files (src/auth.py, tests/test_auth.py)
+
+User: @proto git commit "Add JWT authentication"
+Proto: 📝 Committed a1b2c3d
+      Ready to push?
+
+User: @proto git push
+Proto: ✅ Pushed to origin/main
+```
+
+**Files**:
+- `proto/bot/git_handler.py` (380 lines) - Git command execution
+- `proto/bot/git_methods.py` (200 lines) - Matrix command handlers
+
+#### 2. Claude Code Bridge (Designed, Ready to Build)
+
+AI-powered code analysis and refactoring:
+
+```
+User: @proto code-review src/auth.py
+
+Proto: 🤖 Review complete!
+
+      🔍 Security Issues (2):
+      1. SQL Injection Risk (HIGH) - Line 42
+      2. Hardcoded Secret (CRITICAL) - Line 67
+
+      💡 Suggestions:
+      1. Split auth_handler() into smaller functions
+      2. Add input validation
+      3. Implement rate limiting
+
+      🔧 Auto-fix available for 1/2 issues
+```
+
+**Planned Commands**:
+- `@proto code-review <file>` - Security and quality analysis
+- `@proto refactor <pattern>` - Extract methods, simplify logic
+- `@proto explain <function>` - Natural language explanation
+- `@proto implement <description>` - Generate implementation
+
+#### 3. HoloLoom Memory Bridge (80% Complete)
+
+Institutional knowledge graph for team memory:
+
+```
+Alice: @proto remember we decided to use PostgreSQL for auth
+
+Proto: 🧠 Stored in team memory
+
+[3 days later]
+
+Bob: @proto what database for auth?
+
+Proto: 🔍 From discussion on Nov 17:
+      PostgreSQL for auth service
+
+      📚 Related decisions:
+      • JWT tokens (Nov 15)
+      • OAuth providers (Nov 12)
+      • Rate limiting (Nov 10)
+```
+
+**Features**:
+- Store all conversations in knowledge graph
+- Context-aware response generation
+- Semantic search across team knowledge
+- Temporal queries (when was this decided?)
+- Cross-reference related topics
+
+**Files**:
+- `proto/bot/hololoom_integration.py` - Complete weaving cycle integration
+- Uses HoloLoom's full 9-step weaving architecture
+- Knowledge graph persistence (Neo4j/NetworkX)
+
+### Advanced Integrations
+
+#### Elle AR Bridge (Future)
+
+Proto as conversational interface to Elle's AR observations:
+
+```
+[Elle observes workshop via AR]
+
+Elle → Proto: 🏗️ Workshop observation:
+              Workbench cleared (shop vac used)
+              Organized hand tools
+
+[Later, at desk]
+
+You: @proto what did we accomplish in workshop?
+
+Proto: 🏗️ Workshop Session (2:30pm - 3:45pm):
+      ✅ Workbench cleared
+      ⏸️ Birdhouse project (deferred - need cedar)
+      📸 3 progress photos stored
+```
+
+#### Department Orchestration (Future)
+
+Multi-department workflows via conversation:
+
+```
+User: @proto full QA pipeline for PR #42
+
+Proto: 🏢 Multi-department workflow:
+
+      Quality Assurance:
+      ✅ Code analysis (23 checks passed)
+      ✅ Security scan (no vulnerabilities)
+
+      Analytics:
+      ✅ Coverage: 94% (+3%)
+      ✅ Complexity: 4.2 (good)
+
+      Infrastructure:
+      ✅ Docker build successful
+      ✅ Deploy to staging complete
+
+      Overall: ✅ APPROVED FOR MERGE
+```
+
+### Key Features
+
+- **Conversation-First**: All operations via natural language
+- **Institutional Memory**: Everything stored in knowledge graph
+- **Safe by Default**: Destructive operations require confirmation
+- **Intelligent Automation**: Thompson Sampling for workflow optimization
+- **Extensible**: Protocol-based bridge architecture
+
+### Usage
+
+**Basic Commands**:
+```
+@proto help
+@proto git status
+@proto code-review src/file.py
+@proto remember [fact]
+@proto recall [query]
+```
+
+**Multi-Step Workflows**:
+```
+@proto commit and push "feat: Add auth"
+@proto review, fix, and test src/auth.py
+@proto full QA pipeline for current branch
+```
+
+### Development Status
+
+**Week 1 (Current)**:
+- ✅ Renamed from promptly-matrix-bot to Proto
+- ✅ Created comprehensive vision document
+- ⏳ Completing Git integration
+- ⏳ Documentation updates
+
+**Week 2 (Next)**:
+- Build Claude Code CLI bridge
+- Implement code-review, refactor, explain commands
+- End-to-end testing
+
+**Week 3**:
+- Enhanced HoloLoom memory integration
+- Memory commands (remember, recall, related)
+- Temporal query support
+
+**Week 4**:
+- Basic Elle bridge
+- AR observation integration
+- Shared memory coordination
+
+### Integration with HoloLoom
+
+Proto leverages HoloLoom's complete infrastructure:
+
+- **Memory Systems**: Knowledge graph, awareness graph, multi-scale embeddings
+- **Learning Systems**: Thompson Sampling, adaptive routing, hot patterns
+- **Quality Systems**: Trough & xTerminator integration
+- **Department Systems**: Multi-department orchestration
+
+**Example Integration**:
+```python
+from proto.bot.hololoom_integration import HoloLoomBot
+
+bot = HoloLoomBot(config_mode="FAST")
+await bot.initialize()
+
+response = await bot.weave(
+    query="What is Thompson Sampling?",
+    user_id="@alice:matrix.org",
+    complexity="FAST"
+)
+
+print(response.text)
+print(f"Confidence: {response.confidence}")
+print(f"Memories: {response.memories_retrieved}")
+```
+
+### Tech Stack
+
+- **Matrix SDK**: matrix-nio (Python, async, E2E encryption)
+- **AI Core**: HoloLoom + Ollama
+- **Memory**: Neo4j/NetworkX knowledge graph
+- **State**: Redis sessions, PostgreSQL persistence
+- **Git**: subprocess-based integration
+- **Claude**: CLI/API integration (planned)
+
+### Documentation
+
+- **Vision**: [proto/PROTO_VISION.md](proto/PROTO_VISION.md) - Complete architecture and roadmap
+- **Setup**: [proto/README.md](proto/README.md) - Quick start guide
+- **Roadmap**: [proto/CHATOPS_ROADMAP.md](proto/CHATOPS_ROADMAP.md) - 4-phase development plan
+- **Git Integration**: [proto/GIT_INTEGRATION_PATCH.md](proto/GIT_INTEGRATION_PATCH.md) - Git bridge implementation
+
+---
+
 ## Learning Systems: 7 Parallel Learning Loops
 
 **Status**: ✅ All 7 Systems Active (November 2025)

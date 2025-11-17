@@ -1,12 +1,12 @@
-# Promptly Matrix Bot
+# Proto - Conversational Intelligence Hub
 
-**Chat-Native AI Reliability + Team Collaboration via Matrix.org**
+**Matrix-Based Development & AI Integration Platform**
 
-Turn any Matrix room into an AI reliability workspace with enterprise team features. Just message `@promptly` and optimize prompts, review code, request approvals, run workflows - all via chat.
+Turn any Matrix room into your complete development command center. Message `@proto` to access Git operations, Claude Code integration, HoloLoom memory, code review, and intelligent workflows - all via chat.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Matrix](https://img.shields.io/badge/chat-Matrix-green.svg)](https://matrix.to/#/@promptly:matrix.org)
-[![Phase 2](https://img.shields.io/badge/Phase-2%20Complete-brightgreen.svg)](PHASE_2_COMPLETE.md)
+[![Matrix](https://img.shields.io/badge/chat-Matrix-green.svg)](https://matrix.to/#/@proto:matrix.org)
+[![Status](https://img.shields.io/badge/Status-Active%20Development-brightgreen.svg)](PROTO_VISION.md)
 
 ## ✨ What's New (Phase 2)
 
@@ -25,12 +25,12 @@ Turn any Matrix room into an AI reliability workspace with enterprise team featu
 
 1. **Invite bot to your room**:
    ```
-   /invite @promptly:matrix.org
+   /invite @proto:matrix.org
    ```
 
 2. **Start using**:
    ```
-   @promptly help
+   @proto help
    ```
 
 ### Option 2: Self-Host (Docker)
@@ -54,7 +54,7 @@ Turn any Matrix room into an AI reliability workspace with enterprise team featu
 
 4. **Invite bot**:
    ```
-   /invite @promptly:matrix.localhost
+   /invite @proto:matrix.localhost
    ```
 
 ---
@@ -63,24 +63,25 @@ Turn any Matrix room into an AI reliability workspace with enterprise team featu
 
 ### Core Commands
 
-**Optimize Prompts**:
+**Git Operations**:
 ```
-@promptly optimize
-Task: Answer customer support questions
-Examples: [
-  {"input": "How to reset password?", "output": "Click..."},
-  {"input": "Where is my order?", "output": "Check..."}
-]
+@proto git status
+@proto git commit "your message"
+@proto git push
 ```
 
-**Run Workflows**:
+**Claude Code Integration**:
 ```
-@promptly run qa_workflow "What is Thompson Sampling?"
+@proto code-review src/auth.py
+@proto refactor extract_method
+@proto explain this_function
 ```
 
-**Code Review**:
+**HoloLoom Memory**:
 ```
-@promptly code-review
+@proto remember we decided to use PostgreSQL
+@proto recall what database for auth?
+@proto related authentication
 ```python
 def process_user_input(data):
     query = f"SELECT * FROM users WHERE id={data}"
@@ -139,11 +140,13 @@ Matrix Client (Element, etc.)
     ↓
 Matrix Homeserver
     ↓
-Promptly Matrix Bot (Application Service)
+Proto Bot (Application Service)
+    ├─ Git Handler → Git operations
+    ├─ Claude Bridge → Claude Code integration
+    ├─ HoloLoom Memory → Knowledge graph
+    └─ Workflow Engine → Multi-step automation
     ↓
-Promptly Core (HoloLoom + DSPy)
-    ↓
-LLM (OpenAI, Anthropic, etc.)
+Backend Services (Git, Claude Code, HoloLoom, Ollama)
 ```
 
 **Tech Stack**:
