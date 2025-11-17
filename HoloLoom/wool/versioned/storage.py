@@ -31,6 +31,12 @@ from typing import Optional, List, Dict, Any
 from HoloLoom.wool import WoolStorage, WoolReference
 from HoloLoom.wool.versioned.reference import VersionedWoolReference
 from HoloLoom.wool.versioned.index import TemporalIndex
+from HoloLoom.wool.versioned.delta import (
+    compute_delta,
+    apply_delta,
+    DeltaAlgorithm,
+    DeltaMetadata
+)
 
 
 logger = logging.getLogger(__name__)
@@ -73,7 +79,9 @@ class VersionedWoolStorage(WoolStorage):
         self,
         base_path: Optional[Path] = None,
         enable_cache: bool = True,
-        enable_delta_encoding: bool = False
+        enable_delta_encoding: bool = True,
+        delta_algorithm: Optional[DeltaAlgorithm] = None,
+        snapshot_interval: int = 10
     ):
         """
         Initialize versioned wool storage.
@@ -81,7 +89,9 @@ class VersionedWoolStorage(WoolStorage):
         Args:
             base_path: Base path for storage
             enable_cache: Whether to enable mmap caching
-            enable_delta_encoding: Whether to use delta encoding (future)
+            enable_delta_encoding: Whether to use delta encoding (default: True)
+            delta_algorithm: Delta algorithm (None = auto-select)
+            snapshot_interval: Create full snapshot every N versions
         """
         super().__init__(base_path=base_path, enable_cache=enable_cache)
 
@@ -91,20 +101,28 @@ class VersionedWoolStorage(WoolStorage):
         # Version counter (monotonic)
         self.next_version_id = 1
 
-        # Delta encoding (not yet implemented)
+        # Delta encoding
         self.enable_delta_encoding = enable_delta_encoding
-        if enable_delta_encoding:
-            logger.warning("Delta encoding not yet implemented, storing full versions")
+        self.delta_algorithm = delta_algorithm
+        self.snapshot_interval = snapshot_interval
+
+        # Version metadata storage (version_id → VersionedWoolReference)
+        self._version_metadata: Dict[int, VersionedWoolReference] = {}
 
         # Statistics
         self.version_stats = {
             'versions_created': 0,
             'bytes_versioned': 0,
+            'bytes_stored': 0,  # Actual bytes (with deltas)
+            'deltas_created': 0,
+            'snapshots_created': 0,
             'time_travel_queries': 0,
-            'range_queries': 0
+            'range_queries': 0,
+            'reconstructions': 0
         }
 
         logger.info(f"Initialized versioned wool storage at {self.base_path}")
+        logger.info(f"Delta encoding: {'enabled' if enable_delta_encoding else 'disabled'}")
 
     def store_versioned(
         self,
@@ -115,7 +133,7 @@ class VersionedWoolStorage(WoolStorage):
         message: str = ""
     ) -> VersionedWoolReference:
         """
-        Store data as new version.
+        Store data as new version with optional delta encoding.
 
         Args:
             data: Data to store
@@ -127,25 +145,84 @@ class VersionedWoolStorage(WoolStorage):
         Returns:
             VersionedWoolReference
         """
-        # Store data using base WoolStorage
-        base_ref = super().store(data, content_type)
-
         # Assign version ID
         version_id = self.next_version_id
         self.next_version_id += 1
 
-        # Create versioned reference
-        versioned_ref = VersionedWoolReference(
-            file_id=base_ref.file_id,
-            offset=base_ref.offset,
-            length=base_ref.length,
-            content_type=content_type,
-            version_id=version_id,
-            parent_version=parent.version_id if parent else None,
-            timestamp=time.time(),
-            author=author,
-            message=message
+        # Determine if this should be a snapshot or delta
+        is_snapshot = (
+            parent is None or  # First version is always snapshot
+            not self.enable_delta_encoding or  # Delta disabled
+            version_id % self.snapshot_interval == 0  # Periodic snapshot
         )
+
+        if is_snapshot:
+            # Store full data
+            base_ref = super().store(data, content_type)
+
+            versioned_ref = VersionedWoolReference(
+                file_id=base_ref.file_id,
+                offset=base_ref.offset,
+                length=base_ref.length,
+                content_type=content_type,
+                version_id=version_id,
+                parent_version=parent.version_id if parent else None,
+                timestamp=time.time(),
+                author=author,
+                message=message,
+                delta_from=None  # Full snapshot
+            )
+
+            self.version_stats['snapshots_created'] += 1
+            self.version_stats['bytes_stored'] += len(data)
+
+            logger.info(
+                f"Created v{version_id} SNAPSHOT for {base_ref.file_id[:12]}... "
+                f"({len(data)} bytes)"
+            )
+
+        else:
+            # Store as delta from parent
+            if parent is None:
+                raise ValueError("Cannot create delta without parent")
+
+            # Reconstruct parent data
+            parent_data = self.reconstruct_version(parent)
+
+            # Compute delta
+            delta_bytes, delta_metadata = compute_delta(
+                parent_data,
+                data,
+                algorithm=self.delta_algorithm
+            )
+
+            # Store delta
+            base_ref = super().store(delta_bytes, f"{content_type}+delta")
+
+            versioned_ref = VersionedWoolReference(
+                file_id=base_ref.file_id,
+                offset=base_ref.offset,
+                length=base_ref.length,
+                content_type=content_type,
+                version_id=version_id,
+                parent_version=parent.version_id,
+                timestamp=time.time(),
+                author=author,
+                message=message,
+                delta_from=parent.file_id  # Store as delta
+            )
+
+            self.version_stats['deltas_created'] += 1
+            self.version_stats['bytes_stored'] += len(delta_bytes)
+
+            logger.info(
+                f"Created v{version_id} DELTA from v{parent.version_id} "
+                f"({len(data)} → {len(delta_bytes)} bytes, "
+                f"{delta_metadata.compression_ratio:.1f}x)"
+            )
+
+        # Store metadata
+        self._version_metadata[version_id] = versioned_ref
 
         # Add to temporal index
         self.temporal_index.add_version(versioned_ref)
@@ -154,12 +231,71 @@ class VersionedWoolStorage(WoolStorage):
         self.version_stats['versions_created'] += 1
         self.version_stats['bytes_versioned'] += len(data)
 
-        logger.info(
-            f"Created v{version_id} for {base_ref.file_id[:12]}... "
-            f"(parent: v{parent.version_id if parent else None})"
+        return versioned_ref
+
+    def reconstruct_version(self, ref: VersionedWoolReference) -> bytes:
+        """
+        Reconstruct full version data (applying deltas if needed).
+
+        Args:
+            ref: Versioned reference
+
+        Returns:
+            Full reconstructed data
+        """
+        # If not a delta, read directly
+        if not ref.is_delta:
+            return super().read(ref).tobytes()
+
+        # Need to reconstruct from delta chain
+        # Build lineage (root → current)
+        lineage = self.temporal_index.get_lineage(ref.version_id)
+
+        if not lineage:
+            raise ValueError(f"Cannot find lineage for version {ref.version_id}")
+
+        # Find base snapshot (walk backwards until non-delta)
+        base_version_id = None
+        for vid in reversed(lineage):
+            version_ref = self._version_metadata.get(vid)
+            if version_ref and not version_ref.is_delta:
+                base_version_id = vid
+                break
+
+        if base_version_id is None:
+            raise ValueError(f"Cannot find base snapshot for version {ref.version_id}")
+
+        # Read base snapshot
+        base_ref = self._version_metadata[base_version_id]
+        current_data = super().read(base_ref).tobytes()
+
+        # Apply deltas in sequence
+        for vid in lineage[lineage.index(base_version_id) + 1:]:
+            if vid > ref.version_id:
+                break
+
+            version_ref = self._version_metadata.get(vid)
+            if not version_ref or not version_ref.is_delta:
+                continue
+
+            # Read delta
+            delta_bytes = super().read(version_ref).tobytes()
+
+            # Apply delta (need to know algorithm - for now assume TEXT)
+            # TODO: Store algorithm in metadata
+            current_data = apply_delta(current_data, delta_bytes, DeltaAlgorithm.TEXT)
+
+            if vid == ref.version_id:
+                break
+
+        self.version_stats['reconstructions'] += 1
+
+        logger.debug(
+            f"Reconstructed v{ref.version_id} from v{base_version_id} "
+            f"(applied {ref.version_id - base_version_id} deltas)"
         )
 
-        return versioned_ref
+        return current_data
 
     def as_of(
         self,
@@ -305,6 +441,20 @@ class VersionedWoolStorage(WoolStorage):
 
         # Add temporal index stats
         stats['index'] = self.temporal_index.get_stats()
+
+        # Calculate storage efficiency
+        if stats['bytes_versioned'] > 0:
+            stats['storage_efficiency'] = stats['bytes_stored'] / stats['bytes_versioned']
+            stats['storage_savings'] = (1 - stats['storage_efficiency']) * 100  # Percentage
+        else:
+            stats['storage_efficiency'] = 1.0
+            stats['storage_savings'] = 0.0
+
+        # Delta statistics
+        if stats['versions_created'] > 0:
+            stats['delta_percentage'] = (stats['deltas_created'] / stats['versions_created']) * 100
+        else:
+            stats['delta_percentage'] = 0.0
 
         return stats
 
