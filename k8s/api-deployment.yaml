@@ -1,0 +1,198 @@
+# EdWIN API Deployment
+# Main API server deployment and service
+#
+# Apply: kubectl apply -f k8s/api-deployment.yaml
+#
+# Implementation Date: November 15, 2025
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edwin-api
+  namespace: edwin
+  labels:
+    app: edwin
+    component: api
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: edwin
+      component: api
+  template:
+    metadata:
+      labels:
+        app: edwin
+        component: api
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: edwin-api
+      containers:
+      - name: api
+        image: edwin-ai-tutor:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        env:
+        - name: EDWIN_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: edwin-config
+              key: EDWIN_ENV
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: edwin-config
+              key: LOG_LEVEL
+        - name: NEO4J_URI
+          valueFrom:
+            configMapKeyRef:
+              name: edwin-config
+              key: NEO4J_URI
+        - name: NEO4J_USER
+          valueFrom:
+            configMapKeyRef:
+              name: edwin-config
+              key: NEO4J_USER
+        - name: NEO4J_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: edwin-secrets
+              key: NEO4J_PASSWORD
+        - name: QDRANT_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: edwin-config
+              key: QDRANT_HOST
+        - name: QDRANT_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: edwin-config
+              key: QDRANT_PORT
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: edwin-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: edwin-config
+              key: REDIS_PORT
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: edwin-secrets
+              key: JWT_SECRET_KEY
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: edwin-api
+  namespace: edwin
+  labels:
+    app: edwin
+    component: api
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  selector:
+    app: edwin
+    component: api
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: edwin-api
+  namespace: edwin
+  labels:
+    app: edwin
+    component: api
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: edwin-api-hpa
+  namespace: edwin
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: edwin-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30

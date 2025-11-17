@@ -1,0 +1,89 @@
+# EdWIN Redis Deployment
+# Cache layer for sessions and queries
+#
+# Apply: kubectl apply -f k8s/redis-deployment.yaml
+#
+# Implementation Date: November 15, 2025
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: edwin
+  labels:
+    app: edwin
+    component: redis
+spec:
+  type: ClusterIP
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+    protocol: TCP
+  selector:
+    app: edwin
+    component: redis
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: edwin
+  labels:
+    app: edwin
+    component: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edwin
+      component: redis
+  template:
+    metadata:
+      labels:
+        app: edwin
+        component: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - name: redis
+          containerPort: 6379
+        command:
+        - redis-server
+        - --appendonly
+        - "yes"
+        - --maxmemory
+        - "512mb"
+        - --maxmemory-policy
+        - "allkeys-lru"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: redis-data
+        emptyDir: {}  # Ephemeral cache (can use PVC for persistence)

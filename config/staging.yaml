@@ -1,0 +1,152 @@
+# EdWIN Staging Configuration
+# Configuration for staging/pre-production environment
+#
+# Implementation Date: November 17, 2025
+
+environment: staging
+
+# Application
+app:
+  name: EdWIN AI Tutor
+  version: 1.0.0
+  debug: false
+  log_level: INFO
+
+# Server
+server:
+  api_host: 0.0.0.0
+  api_port: 8000
+  dashboard_port: 8001
+  mobile_port: 8002
+  workers: 2
+  reload: false
+  timeout: 60
+
+# Database
+database:
+  use_persistent_storage: true
+  neo4j:
+    uri: ${NEO4J_URI}
+    user: ${NEO4J_USER}
+    password: ${NEO4J_PASSWORD}
+    max_connection_pool_size: 30
+    connection_timeout: 30
+  qdrant:
+    host: ${QDRANT_HOST}
+    port: ${QDRANT_PORT}
+    timeout: 30
+    prefer_grpc: true
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    db: ${REDIS_DB}
+    password: ${REDIS_PASSWORD}
+    max_connections: 50
+    socket_timeout: 5
+
+# Authentication
+auth:
+  jwt_secret_key: ${JWT_SECRET_KEY}
+  algorithm: HS256
+  access_token_expire_minutes: 1440
+  refresh_token_expire_days: 30
+  password:
+    min_length: 10
+    require_uppercase: true
+    require_lowercase: true
+    require_digit: true
+    require_special: true
+
+# CORS
+cors:
+  allow_origins:
+    - https://staging-api.edwin.edu
+    - https://staging-dashboard.edwin.edu
+    - https://staging-mobile.edwin.edu
+    - https://staging.edwin.edu
+  allow_methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allow_headers:
+    - Authorization
+    - Content-Type
+    - X-Request-ID
+  allow_credentials: true
+
+# Rate Limiting
+rate_limit:
+  enabled: true
+  per_minute: 100
+  per_hour: 5000
+  per_day: 50000
+  burst: 20
+
+# Features
+features:
+  analytics: true
+  caching: true
+  multimodal: true
+  safety_layer: true
+  adaptive_difficulty: true
+
+# LLM
+llm:
+  provider: ${LLM_PROVIDER}
+  anthropic:
+    api_key: ${ANTHROPIC_API_KEY}
+    model: claude-3-5-sonnet-20241022
+    max_tokens: 4096
+    timeout: 60
+  openai:
+    api_key: ${OPENAI_API_KEY}
+    model: gpt-4
+    timeout: 60
+  ollama:
+    base_url: ${OLLAMA_BASE_URL}
+    model: llama3.2:3b
+
+# Monitoring
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    metrics_path: /metrics
+  sentry:
+    enabled: true
+    dsn: ${SENTRY_DSN}
+    environment: staging
+    traces_sample_rate: 0.3  # Higher sampling for staging
+
+# Logging
+logging:
+  level: INFO
+  format: json
+  dir: /var/log/edwin
+  rotation_days: 14
+  file_size_mb: 50
+
+# Security
+security:
+  ssl_enabled: true
+  hsts_enabled: true
+  content_security_policy: "default-src 'self'"
+  x_frame_options: "DENY"
+  x_content_type_options: "nosniff"
+
+# Performance
+performance:
+  cache_ttl_seconds: 1800  # 30 minutes
+  connection_pool_size: 50
+  max_overflow: 10
+  pool_recycle: 3600
+
+# Backup
+backup:
+  enabled: true
+  schedule: "0 3 * * *"  # Daily at 3 AM UTC
+  dir: /var/backups/edwin
+  retention_days: 14
+  compress: true

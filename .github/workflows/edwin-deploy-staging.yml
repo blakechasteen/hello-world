@@ -1,0 +1,124 @@
+# EdWIN Staging Deployment
+# Auto-deploys to staging on develop branch push
+#
+# Implementation Date: November 17, 2025
+
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+
+env:
+  KUBE_NAMESPACE: edwin-staging
+
+jobs:
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging-api.edwin.edu
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > ${HOME}/.kube/config
+
+      - name: Set image tag
+        id: image
+        run: |
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          echo "tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace ${KUBE_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply secrets
+        run: |
+          kubectl delete secret edwin-secrets -n ${KUBE_NAMESPACE} --ignore-not-found
+          kubectl create secret generic edwin-secrets -n ${KUBE_NAMESPACE} \
+            --from-literal=NEO4J_PASSWORD="${{ secrets.NEO4J_PASSWORD_STAGING }}" \
+            --from-literal=REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD_STAGING }}" \
+            --from-literal=JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY_STAGING }}" \
+            --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
+
+      - name: Apply ConfigMaps
+        run: |
+          kubectl create configmap edwin-config -n ${KUBE_NAMESPACE} \
+            --from-file=config/staging.yaml \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy infrastructure
+        run: |
+          kubectl apply -f k8s/neo4j-statefulset.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/qdrant-statefulset.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/redis-deployment.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/services.yaml -n ${KUBE_NAMESPACE}
+
+      - name: Wait for databases
+        run: |
+          kubectl wait --for=condition=ready pod -l app=neo4j -n ${KUBE_NAMESPACE} --timeout=300s
+          kubectl wait --for=condition=ready pod -l app=qdrant -n ${KUBE_NAMESPACE} --timeout=300s
+          kubectl wait --for=condition=ready pod -l app=redis -n ${KUBE_NAMESPACE} --timeout=300s
+
+      - name: Update deployment image
+        run: |
+          kubectl set image deployment/edwin-api \
+            edwin-api=ghcr.io/${{ github.repository }}/edwin-api:${{ steps.image.outputs.tag }} \
+            -n ${KUBE_NAMESPACE}
+          kubectl set image deployment/edwin-dashboard \
+            edwin-dashboard=ghcr.io/${{ github.repository }}/edwin-api:${{ steps.image.outputs.tag }} \
+            -n ${KUBE_NAMESPACE}
+          kubectl set image deployment/edwin-mobile \
+            edwin-mobile=ghcr.io/${{ github.repository }}/edwin-api:${{ steps.image.outputs.tag }} \
+            -n ${KUBE_NAMESPACE}
+
+      - name: Deploy applications
+        run: |
+          kubectl apply -f k8s/api-deployment.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/dashboard-deployment.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/mobile-deployment.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/hpa.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/pdb.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/ingress.yaml -n ${KUBE_NAMESPACE}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/edwin-api -n ${KUBE_NAMESPACE} --timeout=10m
+          kubectl rollout status deployment/edwin-dashboard -n ${KUBE_NAMESPACE} --timeout=10m
+          kubectl rollout status deployment/edwin-mobile -n ${KUBE_NAMESPACE} --timeout=10m
+
+      - name: Run smoke tests
+        run: |
+          sleep 30
+          kubectl run smoke-test --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            -n ${KUBE_NAMESPACE} \
+            -- curl -f http://edwin-api:8000/health
+
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "✅ Staging deployment successful!"
+          echo "Image: ghcr.io/${{ github.repository }}/edwin-api:${{ steps.image.outputs.tag }}"
+          echo "Namespace: ${KUBE_NAMESPACE}"
+          kubectl get pods -n ${KUBE_NAMESPACE}
+
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'EdWIN staging deployment failed'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

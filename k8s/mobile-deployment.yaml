@@ -1,0 +1,108 @@
+# EdWIN Mobile API Deployment
+# Mobile API deployment and service
+#
+# Apply: kubectl apply -f k8s/mobile-deployment.yaml
+#
+# Implementation Date: November 15, 2025
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edwin-mobile
+  namespace: edwin
+  labels:
+    app: edwin
+    component: mobile
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: edwin
+      component: mobile
+  template:
+    metadata:
+      labels:
+        app: edwin
+        component: mobile
+        version: v1.0.0
+    spec:
+      serviceAccountName: edwin-mobile
+      containers:
+      - name: mobile
+        image: edwin-ai-tutor:latest
+        imagePullPolicy: Always
+        command: ["uvicorn", "EduVerse.edwin.mobile_api:app", "--host", "0.0.0.0", "--port", "8002"]
+        ports:
+        - name: http
+          containerPort: 8002
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: edwin-config
+        env:
+        - name: NEO4J_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: edwin-secrets
+              key: NEO4J_PASSWORD
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: edwin-secrets
+              key: JWT_SECRET_KEY
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: edwin-mobile
+  namespace: edwin
+  labels:
+    app: edwin
+    component: mobile
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8002
+    targetPort: http
+    protocol: TCP
+  selector:
+    app: edwin
+    component: mobile
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: edwin-mobile
+  namespace: edwin
+  labels:
+    app: edwin
+    component: mobile

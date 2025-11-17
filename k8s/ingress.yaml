@@ -1,0 +1,113 @@
+# EdWIN Ingress Configuration
+# External access and routing for all services
+#
+# Prerequisites:
+#   - Install Nginx Ingress Controller:
+#     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+#   - Install cert-manager for TLS (optional):
+#     kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+#
+# Apply: kubectl apply -f k8s/ingress.yaml
+#
+# Implementation Date: November 15, 2025
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: edwin-ingress
+  namespace: edwin
+  labels:
+    app: edwin
+    component: ingress
+  annotations:
+    # Nginx Ingress Controller
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "10"
+
+    # CORS (adjust for production)
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type"
+
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+
+    # Request size
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+
+    # TLS (uncomment when using cert-manager)
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  # TLS configuration (uncomment for HTTPS)
+  # tls:
+  # - hosts:
+  #   - api.edwin.edu
+  #   - dashboard.edwin.edu
+  #   - mobile.edwin.edu
+  #   secretName: edwin-tls
+
+  rules:
+  # API (api.edwin.edu)
+  - host: api.edwin.edu
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: edwin-api
+            port:
+              number: 8000
+
+  # Teacher Dashboard (dashboard.edwin.edu)
+  - host: dashboard.edwin.edu
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: edwin-dashboard
+            port:
+              number: 8001
+
+  # Mobile API (mobile.edwin.edu)
+  - host: mobile.edwin.edu
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: edwin-mobile
+            port:
+              number: 8002
+
+---
+# ClusterIssuer for Let's Encrypt TLS certificates (optional)
+# Uncomment to enable automatic TLS
+#
+# apiVersion: cert-manager.io/v1
+# kind: ClusterIssuer
+# metadata:
+#   name: letsencrypt-prod
+# spec:
+#   acme:
+#     server: https://acme-v02.api.letsencrypt.org/directory
+#     email: admin@edwin.edu  # Change to your email
+#     privateKeySecretRef:
+#       name: letsencrypt-prod
+#     solvers:
+#     - http01:
+#         ingress:
+#           class: nginx

@@ -1,0 +1,166 @@
+# EdWIN Production Deployment
+# Manual deployment to production
+#
+# Implementation Date: November 17, 2025
+
+name: Deploy to Production
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+        default: 'latest'
+
+env:
+  KUBE_NAMESPACE: edwin
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://api.edwin.edu
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > ${HOME}/.kube/config
+
+      - name: Determine image tag
+        id: image
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            IMAGE_TAG=${{ github.event.release.tag_name }}
+          else
+            IMAGE_TAG=${{ github.event.inputs.image_tag }}
+          fi
+          echo "tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Manual approval checkpoint
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: team-leads,devops-team
+          minimum-approvals: 2
+          issue-title: "🚀 Production Deployment Approval Required"
+          issue-body: |
+            ## Production Deployment
+
+            **Image**: ghcr.io/${{ github.repository }}/edwin-api:${{ steps.image.outputs.tag }}
+            **Triggered by**: ${{ github.actor }}
+            **Commit**: ${{ github.sha }}
+
+            Please review and approve this production deployment.
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace ${KUBE_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply secrets
+        run: |
+          kubectl delete secret edwin-secrets -n ${KUBE_NAMESPACE} --ignore-not-found
+          kubectl create secret generic edwin-secrets -n ${KUBE_NAMESPACE} \
+            --from-literal=NEO4J_PASSWORD="${{ secrets.NEO4J_PASSWORD_PROD }}" \
+            --from-literal=REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD_PROD }}" \
+            --from-literal=JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY_PROD }}" \
+            --from-literal=ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY_PROD }}" \
+            --from-literal=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
+
+      - name: Apply ConfigMaps
+        run: |
+          kubectl create configmap edwin-config -n ${KUBE_NAMESPACE} \
+            --from-file=config/production.yaml \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy infrastructure
+        run: |
+          kubectl apply -f k8s/neo4j-statefulset.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/qdrant-statefulset.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/redis-deployment.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/services.yaml -n ${KUBE_NAMESPACE}
+
+      - name: Wait for databases
+        run: |
+          kubectl wait --for=condition=ready pod -l app=neo4j -n ${KUBE_NAMESPACE} --timeout=300s
+          kubectl wait --for=condition=ready pod -l app=qdrant -n ${KUBE_NAMESPACE} --timeout=300s
+          kubectl wait --for=condition=ready pod -l app=redis -n ${KUBE_NAMESPACE} --timeout=300s
+
+      - name: Update deployment image
+        run: |
+          kubectl set image deployment/edwin-api \
+            edwin-api=ghcr.io/${{ github.repository }}/edwin-api:${{ steps.image.outputs.tag }} \
+            -n ${KUBE_NAMESPACE}
+          kubectl set image deployment/edwin-dashboard \
+            edwin-dashboard=ghcr.io/${{ github.repository }}/edwin-api:${{ steps.image.outputs.tag }} \
+            -n ${KUBE_NAMESPACE}
+          kubectl set image deployment/edwin-mobile \
+            edwin-mobile=ghcr.io/${{ github.repository }}/edwin-api:${{ steps.image.outputs.tag }} \
+            -n ${KUBE_NAMESPACE}
+
+      - name: Deploy applications
+        run: |
+          kubectl apply -f k8s/api-deployment.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/dashboard-deployment.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/mobile-deployment.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/hpa.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/pdb.yaml -n ${KUBE_NAMESPACE}
+          kubectl apply -f k8s/ingress.yaml -n ${KUBE_NAMESPACE}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/edwin-api -n ${KUBE_NAMESPACE} --timeout=15m
+          kubectl rollout status deployment/edwin-dashboard -n ${KUBE_NAMESPACE} --timeout=15m
+          kubectl rollout status deployment/edwin-mobile -n ${KUBE_NAMESPACE} --timeout=15m
+
+      - name: Run smoke tests
+        run: |
+          sleep 60
+          kubectl run smoke-test --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            -n ${KUBE_NAMESPACE} \
+            -- curl -f http://edwin-api:8000/health
+
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "✅ Production deployment successful!"
+          echo "Image: ghcr.io/${{ github.repository }}/edwin-api:${{ steps.image.outputs.tag }}"
+          echo "Namespace: ${KUBE_NAMESPACE}"
+          kubectl get pods -n ${KUBE_NAMESPACE}
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed - initiating rollback"
+          kubectl rollout undo deployment/edwin-api -n ${KUBE_NAMESPACE}
+          kubectl rollout undo deployment/edwin-dashboard -n ${KUBE_NAMESPACE}
+          kubectl rollout undo deployment/edwin-mobile -n ${KUBE_NAMESPACE}
+
+      - name: Notify success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: '✅ EdWIN production deployment successful'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Notify failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: '❌ EdWIN production deployment failed and was rolled back'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

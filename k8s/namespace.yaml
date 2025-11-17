@@ -1,0 +1,15 @@
+# EdWIN Kubernetes Namespace
+# Isolates EdWIN resources
+#
+# Apply: kubectl apply -f k8s/namespace.yaml
+#
+# Implementation Date: November 15, 2025
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edwin
+  labels:
+    name: edwin
+    environment: production
+    app: edwin-ai-tutor

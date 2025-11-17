@@ -1,0 +1,114 @@
+# EdWIN Prometheus Configuration
+# Metrics collection and monitoring
+#
+# Implementation Date: November 15, 2025
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'edwin-production'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # EdWIN API
+  - job_name: 'edwin-api'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - edwin
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_component]
+        action: keep
+        regex: api
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+  # EdWIN Dashboard
+  - job_name: 'edwin-dashboard'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - edwin
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_component]
+        action: keep
+        regex: dashboard
+
+  # EdWIN Mobile API
+  - job_name: 'edwin-mobile'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - edwin
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_component]
+        action: keep
+        regex: mobile
+
+  # Neo4j
+  - job_name: 'neo4j'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - edwin
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_component]
+        action: keep
+        regex: neo4j
+
+  # Qdrant
+  - job_name: 'qdrant'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - edwin
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_component]
+        action: keep
+        regex: qdrant
+
+  # Redis
+  - job_name: 'redis'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - edwin
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_component]
+        action: keep
+        regex: redis

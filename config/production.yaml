@@ -1,0 +1,157 @@
+# EdWIN Production Configuration
+# Configuration for production deployment
+#
+# Implementation Date: November 15, 2025
+
+environment: production
+
+# Application
+app:
+  name: EdWIN AI Tutor
+  version: 1.0.0
+  debug: false
+  log_level: INFO
+
+# Server
+server:
+  api_host: 0.0.0.0
+  api_port: 8000
+  dashboard_port: 8001
+  mobile_port: 8002
+  workers: 4  # Adjust based on CPU cores
+  reload: false
+  timeout: 60
+
+# Database
+database:
+  use_persistent_storage: true  # Use Neo4j + Qdrant
+  neo4j:
+    uri: ${NEO4J_URI}
+    user: ${NEO4J_USER}
+    password: ${NEO4J_PASSWORD}
+    max_connection_pool_size: 50
+    connection_timeout: 30
+  qdrant:
+    host: ${QDRANT_HOST}
+    port: ${QDRANT_PORT}
+    timeout: 30
+    prefer_grpc: true
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    db: ${REDIS_DB}
+    password: ${REDIS_PASSWORD}
+    max_connections: 100
+    socket_timeout: 5
+    socket_connect_timeout: 5
+
+# Authentication
+auth:
+  jwt_secret_key: ${JWT_SECRET_KEY}
+  algorithm: HS256
+  access_token_expire_minutes: 1440
+  refresh_token_expire_days: 30
+  password:
+    min_length: 12  # Stricter in production
+    require_uppercase: true
+    require_lowercase: true
+    require_digit: true
+    require_special: true
+
+# CORS
+cors:
+  allow_origins:
+    - https://api.edwin.edu
+    - https://dashboard.edwin.edu
+    - https://mobile.edwin.edu
+    - https://www.edwin.edu
+  allow_methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allow_headers:
+    - Authorization
+    - Content-Type
+    - X-Request-ID
+  allow_credentials: true
+
+# Rate Limiting
+rate_limit:
+  enabled: true
+  per_minute: 60
+  per_hour: 1000
+  per_day: 10000
+  burst: 10
+
+# Features
+features:
+  analytics: true
+  caching: true
+  multimodal: true
+  safety_layer: true
+  adaptive_difficulty: true
+
+# LLM
+llm:
+  provider: ${LLM_PROVIDER}
+  anthropic:
+    api_key: ${ANTHROPIC_API_KEY}
+    model: claude-3-5-sonnet-20241022
+    max_tokens: 4096
+    timeout: 60
+  openai:
+    api_key: ${OPENAI_API_KEY}
+    model: gpt-4
+    timeout: 60
+  ollama:
+    base_url: ${OLLAMA_BASE_URL}
+    model: llama3.2:3b
+
+# Monitoring
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    metrics_path: /metrics
+  sentry:
+    enabled: true
+    dsn: ${SENTRY_DSN}
+    environment: production
+    traces_sample_rate: 0.1  # 10% of transactions
+
+# Logging
+logging:
+  level: INFO
+  format: json  # Structured logging for production
+  dir: /var/log/edwin
+  rotation_days: 30
+  file_size_mb: 100
+  syslog:
+    enabled: false
+    host: localhost
+    port: 514
+
+# Security
+security:
+  ssl_enabled: true
+  hsts_enabled: true
+  content_security_policy: "default-src 'self'"
+  x_frame_options: "DENY"
+  x_content_type_options: "nosniff"
+
+# Performance
+performance:
+  cache_ttl_seconds: 3600  # 1 hour
+  connection_pool_size: 100
+  max_overflow: 20
+  pool_recycle: 3600
+
+# Backup
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM UTC
+  dir: /var/backups/edwin
+  retention_days: 30
+  compress: true

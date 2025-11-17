@@ -1,0 +1,63 @@
+# EdWIN Pod Disruption Budgets
+# Ensures minimum availability during voluntary disruptions
+#
+# Implementation Date: November 17, 2025
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: edwin-api-pdb
+  namespace: edwin
+spec:
+  minAvailable: 2  # Always keep at least 2 API pods running
+  selector:
+    matchLabels:
+      app: edwin-api
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: edwin-dashboard-pdb
+  namespace: edwin
+spec:
+  minAvailable: 1  # Always keep at least 1 dashboard pod running
+  selector:
+    matchLabels:
+      app: edwin-dashboard
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: edwin-mobile-pdb
+  namespace: edwin
+spec:
+  minAvailable: 1  # Always keep at least 1 mobile API pod running
+  selector:
+    matchLabels:
+      app: edwin-mobile
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: neo4j-pdb
+  namespace: edwin
+spec:
+  minAvailable: 1  # Protect database from disruption
+  selector:
+    matchLabels:
+      app: neo4j
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: qdrant-pdb
+  namespace: edwin
+spec:
+  minAvailable: 1  # Protect vector DB from disruption
+  selector:
+    matchLabels:
+      app: qdrant

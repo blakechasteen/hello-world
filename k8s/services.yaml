@@ -1,0 +1,163 @@
+# EdWIN Kubernetes Services
+# Exposes deployments within the cluster
+#
+# Implementation Date: November 17, 2025
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: edwin-api
+  namespace: edwin
+  labels:
+    app: edwin-api
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: edwin-api
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: edwin-dashboard
+  namespace: edwin
+  labels:
+    app: edwin-dashboard
+    tier: frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8001
+      targetPort: 8001
+      protocol: TCP
+      name: http
+  selector:
+    app: edwin-dashboard
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: edwin-mobile
+  namespace: edwin
+  labels:
+    app: edwin-mobile
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8002
+      targetPort: 8002
+      protocol: TCP
+      name: http
+  selector:
+    app: edwin-mobile
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: neo4j
+  namespace: edwin
+  labels:
+    app: neo4j
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+    - port: 7474
+      targetPort: 7474
+      protocol: TCP
+      name: http
+    - port: 7687
+      targetPort: 7687
+      protocol: TCP
+      name: bolt
+  selector:
+    app: neo4j
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  namespace: edwin
+  labels:
+    app: qdrant
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6333
+      targetPort: 6333
+      protocol: TCP
+      name: http
+    - port: 6334
+      targetPort: 6334
+      protocol: TCP
+      name: grpc
+  selector:
+    app: qdrant
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: edwin
+  labels:
+    app: redis
+    tier: cache
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    app: redis
+
+---
+# Headless service for Neo4j StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: neo4j-headless
+  namespace: edwin
+  labels:
+    app: neo4j
+spec:
+  clusterIP: None
+  ports:
+    - port: 7687
+      targetPort: 7687
+      protocol: TCP
+      name: bolt
+  selector:
+    app: neo4j
+
+---
+# Headless service for Qdrant StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant-headless
+  namespace: edwin
+  labels:
+    app: qdrant
+spec:
+  clusterIP: None
+  ports:
+    - port: 6333
+      targetPort: 6333
+      protocol: TCP
+      name: http
+  selector:
+    app: qdrant
