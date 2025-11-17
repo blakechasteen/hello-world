@@ -47,6 +47,32 @@
             font-weight: 600;
         }
 
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         .status {
             font-size: 14px;
             opacity: 0.9;
@@ -205,7 +231,11 @@
     <div class="container">
         <div class="header">
             <h1>🧵 HoloLoom Chat</h1>
-            <div class="status disconnected" id="status">● Connecting...</div>
+            <div class="header-right">
+                <div class="user-info" id="userInfo">Loading...</div>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+                <div class="status disconnected" id="status">● Connecting...</div>
+            </div>
         </div>
 
         <div class="messages" id="messages">
@@ -224,6 +254,41 @@
     </div>
 
     <script>
+        // Authentication check
+        const accessToken = localStorage.getItem('access_token');
+
+        if (!accessToken) {
+            // No token, redirect to login
+            window.location.href = '/login';
+        }
+
+        // Fetch user info
+        fetch('/api/auth/me', {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Authentication failed');
+            }
+            return response.json();
+        })
+        .then(user => {
+            document.getElementById('userInfo').textContent = `👤 ${user.username}`;
+        })
+        .catch(error => {
+            console.error('Failed to fetch user info:', error);
+            localStorage.removeItem('access_token');
+            window.location.href = '/login';
+        });
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('access_token');
+            window.location.href = '/login';
+        });
+
         // WebSocket connection
         const sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
         let ws = null;
@@ -231,7 +296,7 @@
         let currentResponseText = '';
 
         function connect() {
-            const wsUrl = `ws://${window.location.host}/ws/chat/${sessionId}`;
+            const wsUrl = `ws://${window.location.host}/ws/chat/${sessionId}?token=${accessToken}`;
             ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {

@@ -22,9 +22,9 @@ logger = logging.getLogger(__name__)
 
 # Try imports with graceful fallback
 try:
-    from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Form, Query
     from fastapi.staticfiles import StaticFiles
-    from fastapi.responses import HTMLResponse, FileResponse
+    from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse
     from fastapi.middleware.cors import CORSMiddleware
     FASTAPI_AVAILABLE = True
 except ImportError:
@@ -32,6 +32,22 @@ except ImportError:
     FASTAPI_AVAILABLE = False
     FastAPI = None
     WebSocket = None
+
+# Import auth module
+try:
+    from .auth import (
+        user_db,
+        create_access_token,
+        verify_token_for_websocket,
+        get_current_user,
+        User,
+        get_demo_credentials,
+        session_manager
+    )
+    AUTH_AVAILABLE = True
+except ImportError:
+    logger.warning("Auth module unavailable")
+    AUTH_AVAILABLE = False
 
 
 @dataclass
@@ -180,17 +196,266 @@ def create_app(config: ChatConfig = None) -> FastAPI:
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
+    # ========================================================================
+    # Authentication Routes
+    # ========================================================================
+
+    @app.get("/login")
+    async def login_page():
+        """Serve login page."""
+        html_path = Path(__file__).parent / "templates" / "login.html"
+
+        if html_path.exists():
+            return FileResponse(html_path)
+        else:
+            # Inline login page
+            return HTMLResponse("""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>HoloLoom - Login</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        min-height: 100vh;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .login-container {
+                        background: white;
+                        border-radius: 12px;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                        padding: 40px;
+                        width: 400px;
+                        max-width: 90%;
+                    }
+                    h1 {
+                        color: #333;
+                        margin-bottom: 10px;
+                        font-size: 28px;
+                    }
+                    .subtitle {
+                        color: #666;
+                        margin-bottom: 30px;
+                        font-size: 14px;
+                    }
+                    .form-group {
+                        margin-bottom: 20px;
+                    }
+                    label {
+                        display: block;
+                        color: #444;
+                        margin-bottom: 8px;
+                        font-weight: 500;
+                    }
+                    input {
+                        width: 100%;
+                        padding: 12px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 6px;
+                        font-size: 14px;
+                        transition: border-color 0.3s;
+                    }
+                    input:focus {
+                        outline: none;
+                        border-color: #667eea;
+                    }
+                    button {
+                        width: 100%;
+                        padding: 12px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: transform 0.2s;
+                    }
+                    button:hover {
+                        transform: translateY(-2px);
+                    }
+                    .demo-info {
+                        margin-top: 20px;
+                        padding: 15px;
+                        background: #f5f5f5;
+                        border-radius: 6px;
+                        font-size: 13px;
+                        color: #666;
+                    }
+                    .demo-info strong {
+                        color: #333;
+                    }
+                    .error {
+                        color: #e74c3c;
+                        margin-top: 10px;
+                        font-size: 14px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="login-container">
+                    <h1>🌀 HoloLoom</h1>
+                    <p class="subtitle">Neural Decision-Making System</p>
+
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" required autofocus>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        <button type="submit">Login</button>
+                        <div class="error" id="error" style="display: none;"></div>
+                    </form>
+
+                    <div class="demo-info">
+                        <strong>Demo Accounts:</strong><br>
+                        • admin / admin123<br>
+                        • demo / demo123
+                    </div>
+                </div>
+
+                <script>
+                    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+
+                        const username = document.getElementById('username').value;
+                        const password = document.getElementById('password').value;
+                        const errorDiv = document.getElementById('error');
+
+                        try {
+                            const response = await fetch('/api/auth/login', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({username, password})
+                            });
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                localStorage.setItem('access_token', data.access_token);
+                                window.location.href = '/';
+                            } else {
+                                const error = await response.json();
+                                errorDiv.textContent = error.detail || 'Login failed';
+                                errorDiv.style.display = 'block';
+                            }
+                        } catch (error) {
+                            errorDiv.textContent = 'Network error. Please try again.';
+                            errorDiv.style.display = 'block';
+                        }
+                    });
+                </script>
+            </body>
+            </html>
+            """)
+
+    @app.post("/api/auth/login")
+    async def login(username: str = Form(), password: str = Form(None)):
+        """Login endpoint."""
+        if not AUTH_AVAILABLE:
+            raise HTTPException(status_code=500, detail="Authentication not available")
+
+        # Support both form and JSON
+        if password is None:
+            # JSON request
+            from fastapi import Request
+            request = Request
+            # Will be handled by form parameter above
+
+        # Authenticate
+        user = user_db.authenticate_user(username, password)
+
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail="Incorrect username or password"
+            )
+
+        # Create token
+        access_token = create_access_token(data={"sub": user.username})
+
+        # Create session
+        session_id = session_manager.create_session(user.username, access_token)
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "username": user.username,
+            "session_id": session_id
+        }
+
+    @app.post("/api/auth/login_json")
+    async def login_json(credentials: dict):
+        """Login endpoint for JSON requests."""
+        if not AUTH_AVAILABLE:
+            raise HTTPException(status_code=500, detail="Authentication not available")
+
+        username = credentials.get("username")
+        password = credentials.get("password")
+
+        if not username or not password:
+            raise HTTPException(status_code=400, detail="Missing credentials")
+
+        user = user_db.authenticate_user(username, password)
+
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail="Incorrect username or password"
+            )
+
+        access_token = create_access_token(data={"sub": user.username})
+        session_id = session_manager.create_session(user.username, access_token)
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "username": user.username,
+            "session_id": session_id
+        }
+
+    @app.post("/api/auth/logout")
+    async def logout(user: User = Depends(get_current_user)):
+        """Logout endpoint."""
+        # In a real app, invalidate token on server side
+        return {"status": "logged_out", "username": user.username}
+
+    @app.get("/api/auth/me")
+    async def get_current_user_info(user: User = Depends(get_current_user)):
+        """Get current user info (protected endpoint example)."""
+        return user.to_dict()
+
     @app.websocket("/ws/chat/{session_id}")
-    async def websocket_chat(websocket: WebSocket, session_id: str):
+    async def websocket_chat(websocket: WebSocket, session_id: str, token: str = Query(None)):
         """
-        WebSocket endpoint for chat.
+        WebSocket endpoint for chat (protected with JWT).
 
         Protocol:
+        - Connect with: ws://host/ws/chat/{session_id}?token={jwt_token}
         - Client sends: {"type": "message", "text": "user message", "metadata": {...}}
         - Server sends: {"type": "response_chunk", "text": "...", "done": false}
         - Server sends: {"type": "response_chunk", "text": "", "done": true}
         - Server sends: {"type": "trace", "data": {...}}  # Weaving trace
         """
+        # Verify authentication
+        if AUTH_AVAILABLE and token:
+            username = verify_token_for_websocket(token)
+            if not username:
+                await websocket.close(code=1008, reason="Invalid or expired token")
+                return
+            logger.info(f"Authenticated WebSocket for user: {username}")
+        elif AUTH_AVAILABLE:
+            await websocket.close(code=1008, reason="Authentication required")
+            return
+
         await manager.connect(websocket, session_id)
 
         try:
