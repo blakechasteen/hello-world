@@ -1,0 +1,50 @@
+{
+  "benchmark_name": "recall_accuracy_books",
+  "version": "1.0",
+  "timestamp": "2025-11-17T04:58:49.989296",
+  "metrics": {
+    "precision_at_1": 0.9166666666666666,
+    "precision_at_5": 0.21666666666666667,
+    "precision_at_10": 0.12500000000000003,
+    "recall_at_5": 0.875,
+    "recall_at_10": 0.9583333333333334,
+    "mrr": 0.9305555555555555,
+    "ndcg": null,
+    "latency_p50_ms": 0.10991096496582031,
+    "latency_p95_ms": 0.18930435180664062,
+    "latency_p99_ms": 0.18930435180664062,
+    "throughput_qps": 8614.00787266815,
+    "memory_mb": null,
+    "disk_mb": null,
+    "index_build_time_sec": null,
+    "accuracy_improvement": null,
+    "convergence_queries": null,
+    "adaptation_rate": null,
+    "custom": {}
+  },
+  "config": {
+    "dataset_name": "books_synthetic",
+    "num_memories": 15,
+    "num_queries": 12,
+    "seed": 42,
+    "config_mode": "fast",
+    "enable_cache": true,
+    "custom": {}
+  },
+  "dataset_info": {
+    "name": "books_synthetic",
+    "version": "1.0",
+    "num_books": 15,
+    "num_queries": 12,
+    "genres": [
+      "Fiction",
+      "Non-fiction",
+      "Fantasy",
+      "Science"
+    ],
+    "source": "synthetic",
+    "avg_summary_length": 100
+  },
+  "errors": [],
+  "warnings": []
+}

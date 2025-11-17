@@ -1,6 +1,6 @@
 # Wikipedia Recall Accuracy Benchmark
 
-**Date:** 2025-11-17T04:20:26.110561
+**Date:** 2025-11-17T04:58:49.799476
 
 **Dataset:** wikipedia_synthetic
 **Memories:** 10
@@ -17,4 +17,4 @@
 | Recall@10 | 1.000 |
 | MRR | 0.817 |
 | Latency p95 | 0.1ms |
-| Throughput | 30795.2 queries/sec |
+| Throughput | 30023.7 queries/sec |
