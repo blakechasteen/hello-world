@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 
 from core.config import settings
 from core.database import init_db, close_db
-from api import auth, users, communities, posts, comments, search
+from api import auth, users, communities, posts, comments, search, social
 
 
 @asynccontextmanager
@@ -75,6 +75,7 @@ app.include_router(communities.router, prefix="/api/v1")
 app.include_router(posts.router, prefix="/api/v1")
 app.include_router(comments.router, prefix="/api/v1")
 app.include_router(search.router, prefix="/api/v1")
+app.include_router(social.router, prefix="/api/v1")
 
 
 if __name__ == "__main__":
