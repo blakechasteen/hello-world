@@ -147,7 +147,8 @@ async def fetch_transcript_direct(url: str, output_file: str = "transcript.txt")
 
 
 async def main():
-    url = "https://youtube.com/shorts/Flqljv8clcY?si=dY_rwyIFjhlrXOxM"
+    # Try with a well-known video that has transcripts (TED Talk)
+    url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"  # Test video
     output_file = "youtube_transcript.txt"
 
     if HOLOLOOM_SPINNER:
