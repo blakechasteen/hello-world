@@ -15,9 +15,11 @@ This module is a drop-in replacement for standard WarpSpace with
 significant performance improvements for large-scale deployments.
 """
 
+from __future__ import annotations  # PEP 563 - Postponed evaluation of annotations
+
 import logging
 import numpy as np
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional, Union, Tuple, TYPE_CHECKING
 from dataclasses import dataclass
 import warnings
 
@@ -42,6 +44,9 @@ except ImportError:
     HAS_TORCH = False
     DEVICE = None
     logger.warning("PyTorch not available. GPU acceleration disabled.")
+    # Define torch for type hints only
+    if TYPE_CHECKING:
+        import torch
 
 
 # ============================================================================

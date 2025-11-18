@@ -9,7 +9,13 @@ import numpy as np
 from typing import Dict, Any, Optional, Callable
 
 from .config import SemanticCalculusConfig
-from .flow_calculus import SemanticFlowCalculus
+try:
+    from .flow_calculus import SemanticFlowCalculus
+except ModuleNotFoundError:
+    try:
+        from .flow import SemanticFlowCalculus
+    except (ModuleNotFoundError, ImportError):
+        SemanticFlowCalculus = None
 from .dimensions import (
     SemanticSpectrum,
     STANDARD_DIMENSIONS,

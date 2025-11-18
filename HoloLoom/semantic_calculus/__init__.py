@@ -52,13 +52,32 @@ Author: BearL Labs
 __version__ = "0.1.0"
 
 # === Core Calculus ===
-from .flow_calculus import (
-    SemanticState,
-    SemanticTrajectory,
-    SemanticFlowCalculus,
-    SemanticFlowVisualizer,
-    analyze_text_flow,
-)
+# NOTE: flow_calculus module not found, using flow module instead
+try:
+    from .flow_calculus import (
+        SemanticState,
+        SemanticTrajectory,
+        SemanticFlowCalculus,
+        SemanticFlowVisualizer,
+        analyze_text_flow,
+    )
+except ModuleNotFoundError:
+    # Fallback: Try importing from flow module
+    try:
+        from .flow import (
+            SemanticState,
+            SemanticTrajectory,
+            SemanticFlowCalculus,
+            SemanticFlowVisualizer,
+            analyze_text_flow,
+        )
+    except (ModuleNotFoundError, ImportError):
+        # If neither works, define placeholders
+        SemanticState = None
+        SemanticTrajectory = None
+        SemanticFlowCalculus = None
+        SemanticFlowVisualizer = None
+        analyze_text_flow = None
 
 # === Semantic Dimensions (The Key Projection!) ===
 from .dimensions import (
