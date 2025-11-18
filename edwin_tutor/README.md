@@ -67,6 +67,34 @@ See [`ui/web/README.md`](ui/web/README.md) for full documentation!
 
 ---
 
+## 🤖 AI Tutor ✨ NEW!
+
+EdWIN now includes an **AI-powered tutor** that uses HoloLoom itself to teach HoloLoom!
+
+### Features
+
+- **💬 Ask anything** - Get instant answers about HoloLoom concepts
+- **🎯 Personalized recommendations** - Based on your progress and learning style
+- **💡 Smart hints** - Get help without spoiling the answer
+- **📚 Lesson sourcing** - See which lessons cover each topic
+- **🤝 Context-aware** - Knows what lesson you're on
+
+### How to Use
+
+**Terminal UI**: Choose option 3 ("🤖 Ask AI Tutor") from the main menu
+
+**Web UI**: Click the floating "🤖 AI Tutor" button (bottom-right corner)
+
+### Example Questions
+
+- "What is a memory shard?"
+- "How does Thompson Sampling work?"
+- "When should I use FAST mode vs FUSED mode?"
+- "Why am I getting import errors?"
+- "Get recommendations" (for personalized next steps)
+
+---
+
 ## 📓 Quick Start (Jupyter Notebooks) ✨ NEW!
 
 ### Prerequisites
@@ -331,12 +359,16 @@ Edit `core/progress.py` → `_define_badges()` method
 - ✅ 2.5+ hours of learning material
 - ✅ Multiple quizzes and challenges
 
-### 🔜 Phase 4 (Next)
-- 🔜 AI tutor (HoloLoom helps teach HoloLoom!)
+### 🚀 Phase 4 (In Progress)
+- ✅ **AI Tutor** - HoloLoom teaches HoloLoom! (Terminal + Web UI complete)
+  - 🤖 Ask questions anytime
+  - 💡 Get personalized recommendations
+  - 🎯 Context-aware hints
+  - 📚 Sources lessons in responses
 - 🔜 Intermediate lessons (11-20)
 - 🔜 Advanced lessons (21-30)
 
-### 💭 Phase 4 & Beyond (Future)
+### 💭 Phase 5 & Beyond (Future)
 - Complete all 30 lessons (beginner → intermediate → advanced)
 - Video tutorials
 - Community lesson sharing
