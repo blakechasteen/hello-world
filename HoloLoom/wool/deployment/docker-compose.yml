@@ -1,0 +1,208 @@
+# Docker Compose for Wool Storage Distributed Cluster
+# ======================================================
+#
+# Local development environment for Phases 6-8:
+# - 3-node distributed storage cluster
+# - Neo4j (for future graph storage)
+# - Qdrant (for future vector storage)
+# - Prometheus (metrics)
+# - Grafana (dashboards)
+#
+# Usage:
+#   docker-compose up -d          # Start all services
+#   docker-compose logs wool-1    # View logs for node 1
+#   docker-compose down           # Stop all services
+#
+# Author: Claude Code
+# Date: November 17, 2025 (Track 3 Week 1: Docker Setup)
+
+version: '3.8'
+
+services:
+  # Wool Storage Node 1 (Primary)
+  wool-1:
+    image: python:3.11-slim
+    container_name: wool-node-1
+    hostname: wool-1
+    volumes:
+      - ../../../:/app  # Mount HoloLoom root
+      - wool-1-data:/data
+    working_dir: /app
+    command: >
+      bash -c "
+      pip install --quiet -e . &&
+      python -m HoloLoom.wool.distributed.node
+        --node-id wool-1
+        --bind-address 0.0.0.0:9000
+        --peers wool-1,wool-2,wool-3
+        --data-path /data
+      "
+    ports:
+      - "9000:9000"
+    networks:
+      - wool-net
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # Wool Storage Node 2 (Replica)
+  wool-2:
+    image: python:3.11-slim
+    container_name: wool-node-2
+    hostname: wool-2
+    volumes:
+      - ../../../:/app
+      - wool-2-data:/data
+    working_dir: /app
+    command: >
+      bash -c "
+      pip install --quiet -e . &&
+      python -m HoloLoom.wool.distributed.node
+        --node-id wool-2
+        --bind-address 0.0.0.0:9001
+        --peers wool-1,wool-2,wool-3
+        --data-path /data
+      "
+    ports:
+      - "9001:9001"
+    networks:
+      - wool-net
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - wool-1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # Wool Storage Node 3 (Replica)
+  wool-3:
+    image: python:3.11-slim
+    container_name: wool-node-3
+    hostname: wool-3
+    volumes:
+      - ../../../:/app
+      - wool-3-data:/data
+    working_dir: /app
+    command: >
+      bash -c "
+      pip install --quiet -e . &&
+      python -m HoloLoom.wool.distributed.node
+        --node-id wool-3
+        --bind-address 0.0.0.0:9002
+        --peers wool-1,wool-2,wool-3
+        --data-path /data
+      "
+    ports:
+      - "9002:9002"
+    networks:
+      - wool-net
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - wool-1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # Prometheus (Metrics Collection)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: wool-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    ports:
+      - "9090:9090"
+    networks:
+      - wool-net
+    depends_on:
+      - wool-1
+      - wool-2
+      - wool-3
+
+  # Grafana (Dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: wool-grafana
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    networks:
+      - wool-net
+    depends_on:
+      - prometheus
+
+  # Neo4j (Future: Knowledge Graph Storage)
+  neo4j:
+    image: neo4j:5.13-community
+    container_name: wool-neo4j
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PLUGINS=["apoc"]
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    networks:
+      - wool-net
+
+  # Qdrant (Future: Vector Storage)
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: wool-qdrant
+    volumes:
+      - qdrant-data:/qdrant/storage
+    ports:
+      - "6333:6333"  # HTTP API
+      - "6334:6334"  # gRPC
+    networks:
+      - wool-net
+
+volumes:
+  wool-1-data:
+    driver: local
+  wool-2-data:
+    driver: local
+  wool-3-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  neo4j-data:
+    driver: local
+  neo4j-logs:
+    driver: local
+  qdrant-data:
+    driver: local
+
+networks:
+  wool-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -1,0 +1,218 @@
+# Kubernetes StatefulSet for Wool Storage Cluster
+# ================================================
+#
+# Deploys 3-node distributed wool storage cluster with:
+# - StatefulSet for stable network identities
+# - Persistent volumes for data
+# - Headless service for peer discovery
+# - NodePort service for external access
+#
+# Usage:
+#   kubectl apply -f wool-statefulset.yaml
+#   kubectl get pods -l app=wool-storage
+#   kubectl logs wool-storage-0
+#
+# Author: Claude Code
+# Date: November 17, 2025 (Track 3 Week 1: Kubernetes Setup)
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wool-storage
+  labels:
+    name: wool-storage
+
+---
+# Headless Service for StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: wool-storage-headless
+  namespace: wool-storage
+  labels:
+    app: wool-storage
+spec:
+  clusterIP: None
+  selector:
+    app: wool-storage
+  ports:
+    - name: wool-api
+      port: 9000
+      targetPort: 9000
+    - name: metrics
+      port: 9001
+      targetPort: 9001
+
+---
+# External Service (NodePort)
+apiVersion: v1
+kind: Service
+metadata:
+  name: wool-storage-external
+  namespace: wool-storage
+  labels:
+    app: wool-storage
+spec:
+  type: NodePort
+  selector:
+    app: wool-storage
+  ports:
+    - name: wool-api
+      port: 9000
+      targetPort: 9000
+      nodePort: 30900
+
+---
+# StatefulSet for Wool Storage Nodes
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wool-storage
+  namespace: wool-storage
+  labels:
+    app: wool-storage
+spec:
+  serviceName: wool-storage-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: wool-storage
+  template:
+    metadata:
+      labels:
+        app: wool-storage
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9001"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Anti-affinity: spread pods across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - wool-storage
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: wool-storage
+          image: wool-storage:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: wool-api
+              containerPort: 9000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9001
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NODE_ID
+              value: "$(POD_NAME)"
+            - name: BIND_ADDRESS
+              value: "0.0.0.0:9000"
+            - name: PEERS
+              value: "wool-storage-0.wool-storage-headless.wool-storage.svc.cluster.local,wool-storage-1.wool-storage-headless.wool-storage.svc.cluster.local,wool-storage-2.wool-storage-headless.wool-storage.svc.cluster.local"
+            - name: DATA_PATH
+              value: "/data"
+            - name: ENABLE_COMPRESSION
+              value: "true"
+            - name: ENABLE_VERSIONING
+              value: "true"
+
+          volumeMounts:
+            - name: data
+              mountPath: /data
+
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 9000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+  # Volume claim templates
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "standard"
+        resources:
+          requests:
+            storage: 100Gi
+
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: wool-storage-hpa
+  namespace: wool-storage
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: wool-storage
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+---
+# PodDisruptionBudget (ensure high availability)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: wool-storage-pdb
+  namespace: wool-storage
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: wool-storage

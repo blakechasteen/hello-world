@@ -1,0 +1,77 @@
+# Prometheus Configuration for Wool Storage Cluster
+# ===================================================
+#
+# Scrapes metrics from:
+# - 3 Wool storage nodes
+# - Prometheus self-monitoring
+#
+# Author: Claude Code
+# Date: November 17, 2025 (Track 3 Week 1: Monitoring Setup)
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'wool-storage-dev'
+    environment: 'development'
+
+# Alerting configuration (future)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Rule files (future)
+rule_files:
+  # - "alerts.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Wool Storage Node 1
+  - job_name: 'wool-node-1'
+    static_configs:
+      - targets: ['wool-1:9000']
+        labels:
+          node_id: 'wool-1'
+          node_role: 'primary'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Wool Storage Node 2
+  - job_name: 'wool-node-2'
+    static_configs:
+      - targets: ['wool-2:9001']
+        labels:
+          node_id: 'wool-2'
+          node_role: 'replica'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Wool Storage Node 3
+  - job_name: 'wool-node-3'
+    static_configs:
+      - targets: ['wool-3:9002']
+        labels:
+          node_id: 'wool-3'
+          node_role: 'replica'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Neo4j (future)
+  - job_name: 'neo4j'
+    static_configs:
+      - targets: ['neo4j:2004']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Qdrant (future)
+  - job_name: 'qdrant'
+    static_configs:
+      - targets: ['qdrant:6333']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
