@@ -1162,3 +1162,116 @@ class LLMContextPacker(SmartContextPacker):
         )
 
         return result
+
+    # ========================================================================
+    # Phase 6.1: USER_FEEDBACK Refinement
+    # ========================================================================
+
+    async def pack_and_generate_with_feedback_learning(
+        self,
+        query: str,
+        awareness_context,
+        memory_results: Optional[List[Any]] = None,
+        max_memories: int = 10,
+        # Refinement configuration
+        quality_threshold: float = 0.85,
+        max_passes: int = 3,
+        # Feedback configuration
+        feedback_tracker: Optional[Any] = None,  # FeedbackTracker instance
+        enable_feedback_learning: bool = True
+    ) -> Any:  # Returns FeedbackAwareResult
+        """
+        Pack, generate, and refine with feedback-based learning.
+
+        Phase 6.1 extension that learns from user feedback to improve
+        future refinements. The system:
+        - Classifies query type
+        - Selects strategy based on past feedback for similar queries
+        - Tracks feedback to improve over time
+        - Adapts to user preferences
+
+        Args:
+            query: User query
+            awareness_context: Awareness context
+            memory_results: Memory retrieval results
+            max_memories: Maximum memories to include
+            quality_threshold: Minimum quality to accept (default: 0.85)
+            max_passes: Maximum refinement passes (default: 3)
+            feedback_tracker: Optional shared feedback tracker
+            enable_feedback_learning: Enable feedback-based learning
+
+        Returns:
+            FeedbackAwareResult with query type and recommendations
+
+        Example:
+            # First query
+            result1 = await packer.pack_and_generate_with_feedback_learning(
+                query="Explain Thompson Sampling",
+                awareness_ctx=ctx
+            )
+
+            # Track user feedback
+            from HoloLoom.awareness.feedback_tracker import FeedbackSignal, FeedbackType
+            feedback = FeedbackSignal(
+                feedback_type=FeedbackType.THUMBS_UP,
+                helpful=True
+            )
+
+            # This requires accessing the refiner (see Phase 6.1 docs for full example)
+            # For now, user should use UserFeedbackRefiner directly for feedback tracking
+
+            # Second similar query - automatically uses learned strategy
+            result2 = await packer.pack_and_generate_with_feedback_learning(
+                query="Explain Epsilon-Greedy",  # Similar to Thompson Sampling
+                awareness_ctx=ctx,
+                feedback_tracker=result1.feedback_tracker  # Shared learning
+            )
+
+        Note:
+            For full feedback tracking, use UserFeedbackRefiner directly.
+            This method provides simplified access with automatic strategy selection.
+        """
+        if not REFINEMENT_AVAILABLE:
+            # Graceful fallback
+            return await self.pack_and_generate(
+                query=query,
+                awareness_context=awareness_context,
+                memory_results=memory_results,
+                max_memories=max_memories
+            )
+
+        # Import Phase 6.1 components
+        try:
+            from .user_feedback_refiner import UserFeedbackRefiner
+        except ImportError:
+            # Phase 6.1 not available, fall back to Phase 5
+            return await self.pack_and_generate_with_refinement(
+                query=query,
+                awareness_context=awareness_context,
+                memory_results=memory_results,
+                max_memories=max_memories,
+                quality_threshold=quality_threshold,
+                max_passes=max_passes
+            )
+
+        # Create feedback-aware refiner
+        refiner = UserFeedbackRefiner(
+            packer=self,
+            quality_threshold=quality_threshold,
+            max_passes=max_passes,
+            enable_feedback_learning=enable_feedback_learning,
+            feedback_tracker=feedback_tracker
+        )
+
+        # Execute refinement with feedback learning
+        result = await refiner.refine(
+            query=query,
+            awareness_ctx=awareness_context,
+            memory_results=memory_results,
+            max_memories=max_memories
+        )
+
+        # Attach refiner for feedback tracking (optional)
+        result.refiner = refiner
+
+        return result
