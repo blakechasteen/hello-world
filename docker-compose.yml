@@ -1,6 +1,91 @@
+# HoloLoom Production Docker Compose
+# ====================================
+# Complete deployment stack with API, databases, and monitoring
+#
+# Services:
+# - hololoom-api: FastAPI server (Week 5-7 memory systems)
+# - neo4j: Graph database (memory backend)
+# - qdrant: Vector database (memory backend)
+# - redis: Caching and rate limiting
+# - prometheus: Metrics collection
+# - grafana: Visualization (optional)
+#
+# Author: HoloLoom Team
+# Date: 2025-11-18 (Week 8B)
+
 version: '3.8'
 
 services:
+  # ============================================================================
+  # HoloLoom API Server (NEW - Week 8B)
+  # ============================================================================
+
+  hololoom-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hololoom-api
+    ports:
+      - "8000:8000"
+    environment:
+      # Application settings
+      - HOLOLOOM_ENV=production
+      - LOG_LEVEL=INFO
+      - DEBUG=false
+
+      # API settings
+      - HOLOLOOM_API_KEY=${HOLOLOOM_API_KEY:-changeme}
+      - RATE_LIMIT_RPM=60
+      - RATE_LIMIT_BURST=10
+
+      # CORS settings (comma-separated)
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+
+      # Redis connection
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+      # Neo4j connection
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=hololoom123
+
+      # Qdrant connection
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+
+      # Memory backend settings
+      - MEMORY_BACKEND=HYBRID  # INMEMORY, HYBRID (Neo4j+Qdrant), HYPERSPACE
+    volumes:
+      # Persistent data storage
+      - ./data:/app/data
+
+      # Log files
+      - ./logs:/app/logs
+
+      # Configuration (optional)
+      - ./config:/app/config
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hololoom
+
+  # ============================================================================
+  # Memory Backends (Existing)
+  # ============================================================================
+
   # Neo4j - Graph Database
   neo4j:
     image: neo4j:5.15.0
@@ -46,13 +131,89 @@ services:
       timeout: 5s
       retries: 5
 
+  # ============================================================================
+  # Infrastructure (NEW - Week 8B)
+  # ============================================================================
+
+  # Redis - Caching and Rate Limiting
+  redis:
+    image: redis:7-alpine
+    container_name: hololoom-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - hololoom
+    command: redis-server --appendonly yes
+
+  # Prometheus - Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hololoom-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    networks:
+      - hololoom
+
+  # Grafana - Visualization (Optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hololoom-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    networks:
+      - hololoom
+
+# ============================================================================
+# Volumes
+# ============================================================================
+
 volumes:
+  # Existing
   neo4j_data:
     driver: local
   neo4j_logs:
     driver: local
   qdrant_data:
     driver: local
+
+  # New
+  redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
 
 networks:
   hololoom:

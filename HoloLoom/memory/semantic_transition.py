@@ -48,6 +48,8 @@ from HoloLoom.Documentation.types import MemoryShard
 from HoloLoom.memory.lifecycle_manager import MemoryScope, LifeCycle
 from HoloLoom.memory.graph import KG, KGEdge
 from HoloLoom.memory.protocol import Memory
+from HoloLoom.memory.validation import MemoryValidator, ValidationConfig
+from HoloLoom.memory.error_recovery import safe_execute, get_error_aggregator
 
 logger = logging.getLogger(__name__)
 
@@ -252,67 +254,98 @@ class SemanticTransitionEngine:
         Returns:
             List of detected patterns sorted by frequency (high→low)
         """
-        max_patterns = max_patterns or self.config.max_patterns_per_cycle
+        try:
+            max_patterns = max_patterns or self.config.max_patterns_per_cycle
 
-        # Get recent episodic memories
-        cutoff_date = datetime.now() - timedelta(days=self.config.transition_window_days)
-        episodes = await self._get_recent_episodes(cutoff_date)
+            # Validate max_patterns
+            if max_patterns <= 0:
+                logger.warning(f"Invalid max_patterns: {max_patterns}, using config default")
+                max_patterns = self.config.max_patterns_per_cycle
 
-        if not episodes:
-            logger.debug("No recent episodic memories to analyze")
-            return []
+            # Get recent episodic memories
+            cutoff_date = datetime.now() - timedelta(days=self.config.transition_window_days)
+            episodes = await self._get_recent_episodes(cutoff_date)
 
-        logger.info(f"Analyzing {len(episodes)} episodic memories for patterns")
+            if not episodes:
+                logger.debug("No recent episodic memories to analyze")
+                return []
 
-        # Detect patterns using enabled strategies
-        all_patterns = []
+            logger.info(f"Analyzing {len(episodes)} episodic memories for patterns")
 
-        if self.config.enable_query_clustering:
-            patterns = await self._detect_query_clusters(episodes)
-            all_patterns.extend(patterns)
-            logger.debug(f"Query clustering: {len(patterns)} patterns")
+            # Detect patterns using enabled strategies
+            all_patterns = []
 
-        if self.config.enable_entity_cooccurrence:
-            patterns = await self._detect_entity_cooccurrence(episodes)
-            all_patterns.extend(patterns)
-            logger.debug(f"Entity co-occurrence: {len(patterns)} patterns")
+            # Query clustering with error handling
+            if self.config.enable_query_clustering:
+                try:
+                    patterns = await self._detect_query_clusters(episodes)
+                    all_patterns.extend(patterns)
+                    logger.debug(f"Query clustering: {len(patterns)} patterns")
+                except Exception as e:
+                    logger.error(f"Query clustering failed: {e}")
+                    get_error_aggregator().record_error(e, {"operation": "query_clustering"})
 
-        if self.config.enable_motif_patterns:
-            patterns = await self._detect_motif_patterns(episodes)
-            all_patterns.extend(patterns)
-            logger.debug(f"Motif patterns: {len(patterns)} patterns")
+            # Entity co-occurrence with error handling
+            if self.config.enable_entity_cooccurrence:
+                try:
+                    patterns = await self._detect_entity_cooccurrence(episodes)
+                    all_patterns.extend(patterns)
+                    logger.debug(f"Entity co-occurrence: {len(patterns)} patterns")
+                except Exception as e:
+                    logger.error(f"Entity co-occurrence failed: {e}")
+                    get_error_aggregator().record_error(e, {"operation": "entity_cooccurrence"})
 
-        if self.config.enable_response_similarity:
-            patterns = await self._detect_response_similarity(episodes)
-            all_patterns.extend(patterns)
-            logger.debug(f"Response similarity: {len(patterns)} patterns")
+            # Motif patterns with error handling
+            if self.config.enable_motif_patterns:
+                try:
+                    patterns = await self._detect_motif_patterns(episodes)
+                    all_patterns.extend(patterns)
+                    logger.debug(f"Motif patterns: {len(patterns)} patterns")
+                except Exception as e:
+                    logger.error(f"Motif pattern detection failed: {e}")
+                    get_error_aggregator().record_error(e, {"operation": "motif_patterns"})
 
-        # Filter by threshold and sort by frequency
-        filtered_patterns = [
-            p for p in all_patterns
-            if p.frequency >= self.config.pattern_threshold
-            and p.similarity_score >= self.config.similarity_threshold
-        ]
+            # Response similarity with error handling
+            if self.config.enable_response_similarity:
+                try:
+                    patterns = await self._detect_response_similarity(episodes)
+                    all_patterns.extend(patterns)
+                    logger.debug(f"Response similarity: {len(patterns)} patterns")
+                except Exception as e:
+                    logger.error(f"Response similarity detection failed: {e}")
+                    get_error_aggregator().record_error(e, {"operation": "response_similarity"})
 
-        sorted_patterns = sorted(
-            filtered_patterns,
-            key=lambda p: (p.frequency, p.similarity_score),
-            reverse=True
-        )[:max_patterns]
+            # Filter by threshold and sort by frequency
+            filtered_patterns = [
+                p for p in all_patterns
+                if p.frequency >= self.config.pattern_threshold
+                and p.similarity_score >= self.config.similarity_threshold
+            ]
 
-        # Cache detected patterns
-        for pattern in sorted_patterns:
-            self.detected_patterns[pattern.pattern_id] = pattern
+            sorted_patterns = sorted(
+                filtered_patterns,
+                key=lambda p: (p.frequency, p.similarity_score),
+                reverse=True
+            )[:max_patterns]
 
-        self.stats['patterns_detected'] += len(sorted_patterns)
+            # Cache detected patterns
+            for pattern in sorted_patterns:
+                self.detected_patterns[pattern.pattern_id] = pattern
 
-        logger.info(
-            f"Detected {len(sorted_patterns)} patterns "
-            f"(from {len(all_patterns)} total, "
-            f"{len(filtered_patterns)} after filtering)"
-        )
+            self.stats['patterns_detected'] += len(sorted_patterns)
 
-        return sorted_patterns
+            logger.info(
+                f"Detected {len(sorted_patterns)} patterns "
+                f"(from {len(all_patterns)} total, "
+                f"{len(filtered_patterns)} after filtering)"
+            )
+
+            return sorted_patterns
+
+        except Exception as e:
+            logger.error(f"Pattern detection failed: {e}", exc_info=True)
+            get_error_aggregator().record_error(e, {"operation": "detect_patterns"})
+            return []  # Graceful degradation: return empty list
 
     async def _get_recent_episodes(
         self,
@@ -603,7 +636,7 @@ class SemanticTransitionEngine:
     async def promote_to_semantic(
         self,
         pattern: EpisodicPattern
-    ) -> SemanticConcept:
+    ) -> Optional[SemanticConcept]:
         """
         Convert episodic pattern → semantic concept.
 
@@ -613,68 +646,109 @@ class SemanticTransitionEngine:
             pattern: Detected pattern to promote
 
         Returns:
-            Created semantic concept
+            Created semantic concept or None on error
         """
-        # Generate concept text based on pattern type
-        concept_text = await self._generate_concept_text(pattern)
+        try:
+            # Validate pattern
+            if not pattern:
+                logger.error("Cannot promote None pattern")
+                return None
 
-        # Create semantic concept
-        concept = SemanticConcept(
-            concept_id=f"concept_{pattern.pattern_id}",
-            concept_text=concept_text,
-            source_pattern_id=pattern.pattern_id,
-            source_episode_ids=pattern.episode_ids,
-            confidence=pattern.similarity_score,
-            scope=MemoryScope.AGENT,
-            lifecycle=LifeCycle.TEMPORARY,
-            metadata={
-                'pattern_type': pattern.pattern_type,
-                'pattern_frequency': pattern.frequency,
-                'created_from_pattern': True
-            }
-        )
+            if not pattern.episode_ids:
+                logger.error(f"Pattern {pattern.pattern_id} has no source episodes")
+                return None
 
-        # Store in semantic memory
-        self.semantic_concepts[concept.concept_id] = concept
+            if pattern.frequency < self.config.pattern_threshold:
+                logger.warning(
+                    f"Pattern {pattern.pattern_id} below frequency threshold "
+                    f"({pattern.frequency} < {self.config.pattern_threshold})"
+                )
+                # Continue anyway - already detected, so allow promotion
 
-        # Add to knowledge graph with AGENT scope
-        self.kg.graph.add_node(
-            concept.concept_id,
-            text=concept.concept_text,
-            scope='AGENT',
-            lifecycle='TEMPORARY',
-            type='semantic_concept',
-            timestamp=datetime.now().timestamp(),
-            metadata=concept.metadata
-        )
+            # Generate concept text based on pattern type
+            concept_text = await self._generate_concept_text(pattern)
 
-        # Link to source episodes (provenance)
-        for episode_id in pattern.episode_ids:
-            if episode_id in self.kg.graph.nodes():
-                self.kg.add_edges([
-                    KGEdge(
-                        src=concept.concept_id,
-                        dst=episode_id,
-                        type='DERIVED_FROM',
-                        weight=1.0,
-                        metadata={'transition_type': 'episodic_to_semantic'}
-                    )
-                ])
+            if not concept_text or len(concept_text) < 10:
+                logger.error(f"Generated concept text too short: '{concept_text}'")
+                concept_text = f"[Concept from pattern {pattern.pattern_id}]"
 
-        # Update statistics
-        self.stats['concepts_created'] += 1
-        self.stats['episodes_transitioned'] += len(pattern.episode_ids)
+            # Create semantic concept
+            concept = SemanticConcept(
+                concept_id=f"concept_{pattern.pattern_id}",
+                concept_text=concept_text,
+                source_pattern_id=pattern.pattern_id,
+                source_episode_ids=pattern.episode_ids,
+                confidence=pattern.similarity_score,
+                scope=MemoryScope.AGENT,
+                lifecycle=LifeCycle.TEMPORARY,
+                metadata={
+                    'pattern_type': pattern.pattern_type,
+                    'pattern_frequency': pattern.frequency,
+                    'created_from_pattern': True
+                }
+            )
 
-        logger.info(
-            f"Promoted pattern '{pattern.pattern_id}' to semantic concept "
-            f"'{concept.concept_id}' (from {len(pattern.episode_ids)} episodes)"
-        )
+            # Store in semantic memory
+            self.semantic_concepts[concept.concept_id] = concept
 
-        # Optionally prune source episodes
-        if self.config.prune_source_episodes:
-            await self._prune_episodes(pattern.episode_ids)
+            # Add to knowledge graph with AGENT scope
+            try:
+                self.kg.graph.add_node(
+                    concept.concept_id,
+                    text=concept.concept_text,
+                    scope='AGENT',
+                    lifecycle='TEMPORARY',
+                    type='semantic_concept',
+                    timestamp=datetime.now().timestamp(),
+                    metadata=concept.metadata
+                )
+            except Exception as e:
+                logger.error(f"Failed to add concept to knowledge graph: {e}")
+                # Continue - concept is still in semantic_concepts dict
 
-        return concept
+            # Link to source episodes (provenance)
+            for episode_id in pattern.episode_ids:
+                try:
+                    if episode_id in self.kg.graph.nodes():
+                        self.kg.add_edges([
+                            KGEdge(
+                                src=concept.concept_id,
+                                dst=episode_id,
+                                type='DERIVED_FROM',
+                                weight=1.0,
+                                metadata={'transition_type': 'episodic_to_semantic'}
+                            )
+                        ])
+                except Exception as e:
+                    logger.warning(f"Failed to link concept to episode {episode_id}: {e}")
+                    # Continue - not critical
+
+            # Update statistics
+            self.stats['concepts_created'] += 1
+            self.stats['episodes_transitioned'] += len(pattern.episode_ids)
+
+            logger.info(
+                f"Promoted pattern '{pattern.pattern_id}' to semantic concept "
+                f"'{concept.concept_id}' (from {len(pattern.episode_ids)} episodes)"
+            )
+
+            # Optionally prune source episodes
+            if self.config.prune_source_episodes:
+                try:
+                    await self._prune_episodes(pattern.episode_ids)
+                except Exception as e:
+                    logger.error(f"Failed to prune episodes: {e}")
+                    # Continue - pruning is optional
+
+            return concept
+
+        except Exception as e:
+            logger.error(f"Failed to promote pattern {pattern.pattern_id}: {e}", exc_info=True)
+            get_error_aggregator().record_error(e, {
+                "operation": "promote_to_semantic",
+                "pattern_id": pattern.pattern_id
+            })
+            return None  # Graceful degradation
 
     async def _generate_concept_text(
         self,

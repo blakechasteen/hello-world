@@ -41,8 +41,13 @@ import bisect
 from collections import defaultdict
 import json
 from pathlib import Path
+import logging
 
 from HoloLoom.protocols import Memory
+from HoloLoom.memory.validation import MemoryValidator
+from HoloLoom.memory.error_recovery import get_error_aggregator
+
+logger = logging.getLogger(__name__)
 
 # Optional for visualization
 try:
@@ -358,31 +363,60 @@ class TemporalEvolutionTracker:
 
         Performance: <2ms per query
         """
-        timestamp = timestamp or datetime.now()
-        memory_ids = memory_ids or []
+        try:
+            # Validate inputs
+            validator = MemoryValidator()
+            query = validator.validate_query(query, allow_empty=False)
+            entities = validator.validate_entities(entities)
+            confidence = validator.validate_confidence(confidence)
+            timestamp = validator.validate_timestamp(timestamp) if timestamp else datetime.now()
 
-        # Log interaction
-        interaction = {
-            'timestamp': timestamp,
-            'query': query,
-            'entities': entities,
-            'confidence': confidence,
-            'memory_ids': memory_ids
-        }
-        self.interaction_log.append(interaction)
+            # Check if entities is empty after validation
+            if not entities:
+                logger.warning("No valid entities provided, skipping tracking")
+                return
 
-        # Update each entity's history
-        for entity in entities:
-            await self._update_concept_history(
-                entity,
-                confidence,
-                memory_ids,
-                timestamp
-            )
+            memory_ids = memory_ids or []
 
-        # Persist if configured
-        if self.config.persistence_path:
-            self._save_to_disk()
+            # Log interaction
+            interaction = {
+                'timestamp': timestamp,
+                'query': query,
+                'entities': entities,
+                'confidence': confidence,
+                'memory_ids': memory_ids
+            }
+            self.interaction_log.append(interaction)
+
+            # Update each entity's history
+            for entity in entities:
+                try:
+                    await self._update_concept_history(
+                        entity,
+                        confidence,
+                        memory_ids,
+                        timestamp
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to update concept history for '{entity}': {e}")
+                    get_error_aggregator().record_error(e, {
+                        "operation": "update_concept_history",
+                        "entity": entity
+                    })
+                    # Continue with other entities
+
+            # Persist if configured
+            if self.config.persistence_path:
+                try:
+                    self._save_to_disk()
+                except Exception as e:
+                    logger.error(f"Failed to persist temporal evolution data: {e}")
+                    # Continue - persistence failure is not critical
+
+        except Exception as e:
+            logger.error(f"Failed to track interaction: {e}", exc_info=True)
+            get_error_aggregator().record_error(e, {"operation": "track_interaction"})
+            # Don't raise - tracking is non-critical, continue execution
 
     async def _update_concept_history(
         self,
@@ -722,7 +756,64 @@ class TemporalEvolutionTracker:
 
         Performance: <100ms (binary search on timestamps)
         """
-        if concept not in self.concept_histories:
+        try:
+            # Validate inputs
+            validator = MemoryValidator()
+            concept = validator.validate_concept_text(concept, allow_empty=False)
+            timestamp = validator.validate_timestamp(timestamp)
+
+            # Check if timestamp is in future
+            if timestamp > datetime.now():
+                logger.error("Cannot query future understanding")
+                raise ValueError("Cannot query future understanding")
+
+            if concept not in self.concept_histories:
+                return UnderstandingSnapshot(
+                    concept=concept,
+                    state=UnderstandingState.UNKNOWN,
+                    confidence=0.0,
+                    memories_at_time=[],
+                    query_count=0,
+                    timestamp=timestamp
+                )
+
+            history = self.concept_histories[concept]
+
+            # Find state at timestamp (binary search on transitions)
+            state = self._find_state_at_time(history, timestamp)
+
+            # Find confidence at timestamp
+            confidence = self._find_confidence_at_time(history, timestamp)
+
+            # Count queries up to timestamp
+            query_count = sum(
+                1 for interaction in self.interaction_log
+                if concept in interaction['entities'] and interaction['timestamp'] <= timestamp
+            )
+
+            # Get memories valid at timestamp (would need to query HoloLoom)
+            # For now, return empty list (could be enhanced)
+            memories_at_time = []
+
+            return UnderstandingSnapshot(
+                concept=concept,
+                state=state,
+                confidence=confidence,
+                memories_at_time=memories_at_time,
+                query_count=query_count,
+                timestamp=timestamp
+            )
+
+        except ValueError:
+            # Re-raise validation errors
+            raise
+        except Exception as e:
+            logger.error(f"Failed to query temporal state for '{concept}': {e}", exc_info=True)
+            get_error_aggregator().record_error(e, {
+                "operation": "query_at_time",
+                "concept": concept
+            })
+            # Return UNKNOWN snapshot as fallback
             return UnderstandingSnapshot(
                 concept=concept,
                 state=UnderstandingState.UNKNOWN,
@@ -731,33 +822,6 @@ class TemporalEvolutionTracker:
                 query_count=0,
                 timestamp=timestamp
             )
-
-        history = self.concept_histories[concept]
-
-        # Find state at timestamp (binary search on transitions)
-        state = self._find_state_at_time(history, timestamp)
-
-        # Find confidence at timestamp
-        confidence = self._find_confidence_at_time(history, timestamp)
-
-        # Count queries up to timestamp
-        query_count = sum(
-            1 for interaction in self.interaction_log
-            if concept in interaction['entities'] and interaction['timestamp'] <= timestamp
-        )
-
-        # Get memories valid at timestamp (would need to query HoloLoom)
-        # For now, return empty list (could be enhanced)
-        memories_at_time = []
-
-        return UnderstandingSnapshot(
-            concept=concept,
-            state=state,
-            confidence=confidence,
-            memories_at_time=memories_at_time,
-            query_count=query_count,
-            timestamp=timestamp
-        )
 
     def _find_state_at_time(
         self,

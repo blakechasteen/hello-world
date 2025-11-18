@@ -22,6 +22,22 @@ scipy>=1.10.0,<2.0.0  # Optional: better performance for graph operations
 # Optional: Neo4j (production graph backend)
 # neo4j>=5.0.0,<6.0.0  # Uncomment for production HYBRID backend
 
+# =====================================
+# API Server Dependencies (Week 8B)
+# =====================================
+
+# FastAPI & Server
+fastapi>=0.104.0,<1.0.0
+uvicorn[standard]>=0.24.0,<1.0.0
+pydantic>=2.0.0,<3.0.0
+python-multipart>=0.0.6,<1.0.0
+
+# Metrics & Monitoring
+prometheus-client>=0.18.0,<1.0.0
+
+# Redis (caching & rate limiting)
+redis>=5.0.0,<6.0.0
+
 # Development Dependencies (optional)
 # =====================================
 # Uncomment for development/testing

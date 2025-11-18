@@ -41,6 +41,8 @@ from HoloLoom.memory.lifecycle_manager import (
     LifeCycle
 )
 from HoloLoom.memory.graph import KG, KGEdge
+from HoloLoom.memory.validation import MemoryValidator
+from HoloLoom.memory.error_recovery import safe_execute, get_error_aggregator
 
 logger = logging.getLogger(__name__)
 
