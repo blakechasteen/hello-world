@@ -747,11 +747,12 @@ wool.checkout(version=stable_version)
 - ✅ Delta reconstruction (lineage traversal)
 - ⬜ Compression benchmarks (TODO)
 
-**Month 3**: Advanced features ⬜
-- ⬜ Branching/merging (500 lines)
-- ⬜ Conflict resolution (300 lines)
-- ⬜ Garbage collection (400 lines)
-- ⬜ Time-travel UI
+**Month 3**: Advanced features ✅ COMPLETE (Branch/Merge)
+- ✅ Branching/merging (550 lines - branch.py)
+- ✅ Conflict resolution (integrated in branch.py)
+- ✅ Storage integration (branch operations in storage.py)
+- ⬜ Garbage collection (400 lines - TODO)
+- ⬜ Time-travel UI (TODO)
 
 **Month 4**: Production ⬜
 - ⬜ Performance tuning
@@ -824,11 +825,11 @@ wool.checkout(version=stable_version)
 - Pending: Benchmarks, streaming compression
 
 **Phase 8: Time-Travel Queries** ✅
-- Lines of code: ~1,250 (versioning: 730, delta encoding: 520)
-- Status: Versioning, temporal queries, and delta encoding complete
-- Pending: Branching/merging
+- Lines of code: ~1,800 (versioning: 730, delta encoding: 520, branch/merge: 550)
+- Status: Versioning, temporal queries, delta encoding, and branch/merge complete
+- Pending: Garbage collection, time-travel UI
 
-**Total Implementation**: ~4,470 lines of production code across all 3 phases
+**Total Implementation**: ~5,020 lines of production code across all 3 phases
 
 **Timeline**: All 3 phases implemented in single session (November 17, 2025)
 - Originally planned: Q2 2026 - Q1 2027 (12 months)

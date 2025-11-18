@@ -37,6 +37,11 @@ from HoloLoom.wool.versioned.delta import (
     DeltaAlgorithm,
     DeltaMetadata
 )
+from HoloLoom.wool.versioned.branch import (
+    BranchManager,
+    MergeStrategy,
+    MergeResult
+)
 
 
 logger = logging.getLogger(__name__)
@@ -97,6 +102,10 @@ class VersionedWoolStorage(WoolStorage):
 
         # Temporal index
         self.temporal_index = TemporalIndex()
+
+        # Branch manager
+        self.branch_manager = BranchManager()
+        self.current_branch = "main"  # Default branch
 
         # Version counter (monotonic)
         self.next_version_id = 1
@@ -226,6 +235,9 @@ class VersionedWoolStorage(WoolStorage):
 
         # Add to temporal index
         self.temporal_index.add_version(versioned_ref)
+
+        # Update branch HEAD
+        self.branch_manager.update_head(self.current_branch, version_id)
 
         # Update stats
         self.version_stats['versions_created'] += 1
@@ -471,7 +483,139 @@ class VersionedWoolStorage(WoolStorage):
         # Add versioning stats
         base_stats['versioning'] = self.get_version_stats()
 
+        # Add branch stats
+        base_stats['branches'] = self.branch_manager.get_stats()
+
         return base_stats
+
+    # Branch Operations
+    # ==================
+
+    def create_branch(
+        self,
+        name: str,
+        from_version: Optional[int] = None,
+        author: str = "system",
+        description: str = ""
+    ):
+        """
+        Create new branch from version.
+
+        Args:
+            name: Branch name
+            from_version: Version to branch from (None = current HEAD)
+            author: Who created the branch
+            description: Branch description
+        """
+        if from_version is None:
+            # Branch from current branch HEAD
+            current_branch = self.branch_manager.get_branch(self.current_branch)
+            from_version = current_branch.head_version
+
+        self.branch_manager.create_branch(
+            name=name,
+            from_version=from_version,
+            author=author,
+            description=description
+        )
+
+    def switch_branch(self, name: str):
+        """
+        Switch to different branch.
+
+        Args:
+            name: Branch name
+
+        Raises:
+            ValueError: If branch doesn't exist
+        """
+        # Verify branch exists
+        self.branch_manager.get_branch(name)
+        self.current_branch = name
+
+        logger.info(f"Switched to branch '{name}'")
+
+    def list_branches(self):
+        """List all branches."""
+        return self.branch_manager.list_branches()
+
+    def delete_branch(self, name: str):
+        """
+        Delete branch.
+
+        Args:
+            name: Branch name
+
+        Raises:
+            ValueError: If deleting current/default branch or branch doesn't exist
+        """
+        if name == self.current_branch:
+            raise ValueError(f"Cannot delete current branch '{name}'")
+
+        self.branch_manager.delete_branch(name)
+
+    def merge(
+        self,
+        source: str,
+        target: Optional[str] = None,
+        strategy: MergeStrategy = MergeStrategy.OURS
+    ) -> MergeResult:
+        """
+        Merge source branch into target branch.
+
+        Args:
+            source: Source branch name
+            target: Target branch name (None = current branch)
+            strategy: Merge strategy for conflicts
+
+        Returns:
+            MergeResult
+        """
+        if target is None:
+            target = self.current_branch
+
+        # Create merge function that creates a merge version
+        def create_merge_version(
+            source_version: int,
+            target_version: int,
+            resolved_version: Optional[int],
+            strategy: MergeStrategy
+        ) -> int:
+            """Create merge version."""
+            # If resolved_version is provided, use that data
+            if resolved_version is not None:
+                ref = self._version_metadata[resolved_version]
+                data = self.reconstruct_version(ref)
+            else:
+                # No conflicts: just use source data
+                source_ref = self._version_metadata[source_version]
+                data = self.reconstruct_version(source_ref)
+
+            # Get source ref for metadata
+            source_ref = self._version_metadata[source_version]
+
+            # Create merge version
+            merge_ref = self.store_versioned(
+                data=data,
+                content_type=source_ref.content_type,
+                parent=self._version_metadata[target_version],
+                author="system",
+                message=f"Merge '{source}' into '{target}' (strategy: {strategy.value})"
+            )
+
+            return merge_ref.version_id
+
+        # Perform merge
+        result = self.branch_manager.merge(
+            source=source,
+            target=target,
+            strategy=strategy,
+            get_lineage_func=self.get_lineage,
+            get_version_func=lambda vid: self._version_metadata[vid],
+            create_merge_func=create_merge_version
+        )
+
+        return result
 
     def __repr__(self) -> str:
         """String representation."""

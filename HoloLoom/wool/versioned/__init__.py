@@ -53,6 +53,13 @@ from HoloLoom.wool.versioned.delta import (
     compute_delta,
     apply_delta
 )
+from HoloLoom.wool.versioned.branch import (
+    BranchManager,
+    Branch,
+    MergeStrategy,
+    MergeResult,
+    MergeConflict
+)
 
 __all__ = [
     'VersionedWoolReference',
@@ -60,5 +67,10 @@ __all__ = [
     'VersionedWoolStorage',
     'DeltaAlgorithm',
     'compute_delta',
-    'apply_delta'
+    'apply_delta',
+    'BranchManager',
+    'Branch',
+    'MergeStrategy',
+    'MergeResult',
+    'MergeConflict'
 ]
