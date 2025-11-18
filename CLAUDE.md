@@ -1752,6 +1752,139 @@ PYTHONPATH=. .venv/bin/python HoloLoom/orchestrator.py
 
 This runs a demo showing query → features → context → decision → response pipeline.
 
+### Git Workflow & Branch Management
+
+**Branch Naming Convention:**
+All Claude Code development work uses feature branches with the pattern:
+```
+claude/claude-<descriptor>-<session-id>
+```
+
+**Example**: `claude/claude-md-mi2jun0spdjky2ax-01Xa9ZHBXYhZaNmdN7Nh9p5k`
+
+**Development Workflow:**
+
+1. **Create/Switch to Feature Branch**:
+```bash
+# Claude Code automatically creates and switches to feature branches
+git checkout -b claude/claude-<feature>-<session-id>
+```
+
+2. **Make Changes and Commit**:
+```bash
+# Stage changes
+git add <files>
+
+# Commit with descriptive message
+git commit -m "feat: Add feature description
+
+- Detailed change 1
+- Detailed change 2
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+3. **Push to Remote**:
+```bash
+# Push to origin (required for PR creation)
+git push -u origin <branch-name>
+
+# The branch name must start with 'claude/' and end with session ID
+# Otherwise push will fail with 403 error
+```
+
+4. **Create Pull Request**:
+```bash
+# Visit the URL provided by git push output
+https://github.com/<user>/<repo>/pull/new/<branch-name>
+
+# Or use GitHub's web interface
+```
+
+**Branch Management Best Practices:**
+
+- ✅ **One branch per feature/fix** - Keep changes focused
+- ✅ **Descriptive branch names** - `claude/claude-docs-update-<id>` not `claude/fix-<id>`
+- ✅ **Regular commits** - Commit logical units of work
+- ✅ **Push frequently** - Keep remote in sync
+- ✅ **Clean commit messages** - Follow conventional commits format
+- ✅ **Delete after merge** - Clean up merged branches
+
+**Commit Message Format:**
+
+```
+<type>: <subject>
+
+<body>
+
+<footer>
+```
+
+**Types:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation changes
+- `refactor:` - Code refactoring
+- `test:` - Adding tests
+- `chore:` - Maintenance tasks
+
+**Example Commit Message:**
+```
+docs: Update CLAUDE.md with comprehensive coverage of recent features
+
+**Added Sections:**
+
+1. Repository Statistics (2025-11-17)
+   - 924 Python files, 67 subdirectories
+   - ~150,000+ lines of code
+
+2. Trough & xTerminator: Production QA System
+   - 21,544 lines of code
+   - 24 code issue categories
+
+**Total Changes:** +392 lines
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Pull Request Checklist:**
+
+Before creating a PR, ensure:
+- [ ] All tests pass (`pytest HoloLoom/tests/ -v`)
+- [ ] Code follows project style guidelines
+- [ ] Documentation updated (CLAUDE.md, README.md, etc.)
+- [ ] Commit messages are descriptive
+- [ ] No merge conflicts with main branch
+- [ ] Changes are focused and atomic
+
+**Merging Strategy:**
+
+- **Squash and merge** - Preferred for feature branches
+- **Rebase and merge** - For maintaining linear history
+- **Merge commit** - For major feature integrations
+
+**Post-Merge Cleanup:**
+
+```bash
+# Switch back to main
+git checkout main
+
+# Pull latest changes
+git pull origin main
+
+# Delete local feature branch
+git branch -d claude/claude-<feature>-<session-id>
+
+# Delete remote branch (if not auto-deleted)
+git push origin --delete claude/claude-<feature>-<session-id>
+```
+
+---
+
 ## Architecture
 
 ### Core Design Philosophy

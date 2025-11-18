@@ -525,7 +525,13 @@ We welcome contributions! Areas where we need help:
 4. **Visualizations**: Dashboard enhancements
 5. **Performance**: Profiling and optimization
 
-**See**: [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+**Branch Workflow:**
+- All development uses feature branches: `claude/claude-<feature>-<session-id>`
+- Follow conventional commits format (`feat:`, `fix:`, `docs:`, etc.)
+- Create PR when ready for review
+- See [CLAUDE.md](CLAUDE.md#git-workflow--branch-management) for complete workflow
+
+**See**: [CONTRIBUTING.md](CONTRIBUTING.md) for complete guidelines.
 
 ---
 
