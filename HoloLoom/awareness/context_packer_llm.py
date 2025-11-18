@@ -86,6 +86,22 @@ except ImportError:
     TuningStrategy = None
     CompressionLevel = None
 
+# Import context compression (Phase 4)
+try:
+    from .semantic_deduplicator import (
+        SemanticDeduplicator,
+        DeduplicationStrategy,
+        SimilarityMethod
+    )
+    from .compression_analyzer import CompressionAnalyzer
+    COMPRESSION_AVAILABLE = True
+except ImportError:
+    COMPRESSION_AVAILABLE = False
+    SemanticDeduplicator = None
+    DeduplicationStrategy = None
+    SimilarityMethod = None
+    CompressionAnalyzer = None
+
 
 @dataclass
 class QualityScore:
@@ -246,7 +262,13 @@ class LLMContextPacker(SmartContextPacker):
         # Phase 3: Outcome tracking and adaptive tuning
         enable_outcome_tracking: bool = False,
         enable_adaptive_tuning: bool = False,
-        tuning_strategy: Optional[str] = "balanced"
+        tuning_strategy: Optional[str] = "balanced",
+        # Phase 4: Context compression
+        enable_compression: bool = False,
+        compression_strategy: str = "merge_similar",  # "merge_similar", "keep_best", "summarize", "remove_exact"
+        compression_similarity_threshold: float = 0.8,  # 0.8 = 80% similar
+        compression_similarity_method: str = "ngram",  # "embeddings", "ngram", "jaccard", "exact"
+        compression_min_savings: int = 50  # Minimum token savings to justify compression
     ):
         """
         Initialize LLM-integrated context packer.
@@ -267,6 +289,11 @@ class LLMContextPacker(SmartContextPacker):
             enable_outcome_tracking: Enable Phase 3 outcome tracking
             enable_adaptive_tuning: Enable Phase 3 adaptive threshold tuning
             tuning_strategy: Tuning strategy ("conservative", "balanced", "aggressive")
+            enable_compression: Enable Phase 4 context compression
+            compression_strategy: Deduplication strategy
+            compression_similarity_threshold: Similarity threshold for deduplication (0.0-1.0)
+            compression_similarity_method: Method for computing similarity
+            compression_min_savings: Minimum token savings to justify compression
         """
         # Initialize base packer
         super().__init__(
@@ -334,6 +361,54 @@ class LLMContextPacker(SmartContextPacker):
                 # Create performance analyzer
                 self.performance_analyzer = PerformanceAnalyzer(
                     outcome_tracker=self.outcome_tracker
+                )
+
+        # Phase 4: Context compression
+        self.enable_compression = enable_compression and COMPRESSION_AVAILABLE
+        self.semantic_deduplicator = None
+        self.compression_analyzer = None
+
+        if self.enable_compression:
+            if not COMPRESSION_AVAILABLE:
+                logger.warning("Compression requested but not available (import failed)")
+            else:
+                # Map strategy name to enum
+                strategy_map = {
+                    "merge_similar": DeduplicationStrategy.MERGE_SIMILAR,
+                    "keep_best": DeduplicationStrategy.KEEP_BEST,
+                    "summarize": DeduplicationStrategy.SUMMARIZE,
+                    "remove_exact": DeduplicationStrategy.REMOVE_EXACT
+                }
+                self.compression_strategy = strategy_map.get(
+                    compression_strategy,
+                    DeduplicationStrategy.MERGE_SIMILAR
+                )
+
+                # Map similarity method name to enum
+                method_map = {
+                    "embeddings": SimilarityMethod.EMBEDDINGS,
+                    "ngram": SimilarityMethod.NGRAM,
+                    "jaccard": SimilarityMethod.JACCARD,
+                    "exact": SimilarityMethod.EXACT
+                }
+                similarity_method = method_map.get(
+                    compression_similarity_method,
+                    SimilarityMethod.NGRAM
+                )
+
+                # Create semantic deduplicator
+                self.semantic_deduplicator = SemanticDeduplicator(
+                    similarity_threshold=compression_similarity_threshold,
+                    similarity_method=similarity_method,
+                    min_tokens_to_deduplicate=compression_min_savings,
+                    preserve_importance=True,  # Never compress CRITICAL elements
+                    embeddings=None  # TODO: Pass embeddings if available
+                )
+
+                # Create compression analyzer
+                self.compression_analyzer = CompressionAnalyzer(
+                    track_quality=True,
+                    track_latency=True
                 )
 
         # Lazy-load LLM provider
@@ -422,6 +497,31 @@ class LLMContextPacker(SmartContextPacker):
             use_fusion
         )
 
+        # 1.5. Compress context (Phase 4) - NEW STEP
+        compression_result = None
+        compression_latency_ms = 0.0
+
+        if self.enable_compression and self.semantic_deduplicator:
+            import time
+            compression_start = time.time()
+
+            # Extract context elements from packed context
+            context_elements = self._extract_elements_from_packed(packed)
+
+            # Apply compression
+            compression_result = self.semantic_deduplicator.deduplicate(
+                context_elements,
+                strategy=self.compression_strategy
+            )
+
+            # Replace packed context with compressed version
+            packed = self._rebuild_packed_with_compressed(
+                packed,
+                compression_result.deduplicated_elements
+            )
+
+            compression_latency_ms = (time.time() - compression_start) * 1000
+
         # 2. Generate with LLM
         llm_response = await self._generate_with_llm(
             packed,
@@ -444,7 +544,24 @@ class LLMContextPacker(SmartContextPacker):
             llm_response
         )
 
-        # 6. Learn from outcome (if enabled)
+        # 6. Track compression metrics (Phase 4)
+        if compression_result and self.compression_analyzer:
+            # Track compression with before/after quality
+            # Note: We don't have "before compression" quality, so we estimate
+            # by assuming quality was similar (this is a simplification)
+            self.compression_analyzer.track_compression(
+                original_tokens=compression_result.original_tokens,
+                compressed_tokens=compression_result.deduplicated_tokens,
+                strategy=self.compression_strategy.value if hasattr(self.compression_strategy, 'value') else str(self.compression_strategy),
+                quality_before=None,  # Unknown (could track in future)
+                quality_after=quality_score.overall,
+                latency_ms=compression_latency_ms,
+                duplicate_groups_found=len(compression_result.duplicate_groups),
+                elements_removed=compression_result.elements_removed,
+                elements_merged=compression_result.elements_merged
+            )
+
+        # 7. Learn from outcome (if enabled)
         if self.enable_learning:
             self._learn_from_outcome(
                 packed,
@@ -453,8 +570,8 @@ class LLMContextPacker(SmartContextPacker):
                 context_utilization
             )
 
-        # 7. Build result
-        return PackedGeneration(
+        # 8. Build result
+        result = PackedGeneration(
             packed_context=packed,
             llm_response=llm_response,
             quality_score=quality_score,
@@ -462,6 +579,22 @@ class LLMContextPacker(SmartContextPacker):
             context_utilization=context_utilization,
             query=query
         )
+
+        # Add compression metadata if compression was applied
+        if compression_result:
+            result.packed_context.metadata["compression"] = {
+                "enabled": True,
+                "strategy": str(self.compression_strategy),
+                "original_tokens": compression_result.original_tokens,
+                "compressed_tokens": compression_result.deduplicated_tokens,
+                "token_savings": compression_result.token_savings,
+                "compression_ratio": compression_result.compression_ratio,
+                "elements_removed": compression_result.elements_removed,
+                "elements_merged": compression_result.elements_merged,
+                "latency_ms": compression_latency_ms
+            }
+
+        return result
 
     async def _generate_with_llm(
         self,
@@ -804,3 +937,109 @@ class LLMContextPacker(SmartContextPacker):
             return {"provider": "not_initialized"}
 
         return self._llm_provider.get_statistics()
+
+    # ========================================================================
+    # Phase 4: Compression Helper Methods
+    # ========================================================================
+
+    def _extract_elements_from_packed(self, packed: PackedContext) -> List[ContextElement]:
+        """
+        Extract context elements from packed context.
+
+        This is a reconstruction step - we extract elements from the
+        packed sections to enable compression.
+        """
+        elements = []
+
+        # Extract from awareness section
+        if packed.awareness_section:
+            elements.append(ContextElement(
+                content=packed.awareness_section,
+                importance=1.0,  # High importance
+                token_count=len(packed.awareness_section) // 4,
+                source="awareness",
+                metadata={"section": "awareness"}
+            ))
+
+        # Extract from memory section (split by newlines)
+        if packed.memory_section:
+            # Split memories (simple heuristic: split by double newlines)
+            memory_chunks = packed.memory_section.split('\n\n')
+            for i, chunk in enumerate(memory_chunks):
+                if chunk.strip():
+                    elements.append(ContextElement(
+                        content=chunk.strip(),
+                        importance=0.8,  # Medium-high importance
+                        token_count=len(chunk) // 4,
+                        source="memory",
+                        metadata={"section": "memory", "index": i}
+                    ))
+
+        # Extract from pattern section
+        if packed.pattern_section:
+            elements.append(ContextElement(
+                content=packed.pattern_section,
+                importance=0.6,  # Medium importance
+                token_count=len(packed.pattern_section) // 4,
+                source="pattern",
+                metadata={"section": "pattern"}
+            ))
+
+        return elements
+
+    def _rebuild_packed_with_compressed(
+        self,
+        original_packed: PackedContext,
+        compressed_elements: List[ContextElement]
+    ) -> PackedContext:
+        """
+        Rebuild PackedContext with compressed elements.
+
+        Reconstructs the packed context sections from compressed elements.
+        """
+        # Separate elements by source
+        awareness_elements = [e for e in compressed_elements if e.source == "awareness"]
+        memory_elements = [e for e in compressed_elements if e.source == "memory"]
+        pattern_elements = [e for e in compressed_elements if e.source == "pattern"]
+
+        # Rebuild sections
+        awareness_section = "\n\n".join(e.content for e in awareness_elements) if awareness_elements else ""
+        memory_section = "\n\n".join(e.content for e in memory_elements) if memory_elements else ""
+        pattern_section = "\n\n".join(e.content for e in pattern_elements) if pattern_elements else ""
+
+        # Calculate new token count
+        total_tokens = sum(e.token_count for e in compressed_elements)
+        total_tokens += len(original_packed.query_section) // 4  # Add query tokens
+
+        # Create new packed context
+        return PackedContext(
+            awareness_section=awareness_section,
+            memory_section=memory_section,
+            pattern_section=pattern_section,
+            query_section=original_packed.query_section,  # Keep original query
+            total_tokens=total_tokens,
+            elements_included=len(compressed_elements),
+            packing_time_ms=original_packed.packing_time_ms,  # Keep original packing time
+            metadata=original_packed.metadata.copy()  # Copy metadata
+        )
+
+    def get_compression_statistics(self) -> Optional[Dict[str, Any]]:
+        """Get compression statistics (Phase 4)"""
+        if not self.enable_compression or not self.compression_analyzer:
+            return None
+
+        return self.compression_analyzer.get_statistics()
+
+    def get_compression_insights(self) -> Optional[Any]:
+        """Get compression insights (Phase 4)"""
+        if not self.enable_compression or not self.compression_analyzer:
+            return None
+
+        return self.compression_analyzer.get_insights()
+
+    def get_compression_recommendations(self) -> Optional[List[str]]:
+        """Get compression recommendations (Phase 4)"""
+        if not self.enable_compression or not self.compression_analyzer:
+            return None
+
+        return self.compression_analyzer.get_recommendations()
