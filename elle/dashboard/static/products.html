@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product ROI Dashboard - Elle Core</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/budget">Budget</a>
+        <a href="/products">Products</a>
+        <a href="/planner">Planner</a>
+        <a href="/tracker">Tracker</a>
+    </nav>
+
+    <h1>Product ROI Dashboard</h1>
+    <p class="subtitle">Product performance and profitability analysis</p>
+
+    <!-- Product Comparison -->
+    <h2>Product Comparison (Last 30 Days)</h2>
+    <div class="panel full-width">
+        <table id="products-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th class="numeric">Revenue</th>
+                    <th class="numeric">Costs</th>
+                    <th class="numeric">Profit</th>
+                    <th class="numeric">Margin %</th>
+                    <th class="numeric">Hourly ROI</th>
+                    <th class="numeric">Hours</th>
+                    <th class="numeric">Units</th>
+                    <th>Trend</th>
+                </tr>
+            </thead>
+            <tbody id="products-body">
+                <tr><td colspan="9" class="text-center">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Hourly ROI by Product -->
+    <h2>Hourly ROI by Product</h2>
+    <div class="panel full-width">
+        <div id="hourly-roi-chart" class="chart-container"></div>
+    </div>
+
+    <!-- Profit Margin Trends -->
+    <h2>Profit Margin Trends</h2>
+    <div class="panel full-width">
+        <div id="margin-trends-chart" class="chart-container"></div>
+    </div>
+
+    <!-- Production Frequency Recommendations -->
+    <h2>Production Recommendations</h2>
+    <div id="recommendations-container">
+        <p class="loading">Loading recommendations...</p>
+    </div>
+
+    <!-- Available SOPs -->
+    <h2>Available Standard Operating Procedures</h2>
+    <div class="panel full-width">
+        <table id="sops-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th class="numeric">Batch Size</th>
+                    <th class="numeric">Time (min)</th>
+                    <th class="numeric">Material Cost</th>
+                    <th class="numeric">Sale Price</th>
+                    <th class="numeric">Profit/Batch</th>
+                    <th class="numeric">Margin %</th>
+                </tr>
+            </thead>
+            <tbody id="sops-body">
+                <tr><td colspan="8" class="text-center">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        // Load analytics data
+        async function loadAnalytics() {
+            try {
+                const data = await API.analytics();
+                updateProductsTable(data.products);
+                renderHourlyROIChart(data.products);
+                renderMarginTrendsChart(data.products);
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+                Notifications.error('Failed to load product data');
+            }
+        }
+
+        // Update products table
+        function updateProductsTable(products) {
+            const tbody = document.getElementById('products-body');
+            const sorted = Object.entries(products).sort((a, b) => b[1].hourly_roi - a[1].hourly_roi);
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No data yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = sorted.map(([product, stats]) => {
+                // Generate fake trend data for demo
+                const trend = Array.from({ length: 7 }, () =>
+                    stats.hourly_roi * (0.8 + Math.random() * 0.4)
+                );
+
+                return `
+                    <tr>
+                        <td><strong>${product}</strong></td>
+                        <td class="numeric">${Format.currency(stats.revenue)}</td>
+                        <td class="numeric">${Format.currency(stats.costs)}</td>
+                        <td class="numeric">${Format.currency(stats.profit)}</td>
+                        <td class="numeric">${Format.percent(stats.profit_margin)}</td>
+                        <td class="numeric"><strong>${Format.currency(stats.hourly_roi)}</strong></td>
+                        <td class="numeric">${Format.duration(stats.hours)}</td>
+                        <td class="numeric">${stats.units}</td>
+                        <td>${createSparkline(trend, 80, 30)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render hourly ROI chart
+        function renderHourlyROIChart(products) {
+            const sorted = Object.entries(products).sort((a, b) => b[1].hourly_roi - a[1].hourly_roi);
+            const labels = sorted.map(([product]) => product);
+            const values = sorted.map(([, stats]) => stats.hourly_roi);
+
+            const data = [{
+                x: labels,
+                y: values,
+                type: 'bar',
+                marker: {
+                    color: values,
+                    colorscale: 'Viridis'
+                }
+            }];
+
+            const layout = {
+                title: '',
+                margin: { t: 20, b: 100 },
+                xaxis: { tickangle: -45 },
+                yaxis: { title: 'Hourly ROI ($)' }
+            };
+
+            Plotly.newPlot('hourly-roi-chart', data, layout, { responsive: true });
+        }
+
+        // Render profit margin trends
+        function renderMarginTrendsChart(products) {
+            const sorted = Object.entries(products)
+                .sort((a, b) => b[1].profit_margin - a[1].profit_margin)
+                .slice(0, 5);
+
+            const data = sorted.map(([product, stats]) => ({
+                x: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                y: Array.from({ length: 4 }, () =>
+                    stats.profit_margin * (0.9 + Math.random() * 0.2)
+                ),
+                name: product,
+                type: 'scatter',
+                mode: 'lines+markers'
+            }));
+
+            const layout = {
+                title: '',
+                margin: { t: 20, b: 60 },
+                xaxis: { title: 'Time Period' },
+                yaxis: { title: 'Profit Margin (%)' },
+                showlegend: true
+            };
+
+            Plotly.newPlot('margin-trends-chart', data, layout, { responsive: true });
+        }
+
+        // Load recommendations
+        async function loadRecommendations() {
+            try {
+                const recommendations = await API.recommendations();
+                const container = document.getElementById('recommendations-container');
+
+                const productRecs = recommendations.filter(r =>
+                    r.action.toLowerCase().includes('bread') ||
+                    r.action.toLowerCase().includes('biochar') ||
+                    r.action.toLowerCase().includes('produce')
+                );
+
+                if (productRecs.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No product recommendations available</p>';
+                } else {
+                    container.innerHTML = productRecs.map(rec => `
+                        <div class="recommendation ${rec.priority.toLowerCase()}">
+                            <div class="recommendation-action">${rec.action}</div>
+                            <div class="recommendation-reasoning">${rec.reasoning}</div>
+                            <div class="recommendation-metrics">
+                                <span>Profit: ${Format.currency(rec.estimated_profit)}</span>
+                                <span>Time: ${Format.duration(rec.time_required)}</span>
+                                <span>Confidence: ${Format.percent(rec.confidence * 100)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load recommendations:', error);
+            }
+        }
+
+        // Load SOPs
+        async function loadSOPs() {
+            try {
+                const sops = await API.sops.list();
+                const tbody = document.getElementById('sops-body');
+
+                if (sops.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No SOPs available</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = sops.map(sop => `
+                    <tr>
+                        <td><strong>${sop.title}</strong></td>
+                        <td>${sop.category}</td>
+                        <td class="numeric">${sop.batch_size}</td>
+                        <td class="numeric">${sop.estimated_time}</td>
+                        <td class="numeric">${Format.currency(sop.material_cost)}</td>
+                        <td class="numeric">${Format.currency(sop.sale_price)}</td>
+                        <td class="numeric">${Format.currency(sop.sale_price - sop.material_cost)}</td>
+                        <td class="numeric">${Format.percent(((sop.sale_price - sop.material_cost) / sop.sale_price) * 100)}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load SOPs:', error);
+            }
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadAnalytics();
+            await loadRecommendations();
+            await loadSOPs();
+
+            // Auto-refresh every 30 seconds
+            setInterval(async () => {
+                await loadAnalytics();
+                await loadRecommendations();
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

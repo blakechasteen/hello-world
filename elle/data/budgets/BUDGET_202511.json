@@ -1,0 +1,91 @@
+{
+  "budget_id": "BUDGET_202511",
+  "name": "November 2025 Budget",
+  "period": "monthly",
+  "start_date": "2025-11-01T00:00:00",
+  "end_date": "2025-11-30T23:59:59",
+  "revenue_lines": [
+    {
+      "category": "revenue_bakery",
+      "description": "Sourdough Bread Production (4 batches)",
+      "planned_amount": 596.5714285714287,
+      "actual_amount": 0.0,
+      "variance": 0.0,
+      "variance_pct": 0.0,
+      "notes": ""
+    }
+  ],
+  "cost_lines": [
+    {
+      "category": "cost_materials",
+      "description": "Total materials cost",
+      "planned_amount": 91.97142857142858,
+      "actual_amount": 0.0,
+      "variance": 0.0,
+      "variance_pct": 0.0,
+      "notes": ""
+    },
+    {
+      "category": "cost_labor",
+      "description": "Total labor cost",
+      "planned_amount": 258.92857142857144,
+      "actual_amount": 0.0,
+      "variance": 0.0,
+      "variance_pct": 0.0,
+      "notes": ""
+    },
+    {
+      "category": "cost_overhead",
+      "description": "Total overhead (15%)",
+      "planned_amount": 52.635000000000005,
+      "actual_amount": 0.0,
+      "variance": 0.0,
+      "variance_pct": 0.0,
+      "notes": ""
+    }
+  ],
+  "reinvestment_lines": [
+    {
+      "category": "reinvest_infrastructure",
+      "description": "Long-term infrastructure (mushroom logs, nursery)",
+      "planned_amount": 28.955464285714296,
+      "actual_amount": 0.0,
+      "variance": 0.0,
+      "variance_pct": 0.0,
+      "notes": ""
+    },
+    {
+      "category": "reinvest_equipment",
+      "description": "Equipment & tool upgrades",
+      "planned_amount": 19.303642857142865,
+      "actual_amount": 0.0,
+      "variance": 0.0,
+      "variance_pct": 0.0,
+      "notes": ""
+    },
+    {
+      "category": "reinvest_buffer",
+      "description": "Emergency operating buffer",
+      "planned_amount": 9.651821428571433,
+      "actual_amount": 0.0,
+      "variance": 0.0,
+      "variance_pct": 0.0,
+      "notes": ""
+    }
+  ],
+  "created_at": "2025-11-15T18:42:43.081582",
+  "updated_at": "2025-11-15T18:42:43.082562",
+  "notes": "",
+  "summary": {
+    "total_planned_revenue": 596.5714285714287,
+    "total_actual_revenue": 0.0,
+    "total_planned_costs": 403.535,
+    "total_actual_costs": 0.0,
+    "planned_profit": 193.03642857142864,
+    "actual_profit": 0.0,
+    "profit_variance": -193.03642857142864,
+    "planned_margin": 32.35763888888889,
+    "actual_margin": 0.0,
+    "completion_pct": 48.275862068965516
+  }
+}

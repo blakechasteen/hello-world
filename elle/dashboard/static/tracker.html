@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tracker - Elle Core</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/budget">Budget</a>
+        <a href="/products">Products</a>
+        <a href="/planner">Planner</a>
+        <a href="/tracker">Tracker</a>
+    </nav>
+
+    <h1>Task Tracker</h1>
+    <p class="subtitle">Real-time task tracking with automatic profit calculation</p>
+
+    <!-- Active Task -->
+    <div id="active-task-section" class="hidden">
+        <h2>Active Task</h2>
+        <div class="task-active">
+            <div class="panel-title" id="active-task-name">No active task</div>
+            <div class="task-timer" id="task-timer">00:00:00</div>
+
+            <div class="dashboard-grid" style="margin-top: 20px;">
+                <div class="panel">
+                    <div class="metric-card">
+                        <div class="metric-label">Estimated Cost</div>
+                        <div class="metric-value" id="estimated-cost">$0</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="metric-card">
+                        <div class="metric-label">Estimated Revenue</div>
+                        <div class="metric-value" id="estimated-revenue">$0</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="metric-card">
+                        <div class="metric-label">Estimated Profit</div>
+                        <div class="metric-value" id="estimated-profit">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-controls">
+                <button class="danger" onclick="pauseTask()">⏸ Pause</button>
+                <button class="primary" onclick="showEndTaskForm()">✓ Complete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Task Form -->
+    <div id="start-task-section">
+        <h2>Start New Task</h2>
+        <div class="panel">
+            <div style="display: grid; gap: 16px; max-width: 600px;">
+                <div>
+                    <label for="task-select">Select Task/Product:</label>
+                    <select id="task-select" onchange="updateTaskInfo()">
+                        <option value="">-- Select from SOP --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="custom-task">Or enter custom task:</label>
+                    <input type="text" id="custom-task" placeholder="Custom task name">
+                </div>
+
+                <div>
+                    <label for="task-category">Category:</label>
+                    <select id="task-category">
+                        <option value="bakery">Bakery</option>
+                        <option value="kitchen">Kitchen</option>
+                        <option value="apothecary">Apothecary</option>
+                        <option value="farm">Farm</option>
+                        <option value="soil">Soil</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+
+                <div id="task-info" class="hidden" style="background: #f8f8f0; padding: 16px; border-radius: 4px;">
+                    <strong>Task Info:</strong>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li>Estimated time: <span id="info-time">-</span></li>
+                        <li>Material cost: <span id="info-cost">-</span></li>
+                        <li>Expected revenue: <span id="info-revenue">-</span></li>
+                        <li>Expected profit: <span id="info-profit">-</span></li>
+                    </ul>
+                </div>
+
+                <button class="primary" onclick="startTask()" style="margin-top: 16px;">
+                    ▶ Start Task
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- End Task Form -->
+    <div id="end-task-section" class="hidden">
+        <h2>Complete Task</h2>
+        <div class="panel">
+            <div style="display: grid; gap: 16px; max-width: 600px;">
+                <div>
+                    <label for="units-produced">Units Produced:</label>
+                    <input type="number" id="units-produced" min="0" value="0">
+                </div>
+
+                <div>
+                    <label for="quality-score">Quality Score (1-10):</label>
+                    <input type="number" id="quality-score" min="1" max="10" step="0.1" value="8">
+                </div>
+
+                <div>
+                    <label for="task-notes">Notes:</label>
+                    <textarea id="task-notes" rows="3" placeholder="Any notes or observations..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 16px;">
+                    <button onclick="cancelEndTask()">Cancel</button>
+                    <button class="primary" onclick="completeTask()">Complete Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    <h2>Recent Tasks</h2>
+    <div class="panel full-width">
+        <table id="tasks-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Category</th>
+                    <th>Started</th>
+                    <th class="numeric">Duration</th>
+                    <th class="numeric">Units</th>
+                    <th class="numeric">Revenue</th>
+                    <th class="numeric">Profit</th>
+                    <th class="numeric">Hourly ROI</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tasks-body">
+                <tr><td colspan="9" class="text-center">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        let activeTask = null;
+        let timerInterval = null;
+        let sopsList = [];
+
+        // Load SOPs for dropdown
+        async function loadSOPs() {
+            try {
+                sopsList = await API.sops.list();
+                const select = document.getElementById('task-select');
+
+                select.innerHTML = '<option value="">-- Select from SOP --</option>' +
+                    sopsList.map(sop =>
+                        `<option value="${sop.sop_id}">${sop.title} (${sop.category})</option>`
+                    ).join('');
+            } catch (error) {
+                console.error('Failed to load SOPs:', error);
+            }
+        }
+
+        // Update task info when SOP selected
+        function updateTaskInfo() {
+            const select = document.getElementById('task-select');
+            const sopId = select.value;
+
+            if (!sopId) {
+                document.getElementById('task-info').classList.add('hidden');
+                return;
+            }
+
+            const sop = sopsList.find(s => s.sop_id === sopId);
+            if (!sop) return;
+
+            document.getElementById('info-time').textContent = `${sop.estimated_time} minutes`;
+            document.getElementById('info-cost').textContent = Format.currency(sop.material_cost);
+            document.getElementById('info-revenue').textContent = Format.currency(sop.sale_price);
+            document.getElementById('info-profit').textContent = Format.currency(sop.sale_price - sop.material_cost);
+            document.getElementById('task-info').classList.remove('hidden');
+        }
+
+        // Start task
+        async function startTask() {
+            const sopSelect = document.getElementById('task-select');
+            const customTask = document.getElementById('custom-task');
+            const category = document.getElementById('task-category');
+
+            const taskName = customTask.value || sopSelect.options[sopSelect.selectedIndex]?.text || '';
+            const sopId = sopSelect.value || null;
+
+            if (!taskName) {
+                Notifications.error('Please select or enter a task name');
+                return;
+            }
+
+            try {
+                activeTask = await API.tasks.start(taskName, sopId, category.value);
+                Notifications.success(`Started: ${taskName}`);
+
+                // Switch to active task view
+                document.getElementById('start-task-section').classList.add('hidden');
+                document.getElementById('active-task-section').classList.remove('hidden');
+                document.getElementById('active-task-name').textContent = taskName;
+
+                // Start timer
+                startTimer(activeTask.start_time);
+
+                // Update estimated metrics
+                updateEstimates(sopId);
+
+            } catch (error) {
+                console.error('Failed to start task:', error);
+                Notifications.error('Failed to start task');
+            }
+        }
+
+        // Update estimated metrics
+        function updateEstimates(sopId) {
+            if (!sopId) return;
+
+            const sop = sopsList.find(s => s.sop_id === sopId);
+            if (!sop) return;
+
+            document.getElementById('estimated-cost').textContent = Format.currency(sop.material_cost);
+            document.getElementById('estimated-revenue').textContent = Format.currency(sop.sale_price);
+            document.getElementById('estimated-profit').textContent = Format.currency(sop.sale_price - sop.material_cost);
+        }
+
+        // Start timer
+        function startTimer(startTime) {
+            if (timerInterval) clearInterval(timerInterval);
+
+            const update = () => {
+                const start = new Date(startTime);
+                const now = new Date();
+                const diff = now - start;
+                const hours = Math.floor(diff / 3600000);
+                const minutes = Math.floor((diff % 3600000) / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+
+                document.getElementById('task-timer').textContent =
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            };
+
+            update();
+            timerInterval = setInterval(update, 1000);
+        }
+
+        // Pause task
+        async function pauseTask() {
+            if (!activeTask) return;
+
+            try {
+                await API.tasks.pause(activeTask.task_id);
+                Notifications.show('Task paused', 'info');
+                if (timerInterval) clearInterval(timerInterval);
+            } catch (error) {
+                Notifications.error('Failed to pause task');
+            }
+        }
+
+        // Show end task form
+        function showEndTaskForm() {
+            document.getElementById('active-task-section').classList.add('hidden');
+            document.getElementById('end-task-section').classList.remove('hidden');
+        }
+
+        // Cancel end task
+        function cancelEndTask() {
+            document.getElementById('end-task-section').classList.add('hidden');
+            document.getElementById('active-task-section').classList.remove('hidden');
+        }
+
+        // Complete task
+        async function completeTask() {
+            const units = parseInt(document.getElementById('units-produced').value) || 0;
+            const quality = parseFloat(document.getElementById('quality-score').value) || null;
+            const notes = document.getElementById('task-notes').value;
+
+            try {
+                await API.tasks.end(units, quality, notes);
+                Notifications.success('Task completed!');
+
+                // Reset UI
+                if (timerInterval) clearInterval(timerInterval);
+                activeTask = null;
+
+                document.getElementById('end-task-section').classList.add('hidden');
+                document.getElementById('start-task-section').classList.remove('hidden');
+
+                // Clear form
+                document.getElementById('custom-task').value = '';
+                document.getElementById('task-select').value = '';
+                document.getElementById('units-produced').value = '0';
+                document.getElementById('quality-score').value = '8';
+                document.getElementById('task-notes').value = '';
+
+                // Reload recent tasks
+                await loadRecentTasks();
+
+            } catch (error) {
+                console.error('Failed to complete task:', error);
+                Notifications.error('Failed to complete task');
+            }
+        }
+
+        // Load recent tasks
+        async function loadRecentTasks() {
+            try {
+                const tasks = await API.tasks.list(20);
+                const tbody = document.getElementById('tasks-body');
+
+                if (tasks.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No tasks yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = tasks.map(task => `
+                    <tr>
+                        <td><strong>${task.task_name}</strong></td>
+                        <td>${task.category}</td>
+                        <td>${Format.time(task.created_at)}</td>
+                        <td class="numeric">${Format.duration(task.active_time_hours)}</td>
+                        <td class="numeric">${task.units_produced}</td>
+                        <td class="numeric">${Format.currency(task.revenue)}</td>
+                        <td class="numeric">${Format.currency(task.profit)}</td>
+                        <td class="numeric">${Format.currency(task.hourly_roi)}</td>
+                        <td><span class="status-badge ${task.status === 'completed' ? 'success' : 'info'}">${task.status}</span></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load tasks:', error);
+            }
+        }
+
+        // Check for active task on load
+        async function checkActiveTask() {
+            try {
+                const active = await API.tasks.active();
+
+                if (active.length > 0) {
+                    activeTask = active[0];
+                    document.getElementById('start-task-section').classList.add('hidden');
+                    document.getElementById('active-task-section').classList.remove('hidden');
+                    document.getElementById('active-task-name').textContent = activeTask.task_name;
+                    startTimer(activeTask.start_time);
+                }
+            } catch (error) {
+                console.error('Failed to check active task:', error);
+            }
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadSOPs();
+            await checkActiveTask();
+            await loadRecentTasks();
+
+            // Auto-refresh recent tasks every 10 seconds
+            setInterval(loadRecentTasks, 10000);
+        });
+    </script>
+</body>
+</html>

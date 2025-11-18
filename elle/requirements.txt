@@ -1,12 +1,17 @@
-# Elle Requirements
+# Elle Core Requirements
 
-# Core dependencies
-click>=8.1.0
-pyyaml>=6.0
+# Core
+python>=3.11
 
-# LLM providers (install as needed)
-anthropic>=0.34.0
-openai>=1.0.0
+# HoloLoom integration (full MirrorCore)
+# Install from parent directory: pip install -e ../HoloLoom
 
-# Optional: for local LLM
-# ollama-python>=0.1.0
+# Voice processing (optional)
+pyttsx3>=2.90  # Text-to-speech
+# For speech-to-text, use HoloLoom's AudioSpinner which supports:
+# - Whisper (local)
+# - Deepgram (cloud)
+
+# Data handling
+sqlite3  # Built-in to Python
+pandas>=2.0.0  # Analytics

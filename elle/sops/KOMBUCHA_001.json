@@ -1,0 +1,177 @@
+{
+  "sop_id": "KOMBUCHA_001",
+  "product_name": "Original Kombucha",
+  "version": "1.0.0",
+  "created_date": "2025-11-16T00:00:00",
+  "last_modified": "2025-11-16T00:00:00",
+  "batch_size": 80,
+  "batch_unit": "bottles",
+  "ingredients": [
+    {
+      "name": "Organic Black Tea",
+      "quantity": 1.5,
+      "unit": "cup",
+      "cost_per_unit": 0.15,
+      "supplier": "Local tea supplier"
+    },
+    {
+      "name": "Organic Cane Sugar",
+      "quantity": 2.0,
+      "unit": "cup",
+      "cost_per_unit": 0.08,
+      "supplier": "Bulk supplier"
+    },
+    {
+      "name": "SCOBY Culture",
+      "quantity": 1,
+      "unit": "piece",
+      "cost_per_unit": 5.00,
+      "supplier": "Own culture (amortized)"
+    },
+    {
+      "name": "Filtered Water",
+      "quantity": 10,
+      "unit": "gallon",
+      "cost_per_unit": 0.02,
+      "supplier": "Municipal + filter"
+    },
+    {
+      "name": "16oz Glass Bottles",
+      "quantity": 80,
+      "unit": "bottles",
+      "cost_per_unit": 0.45,
+      "supplier": "Packaging supplier"
+    },
+    {
+      "name": "Labels",
+      "quantity": 80,
+      "unit": "labels",
+      "cost_per_unit": 0.08,
+      "supplier": "Print shop"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "description": "Boil 2 gallons of filtered water",
+      "duration_minutes": 15,
+      "step_type": "PREP",
+      "equipment_needed": ["Large pot", "Stove"],
+      "safety_notes": ["Handle boiling water carefully"]
+    },
+    {
+      "step_number": 2,
+      "description": "Steep 1.5 cups organic black tea for 10 minutes",
+      "duration_minutes": 10,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Tea bags or strainer"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 3,
+      "description": "Dissolve 2 cups organic cane sugar in hot tea",
+      "duration_minutes": 5,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Stirring spoon"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 4,
+      "description": "Cool tea concentrate to room temperature (70-75°F)",
+      "duration_minutes": 60,
+      "step_type": "WAIT",
+      "equipment_needed": ["Thermometer"],
+      "safety_notes": ["Never add SCOBY to hot liquid - will kill culture"]
+    },
+    {
+      "step_number": 5,
+      "description": "Transfer to 10-gallon fermentation vessel, add remaining 8 gallons filtered water",
+      "duration_minutes": 10,
+      "step_type": "PROCESS",
+      "equipment_needed": ["10-gallon glass carboy or food-grade bucket"],
+      "safety_notes": ["Ensure vessel is clean and sanitized"]
+    },
+    {
+      "step_number": 6,
+      "description": "Add SCOBY and 2 cups starter liquid from previous batch",
+      "duration_minutes": 5,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Clean hands or sanitized utensils"],
+      "safety_notes": ["Handle SCOBY gently"]
+    },
+    {
+      "step_number": 7,
+      "description": "Cover with breathable cloth, secure with rubber band",
+      "duration_minutes": 5,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Cheesecloth or coffee filter", "Rubber band"],
+      "safety_notes": ["Must allow airflow but prevent contamination"]
+    },
+    {
+      "step_number": 8,
+      "description": "Ferment at 70-80°F for 7-10 days, taste daily after day 7",
+      "duration_minutes": 10080,
+      "step_type": "WAIT",
+      "equipment_needed": ["Temperature-controlled room"],
+      "safety_notes": ["Check for mold daily - discard batch if any mold appears"]
+    },
+    {
+      "step_number": 9,
+      "description": "Bottle kombucha, leaving 1 inch headspace",
+      "duration_minutes": 30,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["Funnel", "80 x 16oz bottles"],
+      "safety_notes": ["Reserve 2 cups as starter for next batch"]
+    },
+    {
+      "step_number": 10,
+      "description": "Second fermentation (optional) - add fruit/flavoring, seal for 2-3 days",
+      "duration_minutes": 4320,
+      "step_type": "WAIT",
+      "equipment_needed": ["Airtight bottles"],
+      "safety_notes": ["Burp bottles daily to prevent explosion"]
+    },
+    {
+      "step_number": 11,
+      "description": "Refrigerate to stop fermentation, apply labels",
+      "duration_minutes": 20,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["Refrigeration", "Labels"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 12,
+      "description": "Quality check - taste, visual inspection, pH test",
+      "duration_minutes": 10,
+      "step_type": "QC",
+      "equipment_needed": ["pH strips"],
+      "quality_metrics": ["pH 2.5-3.5", "No visible mold", "Pleasant tart taste"]
+    }
+  ],
+  "equipment": [
+    "Large pot (2+ gallon capacity)",
+    "10-gallon fermentation vessel (glass or food-grade plastic)",
+    "Thermometer",
+    "Funnel",
+    "Cheesecloth or coffee filter",
+    "Rubber bands",
+    "80 x 16oz glass bottles with caps",
+    "pH test strips"
+  ],
+  "total_time_minutes": 150,
+  "active_time_minutes": 120,
+  "passive_time_minutes": 14460,
+  "target_yield": 80,
+  "yield_unit": "bottles",
+  "retail_price": 4.50,
+  "cost_per_batch": 118.60,
+  "quality_standards": [
+    "pH between 2.5-3.5",
+    "No visible mold or contamination",
+    "Pleasant tart, slightly sweet taste",
+    "Light carbonation present",
+    "Clear or slightly cloudy appearance"
+  ],
+  "storage_instructions": "Refrigerate at 35-40°F. Best consumed within 2 weeks of bottling. Slight continued fermentation is normal.",
+  "notes": "SCOBY will grow with each batch - can be shared or composted. Save 2 cups liquid from each batch as starter for next. Temperature control is critical for consistent fermentation. Winter batches may take 10-12 days, summer batches 7-8 days."
+}

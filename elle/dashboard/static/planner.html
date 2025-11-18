@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Planner - Elle Core</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/budget">Budget</a>
+        <a href="/products">Products</a>
+        <a href="/planner">Planner</a>
+        <a href="/tracker">Tracker</a>
+    </nav>
+
+    <h1>Weekly Planner</h1>
+    <p class="subtitle">Optimized weekly schedule based on ROI and resources</p>
+
+    <!-- Week Summary -->
+    <div class="dashboard-grid">
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Planned Hours</div>
+                <div class="metric-value" id="total-hours">0h</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Expected Revenue</div>
+                <div class="metric-value" id="expected-revenue">$0</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Expected Profit</div>
+                <div class="metric-value" id="expected-profit">$0</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Utilization</div>
+                <div class="metric-value" id="utilization">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Calendar -->
+    <h2>Week of <span id="week-date"></span></h2>
+    <div class="calendar-grid" id="calendar">
+        <!-- Calendar will be populated by JavaScript -->
+    </div>
+
+    <!-- Recommended Tasks -->
+    <h2>Recommended Tasks for This Week</h2>
+    <div id="recommended-tasks">
+        <p class="loading">Loading recommendations...</p>
+    </div>
+
+    <!-- Resource Allocation -->
+    <h2>Resource Allocation</h2>
+    <div class="panel full-width">
+        <table id="allocation-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th class="numeric">Time (hrs)</th>
+                    <th class="numeric">Cost</th>
+                    <th class="numeric">Revenue</th>
+                    <th class="numeric">Profit</th>
+                    <th class="numeric">ROI</th>
+                    <th>Materials</th>
+                </tr>
+            </thead>
+            <tbody id="allocation-body">
+                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        let weeklyPlan = null;
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        // Initialize calendar
+        function initCalendar() {
+            const today = new Date();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - today.getDay() + 1); // Get Monday
+
+            document.getElementById('week-date').textContent = monday.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = daysOfWeek.map((day, index) => {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + index);
+
+                return `
+                    <div class="calendar-day" data-day="${index}" ondrop="drop(event)" ondragover="allowDrop(event)">
+                        <div class="calendar-day-header">
+                            ${day}<br>
+                            <small>${date.getMonth() + 1}/${date.getDate()}</small>
+                        </div>
+                        <div class="calendar-tasks" id="day-${index}">
+                            <!-- Tasks will be added here -->
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load weekly plan
+        async function loadWeeklyPlan() {
+            try {
+                weeklyPlan = await API.weeklyPlan();
+
+                // Update summary metrics
+                document.getElementById('total-hours').textContent = Format.duration(weeklyPlan.total_hours);
+                document.getElementById('expected-revenue').textContent = Format.currency(weeklyPlan.expected_revenue);
+                document.getElementById('expected-profit').textContent = Format.currency(weeklyPlan.expected_profit);
+                document.getElementById('utilization').textContent = Format.percent(weeklyPlan.utilization * 100);
+
+                // Populate calendar with tasks
+                populateCalendar(weeklyPlan.tasks);
+
+                // Update allocation table
+                updateAllocationTable(weeklyPlan.tasks);
+
+            } catch (error) {
+                console.error('Failed to load weekly plan:', error);
+                Notifications.error('Failed to load weekly plan');
+            }
+        }
+
+        // Populate calendar with tasks
+        function populateCalendar(tasks) {
+            // Distribute tasks across days (simple distribution)
+            const tasksPerDay = Math.ceil(tasks.length / 7);
+
+            tasks.forEach((task, index) => {
+                const dayIndex = Math.floor(index / tasksPerDay);
+                const dayContainer = document.getElementById(`day-${dayIndex}`);
+
+                if (dayContainer) {
+                    const taskEl = document.createElement('div');
+                    taskEl.className = 'calendar-task';
+                    taskEl.draggable = true;
+                    taskEl.dataset.taskIndex = index;
+                    taskEl.innerHTML = `
+                        <strong>${task.product || task.task}</strong><br>
+                        <small>${Format.duration(task.time_hours)} • ${Format.currency(task.profit)}</small>
+                    `;
+                    taskEl.ondragstart = drag;
+                    dayContainer.appendChild(taskEl);
+                }
+            });
+        }
+
+        // Update allocation table
+        function updateAllocationTable(tasks) {
+            const tbody = document.getElementById('allocation-body');
+
+            if (tasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No tasks planned</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = tasks.map(task => {
+                const roi = task.time_hours > 0 ? task.profit / task.time_hours : 0;
+
+                return `
+                    <tr>
+                        <td><strong>${task.product || task.task}</strong></td>
+                        <td class="numeric">${Format.duration(task.time_hours)}</td>
+                        <td class="numeric">${Format.currency(task.cost)}</td>
+                        <td class="numeric">${Format.currency(task.revenue)}</td>
+                        <td class="numeric">${Format.currency(task.profit)}</td>
+                        <td class="numeric">${Format.currency(roi)}/hr</td>
+                        <td>${(task.materials || []).join(', ') || 'N/A'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Load recommendations
+        async function loadRecommendations() {
+            try {
+                const recommendations = await API.recommendations();
+                const container = document.getElementById('recommended-tasks');
+
+                if (recommendations.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No recommendations available</p>';
+                } else {
+                    container.innerHTML = recommendations.slice(0, 5).map(rec => `
+                        <div class="recommendation ${rec.priority.toLowerCase()}">
+                            <div class="recommendation-action">${rec.action}</div>
+                            <div class="recommendation-reasoning">${rec.reasoning}</div>
+                            <div class="recommendation-metrics">
+                                <span>Profit: ${Format.currency(rec.estimated_profit)}</span>
+                                <span>Time: ${Format.duration(rec.time_required)}</span>
+                                <span>Priority: ${rec.priority}</span>
+                            </div>
+                            <button class="primary" onclick="addToCalendar('${rec.action}')">Add to Calendar</button>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load recommendations:', error);
+            }
+        }
+
+        // Drag and drop handlers
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData('taskIndex', ev.target.dataset.taskIndex);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const taskIndex = ev.dataTransfer.getData('taskIndex');
+            const taskEl = document.querySelector(`[data-task-index="${taskIndex}"]`);
+
+            // Find the calendar-tasks container
+            let target = ev.target;
+            while (target && !target.classList.contains('calendar-tasks')) {
+                target = target.parentElement;
+            }
+
+            if (target) {
+                target.appendChild(taskEl);
+                Notifications.success('Task moved');
+            }
+        }
+
+        // Add recommendation to calendar
+        function addToCalendar(action) {
+            Notifications.success(`Added "${action}" to calendar`);
+            // In a real implementation, this would add the task to the calendar
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', async () => {
+            initCalendar();
+            await loadWeeklyPlan();
+            await loadRecommendations();
+
+            // Auto-refresh every 60 seconds
+            setInterval(async () => {
+                await loadWeeklyPlan();
+            }, 60000);
+        });
+    </script>
+</body>
+</html>
