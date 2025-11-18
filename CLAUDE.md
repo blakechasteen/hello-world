@@ -136,6 +136,184 @@ Good datestamping practices already in use:
 
 ---
 
+## Contract-First Prompting
+
+**Status**: ✅ Production Ready (November 2025)
+**Location**: `HoloLoom/prompting/` + `CONTRACT_FIRST_PROMPTING.md`
+**Philosophy**: "Clarity of intent before execution"
+
+### Overview
+
+Contract-First Prompting is a systematic approach to achieving clarity of intent when working with LLMs. Like engineering teams write contracts for how microservices interact, we establish tight technical shared understanding before starting work.
+
+**The Problem**: Almost every prompt that fails fails because **intent wasn't clearly communicated**. Human language is rough on intent - we bring tremendous domain expertise, passion, and experience, but struggle to convey it in words.
+
+**The Solution**: Structured sequence of gap identification → iterative questioning → echo check → user approval → execution.
+
+### The 5-Step Workflow
+
+```
+1. Gap Identification (Silent)  → List every fact/constraint needed
+2. Iterative Questioning        → Ask one question at a time until 95% confidence
+3. Echo Check                   → Crisp summary: deliverable + includes + constraints
+4. User Approval                → yes/edit/blueprint/risks control flow
+5. Execution                    → Build and self-test against contract
+```
+
+### Quick Start
+
+```python
+from HoloLoom.prompting import ContractFirstPrompting
+
+async with ContractFirstPrompting() as cfp:
+    # Step 1: Start with rough idea
+    await cfp.start("I need a function to validate email addresses")
+
+    # Step 2: Iterative questioning
+    while not cfp.is_confident():
+        question = await cfp.next_question()
+        answer = input(f"{question}\n> ")
+        await cfp.answer(answer)
+
+    # Step 3: Echo check
+    contract = await cfp.get_contract()
+    print(contract.echo_check())
+
+    # Step 4: Approve
+    if await cfp.approve("yes"):
+        # Step 5: Execute
+        result = await cfp.execute()
+```
+
+### Direct LLM Usage (Copy-Paste Template)
+
+For use with ChatGPT, Claude, or other LLMs without the Python API:
+
+**Template Location**: `prompts/contract_first_template.md`
+
+Just copy the template into your chat and say "go". The LLM will:
+1. Ask clarifying questions one at a time
+2. Build understanding until 95% confident
+3. Provide echo check for approval
+4. Build deliverable after you say "yes"
+
+### Key Features
+
+**4 Questioning Strategies**:
+- `BREADTH_FIRST` - Cover all dimensions broadly before deep diving
+- `DEPTH_FIRST` - Exhaust one dimension before moving to next
+- `ESSENTIAL_ONLY` - Ask only critical questions (fastest)
+- `ADAPTIVE` - Adjust based on user responses (recommended)
+
+**5 User Control Options**:
+- `yes` - Lock contract and proceed
+- `edit` - Request changes
+- `blueprint` - See structured outline first
+- `risks` - Review risk analysis
+- `reset` - Start over
+
+**Integration with HoloLoom**:
+```python
+from HoloLoom import HoloLoom
+from HoloLoom.prompting import ContractFirstPrompting
+
+async with HoloLoom() as loom:
+    async with ContractFirstPrompting(memory=loom) as cfp:
+        # LLM recalls past contracts and patterns
+        await cfp.start("Build another dashboard like last time")
+```
+
+### When to Use Contract-First
+
+✅ **Use when**:
+- Complex, multi-step work with ambiguous requirements
+- High cost of failure (production code, important documents)
+- You have domain expertise but unclear how to convey it
+- Collaborative refinement of requirements
+
+❌ **Don't use when**:
+- Simple, clear tasks ("Write a function to add two numbers")
+- Extremely urgent (no time for iterative refinement)
+- You already have crisp, complete requirements
+
+### Performance
+
+| Phase | Duration | Notes |
+|-------|----------|-------|
+| Gap Identification | <1s | Silent, internal |
+| Iterative Questioning | 5-20 questions | 1-2 min total |
+| Echo Check | <1s | Single response |
+| Blueprint Generation | 2-5s | If requested |
+| Risk Analysis | 2-5s | If requested |
+| Execution | Variable | Depends on work |
+
+**Total overhead**: 1-3 minutes for clarification, massive time savings on rework.
+
+### Documentation
+
+- **Complete Guide**: [CONTRACT_FIRST_PROMPTING.md](CONTRACT_FIRST_PROMPTING.md) (1,000+ lines)
+  - Philosophy and core principles
+  - Usage examples (code, documents, architecture)
+  - Gap identification dimensions
+  - Control flow options
+  - Integration with HoloLoom
+
+- **Direct Template**: `prompts/contract_first_template.md`
+  - Copy-paste into any LLM chat
+  - Self-contained instructions
+  - No dependencies
+
+- **Implementation**: `HoloLoom/prompting/`
+  - `contract_first.py` - Main API (600+ lines)
+  - `types.py` - Data structures (350+ lines)
+  - `strategies.py` - Questioning strategies (250+ lines)
+
+- **Demo**: `demos/demo_contract_first_prompting.py`
+  - 4 interactive demos
+  - Basic usage, blueprint request, risk analysis, interactive mode
+
+### Running the Demo
+
+```bash
+# Run all demos
+PYTHONPATH=. python demos/demo_contract_first_prompting.py
+
+# Example output:
+# - Demo 1: Basic email validator with iterative questioning
+# - Demo 2: Technical document with blueprint request
+# - Demo 3: Chat system with risk analysis
+# - Demo 4: Interactive mode (user input)
+```
+
+### Example: Email Validator
+
+**Rough Idea**: "I need a function to validate email addresses"
+
+**Questions Asked** (8 total):
+1. What programming language? → Python
+2. How should errors be handled? → Return detailed error object
+3. What edge cases? → International domains with Unicode
+4. More edge cases? → Plus addressing (user+tag@domain.com)
+5. Performance requirements? → Regex validation, no DNS
+6. Why does this exist? → Web form validation
+7. Who will use it? → Web developers
+8. Success criteria? → Clear errors, validates correctly
+
+**Echo Check**:
+```
+I will create a Python email validator function that supports international
+domains and Unicode characters. It must return a detailed error object (not
+just boolean) and handle edge cases like plus addressing.
+
+Is this correct? Reply: yes, edit, blueprint, or risks
+```
+
+**User**: yes
+
+**Deliverable**: Production-ready Python validator with comprehensive tests.
+
+---
+
 ## Agent Swarm Deployment Strategy
 
 When deploying multiple Claude Code agents in parallel for complex tasks, use this model selection matrix for **optimal cost-performance**:
