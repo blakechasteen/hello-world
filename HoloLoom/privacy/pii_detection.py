@@ -28,6 +28,7 @@ Timestamp: 2025-11-17
 """
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Set, Tuple
 from enum import Enum
@@ -208,6 +209,51 @@ class PIIPatterns:
 
 
 # ============================================================================
+# Input Sanitization
+# ============================================================================
+
+def _sanitize_text_for_pii_detection(text: str) -> str:
+    """
+    Sanitize text to prevent Unicode-based bypasses.
+
+    Security transformations:
+    1. Unicode NFKC normalization (full-width → half-width)
+    2. Zero-width character removal (U+200B, U+200C, U+200D, U+FEFF)
+    3. Preserve original text structure (newlines, spaces)
+
+    Args:
+        text: Raw text input
+
+    Returns:
+        Sanitized text ready for PII pattern matching
+
+    Examples:
+        >>> _sanitize_text_for_pii_detection("１２３-４５-６７８９")  # Full-width digits
+        "123-45-6789"
+
+        >>> _sanitize_text_for_pii_detection("test\u200b@\u200bexample.com")  # Zero-width
+        "test@example.com"
+    """
+    # Step 1: Unicode normalization (NFKC = compatibility + composition)
+    # Converts full-width/half-width variants to standard form
+    normalized = unicodedata.normalize('NFKC', text)
+
+    # Step 2: Remove zero-width characters (common obfuscation technique)
+    zero_width_chars = [
+        '\u200B',  # ZERO WIDTH SPACE
+        '\u200C',  # ZERO WIDTH NON-JOINER
+        '\u200D',  # ZERO WIDTH JOINER
+        '\uFEFF',  # ZERO WIDTH NO-BREAK SPACE (BOM)
+    ]
+
+    sanitized = normalized
+    for char in zero_width_chars:
+        sanitized = sanitized.replace(char, '')
+
+    return sanitized
+
+
+# ============================================================================
 # PII Detector
 # ============================================================================
 
@@ -291,12 +337,16 @@ class PIIDetector:
         Returns:
             PIIAnalysisResult with all detections and risk assessment
         """
+        # SECURITY: Sanitize text to prevent Unicode-based bypasses
+        # This defends against zero-width characters and full-width digit obfuscation
+        sanitized_text = _sanitize_text_for_pii_detection(text)
+
         detections: List[PIIDetection] = []
 
         # Detect each PII type
         for pii_type, compiled_patterns in self.compiled_patterns.items():
             for pattern, confidence in compiled_patterns:
-                for match in pattern.finditer(text):
+                for match in pattern.finditer(sanitized_text):
                     matched_text = match.group(0)
                     start_pos = match.start()
                     end_pos = match.end()

@@ -34,10 +34,55 @@ from datetime import datetime
 from enum import Enum
 import logging
 import asyncio
+import re
 from uuid import UUID, uuid4
 
 
 logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# Input Validation
+# ============================================================================
+
+# Tenant ID must be alphanumeric with underscores and hyphens only
+# No path traversal characters (/, \, ..), no colons (used as delimiter)
+TENANT_ID_PATTERN = re.compile(r'^[a-zA-Z0-9_-]{1,64}$')
+
+
+def _validate_tenant_id(tenant_id: str) -> None:
+    """
+    Validate tenant ID to prevent security vulnerabilities.
+
+    Security checks:
+    - Not empty
+    - Only alphanumeric, underscore, hyphen (no path traversal)
+    - No colons (used as delimiter in scoped keys)
+    - Length limit (1-64 chars)
+
+    Args:
+        tenant_id: Tenant identifier to validate
+
+    Raises:
+        ValueError: If tenant ID is invalid
+
+    Examples:
+        _validate_tenant_id("acme_corp")        # OK
+        _validate_tenant_id("acme-corp-123")    # OK
+        _validate_tenant_id("../other_tenant")  # FAIL - path traversal
+        _validate_tenant_id("tenant:fake")      # FAIL - colon injection
+        _validate_tenant_id("")                 # FAIL - empty
+        _validate_tenant_id("x" * 100)          # FAIL - too long
+    """
+    if not tenant_id:
+        raise ValueError("Tenant ID cannot be empty")
+
+    if not TENANT_ID_PATTERN.match(tenant_id):
+        raise ValueError(
+            f"Invalid tenant ID: '{tenant_id}'. "
+            "Must be 1-64 alphanumeric characters with underscores or hyphens only. "
+            "No path traversal (/, \\, ..) or delimiter (:) characters allowed."
+        )
 
 
 # ============================================================================
@@ -362,10 +407,15 @@ class TenantIsolationLayer:
         Returns:
             Scoped key: "tenant:{tenant_id}:{key}"
 
+        Raises:
+            ValueError: If tenant_id is invalid (security check)
+
         Example:
             scoped = scope_key("memory_123", "acme_corp")
             # Result: "tenant:acme_corp:memory_123"
         """
+        # SECURITY: Validate tenant ID to prevent path traversal
+        _validate_tenant_id(tenant_id)
         return f"tenant:{tenant_id}:{key}"
 
     def unscope_key(self, scoped_key: str) -> tuple[str, str]:
@@ -379,7 +429,7 @@ class TenantIsolationLayer:
             (tenant_id, original_key)
 
         Raises:
-            ValueError: If key format is invalid
+            ValueError: If key format is invalid or tenant_id is malicious
 
         Example:
             tenant_id, key = unscope_key("tenant:acme_corp:memory_123")
@@ -389,7 +439,13 @@ class TenantIsolationLayer:
         if len(parts) != 3 or parts[0] != "tenant":
             raise ValueError(f"Invalid scoped key format: {scoped_key}")
 
-        return parts[1], parts[2]
+        tenant_id = parts[1]
+        original_key = parts[2]
+
+        # SECURITY: Validate extracted tenant ID to prevent path traversal
+        _validate_tenant_id(tenant_id)
+
+        return tenant_id, original_key
 
     def validate_scoped_key(
         self,
@@ -577,8 +633,11 @@ class TenantRegistry:
             TenantMetadata for new tenant
 
         Raises:
-            ValueError: If tenant_id already exists
+            ValueError: If tenant_id already exists or is invalid
         """
+        # SECURITY: Validate tenant ID to prevent path traversal
+        _validate_tenant_id(tenant_id)
+
         if tenant_id in self._tenants:
             raise ValueError(f"Tenant already exists: {tenant_id}")
 
