@@ -102,6 +102,20 @@ except ImportError:
     SimilarityMethod = None
     CompressionAnalyzer = None
 
+# Import multi-pass refinement (Phase 5)
+try:
+    from .refinement_engine import (
+        RefinementEngine,
+        RefinementStrategy,
+        RefinementResult
+    )
+    REFINEMENT_AVAILABLE = True
+except ImportError:
+    REFINEMENT_AVAILABLE = False
+    RefinementEngine = None
+    RefinementStrategy = None
+    RefinementResult = None
+
 
 @dataclass
 class QualityScore:
@@ -1043,3 +1057,108 @@ class LLMContextPacker(SmartContextPacker):
             return None
 
         return self.compression_analyzer.get_recommendations()
+
+    # ========================================================================
+    # Phase 5: Multi-Pass Refinement
+    # ========================================================================
+
+    async def pack_and_generate_with_refinement(
+        self,
+        query: str,
+        awareness_context,
+        memory_results: Optional[List[Any]] = None,
+        max_memories: int = 10,
+        # Refinement configuration
+        quality_threshold: float = 0.85,  # Refine if quality < 0.85
+        max_passes: int = 3,
+        refinement_strategy: str = "adaptive",  # "adaptive", "depth_first", "breadth_first", "focused"
+        force_refinement: bool = False  # Force refinement even if quality acceptable
+    ) -> Any:  # Returns RefinementResult
+        """
+        Pack, generate, and iteratively refine until quality acceptable.
+
+        This is the simplest way to use Phase 5 refinement. It handles:
+        - Initial generation
+        - Quality checking
+        - Automatic refinement passes
+        - Intelligent stopping criteria
+
+        Args:
+            query: User query
+            awareness_context: Awareness context
+            memory_results: Memory retrieval results
+            max_memories: Maximum memories to include
+            quality_threshold: Minimum quality to accept (default: 0.85)
+            max_passes: Maximum refinement passes (default: 3)
+            refinement_strategy: Refinement strategy
+            force_refinement: Force refinement even if quality acceptable
+
+        Returns:
+            RefinementResult with complete refinement history
+
+        Example:
+            result = await packer.pack_and_generate_with_refinement(
+                query="Complex research question",
+                awareness_ctx=ctx,
+                memory_results=memories,
+                quality_threshold=0.90,  # High quality bar
+                max_passes=3
+            )
+
+            print(f"Quality: {result.initial_quality:.2f} → {result.final_quality:.2f}")
+            print(f"Passes: {result.passes_executed}")
+        """
+        if not REFINEMENT_AVAILABLE:
+            logger.warning("Refinement requested but not available (import failed)")
+            # Fall back to single pass
+            generation = await self.pack_and_generate(
+                query, awareness_context, memory_results, max_memories
+            )
+
+            # Wrap in RefinementResult-like structure
+            class FallbackResult:
+                def __init__(self, gen):
+                    self.query = query
+                    self.initial_generation = gen
+                    self.final_generation = gen
+                    self.passes = []
+                    self.initial_quality = gen.quality_score.overall
+                    self.final_quality = gen.quality_score.overall
+                    self.total_improvement = 0.0
+                    self.passes_executed = 0
+                    self.stopping_criterion = "quality_threshold"
+
+                def summary(self):
+                    return f"Refinement unavailable, single pass: quality {self.final_quality:.2f}"
+
+            return FallbackResult(generation)
+
+        # Create refinement engine
+        strategy_map = {
+            "adaptive": RefinementStrategy.ADAPTIVE,
+            "depth_first": RefinementStrategy.DEPTH_FIRST,
+            "breadth_first": RefinementStrategy.BREADTH_FIRST,
+            "focused": RefinementStrategy.FOCUSED
+        }
+
+        strategy = strategy_map.get(refinement_strategy, RefinementStrategy.ADAPTIVE)
+
+        refiner = RefinementEngine(
+            packer=self,
+            quality_threshold=quality_threshold,
+            max_passes=max_passes,
+            strategy=strategy,
+            enable_compression_disable=True,
+            enable_budget_increase=True
+        )
+
+        # Execute refinement
+        result = await refiner.refine(
+            query=query,
+            awareness_ctx=awareness_context,
+            memory_results=memory_results,
+            max_memories=max_memories,
+            force_refinement=force_refinement
+        )
+
+        return result
