@@ -14,7 +14,9 @@ from HoloLoom.privacy import (
     TenantIsolationLayer,
     TenantContext,
     TenantTier,
+    PIIFlowTracker,
 )
+from HoloLoom.privacy.pii_flow_tracking import _sanitize_log_field
 
 
 class TestPathTraversalFix:
@@ -271,3 +273,154 @@ class TestSpecialCharacterBlocking:
         for unicode_id in unicode_ids:
             with pytest.raises(ValueError, match="Invalid tenant ID"):
                 await registry.create_tenant(unicode_id, "Unicode Tenant")
+
+
+class TestLogInjectionFix:
+    """
+    Regression tests for MEDIUM-001: Log Injection in PII Flow Tracking.
+
+    CVSS: 5.3 (Medium)
+    CWE: CWE-117
+    Fixed: 2025-11-18
+    """
+
+    def test_sanitize_log_field_newlines(self):
+        """Test that newlines are removed from log fields."""
+        # Newline injection attempt
+        malicious = "legitimate\n[ADMIN] Unauthorized access granted"
+        sanitized = _sanitize_log_field(malicious)
+
+        # Newlines should be replaced with spaces
+        assert '\n' not in sanitized
+        assert '\r' not in sanitized
+        assert sanitized == "legitimate [ADMIN] Unauthorized access granted"
+
+    def test_sanitize_log_field_carriage_return(self):
+        """Test that carriage returns are removed."""
+        malicious = "test\roverwrite_previous_line"
+        sanitized = _sanitize_log_field(malicious)
+
+        assert '\r' not in sanitized
+        assert sanitized == "test overwrite_previous_line"
+
+    def test_sanitize_log_field_control_characters(self):
+        """Test that control characters are removed."""
+        # Control characters 0x00-0x1F (except tab 0x09)
+        malicious = "test\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0B\x0C\x0D\x0E\x0F"
+        sanitized = _sanitize_log_field(malicious)
+
+        # All control chars should be removed
+        for i in range(0x00, 0x09):  # 0x00-0x08
+            assert chr(i) not in sanitized
+        for i in range(0x0A, 0x20):  # 0x0A-0x1F (except we handle 0x0A/0x0D separately)
+            assert chr(i) not in sanitized
+
+        assert sanitized == "test"
+
+    def test_sanitize_log_field_preserves_tabs(self):
+        """Test that tabs are preserved."""
+        text = "column1\tcolumn2\tcolumn3"
+        sanitized = _sanitize_log_field(text)
+
+        # Tabs should be preserved (but may be collapsed)
+        assert "column1" in sanitized
+        assert "column2" in sanitized
+        assert "column3" in sanitized
+
+    def test_sanitize_log_field_empty_string(self):
+        """Test that empty string is handled."""
+        assert _sanitize_log_field("") == ""
+        assert _sanitize_log_field(None) is None
+
+    def test_sanitize_log_field_multiple_spaces(self):
+        """Test that multiple spaces are collapsed."""
+        text = "test    multiple     spaces"
+        sanitized = _sanitize_log_field(text)
+
+        # Multiple spaces should be collapsed to single space
+        assert sanitized == "test multiple spaces"
+
+    @pytest.mark.asyncio
+    async def test_track_ingestion_sanitizes_purpose(self):
+        """Test that track_ingestion() sanitizes purpose field."""
+        registry = TenantRegistry()
+        await registry.create_tenant("test_tenant", "Test Tenant", TenantTier.PROFESSIONAL)
+
+        tracker = PIIFlowTracker()
+        context = TenantContext(
+            tenant_id="test_tenant",
+            user_id="test_user",
+            permissions={"read", "write"}
+        )
+
+        # Malicious purpose with newline injection
+        malicious_purpose = "legitimate\n[CRITICAL] SECURITY BREACH"
+
+        event = await tracker.track_ingestion(
+            text="test email: user@example.com",
+            context=context,
+            purpose=malicious_purpose
+        )
+
+        # Purpose should be sanitized (newlines removed)
+        assert '\n' not in event.purpose
+        assert '\r' not in event.purpose
+        assert event.purpose == "legitimate [CRITICAL] SECURITY BREACH"
+
+    @pytest.mark.asyncio
+    async def test_track_storage_sanitizes_purpose(self):
+        """Test that track_storage() sanitizes purpose field."""
+        from uuid import uuid4
+
+        registry = TenantRegistry()
+        await registry.create_tenant("test_tenant", "Test Tenant", TenantTier.PROFESSIONAL)
+
+        tracker = PIIFlowTracker()
+        context = TenantContext(
+            tenant_id="test_tenant",
+            user_id="test_user",
+            permissions={"read", "write"}
+        )
+
+        malicious_purpose = "storage\r\n[ADMIN] Full access granted"
+
+        event = await tracker.track_storage(
+            data={"key": "value"},
+            context=context,
+            parent_event_id=uuid4(),
+            purpose=malicious_purpose
+        )
+
+        assert '\n' not in event.purpose
+        assert '\r' not in event.purpose
+
+    @pytest.mark.asyncio
+    async def test_to_dict_contains_sanitized_purpose(self):
+        """Test that PIIFlowEvent.to_dict() contains sanitized purpose."""
+        from uuid import uuid4
+
+        registry = TenantRegistry()
+        await registry.create_tenant("test_tenant", "Test Tenant", TenantTier.PROFESSIONAL)
+
+        tracker = PIIFlowTracker()
+        context = TenantContext(
+            tenant_id="test_tenant",
+            user_id="test_user",
+            permissions={"read", "write"}
+        )
+
+        malicious_purpose = "test\ninjection\rattack"
+
+        event = await tracker.track_ingestion(
+            text="test",
+            context=context,
+            purpose=malicious_purpose
+        )
+
+        # Convert to dict (as would be logged)
+        event_dict = event.to_dict()
+
+        # purpose field should be sanitized
+        assert '\n' not in event_dict['purpose']
+        assert '\r' not in event_dict['purpose']
+        assert event_dict['purpose'] == "test injection attack"

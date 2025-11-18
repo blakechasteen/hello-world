@@ -37,6 +37,7 @@ from enum import Enum
 from uuid import UUID, uuid4
 import logging
 import json
+import re
 from pathlib import Path
 
 from .pii_detection import PIIType, PIIDetection, PIIDetector, PIIAnalysisResult
@@ -44,6 +45,53 @@ from .tenant_isolation import TenantContext
 
 
 logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# Input Sanitization for Logging
+# ============================================================================
+
+def _sanitize_log_field(value: str) -> str:
+    """
+    Sanitize user input for safe logging.
+
+    Security transformation:
+    - Remove newlines (CR, LF) to prevent log injection
+    - Remove control characters (0x00-0x1F except tab/space)
+    - Preserve meaningful whitespace (space, tab)
+
+    Args:
+        value: Raw user input
+
+    Returns:
+        Sanitized string safe for logging
+
+    Examples:
+        >>> _sanitize_log_field("legitimate\\n[ADMIN] Unauthorized access")
+        "legitimate [ADMIN] Unauthorized access"
+
+        >>> _sanitize_log_field("test\\x00\\x01\\x02")
+        "test"
+
+    References:
+        - CWE-117: Improper Output Neutralization for Logs
+        - OWASP Logging Cheat Sheet
+    """
+    if not value:
+        return value
+
+    # Remove newlines (CR, LF) - primary log injection vector
+    # Replace with spaces to prevent word concatenation
+    sanitized = value.replace('\r', ' ').replace('\n', ' ')
+
+    # Remove control characters except tab (0x09) and space (0x20)
+    # Control chars: 0x00-0x1F (except 0x09 tab)
+    sanitized = re.sub(r'[\x00-\x08\x0A-\x1F]', '', sanitized)
+
+    # Collapse multiple spaces
+    sanitized = re.sub(r'\s+', ' ', sanitized)
+
+    return sanitized.strip()
 
 
 # ============================================================================
@@ -288,6 +336,9 @@ class PIIFlowTracker:
         Returns:
             PIIFlowEvent for this ingestion
         """
+        # SECURITY: Sanitize purpose to prevent log injection
+        safe_purpose = _sanitize_log_field(purpose)
+
         # Detect PII
         detections = []
         if self.enable_auto_detection:
@@ -308,7 +359,7 @@ class PIIFlowTracker:
             stage=PIIFlowStage.INGESTION,
             action=PIIAction.DETECTED,
             pii_detections=detections,
-            purpose=purpose,
+            purpose=safe_purpose,
             metadata=metadata
         )
 
@@ -347,6 +398,9 @@ class PIIFlowTracker:
         Returns:
             PIIFlowEvent for this storage
         """
+        # SECURITY: Sanitize purpose to prevent log injection
+        safe_purpose = _sanitize_log_field(purpose)
+
         # Detect PII in data
         detections = []
         if self.enable_auto_detection:
@@ -362,7 +416,7 @@ class PIIFlowTracker:
             stage=PIIFlowStage.MEMORY_WRITE,
             action=PIIAction.STORED,
             pii_detections=detections,
-            purpose=purpose,
+            purpose=safe_purpose,
             parent_event_id=parent_event_id,
             metadata=metadata
         )
@@ -396,6 +450,9 @@ class PIIFlowTracker:
         Returns:
             PIIFlowEvent for this retrieval
         """
+        # SECURITY: Sanitize purpose to prevent log injection
+        safe_purpose = _sanitize_log_field(purpose)
+
         # Create event
         event = PIIFlowEvent(
             event_id=uuid4(),
@@ -403,7 +460,7 @@ class PIIFlowTracker:
             stage=PIIFlowStage.MEMORY_READ,
             action=PIIAction.RETRIEVED,
             pii_detections=[],  # Will be filled if PII found in retrieved data
-            purpose=purpose,
+            purpose=safe_purpose,
             metadata={"memory_keys": memory_keys, **metadata}
         )
 
@@ -431,6 +488,9 @@ class PIIFlowTracker:
         Returns:
             PIIFlowEvent for this deletion
         """
+        # SECURITY: Sanitize purpose to prevent log injection
+        safe_purpose = _sanitize_log_field(purpose)
+
         # Create event
         event = PIIFlowEvent(
             event_id=uuid4(),
@@ -438,7 +498,7 @@ class PIIFlowTracker:
             stage=PIIFlowStage.DELETION,
             action=PIIAction.DELETED,
             pii_detections=[],
-            purpose=purpose,
+            purpose=safe_purpose,
             metadata={"pii_references": pii_references, **metadata}
         )
 
