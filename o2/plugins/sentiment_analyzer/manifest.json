@@ -1,0 +1,21 @@
+{
+  "name": "sentiment_analyzer",
+  "version": "1.0.0",
+  "author": "O2 Community",
+  "description": "Analyzes sentiment of messages and proposals to detect community mood",
+  "capabilities": [
+    "process_messages",
+    "observe_votes",
+    "send_messages"
+  ],
+  "permission_level": "safe",
+  "homepage": "https://github.com/o2-platform/plugin-sentiment-analyzer",
+  "repository": "https://github.com/o2-platform/plugin-sentiment-analyzer.git",
+  "license": "MIT",
+  "keywords": ["sentiment", "analysis", "community", "mood"],
+  "dependencies": {},
+  "compatibility": {
+    "o2_version": ">=1.0.0",
+    "python_version": ">=3.11"
+  }
+}
