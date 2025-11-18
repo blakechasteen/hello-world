@@ -108,6 +108,293 @@ spinner = FilesystemSpinner(config=config)
 
 ---
 
+## File Selection & Filtering
+
+FilesystemSpinner provides flexible file selection through **allow/deny glob patterns**. You have complete control over which files to include or exclude.
+
+### Pattern-Based Selection
+
+#### CLI Usage
+
+```bash
+# Include only specific file types
+python -m HoloLoom.ingestion.filesystem /path/to/docs \
+    --allow "*.md" "*.txt" "*.rst"
+
+# Exclude specific directories or files
+python -m HoloLoom.ingestion.filesystem /path/to/docs \
+    --allow "*.md" \
+    --deny "drafts/**" "*.draft.md" "_archive/**"
+
+# Complex filtering
+python -m HoloLoom.ingestion.filesystem /path/to/docs \
+    --allow "*.md" "*.txt" \
+    --deny ".git/**" "node_modules/**" "build/**" "*.log"
+```
+
+#### Programmatic Usage
+
+```python
+from HoloLoom.spinningWheel.filesystem_spinner import FilesystemSpinner
+
+# Precise control
+spinner = FilesystemSpinner(
+    allow_patterns=[
+        "docs/**/*.md",      # Only Markdown in docs/
+        "README*.md",        # All README files
+        "guides/*.txt"       # Text files in guides/
+    ],
+    deny_patterns=[
+        "docs/drafts/**",    # Exclude drafts folder
+        "**/*.draft.*",      # Exclude draft files
+        "**/temp_*"          # Exclude temp files
+    ]
+)
+
+result = await spinner.spin("/path/to/project")
+```
+
+### Common Selection Patterns
+
+#### By File Type
+
+```python
+# Only Markdown
+allow_patterns=["*.md", "*.markdown"]
+
+# Documentation formats
+allow_patterns=["*.md", "*.rst", "*.txt", "*.adoc"]
+
+# Code + documentation
+allow_patterns=["*.md", "*.py", "*.js"]
+
+# Everything except binaries
+allow_patterns=["**/*"]
+deny_patterns=["*.pdf", "*.png", "*.jpg", "*.exe", "*.bin"]
+```
+
+#### By Location
+
+```python
+# Specific directories only
+allow_patterns=["docs/**/*", "guides/**/*", "tutorials/**/*"]
+
+# Top-level files only (no subdirectories)
+# (Use recursive=False instead)
+
+# Everything except certain directories
+allow_patterns=["**/*"]
+deny_patterns=[
+    ".git/**",
+    "node_modules/**",
+    ".venv/**",
+    "venv/**",
+    "__pycache__/**",
+    "build/**",
+    "dist/**"
+]
+```
+
+#### By Name Pattern
+
+```python
+# READMEs and guides
+allow_patterns=["README*", "*guide*", "*tutorial*", "*howto*"]
+
+# Exclude temp/backup/hidden files
+deny_patterns=[
+    "*~",           # Vim backup files
+    "*.bak",        # Backup files
+    "*.tmp",        # Temp files
+    ".*",           # Hidden files (Unix)
+    ".DS_Store"     # macOS metadata
+]
+
+# Documentation-specific files
+allow_patterns=[
+    "README*",
+    "CHANGELOG*",
+    "CONTRIBUTING*",
+    "docs/**/*.md",
+    "*.md"
+]
+```
+
+#### By Recency
+
+```python
+# Use importance threshold to filter by recency
+spinner = FilesystemSpinner(
+    allow_patterns=["*.md"],
+    importance_threshold=0.6  # Only recent/important files
+)
+
+# Files modified in last 7 days get high recency score
+# See "Importance Scoring" section below
+```
+
+### Dry-Run Preview
+
+**Always preview before ingesting** to see what will be selected:
+
+```bash
+python -m HoloLoom.ingestion.filesystem /path/to/docs \
+    --allow "*.md" \
+    --deny "drafts/**" \
+    --dry-run
+```
+
+**Output shows**:
+```
+📁 Scanning: /path/to/docs
+   Patterns: *.md
+   Exclude: drafts/**
+   Mode: full
+
+✅ Ingestion complete!
+   Shards created: 42
+   Average importance: 0.68
+   Processing time: 156ms
+
+🔍 Dry run complete (shards not added to memory)
+```
+
+### Priority Rules
+
+**Important**: Deny patterns take priority over allow patterns.
+
+```python
+spinner = FilesystemSpinner(
+    allow_patterns=["**/*.md"],      # Include all Markdown
+    deny_patterns=["drafts/**"]      # But exclude drafts/
+)
+
+# Result: All .md files EXCEPT those in drafts/ folder
+```
+
+### Pattern Syntax
+
+Uses standard **glob patterns**:
+
+| Pattern | Matches | Example |
+|---------|---------|---------|
+| `*` | Any characters (except `/`) | `*.md` matches `README.md` |
+| `**` | Any characters (including `/`) | `docs/**/*.md` matches `docs/guide/setup.md` |
+| `?` | Single character | `file?.txt` matches `file1.txt` |
+| `[abc]` | One of: a, b, or c | `file[123].md` matches `file2.md` |
+| `[!abc]` | Not: a, b, or c | `file[!0].md` matches `file1.md` but not `file0.md` |
+
+**Examples**:
+```python
+# All Markdown in any subdirectory
+"**/*.md"
+
+# Top-level Markdown only
+"*.md"
+
+# Markdown in specific directory and subdirectories
+"docs/**/*.md"
+
+# Multiple extensions
+"*.{md,txt,rst}"  # Note: Use separate patterns in allow_patterns list
+
+# Exclude pattern for directories
+".git/**"          # Excludes entire .git directory
+"**/node_modules/**"  # Excludes node_modules anywhere
+```
+
+### Advanced: Custom Selection
+
+For complex selection logic beyond glob patterns:
+
+```python
+from pathlib import Path
+from HoloLoom.spinningWheel.filesystem_spinner import FilesystemSpinner
+
+spinner = FilesystemSpinner()
+
+# Get all files first
+all_files = spinner._scan_directory(Path("/path/to/docs"), recursive=True)
+
+# Custom filtering logic
+selected_files = []
+for file in all_files:
+    # Example: Only files > 1KB with "important" in name
+    if file.stat().st_size > 1000:
+        if "important" in file.name.lower():
+            selected_files.append(file)
+
+# Process only selected files
+shards = []
+for file in selected_files:
+    file_shards = spinner._process_file(file)
+    shards.extend(file_shards)
+
+print(f"Created {len(shards)} shards from {len(selected_files)} files")
+```
+
+### Selection Examples by Use Case
+
+#### Documentation Project
+
+```bash
+python -m HoloLoom.ingestion.filesystem /path/to/project \
+    --allow "*.md" "*.rst" "*.txt" \
+    --deny ".git/**" "build/**" "_build/**" \
+    --incremental
+```
+
+#### Code Repository (docs only)
+
+```bash
+python -m HoloLoom.ingestion.filesystem /path/to/repo \
+    --allow "README*" "docs/**/*.md" "*.md" \
+    --deny "node_modules/**" ".git/**" "dist/**" \
+    --no-recursive  # Or use recursive=False
+```
+
+#### Knowledge Base (high quality only)
+
+```bash
+python -m HoloLoom.ingestion.filesystem /path/to/kb \
+    --allow "**/*.md" \
+    --deny "drafts/**" "archive/**" "_*/**" \
+    --importance-threshold 0.7  # Only high-quality files
+```
+
+#### Blog Posts (published only)
+
+```python
+spinner = FilesystemSpinner(
+    allow_patterns=[
+        "posts/**/*.md",
+        "articles/**/*.md"
+    ],
+    deny_patterns=[
+        "**/draft_*",
+        "**/*.draft.md",
+        "**/unpublished/**"
+    ]
+)
+```
+
+### Interactive Selection (Future)
+
+Planned for v1.1:
+
+```bash
+# Interactive mode (future enhancement)
+python -m HoloLoom.ingestion.filesystem /path/to/docs --interactive
+
+# Would show:
+# ☐ README.md (importance: 0.92)
+# ☐ guide.md (importance: 0.78)
+# ☐ notes.txt (importance: 0.45)
+# Select files to ingest (space to toggle, enter to confirm)
+```
+
+---
+
 ## Features
 
 ### 1. Smart Chunking
