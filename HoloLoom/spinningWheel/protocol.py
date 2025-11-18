@@ -790,6 +790,12 @@ def create_spinner_registry() -> Dict[str, type]:
     except ImportError:
         pass
 
+    try:
+        from .filesystem_spinner import FilesystemSpinner
+        registry['filesystem'] = FilesystemSpinner
+    except ImportError:
+        pass
+
     # Future spinners will be added here automatically
     # try:
     #     from .git_spinner import GitSpinner
