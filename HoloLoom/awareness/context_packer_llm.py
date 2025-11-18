@@ -1275,3 +1275,108 @@ class LLMContextPacker(SmartContextPacker):
         result.refiner = refiner
 
         return result
+
+    async def pack_and_generate_with_consensus(
+        self,
+        query: str,
+        awareness_context,
+        memory_results: Optional[List[Any]] = None,
+        max_memories: int = 10,
+        strategies: Optional[List[Any]] = None,
+        voting_method: str = "quality_weighted",
+        quality_threshold: float = 0.85,
+        max_passes: int = 3,
+        require_unanimity: bool = False,
+        unanimity_threshold: float = 0.8,
+        enable_disagreement_detection: bool = True
+    ) -> Any:  # Returns ConsensusResult
+        """
+        Pack, generate, and refine with parallel consensus (Phase 6.2).
+
+        Executes multiple refinement strategies in parallel and uses
+        ensemble voting to select the best result.
+
+        Args:
+            query: Query text
+            awareness_context: Awareness context
+            memory_results: Memory retrieval results
+            max_memories: Maximum memories to include
+            strategies: List of strategies to run in parallel
+                       (default: [DEPTH_FIRST, BREADTH_FIRST, FOCUSED])
+            voting_method: Ensemble voting method
+                          ('quality_weighted', 'diversity', 'unanimous', 'best_of_n')
+            quality_threshold: Quality threshold for refinement
+            max_passes: Maximum refinement passes per strategy
+            require_unanimity: Whether to require unanimous agreement
+            unanimity_threshold: Agreement level required (0-1)
+            enable_disagreement_detection: Whether to detect disagreements
+
+        Returns:
+            ConsensusResult with selected result and consensus metadata
+
+        Raises:
+            ImportError: If Phase 6.2 (consensus) not available
+            ValueError: If all strategies fail
+
+        Example:
+            result = await packer.pack_and_generate_with_consensus(
+                query="Explain Thompson Sampling",
+                awareness_context=ctx,
+                memory_results=memories,
+                voting_method="quality_weighted"
+            )
+
+            print(f"Consensus: {result.consensus_confidence:.2f}")
+            print(f"Agreement: {result.agreement_level:.1%}")
+            print(f"Speedup: {result.parallel_speedup:.1f}x")
+        """
+        # Fall back to Phase 5 if consensus not available
+        if not REFINEMENT_AVAILABLE:
+            return await self.pack_and_generate(
+                query=query,
+                awareness_context=awareness_context,
+                memory_results=memory_results,
+                max_memories=max_memories
+            )
+
+        # Try to import consensus refiner (Phase 6.2)
+        try:
+            from .consensus_refiner import ConsensusRefiner, VotingMethod
+        except ImportError:
+            # Fall back to Phase 6.1 (feedback) or Phase 5 (refinement)
+            return await self.pack_and_generate_with_refinement(
+                query=query,
+                awareness_context=awareness_context,
+                memory_results=memory_results,
+                max_memories=max_memories,
+                quality_threshold=quality_threshold,
+                max_passes=max_passes
+            )
+
+        # Convert voting method string to enum
+        try:
+            voting_enum = VotingMethod(voting_method)
+        except ValueError:
+            voting_enum = VotingMethod.QUALITY_WEIGHTED
+
+        # Create consensus refiner
+        refiner = ConsensusRefiner(
+            packer=self,
+            strategies=strategies,
+            voting_method=voting_enum,
+            quality_threshold=quality_threshold,
+            max_passes=max_passes,
+            require_unanimity=require_unanimity,
+            unanimity_threshold=unanimity_threshold,
+            enable_disagreement_detection=enable_disagreement_detection
+        )
+
+        # Execute consensus refinement
+        result = await refiner.refine(
+            query=query,
+            awareness_ctx=awareness_context,
+            memory_results=memory_results,
+            max_memories=max_memories
+        )
+
+        return result
