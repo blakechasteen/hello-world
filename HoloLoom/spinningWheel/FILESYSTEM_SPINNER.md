@@ -378,20 +378,89 @@ spinner = FilesystemSpinner(
 )
 ```
 
-### Interactive Selection (Future)
+### Interactive Selection ✅ NEW
 
-Planned for v1.1:
+**Now available!** Interactively select files before ingesting.
 
 ```bash
-# Interactive mode (future enhancement)
+# Interactive mode
 python -m HoloLoom.ingestion.filesystem /path/to/docs --interactive
-
-# Would show:
-# ☐ README.md (importance: 0.92)
-# ☐ guide.md (importance: 0.78)
-# ☐ notes.txt (importance: 0.45)
-# Select files to ingest (space to toggle, enter to confirm)
 ```
+
+**Interface**:
+```
+==================================================================
+Interactive File Selection
+==================================================================
+Found 5 files
+
+#    Sel  File                            Size      Importance
+------------------------------------------------------------------
+1    [✓]  README.md                      2.5KB     0.92
+2    [✓]  guide.md                       1.8KB     0.78
+3    [✓]  tutorial.md                    1.2KB     0.68
+4    [✓]  notes.txt                      456B      0.45
+5    [✓]  temp.txt                       23B       0.28
+------------------------------------------------------------------
+Selected: 5/5 files
+
+Actions:
+  <number>     - Toggle file selection
+  all          - Select all files
+  none         - Deselect all files
+  invert       - Invert selection
+  done         - Proceed with selected files
+  cancel       - Cancel and exit
+
+Enter action: _
+```
+
+**Actions**:
+- **Type a number** (e.g., `3`) to toggle that file's selection
+- **`all`** - Select all files
+- **`none`** - Deselect all files
+- **`invert`** - Invert selection (selected ↔ deselected)
+- **`done`** - Proceed with currently selected files
+- **`cancel`** - Exit without ingesting
+
+**Example Workflow**:
+```bash
+$ python -m HoloLoom.ingestion.filesystem /path/to/docs --interactive
+
+# Files are shown with importance scores (sorted by importance)
+# All files selected by default
+
+Enter action: 4      # Deselect notes.txt
+Enter action: 5      # Deselect temp.txt
+Enter action: done   # Proceed with README, guide, tutorial only
+
+✅ Proceeding with 3 files
+...
+```
+
+**Programmatic Usage**:
+```python
+from pathlib import Path
+from HoloLoom.spinningWheel.filesystem_spinner import FilesystemSpinner
+
+spinner = FilesystemSpinner(allow_patterns=["*.md"])
+
+# Interactive selection
+selected_files = spinner.interactive_select_files(Path("/path/to/docs"))
+
+# Process only selected files
+if selected_files:
+    result = await spinner.spin_custom_files(selected_files)
+    print(f"Processed {result.shard_count} shards from {len(selected_files)} files")
+```
+
+**Features**:
+- ✅ Files sorted by importance (highest first)
+- ✅ Shows file size and importance score
+- ✅ All files selected by default (deselect unwanted)
+- ✅ Simple text-based interface (no external dependencies)
+- ✅ Works with all allow/deny patterns
+- ✅ Can be combined with other flags (--integrate, --dry-run, etc.)
 
 ---
 

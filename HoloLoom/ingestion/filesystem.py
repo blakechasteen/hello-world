@@ -61,6 +61,7 @@ async def ingest_directory(
     deny_patterns: List[str],
     recursive: bool,
     incremental: bool,
+    interactive: bool,
     dry_run: bool,
     checkpoint_dir: Optional[str],
     importance_threshold: float,
@@ -78,6 +79,7 @@ async def ingest_directory(
         deny_patterns: Glob patterns to exclude
         recursive: Scan subdirectories
         incremental: Only process new/modified files
+        interactive: Interactively select files to ingest
         dry_run: Preview without ingesting
         checkpoint_dir: Directory for checkpoints
         importance_threshold: Minimum importance to include
@@ -107,22 +109,50 @@ async def ingest_directory(
         checkpoint_dir=Path(checkpoint_dir) if checkpoint_dir else None
     )
 
-    print(f"📁 Scanning: {directory}")
-    print(f"   Patterns: {', '.join(allow_patterns)}")
-    print(f"   Exclude: {', '.join(deny_patterns)}")
-    print(f"   Mode: {'incremental' if incremental else 'full'}")
-    print(f"   Chunk size: {chunk_size} chars (overlap: {chunk_overlap})")
-    print()
+    # Interactive mode
+    if interactive:
+        print(f"📁 Interactive File Selection")
+        print(f"   Directory: {directory}")
+        print(f"   Patterns: {', '.join(allow_patterns)}")
+        print(f"   Exclude: {', '.join(deny_patterns)}")
+        print()
 
-    # Ingest
-    try:
-        if incremental:
-            result = await spinner.spin_incremental(directory, recursive=recursive)
-        else:
-            result = await spinner.spin(directory, recursive=recursive)
-    except Exception as e:
-        print(f"Error: Ingestion failed: {e}", file=sys.stderr)
-        sys.exit(1)
+        # Interactive selection
+        selected_files = spinner.interactive_select_files(
+            dir_path,
+            recursive=recursive,
+            follow_symlinks=False
+        )
+
+        if not selected_files:
+            print("\n❌ No files selected or operation cancelled")
+            sys.exit(0)
+
+        # Process selected files
+        try:
+            result = await spinner.spin_custom_files(selected_files)
+        except Exception as e:
+            print(f"Error: Ingestion failed: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    else:
+        # Non-interactive mode
+        print(f"📁 Scanning: {directory}")
+        print(f"   Patterns: {', '.join(allow_patterns)}")
+        print(f"   Exclude: {', '.join(deny_patterns)}")
+        print(f"   Mode: {'incremental' if incremental else 'full'}")
+        print(f"   Chunk size: {chunk_size} chars (overlap: {chunk_overlap})")
+        print()
+
+        # Ingest
+        try:
+            if incremental:
+                result = await spinner.spin_incremental(directory, recursive=recursive)
+            else:
+                result = await spinner.spin(directory, recursive=recursive)
+        except Exception as e:
+            print(f"Error: Ingestion failed: {e}", file=sys.stderr)
+            sys.exit(1)
 
     # Report results
     if not result.success:
@@ -197,6 +227,9 @@ Examples:
   python -m HoloLoom.ingestion.filesystem /path/to/docs \\
       --allow "*.md" "*.rst" --deny "build/**"
 
+  # Interactive file selection
+  python -m HoloLoom.ingestion.filesystem /path/to/docs --interactive
+
   # Incremental (only new/modified files)
   python -m HoloLoom.ingestion.filesystem /path/to/docs --incremental
 
@@ -263,6 +296,13 @@ For more information: https://github.com/blakechasteen/hello-world
         help="Directory for checkpoints (default: ~/.hololoom/checkpoints)"
     )
 
+    # Interactive selection
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Interactively select files to ingest"
+    )
+
     # Importance filtering
     parser.add_argument(
         "--importance-threshold",
@@ -304,6 +344,7 @@ For more information: https://github.com/blakechasteen/hello-world
             deny_patterns=args.deny,
             recursive=not args.no_recursive,
             incremental=args.incremental,
+            interactive=args.interactive,
             dry_run=args.dry_run,
             checkpoint_dir=args.checkpoint_dir,
             importance_threshold=args.importance_threshold,

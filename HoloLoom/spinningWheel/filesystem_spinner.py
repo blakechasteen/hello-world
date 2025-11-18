@@ -623,6 +623,203 @@ class FilesystemSpinner(BaseSpinner):
         abs_path = source_path.resolve()
         return hashlib.md5(str(abs_path).encode()).hexdigest()[:16]
 
+    def interactive_select_files(
+        self,
+        source: Path,
+        recursive: bool = True,
+        follow_symlinks: bool = False
+    ) -> List[Path]:
+        """
+        Interactively select files from a directory.
+
+        Args:
+            source: Directory path to scan
+            recursive: Scan subdirectories
+            follow_symlinks: Follow symbolic links
+
+        Returns:
+            List of selected file paths
+
+        Example:
+            >>> spinner = FilesystemSpinner()
+            >>> selected = spinner.interactive_select_files(Path("/path/to/docs"))
+            >>> result = await spinner.spin_custom_files(selected)
+        """
+        # Scan directory
+        all_files = self._scan_directory(source, recursive, follow_symlinks)
+
+        if not all_files:
+            print("No files found matching patterns.")
+            return []
+
+        # Calculate importance for each file
+        file_info = []
+        for file_path in all_files:
+            importance = self.score_importance(file_path)
+            size = file_path.stat().st_size
+            rel_path = file_path.relative_to(source) if file_path.is_relative_to(source) else file_path
+            file_info.append({
+                'path': file_path,
+                'rel_path': rel_path,
+                'importance': importance.score,
+                'size': size,
+                'selected': True  # Default: all selected
+            })
+
+        # Sort by importance (descending)
+        file_info.sort(key=lambda x: x['importance'], reverse=True)
+
+        # Interactive selection loop
+        print(f"\n{'=' * 70}")
+        print(f"Interactive File Selection")
+        print(f"{'=' * 70}")
+        print(f"Found {len(file_info)} files\n")
+
+        while True:
+            # Display files
+            print(f"\n{'#':<4} {'Sel':<4} {'File':<40} {'Size':<10} {'Importance':<12}")
+            print("-" * 70)
+
+            for i, info in enumerate(file_info, 1):
+                selected_mark = "[✓]" if info['selected'] else "[ ]"
+                size_str = self._format_size(info['size'])
+                imp_str = f"{info['importance']:.2f}"
+
+                # Truncate long paths
+                path_str = str(info['rel_path'])
+                if len(path_str) > 38:
+                    path_str = "..." + path_str[-35:]
+
+                print(f"{i:<4} {selected_mark:<4} {path_str:<40} {size_str:<10} {imp_str:<12}")
+
+            # Show summary
+            selected_count = sum(1 for f in file_info if f['selected'])
+            print("-" * 70)
+            print(f"Selected: {selected_count}/{len(file_info)} files")
+
+            # Prompt for action
+            print("\nActions:")
+            print("  <number>     - Toggle file selection")
+            print("  all          - Select all files")
+            print("  none         - Deselect all files")
+            print("  invert       - Invert selection")
+            print("  done         - Proceed with selected files")
+            print("  cancel       - Cancel and exit")
+
+            action = input("\nEnter action: ").strip().lower()
+
+            if action == "done":
+                # Return selected files
+                selected_files = [info['path'] for info in file_info if info['selected']]
+                if not selected_files:
+                    print("\n⚠️  No files selected. Please select at least one file.")
+                    continue
+                print(f"\n✅ Proceeding with {len(selected_files)} files")
+                return selected_files
+
+            elif action == "cancel":
+                print("\n❌ Selection cancelled")
+                return []
+
+            elif action == "all":
+                for info in file_info:
+                    info['selected'] = True
+                print("✓ Selected all files")
+
+            elif action == "none":
+                for info in file_info:
+                    info['selected'] = False
+                print("✓ Deselected all files")
+
+            elif action == "invert":
+                for info in file_info:
+                    info['selected'] = not info['selected']
+                print("✓ Inverted selection")
+
+            elif action.isdigit():
+                num = int(action)
+                if 1 <= num <= len(file_info):
+                    info = file_info[num - 1]
+                    info['selected'] = not info['selected']
+                    status = "selected" if info['selected'] else "deselected"
+                    print(f"✓ {status.capitalize()}: {info['rel_path']}")
+                else:
+                    print(f"❌ Invalid number. Please enter 1-{len(file_info)}")
+
+            else:
+                print(f"❌ Unknown action: {action}")
+
+    def _format_size(self, size_bytes: int) -> str:
+        """Format file size in human-readable format."""
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size_bytes < 1024.0:
+                return f"{size_bytes:.1f}{unit}"
+            size_bytes /= 1024.0
+        return f"{size_bytes:.1f}TB"
+
+    async def spin_custom_files(self, file_paths: List[Path]) -> SpinResult:
+        """
+        Process a custom list of files.
+
+        Args:
+            file_paths: List of file paths to process
+
+        Returns:
+            SpinResult with shards and metadata
+
+        Example:
+            >>> selected = spinner.interactive_select_files(Path("/path/to/docs"))
+            >>> result = await spinner.spin_custom_files(selected)
+        """
+        start_time = time.time()
+
+        try:
+            # Process each selected file
+            shards = []
+            for file_path in file_paths:
+                file_shards = self._process_file(file_path)
+                shards.extend(file_shards)
+
+            # Filter by importance if threshold set
+            if self.importance_threshold > 0:
+                filtered_shards = []
+                for shard in shards:
+                    importance = shard.metadata.get('importance_score', 0.5)
+                    if importance >= self.importance_threshold:
+                        filtered_shards.append(shard)
+
+                filtered_count = len(shards) - len(filtered_shards)
+                shards = filtered_shards
+            else:
+                filtered_count = 0
+
+            # Calculate metrics
+            processing_time_ms = (time.time() - start_time) * 1000
+
+            # Create result
+            result = SpinResult(
+                shards=shards,
+                success=True,
+                processing_time_ms=processing_time_ms
+            )
+
+            if filtered_count > 0:
+                result.warnings.append(
+                    f"Filtered {filtered_count} shards below importance threshold {self.importance_threshold}"
+                )
+
+            return result
+
+        except Exception as e:
+            processing_time_ms = (time.time() - start_time) * 1000
+
+            return SpinResult(
+                shards=[],
+                success=False,
+                error_message=str(e),
+                processing_time_ms=processing_time_ms
+            )
+
 
 # ============================================================================
 # Convenience Functions
