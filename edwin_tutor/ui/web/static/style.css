@@ -589,3 +589,178 @@ body {
 .lesson-detail {
     animation: fadeIn 0.3s ease;
 }
+
+/* AI Tutor Chat */
+.ai-chat-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    z-index: 999;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ai-chat-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.ai-chat-panel {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 400px;
+    max-height: 600px;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+}
+
+.ai-chat-panel.active {
+    display: flex;
+}
+
+.ai-chat-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-chat-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.ai-chat-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.ai-chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 400px;
+    background: var(--gray-50);
+}
+
+.ai-message, .user-message {
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    border-radius: var(--radius-md);
+    animation: fadeIn 0.3s ease;
+}
+
+.ai-message {
+    background: white;
+    border-left: 4px solid var(--primary);
+}
+
+.user-message {
+    background: var(--primary);
+    color: white;
+    text-align: right;
+}
+
+.ai-message ul {
+    margin: 10px 0 0 20px;
+}
+
+.ai-message strong {
+    color: var(--primary);
+}
+
+.ai-message-sources {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--gray-200);
+    font-size: 14px;
+    color: var(--gray-600);
+}
+
+.ai-chat-input {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 10px;
+}
+
+.ai-chat-input input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+}
+
+.ai-chat-input input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.ai-chat-suggestions {
+    padding: 10px 15px 15px;
+    background: white;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-small:hover {
+    background: var(--gray-200);
+    border-color: var(--gray-400);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ai-chat-panel {
+        width: calc(100% - 60px);
+        right: 15px;
+        left: 15px;
+    }
+
+    .ai-chat-button {
+        bottom: 15px;
+        right: 15px;
+    }
+}

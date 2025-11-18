@@ -156,6 +156,39 @@
         </div>
     </div>
 
+    <!-- AI Tutor Chat Panel -->
+    <div id="ai-chat-panel" class="ai-chat-panel">
+        <div class="ai-chat-header">
+            <span>🤖 AI Tutor</span>
+            <button class="ai-chat-close" onclick="toggleAIChat()">✕</button>
+        </div>
+        <div class="ai-chat-messages" id="ai-chat-messages">
+            <div class="ai-message">
+                <strong>AI Tutor:</strong> Hi! I'm your AI tutor. Ask me anything about HoloLoom! I can:
+                <ul>
+                    <li>Explain concepts</li>
+                    <li>Provide hints for challenges</li>
+                    <li>Recommend next lessons</li>
+                    <li>Answer technical questions</li>
+                </ul>
+            </div>
+        </div>
+        <div class="ai-chat-input">
+            <input type="text" id="ai-question-input" placeholder="Ask a question..." />
+            <button class="btn btn-primary" onclick="askAITutor()">Send</button>
+        </div>
+        <div class="ai-chat-suggestions">
+            <button class="btn-small" onclick="askSuggestion('What is HoloLoom?')">What is HoloLoom?</button>
+            <button class="btn-small" onclick="askSuggestion('How do memory shards work?')">Memory Shards?</button>
+            <button class="btn-small" onclick="askSuggestion('Get recommendations')">Recommendations</button>
+        </div>
+    </div>
+
+    <!-- AI Tutor Floating Button -->
+    <button id="ai-chat-button" class="ai-chat-button" onclick="toggleAIChat()">
+        🤖 AI Tutor
+    </button>
+
     <script src="app.js"></script>
 </body>
 </html>

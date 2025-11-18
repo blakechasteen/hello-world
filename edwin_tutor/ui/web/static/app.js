@@ -487,7 +487,141 @@ function updateBadgesView() {
     loadBadges();
 }
 
+// AI Tutor Functions
+let aiChatActive = false;
+
+function toggleAIChat() {
+    const chatPanel = document.getElementById('ai-chat-panel');
+    const chatButton = document.getElementById('ai-chat-button');
+
+    aiChatActive = !aiChatActive;
+
+    if (aiChatActive) {
+        chatPanel.classList.add('active');
+        chatButton.style.display = 'none';
+    } else {
+        chatPanel.classList.remove('active');
+        chatButton.style.display = 'block';
+    }
+}
+
+async function askAITutor() {
+    const input = document.getElementById('ai-question-input');
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    // Add user message to chat
+    addChatMessage('user', question);
+
+    // Clear input
+    input.value = '';
+
+    // Special case: recommendations
+    if (question.toLowerCase().includes('recommend')) {
+        await getAIRecommendations();
+        return;
+    }
+
+    // Show typing indicator
+    const typingId = addChatMessage('ai', '💭 Thinking...');
+
+    try {
+        const response = await apiPost('/ai-tutor/ask', {
+            question: question,
+            current_lesson: currentLesson ? currentLesson.id : null,
+            hint_mode: false
+        });
+
+        // Remove typing indicator
+        document.getElementById(typingId).remove();
+
+        // Add AI response
+        let messageHTML = `<strong>AI Tutor:</strong> ${response.answer}`;
+
+        if (response.source_lessons && response.source_lessons.length > 0) {
+            messageHTML += `<div class="ai-message-sources">📚 Related lessons: ${response.source_lessons.join(', ')}</div>`;
+        }
+
+        if (response.follow_up_questions && response.follow_up_questions.length > 0) {
+            messageHTML += `<div class="ai-message-sources">💡 Follow-up: ${response.follow_up_questions.join(', ')}</div>`;
+        }
+
+        addChatMessage('ai', messageHTML);
+
+    } catch (error) {
+        document.getElementById(typingId).remove();
+        addChatMessage('ai', `<strong>Error:</strong> ${error.message || 'Failed to get response'}`);
+    }
+}
+
+async function getAIRecommendations() {
+    const typingId = addChatMessage('ai', '💭 Finding recommendations...');
+
+    try {
+        const recommendations = await apiGet('/ai-tutor/recommendations');
+
+        document.getElementById(typingId).remove();
+
+        if (recommendations.length === 0) {
+            addChatMessage('ai', '<strong>AI Tutor:</strong> Great job! You\'ve completed all available lessons!');
+            return;
+        }
+
+        let messageHTML = '<strong>AI Tutor:</strong> Based on your progress, here are my recommendations:<br><br>';
+
+        recommendations.forEach((rec, idx) => {
+            messageHTML += `${idx + 1}. <strong>${rec.title}</strong><br>`;
+            messageHTML += `   Reason: ${rec.reason}<br>`;
+            messageHTML += `   XP: ${rec.xp_reward} | Difficulty: ${rec.difficulty}<br><br>`;
+        });
+
+        addChatMessage('ai', messageHTML);
+
+    } catch (error) {
+        document.getElementById(typingId).remove();
+        addChatMessage('ai', `<strong>Error:</strong> ${error.message || 'Failed to get recommendations'}`);
+    }
+}
+
+function addChatMessage(type, content) {
+    const messagesContainer = document.getElementById('ai-chat-messages');
+    const messageId = `msg-${Date.now()}`;
+
+    const messageDiv = document.createElement('div');
+    messageDiv.id = messageId;
+    messageDiv.className = type === 'user' ? 'user-message' : 'ai-message';
+    messageDiv.innerHTML = content;
+
+    messagesContainer.appendChild(messageDiv);
+
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    return messageId;
+}
+
+function askSuggestion(question) {
+    document.getElementById('ai-question-input').value = question;
+    askAITutor();
+}
+
+// Handle Enter key in AI chat input
+document.addEventListener('DOMContentLoaded', () => {
+    const aiInput = document.getElementById('ai-question-input');
+    if (aiInput) {
+        aiInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                askAITutor();
+            }
+        });
+    }
+});
+
 // Make functions available globally for onclick handlers
 window.submitChallenge = submitChallenge;
 window.showHint = showHint;
 window.closeLevelUpModal = closeLevelUpModal;
+window.toggleAIChat = toggleAIChat;
+window.askAITutor = askAITutor;
+window.askSuggestion = askSuggestion;

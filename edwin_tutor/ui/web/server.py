@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from core.lesson import LessonManager, Lesson
 from core.progress import ProgressTracker
+from core.ai_tutor import AITutor
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)  # Enable CORS for development
@@ -24,6 +25,24 @@ CORS(app)  # Enable CORS for development
 content_dir = Path(__file__).parent.parent.parent / "content"
 lesson_manager = LessonManager(content_dir)
 progress_tracker = ProgressTracker()
+
+# Initialize AI Tutor (async initialization happens on first request)
+ai_tutor = None
+ai_tutor_lock = asyncio.Lock()
+
+async def get_ai_tutor():
+    """Get or initialize the AI tutor instance."""
+    global ai_tutor
+    async with ai_tutor_lock:
+        if ai_tutor is None:
+            ai_tutor_instance = AITutor(
+                content_dir=content_dir,
+                progress_tracker=progress_tracker,
+                config_mode="fast"
+            )
+            await ai_tutor_instance.initialize_hololoom()
+            ai_tutor = ai_tutor_instance
+        return ai_tutor
 
 
 @app.route('/')
@@ -192,6 +211,72 @@ def get_badges():
         })
 
     return jsonify(badges_data)
+
+
+@app.route('/api/ai-tutor/ask', methods=['POST'])
+def ai_tutor_ask():
+    """Ask the AI tutor a question."""
+    data = request.json
+    question = data.get('question')
+    current_lesson = data.get('current_lesson')
+    hint_mode = data.get('hint_mode', False)
+
+    if not question:
+        return jsonify({'error': 'question required'}), 400
+
+    # Run async AI tutor query
+    async def ask_question():
+        tutor = await get_ai_tutor()
+        response = await tutor.ask(question, current_lesson=current_lesson, hint_mode=hint_mode)
+        return {
+            'answer': response.answer,
+            'confidence': response.confidence,
+            'hint': response.hint,
+            'follow_up_questions': response.follow_up_questions,
+            'recommended_lessons': response.recommended_lessons,
+            'source_lessons': response.source_lessons
+        }
+
+    try:
+        result = asyncio.run(ask_question())
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ai-tutor/recommendations', methods=['GET'])
+def ai_tutor_recommendations():
+    """Get personalized lesson recommendations."""
+    async def get_recommendations():
+        tutor = await get_ai_tutor()
+        return tutor.get_personalized_recommendations()
+
+    try:
+        recommendations = asyncio.run(get_recommendations())
+        return jsonify(recommendations)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ai-tutor/hint', methods=['POST'])
+def ai_tutor_hint():
+    """Get a hint for a specific quiz question."""
+    data = request.json
+    lesson_id = data.get('lesson_id')
+    question_idx = data.get('question_idx')
+
+    if not lesson_id or question_idx is None:
+        return jsonify({'error': 'lesson_id and question_idx required'}), 400
+
+    async def get_hint():
+        tutor = await get_ai_tutor()
+        return tutor.get_hint_for_quiz(lesson_id, question_idx)
+
+    try:
+        hint = asyncio.run(get_hint())
+        return jsonify({'hint': hint})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

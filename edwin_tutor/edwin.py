@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.lesson import LessonManager, Lesson, LessonType, Difficulty
 from core.progress import ProgressTracker
+from core.ai_tutor import AITutor
 
 
 class Colors:
@@ -43,6 +44,8 @@ class EdWINTerminal:
         self.progress_tracker = ProgressTracker()
         self.current_lesson: Optional[Lesson] = None
         self.hint_level = 0  # Track hint progression
+        self.ai_tutor: Optional[AITutor] = None
+        self.ai_tutor_enabled = False
 
     def print_header(self, text: str):
         """Print a styled header."""
@@ -239,17 +242,111 @@ I'll help you learn HoloLoom through:
         self.hint_level += 1
         self.progress_tracker.use_hint()
 
+    async def initialize_ai_tutor(self):
+        """Initialize the AI tutor system."""
+        if self.ai_tutor_enabled:
+            return
+
+        print(f"{Colors.CYAN}🤖 Initializing AI Tutor...{Colors.END}")
+        try:
+            content_dir = Path(__file__).parent / "content"
+            self.ai_tutor = AITutor(
+                content_dir=content_dir,
+                progress_tracker=self.progress_tracker,
+                config_mode="fast"
+            )
+            await self.ai_tutor.initialize_hololoom()
+            self.ai_tutor_enabled = True
+            self.print_success("AI Tutor ready! You can now ask questions.")
+        except Exception as e:
+            self.print_error(f"Failed to initialize AI Tutor: {e}")
+            print(f"{Colors.YELLOW}Continuing without AI Tutor...{Colors.END}")
+
+    async def ask_ai_tutor(self):
+        """Interactive session with AI tutor."""
+        if not self.ai_tutor_enabled:
+            print(f"{Colors.YELLOW}AI Tutor not initialized. Initializing now...{Colors.END}")
+            await self.initialize_ai_tutor()
+            if not self.ai_tutor_enabled:
+                return
+
+        self.print_header("🤖 AI Tutor")
+        print(f"""
+{Colors.BOLD}Ask me anything about HoloLoom!{Colors.END}
+
+I can help with:
+  {Colors.YELLOW}•{Colors.END} Explaining concepts
+  {Colors.YELLOW}•{Colors.END} Providing hints for challenges
+  {Colors.YELLOW}•{Colors.END} Recommending next lessons
+  {Colors.YELLOW}•{Colors.END} Answering technical questions
+
+Type 'back' to return to the main menu.
+""")
+
+        while True:
+            question = input(f"\n{Colors.CYAN}Your question: {Colors.END}").strip()
+
+            if question.lower() == 'back':
+                break
+
+            if not question:
+                continue
+
+            # Ask the AI tutor
+            current_lesson_id = self.current_lesson.id if self.current_lesson else None
+            response = await self.ai_tutor.ask(question, current_lesson=current_lesson_id)
+
+            print(f"\n{Colors.BOLD}AI Tutor:{Colors.END}")
+            print(response.answer)
+
+            if response.source_lessons:
+                print(f"\n{Colors.BLUE}📚 Related lessons: {', '.join(response.source_lessons)}{Colors.END}")
+
+            if response.follow_up_questions:
+                print(f"\n{Colors.YELLOW}💡 Follow-up questions:{Colors.END}")
+                for q in response.follow_up_questions:
+                    print(f"  • {q}")
+
+            print()
+
+    def show_ai_recommendations(self):
+        """Show personalized lesson recommendations."""
+        if not self.ai_tutor_enabled:
+            print(f"{Colors.YELLOW}AI Tutor not available for recommendations.{Colors.END}")
+            return
+
+        self.print_header("🎯 Recommended for You")
+
+        recommendations = self.ai_tutor.get_personalized_recommendations()
+
+        if not recommendations:
+            print(f"{Colors.GREEN}Great job! You've completed all available lessons!{Colors.END}")
+            return
+
+        print(f"{Colors.BOLD}Based on your progress, here's what you should learn next:{Colors.END}\n")
+
+        for idx, rec in enumerate(recommendations, 1):
+            print(f"{idx}. {Colors.BOLD}{rec['title']}{Colors.END}")
+            print(f"   {Colors.BLUE}Reason:{Colors.END} {rec['reason']}")
+            print(f"   {Colors.GREEN}XP:{Colors.END} {rec['xp_reward']} | {Colors.YELLOW}Difficulty:{Colors.END} {rec['difficulty']}")
+            print()
+
     async def run(self):
         """Main interactive loop."""
+        # Initialize AI tutor asynchronously
+        await self.initialize_ai_tutor()
+
         self.show_welcome()
 
         while True:
             print(f"\n{Colors.BOLD}What would you like to do?{Colors.END}")
             print("  1. Start a lesson")
             print("  2. View progress")
-            print("  3. Exit")
+            print("  3. 🤖 Ask AI Tutor")
+            print("  4. 🎯 Get recommendations")
+            print("  5. Exit")
 
-            choice = input(f"\n{Colors.CYAN}Choose (1-3): {Colors.END}").strip()
+            choice = input(f"\n{Colors.CYAN}Choose (1-5): {Colors.END}").strip()
 
             if choice == '1':
                 self.show_lesson_menu()
@@ -295,11 +392,20 @@ I'll help you learn HoloLoom through:
                 print(f"Completion Rate: {Colors.CYAN}{stats['completion_rate']:.1f}%{Colors.END}")
 
             elif choice == '3':
+                await self.ask_ai_tutor()
+
+            elif choice == '4':
+                self.show_ai_recommendations()
+
+            elif choice == '5':
+                # Clean up AI tutor
+                if self.ai_tutor:
+                    await self.ai_tutor.close()
                 print(f"\n{Colors.BOLD}Thanks for learning with EdWIN! Keep exploring HoloLoom! 🚀{Colors.END}\n")
                 break
 
             else:
-                self.print_error("Invalid choice. Please enter 1, 2, or 3.")
+                self.print_error("Invalid choice. Please enter 1-5.")
 
 
 def main():
