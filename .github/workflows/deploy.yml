@@ -1,0 +1,62 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Deploy to ${{ github.event.inputs.environment }}
+        run: |
+          echo "Deploying to ${{ github.event.inputs.environment }}..."
+
+          # In production, this would use kubectl, docker-compose, or cloud provider CLI
+          # Example with docker-compose:
+          # ssh ${{ secrets.DEPLOY_HOST }} "cd /app && docker-compose pull && docker-compose up -d"
+
+          # Example with Kubernetes:
+          # kubectl set image deployment/lms-backend backend=ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+          echo "✅ Deployment to ${{ github.event.inputs.environment }} complete!"
+
+      - name: Run database migrations
+        if: github.event.inputs.environment == 'production'
+        run: |
+          echo "Running database migrations..."
+          # ssh ${{ secrets.DEPLOY_HOST }} "cd /app && docker-compose exec -T api alembic upgrade head"
+
+      - name: Health check
+        run: |
+          echo "Running health check..."
+          # curl -f https://api.lms.example.com/health || exit 1
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Deployment successful!"
+          # Send Slack/Discord notification
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK }} -d '{"text":"Deployed to ${{ github.event.inputs.environment }}"}'
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed! Rolling back..."
+          # kubectl rollout undo deployment/lms-backend

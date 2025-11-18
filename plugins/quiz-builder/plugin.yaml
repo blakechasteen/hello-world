@@ -1,0 +1,64 @@
+name: quiz-builder
+version: 1.0.0
+category: assessment
+description: Simple quiz builder with multiple choice, true/false, and short answer questions
+author: LMS Team
+
+permissions:
+  - database:read
+  - database:write
+  - knowledge_graph:write
+  - events:publish
+
+hooks:
+  - before_assessment_render
+  - after_assessment_submit
+  - on_question_answer
+
+api_routes:
+  - path: /quiz/{quiz_id}
+    method: GET
+    description: Get quiz configuration
+  - path: /quiz/{quiz_id}/submit
+    method: POST
+    description: Submit quiz answers
+  - path: /quiz/{quiz_id}/results/{student_id}
+    method: GET
+    description: Get quiz results
+
+ui_components:
+  - name: QuizBuilder
+    type: react
+    path: frontend/QuizBuilder.tsx
+  - name: QuizRenderer
+    type: react
+    path: frontend/QuizRenderer.tsx
+  - name: QuizResults
+    type: react
+    path: frontend/QuizResults.tsx
+
+config_schema:
+  show_correct_answers:
+    type: boolean
+    default: true
+    description: Show correct answers after submission
+  allow_retakes:
+    type: boolean
+    default: true
+    description: Allow multiple attempts
+  max_attempts:
+    type: integer
+    default: 3
+    description: Maximum number of attempts
+  shuffle_questions:
+    type: boolean
+    default: false
+    description: Randomize question order
+  shuffle_options:
+    type: boolean
+    default: false
+    description: Randomize answer options
+  time_limit_minutes:
+    type: integer
+    default: null
+    description: Optional time limit

@@ -1,0 +1,60 @@
+name: video-player
+version: 1.0.0
+category: content
+description: Interactive video player with embedded quizzes and analytics
+author: LMS Team
+
+permissions:
+  - database:read
+  - database:write
+  - events:publish
+  - files:read
+
+hooks:
+  - before_lesson_render
+  - on_video_progress
+  - on_video_complete
+  - on_embedded_quiz_submit
+
+api_routes:
+  - path: /video/{video_id}/progress
+    method: POST
+    description: Track video progress
+  - path: /video/{video_id}/analytics
+    method: GET
+    description: Get video analytics
+
+ui_components:
+  - name: VideoPlayer
+    type: react
+    path: frontend/VideoPlayer.tsx
+  - name: VideoAnalytics
+    type: react
+    path: frontend/VideoAnalytics.tsx
+
+config_schema:
+  autoplay:
+    type: boolean
+    default: false
+    description: Auto-play videos on load
+  enable_speed_control:
+    type: boolean
+    default: true
+    description: Allow playback speed adjustment
+  enable_skip:
+    type: boolean
+    default: false
+    description: Allow skipping ahead
+  quiz_pause_video:
+    type: boolean
+    default: true
+    description: Pause video when quiz appears
+  analytics_interval_seconds:
+    type: integer
+    default: 30
+    description: How often to send progress events
+
+dependencies:
+  - plugin: engagement-tracking
+    version: ">=1.0.0"
+    optional: true

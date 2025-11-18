@@ -1,0 +1,51 @@
+name: analytics-dashboard
+version: 1.0.0
+category: analytics
+description: Student and course analytics with visualizations
+author: LMS Team
+
+permissions:
+  - database:read
+  - analytics:read
+  - knowledge_graph:read
+
+hooks:
+  - on_student_dashboard
+  - on_instructor_dashboard
+  - on_admin_dashboard
+
+api_routes:
+  - path: /analytics/student/{student_id}
+    method: GET
+    description: Get student analytics
+  - path: /analytics/course/{course_id}
+    method: GET
+    description: Get course analytics
+  - path: /analytics/institution/{institution_id}
+    method: GET
+    description: Get institution-wide analytics
+
+ui_components:
+  - name: StudentDashboard
+    type: react
+    path: frontend/StudentDashboard.tsx
+  - name: InstructorDashboard
+    type: react
+    path: frontend/InstructorDashboard.tsx
+  - name: AdminDashboard
+    type: react
+    path: frontend/AdminDashboard.tsx
+
+config_schema:
+  update_interval_minutes:
+    type: integer
+    default: 60
+    description: How often to refresh analytics
+  show_predictions:
+    type: boolean
+    default: true
+    description: Show predictive analytics (at-risk students)
+  enable_benchmarking:
+    type: boolean
+    default: true
+    description: Compare against institution benchmarks
