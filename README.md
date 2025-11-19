@@ -9,6 +9,51 @@
 
 ---
 
+graph TD
+    %% Nodes
+    User([User Query])
+    
+    subgraph Core["⚡ The Weaving Core"]
+        Shuttle{{"🚄 The Shuttle<br>(Orchestrator)"}}
+        Guardrails[("🛡️ Safety Guardrails")]
+    end
+
+    subgraph Memory["🧠 Memory Systems"]
+        Yarn[("🧶 Yarn Graph<br>(Symbolic/Discrete)")]
+        Warp[("🌀 Warp Space<br>(Neural/Continuous)")]
+    end
+
+    subgraph Output["🌌 Artifacts"]
+        Spacetime["📜 Spacetime<br>(Response + Provenance)"]
+    end
+    
+    subgraph Learning["🔄 Recursive Loop"]
+        RL["📈 Recursive Learning<br>(Update Priors)"]
+    end
+
+    %% Connections
+    User --> Shuttle
+    Shuttle <--> Guardrails
+    Shuttle -- "Weave" --> Yarn
+    Shuttle -- "Embed" --> Warp
+    
+    Yarn --> Spacetime
+    Warp --> Spacetime
+    
+    Spacetime --> RL
+    RL -.->|"Update Policy (Thompson Sampling)"| Shuttle
+    RL -.->|"Strengthen Patterns"| Yarn
+
+    %% Styling
+    classDef primary fill:#2d3436,stroke:#0984e3,stroke-width:2px,color:#fff;
+    classDef secondary fill:#2d3436,stroke:#6c5ce7,stroke-width:2px,color:#fff;
+    classDef accent fill:#2d3436,stroke:#00b894,stroke-width:2px,color:#fff;
+    
+    class Shuttle,Spacetime primary;
+    class Yarn,Warp secondary;
+    class RL,Guardrails accent;
+
+
 ## 🔬 Research Status
 
 **Current Release**: Layers 1-5 (memory, decision-making, explainability) - Production ready
