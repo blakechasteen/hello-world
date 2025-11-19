@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Dashboard - Elle Core</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/budget">Budget</a>
+        <a href="/products">Products</a>
+        <a href="/planner">Planner</a>
+        <a href="/tracker">Tracker</a>
+    </nav>
+
+    <h1>Budget Dashboard</h1>
+    <p class="subtitle">Budget tracking and variance analysis</p>
+
+    <!-- Budget Selector -->
+    <div class="panel">
+        <label for="budget-select">Select Budget:</label>
+        <select id="budget-select" onchange="loadBudget()">
+            <option value="">Loading...</option>
+        </select>
+    </div>
+
+    <!-- Budget Summary -->
+    <div class="dashboard-grid">
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Planned Revenue</div>
+                <div class="metric-value" id="planned-revenue">$0</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Actual Revenue</div>
+                <div class="metric-value" id="actual-revenue">$0</div>
+                <div class="metric-delta" id="revenue-variance"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Planned Costs</div>
+                <div class="metric-value" id="planned-costs">$0</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Actual Costs</div>
+                <div class="metric-value" id="actual-costs">$0</div>
+                <div class="metric-delta" id="costs-variance"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Variance Chart -->
+    <h2>Budget Variance</h2>
+    <div class="panel full-width">
+        <div id="variance-chart" class="chart-container"></div>
+    </div>
+
+    <!-- Revenue vs Costs Breakdown -->
+    <h2>Revenue vs Costs</h2>
+    <div class="dashboard-grid">
+        <div class="panel">
+            <h3>Revenue Breakdown</h3>
+            <div id="revenue-breakdown-chart" class="chart-container"></div>
+        </div>
+        <div class="panel">
+            <h3>Cost Breakdown</h3>
+            <div id="costs-breakdown-chart" class="chart-container"></div>
+        </div>
+    </div>
+
+    <!-- Reinvestment Plan -->
+    <h2>Reinvestment Allocation</h2>
+    <div class="panel full-width">
+        <div id="reinvestment-chart" class="chart-container"></div>
+    </div>
+
+    <!-- Cash Flow Forecast -->
+    <h2>12-Week Cash Flow Projection</h2>
+    <div class="panel full-width">
+        <div id="forecast-chart" class="chart-container"></div>
+    </div>
+
+    <!-- Budget Details Table -->
+    <h2>Budget Line Items</h2>
+    <div class="panel full-width">
+        <table id="budget-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th class="numeric">Planned</th>
+                    <th class="numeric">Actual</th>
+                    <th class="numeric">Variance</th>
+                    <th class="numeric">Variance %</th>
+                </tr>
+            </thead>
+            <tbody id="budget-body">
+                <tr><td colspan="6" class="text-center">Select a budget</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        let currentBudgetId = null;
+
+        // Load budget list
+        async function loadBudgetList() {
+            try {
+                const budgets = await API.budgets.list();
+                const select = document.getElementById('budget-select');
+
+                if (budgets.length === 0) {
+                    select.innerHTML = '<option value="">No budgets available</option>';
+                } else {
+                    select.innerHTML = budgets.map(b =>
+                        `<option value="${b.budget_id}">${b.name} (${b.period})</option>`
+                    ).join('');
+
+                    // Load first budget
+                    currentBudgetId = budgets[0].budget_id;
+                    loadBudget();
+                }
+            } catch (error) {
+                console.error('Failed to load budgets:', error);
+                Notifications.error('Failed to load budgets');
+            }
+        }
+
+        // Load selected budget
+        async function loadBudget() {
+            const select = document.getElementById('budget-select');
+            currentBudgetId = select.value;
+
+            if (!currentBudgetId) return;
+
+            try {
+                const budget = await API.budgets.get(currentBudgetId);
+
+                // Update summary metrics
+                document.getElementById('planned-revenue').textContent = Format.currency(budget.revenue_planned);
+                document.getElementById('actual-revenue').textContent = Format.currency(budget.revenue_actual);
+                document.getElementById('planned-costs').textContent = Format.currency(budget.costs_planned);
+                document.getElementById('actual-costs').textContent = Format.currency(budget.costs_actual);
+
+                // Calculate and display variances
+                const revenueVariance = budget.revenue_actual - budget.revenue_planned;
+                const costsVariance = budget.costs_actual - budget.costs_planned;
+
+                const revenueVarianceEl = document.getElementById('revenue-variance');
+                revenueVarianceEl.textContent = Format.currency(Math.abs(revenueVariance));
+                revenueVarianceEl.className = revenueVariance >= 0 ? 'metric-delta positive' : 'metric-delta negative';
+
+                const costsVarianceEl = document.getElementById('costs-variance');
+                costsVarianceEl.textContent = Format.currency(Math.abs(costsVariance));
+                costsVarianceEl.className = costsVariance <= 0 ? 'metric-delta positive' : 'metric-delta negative';
+
+                // Update budget table
+                updateBudgetTable(budget);
+
+                // Load and render charts
+                await loadCharts(budget);
+
+            } catch (error) {
+                console.error('Failed to load budget:', error);
+                Notifications.error('Failed to load budget details');
+            }
+        }
+
+        // Update budget details table
+        function updateBudgetTable(budget) {
+            const tbody = document.getElementById('budget-body');
+
+            if (!budget.lines || budget.lines.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No budget lines</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = budget.lines.map(line => `
+                <tr>
+                    <td>${line.category}</td>
+                    <td>${line.description}</td>
+                    <td class="numeric">${Format.currency(line.planned_amount)}</td>
+                    <td class="numeric">${Format.currency(line.actual_amount)}</td>
+                    <td class="numeric ${line.variance >= 0 ? 'positive' : 'negative'}">
+                        ${Format.currency(line.variance)}
+                    </td>
+                    <td class="numeric ${line.variance_pct >= 0 ? 'positive' : 'negative'}">
+                        ${Format.percent(line.variance_pct)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Load and render all charts
+        async function loadCharts(budget) {
+            // Variance chart
+            renderVarianceChart(budget);
+
+            // Revenue breakdown
+            renderRevenueBreakdown(budget);
+
+            // Costs breakdown
+            renderCostsBreakdown(budget);
+
+            // Reinvestment chart
+            renderReinvestmentChart(budget);
+
+            // Cash flow forecast
+            await renderForecastChart();
+        }
+
+        // Render variance chart
+        function renderVarianceChart(budget) {
+            const categories = budget.lines.map(l => l.category);
+            const planned = budget.lines.map(l => l.planned_amount);
+            const actual = budget.lines.map(l => l.actual_amount);
+
+            const data = [
+                {
+                    x: categories,
+                    y: planned,
+                    name: 'Planned',
+                    type: 'bar',
+                    marker: { color: '#4682b4' }
+                },
+                {
+                    x: categories,
+                    y: actual,
+                    name: 'Actual',
+                    type: 'bar',
+                    marker: { color: '#2d882d' }
+                }
+            ];
+
+            const layout = {
+                title: '',
+                barmode: 'group',
+                showlegend: true,
+                margin: { t: 20, b: 100 },
+                xaxis: { tickangle: -45 },
+                yaxis: { title: 'Amount ($)' }
+            };
+
+            Plotly.newPlot('variance-chart', data, layout, { responsive: true });
+        }
+
+        // Render revenue breakdown
+        function renderRevenueBreakdown(budget) {
+            const revenueLines = budget.lines.filter(l => l.category.startsWith('revenue_'));
+            const labels = revenueLines.map(l => l.description);
+            const values = revenueLines.map(l => l.actual_amount);
+
+            const data = [{
+                labels: labels,
+                values: values,
+                type: 'pie',
+                marker: {
+                    colors: ['#4682b4', '#2d882d', '#ff8f00', '#d32f2f', '#9c27b0']
+                }
+            }];
+
+            const layout = {
+                margin: { t: 20, b: 20, l: 20, r: 20 },
+                showlegend: true
+            };
+
+            Plotly.newPlot('revenue-breakdown-chart', data, layout, { responsive: true });
+        }
+
+        // Render costs breakdown
+        function renderCostsBreakdown(budget) {
+            const costLines = budget.lines.filter(l => l.category.startsWith('cost_'));
+            const labels = costLines.map(l => l.description);
+            const values = costLines.map(l => l.actual_amount);
+
+            const data = [{
+                labels: labels,
+                values: values,
+                type: 'pie',
+                marker: {
+                    colors: ['#d32f2f', '#ff8f00', '#4682b4', '#2d882d', '#9c27b0']
+                }
+            }];
+
+            const layout = {
+                margin: { t: 20, b: 20, l: 20, r: 20 },
+                showlegend: true
+            };
+
+            Plotly.newPlot('costs-breakdown-chart', data, layout, { responsive: true });
+        }
+
+        // Render reinvestment chart
+        function renderReinvestmentChart(budget) {
+            const reinvestLines = budget.lines.filter(l => l.category.startsWith('reinvest_'));
+            const labels = reinvestLines.map(l => l.description);
+            const planned = reinvestLines.map(l => l.planned_amount);
+            const actual = reinvestLines.map(l => l.actual_amount);
+
+            const data = [
+                {
+                    x: labels,
+                    y: planned,
+                    name: 'Planned',
+                    type: 'bar',
+                    marker: { color: '#4682b4' }
+                },
+                {
+                    x: labels,
+                    y: actual,
+                    name: 'Actual',
+                    type: 'bar',
+                    marker: { color: '#2d882d' }
+                }
+            ];
+
+            const layout = {
+                barmode: 'group',
+                showlegend: true,
+                margin: { t: 20, b: 80 },
+                yaxis: { title: 'Amount ($)' }
+            };
+
+            Plotly.newPlot('reinvestment-chart', data, layout, { responsive: true });
+        }
+
+        // Render cash flow forecast
+        async function renderForecastChart() {
+            if (!currentBudgetId) return;
+
+            try {
+                const forecast = await API.budgets.forecast(currentBudgetId, 12);
+                const weeks = forecast.weeks.map(w => `Week ${w.week_number}`);
+                const cashFlow = forecast.weeks.map(w => w.ending_cash);
+
+                const data = [{
+                    x: weeks,
+                    y: cashFlow,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: { color: '#4682b4', width: 2 },
+                    marker: { size: 6 }
+                }];
+
+                const layout = {
+                    margin: { t: 20, b: 60 },
+                    xaxis: { title: 'Week' },
+                    yaxis: { title: 'Cash ($)' }
+                };
+
+                Plotly.newPlot('forecast-chart', data, layout, { responsive: true });
+            } catch (error) {
+                console.error('Failed to load forecast:', error);
+            }
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBudgetList();
+        });
+    </script>
+</body>
+</html>

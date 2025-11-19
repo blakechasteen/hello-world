@@ -1,68 +1,43 @@
-"""Elle: AR guide for unfolding work.
+"""
+Elle Core - Farm & Kitchen Cooperative Intelligence System
 
-A quiet, observant presence that helps you see what you're looking at
-and decide what to do next.
+Comprehensive operational intelligence for Coz using HoloLoom/MirrorCore.
 
-Architecture:
-    adapters → engine → core → tools → infra
+Key components:
+- Voice-editable SOPs
+- Real-time time/profit tracking
+- Decision support engine
+- Knowledge management (HoloLoom RAG)
+- Predictive analytics
 
-Layers:
-    - Interface Adapters: AR / Matrix / CLI
-    - Orchestrator: ElleEngine routes requests
-    - Core: Policy + prompting + LLM calls
-    - Domain & Services: Models, memory, tools
-    - Infrastructure: Config, logging, persistence
-
-Key principles:
-    - LLM is policy, not glue
-    - Event in → Decision → Command out
-    - Stateless per-request, stateful via memory
-    - Everything is replaceable
-
-See ELLE_ARCHITECTURE.md for complete design.
+Created: 2025-11-15
+Author: Blake Chasteen
+Version: 0.1.0-alpha
 """
 
-__version__ = "0.1.0"
+from elle.sop_schema import SOP, SOPStep, Ingredient, StepType, UnitType
+from elle.tracker import TaskTracker, TaskResult, TaskStatus
+from elle.voice_interface import VoiceSOPEditor
+from elle.mirrorcore import DecisionEngine, ElleKnowledge, Recommendation
+from elle.budget import BudgetBuilder, Budget, BudgetLine, BudgetCategory, BudgetPeriod
 
-from .domain import (
-    SceneSnapshot,
-    UserIntent,
-    UserState,
-    ElleAction,
-    ElleRequest,
-)
-from .engine import ElleEngine, create_request
-from .core import EllePolicy, PromptBuilder, create_llm_client
-from .memory import MemoryStore, MemorySnapshot, InMemoryMemoryStore
-from .tools import ToolRegistry, create_default_registry
-from .infra import ElleConfig
-
+__version__ = "0.1.0-alpha"
 __all__ = [
-    # Domain
-    'SceneSnapshot',
-    'UserIntent',
-    'UserState',
-    'ElleAction',
-    'ElleRequest',
-    
-    # Engine
-    'ElleEngine',
-    'create_request',
-    
-    # Core
-    'EllePolicy',
-    'PromptBuilder',
-    'create_llm_client',
-    
-    # Memory
-    'MemoryStore',
-    'MemorySnapshot',
-    'InMemoryMemoryStore',
-    
-    # Tools
-    'ToolRegistry',
-    'create_default_registry',
-    
-    # Config
-    'ElleConfig',
+    "SOP",
+    "SOPStep",
+    "Ingredient",
+    "StepType",
+    "UnitType",
+    "TaskTracker",
+    "TaskResult",
+    "TaskStatus",
+    "VoiceSOPEditor",
+    "DecisionEngine",
+    "ElleKnowledge",
+    "Recommendation",
+    "BudgetBuilder",
+    "Budget",
+    "BudgetLine",
+    "BudgetCategory",
+    "BudgetPeriod",
 ]

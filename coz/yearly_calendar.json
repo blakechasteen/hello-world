@@ -1,0 +1,282 @@
+{
+  "calendar_year": 2025,
+  "farm_name": "Farm & Kitchen Cooperative",
+  "timezone": "America/New_York",
+  "events": [
+    {
+      "id": "tax_q1",
+      "name": "Q1 Tax Payment Due",
+      "type": "FINANCIAL",
+      "month": 1,
+      "day": 15,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Federal quarterly estimated tax payment",
+      "reminder_days": 7
+    },
+    {
+      "id": "seed_order",
+      "name": "Order Seeds for Spring",
+      "type": "PLANTING",
+      "month": 1,
+      "day": 31,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Place seed orders before spring planting season",
+      "reminder_days": 14
+    },
+    {
+      "id": "insurance_renewal",
+      "name": "Farm Insurance Renewal",
+      "type": "REGULATORY",
+      "month": 2,
+      "day": 1,
+      "recurrence": "yearly",
+      "priority": "CRITICAL",
+      "notes": "Annual farm and product liability insurance renewal",
+      "reminder_days": 30
+    },
+    {
+      "id": "spring_plant_start",
+      "name": "Start Spring Seedlings",
+      "type": "PLANTING",
+      "month": 3,
+      "day": 1,
+      "end_month": 3,
+      "end_day": 31,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Start tomatoes, peppers, herbs indoors 6-8 weeks before last frost",
+      "related_products": ["Hot Sauce", "Kimchi"]
+    },
+    {
+      "id": "tax_filing",
+      "name": "Tax Filing Deadline",
+      "type": "FINANCIAL",
+      "month": 4,
+      "day": 15,
+      "recurrence": "yearly",
+      "priority": "CRITICAL",
+      "notes": "Federal and state tax filing deadline",
+      "reminder_days": 30
+    },
+    {
+      "id": "tax_q2",
+      "name": "Q2 Tax Payment Due",
+      "type": "FINANCIAL",
+      "month": 4,
+      "day": 15,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Federal quarterly estimated tax payment"
+    },
+    {
+      "id": "spring_transplant",
+      "name": "Transplant Spring Seedlings",
+      "type": "PLANTING",
+      "month": 5,
+      "day": 1,
+      "end_month": 5,
+      "end_day": 31,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Transplant after last frost (typically mid-May)",
+      "related_products": ["Hot Sauce", "Kimchi"]
+    },
+    {
+      "id": "market_start",
+      "name": "Farmers Market Season Starts",
+      "type": "MARKET",
+      "month": 5,
+      "day": 15,
+      "end_month": 10,
+      "end_day": 31,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Saturday farmers market 8am-1pm, weekly through October"
+    },
+    {
+      "id": "kombucha_peak",
+      "name": "Kombucha Production Peak",
+      "type": "PRODUCTION",
+      "month": 6,
+      "day": 1,
+      "end_month": 9,
+      "end_day": 30,
+      "recurrence": "yearly",
+      "priority": "MEDIUM",
+      "notes": "Warm weather = faster fermentation, higher demand",
+      "related_sops": ["KOMBUCHA_001"]
+    },
+    {
+      "id": "tax_q3",
+      "name": "Q3 Tax Payment Due",
+      "type": "FINANCIAL",
+      "month": 6,
+      "day": 15,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Federal quarterly estimated tax payment"
+    },
+    {
+      "id": "herb_harvest",
+      "name": "Herb Harvest Season",
+      "type": "HARVEST",
+      "month": 6,
+      "day": 15,
+      "end_month": 9,
+      "end_day": 15,
+      "recurrence": "yearly",
+      "priority": "MEDIUM",
+      "notes": "Peak herb production for drying and hot sauce",
+      "related_products": ["Hot Sauce"]
+    },
+    {
+      "id": "pepper_harvest",
+      "name": "Hot Pepper Harvest",
+      "type": "HARVEST",
+      "month": 7,
+      "day": 1,
+      "end_month": 10,
+      "end_day": 15,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Habaneros and jalapeños for hot sauce production",
+      "related_sops": ["HOTSAUCE_001"]
+    },
+    {
+      "id": "cabbage_plant",
+      "name": "Plant Fall Cabbage",
+      "type": "PLANTING",
+      "month": 7,
+      "day": 15,
+      "end_month": 8,
+      "end_day": 15,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Plant for fall harvest (kraut and kimchi)",
+      "related_sops": ["SAUERKRAUT_001", "KIMCHI_001"]
+    },
+    {
+      "id": "health_inspection",
+      "name": "Annual Health Inspection",
+      "type": "REGULATORY",
+      "month": 8,
+      "day": 1,
+      "recurrence": "yearly",
+      "priority": "CRITICAL",
+      "notes": "Food processing facility inspection, schedule 2 weeks ahead",
+      "reminder_days": 14
+    },
+    {
+      "id": "equipment_maintenance",
+      "name": "Equipment Annual Maintenance",
+      "type": "MAINTENANCE",
+      "month": 8,
+      "day": 15,
+      "recurrence": "yearly",
+      "priority": "MEDIUM",
+      "notes": "Service fermentation vessels, refrigeration, packaging equipment"
+    },
+    {
+      "id": "tax_q4",
+      "name": "Q4 Tax Payment Due",
+      "type": "FINANCIAL",
+      "month": 9,
+      "day": 15,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Federal quarterly estimated tax payment"
+    },
+    {
+      "id": "cabbage_harvest",
+      "name": "Fall Cabbage Harvest",
+      "type": "HARVEST",
+      "month": 10,
+      "day": 1,
+      "end_month": 11,
+      "end_day": 15,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Harvest before hard freeze for kraut and kimchi",
+      "related_sops": ["SAUERKRAUT_001", "KIMCHI_001"]
+    },
+    {
+      "id": "kraut_peak",
+      "name": "Sauerkraut Production Peak",
+      "type": "PRODUCTION",
+      "month": 10,
+      "day": 15,
+      "end_month": 12,
+      "end_day": 31,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Fall cabbage harvest = peak kraut and kimchi production",
+      "related_sops": ["SAUERKRAUT_001", "KIMCHI_001"]
+    },
+    {
+      "id": "market_end",
+      "name": "Farmers Market Season Ends",
+      "type": "MARKET",
+      "month": 10,
+      "day": 31,
+      "recurrence": "yearly",
+      "priority": "MEDIUM",
+      "notes": "Last market day of season"
+    },
+    {
+      "id": "winter_prep",
+      "name": "Winter Facility Prep",
+      "type": "MAINTENANCE",
+      "month": 11,
+      "day": 1,
+      "end_month": 11,
+      "end_day": 30,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Winterize outdoor equipment, check heating, stock supplies"
+    },
+    {
+      "id": "budget_planning",
+      "name": "Next Year Budget Planning",
+      "type": "FINANCIAL",
+      "month": 11,
+      "day": 15,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Review year, plan next year's budget and production schedule"
+    },
+    {
+      "id": "year_end_inventory",
+      "name": "Year-End Inventory Count",
+      "type": "FINANCIAL",
+      "month": 12,
+      "day": 31,
+      "recurrence": "yearly",
+      "priority": "HIGH",
+      "notes": "Full inventory count for tax purposes"
+    }
+  ],
+  "seasonal_production_windows": {
+    "SPRING": {
+      "months": [3, 4, 5],
+      "focus": "Planting, seedlings, spring ferments",
+      "products": ["Kombucha", "Early greens kimchi"]
+    },
+    "SUMMER": {
+      "months": [6, 7, 8],
+      "focus": "Markets, kombucha production, herb harvest",
+      "products": ["Kombucha", "Hot Sauce (prep)", "Herb products"]
+    },
+    "FALL": {
+      "months": [9, 10, 11],
+      "focus": "Harvest, kraut/kimchi production, winter prep",
+      "products": ["Sauerkraut", "Kimchi", "Hot Sauce (bottling)"]
+    },
+    "WINTER": {
+      "months": [12, 1, 2],
+      "focus": "Planning, maintenance, indoor ferments",
+      "products": ["Kombucha", "Indoor mushroom cultivation", "Planning"]
+    }
+  }
+}
