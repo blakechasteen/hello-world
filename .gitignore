@@ -45,6 +45,10 @@ synthesis_output/
 *.npy
 *.jsonl
 
+# Voice synthesis cache and output
+.voice_cache/
+demos/output/voice_samples/
+
 # Bootstrap and experiment results
 HoloLoom/bootstrap_results/
 **/bootstrap_results/

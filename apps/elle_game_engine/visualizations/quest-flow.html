@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigPlay Engine - Quest Flow Diagrams</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="design-system.css">
+
+    <!-- D3.js for force-directed graph -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            padding: var(--space-4);
+            min-height: 100vh;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: var(--space-2);
+            font-size: var(--font-size-5xl);
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: var(--space-8);
+            font-size: var(--font-size-lg);
+            opacity: 0.9;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+
+        .sidebar {
+            background: var(--color-bg-elevated);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-lg);
+            height: fit-content;
+            position: sticky;
+            top: var(--space-4);
+        }
+
+        #quest-canvas {
+            background: var(--color-bg-elevated);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            min-height: 700px;
+        }
+
+        .quest-selector {
+            margin-bottom: var(--space-6);
+        }
+
+        .quest-option {
+            padding: var(--space-3);
+            margin-bottom: var(--space-2);
+            background: var(--color-bg-tertiary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .quest-option:hover {
+            background: var(--color-bg-secondary);
+            transform: translateX(4px);
+        }
+
+        .quest-option.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .legend {
+            margin-top: var(--space-6);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+            font-size: var(--font-size-sm);
+        }
+
+        .legend-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-sm);
+        }
+
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            filter: brightness(1.2);
+        }
+
+        .node-start { fill: var(--color-success); }
+        .node-choice { fill: var(--color-info); }
+        .node-success { fill: var(--color-success); }
+        .node-failure { fill: var(--color-danger); }
+        .node-neutral { fill: var(--color-warning); }
+
+        .link {
+            stroke: var(--color-text-tertiary);
+            stroke-opacity: 0.6;
+            stroke-width: 2px;
+            fill: none;
+        }
+
+        .link-success {
+            stroke: var(--color-success);
+            stroke-opacity: 0.8;
+        }
+
+        .link-failure {
+            stroke: var(--color-danger);
+            stroke-opacity: 0.8;
+        }
+
+        .node-label {
+            font-family: var(--font-body);
+            font-size: 12px;
+            font-weight: 600;
+            fill: var(--color-text-primary);
+            pointer-events: none;
+            text-anchor: middle;
+        }
+
+        .link-label {
+            font-family: var(--font-body);
+            font-size: 10px;
+            fill: var(--color-text-secondary);
+            pointer-events: none;
+            text-anchor: middle;
+        }
+
+        @media (max-width: 1200px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Quest Flow Diagrams</h1>
+        <p class="subtitle">Interactive branching narratives - Click nodes to explore paths</p>
+
+        <div class="content-grid">
+            <div class="sidebar">
+                <h3 style="margin-bottom: var(--space-4);">Example Quests</h3>
+
+                <div class="quest-selector">
+                    <div class="quest-option active" data-quest="dragon">
+                        <strong>🐉 Dragon Negotiation</strong>
+                        <p style="font-size: var(--font-size-sm); opacity: 0.8; margin-top: var(--space-1);">
+                            Diplomacy vs. Combat
+                        </p>
+                    </div>
+
+                    <div class="quest-option" data-quest="murder">
+                        <strong>🔍 Murder Mystery</strong>
+                        <p style="font-size: var(--font-size-sm); opacity: 0.8; margin-top: var(--space-1);">
+                            Investigation & Deduction
+                        </p>
+                    </div>
+
+                    <div class="quest-option" data-quest="romance">
+                        <strong>💕 Village Romance</strong>
+                        <p style="font-size: var(--font-size-sm); opacity: 0.8; margin-top: var(--space-1);">
+                            Relationship Building
+                        </p>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <h4 style="margin-bottom: var(--space-3);">Legend</h4>
+                    <div class="legend-item">
+                        <div class="legend-icon node-start"></div>
+                        <span>Quest Start</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon node-choice"></div>
+                        <span>Player Choice</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon node-success"></div>
+                        <span>Success Outcome</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon node-failure"></div>
+                        <span>Failure Outcome</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon node-neutral"></div>
+                        <span>Neutral Outcome</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                    <h4 style="margin-bottom: var(--space-2);">Controls</h4>
+                    <ul style="font-size: var(--font-size-sm); line-height: 1.8; margin-left: var(--space-4);">
+                        <li>Click nodes to view details</li>
+                        <li>Drag nodes to rearrange</li>
+                        <li>Scroll to zoom in/out</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div>
+                <svg id="quest-canvas" width="100%" height="700"></svg>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quest data definitions
+        const quests = {
+            dragon: {
+                name: "Dragon Negotiation",
+                nodes: [
+                    { id: "start", label: "Village Under\nThreat", type: "start" },
+                    { id: "choice1", label: "Approach\nDragon", type: "choice" },
+                    { id: "negotiate", label: "Attempt\nNegotiation", type: "choice" },
+                    { id: "prepare", label: "Prepare for\nBattle", type: "choice" },
+                    { id: "peace", label: "Peace Treaty", type: "success" },
+                    { id: "angered", label: "Dragon\nAttacks", type: "failure" },
+                    { id: "allies", label: "Gather\nAllies", type: "choice" },
+                    { id: "solo", label: "Solo\nAttack", type: "choice" },
+                    { id: "victory", label: "Epic\nVictory", type: "success" },
+                    { id: "defeat", label: "Heroic\nDefeat", type: "failure" },
+                    { id: "retreat", label: "Strategic\nRetreat", type: "neutral" }
+                ],
+                links: [
+                    { source: "start", target: "choice1", label: "" },
+                    { source: "choice1", target: "negotiate", label: "Diplomacy", type: "success" },
+                    { source: "choice1", target: "prepare", label: "Combat", type: "neutral" },
+                    { source: "negotiate", target: "peace", label: "Charisma\n>15", type: "success" },
+                    { source: "negotiate", target: "angered", label: "Failed", type: "failure" },
+                    { source: "prepare", target: "allies", label: "Recruit", type: "success" },
+                    { source: "prepare", target: "solo", label: "Alone", type: "neutral" },
+                    { source: "allies", target: "victory", label: "Win", type: "success" },
+                    { source: "allies", target: "retreat", label: "Flee", type: "neutral" },
+                    { source: "solo", target: "defeat", label: "Lose", type: "failure" }
+                ]
+            },
+            murder: {
+                name: "Murder Mystery",
+                nodes: [
+                    { id: "start", label: "Body\nDiscovered", type: "start" },
+                    { id: "investigate", label: "Investigate\nScene", type: "choice" },
+                    { id: "interrogate", label: "Question\nSuspects", type: "choice" },
+                    { id: "clue1", label: "Find\nWeapon", type: "neutral" },
+                    { id: "clue2", label: "Find\nLetter", type: "neutral" },
+                    { id: "accuse1", label: "Accuse\nButler", type: "choice" },
+                    { id: "accuse2", label: "Accuse\nDuke", type: "choice" },
+                    { id: "correct", label: "Culprit\nCaught", type: "success" },
+                    { id: "wrong", label: "Wrong\nPerson", type: "failure" },
+                    { id: "escape", label: "Real Killer\nEscapes", type: "failure" }
+                ],
+                links: [
+                    { source: "start", target: "investigate", label: "" },
+                    { source: "investigate", target: "clue1", label: "Search", type: "success" },
+                    { source: "investigate", target: "interrogate", label: "Interview", type: "neutral" },
+                    { source: "clue1", target: "interrogate", label: "Continue", type: "success" },
+                    { source: "interrogate", target: "clue2", label: "Discover", type: "success" },
+                    { source: "clue2", target: "accuse1", label: "Butler", type: "neutral" },
+                    { source: "clue2", target: "accuse2", label: "Duke", type: "neutral" },
+                    { source: "accuse1", target: "wrong", label: "Incorrect", type: "failure" },
+                    { source: "accuse2", target: "correct", label: "Correct!", type: "success" },
+                    { source: "wrong", target: "escape", label: "Consequence", type: "failure" }
+                ]
+            },
+            romance: {
+                name: "Village Romance",
+                nodes: [
+                    { id: "start", label: "Meet\nVillager", type: "start" },
+                    { id: "talk", label: "Strike Up\nConversation", type: "choice" },
+                    { id: "gift", label: "Give\nGift", type: "choice" },
+                    { id: "liked", label: "They\nLike It", type: "success" },
+                    { id: "disliked", label: "Wrong\nGift", type: "failure" },
+                    { id: "quest", label: "Help with\nQuest", type: "choice" },
+                    { id: "friendship", label: "Close\nFriends", type: "neutral" },
+                    { id: "confess", label: "Confess\nFeelings", type: "choice" },
+                    { id: "accept", label: "They Accept!", type: "success" },
+                    { id: "reject", label: "Stay\nFriends", type: "neutral" }
+                ],
+                links: [
+                    { source: "start", target: "talk", label: "" },
+                    { source: "talk", target: "gift", label: "Get to Know", type: "success" },
+                    { source: "gift", target: "liked", label: "Favorite", type: "success" },
+                    { source: "gift", target: "disliked", label: "Hated", type: "failure" },
+                    { source: "liked", target: "quest", label: "Continue", type: "success" },
+                    { source: "quest", target: "friendship", label: "Complete", type: "success" },
+                    { source: "friendship", target: "confess", label: "Heart Event", type: "neutral" },
+                    { source: "confess", target: "accept", label: "High\nRelationship", type: "success" },
+                    { source: "confess", target: "reject", label: "Low\nRelationship", type: "neutral" }
+                ]
+            }
+        };
+
+        // Current quest
+        let currentQuest = 'dragon';
+
+        // SVG setup
+        const svg = d3.select('#quest-canvas');
+        const width = parseInt(svg.style('width'));
+        const height = parseInt(svg.style('height'));
+
+        // Create container groups
+        const g = svg.append('g');
+        const linkGroup = g.append('g').attr('class', 'links');
+        const nodeGroup = g.append('g').attr('class', 'nodes');
+
+        // Zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 3])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+            });
+
+        svg.call(zoom);
+
+        // Force simulation
+        const simulation = d3.forceSimulation()
+            .force('link', d3.forceLink().id(d => d.id).distance(150))
+            .force('charge', d3.forceManyBody().strength(-300))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(50));
+
+        function renderQuest(questId) {
+            const quest = quests[questId];
+
+            // Clear existing
+            linkGroup.selectAll('*').remove();
+            nodeGroup.selectAll('*').remove();
+
+            // Create links
+            const link = linkGroup.selectAll('path')
+                .data(quest.links)
+                .enter().append('path')
+                .attr('class', d => `link link-${d.type || 'neutral'}`)
+                .attr('marker-end', 'url(#arrowhead)');
+
+            // Create link labels
+            const linkLabel = linkGroup.selectAll('text')
+                .data(quest.links)
+                .enter().append('text')
+                .attr('class', 'link-label')
+                .text(d => d.label);
+
+            // Create nodes
+            const node = nodeGroup.selectAll('g')
+                .data(quest.nodes)
+                .enter().append('g')
+                .attr('class', 'node')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            node.append('rect')
+                .attr('width', 80)
+                .attr('height', 60)
+                .attr('x', -40)
+                .attr('y', -30)
+                .attr('rx', 8)
+                .attr('class', d => `node-${d.type}`);
+
+            node.append('text')
+                .attr('class', 'node-label')
+                .attr('dy', '0.35em')
+                .text(d => d.label.split('\n')[0])
+                .each(function(d) {
+                    const lines = d.label.split('\n');
+                    if (lines.length > 1) {
+                        d3.select(this).text(lines[0]);
+                        d3.select(this.parentNode).append('text')
+                            .attr('class', 'node-label')
+                            .attr('dy', '1.5em')
+                            .text(lines[1]);
+                    }
+                });
+
+            // Node click handler
+            node.on('click', (event, d) => {
+                console.log('Clicked node:', d);
+                // Could show details in a modal
+                if (window.BigPlayUI?.accessibility) {
+                    window.BigPlayUI.accessibility.announce(`Selected: ${d.label.replace('\n', ' ')}`);
+                }
+            });
+
+            // Update simulation
+            simulation
+                .nodes(quest.nodes)
+                .on('tick', ticked);
+
+            simulation.force('link')
+                .links(quest.links);
+
+            simulation.alpha(1).restart();
+
+            function ticked() {
+                link.attr('d', d => {
+                    const dx = d.target.x - d.source.x;
+                    const dy = d.target.y - d.source.y;
+                    const dr = Math.sqrt(dx * dx + dy * dy);
+                    return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+                });
+
+                linkLabel
+                    .attr('x', d => (d.source.x + d.target.x) / 2)
+                    .attr('y', d => (d.source.y + d.target.y) / 2);
+
+                node.attr('transform', d => `translate(${d.x},${d.y})`);
+            }
+        }
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Quest selector
+        document.querySelectorAll('.quest-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.quest-option').forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                currentQuest = option.dataset.quest;
+                renderQuest(currentQuest);
+            });
+        });
+
+        // Arrow marker
+        svg.append('defs').append('marker')
+            .attr('id', 'arrowhead')
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 45)
+            .attr('refY', 0)
+            .attr('markerWidth', 6)
+            .attr('markerHeight', 6)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('fill', 'var(--color-text-tertiary)');
+
+        // Initial render
+        renderQuest(currentQuest);
+    </script>
+
+    <!-- BigPlay UI Utilities -->
+    <script src="bigplay-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "BigPlay Engine",
+	"Description": "LLM-Native Game Development Platform - Emotional NPCs, Dynamic Quests, and Voice Synthesis",
+	"Category": "AI",
+	"CreatedBy": "BigPlay Team",
+	"CreatedByURL": "https://github.com/yourusername/bigplay",
+	"DocsURL": "https://github.com/yourusername/bigplay/tree/main/apps/elle_game_engine/unreal_integration",
+	"MarketplaceURL": "",
+	"SupportURL": "https://github.com/yourusername/bigplay/issues",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "BigPlayEngine",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Mac",
+				"Linux",
+				"IOS",
+				"Android"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "Json",
+			"Enabled": true
+		},
+		{
+			"Name": "HTTP",
+			"Enabled": true
+		}
+	]
+}
