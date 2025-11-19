@@ -6,30 +6,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **New to HoloLoom?** Start here:
 
-1. **[HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md](HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md)** (25,000+ lines)
+1. **[VISUAL_QUICK_START.md](VISUAL_QUICK_START.md)** ⭐ **NEW!** (7,500+ lines)
+   - Choose your journey: Beginner (5 min) → Developer (15 min) → Expert (30 min)
+   - 15 comprehensive diagrams with progressive disclosure
+   - Visual API reference and "what to build" navigator
+   - **Perfect for new users - start here!**
+
+2. **[HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md](HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md)** (25,000+ lines)
    - Complete architectural map from first principles to production
    - Learning sequence for beginners → researchers
    - All 5 phases explained with context
    - Future roadmap (Phases 6-10)
-   - **Start here for the big picture!**
+   - **Complete reference for the big picture!**
 
-2. **[CURRENT_STATUS_AND_NEXT_STEPS.md](CURRENT_STATUS_AND_NEXT_STEPS.md)**
+3. **[CURRENT_STATUS_AND_NEXT_STEPS.md](CURRENT_STATUS_AND_NEXT_STEPS.md)**
    - What works right now (snapshot)
    - What needs work (prioritized tasks)
    - Recommended next actions
    - Quick decision guide
    - **Use this to know what to build next**
 
-3. **[ARCHITECTURE_VISUAL_MAP.md](ARCHITECTURE_VISUAL_MAP.md)**
+4. **[ARCHITECTURE_VISUAL_MAP.md](ARCHITECTURE_VISUAL_MAP.md)**
    - Visual diagrams of the 9-layer system
    - Data flow illustrations
    - Component relationships
    - Quick reference to key files
    - **Best for visual learners**
 
-4. **This file (CLAUDE.md)** - Developer quick reference (below)
+5. **[docs/ANIMATED_ARCHITECTURE_FLOWS.md](docs/ANIMATED_ARCHITECTURE_FLOWS.md)** ⭐ **NEW!**
+   - 8 CSS-animated diagrams showing data flow in motion
+   - Pure CSS animations (<100ms paint time, 60 FPS)
+   - Zero dependencies, mobile-responsive
+   - **See the system in action!**
 
-5. **[DREAMWEAVER_SUMMARY.md](DREAMWEAVER_SUMMARY.md)** - Open-source world building component
+6. **This file (CLAUDE.md)** - Developer quick reference (below)
+
+7. **[DREAMWEAVER_SUMMARY.md](DREAMWEAVER_SUMMARY.md)** - Open-source world building component
    - Phase 0 complete (architecture)
    - 6-phase roadmap (18 months)
    - Extends HoloLoom to collaborative storytelling
@@ -1486,17 +1498,78 @@ Learning loop - stores outcomes for improvement.
 
 #### Complete Weaving Cycle
 
+```mermaid
+graph TD
+    Start[Query Arrives] --> Step1[1. Loom Command<br/>Select Pattern Card]
+
+    Step1 --> Step1a{Pattern?}
+    Step1a -->|BARE| Card1[⚡️ Minimal<br/>5s timeout]
+    Step1a -->|FAST| Card2[⚡ Balanced<br/>30s timeout]
+    Step1a -->|FUSED| Card3[🔬 Full<br/>120s timeout]
+
+    Card1 --> Step2
+    Card2 --> Step2
+    Card3 --> Step2
+
+    Step2[2. Chrono Trigger<br/>Fire TemporalWindow] --> Step3[3. Yarn Graph<br/>Select Threads by Recency]
+
+    Step3 --> Step4[4. Resonance Shed<br/>Lift Feature Threads]
+    Step4 --> Step4a[Motif Thread<br/>Symbolic patterns]
+    Step4 --> Step4b[Embedding Thread<br/>Multi-scale vectors]
+    Step4 --> Step4c[Spectral Thread<br/>Graph topology]
+
+    Step4a --> Plasma[DotPlasma Created<br/>Feature fusion]
+    Step4b --> Plasma
+    Step4c --> Plasma
+
+    Plasma --> Step5[5. Warp Space<br/>Tension threads<br/>to continuous manifold]
+
+    Step5 --> Step6[6. Convergence Engine<br/>Collapse to discrete]
+    Step6 --> Step6a{Strategy?}
+    Step6a -->|ARGMAX| Tool1[Tool: answer]
+    Step6a -->|Bayesian Blend| Tool2[Tool: research]
+    Step6a -->|Thompson| Tool3[Tool: explore]
+
+    Tool1 --> Step7
+    Tool2 --> Step7
+    Tool3 --> Step7
+
+    Step7[7. Tool Execution<br/>Generate response] --> Step8[8. Spacetime Fabric<br/>Weave output + trace]
+
+    Step8 --> Step9[9. Reflection Buffer<br/>Learn from outcome]
+
+    Step9 --> Detension[Chrono Trigger<br/>Detension cycle]
+
+    Detension --> End[Spacetime Returned<br/>with provenance]
+
+    style Start fill:#E6F3FF
+    style Step1 fill:#FFE6F0
+    style Step2 fill:#E6FFE6
+    style Step3 fill:#FFF0E6
+    style Step4 fill:#FFE6F0
+    style Plasma fill:#FFD700
+    style Step5 fill:#E6F3FF
+    style Step6 fill:#FFE6F0
+    style Step7 fill:#E6FFE6
+    style Step8 fill:#FFF0E6
+    style Step9 fill:#FFE6F0
+    style End fill:#90EE90
+
+    style Card1 fill:#87CEEB
+    style Card2 fill:#90EE90
+    style Card3 fill:#FFD700
 ```
-1. Loom Command selects Pattern Card (BARE/FAST/FUSED)
-2. Chrono Trigger fires, creates TemporalWindow
-3. Yarn Graph threads selected based on temporal window
-4. Resonance Shed lifts feature threads, creates DotPlasma
-5. Warp Space tensions threads into continuous manifold
-6. Convergence Engine collapses to discrete tool selection
-7. Tool executes, results woven into Spacetime fabric
-8. Reflection Buffer learns from outcome
-9. Chrono Trigger detensions, cycle completes
-```
+
+**Text Summary**:
+1. **Loom Command** selects Pattern Card (BARE/FAST/FUSED)
+2. **Chrono Trigger** fires, creates TemporalWindow
+3. **Yarn Graph** threads selected based on temporal window
+4. **Resonance Shed** lifts feature threads, creates DotPlasma
+5. **Warp Space** tensions threads into continuous manifold
+6. **Convergence Engine** collapses to discrete tool selection
+7. **Tool executes**, results woven into Spacetime fabric
+8. **Reflection Buffer** learns from outcome
+9. **Chrono Trigger** detensions, cycle completes
 
 This architecture enables:
 - **Symbolic ↔ Continuous**: Seamless transition between discrete and continuous representations
@@ -1687,6 +1760,132 @@ PPO trainer for RL environments with:
 - Optional ICM/RND curiosity modules
 - Checkpoint saving/loading
 - Configurable network architectures
+
+---
+
+### Visual Architecture Guides
+
+#### Data Transformation Flow
+
+```mermaid
+graph LR
+    Q[Query<br/>"What is Thompson Sampling?"] --> R[Routing<br/>Classify complexity]
+
+    R --> R1{Complexity?}
+    R1 -->|SIMPLE| P1[FAST Pattern]
+    R1 -->|COMPLEX| P2[FUSED Pattern]
+
+    P1 --> M[Memory Retrieval<br/>Top 10 shards]
+    P2 --> M2[Memory Retrieval<br/>Top 20 shards]
+
+    M --> F[Feature Extraction<br/>Resonance Shed]
+    M2 --> F
+
+    F --> F1[Motif:<br/>question→answer]
+    F --> F2[Embedding:<br/>384D vector]
+    F --> F3[Spectral:<br/>Ψ 6D topology]
+
+    F1 --> DP[DotPlasma<br/>Feature Fusion]
+    F2 --> DP
+    F3 --> DP
+
+    DP --> WS[Warp Space<br/>Tensioned Manifold]
+
+    WS --> POL[Policy Engine<br/>Neural + Thompson]
+
+    POL --> PROB[Tool Probabilities<br/>0.65, 0.25, 0.07, 0.03]
+
+    PROB --> CONV[Convergence Engine<br/>Bayesian Blend]
+
+    CONV --> TOOL[Tool: answer<br/>Execute]
+
+    TOOL --> ST[Spacetime<br/>Response + Trace]
+
+    ST --> OUT[Output<br/>"Thompson Sampling is..."]
+
+    style Q fill:#E6F3FF
+    style R fill:#FFE6F0
+    style F fill:#E6FFE6
+    style DP fill:#FFD700
+    style WS fill:#FFE6F0
+    style POL fill:#E6F3FF
+    style CONV fill:#FFE6F0
+    style ST fill:#E6FFE6
+    style OUT fill:#90EE90
+```
+
+**Data Transformation Stages**:
+1. **Query** → Text string input
+2. **Routing** → Complexity classification (TRIVIAL/SIMPLE/COMPLEX/RESEARCH)
+3. **Memory Retrieval** → Knowledge graph + vector search
+4. **Feature Extraction** → Motif + Embedding + Spectral → DotPlasma
+5. **Warp Space** → Continuous mathematical manifold
+6. **Policy Engine** → Neural network predictions + Thompson Sampling priors
+7. **Convergence** → Probability collapse to discrete tool selection
+8. **Tool Execution** → Generate response
+9. **Spacetime** → Structured output with provenance
+
+---
+
+#### Memory Architecture (3-Tier Backend System)
+
+```mermaid
+graph TD
+    APP[Application<br/>Config.memory_backend] --> CHOICE{Backend Type?}
+
+    CHOICE -->|INMEMORY| IM[In-Memory Backend<br/>NetworkX MultiDiGraph]
+    CHOICE -->|HYBRID| HY[Hybrid Backend<br/>Neo4j + Qdrant]
+    CHOICE -->|HYPERSPACE| HS[Hyperspace Backend<br/>Advanced Research]
+
+    IM --> IM1[✓ Always Available<br/>No dependencies]
+    IM --> IM2[✓ Fast development<br/>~50ms queries]
+    IM --> IM3[⚠ Data lost on restart<br/>No persistence]
+
+    HY --> HY1[Docker Services Required]
+    HY1 --> HY1a[Neo4j Graph<br/>:7474 Web, :7687 Bolt]
+    HY1 --> HY1b[Qdrant Vector<br/>:6333 HTTP, :6334 gRPC]
+
+    HY --> HY2{Services Available?}
+    HY2 -->|Yes| HY3[✓ Production Ready<br/>~150ms queries<br/>Persistent storage]
+    HY2 -->|No| FALLBACK[Auto-Fallback<br/>→ INMEMORY]
+
+    HS --> HS1[⚠ Research Only<br/>Experimental features]
+    HS --> HS2[Gated Multipass<br/>Advanced retrieval]
+
+    FALLBACK --> IM1
+
+    IM1 --> USE1[Development<br/>Testing<br/>Demos]
+    HY3 --> USE2[Production<br/>Deployed Systems<br/>Multi-User]
+    HS2 --> USE3[Research<br/>Experiments<br/>Advanced Features]
+
+    style CHOICE fill:#FFE6F0
+    style IM fill:#90EE90
+    style HY fill:#FFD700
+    style HS fill:#FFA500
+    style FALLBACK fill:#87CEEB
+    style USE1 fill:#E6F3FF
+    style USE2 fill:#E6FFE6
+    style USE3 fill:#FFE6F0
+```
+
+**Backend Comparison**:
+
+| Backend | Persistence | Speed | Setup | Use Case |
+|---------|-------------|-------|-------|----------|
+| **INMEMORY** | ❌ | ~50ms | Zero | Development, testing |
+| **HYBRID** | ✅ | ~150ms | Docker | **Production** |
+| **HYPERSPACE** | ✅ | ~200ms | Docker + config | Research |
+
+**Auto-Fallback**: HYBRID automatically falls back to INMEMORY if Docker services unavailable (ensures graceful degradation).
+
+**Docker Setup**:
+```bash
+docker-compose up -d  # Start Neo4j + Qdrant
+```
+
+See `DOCKER_MEMORY_SETUP.md` for complete setup guide.
+
+---
 
 ### Module Structure (Phase 1+2 Cleanup - Oct 2025)
 
@@ -2374,6 +2573,90 @@ The system implements 5 phases of recursive learning:
 The system embraces multiple passes on quality dimensions:
 - **ELEGANCE**: Clarity → Simplicity → Beauty
 - **VERIFY**: Accuracy → Completeness → Consistency
+
+---
+
+### Thompson Sampling Learning Loop
+
+```mermaid
+graph TD
+    START[Query Arrives] --> WEAVE[Weaving Cycle<br/>Generate Response]
+
+    WEAVE --> CONF{Confidence?}
+    CONF -->|High ≥0.75| SUCCESS[✓ Success Path]
+    CONF -->|Low <0.75| REFINE[⚠ Refinement Path]
+
+    SUCCESS --> UPDATE1[Thompson Sampling Update<br/>α ← α + confidence]
+    REFINE --> UPDATE2[Thompson Sampling Update<br/>β ← β + 1 - confidence]
+
+    UPDATE1 --> POLICY1[Policy Weight Update<br/>weight ← successes/total]
+    UPDATE2 --> POLICY2[Policy Weight Update<br/>weight ← successes/total]
+
+    POLICY1 --> PATTERN1[Pattern Learning<br/>motif → tool → success]
+    POLICY2 --> PATTERN2[Pattern Mining<br/>Find improvements]
+
+    PATTERN1 --> HOT[Hot Pattern Tracking<br/>heat = access × success × conf]
+    PATTERN2 --> MINE[Pattern Miner<br/>Discover new patterns]
+
+    HOT --> RETRIEVAL[Adaptive Retrieval<br/>2x boost for hot<br/>0.5x penalty for cold]
+
+    MINE --> VALIDATE[Continuous Validator<br/>Hourly validation]
+
+    VALIDATE --> VALID{Quality OK?}
+    VALID -->|precision ≥95%<br/>support ≥10| DEPLOY[Deploy Pattern<br/>SHADOW → A/B → GRADUAL]
+    VALID -->|Low quality| DISCARD[Discard Pattern]
+
+    DEPLOY --> MONITOR[Performance Reporter<br/>Prometheus + Alerts]
+
+    RETRIEVAL --> NEXT[Next Query]
+    MONITOR --> NEXT
+
+    NEXT --> START
+
+    style START fill:#E6F3FF
+    style WEAVE fill:#FFE6F0
+    style CONF fill:#FFF0E6
+    style SUCCESS fill:#90EE90
+    style REFINE fill:#FFD700
+    style UPDATE1 fill:#E6FFE6
+    style UPDATE2 fill:#FFE6F0
+    style PATTERN1 fill:#E6F3FF
+    style HOT fill:#FFD700
+    style DEPLOY fill:#90EE90
+    style NEXT fill:#87CEEB
+```
+
+**Learning Components**:
+
+1. **Thompson Sampling** (Bandit Updates)
+   - Success: `α ← α + confidence` (strengthen prior)
+   - Failure: `β ← β + (1 - confidence)` (weaken prior)
+   - Expected Reward: `E[X] = α / (α + β)`
+
+2. **Policy Weights** (Laplace Smoothing)
+   - `weight = (successes + 1) / (total + 2)`
+   - Adapts adapter selection over time
+
+3. **Pattern Learning**
+   - Extracts `motif → tool → success` patterns
+   - Classifies queries (factual, procedural, analytical)
+   - Auto-prunes stale patterns (>7 days unused)
+
+4. **Hot Pattern Feedback**
+   - Heat score: `access_count × success_rate × avg_confidence × decay`
+   - Hot patterns get 2x retrieval boost
+   - Cold patterns get 0.5x penalty
+   - Exponential decay (5% per hour)
+
+5. **Adaptive Pattern Mining** (Phase 3)
+   - Mines patterns from production logs
+   - Quality filter: precision ≥95%, support ≥10
+   - Safe deployment: SHADOW → A/B → GRADUAL
+   - Auto-rollback on regression (>2% accuracy drop)
+
+**Result**: System continuously improves from every query, learns what works, adapts retrieval, and safely deploys discoveries.
+
+---
 
 ### Phase 1: Scratchpad Integration (990 lines)
 

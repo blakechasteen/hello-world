@@ -1,0 +1,459 @@
+/**
+ * HoloLoom Interactive Diagrams Stylesheet
+ * Version: 1.0.0
+ * Date: November 17, 2025
+ *
+ * Tufte-inspired design with high information density
+ * Zero external dependencies
+ * Mobile-responsive
+ */
+
+/* ===== Variables ===== */
+:root {
+  --hololoom-primary: #FFD700;
+  --hololoom-secondary: #90EE90;
+  --hololoom-tertiary: #E6F3FF;
+  --hololoom-text: #000;
+  --hololoom-bg: #fff;
+  --hololoom-border: #ddd;
+  --hololoom-shadow: rgba(0, 0, 0, 0.1);
+  --hololoom-highlight: rgba(255, 215, 0, 0.3);
+  --hololoom-selected: rgba(255, 215, 0, 0.5);
+
+  --hololoom-spacing-xs: 4px;
+  --hololoom-spacing-sm: 8px;
+  --hololoom-spacing-md: 16px;
+  --hololoom-spacing-lg: 24px;
+  --hololoom-spacing-xl: 32px;
+
+  --hololoom-border-radius: 4px;
+  --hololoom-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* ===== Global Controls ===== */
+.hololoom-controls {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--hololoom-bg);
+  border-bottom: 1px solid var(--hololoom-border);
+  padding: var(--hololoom-spacing-md);
+  display: flex;
+  gap: var(--hololoom-spacing-md);
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 4px var(--hololoom-shadow);
+}
+
+.hololoom-control-section {
+  display: flex;
+  gap: var(--hololoom-spacing-sm);
+  align-items: center;
+}
+
+.hololoom-search-input {
+  padding: var(--hololoom-spacing-sm) var(--hololoom-spacing-md);
+  border: 1px solid var(--hololoom-border);
+  border-radius: var(--hololoom-border-radius);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  width: 300px;
+  transition: var(--hololoom-transition);
+}
+
+.hololoom-search-input:focus {
+  outline: none;
+  border-color: var(--hololoom-primary);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+.hololoom-btn {
+  padding: var(--hololoom-spacing-sm) var(--hololoom-spacing-md);
+  background: var(--hololoom-bg);
+  border: 1px solid var(--hololoom-border);
+  border-radius: var(--hololoom-border-radius);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--hololoom-transition);
+}
+
+.hololoom-btn:hover {
+  background: var(--hololoom-tertiary);
+  border-color: var(--hololoom-primary);
+}
+
+.hololoom-btn:active {
+  transform: scale(0.98);
+}
+
+/* ===== Diagram Container ===== */
+.hololoom-diagram-container {
+  position: relative;
+  margin: var(--hololoom-spacing-xl) 0;
+  border: 1px solid var(--hololoom-border);
+  border-radius: var(--hololoom-border-radius);
+  overflow: hidden;
+  background: var(--hololoom-bg);
+}
+
+.hololoom-zoom-wrapper {
+  transform-origin: center center;
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--hololoom-spacing-lg);
+}
+
+/* ===== Interactive Nodes ===== */
+.hololoom-interactive-node {
+  cursor: pointer;
+  transition: var(--hololoom-transition);
+}
+
+.hololoom-interactive-node:hover {
+  opacity: 0.8;
+  filter: drop-shadow(0 4px 8px var(--hololoom-shadow));
+}
+
+.hololoom-interactive-node.hololoom-selected {
+  filter: drop-shadow(0 0 8px var(--hololoom-primary));
+}
+
+.hololoom-interactive-node.hololoom-search-highlight {
+  animation: hololoom-pulse 1s ease-in-out infinite;
+}
+
+@keyframes hololoom-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px var(--hololoom-primary));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px var(--hololoom-primary));
+  }
+}
+
+/* ===== Zoom Controls ===== */
+.hololoom-zoom-controls {
+  position: absolute;
+  top: var(--hololoom-spacing-md);
+  right: var(--hololoom-spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--hololoom-spacing-xs);
+  background: var(--hololoom-bg);
+  border: 1px solid var(--hololoom-border);
+  border-radius: var(--hololoom-border-radius);
+  padding: var(--hololoom-spacing-xs);
+  box-shadow: 0 2px 8px var(--hololoom-shadow);
+  z-index: 10;
+}
+
+.hololoom-zoom-btn {
+  width: 36px;
+  height: 36px;
+  background: var(--hololoom-bg);
+  border: 1px solid var(--hololoom-border);
+  border-radius: var(--hololoom-border-radius);
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--hololoom-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hololoom-zoom-btn:hover {
+  background: var(--hololoom-tertiary);
+  border-color: var(--hololoom-primary);
+}
+
+.hololoom-zoom-btn:active {
+  transform: scale(0.95);
+}
+
+/* ===== Tooltip ===== */
+.hololoom-tooltip {
+  position: fixed;
+  z-index: 2000;
+  background: var(--hololoom-text);
+  color: var(--hololoom-bg);
+  padding: var(--hololoom-spacing-sm) var(--hololoom-spacing-md);
+  border-radius: var(--hololoom-border-radius);
+  box-shadow: 0 4px 12px var(--hololoom-shadow);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -100%) translateY(-8px);
+  transition: opacity 0.2s ease-in-out;
+  max-width: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+}
+
+.hololoom-tooltip-visible {
+  opacity: 1;
+}
+
+.hololoom-tooltip-header {
+  font-weight: 600;
+  margin-bottom: var(--hololoom-spacing-xs);
+  padding-bottom: var(--hololoom-spacing-xs);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hololoom-tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hololoom-spacing-xs);
+}
+
+.hololoom-tooltip code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+}
+
+/* ===== Details Panel ===== */
+.hololoom-panel {
+  position: fixed;
+  top: 50%;
+  right: -400px;
+  transform: translateY(-50%);
+  width: 380px;
+  max-height: 80vh;
+  background: var(--hololoom-bg);
+  border: 1px solid var(--hololoom-border);
+  border-radius: var(--hololoom-border-radius);
+  box-shadow: -4px 0 16px var(--hololoom-shadow);
+  z-index: 1500;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.hololoom-panel-visible {
+  right: var(--hololoom-spacing-lg);
+}
+
+.hololoom-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--hololoom-spacing-md);
+  background: var(--hololoom-primary);
+  border-bottom: 1px solid var(--hololoom-border);
+}
+
+.hololoom-panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--hololoom-text);
+}
+
+.hololoom-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--hololoom-text);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--hololoom-border-radius);
+  transition: var(--hololoom-transition);
+}
+
+.hololoom-close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.hololoom-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--hololoom-spacing-md);
+}
+
+.hololoom-detail-section {
+  margin-bottom: var(--hololoom-spacing-lg);
+}
+
+.hololoom-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.hololoom-detail-section h4 {
+  margin: 0 0 var(--hololoom-spacing-sm) 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hololoom-detail-section code {
+  display: block;
+  background: #f5f5f5;
+  padding: var(--hololoom-spacing-sm);
+  border-radius: var(--hololoom-border-radius);
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  margin-bottom: var(--hololoom-spacing-sm);
+  word-break: break-all;
+}
+
+.hololoom-detail-section p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.hololoom-metrics-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hololoom-metrics-list li {
+  padding: var(--hololoom-spacing-xs) 0;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+}
+
+.hololoom-metrics-list li:last-child {
+  border-bottom: none;
+}
+
+.hololoom-copy-btn,
+.hololoom-action-btn {
+  padding: var(--hololoom-spacing-xs) var(--hololoom-spacing-md);
+  background: var(--hololoom-tertiary);
+  border: 1px solid var(--hololoom-border);
+  border-radius: var(--hololoom-border-radius);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--hololoom-transition);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.hololoom-copy-btn:hover,
+.hololoom-action-btn:hover {
+  background: var(--hololoom-primary);
+}
+
+.hololoom-action-btn {
+  margin-right: var(--hololoom-spacing-sm);
+  margin-top: var(--hololoom-spacing-xs);
+}
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 768px) {
+  .hololoom-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hololoom-control-section {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .hololoom-search-input {
+    width: 100%;
+  }
+
+  .hololoom-panel {
+    width: 100%;
+    right: -100%;
+    top: auto;
+    bottom: 0;
+    transform: none;
+    max-height: 60vh;
+    border-radius: var(--hololoom-border-radius) var(--hololoom-border-radius) 0 0;
+  }
+
+  .hololoom-panel-visible {
+    right: 0;
+  }
+
+  .hololoom-zoom-controls {
+    flex-direction: row;
+    top: auto;
+    bottom: var(--hololoom-spacing-md);
+    right: 50%;
+    transform: translateX(50%);
+  }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  .hololoom-controls,
+  .hololoom-zoom-controls,
+  .hololoom-panel,
+  .hololoom-tooltip {
+    display: none;
+  }
+
+  .hololoom-diagram-container {
+    page-break-inside: avoid;
+    border: none;
+  }
+}
+
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+.hololoom-interactive-node:focus-visible,
+.hololoom-btn:focus-visible,
+.hololoom-zoom-btn:focus-visible,
+.hololoom-search-input:focus-visible {
+  outline: 3px solid var(--hololoom-primary);
+  outline-offset: 2px;
+}
+
+/* ===== Dark Mode Support ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hololoom-text: #fff;
+    --hololoom-bg: #1a1a1a;
+    --hololoom-border: #444;
+    --hololoom-shadow: rgba(0, 0, 0, 0.3);
+    --hololoom-tertiary: #2a2a2a;
+  }
+
+  .hololoom-detail-section code {
+    background: #2a2a2a;
+    color: #e0e0e0;
+  }
+
+  .hololoom-metrics-list li {
+    border-bottom-color: #333;
+  }
+
+  .hololoom-tooltip {
+    background: #2a2a2a;
+    color: #e0e0e0;
+  }
+}
