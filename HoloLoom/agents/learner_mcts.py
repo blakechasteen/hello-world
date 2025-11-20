@@ -20,7 +20,7 @@ import numpy as np
 from HoloLoom.agents.learner import WorkingMemoryLearner
 from HoloLoom.agents.mcts_core import MCTSStateSpace, MCTSEngine
 from HoloLoom.agents.types import LearnedPattern, WorkingMemoryState, AgentProfile
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 
 
 # ============================================================================

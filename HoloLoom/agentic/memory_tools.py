@@ -27,7 +27,7 @@ from datetime import datetime, timedelta
 import asyncio
 import logging
 
-from HoloLoom.documentation.types import MemoryShard, Query
+from HoloLoom.Documentation.types import MemoryShard, Query
 from HoloLoom.memory.lifecycle_manager import (
     ContextStreamManager,
     MemoryScope,

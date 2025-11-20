@@ -1,0 +1,135 @@
+# Code Reviewer Skill Template
+# =============================
+# Reviews code for best practices, potential issues, and quality improvements
+
+name: code-reviewer
+version: "1.0.0"
+description: "Review code for best practices, potential bugs, and quality improvements"
+
+metadata:
+  category: "development"
+  tags: ["code-review", "quality", "best-practices", "static-analysis"]
+  author: "HoloLoom Agent System"
+  created: "2025-11-16"
+
+# Recursive reasoning configuration
+reasoning:
+  default_strategy: "critique"  # Use CRITIQUE strategy for code review
+  max_iterations: 3
+  quality_threshold: 0.85
+  refinement_passes:
+    - name: "initial_review"
+      focus: "Identify code smells and obvious issues"
+    - name: "deep_analysis"
+      focus: "Analyze design patterns and architecture"
+    - name: "final_polish"
+      focus: "Suggest improvements and best practices"
+
+# Prompt template
+system_prompt: |
+  You are an expert code reviewer with deep knowledge of:
+  - Software design patterns and SOLID principles
+  - Language-specific best practices
+  - Performance optimization techniques
+  - Security vulnerabilities (OWASP Top 10)
+  - Testing and maintainability
+
+  Your reviews are:
+  - Constructive and educational
+  - Specific and actionable
+  - Prioritized by severity (critical, high, medium, low)
+  - Balanced (acknowledge good practices too)
+
+user_prompt_template: |
+  Please review the following code:
+
+  Language: {language}
+  File: {filename}
+
+  ```{language}
+  {code}
+  ```
+
+  Focus areas: {focus_areas}
+
+  Provide:
+  1. Overall assessment (rating 1-10)
+  2. Critical issues (must fix)
+  3. Improvements (should consider)
+  4. Positive highlights
+  5. Refactoring suggestions
+
+# Input parameters
+parameters:
+  - name: code
+    type: string
+    required: true
+    description: "Source code to review"
+
+  - name: language
+    type: string
+    required: true
+    description: "Programming language (python, javascript, typescript, go, rust, etc.)"
+
+  - name: filename
+    type: string
+    required: false
+    default: "untitled"
+    description: "Filename for context"
+
+  - name: focus_areas
+    type: string
+    required: false
+    default: "all"
+    description: "Specific areas to focus on (security, performance, readability, etc.)"
+
+# Expected output structure
+output:
+  format: "structured"
+  fields:
+    - rating: integer  # 1-10 overall code quality
+    - critical_issues: list  # Must-fix problems
+    - improvements: list  # Should-consider enhancements
+    - highlights: list  # Good practices found
+    - refactoring_suggestions: list  # Optional improvements
+
+# Quality checks
+quality_checks:
+  - name: "severity_classification"
+    description: "All issues must be classified by severity"
+  - name: "actionable_feedback"
+    description: "Each suggestion must include specific action to take"
+  - name: "code_examples"
+    description: "Include code examples for major suggestions"
+
+# Example usage
+examples:
+  - name: "Python function review"
+    input:
+      code: |
+        def process_data(data):
+            result = []
+            for item in data:
+                if item > 0:
+                    result.append(item * 2)
+            return result
+      language: "python"
+      filename: "utils.py"
+    expected_rating: 6
+    expected_issues:
+      - "Missing type hints"
+      - "Could use list comprehension for better readability"
+      - "No input validation"
+
+  - name: "JavaScript React component"
+    input:
+      code: |
+        function UserProfile({ user }) {
+          return <div>{user.name}</div>
+        }
+      language: "javascript"
+      filename: "UserProfile.jsx"
+    expected_rating: 7
+    expected_issues:
+      - "Missing PropTypes or TypeScript"
+      - "No null check for user object"

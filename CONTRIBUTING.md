@@ -15,9 +15,10 @@ We welcome contributions from everyone. Whether you're fixing bugs, adding featu
 5. [Contribution Guidelines](#contribution-guidelines)
 6. [Testing](#testing)
 7. [Code Style](#code-style)
-8. [Commit Messages](#commit-messages)
-9. [Pull Request Process](#pull-request-process)
-10. [Community](#community)
+8. [Pre-Commit Hooks](#pre-commit-hooks)
+9. [Commit Messages](#commit-messages)
+10. [Pull Request Process](#pull-request-process)
+11. [Community](#community)
 
 ---
 
@@ -318,6 +319,192 @@ ruff check --fix HoloLoom/
 ```bash
 mypy HoloLoom/ --ignore-missing-imports
 ```
+
+---
+
+## Pre-Commit Hooks
+
+### What is Pre-Commit?
+
+Pre-commit is an automated code quality framework that runs checks **before every commit**. It ensures:
+- Code formatting consistency (Black, isort)
+- Syntax errors are caught early
+- Security issues are detected
+- Commit messages follow conventions
+- No accidental commits to main/master
+
+### Setup
+
+**Install pre-commit** (one-time setup):
+
+```bash
+# 1. Install pre-commit
+pip install pre-commit
+
+# 2. Install git hooks from .pre-commit-config.yaml
+pre-commit install
+pre-commit install --hook-type commit-msg  # For commit message validation
+
+# 3. (Optional) Run on all files to fix existing issues
+pre-commit run --all-files
+```
+
+### Available Hooks
+
+**Automatic Fixes** (pre-commit will fix these for you):
+- `trailing-whitespace` - Remove trailing spaces
+- `end-of-file-fixer` - Ensure files end with newline
+- `black` - Code formatting
+- `isort` - Import sorting
+- `ruff --fix` - Auto-fix linting issues
+- `markdownlint --fix` - Fix markdown formatting
+- `mixed-line-ending` - Convert to consistent line endings
+
+**Manual Review Required** (pre-commit will show errors, you must fix them):
+- `check-yaml` - YAML syntax errors
+- `check-json` - JSON syntax errors
+- `check-ast` - Python syntax errors
+- `detect-private-key` - Accidentally committed secrets
+- `check-merge-conflict` - Unresolved merge conflicts
+- `conventional-pre-commit` - Commit message format
+
+**Slow Checks** (run manually or in CI, skipped on commit):
+- `mypy` - Type checking (slow)
+- `bandit` - Security analysis (slow)
+
+### Common Workflows
+
+**Fix code before committing**:
+```bash
+# Pre-commit runs automatically on git commit
+# If hooks fail, they auto-fix what they can, then:
+git add .
+git commit -m "feat: Add new feature"
+```
+
+**Run specific hooks manually**:
+```bash
+# Run all hooks on changed files
+pre-commit run
+
+# Run all hooks on all files
+pre-commit run --all-files
+
+# Run a specific hook
+pre-commit run black --all-files
+pre-commit run ruff --all-files
+
+# Run slow type checking (not in pre-commit by default)
+pre-commit run mypy --hook-stage manual --all-files
+
+# Run slow security checks
+pre-commit run bandit --hook-stage manual --all-files
+```
+
+**Skip pre-commit for an emergency fix** (use sparingly):
+```bash
+git commit --no-verify -m "hotfix: Critical bug"  # ⚠️ Not recommended
+```
+
+**Update pre-commit hooks to latest versions**:
+```bash
+pre-commit autoupdate
+```
+
+### Configuration
+
+The main configuration is in `.pre-commit-config.yaml`. Key settings:
+
+- **Python version**: `python3.8` (minimum supported)
+- **Line length**: 100 characters (not 80)
+- **Black profile for isort**: Ensures compatibility
+- **Fail fast disabled**: Shows all issues, not just first
+
+Additional tool configs (Black, isort, ruff, mypy) can go in:
+- `pyproject.toml` (recommended - TOML format)
+- `.flake8` (Ruff config)
+- `.isort.cfg` (isort config)
+- `mypy.ini` (mypy config)
+
+Example `pyproject.toml`:
+```toml
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+select = ["F", "E", "W", "I", "C"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+ignore_missing_imports = true
+```
+
+### Troubleshooting
+
+**Pre-commit rejects my code**:
+1. Read the error message carefully
+2. Most errors are auto-fixed (just `git add` and commit again)
+3. For syntax errors, fix manually and retry
+
+**Pre-commit is too slow**:
+```bash
+# Skip pre-commit (only when needed)
+git commit --no-verify
+
+# Or run only essential hooks
+pre-commit run trailing-whitespace end-of-file-fixer check-yaml
+```
+
+**Hooks not running**:
+```bash
+# Verify hooks are installed
+cat .git/hooks/pre-commit
+
+# Reinstall if missing
+pre-commit install
+```
+
+**Modified commit message format**:
+```bash
+# Pre-commit validates commit messages against conventional-commit
+# Valid format: <type>(<scope>): <description>
+# Example: feat(embeddings): Add Nomic v1.5 support
+
+# Invalid: fix stuff
+# Valid: fix(orchestrator): Correct bandit update logic
+```
+
+### For CI/CD Pipelines
+
+Add to GitHub Actions (`.github/workflows/code-quality.yml`):
+
+```yaml
+name: Code Quality
+
+on: [push, pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - uses: pre-commit/action@v3
+        with:
+          extra_dependencies: ["safety"]  # Optional security check
+```
+
+This runs **all hooks** (including slow manual checks) on every PR.
 
 ---
 

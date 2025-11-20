@@ -401,7 +401,45 @@ Quality Metrics:
 - [CLAUDE.md](CLAUDE.md) - Developer guide
 - [Master Scope & Sequence](HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md) - Complete architectural map
 
-**Last Updated:** November 8, 2025
+**Last Updated:** November 19, 2025
+
+---
+
+## 🌿 Unmerged Branch Status (November 19, 2025)
+
+**47 unmerged Claude/Codex branches** contain features and improvements not yet in master.
+
+### 🚀 High-Priority Ready-to-Merge Features:
+
+#### 1. Filesystem RAG Ingestion ⭐⭐⭐⭐⭐
+**Branch:** `claude/filesystem-rag-ingestion-01LZ4UKcM5K4jbae4C2mSVKV`
+- Interactive file selection for RAG
+- FilesystemSpinner with comprehensive filtering
+- Production-ready with tests and demos
+- **Action:** MERGE SOON - fills gap in ingestion capabilities
+
+#### 2. Memory System Enhancements ⭐⭐⭐⭐⭐
+**Branch:** `claude/enhance-hololoom-memory-01YFMtm1vRKUmwaNAigKR95q`
+- Curiosity Engine for exploration
+- Graph Reasoning system
+- Semantic Transition (episodic → semantic)
+- Temporal Evolution tracking
+- Error Recovery + Health monitoring
+- FastAPI server integration
+- **Action:** REVIEW CAREFULLY - large changeset, may overlap with Memory v1.0
+
+#### 3. Security Improvements ⭐⭐⭐⭐⭐
+**Branch:** `claude/tenant-isolation-pii-018g5itHiyhrwcgFdSoFJWXa`
+- Complete security audit remediation
+- PII handling improvements
+- **Action:** HIGH PRIORITY - merge security fixes
+
+#### 4. Documentation Additions (Safe Merges)
+- **12-Factor Agents:** Architecture methodology (documentation only)
+- **Contract-First Prompting:** Clarity framework (documentation only)
+- **Skills Integration:** Meta-skills ecosystem planning
+
+**For complete branch analysis, see:** [BRANCH_REVIEW_AND_STATUS.md](BRANCH_REVIEW_AND_STATUS.md)
 
 ---
 

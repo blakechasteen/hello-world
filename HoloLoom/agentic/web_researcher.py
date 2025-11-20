@@ -25,7 +25,7 @@ from datetime import datetime
 from enum import Enum
 
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 from HoloLoom.search.web_crawler_integration import (
     WebCrawlerSearch,
     WebCrawlerSearchConfig,

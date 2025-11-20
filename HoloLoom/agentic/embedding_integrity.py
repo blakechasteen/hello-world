@@ -28,7 +28,7 @@ from pathlib import Path
 import json
 import numpy as np
 
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 

@@ -19,7 +19,7 @@ from pathlib import Path
 
 from HoloLoom.agents.types import WorkingMemoryState, AgentProfile
 from HoloLoom.memory.graph import KG
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
 

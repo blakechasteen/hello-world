@@ -1,0 +1,347 @@
+{
+  "name": "hololoom-squad",
+  "displayName": "HoloLoom Squad",
+  "description": "Three AI personas (Proto ⚡, Trough 🔍, EdWIN 💡) for intelligent code assistance",
+  "version": "1.0.0",
+  "publisher": "hololoom",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Linters",
+    "Education",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "code-assistant",
+    "code-review",
+    "refactoring",
+    "learning"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "hololoom.quickActions",
+        "title": "HoloLoom: Quick Actions",
+        "category": "HoloLoom",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "hololoom.proto.explain",
+        "title": "Proto: Explain Code",
+        "category": "HoloLoom",
+        "icon": "$(symbol-method)"
+      },
+      {
+        "command": "hololoom.proto.refactor",
+        "title": "Proto: Refactor Code",
+        "category": "HoloLoom",
+        "icon": "$(symbol-misc)"
+      },
+      {
+        "command": "hololoom.proto.research",
+        "title": "Proto: Research Question",
+        "category": "HoloLoom",
+        "icon": "$(search)"
+      },
+      {
+        "command": "hololoom.proto.verify",
+        "title": "Proto: Verify Claim",
+        "category": "HoloLoom",
+        "icon": "$(verified)"
+      },
+      {
+        "command": "hololoom.proto.workflow",
+        "title": "Proto: Open Workflow Builder",
+        "category": "HoloLoom",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "hololoom.trough.analyze",
+        "title": "Trough: Analyze File",
+        "category": "HoloLoom",
+        "icon": "$(search)"
+      },
+      {
+        "command": "hololoom.trough.fix",
+        "title": "Trough: Auto-Fix Issues",
+        "category": "HoloLoom",
+        "icon": "$(wrench)"
+      },
+      {
+        "command": "hololoom.trough.stats",
+        "title": "Trough: Show QA Statistics",
+        "category": "HoloLoom",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "hololoom.trough.goToIssue",
+        "title": "Go to Issue",
+        "category": "HoloLoom",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "hololoom.edwin.scene",
+        "title": "EdWIN: Analyze Scene",
+        "category": "HoloLoom",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "hololoom.edwin.guidance",
+        "title": "EdWIN: Get Guidance",
+        "category": "HoloLoom",
+        "icon": "$(lightbulb)"
+      },
+      {
+        "command": "hololoom.edwin.graph",
+        "title": "EdWIN: Explore Knowledge Graph",
+        "category": "HoloLoom",
+        "icon": "$(graph-scatter)"
+      },
+      {
+        "command": "hololoom.eduverse.tutorial",
+        "title": "EduVerse: Start Tutorial",
+        "category": "HoloLoom",
+        "icon": "$(book)"
+      },
+      {
+        "command": "hololoom.eduverse.quiz",
+        "title": "EduVerse: Interactive Quiz",
+        "category": "HoloLoom",
+        "icon": "$(mortar-board)"
+      },
+      {
+        "command": "hololoom.chat.open",
+        "title": "ChatOps: Open Chat",
+        "category": "HoloLoom",
+        "icon": "$(comment)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "hololoom",
+          "title": "HoloLoom Squad",
+          "icon": "resources/hololoom.svg"
+        }
+      ]
+    },
+    "views": {
+      "hololoom": [
+        {
+          "id": "hololoom.issues",
+          "name": "Trough Issues 🔍",
+          "icon": "$(warning)",
+          "contextualTitle": "Code Issues"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "hololoom.issues",
+        "contents": "No issues found. Run analysis to scan your code.\n[Analyze File](command:hololoom.trough.analyze)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "hololoom.proto",
+          "group": "hololoom@1"
+        },
+        {
+          "submenu": "hololoom.trough",
+          "group": "hololoom@2"
+        },
+        {
+          "submenu": "hololoom.edwin",
+          "group": "hololoom@3"
+        }
+      ],
+      "hololoom.proto": [
+        {
+          "command": "hololoom.proto.explain",
+          "when": "editorHasSelection",
+          "group": "proto@1"
+        },
+        {
+          "command": "hololoom.proto.refactor",
+          "when": "editorHasSelection",
+          "group": "proto@2"
+        },
+        {
+          "command": "hololoom.proto.verify",
+          "when": "editorHasSelection",
+          "group": "proto@3"
+        },
+        {
+          "command": "hololoom.proto.workflow",
+          "group": "proto@4"
+        }
+      ],
+      "hololoom.trough": [
+        {
+          "command": "hololoom.trough.analyze",
+          "group": "trough@1"
+        },
+        {
+          "command": "hololoom.trough.fix",
+          "group": "trough@2"
+        },
+        {
+          "command": "hololoom.trough.stats",
+          "group": "trough@3"
+        }
+      ],
+      "hololoom.edwin": [
+        {
+          "command": "hololoom.edwin.scene",
+          "group": "edwin@1"
+        },
+        {
+          "command": "hololoom.edwin.guidance",
+          "group": "edwin@2"
+        },
+        {
+          "command": "hololoom.edwin.graph",
+          "group": "edwin@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "hololoom.trough.goToIssue",
+          "when": "view == hololoom.issues",
+          "group": "inline"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "hololoom.proto",
+        "label": "⚡ Proto (Code Orchestrator)"
+      },
+      {
+        "id": "hololoom.trough",
+        "label": "🔍 Trough (Code Reviewer)"
+      },
+      {
+        "id": "hololoom.edwin",
+        "label": "💡 EdWIN (Research Companion)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "hololoom.quickActions",
+        "key": "ctrl+shift+h",
+        "mac": "cmd+shift+h"
+      },
+      {
+        "command": "hololoom.proto.explain",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "hololoom.trough.analyze",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      },
+      {
+        "command": "hololoom.edwin.guidance",
+        "key": "ctrl+shift+g",
+        "mac": "cmd+shift+g"
+      },
+      {
+        "command": "hololoom.chat.open",
+        "key": "ctrl+shift+c",
+        "mac": "cmd+shift+c"
+      }
+    ],
+    "configuration": {
+      "title": "HoloLoom Squad",
+      "properties": {
+        "hololoom.backendUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Backend API URL"
+        },
+        "hololoom.proto.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Proto (Code Orchestrator)"
+        },
+        "hololoom.proto.defaultMode": {
+          "type": "string",
+          "enum": ["verify", "research", "direct"],
+          "default": "verify",
+          "description": "Default reasoning mode for Proto"
+        },
+        "hololoom.trough.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Trough (Code Reviewer)"
+        },
+        "hololoom.trough.autoFix": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically fix issues when detected"
+        },
+        "hololoom.trough.gitSafe": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Git safety checks before fixing"
+        },
+        "hololoom.edwin.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable EdWIN (Research Companion)"
+        },
+        "hololoom.edwin.autoTrigger": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically show guidance when typing"
+        },
+        "hololoom.eduverse.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable EduVerse educational features"
+        },
+        "hololoom.chatops.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable ChatOps conversational interface"
+        },
+        "hololoom.voice.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable voice chat features"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

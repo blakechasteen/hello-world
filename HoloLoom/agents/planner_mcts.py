@@ -21,7 +21,7 @@ import numpy as np
 
 from HoloLoom.agents.mcts_core import MCTSStateSpace, MCTSEngine, HierarchicalMCTS
 from HoloLoom.agents.orchestrator_mcts import MCTSAgentOrchestrator
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 
 
 # ============================================================================
