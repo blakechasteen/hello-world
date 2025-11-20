@@ -34,7 +34,7 @@ from typing import Dict, List, Any, Optional, TYPE_CHECKING
 from datetime import datetime, timedelta
 
 # Shared types
-from HoloLoom.documentation.types import Query, Context, Features, MemoryShard
+from HoloLoom.Documentation.types import Query, Context, Features, MemoryShard
 
 # mythRL Protocol-based architecture types
 from HoloLoom.protocols import (
@@ -1503,7 +1503,7 @@ class WeavingOrchestrator:
 
         Example:
             >>> from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-            >>> from HoloLoom.documentation.types import Query
+            >>> from HoloLoom.Documentation.types import Query
             >>> from HoloLoom.config import Config
             >>>
             >>> config = Config.fast()
@@ -2118,7 +2118,7 @@ class WeavingOrchestrator:
             except asyncio.TimeoutError:
                 self.logger.error("Policy decision timed out after 200ms, using safe default")
                 # Create safe default action plan
-                from HoloLoom.documentation.types import ActionPlan
+                from HoloLoom.Documentation.types import ActionPlan
                 action_plan = ActionPlan(
                     tool="answer",
                     confidence=0.5,

@@ -1,0 +1,563 @@
+/**
+ * Elle Core Dashboard - Tufte-Inspired Styling
+ *
+ * Edward Tufte Principles:
+ * - Maximize data-ink ratio
+ * - Show data variation, not design variation
+ * - Reveal data at several levels
+ * - Minimal decoration, maximum information
+ *
+ * Created: 2025-11-15
+ * Author: Blake Chasteen (Agent C)
+ */
+
+/* ========================================================================
+   RESET & VARIABLES
+   ======================================================================== */
+
+:root {
+    /* Tufte color palette - subtle, information-first */
+    --bg-primary: #fffff8;
+    --bg-secondary: #f8f8f0;
+    --text-primary: #111;
+    --text-secondary: #555;
+    --text-tertiary: #888;
+    --border-light: #ddd;
+    --border-medium: #ccc;
+    --accent-blue: #4682b4;
+    --accent-green: #2d882d;
+    --accent-red: #d32f2f;
+    --accent-amber: #ff8f00;
+
+    /* Typography - Tufte uses serif for text, sans-serif for data */
+    --font-serif: 'ET Book', Palatino, 'Palatino Linotype', 'Palatino LT STD', 'Book Antiqua', Georgia, serif;
+    --font-sans: 'Gill Sans', 'Gill Sans MT', Calibri, sans-serif;
+    --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    padding: var(--space-lg);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ========================================================================
+   TYPOGRAPHY
+   ======================================================================== */
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: var(--space-sm);
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-top: var(--space-xl);
+}
+
+h3 {
+    font-size: 1.25rem;
+    margin-top: var(--space-lg);
+}
+
+p {
+    margin-bottom: var(--space-md);
+    max-width: 55ch; /* Tufte optimal line length */
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: -var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+/* Numbers - always sans-serif */
+.number, .metric-value, .currency, .percentage {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ========================================================================
+   NAVIGATION
+   ======================================================================== */
+
+nav {
+    display: flex;
+    gap: var(--space-lg);
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: var(--space-xl);
+}
+
+nav a {
+    font-family: var(--font-sans);
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+nav a:hover {
+    color: var(--accent-blue);
+    background: var(--bg-secondary);
+}
+
+nav a.active {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+/* ========================================================================
+   LAYOUT
+   ======================================================================== */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    padding: var(--space-lg);
+    border-radius: 4px;
+}
+
+.panel-title {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* ========================================================================
+   DATA DISPLAY - TUFTE TABLES
+   ======================================================================== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-lg);
+}
+
+thead {
+    border-bottom: 2px solid var(--text-primary);
+}
+
+th {
+    text-align: left;
+    font-weight: 600;
+    padding: var(--space-sm) var(--space-xs);
+    color: var(--text-primary);
+}
+
+th.numeric, td.numeric {
+    text-align: right;
+    font-family: var(--font-mono);
+}
+
+td {
+    padding: var(--space-xs);
+    border-bottom: 1px solid var(--border-light);
+}
+
+tbody tr:hover {
+    background: rgba(70, 130, 180, 0.05);
+}
+
+/* Remove bottom border from last row */
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ========================================================================
+   METRICS & CARDS
+   ======================================================================== */
+
+.metric-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.metric-label {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+}
+
+.metric-value {
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.metric-delta {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+}
+
+.metric-delta.positive {
+    color: var(--accent-green);
+}
+
+.metric-delta.negative {
+    color: var(--accent-red);
+}
+
+.metric-delta::before {
+    content: '';
+}
+
+.metric-delta.positive::before {
+    content: '▲ ';
+}
+
+.metric-delta.negative::before {
+    content: '▼ ';
+}
+
+/* ========================================================================
+   SPARKLINES (inline charts)
+   ======================================================================== */
+
+.sparkline {
+    display: inline-block;
+    width: 60px;
+    height: 20px;
+    vertical-align: middle;
+}
+
+.sparkline svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ========================================================================
+   BUTTONS & CONTROLS
+   ======================================================================== */
+
+button {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border-medium);
+    background: white;
+    color: var(--text-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-blue);
+}
+
+button.primary {
+    background: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+}
+
+button.primary:hover {
+    background: #3a6fa0;
+}
+
+button.danger {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-red);
+}
+
+button.danger:hover {
+    background: #b71c1c;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ========================================================================
+   FORMS
+   ======================================================================== */
+
+input, select, textarea {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    padding: var(--space-sm);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    background: white;
+    color: var(--text-primary);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+label {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: var(--space-xs);
+}
+
+/* ========================================================================
+   CHARTS (for embedded visualizations)
+   ======================================================================== */
+
+.chart-container {
+    width: 100%;
+    height: 300px;
+    margin-bottom: var(--space-lg);
+}
+
+/* ========================================================================
+   STATUS INDICATORS
+   ======================================================================== */
+
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.success {
+    background: rgba(45, 136, 45, 0.1);
+    color: var(--accent-green);
+}
+
+.status-badge.warning {
+    background: rgba(255, 143, 0, 0.1);
+    color: var(--accent-amber);
+}
+
+.status-badge.error {
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--accent-red);
+}
+
+.status-badge.info {
+    background: rgba(70, 130, 180, 0.1);
+    color: var(--accent-blue);
+}
+
+/* ========================================================================
+   RECOMMENDATIONS LIST
+   ======================================================================== */
+
+.recommendation {
+    padding: var(--space-md);
+    border-left: 3px solid var(--border-medium);
+    margin-bottom: var(--space-md);
+    background: white;
+}
+
+.recommendation.high {
+    border-left-color: var(--accent-red);
+}
+
+.recommendation.medium {
+    border-left-color: var(--accent-amber);
+}
+
+.recommendation.low {
+    border-left-color: var(--accent-blue);
+}
+
+.recommendation-action {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+}
+
+.recommendation-reasoning {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+.recommendation-metrics {
+    display: flex;
+    gap: var(--space-lg);
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+}
+
+/* ========================================================================
+   TASK TRACKER
+   ======================================================================== */
+
+.task-active {
+    background: rgba(70, 130, 180, 0.05);
+    border: 2px solid var(--accent-blue);
+    padding: var(--space-lg);
+    border-radius: 4px;
+    margin-bottom: var(--space-xl);
+}
+
+.task-timer {
+    font-family: var(--font-mono);
+    font-size: 3rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    text-align: center;
+    margin: var(--space-lg) 0;
+}
+
+.task-controls {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+}
+
+/* ========================================================================
+   WEEKLY PLANNER
+   ======================================================================== */
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border-light);
+    border: 1px solid var(--border-light);
+    margin-bottom: var(--space-xl);
+}
+
+.calendar-day {
+    background: white;
+    padding: var(--space-md);
+    min-height: 150px;
+}
+
+.calendar-day-header {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+    color: var(--text-primary);
+}
+
+.calendar-task {
+    background: var(--bg-secondary);
+    padding: var(--space-xs) var(--space-sm);
+    margin-bottom: var(--space-xs);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: move;
+}
+
+.calendar-task:hover {
+    background: rgba(70, 130, 180, 0.1);
+}
+
+/* ========================================================================
+   RESPONSIVE
+   ======================================================================== */
+
+@media (max-width: 768px) {
+    body {
+        padding: var(--space-md);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    nav {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .calendar-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .metric-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* ========================================================================
+   LOADING STATES
+   ======================================================================== */
+
+.loading {
+    text-align: center;
+    padding: var(--space-xl);
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
+.error {
+    background: rgba(211, 47, 47, 0.1);
+    border-left: 3px solid var(--accent-red);
+    padding: var(--space-md);
+    margin-bottom: var(--space-lg);
+    color: var(--accent-red);
+}
+
+/* ========================================================================
+   UTILITIES
+   ======================================================================== */
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-muted { color: var(--text-tertiary); }
+.mb-0 { margin-bottom: 0; }
+.mt-lg { margin-top: var(--space-lg); }
+.hidden { display: none; }

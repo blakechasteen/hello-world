@@ -44,7 +44,7 @@ import uuid
 from HoloLoom.agents.orchestrator_mcts import create_mcts_agent
 from HoloLoom.agents.mcts_breakthrough import BreakthroughDetector, FeedForwardBroadcaster
 from HoloLoom.agents.background_learner import LearningQueue, Experience
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 from HoloLoom.memory.graph import KG
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 

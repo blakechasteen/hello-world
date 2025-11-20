@@ -1,0 +1,214 @@
+{
+  "sop_id": "KIMCHI_001",
+  "product_name": "Traditional Napa Kimchi",
+  "version": "1.0.0",
+  "created_date": "2025-11-16T00:00:00",
+  "last_modified": "2025-11-16T00:00:00",
+  "batch_size": 40,
+  "batch_unit": "jars",
+  "ingredients": [
+    {
+      "name": "Napa Cabbage",
+      "quantity": 15,
+      "unit": "lb",
+      "cost_per_unit": 1.20,
+      "supplier": "Local farm or produce supplier"
+    },
+    {
+      "name": "Sea Salt (for brining)",
+      "quantity": 1.5,
+      "unit": "cup",
+      "cost_per_unit": 0.05,
+      "supplier": "Bulk supplier"
+    },
+    {
+      "name": "Korean Chili Flakes (Gochugaru)",
+      "quantity": 1.0,
+      "unit": "cup",
+      "cost_per_unit": 2.50,
+      "supplier": "Asian market or online"
+    },
+    {
+      "name": "Fresh Garlic",
+      "quantity": 20,
+      "unit": "cloves",
+      "cost_per_unit": 0.05,
+      "supplier": "Produce supplier"
+    },
+    {
+      "name": "Fresh Ginger",
+      "quantity": 4,
+      "unit": "oz",
+      "cost_per_unit": 0.30,
+      "supplier": "Produce supplier"
+    },
+    {
+      "name": "Fish Sauce",
+      "quantity": 0.5,
+      "unit": "cup",
+      "cost_per_unit": 0.80,
+      "supplier": "Asian market"
+    },
+    {
+      "name": "Green Onions",
+      "quantity": 2,
+      "unit": "bunch",
+      "cost_per_unit": 1.00,
+      "supplier": "Produce supplier"
+    },
+    {
+      "name": "Daikon Radish",
+      "quantity": 2,
+      "unit": "lb",
+      "cost_per_unit": 1.50,
+      "supplier": "Produce supplier"
+    },
+    {
+      "name": "Carrots",
+      "quantity": 1,
+      "unit": "lb",
+      "cost_per_unit": 0.80,
+      "supplier": "Produce supplier"
+    },
+    {
+      "name": "16oz Glass Jars",
+      "quantity": 40,
+      "unit": "jars",
+      "cost_per_unit": 0.50,
+      "supplier": "Packaging supplier"
+    },
+    {
+      "name": "Labels",
+      "quantity": 40,
+      "unit": "labels",
+      "cost_per_unit": 0.08,
+      "supplier": "Print shop"
+    }
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "description": "Quarter napa cabbages lengthwise, cut into 2-inch pieces",
+      "duration_minutes": 20,
+      "step_type": "PREP",
+      "equipment_needed": ["Large knife", "Cutting board"],
+      "safety_notes": ["Use sharp knife carefully"]
+    },
+    {
+      "step_number": 2,
+      "description": "Dissolve 1.5 cups sea salt in 1 gallon water, pour over cabbage in large container",
+      "duration_minutes": 10,
+      "step_type": "PREP",
+      "equipment_needed": ["Large food-grade container", "Water"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 3,
+      "description": "Brine cabbage for 2 hours, turning every 30 minutes",
+      "duration_minutes": 120,
+      "step_type": "WAIT",
+      "equipment_needed": ["Weight or plate to keep cabbage submerged"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 4,
+      "description": "Rinse cabbage thoroughly 3 times in cold water, drain well",
+      "duration_minutes": 15,
+      "step_type": "PREP",
+      "equipment_needed": ["Colander", "Large sink"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 5,
+      "description": "Julienne daikon radish and carrots",
+      "duration_minutes": 15,
+      "step_type": "PREP",
+      "equipment_needed": ["Knife or mandoline"],
+      "safety_notes": ["Use mandoline guard"]
+    },
+    {
+      "step_number": 6,
+      "description": "Chop green onions into 1-inch pieces",
+      "duration_minutes": 5,
+      "step_type": "PREP",
+      "equipment_needed": ["Knife"],
+      "safety_notes": []
+    },
+    {
+      "step_number": 7,
+      "description": "Make paste: blend garlic, ginger, fish sauce, gochugaru, 1/4 cup water",
+      "duration_minutes": 10,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Blender or food processor", "Gloves"],
+      "safety_notes": ["Wear gloves when handling chili paste - will burn skin"]
+    },
+    {
+      "step_number": 8,
+      "description": "Mix paste with cabbage, radish, carrots, green onions - massage thoroughly",
+      "duration_minutes": 20,
+      "step_type": "PROCESS",
+      "equipment_needed": ["Large mixing bowl", "Gloves"],
+      "safety_notes": ["Must wear gloves - chili will burn bare hands"]
+    },
+    {
+      "step_number": 9,
+      "description": "Pack kimchi tightly into 16oz jars, press down to remove air pockets",
+      "duration_minutes": 30,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["40 x 16oz jars", "Funnel or scoop"],
+      "safety_notes": ["Leave 1 inch headspace for fermentation"]
+    },
+    {
+      "step_number": 10,
+      "description": "Seal jars loosely, ferment at room temperature (65-75°F) for 3-5 days",
+      "duration_minutes": 5760,
+      "step_type": "WAIT",
+      "equipment_needed": ["Trays to catch overflow"],
+      "safety_notes": ["Burp jars daily to release gas", "Place on trays - may overflow"]
+    },
+    {
+      "step_number": 11,
+      "description": "Taste daily after day 3 - ready when pleasantly sour and bubbly",
+      "duration_minutes": 15,
+      "step_type": "QC",
+      "equipment_needed": ["Clean spoon for tasting"],
+      "quality_metrics": ["Sour but not overpowering", "Slight fizz", "Vegetables still crisp"]
+    },
+    {
+      "step_number": 12,
+      "description": "Refrigerate to stop fermentation, tighten lids, apply labels",
+      "duration_minutes": 20,
+      "step_type": "PACKAGE",
+      "equipment_needed": ["Refrigeration", "Labels"],
+      "safety_notes": []
+    }
+  ],
+  "equipment": [
+    "Large food-grade container (5+ gallon capacity)",
+    "Sharp knives",
+    "Cutting boards (dedicated for kimchi)",
+    "Mandoline slicer (optional)",
+    "Blender or food processor",
+    "Large mixing bowl",
+    "Nitrile gloves (critical)",
+    "40 x 16oz glass jars with lids",
+    "Funnel or scoop",
+    "Trays for catching overflow"
+  ],
+  "total_time_minutes": 180,
+  "active_time_minutes": 180,
+  "passive_time_minutes": 5880,
+  "target_yield": 40,
+  "yield_unit": "jars",
+  "retail_price": 6.50,
+  "cost_per_batch": 91.00,
+  "quality_standards": [
+    "Vegetables retain crispness (not mushy)",
+    "Pleasant sour aroma with spicy notes",
+    "Bright red color from gochugaru",
+    "Slight carbonation when opened",
+    "No mold or off-odors"
+  ],
+  "storage_instructions": "Refrigerate at 35-40°F. Continues to slowly ferment in refrigerator - flavor deepens over time. Best consumed within 3 months. Use clean utensils to prevent contamination.",
+  "notes": "Always wear gloves when handling kimchi paste - gochugaru burns. Fermentation speed depends on temperature: warmer = faster. Can adjust spice level by varying gochugaru amount. Save brine from jars for cooking or drinking (probiotic-rich)."
+}

@@ -1,0 +1,171 @@
+{{- if .Values.voiceAgent.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hololoom-voice.fullname" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom-voice.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.voiceAgent.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "hololoom-voice.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero downtime deployments
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.voiceAgent.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "hololoom-voice.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "hololoom-voice.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.voiceAgent.securityContext | nindent 8 }}
+
+      # Init containers - wait for dependencies
+      initContainers:
+        {{- if .Values.neo4j.enabled }}
+        - name: wait-for-neo4j
+          image: busybox:latest
+          command: ['sh', '-c', 'until nc -z neo4j 7687; do echo waiting for neo4j; sleep 2; done']
+        {{- end }}
+        {{- if .Values.qdrant.enabled }}
+        - name: wait-for-qdrant
+          image: busybox:latest
+          command: ['sh', '-c', 'until nc -z qdrant 6333; do echo waiting for qdrant; sleep 2; done']
+        {{- end }}
+
+      containers:
+        - name: voice-agent
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.voiceAgent.image.repository }}:{{ .Values.voiceAgent.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.voiceAgent.image.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.voiceAgent.service.targetPort }}
+              protocol: TCP
+
+          # Environment variables
+          env:
+            {{- range .Values.voiceAgent.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+
+            # Secrets
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.voiceAgent.secrets.openaiApiKey.secretName }}
+                  key: {{ .Values.voiceAgent.secrets.openaiApiKey.key }}
+
+            {{- if .Values.neo4j.enabled }}
+            - name: NEO4J_URI
+              value: {{ .Values.neo4j.uri | quote }}
+            - name: NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.voiceAgent.secrets.neo4jPassword.secretName }}
+                  key: {{ .Values.voiceAgent.secrets.neo4jPassword.key }}
+            {{- end }}
+
+            {{- if .Values.qdrant.enabled }}
+            - name: QDRANT_HOST
+              value: {{ .Values.qdrant.host | quote }}
+            - name: QDRANT_PORT
+              value: {{ .Values.qdrant.port | quote }}
+            {{- end }}
+
+            {{- if .Values.redis.enabled }}
+            - name: REDIS_HOST
+              value: {{ .Values.redis.host | quote }}
+            - name: REDIS_PORT
+              value: {{ .Values.redis.port | quote }}
+            {{- end }}
+
+          # Resource limits
+          resources:
+            {{- toYaml .Values.voiceAgent.resources | nindent 12 }}
+
+          # Health probes
+          {{- if .Values.voiceAgent.livenessProbe.enabled }}
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "from HoloLoom.voice import VoiceAgent; print('healthy')"
+            initialDelaySeconds: {{ .Values.voiceAgent.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.voiceAgent.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.voiceAgent.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.voiceAgent.livenessProbe.failureThreshold }}
+          {{- end }}
+
+          {{- if .Values.voiceAgent.readinessProbe.enabled }}
+          readinessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "from HoloLoom.voice import VoiceAgent; print('ready')"
+            initialDelaySeconds: {{ .Values.voiceAgent.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.voiceAgent.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.voiceAgent.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.voiceAgent.readinessProbe.failureThreshold }}
+          {{- end }}
+
+          {{- if .Values.voiceAgent.startupProbe.enabled }}
+          startupProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "from HoloLoom.voice import VoiceAgent; print('starting')"
+            initialDelaySeconds: {{ .Values.voiceAgent.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.voiceAgent.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.voiceAgent.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.voiceAgent.startupProbe.failureThreshold }}
+          {{- end }}
+
+          # Volume mounts
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: voice-sessions
+              mountPath: /data/sessions
+          {{- end }}
+
+      # Volumes
+      {{- if .Values.persistence.enabled }}
+      volumes:
+        - name: voice-sessions
+          persistentVolumeClaim:
+            claimName: {{ include "hololoom-voice.fullname" . }}-sessions
+      {{- end }}
+
+      # Node affinity/anti-affinity
+      {{- with .Values.voiceAgent.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.voiceAgent.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.voiceAgent.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

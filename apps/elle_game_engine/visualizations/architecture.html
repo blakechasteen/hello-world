@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigPlay Engine - Interactive Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        #architecture-canvas {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .component {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .component:hover {
+            filter: brightness(1.1);
+        }
+
+        .component.active {
+            filter: brightness(1.2);
+            stroke: #ff6b6b;
+            stroke-width: 3;
+        }
+
+        .detail-panel {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .detail-panel.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .detail-panel h2 {
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .detail-panel h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #87ceeb;
+        }
+
+        .detail-panel ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .detail-panel code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 40px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+
+        .arrow {
+            stroke: #666;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+
+        .arrow.data {
+            stroke: #4CAF50;
+            stroke-width: 3;
+        }
+
+        .arrow.api {
+            stroke: #2196F3;
+            stroke-width: 3;
+        }
+
+        .arrow.llm {
+            stroke: #FF9800;
+            stroke-width: 3;
+        }
+
+        .label {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .description {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            fill: #666;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 BigPlay Engine Architecture</h1>
+        <p class="subtitle">Interactive System Diagram - Click on components to learn more</p>
+
+        <svg id="architecture-canvas" width="100%" height="800" viewBox="0 0 1400 800">
+            <!-- Define arrow markers -->
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#666" />
+                </marker>
+                <marker id="arrowhead-data" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#4CAF50" />
+                </marker>
+                <marker id="arrowhead-api" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#2196F3" />
+                </marker>
+                <marker id="arrowhead-llm" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#FF9800" />
+                </marker>
+            </defs>
+
+            <!-- Layer labels on the left -->
+            <text x="20" y="100" class="label" style="font-size: 16px; text-anchor: start; fill: #999;">Client Layer</text>
+            <text x="20" y="250" class="label" style="font-size: 16px; text-anchor: start; fill: #999;">API Layer</text>
+            <text x="20" y="450" class="label" style="font-size: 16px; text-anchor: start; fill: #999;">Core Engine</text>
+            <text x="20" y="650" class="label" style="font-size: 16px; text-anchor: start; fill: #999;">Data Layer</text>
+
+            <!-- Client Layer -->
+            <g class="component" data-component="unity">
+                <rect x="150" y="60" width="120" height="80" rx="8" fill="#222C37" stroke="#444" stroke-width="2"/>
+                <text x="210" y="95" class="label" fill="#fff">Unity</text>
+                <text x="210" y="115" class="description" fill="#aaa">C# Client</text>
+            </g>
+
+            <g class="component" data-component="godot">
+                <rect x="300" y="60" width="120" height="80" rx="8" fill="#478CBF" stroke="#444" stroke-width="2"/>
+                <text x="360" y="95" class="label" fill="#fff">Godot</text>
+                <text x="360" y="115" class="description" fill="#fff">GDScript</text>
+            </g>
+
+            <g class="component" data-component="unreal">
+                <rect x="450" y="60" width="120" height="80" rx="8" fill="#313131" stroke="#444" stroke-width="2"/>
+                <text x="510" y="95" class="label" fill="#fff">Unreal</text>
+                <text x="510" y="115" class="description" fill="#aaa">C++ Client</text>
+            </g>
+
+            <g class="component" data-component="web">
+                <rect x="600" y="60" width="120" height="80" rx="8" fill="#E34F26" stroke="#444" stroke-width="2"/>
+                <text x="660" y="95" class="label" fill="#fff">Web</text>
+                <text x="660" y="115" class="description" fill="#fff">JS/TS</text>
+            </g>
+
+            <!-- API Layer -->
+            <g class="component" data-component="fastapi">
+                <rect x="250" y="210" width="180" height="100" rx="8" fill="#009688" stroke="#444" stroke-width="2"/>
+                <text x="340" y="250" class="label" fill="#fff">FastAPI Server</text>
+                <text x="340" y="270" class="description" fill="#fff">REST Endpoints</text>
+                <text x="340" y="290" class="description" fill="#fff">/game/action, /quest/generate</text>
+            </g>
+
+            <g class="component" data-component="websocket">
+                <rect x="460" y="210" width="180" height="100" rx="8" fill="#0277BD" stroke="#444" stroke-width="2"/>
+                <text x="550" y="250" class="label" fill="#fff">WebSocket</text>
+                <text x="550" y="270" class="description" fill="#fff">Real-time multiplayer</text>
+                <text x="550" y="290" class="description" fill="#fff">SSE streaming</text>
+            </g>
+
+            <g class="component" data-component="auth">
+                <rect x="670" y="210" width="140" height="100" rx="8" fill="#F44336" stroke="#444" stroke-width="2"/>
+                <text x="740" y="250" class="label" fill="#fff">Auth Layer</text>
+                <text x="740" y="270" class="description" fill="#fff">API Keys</text>
+                <text x="740" y="290" class="description" fill="#fff">Rate Limiting</text>
+            </g>
+
+            <!-- Core Engine Layer -->
+            <g class="component" data-component="action-processor">
+                <rect x="150" y="380" width="160" height="120" rx="8" fill="#7B1FA2" stroke="#444" stroke-width="2"/>
+                <text x="230" y="425" class="label" fill="#fff">Action Processor</text>
+                <text x="230" y="445" class="description" fill="#fff">Intent classification</text>
+                <text x="230" y="465" class="description" fill="#fff">State validation</text>
+                <text x="230" y="485" class="description" fill="#fff">Tool orchestration</text>
+            </g>
+
+            <g class="component" data-component="emotion-engine">
+                <rect x="340" y="380" width="160" height="120" rx="8" fill="#E91E63" stroke="#444" stroke-width="2"/>
+                <text x="420" y="425" class="label" fill="#fff">Emotion Engine</text>
+                <text x="420" y="445" class="description" fill="#fff">PAD model</text>
+                <text x="420" y="465" class="description" fill="#fff">Trust dynamics</text>
+                <text x="420" y="485" class="description" fill="#fff">Mood simulation</text>
+            </g>
+
+            <g class="component" data-component="quest-generator">
+                <rect x="530" y="380" width="160" height="120" rx="8" fill="#FF5722" stroke="#444" stroke-width="2"/>
+                <text x="610" y="425" class="label" fill="#fff">Quest Generator</text>
+                <text x="610" y="445" class="description" fill="#fff">Dynamic quests</text>
+                <text x="610" y="465" class="description" fill="#fff">Branching paths</text>
+                <text x="610" y="485" class="description" fill="#fff">Context-aware</text>
+            </g>
+
+            <g class="component" data-component="llm-bridge">
+                <rect x="720" y="380" width="160" height="120" rx="8" fill="#FF9800" stroke="#444" stroke-width="2"/>
+                <text x="800" y="425" class="label" fill="#fff">LLM Bridge</text>
+                <text x="800" y="445" class="description" fill="#fff">OpenAI / Anthropic</text>
+                <text x="800" y="465" class="description" fill="#fff">Connection pooling</text>
+                <text x="800" y="485" class="description" fill="#fff">Prompt templates</text>
+            </g>
+
+            <g class="component" data-component="safety">
+                <rect x="910" y="380" width="160" height="120" rx="8" fill="#F44336" stroke="#444" stroke-width="2"/>
+                <text x="990" y="425" class="label" fill="#fff">Safety Layer</text>
+                <text x="990" y="445" class="description" fill="#fff">Content filtering</text>
+                <text x="990" y="465" class="description" fill="#fff">Risk scoring</text>
+                <text x="990" y="485" class="description" fill="#fff">Audit trail</text>
+            </g>
+
+            <!-- Data Layer -->
+            <g class="component" data-component="hololoom">
+                <rect x="200" y="580" width="180" height="120" rx="8" fill="#3F51B5" stroke="#444" stroke-width="2"/>
+                <text x="290" y="625" class="label" fill="#fff">HoloLoom KG</text>
+                <text x="290" y="645" class="description" fill="#fff">Neo4j / NetworkX</text>
+                <text x="290" y="665" class="description" fill="#fff">NPC memories</text>
+                <text x="290" y="685" class="description" fill="#fff">Relationship graph</text>
+            </g>
+
+            <g class="component" data-component="vector-db">
+                <rect x="410" y="580" width="180" height="120" rx="8" fill="#009688" stroke="#444" stroke-width="2"/>
+                <text x="500" y="625" class="label" fill="#fff">Vector Database</text>
+                <text x="500" y="645" class="description" fill="#fff">Qdrant</text>
+                <text x="500" y="665" class="description" fill="#fff">Semantic search</text>
+                <text x="500" y="685" class="description" fill="#fff">Embeddings cache</text>
+            </g>
+
+            <g class="component" data-component="session-store">
+                <rect x="620" y="580" width="180" height="120" rx="8" fill="#4CAF50" stroke="#444" stroke-width="2"/>
+                <text x="710" y="625" class="label" fill="#fff">Session Store</text>
+                <text x="710" y="645" class="description" fill="#fff">Redis</text>
+                <text x="710" y="665" class="description" fill="#fff">Active sessions</text>
+                <text x="710" y="685" class="description" fill="#fff">Conversation state</text>
+            </g>
+
+            <g class="component" data-component="analytics">
+                <rect x="830" y="580" width="180" height="120" rx="8" fill="#673AB7" stroke="#444" stroke-width="2"/>
+                <text x="920" y="625" class="label" fill="#fff">Analytics</text>
+                <text x="920" y="645" class="description" fill="#fff">Prometheus</text>
+                <text x="920" y="665" class="description" fill="#fff">Metrics export</text>
+                <text x="920" y="685" class="description" fill="#fff">Grafana dashboards</text>
+            </g>
+
+            <!-- Connections -->
+            <!-- Client to API -->
+            <path class="arrow api" d="M 210 140 L 310 210" marker-end="url(#arrowhead-api)"/>
+            <path class="arrow api" d="M 360 140 L 340 210" marker-end="url(#arrowhead-api)"/>
+            <path class="arrow api" d="M 510 140 L 380 210" marker-end="url(#arrowhead-api)"/>
+            <path class="arrow api" d="M 660 140 L 550 210" marker-end="url(#arrowhead-api)"/>
+
+            <!-- API to Core Engine -->
+            <path class="arrow data" d="M 300 310 L 230 380" marker-end="url(#arrowhead-data)"/>
+            <path class="arrow data" d="M 340 310 L 400 380" marker-end="url(#arrowhead-data)"/>
+            <path class="arrow data" d="M 550 310 L 610 380" marker-end="url(#arrowhead-data)"/>
+
+            <!-- Core Engine to LLM -->
+            <path class="arrow llm" d="M 500 440 L 720 440" marker-end="url(#arrowhead-llm)"/>
+            <path class="arrow llm" d="M 610 440 L 720 420" marker-end="url(#arrowhead-llm)"/>
+
+            <!-- Core Engine to Safety -->
+            <path class="arrow" d="M 690 440 L 910 440" marker-end="url(#arrowhead)"/>
+
+            <!-- Core Engine to Data Layer -->
+            <path class="arrow data" d="M 230 500 L 280 580" marker-end="url(#arrowhead-data)"/>
+            <path class="arrow data" d="M 420 500 L 490 580" marker-end="url(#arrowhead-data)"/>
+            <path class="arrow data" d="M 610 500 L 700 580" marker-end="url(#arrowhead-data)"/>
+            <path class="arrow data" d="M 800 500 L 900 580" marker-end="url(#arrowhead-data)"/>
+        </svg>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2196F3;"></div>
+                <span>API Calls</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4CAF50;"></div>
+                <span>Data Flow</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF9800;"></div>
+                <span>LLM Requests</span>
+            </div>
+        </div>
+
+        <!-- Detail panels for each component -->
+        <div id="detail-unity" class="detail-panel">
+            <h2>Unity Integration (C#)</h2>
+            <p>BigPlay Engine integrates seamlessly with Unity through our C# SDK.</p>
+            <h3>Key Features</h3>
+            <ul>
+                <li>Async/await support for non-blocking NPC interactions</li>
+                <li>Emotion visualization components (facial expressions, body language)</li>
+                <li>Built-in serialization for Unity's GameObject system</li>
+                <li>Performance-optimized for 60+ FPS gameplay</li>
+            </ul>
+            <h3>Example Code</h3>
+            <p><code>NPCController.cs</code> - Handles player→NPC interactions with emotion updates</p>
+        </div>
+
+        <div id="detail-godot" class="detail-panel">
+            <h2>Godot Integration (GDScript)</h2>
+            <p>Native GDScript SDK for Godot Engine 4.x with full async support.</p>
+            <h3>Key Features</h3>
+            <ul>
+                <li>Signals for event-driven NPC behavior</li>
+                <li>HTTPRequest node integration</li>
+                <li>JSON parsing optimized for Godot's Dictionary type</li>
+                <li>Export variables for easy Inspector configuration</li>
+            </ul>
+            <h3>Example Code</h3>
+            <p><code>NPCBehavior.gd</code> - Attach to any NPC node for instant LLM-driven dialogue</p>
+        </div>
+
+        <div id="detail-unreal" class="detail-panel">
+            <h2>Unreal Engine Integration (C++)</h2>
+            <p>High-performance C++ integration for Unreal Engine 5.x.</p>
+            <h3>Key Features</h3>
+            <ul>
+                <li>Blueprint-friendly component architecture</li>
+                <li>UNPCComponent for drag-and-drop NPC creation</li>
+                <li>HTTP module for RESTful API calls</li>
+                <li>Thread-safe async operations</li>
+            </ul>
+            <h3>Example Code</h3>
+            <p><code>UNPCComponent.cpp</code> - Actor component for LLM-driven NPCs</p>
+        </div>
+
+        <div id="detail-web" class="detail-panel">
+            <h2>Web Client (JavaScript/TypeScript)</h2>
+            <p>Browser-based games can use our TypeScript SDK or raw fetch API.</p>
+            <h3>Key Features</h3>
+            <ul>
+                <li>WebSocket support for real-time multiplayer</li>
+                <li>SSE (Server-Sent Events) for streaming LLM responses</li>
+                <li>Lightweight client (~15KB gzipped)</li>
+                <li>Works with React, Vue, Svelte, or vanilla JS</li>
+            </ul>
+            <h3>Example Code</h3>
+            <p><code>BigPlayClient.ts</code> - Full TypeScript SDK with type safety</p>
+        </div>
+
+        <div id="detail-fastapi" class="detail-panel">
+            <h2>FastAPI Server</h2>
+            <p>High-performance async Python server handling all game logic.</p>
+            <h3>Endpoints</h3>
+            <ul>
+                <li><code>POST /elle/game/action</code> - Process player actions</li>
+                <li><code>POST /elle/quest/generate</code> - Dynamic quest creation</li>
+                <li><code>POST /elle/voice/synthesize</code> - Text-to-speech</li>
+                <li><code>GET /elle/session/{id}</code> - Session management</li>
+            </ul>
+            <h3>Performance</h3>
+            <ul>
+                <li>Average latency: 150-300ms (with LLM call)</li>
+                <li>Connection pooling: 10 pre-initialized LLM clients</li>
+                <li>Horizontal scaling: Nginx load balancer + 3+ workers</li>
+            </ul>
+        </div>
+
+        <div id="detail-websocket" class="detail-panel">
+            <h2>WebSocket Server</h2>
+            <p>Real-time bidirectional communication for multiplayer games.</p>
+            <h3>Features</h3>
+            <ul>
+                <li>Player presence tracking (who's in each location)</li>
+                <li>NPC conversation locking (prevent simultaneous interactions)</li>
+                <li>Broadcast updates to nearby players</li>
+                <li>SSE fallback for streaming LLM responses</li>
+            </ul>
+            <h3>Message Types</h3>
+            <ul>
+                <li><code>player_joined</code> - New player enters location</li>
+                <li><code>npc_update</code> - NPC state changed</li>
+                <li><code>chat_message</code> - Player chat in shared space</li>
+            </ul>
+        </div>
+
+        <div id="detail-auth" class="detail-panel">
+            <h2>Authentication & Authorization</h2>
+            <p>Secure API key management with role-based access control.</p>
+            <h3>Security Features</h3>
+            <ul>
+                <li>API keys with prefix <code>bp_</code> for easy identification</li>
+                <li>Rate limiting: 100/min (basic), 1000/min (pro), unlimited (enterprise)</li>
+                <li>IP whitelisting for production environments</li>
+                <li>JWT tokens for session management</li>
+            </ul>
+            <h3>Rate Limits</h3>
+            <ul>
+                <li>Basic tier: 100 requests/minute</li>
+                <li>Pro tier: 1,000 requests/minute</li>
+                <li>Enterprise: Custom limits</li>
+            </ul>
+        </div>
+
+        <div id="detail-action-processor" class="detail-panel">
+            <h2>Action Processor</h2>
+            <p>Core engine that interprets player intent and orchestrates game responses.</p>
+            <h3>Pipeline</h3>
+            <ul>
+                <li><strong>Intent Classification</strong> - Determine action type (talk, attack, investigate, etc.)</li>
+                <li><strong>State Validation</strong> - Check if action is valid in current context</li>
+                <li><strong>Tool Selection</strong> - Choose appropriate tool (dialogue, combat, quest, etc.)</li>
+                <li><strong>LLM Orchestration</strong> - Send enriched prompt to LLM</li>
+                <li><strong>Response Synthesis</strong> - Parse LLM output into structured game state</li>
+            </ul>
+            <h3>Supported Actions</h3>
+            <ul>
+                <li>talk_to_npc, attack, investigate, use_item, move, trade, craft</li>
+            </ul>
+        </div>
+
+        <div id="detail-emotion-engine" class="detail-panel">
+            <h2>Emotion Engine</h2>
+            <p>PAD (Pleasure-Arousal-Dominance) model with trust dynamics.</p>
+            <h3>Dimensions</h3>
+            <ul>
+                <li><strong>Valence (Pleasure)</strong> - Happy (-1.0) to Sad (1.0)</li>
+                <li><strong>Arousal</strong> - Calm (0.0) to Excited (1.0)</li>
+                <li><strong>Dominance</strong> - Submissive (0.0) to Dominant (1.0)</li>
+                <li><strong>Trust</strong> - Distrust (0.0) to Complete Trust (1.0)</li>
+            </ul>
+            <h3>Features</h3>
+            <ul>
+                <li>Decay over time (emotions return to baseline)</li>
+                <li>Event-driven updates (player actions affect NPC emotions)</li>
+                <li>Personality modifiers (some NPCs more emotional than others)</li>
+                <li>Relationship tracking (trust builds over multiple interactions)</li>
+            </ul>
+        </div>
+
+        <div id="detail-quest-generator" class="detail-panel">
+            <h2>Quest Generator</h2>
+            <p>Dynamic quest creation based on world state and player history.</p>
+            <h3>Quest Types</h3>
+            <ul>
+                <li><strong>Fetch Quest</strong> - Retrieve item from location/enemy</li>
+                <li><strong>Escort Quest</strong> - Protect NPC during journey</li>
+                <li><strong>Investigation</strong> - Gather clues and solve mystery</li>
+                <li><strong>Combat Challenge</strong> - Defeat specific enemy/boss</li>
+                <li><strong>Social Quest</strong> - Influence NPC relationships</li>
+            </ul>
+            <h3>Branching Narratives</h3>
+            <ul>
+                <li>Conditional objectives based on player choices</li>
+                <li>Multiple endings per quest</li>
+                <li>Consequences that affect world state</li>
+            </ul>
+        </div>
+
+        <div id="detail-llm-bridge" class="detail-panel">
+            <h2>LLM Bridge</h2>
+            <p>Abstraction layer for multiple LLM providers with connection pooling.</p>
+            <h3>Supported Providers</h3>
+            <ul>
+                <li><strong>OpenAI</strong> - GPT-4, GPT-3.5-turbo</li>
+                <li><strong>Anthropic</strong> - Claude 3 Opus, Sonnet, Haiku</li>
+                <li><strong>Ollama</strong> - Local models (Llama 3.2, Mistral, etc.)</li>
+            </ul>
+            <h3>Performance Optimizations</h3>
+            <ul>
+                <li>Connection pool: 10 pre-initialized clients</li>
+                <li>Request batching for bulk NPC updates</li>
+                <li>Prompt caching for repeated queries</li>
+                <li>Streaming responses via SSE</li>
+            </ul>
+            <h3>Cost Tracking</h3>
+            <ul>
+                <li>Token usage monitoring per request</li>
+                <li>Cost estimation in real-time</li>
+                <li>Budget alerts and limits</li>
+            </ul>
+        </div>
+
+        <div id="detail-safety" class="detail-panel">
+            <h2>Safety & Alignment Layer</h2>
+            <p>Content moderation and risk scoring to ensure safe gameplay.</p>
+            <h3>Risk Categories</h3>
+            <ul>
+                <li><strong>Violence</strong> - Contextual (combat vs. unprovoked harm)</li>
+                <li><strong>Hate Speech</strong> - Zero tolerance</li>
+                <li><strong>Personal Info</strong> - Block PII leakage</li>
+                <li><strong>Profanity</strong> - Configurable filtering</li>
+            </ul>
+            <h3>Features</h3>
+            <ul>
+                <li>Pattern matching with regex + keyword lists</li>
+                <li>Context-aware scoring (combat lowers violence risk)</li>
+                <li>Human-in-the-loop for edge cases</li>
+                <li>Complete audit trail of all moderation decisions</li>
+            </ul>
+        </div>
+
+        <div id="detail-hololoom" class="detail-panel">
+            <h2>HoloLoom Knowledge Graph</h2>
+            <p>NPC memory persistence using graph database (Neo4j or NetworkX).</p>
+            <h3>Schema</h3>
+            <ul>
+                <li><strong>Entities</strong> - NPCs, items, locations, quests</li>
+                <li><strong>Relationships</strong> - KNOWS, TRUSTS, OWNS, LOCATED_AT, etc.</li>
+                <li><strong>Properties</strong> - Emotional state, inventory, quest progress</li>
+            </ul>
+            <h3>Queries</h3>
+            <ul>
+                <li>NPC recall: "Who do I know that lives in the tavern?"</li>
+                <li>Relationship traversal: "Who are my friend's enemies?"</li>
+                <li>Temporal queries: "What happened the last time we met?"</li>
+            </ul>
+            <h3>Backends</h3>
+            <ul>
+                <li>Neo4j (production) - Cypher queries, 100k+ entities</li>
+                <li>NetworkX (dev) - In-memory graph, instant startup</li>
+            </ul>
+        </div>
+
+        <div id="detail-vector-db" class="detail-panel">
+            <h2>Vector Database (Qdrant)</h2>
+            <p>Semantic search over NPC memories and game content.</p>
+            <h3>Use Cases</h3>
+            <ul>
+                <li><strong>Memory Retrieval</strong> - Find relevant past interactions</li>
+                <li><strong>Content Search</strong> - "Find all quests involving dragons"</li>
+                <li><strong>Similarity Matching</strong> - Recommend similar NPCs or locations</li>
+            </ul>
+            <h3>Features</h3>
+            <ul>
+                <li>384-dimensional embeddings (Matryoshka multi-scale)</li>
+                <li>Hybrid search: BM25 (keyword) + semantic similarity</li>
+                <li>Filtered search: Combine metadata filters with vector search</li>
+                <li>Performance: <50ms for 100k embeddings</li>
+            </ul>
+        </div>
+
+        <div id="detail-session-store" class="detail-panel">
+            <h2>Session Store (Redis)</h2>
+            <p>Fast in-memory cache for active player sessions and conversation state.</p>
+            <h3>Stored Data</h3>
+            <ul>
+                <li><strong>Active Sessions</strong> - Player ID, location, inventory</li>
+                <li><strong>Conversation State</strong> - NPC conversation locks, turn history</li>
+                <li><strong>Temporary Buffers</strong> - Streaming LLM responses</li>
+            </ul>
+            <h3>TTL Policy</h3>
+            <ul>
+                <li>Session data: 24 hours (auto-expire on inactivity)</li>
+                <li>Conversation locks: 5 minutes (prevent NPC deadlocks)</li>
+                <li>LLM buffers: 1 minute (cleared after streaming completes)</li>
+            </ul>
+        </div>
+
+        <div id="detail-analytics" class="detail-panel">
+            <h2>Analytics & Monitoring</h2>
+            <p>Prometheus metrics with Grafana dashboards for observability.</p>
+            <h3>Key Metrics</h3>
+            <ul>
+                <li><strong>Latency</strong> - P50, P95, P99 response times</li>
+                <li><strong>Throughput</strong> - Requests per second</li>
+                <li><strong>LLM Usage</strong> - Tokens, cost, cache hit rate</li>
+                <li><strong>Error Rates</strong> - 4xx, 5xx, timeouts</li>
+            </ul>
+            <h3>Dashboards</h3>
+            <ul>
+                <li>System overview (health, uptime, request rate)</li>
+                <li>LLM performance (latency distribution, token usage)</li>
+                <li>Player analytics (active sessions, popular NPCs)</li>
+                <li>Cost tracking (estimated monthly spend)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Component data
+        const components = {
+            'unity': 'detail-unity',
+            'godot': 'detail-godot',
+            'unreal': 'detail-unreal',
+            'web': 'detail-web',
+            'fastapi': 'detail-fastapi',
+            'websocket': 'detail-websocket',
+            'auth': 'detail-auth',
+            'action-processor': 'detail-action-processor',
+            'emotion-engine': 'detail-emotion-engine',
+            'quest-generator': 'detail-quest-generator',
+            'llm-bridge': 'detail-llm-bridge',
+            'safety': 'detail-safety',
+            'hololoom': 'detail-hololoom',
+            'vector-db': 'detail-vector-db',
+            'session-store': 'detail-session-store',
+            'analytics': 'detail-analytics'
+        };
+
+        // Add click handlers to all components
+        document.querySelectorAll('.component').forEach(component => {
+            component.addEventListener('click', function() {
+                const componentId = this.getAttribute('data-component');
+                const detailId = components[componentId];
+
+                // Remove active state from all components and panels
+                document.querySelectorAll('.component').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('active'));
+
+                // Add active state to clicked component and its detail panel
+                this.classList.add('active');
+                document.getElementById(detailId).classList.add('active');
+
+                // Scroll to detail panel
+                document.getElementById(detailId).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        });
+    </script>
+</body>
+</html>

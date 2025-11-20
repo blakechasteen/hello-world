@@ -1,0 +1,152 @@
+# Prometheus Alert Rules for HoloLoom VoiceAgent
+# ================================================
+# Alerts for production monitoring
+# Date: November 15, 2025
+
+groups:
+  - name: voice_agent_alerts
+    interval: 30s
+    rules:
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: |
+          rate(extraction_failures_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: voice-agent
+        annotations:
+          summary: "High error rate in Voice Agent"
+          description: "Error rate is {{ $value | humanize }} errors/sec for {{ $labels.pod }}"
+
+      # High Latency
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95, rate(transcription_duration_seconds_bucket[5m])) > 2.0
+        for: 10m
+        labels:
+          severity: warning
+          component: voice-agent
+        annotations:
+          summary: "High transcription latency"
+          description: "95th percentile latency is {{ $value | humanize }}s for {{ $labels.pod }}"
+
+      # Pod Down
+      - alert: VoiceAgentPodDown
+        expr: |
+          up{job="voice-agent"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: voice-agent
+        annotations:
+          summary: "Voice Agent pod is down"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is down"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          container_memory_usage_bytes{pod=~"voice-agent.*"} / container_spec_memory_limit_bytes{pod=~"voice-agent.*"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: voice-agent
+        annotations:
+          summary: "Voice Agent high memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} for {{ $labels.pod }}"
+
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: |
+          rate(container_cpu_usage_seconds_total{pod=~"voice-agent.*"}[5m]) / container_spec_cpu_quota{pod=~"voice-agent.*"} > 0.9
+        for: 10m
+        labels:
+          severity: warning
+          component: voice-agent
+        annotations:
+          summary: "Voice Agent high CPU usage"
+          description: "CPU usage is {{ $value | humanizePercentage }} for {{ $labels.pod }}"
+
+      # Audio Queue Overflow
+      - alert: AudioQueueOverflow
+        expr: |
+          audio_chunks_dropped_total > 100
+        for: 5m
+        labels:
+          severity: critical
+          component: voice-agent
+        annotations:
+          summary: "Audio queue overflow detected"
+          description: "{{ $value }} chunks dropped for {{ $labels.pod }}"
+
+      # No Active Sessions (during business hours)
+      - alert: NoActiveSessions
+        expr: |
+          active_recording_sessions == 0
+        for: 30m
+        labels:
+          severity: info
+          component: voice-agent
+        annotations:
+          summary: "No active voice sessions"
+          description: "No active sessions for 30 minutes in {{ $labels.pod }}"
+
+      # Neo4j Connection Failure
+      - alert: Neo4jConnectionFailure
+        expr: |
+          up{job="neo4j"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: neo4j
+        annotations:
+          summary: "Neo4j connection failed"
+          description: "Cannot connect to Neo4j database"
+
+      # Qdrant Connection Failure
+      - alert: QdrantConnectionFailure
+        expr: |
+          up{job="qdrant"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: qdrant
+        annotations:
+          summary: "Qdrant connection failed"
+          description: "Cannot connect to Qdrant vector database"
+
+      # High Retry Rate
+      - alert: HighRetryRate
+        expr: |
+          rate(extraction_retries_total[5m]) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          component: voice-agent
+        annotations:
+          summary: "High retry rate"
+          description: "Retry rate is {{ $value | humanize }} retries/sec for {{ $labels.pod }}"
+
+      # Deployment Replica Mismatch
+      - alert: DeploymentReplicaMismatch
+        expr: |
+          kube_deployment_spec_replicas{deployment="voice-agent"} != kube_deployment_status_replicas_available{deployment="voice-agent"}
+        for: 10m
+        labels:
+          severity: warning
+          component: voice-agent
+        annotations:
+          summary: "Voice Agent deployment replica mismatch"
+          description: "Desired {{ $labels.deployment }} replicas: {{ $value }}, Available: {{ $labels.replicas_available }}"
+
+      # Pod Restart Loop
+      - alert: PodRestartLoop
+        expr: |
+          rate(kube_pod_container_status_restarts_total{pod=~"voice-agent.*"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          component: voice-agent
+        annotations:
+          summary: "Voice Agent pod in restart loop"
+          description: "Pod {{ $labels.pod }} is restarting frequently"

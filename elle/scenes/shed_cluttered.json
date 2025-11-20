@@ -1,0 +1,65 @@
+{
+  "scene_id": "shed_cluttered_001",
+  "timestamp": "2025-11-15T14:30:00",
+  "location": "shed",
+  "weather": "sunny",
+  "time_of_day": "afternoon",
+  "summary": "Cluttered shed with tools and materials scattered across surfaces. Left shelf partially accessible, right side heavily blocked by paint cans and lumber.",
+  "tags": ["cluttered", "needs_organization", "tools"],
+  "objects": [
+    {
+      "id": "obj_rake",
+      "name": "Garden rake",
+      "category": "tool",
+      "location": "left shelf, leaning against wall",
+      "condition": "dusty but functional"
+    },
+    {
+      "id": "obj_shovel",
+      "name": "Shovel",
+      "category": "tool",
+      "location": "left shelf",
+      "condition": "clean"
+    },
+    {
+      "id": "obj_paint_cans",
+      "name": "Paint cans",
+      "category": "material",
+      "location": "floor, right side",
+      "condition": "scattered",
+      "quantity": 5
+    },
+    {
+      "id": "obj_lumber",
+      "name": "Lumber scraps",
+      "category": "material",
+      "location": "floor, blocking right shelf",
+      "quantity": 8
+    },
+    {
+      "id": "obj_extension_cord",
+      "name": "Extension cord",
+      "category": "utility",
+      "location": "tangled on right hook"
+    },
+    {
+      "id": "obj_bucket",
+      "name": "Plastic bucket",
+      "category": "container",
+      "location": "left shelf",
+      "condition": "cracked"
+    }
+  ],
+  "relations": [
+    {
+      "subject": "obj_paint_cans",
+      "predicate": "blocking",
+      "object": "obj_lumber"
+    },
+    {
+      "subject": "obj_lumber",
+      "predicate": "blocking",
+      "object": "right_shelf"
+    }
+  ]
+}

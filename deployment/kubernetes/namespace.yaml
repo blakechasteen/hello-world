@@ -1,0 +1,12 @@
+# Kubernetes Namespace for HoloLoom VoiceAgent
+# ==============================================
+# Date: November 15, 2025
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hololoom-voice
+  labels:
+    name: hololoom-voice
+    app: voice-agent
+    environment: production

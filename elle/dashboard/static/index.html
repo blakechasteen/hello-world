@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elle Core Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Dashboard</a>
+        <a href="/budget">Budget</a>
+        <a href="/products">Products</a>
+        <a href="/planner">Planner</a>
+        <a href="/tracker">Tracker</a>
+    </nav>
+
+    <h1>Elle Core Dashboard</h1>
+    <p class="subtitle">Real-time operational intelligence for Coz farm operations</p>
+
+    <!-- Quick Metrics -->
+    <div class="dashboard-grid">
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Total Revenue (30d)</div>
+                <div class="metric-value" id="total-revenue">$0</div>
+                <div class="metric-delta" id="revenue-delta"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Total Profit (30d)</div>
+                <div class="metric-value" id="total-profit">$0</div>
+                <div class="metric-delta" id="profit-delta"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Profit Margin</div>
+                <div class="metric-value" id="profit-margin">0%</div>
+                <div class="metric-delta" id="margin-delta"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="metric-card">
+                <div class="metric-label">Hourly ROI</div>
+                <div class="metric-value" id="hourly-roi">$0</div>
+                <div class="metric-delta" id="roi-delta"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Task -->
+    <div id="active-task-container" class="hidden">
+        <h2>Active Task</h2>
+        <div class="task-active" id="active-task">
+            <div class="panel-title" id="task-name">No active task</div>
+            <div class="task-timer" id="task-timer">00:00:00</div>
+            <div class="task-controls">
+                <button class="danger" onclick="pauseTask()">Pause</button>
+                <button class="primary" onclick="endTask()">Complete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Recommendations -->
+    <h2>Today's Recommendations</h2>
+    <div id="recommendations-container" class="loading">Loading recommendations...</div>
+
+    <!-- Top Products -->
+    <h2>Top Products (by ROI)</h2>
+    <div class="panel full-width">
+        <table id="products-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th class="numeric">Revenue</th>
+                    <th class="numeric">Profit</th>
+                    <th class="numeric">Margin</th>
+                    <th class="numeric">Hourly ROI</th>
+                    <th class="numeric">Units</th>
+                    <th>Trend</th>
+                </tr>
+            </thead>
+            <tbody id="products-body">
+                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Recent Tasks -->
+    <h2>Recent Activity</h2>
+    <div class="panel full-width">
+        <table id="tasks-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>When</th>
+                    <th class="numeric">Duration</th>
+                    <th class="numeric">Units</th>
+                    <th class="numeric">Revenue</th>
+                    <th class="numeric">Profit</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tasks-body">
+                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        // Load analytics data
+        async function loadAnalytics() {
+            try {
+                const data = await API.analytics();
+
+                // Update metrics
+                document.getElementById('total-revenue').textContent = Format.currency(data.total_revenue);
+                document.getElementById('total-profit').textContent = Format.currency(data.total_profit);
+                document.getElementById('profit-margin').textContent = Format.percent(data.profit_margin);
+                document.getElementById('hourly-roi').textContent = Format.currency(data.avg_hourly_roi);
+
+                // Update products table
+                const products = Object.entries(data.products)
+                    .sort((a, b) => b[1].hourly_roi - a[1].hourly_roi)
+                    .slice(0, 5);
+
+                const productsBody = document.getElementById('products-body');
+                if (products.length === 0) {
+                    productsBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No data yet</td></tr>';
+                } else {
+                    productsBody.innerHTML = products.map(([product, stats]) => `
+                        <tr>
+                            <td>${product}</td>
+                            <td class="numeric">${Format.currency(stats.revenue)}</td>
+                            <td class="numeric">${Format.currency(stats.profit)}</td>
+                            <td class="numeric">${Format.percent(stats.profit_margin)}</td>
+                            <td class="numeric">${Format.currency(stats.hourly_roi)}</td>
+                            <td class="numeric">${stats.units}</td>
+                            <td>${createSparkline([stats.hourly_roi, stats.hourly_roi * 0.9, stats.hourly_roi * 1.1])}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+            }
+        }
+
+        // Load recommendations
+        async function loadRecommendations() {
+            try {
+                const recommendations = await API.recommendations();
+                const container = document.getElementById('recommendations-container');
+
+                if (recommendations.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No recommendations available</p>';
+                } else {
+                    container.innerHTML = recommendations.map(rec => `
+                        <div class="recommendation ${rec.priority.toLowerCase()}">
+                            <div class="recommendation-action">${rec.action}</div>
+                            <div class="recommendation-reasoning">${rec.reasoning}</div>
+                            <div class="recommendation-metrics">
+                                <span>Profit: ${Format.currency(rec.estimated_profit)}</span>
+                                <span>Time: ${Format.duration(rec.time_required)}</span>
+                                <span>Confidence: ${Format.percent(rec.confidence * 100)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load recommendations:', error);
+                document.getElementById('recommendations-container').innerHTML =
+                    '<p class="error">Failed to load recommendations</p>';
+            }
+        }
+
+        // Load recent tasks
+        async function loadRecentTasks() {
+            try {
+                const tasks = await API.tasks.list(10);
+                const tasksBody = document.getElementById('tasks-body');
+
+                if (tasks.length === 0) {
+                    tasksBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No tasks yet</td></tr>';
+                } else {
+                    tasksBody.innerHTML = tasks.map(task => `
+                        <tr>
+                            <td>${task.task_name}</td>
+                            <td>${Format.relative(task.created_at)}</td>
+                            <td class="numeric">${Format.duration(task.active_time_hours)}</td>
+                            <td class="numeric">${task.units_produced}</td>
+                            <td class="numeric">${Format.currency(task.revenue)}</td>
+                            <td class="numeric">${Format.currency(task.profit)}</td>
+                            <td><span class="status-badge ${task.status === 'completed' ? 'success' : 'info'}">${task.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load tasks:', error);
+            }
+        }
+
+        // Check for active task
+        async function checkActiveTask() {
+            try {
+                const active = await API.tasks.active();
+                const container = document.getElementById('active-task-container');
+
+                if (active.length > 0) {
+                    const task = active[0];
+                    container.classList.remove('hidden');
+                    document.getElementById('task-name').textContent = task.task_name;
+                    updateTimer(task.start_time);
+                } else {
+                    container.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Failed to check active task:', error);
+            }
+        }
+
+        // Update task timer
+        let timerInterval;
+        function updateTimer(startTime) {
+            if (timerInterval) clearInterval(timerInterval);
+
+            const update = () => {
+                const start = new Date(startTime);
+                const now = new Date();
+                const diff = now - start;
+                const hours = Math.floor(diff / 3600000);
+                const minutes = Math.floor((diff % 3600000) / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+
+                document.getElementById('task-timer').textContent =
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            };
+
+            update();
+            timerInterval = setInterval(update, 1000);
+        }
+
+        // Task controls
+        async function pauseTask() {
+            // Implement pause functionality
+            Notifications.show('Task paused', 'info');
+        }
+
+        async function endTask() {
+            const units = prompt('Units produced:');
+            if (units) {
+                try {
+                    await API.tasks.end(parseInt(units), null, '');
+                    Notifications.success('Task completed!');
+                    setTimeout(() => window.location.reload(), 1000);
+                } catch (error) {
+                    Notifications.error('Failed to end task');
+                }
+            }
+        }
+
+        // Auto-refresh
+        const refresh = new AutoRefresh(async () => {
+            await loadAnalytics();
+            await loadRecommendations();
+            await loadRecentTasks();
+            await checkActiveTask();
+        }, 5000);
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            refresh.start();
+        });
+    </script>
+</body>
+</html>

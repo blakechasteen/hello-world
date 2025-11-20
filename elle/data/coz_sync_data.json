@@ -1,0 +1,478 @@
+{
+  "timestamp": "2025-11-15T19:00:06.037079",
+  "kanban": {
+    "tasks": [
+      {
+        "task": "Bake bread",
+        "category": "Bakery",
+        "priority": "HIGH",
+        "start_date": "2025-11-03T00:00:00",
+        "due_date": "2025-11-03T00:00:00",
+        "status": "In Progress",
+        "notes": "Use new flour batch"
+      },
+      {
+        "task": "Package honey",
+        "category": "Apothecary",
+        "priority": "MEDIUM",
+        "start_date": "2025-11-04T00:00:00",
+        "due_date": "2025-11-04T00:00:00",
+        "status": "Planned",
+        "notes": "Restock jars"
+      },
+      {
+        "task": "Biochar batch 1",
+        "category": "Soil",
+        "priority": "HIGH",
+        "start_date": "2025-11-05T00:00:00",
+        "due_date": "2025-11-06T00:00:00",
+        "status": "Pending",
+        "notes": "Test inoculation mix"
+      },
+      {
+        "task": "Clean porch",
+        "category": "Infrastructure",
+        "priority": "MEDIUM",
+        "start_date": "2025-11-06T00:00:00",
+        "due_date": "2025-11-06T00:00:00",
+        "status": "Planned",
+        "notes": "Prep workspace"
+      }
+    ],
+    "summary": {
+      "total_tasks": 4,
+      "completed": 0,
+      "completion_rate": 0.0,
+      "in_progress": 1,
+      "high_priority": 2,
+      "categories": [
+        "Bakery",
+        "Apothecary",
+        "Soil",
+        "Infrastructure"
+      ],
+      "by_category": {
+        "Bakery": 1,
+        "Apothecary": 1,
+        "Soil": 1,
+        "Infrastructure": 1
+      }
+    }
+  },
+  "financials": {
+    "products": [
+      {
+        "name": "Bread Loaf",
+        "unit_price": 6.0,
+        "cost_per_unit": 2.0,
+        "profit_per_unit": 4.0,
+        "gross_margin_percent": 67.0,
+        "gross_margin_calculated": 66.66666666666666,
+        "notes": "Sells well weekly"
+      },
+      {
+        "name": "The GOAT",
+        "unit_price": 5.0,
+        "cost_per_unit": 1.75,
+        "profit_per_unit": 3.25,
+        "gross_margin_percent": 65.0,
+        "gross_margin_calculated": 65.0,
+        "notes": "Target gym & market customers"
+      },
+      {
+        "name": "Honey Jar",
+        "unit_price": 12.0,
+        "cost_per_unit": 3.0,
+        "profit_per_unit": 9.0,
+        "gross_margin_percent": 75.0,
+        "gross_margin_calculated": 75.0,
+        "notes": "Add gift packaging"
+      }
+    ],
+    "reinvestment": {
+      "infrastructure_percent": 0.15,
+      "equipment_percent": 0.1,
+      "emergency_buffer_percent": 0.05,
+      "total_reinvestment_percent": 0.3
+    },
+    "summary": {
+      "product_count": 3,
+      "products": [
+        {
+          "name": "Bread Loaf",
+          "unit_price": 6.0,
+          "cost_per_unit": 2.0,
+          "profit_per_unit": 4.0,
+          "gross_margin_percent": 67.0,
+          "gross_margin_calculated": 66.66666666666666,
+          "notes": "Sells well weekly"
+        },
+        {
+          "name": "The GOAT",
+          "unit_price": 5.0,
+          "cost_per_unit": 1.75,
+          "profit_per_unit": 3.25,
+          "gross_margin_percent": 65.0,
+          "gross_margin_calculated": 65.0,
+          "notes": "Target gym & market customers"
+        },
+        {
+          "name": "Honey Jar",
+          "unit_price": 12.0,
+          "cost_per_unit": 3.0,
+          "profit_per_unit": 9.0,
+          "gross_margin_percent": 75.0,
+          "gross_margin_calculated": 75.0,
+          "notes": "Add gift packaging"
+        }
+      ],
+      "average_margin": 69.0,
+      "reinvestment": {
+        "infrastructure_percent": 0.15,
+        "equipment_percent": 0.1,
+        "emergency_buffer_percent": 0.05,
+        "total_reinvestment_percent": 0.3
+      }
+    }
+  },
+  "schedule": {
+    "focuses": [
+      {
+        "month": "JANUARY",
+        "month_number": 1,
+        "focus": "Planning & Tool Maintenance",
+        "season": "winter",
+        "notes": "Update SOPs, seed orders"
+      },
+      {
+        "month": "MARCH",
+        "month_number": 3,
+        "focus": "Seed Starting",
+        "season": "spring",
+        "notes": "Vegetable and tree nursery prep"
+      },
+      {
+        "month": "MAY",
+        "month_number": 5,
+        "focus": "Honey Flow",
+        "season": "spring",
+        "notes": "Full bee production"
+      },
+      {
+        "month": "JULY",
+        "month_number": 7,
+        "focus": "Canning & Condiments",
+        "season": "summer",
+        "notes": "Preserve harvest"
+      },
+      {
+        "month": "SEPTEMBER",
+        "month_number": 9,
+        "focus": "Bread & Meal Prep",
+        "season": "fall",
+        "notes": "Focus on kitchen products"
+      },
+      {
+        "month": "NOVEMBER",
+        "month_number": 11,
+        "focus": "Biochar & Compost Kits",
+        "season": "fall",
+        "notes": "Regeneration products & winter prep"
+      }
+    ],
+    "summary": {
+      "total_months_defined": 6,
+      "months_defined": [
+        "Month.JANUARY",
+        "Month.MARCH",
+        "Month.MAY",
+        "Month.JULY",
+        "Month.SEPTEMBER",
+        "Month.NOVEMBER"
+      ],
+      "by_season": {
+        "winter": [
+          "Planning & Tool Maintenance"
+        ],
+        "spring": [
+          "Seed Starting",
+          "Honey Flow"
+        ],
+        "summer": [
+          "Canning & Condiments"
+        ],
+        "fall": [
+          "Bread & Meal Prep",
+          "Biochar & Compost Kits"
+        ]
+      }
+    }
+  },
+  "research": {
+    "research_projects": 3,
+    "total_experiments": 3,
+    "total_formulas": 1,
+    "total_recommendations": 1,
+    "categories": [
+      "The GOAT",
+      "Biochar Inoculation",
+      "Parasite Cleanse Formula Variants"
+    ],
+    "by_category": {
+      "The GOAT": 1,
+      "Biochar Inoculation": 1,
+      "Parasite Cleanse Formula Variants": 1
+    },
+    "projects": [
+      {
+        "title": "The GOAT Flavor Trials",
+        "category": "The GOAT",
+        "experiment_count": 3,
+        "experiments": [
+          {
+            "batch_number": "Batch 01",
+            "description": "Honey + Cinnamon",
+            "result": "Excellent texture, mild sweetness.",
+            "notes": "",
+            "status": "completed",
+            "value": null
+          },
+          {
+            "batch_number": "Batch 02",
+            "description": "Pumpkin spice",
+            "result": "Good fall flavor, slightly thick.",
+            "notes": "",
+            "status": "completed",
+            "value": null
+          },
+          {
+            "batch_number": "Batch 03",
+            "description": "Berry blend",
+            "result": "Great color, adjust acidity.",
+            "notes": "",
+            "status": "completed",
+            "value": null
+          }
+        ],
+        "formulas": [],
+        "recommendations": []
+      },
+      {
+        "title": "Biochar Inoculation Mix",
+        "category": "Biochar Inoculation",
+        "experiment_count": 0,
+        "experiments": [],
+        "formulas": [],
+        "recommendations": []
+      },
+      {
+        "title": "Parasite Cleanse Formula Variants",
+        "category": "Parasite Cleanse Formula Variants",
+        "experiment_count": 0,
+        "experiments": [],
+        "formulas": [
+          {
+            "type": "yield",
+            "amount": "3",
+            "unit": "oz"
+          }
+        ],
+        "recommendations": [
+          "aroma but too bitter"
+        ]
+      }
+    ]
+  },
+  "inventory": {
+    "items": [
+      {
+        "name": "Oats (bulk) \u2014 Costco",
+        "category": "ingredients",
+        "supplier": "50 lb bags",
+        "quantity": null,
+        "unit": "",
+        "reorder_point": 20.0,
+        "stock_level": "unknown",
+        "needs_reorder": false,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      },
+      {
+        "name": "Honey \u2014 Farm apiary",
+        "category": "ingredients",
+        "supplier": "",
+        "quantity": null,
+        "unit": "",
+        "reorder_point": 20.0,
+        "stock_level": "unknown",
+        "needs_reorder": false,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      },
+      {
+        "name": "Herbs \u2014 Yarrow",
+        "category": "ingredients",
+        "supplier": "Calendula, Wormwood, Clove",
+        "quantity": null,
+        "unit": "",
+        "reorder_point": 20.0,
+        "stock_level": "unknown",
+        "needs_reorder": false,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      },
+      {
+        "name": "12 oz bottles (The GOAT)",
+        "category": "packaging",
+        "supplier": "",
+        "quantity": 12.0,
+        "unit": "oz",
+        "reorder_point": 50.0,
+        "stock_level": "critical",
+        "needs_reorder": true,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      },
+      {
+        "name": "8 oz jars (Face Cleansing Honey)",
+        "category": "packaging",
+        "supplier": "",
+        "quantity": 8.0,
+        "unit": "oz",
+        "reorder_point": 50.0,
+        "stock_level": "critical",
+        "needs_reorder": true,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      },
+      {
+        "name": "Compostable bags (Biochar)",
+        "category": "packaging",
+        "supplier": "",
+        "quantity": null,
+        "unit": "",
+        "reorder_point": 50.0,
+        "stock_level": "unknown",
+        "needs_reorder": false,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      },
+      {
+        "name": "Bread oven",
+        "category": "equipment",
+        "supplier": "",
+        "quantity": null,
+        "unit": "",
+        "reorder_point": 1.0,
+        "stock_level": "unknown",
+        "needs_reorder": false,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      },
+      {
+        "name": "Fermentation buckets",
+        "category": "equipment",
+        "supplier": "",
+        "quantity": null,
+        "unit": "",
+        "reorder_point": 1.0,
+        "stock_level": "unknown",
+        "needs_reorder": false,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      },
+      {
+        "name": "Label printer",
+        "category": "equipment",
+        "supplier": "",
+        "quantity": null,
+        "unit": "",
+        "reorder_point": 1.0,
+        "stock_level": "unknown",
+        "needs_reorder": false,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      },
+      {
+        "name": "Biochar kiln (prototype)",
+        "category": "equipment",
+        "supplier": "",
+        "quantity": null,
+        "unit": "",
+        "reorder_point": 1.0,
+        "stock_level": "unknown",
+        "needs_reorder": false,
+        "last_ordered": null,
+        "cost_per_unit": null,
+        "notes": ""
+      }
+    ],
+    "summary": {
+      "total_items": 10,
+      "by_category": {
+        "ingredients": 3,
+        "packaging": 3,
+        "equipment": 4
+      },
+      "by_stock_level": {
+        "critical": 2,
+        "low": 0,
+        "normal": 8
+      },
+      "items_needing_reorder": 2,
+      "critical_items": 2,
+      "suppliers": [
+        "50 lb bags",
+        "Calendula, Wormwood, Clove"
+      ]
+    },
+    "reorder_alerts": {
+      "critical": {
+        "count": 2,
+        "items": [
+          {
+            "name": "12 oz bottles (The GOAT)",
+            "category": "packaging",
+            "supplier": "",
+            "quantity": 12.0,
+            "unit": "oz",
+            "reorder_point": 50.0,
+            "stock_level": "critical",
+            "needs_reorder": true,
+            "last_ordered": null,
+            "cost_per_unit": null,
+            "notes": ""
+          },
+          {
+            "name": "8 oz jars (Face Cleansing Honey)",
+            "category": "packaging",
+            "supplier": "",
+            "quantity": 8.0,
+            "unit": "oz",
+            "reorder_point": 50.0,
+            "stock_level": "critical",
+            "needs_reorder": true,
+            "last_ordered": null,
+            "cost_per_unit": null,
+            "notes": ""
+          }
+        ],
+        "message": "URGENT: 2 items critically low"
+      },
+      "low": {
+        "count": 0,
+        "items": [],
+        "message": "Reorder: 0 items low"
+      }
+    }
+  }
+}

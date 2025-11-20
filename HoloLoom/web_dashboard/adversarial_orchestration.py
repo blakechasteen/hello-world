@@ -384,7 +384,7 @@ async def example_adversarial_orchestration():
     """
     from HoloLoom.memory.graph import KG
     from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-    from HoloLoom.documentation.types import Query
+    from HoloLoom.Documentation.types import Query
 
     # Create system
     kg = KG()

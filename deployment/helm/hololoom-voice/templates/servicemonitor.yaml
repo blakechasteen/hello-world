@@ -1,0 +1,18 @@
+{{- if and .Values.voiceAgent.enabled .Values.monitoring.prometheus.servicemonitor.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "hololoom-voice.fullname" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "hololoom-voice.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "hololoom-voice.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.monitoring.prometheus.servicemonitor.interval }}
+      scrapeTimeout: {{ .Values.monitoring.prometheus.servicemonitor.scrapeTimeout }}
+{{- end }}

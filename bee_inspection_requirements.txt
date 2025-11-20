@@ -1,0 +1,15 @@
+# Bee Inspection Audio Ingestion Requirements
+
+# Core HoloLoom dependencies (already in requirements.txt)
+torch>=2.0.0
+numpy>=1.24.0
+sentence-transformers>=2.2.0
+
+# Audio transcription
+openai-whisper>=20230314
+
+# Database
+neo4j>=5.0.0
+
+# Audio processing (whisper dependencies)
+ffmpeg-python>=0.2.0

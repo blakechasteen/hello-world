@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "hololoom-promptly": {
+      "command": "python",
+      "args": [
+        "-m",
+        "HoloLoom.mcp_server_promptly"
+      ],
+      "env": {
+        "PYTHONPATH": "/home/user/hello-world"
+      }
+    }
+  }
+}

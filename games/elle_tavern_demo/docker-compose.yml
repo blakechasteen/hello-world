@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Elle Game Engine Service
+  elle-service:
+    build:
+      context: ../../apps/elle_game_engine
+      dockerfile: Dockerfile
+    environment:
+      - ELLE_LLM_PROVIDER=${ELLE_LLM_PROVIDER:-dummy}
+      - ELLE_VOICE_BACKEND=${ELLE_VOICE_BACKEND:-dummy}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ELLE_ENABLE_POOL=true
+      - ELLE_POOL_SIZE=10
+      - ELLE_CACHE_SIZE=1000
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - tavern-network
+
+  # Game Demo Server
+  game-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ELLE_API_URL=http://elle-service:8000
+      - PORT=8001
+    ports:
+      - "8001:8001"
+    depends_on:
+      elle-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - tavern-network
+
+networks:
+  tavern-network:
+    driver: bridge
+
+# Optional: Add Redis for multiplayer support (Phase 7)
+# volumes:
+#   redis-data:
+#
+# services:
+#   redis:
+#     image: redis:7-alpine
+#     ports:
+#       - "6379:6379"
+#     volumes:
+#       - redis-data:/data
+#     healthcheck:
+#       test: ["CMD", "redis-cli", "ping"]
+#       interval: 10s
+#       timeout: 3s
+#       retries: 3
+#     networks:
+#       - tavern-network

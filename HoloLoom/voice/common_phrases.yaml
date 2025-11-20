@@ -1,0 +1,213 @@
+# Common Beekeeping Phrases for TTS Cache Warmup
+# =================================================
+# These phrases are pre-cached with 24h TTL for optimal performance
+# Updated: November 16, 2025
+
+common_phrases:
+  # Greetings & Status
+  - "Hello, welcome to the hive inspection system"
+  - "Good morning, ready to inspect the hives"
+  - "Hi there, what would you like to do today"
+  - "Welcome back, continuing your inspection"
+  - "Good afternoon, starting new inspection session"
+
+  # Navigation Commands
+  - "Navigate to the next hive"
+  - "Go to the previous hive"
+  - "Show me hive one"
+  - "Move to hive two"
+  - "Switch to hive three"
+  - "Jump to the first hive"
+  - "Go to the last hive"
+  - "Return to the main menu"
+  - "Navigate back to the overview"
+  - "Switch to grid view"
+  - "Show me the map"
+  - "Display hive locations"
+
+  # Hive Status Queries
+  - "What is the status of this hive"
+  - "Show me the hive health"
+  - "How is this hive doing"
+  - "Display hive metrics"
+  - "What is the current condition"
+  - "Show me the health indicators"
+  - "Is this hive healthy"
+  - "Are there any issues"
+  - "Check the hive status"
+  - "Display the inspection history"
+
+  # Queen & Brood
+  - "Where is the queen"
+  - "Show me the queen location"
+  - "Is the queen present"
+  - "Did you find the queen"
+  - "Display brood pattern"
+  - "Show me the brood frames"
+  - "How is the brood looking"
+  - "Is there healthy brood"
+  - "Check for queen cells"
+  - "Are there swarm cells"
+
+  # Honey & Resources
+  - "How much honey is in this hive"
+  - "Show me the honey stores"
+  - "Check the honey levels"
+  - "Is there enough food"
+  - "Display the pollen stores"
+  - "How much pollen do they have"
+  - "Are the bees storing nectar"
+  - "Check the honey frames"
+
+  # Pest & Disease
+  - "Check for varroa mites"
+  - "Are there any mites"
+  - "Show me the mite count"
+  - "Display pest indicators"
+  - "Look for small hive beetles"
+  - "Check for wax moths"
+  - "Are there signs of disease"
+  - "Is there chalkbrood"
+  - "Check for American foulbrood"
+  - "Display the health warnings"
+
+  # Inspection Actions
+  - "Start the inspection"
+  - "Begin inspection mode"
+  - "End the inspection"
+  - "Finish inspection"
+  - "Pause the inspection"
+  - "Resume inspection"
+  - "Record this observation"
+  - "Save the current state"
+  - "Take a photo"
+  - "Capture this frame"
+  - "Add a note"
+  - "Record temperature"
+  - "Log this issue"
+
+  # AR Overlay Commands
+  - "Show the overlay"
+  - "Hide the overlay"
+  - "Display annotations"
+  - "Remove annotations"
+  - "Highlight the queen"
+  - "Mark this area"
+  - "Show me the labels"
+  - "Hide the labels"
+  - "Toggle the grid"
+  - "Display metrics overlay"
+
+  # Measurements
+  - "What is the temperature"
+  - "Show me the humidity"
+  - "Check the weight"
+  - "Display environmental data"
+  - "What is the hive temperature"
+  - "Is the temperature normal"
+
+  # Recommendations
+  - "What should I do next"
+  - "Give me recommendations"
+  - "What action is needed"
+  - "Should I feed this hive"
+  - "Does this hive need treatment"
+  - "When should I inspect again"
+
+  # Confirmation & Responses
+  - "Yes, that's correct"
+  - "No, that's not right"
+  - "Okay, understood"
+  - "Thank you"
+  - "Thanks for the information"
+  - "Got it"
+  - "Acknowledged"
+  - "Confirmed"
+  - "Cancel that"
+  - "Never mind"
+  - "Go back"
+
+  # Help & Information
+  - "Help me with this"
+  - "What can you do"
+  - "Show me the commands"
+  - "How do I use this feature"
+  - "Explain this indicator"
+  - "What does this mean"
+  - "Tell me more about this"
+
+  # Data & Reports
+  - "Show me the inspection report"
+  - "Generate a summary"
+  - "Display the statistics"
+  - "Export the data"
+  - "Save this report"
+  - "Email the inspection results"
+
+  # Alerts & Warnings
+  - "This hive looks healthy"
+  - "This hive needs attention"
+  - "Warning detected"
+  - "No issues found"
+  - "Everything looks good"
+  - "There's a problem here"
+
+  # Settings & Preferences
+  - "Change the language"
+  - "Adjust the volume"
+  - "Switch to metric units"
+  - "Use imperial measurements"
+  - "Enable notifications"
+  - "Disable notifications"
+
+  # Time-based (but still common)
+  - "What time is it"
+  - "How long have I been inspecting"
+  - "When did I start"
+  - "Show me today's schedule"
+
+  # Count & Numbers
+  - "How many hives do I have"
+  - "How many frames are in this hive"
+  - "Count the bees"
+  - "Show me the population estimate"
+
+  # Weather & Environment
+  - "What is the weather like"
+  - "Is it safe to inspect"
+  - "Check the forecast"
+  - "Should I wait to open this hive"
+
+  # Emergency
+  - "Emergency alert"
+  - "Call for help"
+  - "Something is wrong"
+  - "I need assistance"
+
+# Metadata
+metadata:
+  total_phrases: 150
+  categories:
+    - greetings
+    - navigation
+    - status
+    - queen_brood
+    - honey_resources
+    - pests_disease
+    - inspection_actions
+    - ar_overlay
+    - measurements
+    - recommendations
+    - confirmations
+    - help
+    - reports
+    - alerts
+    - settings
+    - time
+    - counts
+    - weather
+    - emergency
+
+  expected_hit_rate: 0.70  # 70% of queries should hit these phrases
+  cache_ttl: 86400  # 24 hours
+  warmup_priority: high

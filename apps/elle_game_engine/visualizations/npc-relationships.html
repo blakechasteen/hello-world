@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPC Relationship Graph - BigPlay Engine</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="design-system.css">
+
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            padding: var(--space-4);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: var(--space-6);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: var(--space-2);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        .graph-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .sidebar {
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-lg);
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: var(--space-2);
+        }
+
+        .filter-group {
+            margin-bottom: var(--space-4);
+        }
+
+        .filter-group label {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2);
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            transition: background 0.2s;
+        }
+
+        .filter-group label:hover {
+            background: var(--color-bg-tertiary);
+        }
+
+        .filter-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .relationship-badge {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: var(--space-2);
+        }
+
+        .graph-main {
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-2xl);
+            position: relative;
+        }
+
+        #graph {
+            width: 100%;
+            height: 700px;
+            border-radius: var(--radius-lg);
+            background: var(--color-bg-tertiary);
+        }
+
+        .controls {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .node {
+            cursor: grab;
+            transition: r 0.3s;
+        }
+
+        .node:active {
+            cursor: grabbing;
+        }
+
+        .node:hover {
+            stroke-width: 4;
+        }
+
+        .node-label {
+            font-family: var(--font-sans);
+            font-size: 12px;
+            font-weight: 600;
+            fill: var(--color-text-primary);
+            pointer-events: none;
+            text-anchor: middle;
+        }
+
+        .link {
+            stroke-opacity: 0.6;
+            transition: stroke-width 0.3s;
+        }
+
+        .link:hover {
+            stroke-opacity: 1;
+            stroke-width: 4;
+        }
+
+        .link-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            fill: var(--color-text-secondary);
+            pointer-events: none;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: var(--color-bg-primary);
+            border: 2px solid var(--color-primary);
+            border-radius: var(--radius-md);
+            padding: var(--space-3);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            max-width: 300px;
+            box-shadow: var(--shadow-xl);
+            z-index: 1000;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .tooltip-title {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: var(--space-2);
+            color: var(--color-primary);
+        }
+
+        .tooltip-content {
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .tooltip-stat {
+            display: flex;
+            justify-content: space-between;
+            margin: var(--space-1) 0;
+        }
+
+        .legend {
+            margin-top: var(--space-6);
+            padding: var(--space-4);
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-lg);
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: var(--space-3);
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-2);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .stats-panel {
+            margin-top: var(--space-4);
+            padding: var(--space-3);
+            background: var(--color-bg-tertiary);
+            border-radius: var(--radius-md);
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 1024px) {
+            .graph-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: 2;
+            }
+
+            #graph {
+                height: 500px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🕸️ NPC Relationship Graph</h1>
+            <p class="subtitle">Network of alliances, rivalries, and social connections</p>
+        </header>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadWorld('tavern')">
+                Tavern NPCs
+            </button>
+            <button class="btn btn-primary" onclick="loadWorld('castle')">
+                Castle Court
+            </button>
+            <button class="btn btn-primary" onclick="loadWorld('thieves')">
+                Thieves Guild
+            </button>
+            <button class="btn btn-primary" onclick="loadWorld('all')">
+                Show All
+            </button>
+            <button class="btn btn-secondary" onclick="resetGraph()">
+                Reset Positions
+            </button>
+        </div>
+
+        <div class="graph-container">
+            <div class="sidebar">
+                <h3>🔍 Filters</h3>
+
+                <div class="filter-group">
+                    <h4 style="margin-bottom: var(--space-2);">Relationship Types</h4>
+                    <label>
+                        <input type="checkbox" value="FRIEND" checked onchange="filterRelationships()">
+                        <span class="relationship-badge" style="background: #4CAF50;"></span>
+                        Friends
+                    </label>
+                    <label>
+                        <input type="checkbox" value="ENEMY" checked onchange="filterRelationships()">
+                        <span class="relationship-badge" style="background: #f44336;"></span>
+                        Enemies
+                    </label>
+                    <label>
+                        <input type="checkbox" value="ROMANCE" checked onchange="filterRelationships()">
+                        <span class="relationship-badge" style="background: #E91E63;"></span>
+                        Romance
+                    </label>
+                    <label>
+                        <input type="checkbox" value="FAMILY" checked onchange="filterRelationships()">
+                        <span class="relationship-badge" style="background: #9C27B0;"></span>
+                        Family
+                    </label>
+                    <label>
+                        <input type="checkbox" value="RIVAL" checked onchange="filterRelationships()">
+                        <span class="relationship-badge" style="background: #FF9800;"></span>
+                        Rivals
+                    </label>
+                    <label>
+                        <input type="checkbox" value="MENTOR" checked onchange="filterRelationships()">
+                        <span class="relationship-badge" style="background: #2196F3;"></span>
+                        Mentor
+                    </label>
+                    <label>
+                        <input type="checkbox" value="BUSINESS" checked onchange="filterRelationships()">
+                        <span class="relationship-badge" style="background: #607D8B;"></span>
+                        Business
+                    </label>
+                </div>
+
+                <div class="stats-panel">
+                    <strong>Network Statistics</strong>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-npcs">0</div>
+                            <div class="stat-label">NPCs</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-relationships">0</div>
+                            <div class="stat-label">Links</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-density">0%</div>
+                            <div class="stat-label">Density</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="graph-main">
+                <svg id="graph"></svg>
+                <div class="tooltip" id="tooltip">
+                    <div class="tooltip-title" id="tooltip-title"></div>
+                    <div class="tooltip-content" id="tooltip-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-title">Relationship Types & Strength</div>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="relationship-badge" style="background: #4CAF50;"></span>
+                    <span>FRIEND - Alliance</span>
+                </div>
+                <div class="legend-item">
+                    <span class="relationship-badge" style="background: #f44336;"></span>
+                    <span>ENEMY - Hostility</span>
+                </div>
+                <div class="legend-item">
+                    <span class="relationship-badge" style="background: #E91E63;"></span>
+                    <span>ROMANCE - Love interest</span>
+                </div>
+                <div class="legend-item">
+                    <span class="relationship-badge" style="background: #9C27B0;"></span>
+                    <span>FAMILY - Blood relation</span>
+                </div>
+                <div class="legend-item">
+                    <span class="relationship-badge" style="background: #FF9800;"></span>
+                    <span>RIVAL - Competition</span>
+                </div>
+                <div class="legend-item">
+                    <span class="relationship-badge" style="background: #2196F3;"></span>
+                    <span>MENTOR - Teacher/student</span>
+                </div>
+                <div class="legend-item">
+                    <span class="relationship-badge" style="background: #607D8B;"></span>
+                    <span>BUSINESS - Trade/commerce</span>
+                </div>
+            </div>
+            <p style="margin-top: var(--space-3); opacity: 0.7; font-size: 0.9em;">
+                <strong>Node Size:</strong> Larger nodes = more connections (importance)<br>
+                <strong>Link Thickness:</strong> Thicker lines = stronger relationship (0.0-1.0)
+            </p>
+        </div>
+
+        <div class="card" style="margin-top: var(--space-6);">
+            <h2>🎯 How NPC Relationships Work</h2>
+
+            <h3>Dynamic Relationship System</h3>
+            <p>BigPlay tracks NPC relationships that evolve based on player actions and world events:</p>
+
+            <h4>Relationship Attributes</h4>
+            <ul>
+                <li><strong>Type</strong>: FRIEND, ENEMY, ROMANCE, FAMILY, RIVAL, MENTOR, BUSINESS</li>
+                <li><strong>Strength</strong>: 0.0 (weak) to 1.0 (strong) - affects dialogue and quest availability</li>
+                <li><strong>History</strong>: Event timeline (first met, major interactions, betrayals, etc.)</li>
+                <li><strong>Visibility</strong>: PUBLIC (everyone knows) or SECRET (hidden from others)</li>
+            </ul>
+
+            <h4>Relationship Changes</h4>
+            <pre style="background: var(--color-bg-tertiary); padding: var(--space-4); border-radius: var(--radius-md); overflow-x: auto;">
+# Initial state: Alice (Merchant) and Bob (Guard) are friendly
+{"type": "FRIEND", "strength": 0.7}
+
+# Player steals from Alice's shop, caught by Bob
+# Bob's loyalty to Alice increases
+{"type": "FRIEND", "strength": 0.85}
+
+# Player convinces Bob to let them go
+# Bob feels conflicted, relationship weakens
+{"type": "FRIEND", "strength": 0.6}
+
+# Later, Alice discovers Bob let the thief escape
+# Relationship degrades to rivalry
+{"type": "RIVAL", "strength": 0.4}
+            </pre>
+
+            <h4>Transitive Relationships</h4>
+            <p>NPCs infer relationships through their network:</p>
+            <ul>
+                <li><strong>"Friend of a friend"</strong>: Positive first impression (trust +0.2)</li>
+                <li><strong>"Enemy of my enemy"</strong>: Potential alliance opportunity</li>
+                <li><strong>"Family of enemy"</strong>: Inherited hostility (unless proven otherwise)</li>
+            </ul>
+
+            <h4>Graph Queries</h4>
+            <pre style="background: var(--color-bg-tertiary); padding: var(--space-4); border-radius: var(--radius-md); overflow-x: auto;">
+# Find all NPCs who might help based on relationships
+MATCH (player)-[:FRIEND]-(ally)-[:FRIEND]-(potential_help)
+WHERE potential_help.location = 'castle'
+RETURN potential_help, ally.introduction_willingness
+
+# Detect love triangles
+MATCH (a)-[:ROMANCE]-(b)-[:ROMANCE]-(c)-[:ROMANCE]-(a)
+RETURN a, b, c
+
+# Find most influential NPC (highest degree centrality)
+MATCH (npc)-[r]-()
+RETURN npc.name, count(r) as connections
+ORDER BY connections DESC
+LIMIT 1
+            </pre>
+        </div>
+    </div>
+
+    <!-- BigPlay UI Utilities -->
+    <script src="bigplay-ui.js"></script>
+
+    <script>
+        // Relationship type colors
+        const relationshipColors = {
+            FRIEND: '#4CAF50',
+            ENEMY: '#f44336',
+            ROMANCE: '#E91E63',
+            FAMILY: '#9C27B0',
+            RIVAL: '#FF9800',
+            MENTOR: '#2196F3',
+            BUSINESS: '#607D8B'
+        };
+
+        // NPC data sets
+        const worlds = {
+            tavern: {
+                npcs: [
+                    { id: 'alice', name: 'Alice\n(Innkeeper)', importance: 0.9, role: 'Merchant' },
+                    { id: 'bob', name: 'Bob\n(Guard)', importance: 0.7, role: 'Military' },
+                    { id: 'charlie', name: 'Charlie\n(Bard)', importance: 0.6, role: 'Entertainer' },
+                    { id: 'diana', name: 'Diana\n(Patron)', importance: 0.5, role: 'Civilian' },
+                    { id: 'eve', name: 'Eve\n(Cook)', importance: 0.6, role: 'Staff' }
+                ],
+                relationships: [
+                    { source: 'alice', target: 'bob', type: 'FRIEND', strength: 0.8 },
+                    { source: 'alice', target: 'eve', type: 'BUSINESS', strength: 0.9 },
+                    { source: 'bob', target: 'charlie', type: 'RIVAL', strength: 0.6 },
+                    { source: 'charlie', target: 'diana', type: 'ROMANCE', strength: 0.7 },
+                    { source: 'diana', target: 'alice', type: 'FRIEND', strength: 0.5 }
+                ]
+            },
+            castle: {
+                npcs: [
+                    { id: 'king', name: 'King\nArthos', importance: 1.0, role: 'Royalty' },
+                    { id: 'queen', name: 'Queen\nElara', importance: 0.95, role: 'Royalty' },
+                    { id: 'prince', name: 'Prince\nTheron', importance: 0.8, role: 'Royalty' },
+                    { id: 'advisor', name: 'Lord\nCavendish', importance: 0.85, role: 'Nobility' },
+                    { id: 'knight', name: 'Sir\nGalahad', importance: 0.7, role: 'Military' },
+                    { id: 'mage', name: 'Archmage\nMerrick', importance: 0.75, role: 'Magic' }
+                ],
+                relationships: [
+                    { source: 'king', target: 'queen', type: 'ROMANCE', strength: 0.9 },
+                    { source: 'king', target: 'prince', type: 'FAMILY', strength: 1.0 },
+                    { source: 'queen', target: 'prince', type: 'FAMILY', strength: 1.0 },
+                    { source: 'king', target: 'advisor', type: 'BUSINESS', strength: 0.7 },
+                    { source: 'advisor', target: 'mage', type: 'RIVAL', strength: 0.8 },
+                    { source: 'knight', target: 'king', type: 'MENTOR', strength: 0.6 },
+                    { source: 'prince', target: 'knight', type: 'FRIEND', strength: 0.8 },
+                    { source: 'mage', target: 'queen', type: 'BUSINESS', strength: 0.5 }
+                ]
+            },
+            thieves: {
+                npcs: [
+                    { id: 'shadowmaster', name: 'The\nShadowmaster', importance: 0.95, role: 'Leader' },
+                    { id: 'fox', name: 'Red\nFox', importance: 0.8, role: 'Thief' },
+                    { id: 'whisper', name: 'Whisper', importance: 0.75, role: 'Assassin' },
+                    { id: 'lockpick', name: 'Lockpick\nLarry', importance: 0.6, role: 'Specialist' },
+                    { id: 'fence', name: 'The\nFence', importance: 0.7, role: 'Merchant' }
+                ],
+                relationships: [
+                    { source: 'shadowmaster', target: 'fox', type: 'MENTOR', strength: 0.9 },
+                    { source: 'shadowmaster', target: 'whisper', type: 'BUSINESS', strength: 0.8 },
+                    { source: 'fox', target: 'lockpick', type: 'FRIEND', strength: 0.7 },
+                    { source: 'whisper', target: 'fox', type: 'RIVAL', strength: 0.6 },
+                    { source: 'fence', target: 'shadowmaster', type: 'BUSINESS', strength: 0.85 },
+                    { source: 'lockpick', target: 'fence', type: 'BUSINESS', strength: 0.6 }
+                ]
+            }
+        };
+
+        // Combine all worlds
+        worlds.all = {
+            npcs: [...worlds.tavern.npcs, ...worlds.castle.npcs, ...worlds.thieves.npcs],
+            relationships: [
+                ...worlds.tavern.relationships,
+                ...worlds.castle.relationships,
+                ...worlds.thieves.relationships,
+                // Cross-world connections
+                { source: 'alice', target: 'king', type: 'BUSINESS', strength: 0.4 },
+                { source: 'bob', target: 'knight', type: 'FRIEND', strength: 0.5 },
+                { source: 'shadowmaster', target: 'advisor', type: 'ENEMY', strength: 0.9 }
+            ]
+        };
+
+        // Graph state
+        let currentWorld = 'tavern';
+        let simulation;
+        let svg;
+        let width, height;
+
+        // Initialize
+        function init() {
+            svg = d3.select('#graph');
+            const container = document.querySelector('#graph');
+            width = container.clientWidth;
+            height = container.clientHeight;
+
+            svg.attr('viewBox', [0, 0, width, height]);
+
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.5, 3])
+                .on('zoom', (event) => {
+                    svg.selectAll('g').attr('transform', event.transform);
+                });
+
+            svg.call(zoom);
+
+            loadWorld('tavern');
+        }
+
+        // Load world
+        function loadWorld(worldId) {
+            currentWorld = worldId;
+            const world = worlds[worldId];
+
+            renderGraph(world.npcs, world.relationships);
+
+            // Track event
+            if (window.BigPlayUI) {
+                window.BigPlayUI.analytics.track('world_loaded', {
+                    world: worldId,
+                    npcs: world.npcs.length,
+                    relationships: world.relationships.length
+                });
+            }
+        }
+
+        // Render graph
+        function renderGraph(npcs, relationships) {
+            svg.selectAll('*').remove();
+
+            const g = svg.append('g');
+
+            // Update stats
+            document.getElementById('stat-npcs').textContent = npcs.length;
+            document.getElementById('stat-relationships').textContent = relationships.length;
+            const maxPossible = npcs.length * (npcs.length - 1) / 2;
+            const density = Math.round((relationships.length / maxPossible) * 100);
+            document.getElementById('stat-density').textContent = density + '%';
+
+            // Create simulation
+            simulation = d3.forceSimulation(npcs)
+                .force('link', d3.forceLink(relationships)
+                    .id(d => d.id)
+                    .distance(d => 150 / d.strength))
+                .force('charge', d3.forceManyBody().strength(-400))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => 20 + d.importance * 20));
+
+            // Links
+            const link = g.append('g')
+                .selectAll('line')
+                .data(relationships)
+                .join('line')
+                .attr('class', 'link')
+                .attr('stroke', d => relationshipColors[d.type])
+                .attr('stroke-width', d => 1 + d.strength * 3);
+
+            // Nodes
+            const node = g.append('g')
+                .selectAll('circle')
+                .data(npcs)
+                .join('circle')
+                .attr('class', 'node')
+                .attr('r', d => 15 + d.importance * 15)
+                .attr('fill', d => {
+                    if (d.role === 'Royalty') return '#FFD700';
+                    if (d.role === 'Military') return '#4CAF50';
+                    if (d.role === 'Magic') return '#9C27B0';
+                    if (d.role === 'Merchant') return '#FF9800';
+                    return '#607D8B';
+                })
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .call(drag(simulation))
+                .on('mouseover', showTooltip)
+                .on('mouseout', hideTooltip);
+
+            // Labels
+            const label = g.append('g')
+                .selectAll('text')
+                .data(npcs)
+                .join('text')
+                .attr('class', 'node-label')
+                .selectAll('tspan')
+                .data(d => d.name.split('\n').map(line => ({ line, id: d.id })))
+                .join('tspan')
+                .attr('x', 0)
+                .attr('dy', (d, i) => i === 0 ? '0.3em' : '1.1em')
+                .text(d => d.line);
+
+            // Update positions
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                label
+                    .attr('transform', d => {
+                        const npc = npcs.find(n => n.id === d.id);
+                        return `translate(${npc.x}, ${npc.y + 25})`;
+                    });
+            });
+        }
+
+        // Drag behavior
+        function drag(simulation) {
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+
+            return d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended);
+        }
+
+        // Tooltip
+        function showTooltip(event, d) {
+            const tooltip = document.getElementById('tooltip');
+            const world = worlds[currentWorld];
+
+            const connections = world.relationships.filter(r =>
+                r.source.id === d.id || r.target.id === d.id
+            );
+
+            let content = `
+                <div class="tooltip-stat">
+                    <span>Role:</span>
+                    <strong>${d.role}</strong>
+                </div>
+                <div class="tooltip-stat">
+                    <span>Importance:</span>
+                    <strong>${(d.importance * 100).toFixed(0)}%</strong>
+                </div>
+                <div class="tooltip-stat">
+                    <span>Connections:</span>
+                    <strong>${connections.length}</strong>
+                </div>
+                <hr style="margin: var(--space-2) 0; border-color: var(--color-border);">
+                <strong>Relationships:</strong><br>
+            `;
+
+            connections.forEach(rel => {
+                const other = rel.source.id === d.id ? rel.target : rel.source;
+                content += `
+                    <div style="margin-top: var(--space-1); font-size: 0.85em;">
+                        <span class="relationship-badge" style="background: ${relationshipColors[rel.type]};"></span>
+                        ${other.name.replace('\n', ' ')} (${(rel.strength * 100).toFixed(0)}%)
+                    </div>
+                `;
+            });
+
+            document.getElementById('tooltip-title').textContent = d.name.replace('\n', ' ');
+            document.getElementById('tooltip-content').innerHTML = content;
+
+            tooltip.style.left = (event.pageX + 15) + 'px';
+            tooltip.style.top = (event.pageY + 15) + 'px';
+            tooltip.classList.add('visible');
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.remove('visible');
+        }
+
+        // Filter relationships
+        function filterRelationships() {
+            const checkboxes = document.querySelectorAll('.filter-group input[type="checkbox"]');
+            const enabledTypes = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            const world = worlds[currentWorld];
+            const filtered = world.relationships.filter(r =>
+                enabledTypes.includes(r.type)
+            );
+
+            renderGraph(world.npcs, filtered);
+        }
+
+        // Reset graph
+        function resetGraph() {
+            loadWorld(currentWorld);
+        }
+
+        // Initialize on load
+        init();
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            const container = document.querySelector('#graph');
+            width = container.clientWidth;
+            height = container.clientHeight;
+            svg.attr('viewBox', [0, 0, width, height]);
+            simulation.force('center', d3.forceCenter(width / 2, height / 2));
+            simulation.alpha(0.3).restart();
+        });
+    </script>
+</body>
+</html>

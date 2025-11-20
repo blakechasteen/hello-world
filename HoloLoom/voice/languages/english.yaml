@@ -1,0 +1,67 @@
+code: en
+name: English
+native_name: English
+
+variants:
+  - en-US:
+      voice_id: nova
+      fallback: alloy
+      name: American English
+  - en-GB:
+      voice_id: onyx
+      fallback: alloy
+      name: British English
+  - en-AU:
+      voice_id: shimmer
+      fallback: nova
+      name: Australian English
+
+default_voice: nova
+fallback_voice: alloy
+rtl: false
+
+ui_strings:
+  # Greetings
+  greeting: "Hello"
+  greeting_morning: "Good morning"
+  greeting_afternoon: "Good afternoon"
+  greeting_evening: "Good evening"
+  goodbye: "Goodbye"
+  see_you: "See you later"
+
+  # Status messages
+  processing: "Processing your request..."
+  thinking: "Let me think about that..."
+  searching: "Searching for information..."
+  analyzing: "Analyzing..."
+  complete: "Done!"
+  ready: "Ready!"
+
+  # Error messages
+  error: "I'm sorry, there was an error."
+  error_network: "Network connection error. Please try again."
+  error_timeout: "Request timed out. Please try again."
+  error_unknown: "An unexpected error occurred."
+  not_understood: "I didn't quite catch that. Could you repeat?"
+
+  # Confirmation prompts
+  confirm_yes: "Yes"
+  confirm_no: "No"
+  confirm_cancel: "Cancel"
+  confirm_continue: "Continue"
+
+  # Navigation
+  go_back: "Go back"
+  next: "Next"
+  previous: "Previous"
+  menu: "Menu"
+
+  # Language switching
+  language_detected: "Language detected"
+  language_switched: "Language switched to English"
+  switch_to_language: "Switch to {language}"
+
+metadata:
+  speakers: 1500000000  # Native + non-native speakers
+  script: Latin
+  direction: ltr

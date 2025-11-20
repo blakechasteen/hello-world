@@ -1,0 +1,67 @@
+code: de
+name: German
+native_name: Deutsch
+
+variants:
+  - de-DE:
+      voice_id: fable
+      fallback: alloy
+      name: Standard German
+  - de-AT:
+      voice_id: onyx
+      fallback: fable
+      name: Austrian German
+  - de-CH:
+      voice_id: echo
+      fallback: fable
+      name: Swiss German
+
+default_voice: fable
+fallback_voice: alloy
+rtl: false
+
+ui_strings:
+  # Greetings
+  greeting: "Hallo"
+  greeting_morning: "Guten Morgen"
+  greeting_afternoon: "Guten Tag"
+  greeting_evening: "Guten Abend"
+  goodbye: "Auf Wiedersehen"
+  see_you: "Bis später"
+
+  # Status messages
+  processing: "Ihre Anfrage wird bearbeitet..."
+  thinking: "Lassen Sie mich darüber nachdenken..."
+  searching: "Suche nach Informationen..."
+  analyzing: "Analysiere..."
+  complete: "Fertig!"
+  ready: "Bereit!"
+
+  # Error messages
+  error: "Es tut mir leid, es ist ein Fehler aufgetreten."
+  error_network: "Netzwerkverbindungsfehler. Bitte versuchen Sie es erneut."
+  error_timeout: "Anfrage zeitüberschritten. Bitte versuchen Sie es erneut."
+  error_unknown: "Ein unerwarteter Fehler ist aufgetreten."
+  not_understood: "Ich habe das nicht ganz verstanden. Könnten Sie das wiederholen?"
+
+  # Confirmation prompts
+  confirm_yes: "Ja"
+  confirm_no: "Nein"
+  confirm_cancel: "Abbrechen"
+  confirm_continue: "Fortfahren"
+
+  # Navigation
+  go_back: "Zurück"
+  next: "Weiter"
+  previous: "Zurück"
+  menu: "Menü"
+
+  # Language switching
+  language_detected: "Sprache erkannt"
+  language_switched: "Sprache auf Deutsch umgestellt"
+  switch_to_language: "Wechseln zu {language}"
+
+metadata:
+  speakers: 135000000  # Native + non-native speakers
+  script: Latin
+  direction: ltr
