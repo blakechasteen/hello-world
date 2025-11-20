@@ -203,6 +203,12 @@ class O2Bot:
         if message_lower.startswith('revoke'):
             return await self.handle_revoke(message, user_id)
 
+        if message_lower.startswith('list shared'):
+            return await self.handle_list_shared(user_id)
+
+        if message_lower.startswith('audit'):
+            return await self.handle_audit(message, user_id)
+
         # Swarm commands
         if message_lower.startswith('run swarm'):
             return await self.handle_swarm(message, user_id, room_id)
@@ -341,15 +347,196 @@ class O2Bot:
         )
 
     async def handle_share(self, message: str, user_id: str) -> str:
-        """Handle memory sharing."""
-        # Parse share command
-        # Format: share memory "[memory_id]" with @user:server.org
-        # Simplified for now
-        return "🚧 Memory sharing coming soon!"
+        """
+        Handle memory sharing.
+
+        Format: share [memory_id] with @user:server.org [permissions] [expiration]
+        Example: share mem_0 with @bob:matrix.org read 7d
+        """
+        try:
+            # Parse command
+            # Format: share [memory_id] with @recipient [permissions] [expiration]
+            parts = message.split()
+
+            if len(parts) < 4:
+                return (
+                    "❌ Invalid format.\n\n"
+                    "**Usage**: `@o2 share [memory_id] with @user:server.org [permissions] [expiration]`\n\n"
+                    "**Example**: `@o2 share mem_0 with @bob:matrix.org read 7d`\n"
+                    "**Permissions**: read, write\n"
+                    "**Expiration**: 24h, 7d, 30d, etc."
+                )
+
+            memory_id = parts[1]
+            recipient = parts[3]
+
+            # Parse optional permissions and expiration
+            permissions = ['read']  # Default
+            expiration = None
+
+            if len(parts) > 4:
+                # Check if next part is permissions or expiration
+                if parts[4] in ['read', 'write']:
+                    permissions = [parts[4]]
+                    if len(parts) > 5:
+                        expiration = parts[5]
+                else:
+                    expiration = parts[4]
+
+            # Share memory
+            share_id = await self.memory_manager.share_memory(
+                from_user=user_id,
+                to_user=recipient,
+                memory_id=memory_id,
+                permissions=permissions,
+                expiration=expiration
+            )
+
+            response = (
+                f"✅ **Memory Shared**\n\n"
+                f"**Memory**: {memory_id}\n"
+                f"**Shared with**: {recipient}\n"
+                f"**Permissions**: {', '.join(permissions)}\n"
+            )
+
+            if expiration:
+                response += f"**Expires**: {expiration}\n"
+
+            response += f"\n**Share ID**: `{share_id}`\n\n"
+            response += "_Remember: End-to-end encrypted! Only you and recipient can read._"
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Share error: {e}", exc_info=True)
+            return f"❌ Failed to share memory: {str(e)}"
 
     async def handle_revoke(self, message: str, user_id: str) -> str:
-        """Handle access revocation."""
-        return "🚧 Access revocation coming soon!"
+        """
+        Handle access revocation.
+
+        Format: revoke [memory_id] from @user:server.org
+        Example: revoke mem_0 from @bob:matrix.org
+        """
+        try:
+            # Parse command
+            # Format: revoke [memory_id] from @recipient
+            parts = message.split()
+
+            if len(parts) < 4:
+                return (
+                    "❌ Invalid format.\n\n"
+                    "**Usage**: `@o2 revoke [memory_id] from @user:server.org`\n\n"
+                    "**Example**: `@o2 revoke mem_0 from @bob:matrix.org`"
+                )
+
+            memory_id = parts[1]
+            recipient = parts[3]
+
+            # Revoke access
+            await self.memory_manager.revoke_access(
+                from_user=user_id,
+                to_user=recipient,
+                memory_id=memory_id
+            )
+
+            return (
+                f"✅ **Access Revoked**\n\n"
+                f"**Memory**: {memory_id}\n"
+                f"**User**: {recipient}\n\n"
+                f"_{recipient} can no longer access this memory._"
+            )
+
+        except Exception as e:
+            logger.error(f"Revoke error: {e}", exc_info=True)
+            return f"❌ Failed to revoke access: {str(e)}"
+
+    async def handle_list_shared(self, user_id: str) -> str:
+        """
+        Handle listing shared memories.
+
+        Lists all memories shared with this user.
+        """
+        try:
+            # Get shared memories
+            shared_memories = await self.memory_manager.get_shared_memories(user_id)
+
+            if not shared_memories:
+                return (
+                    "📭 **No Shared Memories**\n\n"
+                    "No one has shared memories with you yet."
+                )
+
+            response = f"📬 **Shared Memories ({len(shared_memories)})**\n\n"
+
+            for i, memory in enumerate(shared_memories[:10], 1):
+                response += (
+                    f"{i}. **{memory.memory_id}**\n"
+                    f"   From: {memory.owner_id}\n"
+                    f"   Created: {memory.created_at.strftime('%Y-%m-%d %H:%M')}\n\n"
+                )
+
+            if len(shared_memories) > 10:
+                response += f"\n_...and {len(shared_memories) - 10} more_"
+
+            return response
+
+        except Exception as e:
+            logger.error(f"List shared error: {e}", exc_info=True)
+            return f"❌ Failed to list shared memories: {str(e)}"
+
+    async def handle_audit(self, message: str, user_id: str) -> str:
+        """
+        Handle audit trail requests.
+
+        Format: audit [memory_id]
+        Example: audit mem_0
+        """
+        try:
+            # Parse command
+            parts = message.split()
+
+            if len(parts) < 2:
+                return (
+                    "❌ Invalid format.\n\n"
+                    "**Usage**: `@o2 audit [memory_id]`\n\n"
+                    "**Example**: `@o2 audit mem_0`"
+                )
+
+            memory_id = parts[1]
+
+            # Get audit trail
+            audit_trail = await self.memory_manager.get_audit_trail(memory_id)
+
+            if not audit_trail:
+                return (
+                    f"📋 **Audit Trail: {memory_id}**\n\n"
+                    "No access events recorded for this memory."
+                )
+
+            response = f"📋 **Audit Trail: {memory_id}**\n\n"
+
+            for event in audit_trail:
+                response += (
+                    f"**User**: {event['granted_to']}\n"
+                    f"**Permissions**: {', '.join(event['permissions'])}\n"
+                    f"**Granted**: {event['granted_at']}\n"
+                )
+
+                if event['expires_at']:
+                    response += f"**Expires**: {event['expires_at']}\n"
+
+                response += (
+                    f"**Accessed**: {event['accessed_count']} times\n"
+                    f"**Last Access**: {event.get('last_accessed', 'Never')}\n"
+                    f"**Status**: {'Expired' if event['is_expired'] else 'Active'}\n\n"
+                )
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Audit error: {e}", exc_info=True)
+            return f"❌ Failed to get audit trail: {str(e)}"
 
     async def handle_swarm(self, message: str, user_id: str, room_id: str) -> str:
         """Handle swarm coordination."""
@@ -391,8 +578,10 @@ class O2Bot:
 
 **Memory** (User-owned data):
 - `@o2 export my data` - Export memory graph
-- `@o2 share memory "[id]" with @user` - Share memory
-- `@o2 revoke access from @user` - Revoke access
+- `@o2 share [memory_id] with @user [read/write] [expiration]` - Share memory
+- `@o2 revoke [memory_id] from @user` - Revoke access
+- `@o2 list shared` - List memories shared with you
+- `@o2 audit [memory_id]` - View access audit trail
 
 **Swarm** (Multi-agent collaboration):
 - `@o2 run swarm: [task]` - Activate agentic swarm

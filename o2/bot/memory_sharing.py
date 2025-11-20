@@ -371,15 +371,45 @@ class MemorySharingManager:
         return audit_trail
 
     async def _load_memory(self, user_id: str, memory_id: str) -> Optional[SharedMemory]:
-        """Load memory from user's knowledge graph."""
-        # TODO: Integrate with HoloLoom to extract specific memory
-        # For now, return placeholder
-        return SharedMemory(
-            memory_id=memory_id,
-            owner_id=user_id,
-            content=f"Memory content for {memory_id}",
-            metadata={'source': 'hololoom'}
-        )
+        """
+        Load memory from user's knowledge graph.
+
+        Args:
+            user_id: User ID who owns the memory
+            memory_id: Memory ID to load
+
+        Returns:
+            SharedMemory object or None if not found
+        """
+        # Load from user's saved memories
+        user_dir = self.memories_dir / self._sanitize_user_id(user_id)
+        graph_file = user_dir / 'graph.json'
+
+        if not graph_file.exists():
+            logger.warning(f"No graph data found for user {user_id}")
+            return None
+
+        try:
+            with open(graph_file, 'r') as f:
+                graph_data = json.load(f)
+
+            # Find the specific memory by ID
+            if 'memories' in graph_data:
+                for memory_data in graph_data['memories']:
+                    if memory_data.get('id') == memory_id:
+                        return SharedMemory(
+                            memory_id=memory_id,
+                            owner_id=user_id,
+                            content=memory_data.get('content', ''),
+                            metadata=memory_data.get('metadata', {'source': 'hololoom'})
+                        )
+
+            logger.warning(f"Memory {memory_id} not found for user {user_id}")
+            return None
+
+        except Exception as e:
+            logger.error(f"Error loading memory {memory_id} for user {user_id}: {e}")
+            return None
 
     async def _save_shared_memory(self, user_id: str, memory: SharedMemory):
         """Save shared memory to recipient's directory."""

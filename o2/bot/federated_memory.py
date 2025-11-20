@@ -15,11 +15,12 @@ import os
 import json
 import hashlib
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from datetime import datetime
 
 from HoloLoom import HoloLoom
 from HoloLoom.config import Config
+from o2.bot.memory_sharing import MemorySharingManager, SharedMemory
 
 logger = logging.getLogger('o2-bot.federated_memory')
 
@@ -39,11 +40,16 @@ class FederatedMemoryManager:
         self.base_config = base_config
         self.user_looms: Dict[str, HoloLoom] = {}
         self.memories_dir = Path(os.getenv('USER_MEMORIES_DIR', '/app/memories'))
+        self.sharing_manager: Optional[MemorySharingManager] = None
 
     async def initialize(self):
         """Initialize memory manager."""
         # Create memories directory
         self.memories_dir.mkdir(parents=True, exist_ok=True)
+
+        # Initialize memory sharing manager
+        self.sharing_manager = MemorySharingManager(self.memories_dir)
+
         logger.info(f"Federated memory manager initialized: {self.memories_dir}")
 
     async def get_user_loom(self, user_id: str) -> HoloLoom:
@@ -190,7 +196,7 @@ class FederatedMemoryManager:
         memory_id: str,
         permissions: list = None,
         expiration: str = None
-    ):
+    ) -> str:
         """
         Share specific memory with another user.
 
@@ -200,14 +206,28 @@ class FederatedMemoryManager:
             memory_id: Specific memory to share
             permissions: List of permissions (read, write)
             expiration: Expiration time (e.g., '7d', '24h')
+
+        Returns:
+            Share ID for tracking
         """
-        # TODO: Implement memory sharing
-        # This requires:
-        # 1. Extract specific memory from from_user's graph
-        # 2. Encrypt for to_user's public key
-        # 3. Store in to_user's shared_memories directory
-        # 4. Record in access control list
-        logger.info(f"Sharing memory {memory_id} from {from_user} to {to_user} (not implemented)")
+        if not self.sharing_manager:
+            raise RuntimeError("Memory sharing manager not initialized")
+
+        # Get from_user's HoloLoom to access their memories
+        from_loom = await self.get_user_loom(from_user)
+
+        # Share memory using sharing manager
+        # The sharing manager will handle encryption, access control, etc.
+        share_id = await self.sharing_manager.share_memory(
+            memory_id=memory_id,
+            from_user=from_user,
+            to_user=to_user,
+            permissions=permissions,
+            expires_in=expiration
+        )
+
+        logger.info(f"Shared memory {memory_id} from {from_user} to {to_user}: {share_id}")
+        return share_id
 
     async def revoke_access(self, from_user: str, to_user: str, memory_id: str):
         """
@@ -218,8 +238,46 @@ class FederatedMemoryManager:
             to_user: User ID to revoke access from
             memory_id: Memory to revoke
         """
-        # TODO: Implement access revocation
-        logger.info(f"Revoking {to_user}'s access to {memory_id} from {from_user} (not implemented)")
+        if not self.sharing_manager:
+            raise RuntimeError("Memory sharing manager not initialized")
+
+        await self.sharing_manager.revoke_access(
+            memory_id=memory_id,
+            from_user=from_user,
+            to_user=to_user
+        )
+
+        logger.info(f"Revoked {to_user}'s access to {memory_id} from {from_user}")
+
+    async def get_shared_memories(self, user_id: str) -> List[SharedMemory]:
+        """
+        Get all memories shared with a user.
+
+        Args:
+            user_id: User ID to get shared memories for
+
+        Returns:
+            List of SharedMemory objects
+        """
+        if not self.sharing_manager:
+            raise RuntimeError("Memory sharing manager not initialized")
+
+        return await self.sharing_manager.get_shared_memories(user_id)
+
+    async def get_audit_trail(self, memory_id: str) -> List[dict]:
+        """
+        Get audit trail for a shared memory.
+
+        Args:
+            memory_id: Memory ID to get audit trail for
+
+        Returns:
+            List of audit events
+        """
+        if not self.sharing_manager:
+            raise RuntimeError("Memory sharing manager not initialized")
+
+        return await self.sharing_manager.get_audit_trail(memory_id)
 
     async def close_user_loom(self, user_id: str):
         """
@@ -254,16 +312,70 @@ class FederatedMemoryManager:
         logger.info("Closed all user HoloLoom instances")
 
     async def _load_user_data(self, loom: HoloLoom, user_dir: Path):
-        """Load user data from disk."""
-        # TODO: Implement data loading
-        # This will load graph, embeddings, photos from user_dir
-        pass
+        """
+        Load user data from disk.
+
+        Args:
+            loom: HoloLoom instance to load data into
+            user_dir: User's data directory
+        """
+        graph_file = user_dir / 'graph.json'
+
+        if not graph_file.exists():
+            logger.debug(f"No existing graph data for {user_dir.name}")
+            return
+
+        try:
+            with open(graph_file, 'r') as f:
+                graph_data = json.load(f)
+
+            # Load memories into HoloLoom
+            if 'memories' in graph_data:
+                for memory_data in graph_data['memories']:
+                    await loom.experience(memory_data.get('content', ''))
+
+            logger.debug(f"Loaded {len(graph_data.get('memories', []))} memories from {user_dir.name}")
+
+        except Exception as e:
+            logger.error(f"Error loading user data from {user_dir}: {e}")
 
     async def _save_user_data(self, loom: HoloLoom, user_dir: Path):
-        """Save user data to disk."""
-        # TODO: Implement data saving
-        # This will save graph, embeddings, photos to user_dir
-        pass
+        """
+        Save user data to disk.
+
+        Args:
+            loom: HoloLoom instance to save data from
+            user_dir: User's data directory
+        """
+        graph_file = user_dir / 'graph.json'
+
+        try:
+            # Get all memories from HoloLoom
+            # Note: This is a simplified approach - in production you'd want
+            # to use HoloLoom's built-in serialization if available
+            memories = await loom.recall("")  # Get all memories
+
+            # Prepare data for saving
+            graph_data = {
+                'memories': [
+                    {
+                        'id': f"mem_{i}",
+                        'content': str(mem),
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    for i, mem in enumerate(memories)
+                ],
+                'last_saved': datetime.now().isoformat()
+            }
+
+            # Save to JSON
+            with open(graph_file, 'w') as f:
+                json.dump(graph_data, f, indent=2)
+
+            logger.debug(f"Saved {len(memories)} memories to {user_dir.name}")
+
+        except Exception as e:
+            logger.error(f"Error saving user data to {user_dir}: {e}")
 
     def _sanitize_user_id(self, user_id: str) -> str:
         """
