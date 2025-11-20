@@ -28,7 +28,7 @@ from typing import Dict, Callable, Awaitable, Any, Optional
 from dataclasses import dataclass
 import logging
 
-from HoloLoom.documentation.types import Query, Context
+from HoloLoom.Documentation.types import Query, Context
 
 
 @dataclass

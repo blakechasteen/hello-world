@@ -330,7 +330,7 @@ class MultiHopRAGMixin:
         if self.orchestrator and (sources or paths):
             logger.debug("Generating answer with multi-hop context...")
             try:
-                from HoloLoom.documentation.types import Query
+                from HoloLoom.Documentation.types import Query
                 query_obj = Query(text=question)
                 spacetime = await self.orchestrator.weave(query_obj, use_llm=True)
 

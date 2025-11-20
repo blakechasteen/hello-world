@@ -27,7 +27,7 @@ from HoloLoom.memory.llm_consolidator import (
     create_llm_config,
     create_production_consolidator
 )
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 # ============================================================================

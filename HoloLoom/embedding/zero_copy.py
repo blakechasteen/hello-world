@@ -39,7 +39,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 # Import only from shared types layer
-from HoloLoom.documentation.types import Vector
+from HoloLoom.Documentation.types import Vector
 
 # Optional dependencies
 try:

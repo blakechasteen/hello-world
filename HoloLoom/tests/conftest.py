@@ -22,7 +22,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 # Import HoloLoom types and configs
 from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.documentation.types import Query, MemoryShard, Context, Features
+from HoloLoom.Documentation.types import Query, MemoryShard, Context, Features
 
 
 # =============================================================================

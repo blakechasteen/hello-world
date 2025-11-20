@@ -241,7 +241,7 @@ Example Orchestrator Usage:
 ```python
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from HoloLoom.Documentation.types import Query
 
 # Initialize orchestrator with memory access
 weaver = WeavingOrchestrator(config=Config.fused())

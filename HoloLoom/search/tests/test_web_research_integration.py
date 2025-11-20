@@ -9,7 +9,7 @@ import asyncio
 from typing import List
 from HoloLoom.agentic import WebResearchOrchestrator
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 
 @pytest.fixture

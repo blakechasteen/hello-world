@@ -39,7 +39,7 @@ from enum import Enum
 import json
 from pathlib import Path
 
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 # ============================================================================

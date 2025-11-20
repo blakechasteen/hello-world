@@ -35,7 +35,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 import time
 
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 from HoloLoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,

@@ -27,7 +27,7 @@ from HoloLoom.memory.integrated_memory_system import (
 )
 from HoloLoom.memory.lifecycle_manager import MemoryScope
 from HoloLoom.memory.consolidation import ConsolidationStrategy
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 
 
 # ============================================================================

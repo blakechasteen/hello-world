@@ -45,7 +45,7 @@ import hashlib
 from HoloLoom.spinningWheel.receipt_spinner import ReceiptSpinner, ReceiptData
 from HoloLoom.spinningWheel.schema_registry import SchemaRegistry, SchemaDefinition, FieldMapping
 from HoloLoom.spinningWheel.protocol import SpinResult
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.Documentation.types import MemoryShard
 from HoloLoom.memory.graph import KG, KGEdge
 
 

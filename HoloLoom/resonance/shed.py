@@ -834,7 +834,7 @@ if __name__ == "__main__":
         # Mock extractors
         class MockMotifDetector:
             async def detect(self, text):
-                from HoloLoom.documentation.types import Motif
+                from HoloLoom.Documentation.types import Motif
                 return [
                     Motif(pattern="ALGORITHM", span=(0, 10), score=0.9),
                     Motif(pattern="OPTIMIZATION", span=(10, 20), score=0.8)

@@ -296,6 +296,32 @@ class VerificationCheck:
 
 
 @dataclass
+class DSStarCheck:
+    """
+    DS-STAR verification check (Domain, Sensibility, Temporal, Argument, Reference).
+
+    Implements the DS-STAR framework for comprehensive response verification:
+    - D (Domain): Are sources relevant to query domain?
+    - S (Sensibility): Does answer make logical sense?
+    - T (Temporal): Is information up-to-date?
+    - A (Argument): Is answer supported by sources?
+    - R (Reference): Are sources traceable and credible?
+
+    Example:
+        check = DSStarCheck(
+            dimension="Domain",
+            passed=True,
+            score=0.85,
+            details="Source relevance score: 0.85"
+        )
+    """
+    dimension: str                                   # DS-STAR dimension name
+    passed: bool                                     # Did check pass?
+    score: float                                     # 0-1 check score
+    details: str = ""                                # Human-readable details
+
+
+@dataclass
 class VerificationResult:
     """
     Result of verification (composite of multiple checks).
@@ -312,9 +338,12 @@ class VerificationResult:
             confidence=0.92
         )
     """
+    verified: bool = False                           # All checks passed?
     checks: List[VerificationCheck] = field(default_factory=list)
+    overall_score: float = 0.0                       # Aggregate verification score
     summary: str = ""                                # Overall summary
     confidence: float = 0.0                          # 0-1 confidence in verification
+    recommendations: List[str] = field(default_factory=list)  # Improvement suggestions
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     @property
@@ -727,6 +756,7 @@ __all__ = [
     # Verification
     'VerificationStatus',
     'VerificationCheck',
+    'DSStarCheck',
     'VerificationResult',
 
     # Protocols

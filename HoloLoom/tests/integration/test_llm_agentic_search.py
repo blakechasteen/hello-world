@@ -13,7 +13,7 @@ import asyncio
 import logging
 from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

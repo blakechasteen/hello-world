@@ -30,7 +30,7 @@ from pathlib import Path
 import warnings
 
 try:
-    from HoloLoom.documentation.types import MemoryShard, Query
+    from HoloLoom.Documentation.types import MemoryShard, Query
     from HoloLoom.memory.protocol import Memory, MemoryQuery, RetrievalResult
     from HoloLoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
 except ImportError:

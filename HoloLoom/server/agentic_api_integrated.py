@@ -34,7 +34,7 @@ from pydantic import BaseModel, Field
 # HoloLoom imports
 from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
 from HoloLoom.config import Config, MemoryBackend, Environment
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.Documentation.types import Query, MemoryShard
 from HoloLoom.alignment.audit_trail import AuditTrail
 from HoloLoom.memory.backend_factory import create_memory_backend
 from HoloLoom.memory.protocol import Memory, MemoryQuery
