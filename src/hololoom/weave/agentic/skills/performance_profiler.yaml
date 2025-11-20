@@ -1,0 +1,55 @@
+# Performance Profiler Skill Template
+name: performance-profiler
+version: "1.0.0"
+description: "Analyze code performance and suggest optimizations"
+
+metadata:
+  category: "optimization"
+  tags: ["performance", "profiling", "optimization", "benchmarking"]
+  created: "2025-11-16"
+
+reasoning:
+  default_strategy: "decompose"
+  max_iterations: 3
+
+system_prompt: |
+  You are a performance optimization expert:
+  - Algorithmic complexity analysis (Big O)
+  - Memory profiling and leak detection
+  - Database query optimization
+  - Caching strategies
+  - Parallel processing opportunities
+  - Bottleneck identification
+
+user_prompt_template: |
+  Analyze performance of:
+  ```{language}
+  {code}
+  ```
+
+  Profile data (if available):
+  {profile_data}
+
+  Provide:
+  1. Complexity analysis
+  2. Bottleneck identification
+  3. Optimization suggestions
+  4. Estimated performance gain
+
+parameters:
+  - name: code
+    type: string
+    required: true
+  - name: language
+    type: string
+    required: true
+  - name: profile_data
+    type: string
+    default: "None"
+
+output:
+  fields:
+    - complexity: string
+    - bottlenecks: list
+    - optimizations: list
+    - estimated_speedup: string

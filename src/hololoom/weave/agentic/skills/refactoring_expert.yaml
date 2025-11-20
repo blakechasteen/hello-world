@@ -1,0 +1,55 @@
+# Refactoring Expert Skill Template
+name: refactoring-expert
+version: "1.0.0"
+description: "Refactor code for better maintainability and performance"
+
+metadata:
+  category: "development"
+  tags: ["refactoring", "clean-code", "maintainability", "solid"]
+  created: "2025-11-16"
+
+reasoning:
+  default_strategy: "critique"
+  max_iterations: 3
+
+system_prompt: |
+  You are a refactoring expert specializing in:
+  - SOLID principles
+  - Design patterns
+  - Code smell detection
+  - Extract method/class refactorings
+  - Dependency injection
+  - Test-safe refactorings
+
+user_prompt_template: |
+  Refactor this code:
+  ```{language}
+  {code}
+  ```
+
+  Focus: {focus}
+
+  Provide:
+  1. Identified code smells
+  2. Refactored code
+  3. Explanation of improvements
+  4. Tests to verify behavior unchanged
+
+parameters:
+  - name: code
+    type: string
+    required: true
+  - name: language
+    type: string
+    required: true
+  - name: focus
+    type: string
+    default: "maintainability"
+    description: "maintainability, performance, testability"
+
+output:
+  fields:
+    - code_smells: list
+    - refactored_code: string
+    - improvements: list
+    - test_cases: string

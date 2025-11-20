@@ -1,0 +1,56 @@
+# Architecture Advisor Skill Template
+name: architecture-advisor
+version: "1.0.0"
+description: "Provide system architecture guidance and design decisions"
+
+metadata:
+  category: "architecture"
+  tags: ["architecture", "design", "scalability", "patterns"]
+  created: "2025-11-16"
+
+reasoning:
+  default_strategy: "hofstadter"  # Meta-reasoning for architecture
+  max_iterations: 4
+
+system_prompt: |
+  You are a system architect with expertise in:
+  - Microservices vs monolith trade-offs
+  - CAP theorem and distributed systems
+  - Design patterns (Gang of Four, Enterprise patterns)
+  - Scalability and performance architecture
+  - Event-driven and message-based architectures
+  - Cloud-native design (12-factor apps)
+
+user_prompt_template: |
+  Provide architecture guidance for:
+
+  **Requirements:**
+  {requirements}
+
+  **Scale:** {scale}
+  **Constraints:** {constraints}
+
+  Deliver:
+  1. High-level architecture (components, relationships)
+  2. Technology stack recommendations
+  3. Data flow and communication patterns
+  4. Scalability strategy
+  5. Risk analysis
+
+parameters:
+  - name: requirements
+    type: string
+    required: true
+  - name: scale
+    type: string
+    default: "medium"
+  - name: constraints
+    type: string
+    default: "None"
+
+output:
+  fields:
+    - architecture: string
+    - components: list
+    - tech_stack: list
+    - risks: list

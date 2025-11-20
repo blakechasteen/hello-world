@@ -1,0 +1,371 @@
+"""
+LLM API Endpoints
+=================
+
+FastAPI endpoints for multi-model LLM support.
+
+Features:
+- Model selection
+- Model comparison (A/B testing)
+- Cost tracking
+- Available models listing
+
+Created: 2025-01-20
+"""
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Dict, List, Optional, Any
+import logging
+import asyncio
+
+from HoloLoom.llm import UnifiedLLMClient, LLMConfig, LLMResponse
+from HoloLoom.config import Config
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/llm", tags=["llm"])
+
+# Global LLM client instance
+llm_client: Optional[UnifiedLLMClient] = None
+
+
+def get_llm_client(config: Optional[Config] = None) -> UnifiedLLMClient:
+    """
+    Get or create LLM client instance.
+
+    Args:
+        config: Optional HoloLoom config (uses defaults if not provided)
+
+    Returns:
+        UnifiedLLMClient instance
+    """
+    global llm_client
+
+    if llm_client is None:
+        if config is None:
+            config = Config.fast()
+
+        # Build primary config from HoloLoom config
+        primary = LLMConfig(
+            provider=config.llm_primary_provider,
+            model=config.llm_primary_model,
+            timeout=config.llm_timeout
+        )
+
+        # Build fallback configs
+        fallbacks = []
+        if config.llm_enable_fallback:
+            for provider, model in zip(config.llm_fallback_providers, config.llm_fallback_models):
+                fallbacks.append(LLMConfig(
+                    provider=provider,
+                    model=model,
+                    timeout=config.llm_timeout
+                ))
+
+        llm_client = UnifiedLLMClient(
+            primary=primary,
+            fallbacks=fallbacks,
+            enable_cost_tracking=config.llm_enable_cost_tracking,
+            max_cost_per_query=config.llm_max_cost_per_query
+        )
+
+        logger.info(f"✓ LLM client initialized: {primary.full_name}")
+
+    return llm_client
+
+
+# ============== REQUEST/RESPONSE MODELS ==============
+
+class QueryRequest(BaseModel):
+    """Request for LLM query"""
+    query: str
+    max_tokens: int = 500
+    temperature: float = 0.7
+    model_override: Optional[str] = None  # e.g., "anthropic/claude-3-5-sonnet"
+    system_prompt: Optional[str] = None
+
+
+class QueryResponse(BaseModel):
+    """Response from LLM query"""
+    content: str
+    model: str
+    provider: str
+    input_tokens: int
+    output_tokens: int
+    cost_usd: float
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class CompareRequest(BaseModel):
+    """Request for model comparison"""
+    query: str
+    models: List[str]  # e.g., ["ollama/llama3.2:3b", "anthropic/claude-3-5-sonnet"]
+    max_tokens: int = 500
+    temperature: float = 0.7
+
+
+class CompareResponse(BaseModel):
+    """Response from model comparison"""
+    results: Dict[str, QueryResponse]
+    total_cost_usd: float
+    winner: Optional[str] = None  # Model with best response (if determinable)
+
+
+class ModelInfo(BaseModel):
+    """Information about an available model"""
+    name: str  # e.g., "ollama/llama3.2:3b"
+    provider: str
+    model: str
+    is_free: bool
+    input_cost_per_1m: float  # USD per 1M tokens
+    output_cost_per_1m: float
+    available: bool
+
+
+class CostStatsResponse(BaseModel):
+    """Cost tracking statistics"""
+    total_calls: int
+    total_input_tokens: int
+    total_output_tokens: int
+    total_cost_usd: float
+    avg_cost_per_call: float
+    by_model: Dict[str, Dict[str, Any]]
+
+
+# ============== ENDPOINTS ==============
+
+@router.post("/query", response_model=QueryResponse)
+async def query_llm(request: QueryRequest):
+    """
+    Query an LLM model.
+
+    Uses primary model by default, or override with model_override parameter.
+
+    Args:
+        request: Query request with prompt and parameters
+
+    Returns:
+        Response with generated content and cost information
+    """
+    try:
+        client = get_llm_client()
+
+        # Build kwargs
+        kwargs = {}
+        if request.system_prompt:
+            kwargs["system_prompt"] = request.system_prompt
+
+        # Query LLM
+        response = await client.complete(
+            prompt=request.query,
+            max_tokens=request.max_tokens,
+            temperature=request.temperature,
+            model_override=request.model_override,
+            **kwargs
+        )
+
+        # Build response
+        cost_usd = response.cost_estimate.total_cost_usd if response.cost_estimate else 0.0
+
+        return QueryResponse(
+            content=response.content,
+            model=response.model,
+            provider=response.provider,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens,
+            cost_usd=cost_usd,
+            metadata=response.metadata
+        )
+
+    except Exception as e:
+        logger.error(f"Query failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
+
+
+@router.post("/compare", response_model=CompareResponse)
+async def compare_models(request: CompareRequest):
+    """
+    Compare multiple models on the same prompt.
+
+    Useful for A/B testing and model selection.
+
+    Args:
+        request: Comparison request with prompt and list of models
+
+    Returns:
+        Results from all models with cost breakdown
+    """
+    try:
+        client = get_llm_client()
+
+        # Compare models
+        results = await client.compare_models(
+            prompt=request.query,
+            models=request.models,
+            max_tokens=request.max_tokens,
+            temperature=request.temperature
+        )
+
+        # Build response
+        comparison_results = {}
+        total_cost = 0.0
+
+        for model_name, response in results.items():
+            cost_usd = response.cost_estimate.total_cost_usd if response.cost_estimate else 0.0
+            total_cost += cost_usd
+
+            comparison_results[model_name] = QueryResponse(
+                content=response.content,
+                model=response.model,
+                provider=response.provider,
+                input_tokens=response.input_tokens,
+                output_tokens=response.output_tokens,
+                cost_usd=cost_usd,
+                metadata=response.metadata
+            )
+
+        # Determine "winner" (longest response as simple heuristic)
+        winner = max(
+            comparison_results.items(),
+            key=lambda x: len(x[1].content)
+        )[0] if comparison_results else None
+
+        return CompareResponse(
+            results=comparison_results,
+            total_cost_usd=total_cost,
+            winner=winner
+        )
+
+    except Exception as e:
+        logger.error(f"Comparison failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
+
+
+@router.get("/models", response_model=List[ModelInfo])
+async def list_models():
+    """
+    List all available LLM models.
+
+    Returns:
+        List of model information including pricing and availability
+    """
+    try:
+        from HoloLoom.llm.cost_tracker import ModelPricing
+
+        client = get_llm_client()
+        available_models = client.list_available_models()
+
+        # Build model info list
+        models = []
+
+        # Add all known models from pricing table
+        for model_name, pricing in ModelPricing.PRICING.items():
+            # Skip generic "ollama" entry
+            if model_name == "ollama":
+                continue
+
+            # Determine provider
+            if "claude" in model_name:
+                provider = "anthropic"
+            elif "gpt" in model_name:
+                provider = "openai"
+            elif "gemini" in model_name:
+                provider = "google"
+            else:
+                provider = "ollama"
+
+            full_name = f"{provider}/{model_name}"
+            is_available = full_name in available_models
+
+            models.append(ModelInfo(
+                name=full_name,
+                provider=provider,
+                model=model_name,
+                is_free=ModelPricing.is_free(model_name),
+                input_cost_per_1m=pricing["input"],
+                output_cost_per_1m=pricing["output"],
+                available=is_available
+            ))
+
+        # Sort: available first, then by cost (free first, then cheapest)
+        models.sort(key=lambda m: (
+            not m.available,  # Available models first
+            not m.is_free,    # Free models first within available
+            m.input_cost_per_1m  # Cheapest first within paid
+        ))
+
+        return models
+
+    except Exception as e:
+        logger.error(f"Failed to list models: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to list models: {str(e)}")
+
+
+@router.get("/cost-stats", response_model=CostStatsResponse)
+async def get_cost_stats():
+    """
+    Get cost tracking statistics.
+
+    Returns:
+        Statistics about token usage and costs across all queries
+    """
+    try:
+        client = get_llm_client()
+        stats = client.get_cost_statistics()
+
+        if stats is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Cost tracking not enabled"
+            )
+
+        return CostStatsResponse(**stats)
+
+    except Exception as e:
+        logger.error(f"Failed to get cost stats: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get cost stats: {str(e)}")
+
+
+@router.post("/cost-stats/reset")
+async def reset_cost_stats():
+    """
+    Reset cost tracking statistics.
+
+    Returns:
+        Success message
+    """
+    try:
+        client = get_llm_client()
+        client.reset_cost_tracking()
+        return {"status": "success", "message": "Cost statistics reset"}
+
+    except Exception as e:
+        logger.error(f"Failed to reset cost stats: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to reset cost stats: {str(e)}")
+
+
+@router.get("/health")
+async def health_check():
+    """
+    Health check endpoint.
+
+    Returns:
+        Health status and available models count
+    """
+    try:
+        client = get_llm_client()
+        available = client.list_available_models()
+
+        return {
+            "status": "healthy",
+            "available_models": len(available),
+            "models": available
+        }
+
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }

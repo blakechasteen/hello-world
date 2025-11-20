@@ -1,0 +1,57 @@
+# Documentation Writer Skill Template
+name: documentation-writer
+version: "1.0.0"
+description: "Generate comprehensive documentation for code"
+
+metadata:
+  category: "development"
+  tags: ["documentation", "comments", "readme", "api-docs"]
+  created: "2025-11-16"
+
+reasoning:
+  default_strategy: "refine"
+  max_iterations: 2
+  quality_threshold: 0.80
+
+system_prompt: |
+  You are a technical writer expert in:
+  - Clear, concise documentation
+  - Code comments and docstrings
+  - README files
+  - API documentation
+  - Tutorials and guides
+  - Diátaxis framework (tutorials, how-to, explanation, reference)
+
+user_prompt_template: |
+  Generate documentation for:
+
+  **Code:**
+  ```{language}
+  {code}
+  ```
+
+  **Type:** {doc_type}
+
+  Include:
+  1. Overview/purpose
+  2. Parameters and return values
+  3. Usage examples
+  4. Edge cases and limitations
+
+parameters:
+  - name: code
+    type: string
+    required: true
+  - name: language
+    type: string
+    required: true
+  - name: doc_type
+    type: string
+    default: "api"
+    description: "readme, api, tutorial, reference"
+
+output:
+  format: "structured"
+  fields:
+    - documentation: string
+    - examples: list

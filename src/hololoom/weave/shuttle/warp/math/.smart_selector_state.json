@@ -1,0 +1,333 @@
+{
+  "learner_stats": {
+    "('inner_product', 'similarity')": {
+      "operation_name": "inner_product",
+      "intent": "similarity",
+      "successes": 3,
+      "failures": 0,
+      "total_cost_spent": 3,
+      "avg_execution_time": 0.0
+    },
+    "('metric_distance', 'similarity')": {
+      "operation_name": "metric_distance",
+      "intent": "similarity",
+      "successes": 2,
+      "failures": 0,
+      "total_cost_spent": 2,
+      "avg_execution_time": 0.0
+    },
+    "('hyperbolic_distance', 'similarity')": {
+      "operation_name": "hyperbolic_distance",
+      "intent": "similarity",
+      "successes": 3,
+      "failures": 0,
+      "total_cost_spent": 15,
+      "avg_execution_time": 0.0
+    },
+    "('kl_divergence', 'similarity')": {
+      "operation_name": "kl_divergence",
+      "intent": "similarity",
+      "successes": 3,
+      "failures": 0,
+      "total_cost_spent": 9,
+      "avg_execution_time": 0.0
+    },
+    "('gradient', 'similarity')": {
+      "operation_name": "gradient",
+      "intent": "similarity",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('gram_schmidt', 'similarity')": {
+      "operation_name": "gram_schmidt",
+      "intent": "similarity",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('geodesic', 'similarity')": {
+      "operation_name": "geodesic",
+      "intent": "similarity",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('thompson_sampling', 'similarity')": {
+      "operation_name": "thompson_sampling",
+      "intent": "similarity",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('ricci_flow', 'similarity')": {
+      "operation_name": "ricci_flow",
+      "intent": "similarity",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('gradient', 'optimization')": {
+      "operation_name": "gradient",
+      "intent": "optimization",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('gram_schmidt', 'optimization')": {
+      "operation_name": "gram_schmidt",
+      "intent": "optimization",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 8,
+      "avg_execution_time": 0.0
+    },
+    "('geodesic', 'optimization')": {
+      "operation_name": "geodesic",
+      "intent": "optimization",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('thompson_sampling', 'optimization')": {
+      "operation_name": "thompson_sampling",
+      "intent": "optimization",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 3,
+      "avg_execution_time": 0.0
+    },
+    "('ricci_flow', 'optimization')": {
+      "operation_name": "ricci_flow",
+      "intent": "optimization",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('inner_product', 'analysis')": {
+      "operation_name": "inner_product",
+      "intent": "analysis",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 1,
+      "avg_execution_time": 0.0
+    },
+    "('norm', 'analysis')": {
+      "operation_name": "norm",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('gradient', 'analysis')": {
+      "operation_name": "gradient",
+      "intent": "analysis",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 5,
+      "avg_execution_time": 0.0
+    },
+    "('svd', 'analysis')": {
+      "operation_name": "svd",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('eigenvalues', 'analysis')": {
+      "operation_name": "eigenvalues",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('laplacian', 'analysis')": {
+      "operation_name": "laplacian",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('fourier_transform', 'analysis')": {
+      "operation_name": "fourier_transform",
+      "intent": "analysis",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 10,
+      "avg_execution_time": 0.0
+    },
+    "('hyperbolic_distance', 'analysis')": {
+      "operation_name": "hyperbolic_distance",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('geodesic', 'analysis')": {
+      "operation_name": "geodesic",
+      "intent": "analysis",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 20,
+      "avg_execution_time": 0.0
+    },
+    "('entropy', 'analysis')": {
+      "operation_name": "entropy",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('kl_divergence', 'analysis')": {
+      "operation_name": "kl_divergence",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('spectral_clustering', 'analysis')": {
+      "operation_name": "spectral_clustering",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('metric_verification', 'analysis')": {
+      "operation_name": "metric_verification",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('continuity_check', 'analysis')": {
+      "operation_name": "continuity_check",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('convergence_analysis', 'analysis')": {
+      "operation_name": "convergence_analysis",
+      "intent": "analysis",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('norm', 'verification')": {
+      "operation_name": "norm",
+      "intent": "verification",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('metric_distance', 'verification')": {
+      "operation_name": "metric_distance",
+      "intent": "verification",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('eigenvalues', 'verification')": {
+      "operation_name": "eigenvalues",
+      "intent": "verification",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('metric_verification', 'verification')": {
+      "operation_name": "metric_verification",
+      "intent": "verification",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 8,
+      "avg_execution_time": 0.0
+    },
+    "('continuity_check', 'verification')": {
+      "operation_name": "continuity_check",
+      "intent": "verification",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 10,
+      "avg_execution_time": 0.0
+    },
+    "('convergence_analysis', 'verification')": {
+      "operation_name": "convergence_analysis",
+      "intent": "verification",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 5,
+      "avg_execution_time": 0.0
+    },
+    "('svd', 'transformation')": {
+      "operation_name": "svd",
+      "intent": "transformation",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('gram_schmidt', 'transformation')": {
+      "operation_name": "gram_schmidt",
+      "intent": "transformation",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('laplacian', 'transformation')": {
+      "operation_name": "laplacian",
+      "intent": "transformation",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 12,
+      "avg_execution_time": 0.0
+    },
+    "('fourier_transform', 'transformation')": {
+      "operation_name": "fourier_transform",
+      "intent": "transformation",
+      "successes": 1,
+      "failures": 0,
+      "total_cost_spent": 10,
+      "avg_execution_time": 0.0
+    },
+    "('ricci_flow', 'transformation')": {
+      "operation_name": "ricci_flow",
+      "intent": "transformation",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    },
+    "('spectral_clustering', 'transformation')": {
+      "operation_name": "spectral_clustering",
+      "intent": "transformation",
+      "successes": 0,
+      "failures": 0,
+      "total_cost_spent": 0,
+      "avg_execution_time": 0.0
+    }
+  },
+  "test_history": []
+}

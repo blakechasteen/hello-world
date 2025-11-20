@@ -1,0 +1,31 @@
+# Optional Dependencies for Alignment Framework Production Services
+# =========================================================================
+#
+# These dependencies are optional and only needed for specific features:
+#
+# 1. Prometheus Metrics Server (prometheus_server.py)
+#    - Requires: flask
+#
+# 2. Matrix.org ChatOps (matrix_chatops.py)
+#    - Webhook mode: requests (likely already installed)
+#    - Bot mode: matrix-nio
+#
+# 3. Live Dashboard (live_monitor.py)
+#    - No additional dependencies (uses stdlib only)
+#
+# Install all optional dependencies:
+#   pip install -r requirements-optional.txt
+#
+# Or install selectively:
+#   pip install flask                    # Prometheus server
+#   pip install requests                 # Matrix webhook mode
+#   pip install matrix-nio               # Matrix bot mode (advanced)
+
+# Prometheus Metrics Server
+flask>=3.0.0
+
+# Matrix ChatOps (webhook mode)
+requests>=2.28.0
+
+# Matrix ChatOps (bot mode - optional, for advanced features)
+# matrix-nio>=0.20.0  # Uncomment if using bot mode

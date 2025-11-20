@@ -68,7 +68,7 @@ all = [
 ]
 
 [project.scripts]
-hololoom = "HoloLoom.cli:main"
+hololoom = "hololoom.cli:main"
 
 # ============================================================================
 # Black Configuration
@@ -107,7 +107,7 @@ use_parentheses = true
 ensure_newline_before_comments = true
 skip_gitignore = true
 skip = [".venv", "build", "dist", ".tox"]
-known_first_party = ["HoloLoom"]
+known_first_party = ["hololoom"]
 known_third_party = ["torch", "numpy", "gymnasium", "spacy", "networkx", "pytest"]
 
 # ============================================================================
@@ -187,7 +187,7 @@ ignore_missing_imports = true
 # pytest Configuration
 # ============================================================================
 [tool.pytest.ini_options]
-testpaths = ["HoloLoom/tests", "tests"]
+testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
@@ -210,7 +210,7 @@ markers = [
 # Coverage Configuration
 # ============================================================================
 [tool.coverage.run]
-source = ["HoloLoom"]
+source = ["src/hololoom"]
 omit = [
     "*/tests/*",
     "*/test_*.py",
@@ -240,11 +240,13 @@ skip_covered = false
 # Build Configuration
 # ============================================================================
 [tool.setuptools]
-packages = ["HoloLoom"]
 include-package-data = true
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.setuptools.package-data]
-HoloLoom = [
+hololoom = [
     "*.md",
     "config/*.yaml",
     "visualization/*.css",

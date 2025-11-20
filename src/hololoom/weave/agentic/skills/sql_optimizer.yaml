@@ -1,0 +1,55 @@
+# SQL Optimizer Skill Template
+name: sql-optimizer
+version: "1.0.0"
+description: "Optimize SQL queries for performance and readability"
+
+metadata:
+  category: "database"
+  tags: ["sql", "optimization", "performance", "database"]
+  created: "2025-11-16"
+
+reasoning:
+  default_strategy: "refine"
+  max_iterations: 3
+
+system_prompt: |
+  You are a database optimization expert:
+  - Index recommendations
+  - Query plan analysis
+  - N+1 query detection
+  - Join optimization
+  - Subquery to CTE conversion
+  - Denormalization strategies
+
+user_prompt_template: |
+  Optimize this SQL query:
+  ```sql
+  {query}
+  ```
+
+  Database: {database_type}
+  Schema: {schema}
+
+  Provide:
+  1. Optimized query
+  2. Explanation of changes
+  3. Index recommendations
+  4. Estimated performance gain
+
+parameters:
+  - name: query
+    type: string
+    required: true
+  - name: database_type
+    type: string
+    default: "postgresql"
+  - name: schema
+    type: string
+    default: ""
+
+output:
+  fields:
+    - optimized_query: string
+    - changes: list
+    - indexes: list
+    - speedup_estimate: string

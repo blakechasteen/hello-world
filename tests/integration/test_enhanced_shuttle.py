@@ -11,7 +11,7 @@ from HoloLoom.protocols import ComplexityLevel, ProvenceTrace
 from HoloLoom.config import Config
 from HoloLoom.Documentation.types import Query, MemoryShard
 
-async def test_enhanced_shuttle():
+async def _run_enhanced_shuttle() -> None:
     """Test the enhanced WeavingShuttle with complexity detection."""
     
     print("=" * 80)
@@ -152,5 +152,9 @@ async def test_enhanced_shuttle():
     print()
     print("Ready for production use!")
 
+def test_enhanced_shuttle() -> None:
+    asyncio.run(_run_enhanced_shuttle())
+
+
 if __name__ == "__main__":
-    asyncio.run(test_enhanced_shuttle())
+    asyncio.run(_run_enhanced_shuttle())
