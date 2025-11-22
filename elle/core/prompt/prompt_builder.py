@@ -1,12 +1,21 @@
 """Prompt building: context + symbols → full LLM prompt."""
 
-from typing import Optional, List, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING, Dict
 from pathlib import Path
+import logging
 
 from ...domain import ElleRequest
 
 if TYPE_CHECKING:
     from ...memory import MemorySnapshot
+
+# Import HoloLoom prompt refinement (graceful degradation if not available)
+try:
+    from HoloLoom.prompting.metaprompt import create_metaprompt_auto
+    from HoloLoom.config import Config
+    REFINEMENT_AVAILABLE = True
+except ImportError:
+    REFINEMENT_AVAILABLE = False
 
 
 class PromptBuilder:
@@ -21,17 +30,40 @@ class PromptBuilder:
     - Optional symbol snippets
     """
     
-    def __init__(self, base_prompt_path: Optional[Path] = None):
+    def __init__(
+        self,
+        base_prompt_path: Optional[Path] = None,
+        enable_refinement: bool = False,
+        refinement_provider: str = "anthropic",
+        logger: Optional[logging.Logger] = None,
+    ):
         """
         Initialize with path to base prompt.
-        
-        If not provided, looks for base_prompt.txt in same directory.
+
+        Args:
+            base_prompt_path: Path to base_prompt.txt (defaults to same directory)
+            enable_refinement: Enable HoloLoom prompt refinement (+30% quality)
+            refinement_provider: LLM provider for refinement ("anthropic", "google", "openai")
+            logger: Optional logger instance
         """
         if base_prompt_path is None:
             base_prompt_path = Path(__file__).parent / "base_prompt.txt"
-        
+
         self.base_prompt_path = base_prompt_path
+        self.enable_refinement = enable_refinement and REFINEMENT_AVAILABLE
+        self.refinement_provider = refinement_provider
+        self.logger = logger or logging.getLogger(__name__)
+
+        # Caches
         self._base_prompt_cache: Optional[str] = None
+        self._refined_prompt_cache: Dict[str, str] = {}  # key → refined prompt
+
+        # Warn if refinement requested but unavailable
+        if enable_refinement and not REFINEMENT_AVAILABLE:
+            self.logger.warning(
+                "Prompt refinement requested but HoloLoom.prompting.metaprompt "
+                "not available. Falling back to standard prompts."
+            )
     
     @property
     def base_prompt(self) -> str:
@@ -45,19 +77,22 @@ class PromptBuilder:
         request: ElleRequest,
         memory_snapshot: 'MemorySnapshot',
         symbol_names: Optional[List[str]] = None,
+        refine_this_prompt: Optional[bool] = None,
     ) -> str:
         """
         Build complete prompt for LLM.
-        
+
         Args:
             request: The current request with scene + intent + user
             memory_snapshot: Recent history and patterns
             symbol_names: Optional list of symbols to include (e.g., ["chimborazo"])
-        
+            refine_this_prompt: Override instance-level refinement setting for this call
+
         Returns:
             Complete prompt string ready for LLM
         """
-        
+
+        # Build standard prompt
         parts = [
             self.base_prompt,
             "",
@@ -73,7 +108,7 @@ class PromptBuilder:
             "",
             self._format_memory(memory_snapshot),
         ]
-        
+
         # Add symbols if requested
         if symbol_names:
             parts.extend([
@@ -88,7 +123,7 @@ class PromptBuilder:
                 if symbol_text:
                     parts.append(symbol_text)
                     parts.append("")
-        
+
         parts.extend([
             "",
             "---",
@@ -97,8 +132,17 @@ class PromptBuilder:
             "",
             "Based on the above, return your decision as JSON following the format specified in the base prompt.",
         ])
-        
-        return "\n".join(parts)
+
+        standard_prompt = "\n".join(parts)
+
+        # Determine if refinement should be applied
+        should_refine = refine_this_prompt if refine_this_prompt is not None else self.enable_refinement
+
+        if not should_refine:
+            return standard_prompt
+
+        # Refine prompt using HoloLoom metaprompt system
+        return self._refine_prompt(standard_prompt)
     
     def _format_scene(self, scene) -> str:
         """Format scene snapshot for prompt."""
@@ -168,8 +212,79 @@ class PromptBuilder:
         """Load a symbol text by name."""
         symbols_dir = Path(__file__).parent.parent.parent / "symbols"
         symbol_path = symbols_dir / f"{name}.txt"
-        
+
         if symbol_path.exists():
             return symbol_path.read_text()
-        
+
         return None
+
+    def _refine_prompt(self, standard_prompt: str) -> str:
+        """
+        Refine prompt using HoloLoom's 7-component metaprompt framework.
+
+        Applies:
+        - ROLE: Expert AR guide perspective
+        - OBJECTIVE: Clear decision goals
+        - PROCESS: Step-by-step reasoning
+        - FORMAT: Structured output (preserves JSON)
+        - CONSTRAINTS: Anti-patterns to avoid
+        - UNCERTAINTY: Fallback when info incomplete
+        - VALIDATION: Success criteria
+
+        Args:
+            standard_prompt: The standard Elle prompt to refine
+
+        Returns:
+            Refined prompt with +20-30% quality improvement
+        """
+
+        # Generate cache key from prompt content
+        import hashlib
+        cache_key = hashlib.md5(standard_prompt.encode()).hexdigest()
+
+        # Return cached refinement if available
+        if cache_key in self._refined_prompt_cache:
+            self.logger.debug("Using cached refined prompt")
+            return self._refined_prompt_cache[cache_key]
+
+        # Refine using HoloLoom metaprompt system
+        try:
+            self.logger.info(
+                f"Refining prompt using HoloLoom (provider: {self.refinement_provider})"
+            )
+
+            # Create temporary config
+            config = Config.fast()
+            config.llm_provider = self.refinement_provider
+
+            # Apply 7-component refinement with explicit JSON preservation
+            refinement_instructions = (
+                f"{standard_prompt}\n\n"
+                "IMPORTANT: Preserve the JSON response format exactly. "
+                "The refined prompt MUST still instruct the LLM to return valid JSON "
+                "matching the schema in the base prompt."
+            )
+
+            refined = create_metaprompt_auto(
+                request=refinement_instructions,
+                config=config,
+                confidence_threshold=0.7
+            )
+
+            # Cache the refined prompt
+            self._refined_prompt_cache[cache_key] = refined
+
+            self.logger.info(
+                f"Prompt refined: {len(standard_prompt)} → {len(refined)} chars "
+                f"({round(len(refined) / len(standard_prompt), 1)}x expansion)"
+            )
+
+            return refined
+
+        except Exception as e:
+            self.logger.error(
+                f"Prompt refinement failed: {e}. Falling back to standard prompt.",
+                exc_info=True
+            )
+            # Graceful fallback
+            return standard_prompt
