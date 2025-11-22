@@ -98,7 +98,8 @@ class UnifiedMemory:
         enable_mem0: bool = True,
         enable_neo4j: bool = True,
         enable_qdrant: bool = True,
-        enable_hofstadter: bool = True
+        enable_hofstadter: bool = True,
+        backend: Optional[Any] = None
     ):
         """
         Initialize unified memory system.
@@ -106,17 +107,33 @@ class UnifiedMemory:
         Args:
             user_id: User identifier for personalization
             enable_*: Feature flags for each subsystem
+            backend: Optional explicit backend store (dependency injection)
         """
         self.user_id = user_id
         
-        # Initialize subsystems based on config
-        # (Implementation details hidden from user)
-        self._init_subsystems(
-            enable_mem0,
-            enable_neo4j,
-            enable_qdrant,
-            enable_hofstadter
-        )
+        if backend:
+            # Use injected backend
+            self._backend = backend
+            self._backend_available = True
+            
+            # Import protocol types needed for operation
+            try:
+                from .protocol import Memory as ProtocolMemory, MemoryQuery, Strategy as ProtocolStrategy
+                self._protocol_memory = ProtocolMemory
+                self._protocol_query = MemoryQuery
+                self._protocol_strategy = ProtocolStrategy
+            except ImportError:
+                # Fallback if imports fail
+                self._backend_available = False
+        else:
+            # Initialize subsystems based on config
+            # (Implementation details hidden from user)
+            self._init_subsystems(
+                enable_mem0,
+                enable_neo4j,
+                enable_qdrant,
+                enable_hofstadter
+            )
     
     def _init_subsystems(self, *flags):
         """Initialize backend systems (internal)."""
@@ -293,14 +310,32 @@ class UnifiedMemory:
                 direction=NavigationDirection.BACKWARD
             )
         """
-        # Behind the scenes uses:
-        # - FORWARD: Hofstadter G-sequence
-        # - BACKWARD: Hofstadter H-sequence
-        # - SIDEWAYS: Graph neighbors + Q-sequence
-        # - DEEP: Strange loop detection
+        # Check if backend has graph access
+        if not self._backend_available or not self._backend:
+            return []
 
-        # User just thinks spatially!
-        # TODO: Implement actual navigation
+        if not hasattr(self._backend, 'graph'):
+            return []
+
+        graph = self._backend.graph
+
+        # Check if from_memory exists in graph
+        if not hasattr(graph, 'G'):
+            return []
+
+        if from_memory not in graph.G.nodes():
+            return []
+
+        # Navigate based on direction
+        if direction == NavigationDirection.FORWARD:
+            return self._navigate_forward(from_memory, steps, graph)
+        elif direction == NavigationDirection.BACKWARD:
+            return self._navigate_backward(from_memory, steps, graph)
+        elif direction == NavigationDirection.SIDEWAYS:
+            return self._navigate_sideways(from_memory, steps, graph)
+        elif direction == NavigationDirection.DEEP:
+            return self._navigate_deep(from_memory, steps, graph)
+
         return []
     
     def discover_patterns(
@@ -467,26 +502,412 @@ class UnifiedMemory:
         except Exception as e:
             # Graceful fallback
             return []
-    
+
+    def _navigate_forward(self, start_node: str, steps: int, graph) -> List[Memory]:
+        """Navigate forward following successors (what comes next)."""
+        from datetime import datetime
+
+        path = []
+        visited = {start_node}
+        current = start_node
+
+        for _ in range(steps):
+            # Get successors (nodes this points to)
+            successors = list(graph.G.successors(current))
+
+            # Filter out already visited
+            unvisited = [s for s in successors if s not in visited]
+
+            if not unvisited:
+                break
+
+            # Take first unvisited (could be randomized or weighted)
+            next_node = unvisited[0]
+            visited.add(next_node)
+
+            # Convert to Memory
+            memory = Memory(
+                id=next_node,
+                text=next_node,  # Placeholder - would fetch actual text
+                timestamp=datetime.now().isoformat(),
+                context={'direction': 'forward', 'step': len(path) + 1}
+            )
+            path.append(memory)
+            current = next_node
+
+        return path
+
+    def _navigate_backward(self, start_node: str, steps: int, graph) -> List[Memory]:
+        """Navigate backward following predecessors (what led to this)."""
+        from datetime import datetime
+
+        path = []
+        visited = {start_node}
+        current = start_node
+
+        for _ in range(steps):
+            # Get predecessors (nodes that point to this)
+            predecessors = list(graph.G.predecessors(current))
+
+            # Filter out already visited
+            unvisited = [p for p in predecessors if p not in visited]
+
+            if not unvisited:
+                break
+
+            # Take first unvisited
+            next_node = unvisited[0]
+            visited.add(next_node)
+
+            # Convert to Memory
+            memory = Memory(
+                id=next_node,
+                text=next_node,
+                timestamp=datetime.now().isoformat(),
+                context={'direction': 'backward', 'step': len(path) + 1}
+            )
+            path.append(memory)
+            current = next_node
+
+        return path
+
+    def _navigate_sideways(self, start_node: str, steps: int, graph) -> List[Memory]:
+        """Navigate sideways to related but different nodes (siblings)."""
+        from datetime import datetime
+
+        path = []
+        visited = {start_node}
+
+        # Sideways = nodes at same "level" (share parent or child)
+        # Get all neighbors (successors + predecessors) then filter
+        successors = set(graph.G.successors(start_node))
+        predecessors = set(graph.G.predecessors(start_node))
+
+        # Find "siblings" - nodes that share connections with start_node
+        siblings = set()
+
+        # Nodes that share parent (have same predecessor)
+        for pred in predecessors:
+            siblings.update(s for s in graph.G.successors(pred) if s != start_node)
+
+        # Nodes that share child (have same successor)
+        for succ in successors:
+            siblings.update(p for p in graph.G.predecessors(succ) if p != start_node)
+
+        # Convert to list and limit
+        sibling_list = list(siblings - visited)[:steps]
+
+        for i, node in enumerate(sibling_list):
+            memory = Memory(
+                id=node,
+                text=node,
+                timestamp=datetime.now().isoformat(),
+                context={'direction': 'sideways', 'step': i + 1}
+            )
+            path.append(memory)
+
+        return path
+
+    def _navigate_deep(self, start_node: str, steps: int, graph) -> List[Memory]:
+        """Navigate deep - explore cycles and strange loops from this node."""
+        import networkx as nx
+        from datetime import datetime
+
+        path = []
+
+        # Find all simple cycles that include start_node
+        try:
+            # NetworkX simple_cycles finds all cycles
+            all_cycles = list(nx.simple_cycles(graph.G))
+
+            # Filter cycles that include start_node
+            relevant_cycles = [c for c in all_cycles if start_node in c]
+
+            # Take nodes from cycles (up to steps limit)
+            cycle_nodes = []
+            for cycle in relevant_cycles:
+                # Add nodes from this cycle
+                for node in cycle:
+                    if node != start_node and node not in cycle_nodes:
+                        cycle_nodes.append(node)
+                        if len(cycle_nodes) >= steps:
+                            break
+                if len(cycle_nodes) >= steps:
+                    break
+
+            # Convert to Memory objects
+            for i, node in enumerate(cycle_nodes[:steps]):
+                memory = Memory(
+                    id=node,
+                    text=node,
+                    timestamp=datetime.now().isoformat(),
+                    context={'direction': 'deep', 'step': i + 1, 'in_cycle': True}
+                )
+                path.append(memory)
+
+        except Exception:
+            # If cycle detection fails, fall back to BFS exploration
+            visited = {start_node}
+            queue = [(start_node, 0)]  # (node, depth)
+
+            while queue and len(path) < steps:
+                current, depth = queue.pop(0)
+
+                # Explore neighbors at current depth
+                for neighbor in list(graph.G.successors(current)) + list(graph.G.predecessors(current)):
+                    if neighbor not in visited:
+                        visited.add(neighbor)
+                        queue.append((neighbor, depth + 1))
+
+                        memory = Memory(
+                            id=neighbor,
+                            text=neighbor,
+                            timestamp=datetime.now().isoformat(),
+                            context={'direction': 'deep', 'step': len(path) + 1, 'depth': depth + 1}
+                        )
+                        path.append(memory)
+
+                        if len(path) >= steps:
+                            break
+
+        return path
+
     def _find_strange_loops(self, min_strength) -> List[MemoryPattern]:
         """Detect strange loops using cycle detection."""
-        # TODO: Implement actual loop detection
-        return []
+        if not self._backend_available or not self._backend:
+            return []
+
+        if not hasattr(self._backend, 'graph'):
+            return []
+
+        graph = self._backend.graph
+
+        if not hasattr(graph, 'G'):
+            return []
+
+        import networkx as nx
+
+        patterns = []
+
+        try:
+            # Find all simple cycles in the graph
+            all_cycles = list(nx.simple_cycles(graph.G))
+
+            for cycle in all_cycles:
+                # Calculate loop strength based on cycle length and edge weights
+                # Shorter loops = stronger (more concentrated pattern)
+                length_strength = 1.0 / max(len(cycle), 1)
+
+                # Average edge weight in cycle
+                edge_weights = []
+                for i in range(len(cycle)):
+                    src = cycle[i]
+                    dst = cycle[(i + 1) % len(cycle)]
+                    if graph.G.has_edge(src, dst):
+                        # Get edge data
+                        edges = graph.G.get_edge_data(src, dst)
+                        if edges:
+                            # MultiDiGraph can have multiple edges
+                            weights = [e.get('weight', 1.0) for e in edges.values()]
+                            edge_weights.append(max(weights))
+
+                avg_weight = sum(edge_weights) / max(len(edge_weights), 1) if edge_weights else 0.5
+
+                # Combined strength
+                strength = (length_strength + avg_weight) / 2.0
+
+                if strength >= min_strength:
+                    patterns.append(MemoryPattern(
+                        pattern_type="loop",
+                        memories=cycle,
+                        strength=strength,
+                        description=f"Strange loop of {len(cycle)} memories: {' → '.join(cycle[:3])}..."
+                    ))
+
+        except Exception:
+            # Graceful fallback
+            pass
+
+        return patterns
 
     def _find_clusters(self, min_strength) -> List[MemoryPattern]:
-        """Detect clusters using spectral analysis."""
-        # TODO: Implement actual cluster detection
-        return []
+        """Detect clusters using community detection."""
+        if not self._backend_available or not self._backend:
+            return []
+
+        if not hasattr(self._backend, 'graph'):
+            return []
+
+        graph = self._backend.graph
+
+        if not hasattr(graph, 'G'):
+            return []
+
+        import networkx as nx
+
+        patterns = []
+
+        try:
+            # Convert to undirected for community detection
+            G_undirected = graph.G.to_undirected()
+
+            if len(G_undirected.nodes()) < 2:
+                return []
+
+            # Use greedy modularity communities (fast, no external deps)
+            communities = nx.community.greedy_modularity_communities(G_undirected)
+
+            for i, community in enumerate(communities):
+                community_list = list(community)
+
+                # Calculate cluster strength based on internal vs external connections
+                internal_edges = 0
+                external_edges = 0
+
+                for node in community:
+                    for neighbor in graph.G.neighbors(node):
+                        if neighbor in community:
+                            internal_edges += 1
+                        else:
+                            external_edges += 1
+
+                total_edges = internal_edges + external_edges
+                if total_edges == 0:
+                    strength = 0.5
+                else:
+                    strength = internal_edges / total_edges
+
+                if strength >= min_strength and len(community_list) >= 2:
+                    patterns.append(MemoryPattern(
+                        pattern_type="cluster",
+                        memories=community_list,
+                        strength=strength,
+                        description=f"Memory cluster of {len(community_list)} tightly connected memories"
+                    ))
+
+        except Exception:
+            # Graceful fallback
+            pass
+
+        return patterns
 
     def _find_resonances(self, min_strength) -> List[MemoryPattern]:
-        """Detect resonances using Hofstadter indices."""
-        # TODO: Implement actual resonance detection
+        """Detect resonances using activation patterns."""
+        if not self._backend_available or not self._backend:
+            return []
+
+        # Check if backend has awareness graph for activation tracking
+        if hasattr(self._backend, 'awareness_graph'):
+            awareness = self._backend.awareness_graph
+
+            # Get highly activated nodes (resonating memories)
+            try:
+                activated_nodes = []
+
+                for node_id in awareness.graph.nodes():
+                    node_data = awareness.graph.nodes.get(node_id, {})
+                    activation = node_data.get('activation', 0.0)
+
+                    if activation >= min_strength:
+                        activated_nodes.append((node_id, activation))
+
+                # Sort by activation level
+                activated_nodes.sort(key=lambda x: x[1], reverse=True)
+
+                if len(activated_nodes) >= 2:
+                    # Create resonance pattern
+                    node_ids = [n[0] for n in activated_nodes[:10]]  # Top 10
+                    avg_activation = sum(n[1] for n in activated_nodes[:10]) / len(activated_nodes[:10])
+
+                    return [MemoryPattern(
+                        pattern_type="resonance",
+                        memories=node_ids,
+                        strength=avg_activation,
+                        description=f"Resonance pattern: {len(node_ids)} highly activated memories"
+                    )]
+
+            except Exception:
+                pass
+
         return []
 
     def _find_threads(self, min_strength) -> List[MemoryPattern]:
-        """Detect narrative threads using Neo4j."""
-        # TODO: Implement actual thread detection
-        return []
+        """Detect narrative threads using temporal/causal edges."""
+        if not self._backend_available or not self._backend:
+            return []
+
+        if not hasattr(self._backend, 'graph'):
+            return []
+
+        graph = self._backend.graph
+
+        if not hasattr(graph, 'G'):
+            return []
+
+        patterns = []
+
+        try:
+            # Find longest paths using LEADS_TO edges
+            # Start from nodes with no predecessors (story beginnings)
+            roots = [n for n in graph.G.nodes() if graph.G.in_degree(n) == 0]
+
+            if not roots:
+                # If no clear roots, use nodes with low in-degree
+                roots = sorted(graph.G.nodes(), key=lambda n: graph.G.in_degree(n))[:5]
+
+            for root in roots:
+                # DFS to find longest path from this root
+                visited = set()
+                path = []
+
+                def dfs(node, current_path):
+                    nonlocal path
+                    visited.add(node)
+                    current_path.append(node)
+
+                    # Check for LEADS_TO edges
+                    successors = []
+                    for succ in graph.G.successors(node):
+                        if succ not in visited:
+                            # Check if edge type is LEADS_TO or temporal
+                            edges = graph.G.get_edge_data(node, succ)
+                            if edges:
+                                for edge_data in edges.values():
+                                    edge_type = edge_data.get('type', '')
+                                    if 'LEADS_TO' in edge_type or 'OCCURRED' in edge_type:
+                                        successors.append(succ)
+                                        break
+
+                    if not successors:
+                        # Leaf node - check if path is long enough
+                        if len(current_path) > len(path):
+                            path = current_path.copy()
+                    else:
+                        for succ in successors:
+                            dfs(succ, current_path)
+
+                    current_path.pop()
+                    visited.remove(node)
+
+                dfs(root, [])
+
+                if len(path) >= 3:  # Minimum thread length
+                    # Calculate strength based on path continuity
+                    strength = min(1.0, len(path) / 10.0)  # Longer = stronger
+
+                    if strength >= min_strength:
+                        patterns.append(MemoryPattern(
+                            pattern_type="thread",
+                            memories=path,
+                            strength=strength,
+                            description=f"Narrative thread: {len(path)} connected memories from {path[0]} to {path[-1]}"
+                        ))
+
+        except Exception:
+            # Graceful fallback
+            pass
+
+        return patterns
 
     def _get_memory_by_id(self, memory_id: str) -> Memory:
         """Internal: Fetch memory by ID."""
