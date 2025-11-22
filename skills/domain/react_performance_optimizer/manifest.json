@@ -1,0 +1,23 @@
+{
+  "format_version": "1.0",
+  "skill": {
+    "name": "react_performance_optimizer",
+    "version": "1.0.0",
+    "author": "HoloLoom Team",
+    "category": "domain",
+    "tags": [
+      "react",
+      "performance",
+      "optimization",
+      "frontend"
+    ],
+    "description": "Identifies React anti-patterns and performance bottlenecks, providing optimized code examples and measurable improvement strategies.",
+    "capabilities": [],
+    "dependencies": []
+  },
+  "package": {
+    "created_at": "2025-11-22T18:00:12.091588",
+    "source_path": "skills\\domain\\react_performance_optimizer",
+    "builder_version": "1.0.0"
+  }
+}

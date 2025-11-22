@@ -1,0 +1,23 @@
+{
+  "format_version": "1.0",
+  "skill": {
+    "name": "sql_query_optimizer",
+    "version": "1.0.0",
+    "author": "HoloLoom Team",
+    "category": "domain",
+    "tags": [
+      "sql",
+      "database",
+      "performance",
+      "optimization"
+    ],
+    "description": "Analyzes SQL queries for performance issues and provides optimized alternatives with index recommendations and execution plan insights.",
+    "capabilities": [],
+    "dependencies": []
+  },
+  "package": {
+    "created_at": "2025-11-22T18:00:12.121107",
+    "source_path": "skills\\domain\\sql_query_optimizer",
+    "builder_version": "1.0.0"
+  }
+}

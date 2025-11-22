@@ -1,0 +1,112 @@
+name: Validate Skills
+
+on:
+  push:
+    paths:
+      - 'skills/**'
+      - 'scripts/**'
+  pull_request:
+    paths:
+      - 'skills/**'
+      - 'scripts/**'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate All Skills
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # No external dependencies for now
+
+      - name: Validate all skills
+        run: |
+          python scripts/validate_all_skills.py --json > validation_results.json
+          cat validation_results.json
+
+      - name: Check validation status
+        run: |
+          # Exit with error if any skills failed
+          python scripts/validate_all_skills.py
+
+      - name: Upload validation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-results
+          path: validation_results.json
+
+  package:
+    name: Package Skills
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Package all skills
+        run: |
+          python scripts/build_skill.py --all
+
+      - name: Upload packaged skills
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-skills
+          path: skills/dist/*.skill
+
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: package
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Download packaged skills
+        uses: actions/download-artifact@v4
+        with:
+          name: packaged-skills
+          path: skills/dist
+
+      - name: Create deployment preview comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const skills = fs.readdirSync('skills/dist').filter(f => f.endsWith('.skill'));
+
+            const comment = `
+            ## 📦 Skill Package Preview
+
+            This PR packages ${skills.length} skill(s):
+
+            ${skills.map(s => `- \`${s}\``).join('\n')}
+
+            **Next Steps:**
+            - Review skill.markdown files
+            - Test skills locally
+            - Merge to deploy to \`skills/dist/\`
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

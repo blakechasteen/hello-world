@@ -1,0 +1,23 @@
+{
+  "format_version": "1.0",
+  "skill": {
+    "name": "typescript_error_explainer",
+    "version": "1.0.0",
+    "author": "HoloLoom Team",
+    "category": "domain",
+    "tags": [
+      "typescript",
+      "errors",
+      "debugging",
+      "compiler"
+    ],
+    "description": "Decodes cryptic TypeScript compiler errors into human-readable explanations with context-aware fix suggestions and related error patterns.",
+    "capabilities": [],
+    "dependencies": []
+  },
+  "package": {
+    "created_at": "2025-11-22T18:00:12.144631",
+    "source_path": "skills\\domain\\typescript_error_explainer",
+    "builder_version": "1.0.0"
+  }
+}

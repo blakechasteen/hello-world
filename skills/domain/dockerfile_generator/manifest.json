@@ -1,0 +1,25 @@
+{
+  "format_version": "1.0",
+  "skill": {
+    "name": "dockerfile_generator",
+    "version": "1.0.0",
+    "author": "HoloLoom Team",
+    "category": "domain",
+    "tags": [
+      "docker",
+      "devops",
+      "containerization",
+      "deployment"
+    ],
+    "description": "Generates production-ready Dockerfiles and docker-compose.yml files from project structure analysis with best practices and multi-stage builds.",
+    "capabilities": [
+      "File system access (read)"
+    ],
+    "dependencies": []
+  },
+  "package": {
+    "created_at": "2025-11-22T18:00:12.018710",
+    "source_path": "skills\\domain\\dockerfile_generator",
+    "builder_version": "1.0.0"
+  }
+}
