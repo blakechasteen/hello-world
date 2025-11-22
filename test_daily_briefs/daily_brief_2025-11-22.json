@@ -1,6 +1,6 @@
 {
   "date": "2025-11-22",
-  "summary": "# COZ Daily Intelligence Brief\n**Generated**: 2025-11-22 05:01\n\n## Financial Overview\n\n## Customer Insights\n- **Total Customers**: 0\n- **Avg Orders/Customer**: 0.0\n\n## Key Recommendations\n1. \ud83d\udcc9 Low sellthrough (0.0%). Reduce batch sizes.\n2. \ud83d\udcc8 Low repeat orders. Implement loyalty program.",
+  "summary": "# COZ Daily Intelligence Brief\n**Generated**: 2025-11-22 05:09\n\n## Financial Overview\n\n## Customer Insights\n- **Total Customers**: 0\n- **Avg Orders/Customer**: 0.0\n\n## Key Recommendations\n1. \ud83d\udcc9 Low sellthrough (0.0%). Reduce batch sizes.\n2. \ud83d\udcc8 Low repeat orders. Implement loyalty program.",
   "profit": {
     "error": "'FinancialsParser' object has no attribute 'get_revenue_summary'"
   },

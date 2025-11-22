@@ -1,5 +1,5 @@
 # COZ Daily Intelligence Brief
-**Generated**: 2025-11-22 05:01
+**Generated**: 2025-11-22 05:09
 
 ## Financial Overview
 
