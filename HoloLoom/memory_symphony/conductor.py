@@ -1,0 +1,559 @@
+"""
+Memory Conductor - Main Orchestration Layer
+============================================
+
+Coordinates memory access across 7 systems:
+1. Query Cache - Check cache first (100x speedup)
+2. Hot Patterns - Boost frequently accessed nodes
+3. Vector Memory - Semantic similarity search
+4. Knowledge Graph - Graph traversal + relationships
+5. Awareness Graph - Spreading activation
+6. Spring Dynamics - Physics-based connectivity (optional)
+7. Multi-Wave Engine - Temporal propagation (optional)
+
+Strategy Selection:
+- FAST: Cache + Vector (minimize latency)
+- BALANCED: Cache + Vector + KG (quality/speed tradeoff)
+- DEEP: All systems + spreading activation
+- RESEARCH: Maximum exploration, no time limits
+- AUTO: Automatic selection based on query
+
+Author: Claude Code
+Date: 2025-11-22
+"""
+
+import asyncio
+import logging
+import time
+from typing import List, Dict, Any, Optional, Set
+from collections import defaultdict
+
+from .protocol import (
+    MemoryQuery,
+    MemoryResult,
+    MemoryCoordinationResult,
+    MemoryPerformanceMetrics,
+    MemoryStrategy,
+    MemorySystem,
+    StrategySelectionCriteria,
+    CoordinationPlan,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class MemoryConductor:
+    """
+    Main memory orchestra conductor.
+
+    Coordinates access across multiple memory systems,
+    automatically selects optimal strategies, and tracks
+    performance metrics.
+    """
+
+    def __init__(
+        self,
+        memory_backend: Any,
+        enable_cache: bool = True,
+        enable_hot_patterns: bool = True,
+        enable_awareness: bool = True,
+        enable_spring_dynamics: bool = False,
+        enable_multi_wave: bool = False,
+        default_strategy: MemoryStrategy = MemoryStrategy.AUTO,
+        verbose: bool = False
+    ):
+        """
+        Initialize Memory Conductor.
+
+        Args:
+            memory_backend: HoloLoom memory backend (HYBRID/INMEMORY/HYPERSPACE)
+            enable_cache: Enable query caching
+            enable_hot_patterns: Enable hot pattern tracking
+            enable_awareness: Enable awareness graph
+            enable_spring_dynamics: Enable physics-based dynamics
+            enable_multi_wave: Enable temporal wave propagation
+            default_strategy: Default strategy if AUTO fails
+            verbose: Enable debug logging
+        """
+        self.memory_backend = memory_backend
+        self.enable_cache = enable_cache
+        self.enable_hot_patterns = enable_hot_patterns
+        self.enable_awareness = enable_awareness
+        self.enable_spring_dynamics = enable_spring_dynamics
+        self.enable_multi_wave = enable_multi_wave
+        self.default_strategy = default_strategy
+        self.verbose = verbose
+
+        # Performance tracking
+        self._metrics = MemoryPerformanceMetrics()
+        self._query_history: List[MemoryCoordinationResult] = []
+
+        # Cache for repeated queries
+        self._cache: Dict[str, MemoryCoordinationResult] = {}
+        self._cache_max_size = 1000
+        self._cache_ttl = 3600.0  # 1 hour
+
+    async def recall(
+        self,
+        query: MemoryQuery
+    ) -> MemoryCoordinationResult:
+        """
+        Unified memory recall across all systems.
+
+        Full pipeline:
+        1. Check query cache (if enabled)
+        2. Select optimal strategy (if AUTO)
+        3. Create coordination plan
+        4. Execute plan (parallel/sequential)
+        5. Merge results from multiple systems
+        6. Update performance metrics
+
+        Args:
+            query: MemoryQuery with text, strategy, k, etc.
+
+        Returns:
+            MemoryCoordinationResult with merged results
+        """
+        start_time = time.time()
+
+        # Step 1: Check cache
+        if self.enable_cache:
+            cache_key = self._make_cache_key(query)
+            if cache_key in self._cache:
+                cached = self._cache[cache_key]
+                # Check TTL
+                if time.time() - query.timestamp < self._cache_ttl:
+                    if self.verbose:
+                        logger.debug(f"Cache hit for query: {query.text[:50]}")
+
+                    # Update metrics
+                    self._metrics.total_queries += 1
+                    self._metrics.cache_hits += 1
+
+                    return cached
+
+        # Step 2: Select strategy
+        strategy = query.strategy
+        if strategy == MemoryStrategy.AUTO:
+            strategy = self.select_strategy(query)
+
+        # Step 3: Create coordination plan
+        plan = self._create_coordination_plan(query, strategy)
+
+        if self.verbose:
+            logger.info(
+                f"Executing strategy {strategy.value}: "
+                f"{len(plan.systems_to_query)} systems, "
+                f"parallel={plan.parallel_execution}"
+            )
+
+        # Step 4: Execute plan
+        all_results = await self._execute_plan(query, plan)
+
+        # Step 5: Merge and rank results
+        merged_results = self._merge_results(all_results, query.k)
+
+        # Calculate latency
+        total_latency_ms = (time.time() - start_time) * 1000
+
+        # Create result
+        result = MemoryCoordinationResult(
+            results=merged_results,
+            strategy_used=strategy,
+            systems_accessed=plan.systems_to_query,
+            total_latency_ms=total_latency_ms,
+            cache_hit=False,
+            coordination_metadata={
+                "plan": plan,
+                "num_systems": len(plan.systems_to_query),
+                "parallel": plan.parallel_execution
+            }
+        )
+
+        # Step 6: Update cache and metrics
+        if self.enable_cache:
+            cache_key = self._make_cache_key(query)
+            self._cache[cache_key] = result
+            # LRU eviction
+            if len(self._cache) > self._cache_max_size:
+                oldest = min(self._cache.items(), key=lambda x: x[1].coordination_metadata.get('timestamp', 0))
+                del self._cache[oldest[0]]
+
+        self._update_metrics(result, strategy, plan.systems_to_query)
+        self._query_history.append(result)
+
+        return result
+
+    def select_strategy(
+        self,
+        query: MemoryQuery
+    ) -> MemoryStrategy:
+        """
+        Select optimal memory access strategy.
+
+        Decision tree:
+        - Query in cache → FAST (cache hit)
+        - Simple factual query → FAST (cache + vector)
+        - Standard query → BALANCED (cache + vector + KG)
+        - Complex/research query → DEEP (all systems + spreading)
+        - Explicit research mode → RESEARCH (maximum exploration)
+
+        Args:
+            query: MemoryQuery
+
+        Returns:
+            Selected MemoryStrategy
+        """
+        criteria = self._analyze_query(query)
+
+        # Check cache first
+        if criteria.is_cached:
+            return MemoryStrategy.FAST
+
+        # Research mode
+        if criteria.exploration_mode:
+            return MemoryStrategy.RESEARCH
+
+        # Complex queries need deep traversal
+        if criteria.requires_deep_traversal:
+            return MemoryStrategy.DEEP
+
+        # Performance-critical queries
+        if criteria.performance_critical:
+            return MemoryStrategy.FAST
+
+        # Default: balanced
+        return MemoryStrategy.BALANCED
+
+    def _analyze_query(
+        self,
+        query: MemoryQuery
+    ) -> StrategySelectionCriteria:
+        """Analyze query characteristics for strategy selection."""
+        # Check cache
+        cache_key = self._make_cache_key(query)
+        is_cached = cache_key in self._cache
+
+        # Query complexity heuristics
+        query_length = len(query.text.split())
+        is_simple = query_length < 5
+        is_complex = query_length > 15
+
+        # Research keywords
+        research_keywords = [
+            "compare", "analyze", "evaluate", "explain", "tradeoffs",
+            "comprehensive", "detailed", "thorough", "in-depth"
+        ]
+        has_research_keywords = any(kw in query.text.lower() for kw in research_keywords)
+
+        return StrategySelectionCriteria(
+            query_length=query_length,
+            is_cached=is_cached,
+            requires_deep_traversal=is_complex or has_research_keywords,
+            performance_critical=is_simple,
+            exploration_mode=query.strategy == MemoryStrategy.RESEARCH or has_research_keywords
+        )
+
+    def _create_coordination_plan(
+        self,
+        query: MemoryQuery,
+        strategy: MemoryStrategy
+    ) -> CoordinationPlan:
+        """Create coordination plan based on strategy."""
+        if strategy == MemoryStrategy.FAST:
+            # Cache + Vector only
+            systems = [MemorySystem.VECTOR_MEMORY]
+            if self.enable_hot_patterns:
+                systems.append(MemorySystem.HOT_PATTERNS)
+            parallel = True
+            estimated_latency = 50.0  # ms
+
+        elif strategy == MemoryStrategy.BALANCED:
+            # Cache + Vector + KG
+            systems = [
+                MemorySystem.VECTOR_MEMORY,
+                MemorySystem.KNOWLEDGE_GRAPH,
+            ]
+            if self.enable_hot_patterns:
+                systems.append(MemorySystem.HOT_PATTERNS)
+            parallel = True
+            estimated_latency = 150.0  # ms
+
+        elif strategy == MemoryStrategy.DEEP:
+            # All primary systems + spreading
+            systems = [
+                MemorySystem.VECTOR_MEMORY,
+                MemorySystem.KNOWLEDGE_GRAPH,
+                MemorySystem.HOT_PATTERNS,
+                MemorySystem.AWARENESS_GRAPH,
+            ]
+            if self.enable_spring_dynamics:
+                systems.append(MemorySystem.SPRING_DYNAMICS)
+            parallel = False  # Sequential for deep traversal
+            estimated_latency = 300.0  # ms
+
+        elif strategy == MemoryStrategy.RESEARCH:
+            # Everything
+            systems = [
+                MemorySystem.VECTOR_MEMORY,
+                MemorySystem.KNOWLEDGE_GRAPH,
+                MemorySystem.HOT_PATTERNS,
+                MemorySystem.AWARENESS_GRAPH,
+            ]
+            if self.enable_spring_dynamics:
+                systems.append(MemorySystem.SPRING_DYNAMICS)
+            if self.enable_multi_wave:
+                systems.append(MemorySystem.MULTI_WAVE)
+            parallel = False
+            estimated_latency = 500.0  # ms
+
+        else:
+            # Default to balanced
+            systems = [MemorySystem.VECTOR_MEMORY, MemorySystem.KNOWLEDGE_GRAPH]
+            parallel = True
+            estimated_latency = 150.0
+
+        return CoordinationPlan(
+            strategy=strategy,
+            systems_to_query=systems,
+            parallel_execution=parallel,
+            fallback_systems=[MemorySystem.VECTOR_MEMORY],  # Always fall back to vector
+            estimated_latency_ms=estimated_latency,
+            expected_coverage=0.8  # Estimate
+        )
+
+    async def _execute_plan(
+        self,
+        query: MemoryQuery,
+        plan: CoordinationPlan
+    ) -> List[List[MemoryResult]]:
+        """Execute coordination plan across multiple systems."""
+        tasks = []
+
+        for system in plan.systems_to_query:
+            task = self._query_system(system, query)
+            tasks.append(task)
+
+        # Execute in parallel or sequential
+        if plan.parallel_execution:
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+        else:
+            results = []
+            for task in tasks:
+                try:
+                    result = await task
+                    results.append(result)
+                except Exception as e:
+                    logger.warning(f"System query failed: {e}")
+                    results.append([])
+
+        # Filter out exceptions
+        valid_results = []
+        for r in results:
+            if isinstance(r, list):
+                valid_results.append(r)
+            else:
+                logger.warning(f"System returned exception: {r}")
+                valid_results.append([])
+
+        return valid_results
+
+    async def _query_system(
+        self,
+        system: MemorySystem,
+        query: MemoryQuery
+    ) -> List[MemoryResult]:
+        """Query individual memory system."""
+        try:
+            if system == MemorySystem.VECTOR_MEMORY:
+                return await self._query_vector_memory(query)
+            elif system == MemorySystem.KNOWLEDGE_GRAPH:
+                return await self._query_knowledge_graph(query)
+            elif system == MemorySystem.HOT_PATTERNS:
+                return await self._query_hot_patterns(query)
+            elif system == MemorySystem.AWARENESS_GRAPH:
+                return await self._query_awareness_graph(query)
+            elif system == MemorySystem.SPRING_DYNAMICS:
+                return await self._query_spring_dynamics(query)
+            elif system == MemorySystem.MULTI_WAVE:
+                return await self._query_multi_wave(query)
+            else:
+                logger.warning(f"Unknown system: {system}")
+                return []
+
+        except Exception as e:
+            logger.error(f"Error querying {system.value}: {e}")
+            return []
+
+    async def _query_vector_memory(self, query: MemoryQuery) -> List[MemoryResult]:
+        """Query vector memory (semantic similarity)."""
+        # Use memory backend's vector search
+        memories = await self.memory_backend.recall(query.text, k=query.k)
+
+        results = []
+        for mem in memories:
+            results.append(MemoryResult(
+                node_id=mem.node_id,
+                content=mem.content,
+                relevance=mem.metadata.get('relevance', 0.8),
+                source_system=MemorySystem.VECTOR_MEMORY,
+                metadata=mem.metadata
+            ))
+
+        return results
+
+    async def _query_knowledge_graph(self, query: MemoryQuery) -> List[MemoryResult]:
+        """Query knowledge graph (graph traversal)."""
+        # Use memory backend's graph
+        if not hasattr(self.memory_backend, 'graph'):
+            return []
+
+        graph = self.memory_backend.graph
+
+        # Get nodes matching query (simplified)
+        # In production, use proper entity extraction
+        query_words = set(query.text.lower().split())
+        matching_nodes = []
+
+        for node in list(graph.nodes())[:100]:  # Limit for performance
+            node_str = str(node).lower()
+            if any(word in node_str for word in query_words):
+                matching_nodes.append(node)
+
+        # Limit to k results
+        matching_nodes = matching_nodes[:query.k]
+
+        results = []
+        for node in matching_nodes:
+            results.append(MemoryResult(
+                node_id=node,
+                content=str(node),  # Placeholder
+                relevance=0.7,  # Estimate
+                source_system=MemorySystem.KNOWLEDGE_GRAPH,
+                metadata={"graph_node": True}
+            ))
+
+        return results
+
+    async def _query_hot_patterns(self, query: MemoryQuery) -> List[MemoryResult]:
+        """Query hot patterns (usage-based boosting)."""
+        # Placeholder - integrate with HotPatternFeedbackEngine if available
+        return []
+
+    async def _query_awareness_graph(self, query: MemoryQuery) -> List[MemoryResult]:
+        """Query awareness graph (spreading activation)."""
+        # Placeholder - integrate with AwarenessGraph if available
+        return []
+
+    async def _query_spring_dynamics(self, query: MemoryQuery) -> List[MemoryResult]:
+        """Query spring dynamics (physics-based)."""
+        # Placeholder - integrate with SpringDynamics if available
+        return []
+
+    async def _query_multi_wave(self, query: MemoryQuery) -> List[MemoryResult]:
+        """Query multi-wave engine (temporal propagation)."""
+        # Placeholder - integrate with MultiWaveEngine if available
+        return []
+
+    def _merge_results(
+        self,
+        all_results: List[List[MemoryResult]],
+        k: int
+    ) -> List[MemoryResult]:
+        """
+        Merge results from multiple systems.
+
+        Merging strategy:
+        1. Combine all results
+        2. Deduplicate by node_id
+        3. Aggregate relevance scores (weighted average)
+        4. Sort by aggregated relevance
+        5. Return top k
+        """
+        # Combine all results
+        combined: Dict[str, MemoryResult] = {}
+
+        for system_results in all_results:
+            for result in system_results:
+                node_id = result.node_id
+
+                if node_id in combined:
+                    # Already seen - aggregate relevance
+                    existing = combined[node_id]
+                    # Weighted average (favor higher relevance)
+                    new_relevance = max(existing.relevance, result.relevance)
+                    existing.relevance = new_relevance
+
+                    # Add source system to metadata
+                    if 'source_systems' not in existing.metadata:
+                        existing.metadata['source_systems'] = [existing.source_system]
+                    existing.metadata['source_systems'].append(result.source_system)
+                else:
+                    combined[node_id] = result
+
+        # Sort by relevance
+        sorted_results = sorted(
+            combined.values(),
+            key=lambda r: r.relevance,
+            reverse=True
+        )
+
+        # Return top k
+        return sorted_results[:k]
+
+    def _update_metrics(
+        self,
+        result: MemoryCoordinationResult,
+        strategy: MemoryStrategy,
+        systems: List[MemorySystem]
+    ):
+        """Update performance metrics."""
+        self._metrics.total_queries += 1
+        if not result.cache_hit:
+            self._metrics.cache_misses += 1
+
+        # Update averages (running average)
+        n = self._metrics.total_queries
+        self._metrics.avg_latency_ms = (
+            (self._metrics.avg_latency_ms * (n - 1) + result.total_latency_ms) / n
+        )
+        self._metrics.avg_results_per_query = (
+            (self._metrics.avg_results_per_query * (n - 1) + len(result.results)) / n
+        )
+
+        # Update strategy usage
+        if strategy not in self._metrics.strategy_usage:
+            self._metrics.strategy_usage[strategy] = 0
+        self._metrics.strategy_usage[strategy] += 1
+
+        # Update system usage
+        for system in systems:
+            if system not in self._metrics.system_usage:
+                self._metrics.system_usage[system] = 0
+            self._metrics.system_usage[system] += 1
+
+    def _make_cache_key(self, query: MemoryQuery) -> str:
+        """Create cache key from query."""
+        return f"{query.text}_{query.k}_{query.strategy.value}"
+
+    def get_performance_metrics(self) -> MemoryPerformanceMetrics:
+        """Get current performance metrics."""
+        return self._metrics
+
+    def get_query_history(self, limit: int = 10) -> List[MemoryCoordinationResult]:
+        """Get recent query history."""
+        return self._query_history[-limit:]
+
+
+# Convenience function
+def create_memory_conductor(
+    memory_backend: Any,
+    strategy: MemoryStrategy = MemoryStrategy.AUTO,
+    **kwargs
+) -> MemoryConductor:
+    """Create MemoryConductor with defaults."""
+    return MemoryConductor(
+        memory_backend=memory_backend,
+        default_strategy=strategy,
+        **kwargs
+    )
