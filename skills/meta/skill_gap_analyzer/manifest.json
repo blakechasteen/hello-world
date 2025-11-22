@@ -1,0 +1,28 @@
+{
+  "format_version": "1.0",
+  "skill": {
+    "name": "skill_gap_analyzer",
+    "version": "1.0.0",
+    "author": "HoloLoom Team",
+    "category": "meta",
+    "tags": [
+      "analysis",
+      "gaps",
+      "recommendations",
+      "meta-skill",
+      "continuous-improvement"
+    ],
+    "description": "Identifies missing skills by analyzing user requests, existing skill catalog, and common failure patterns to recommend new skills to build.",
+    "capabilities": [
+      "File system access (read) - to read existing skills and logs",
+      "File system access (write) - to write gap analysis reports",
+      "User interaction (questions) - for clarifying skill requirements"
+    ],
+    "dependencies": []
+  },
+  "package": {
+    "created_at": "2025-11-18T05:29:28.210805",
+    "source_path": "skills/meta/skill_gap_analyzer",
+    "builder_version": "1.0.0"
+  }
+}
