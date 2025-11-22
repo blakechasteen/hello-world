@@ -85,14 +85,15 @@ class CommandGrammarParser:
 
         # Thread operation patterns
         self.thread_patterns = {
-            # "thread 3", "t3", "#3", "baking" (single word only)
+            # "thread 3", "t3", "#3", "baking" (single word or 2-word phrase)
             CommandType.THREAD_SWITCH: [
                 re.compile(r"^thread\s+(\d+)$", re.IGNORECASE),
                 re.compile(r"^t(\d+)$", re.IGNORECASE),
                 re.compile(r"^#(\d+)$"),
-                # Fuzzy name match: single word or short phrase (max 3 words)
-                re.compile(r"^([a-zA-Z][a-zA-Z0-9_]{0,20})$"),  # Single word: "baking", "biochar"
-                re.compile(r"^([a-zA-Z][a-zA-Z0-9_\s]{0,30})$"),  # Short phrase: "baking bread" (max ~3 words)
+                # Fuzzy name match: single word
+                re.compile(r"^([a-zA-Z][a-zA-Z0-9_]{0,20})$"),  # "baking", "biochar"
+                # 2-word phrase (word + space + word)
+                re.compile(r"^([a-zA-Z][a-zA-Z0-9_]+\s[a-zA-Z][a-zA-Z0-9_]+)$"),  # "baking bread"
             ],
             # "threads", "ts", "list"
             CommandType.THREAD_LIST: re.compile(r"^(threads|ts|list)$", re.IGNORECASE),

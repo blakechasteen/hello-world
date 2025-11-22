@@ -121,7 +121,6 @@ __all__ = [
     'ShuttleConfig',
     'ShuttleMode',
     'validate_config',
-    'get_preset_config',
 
     # Exceptions
     'ShuttleError',

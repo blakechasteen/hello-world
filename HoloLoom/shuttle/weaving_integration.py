@@ -350,12 +350,12 @@ class ShuttleStage:
             mode=shuttle_mode,
             mcts_simulations=32 if config.mode == ExecutionMode.FUSED else 16,
             mcts_timeout_ms=5000 if config.mode == ExecutionMode.FUSED else 2000,
-            warp_top_k=config.retrieval_top_k,
+            warp_top_k=config.retrieval_k,
             max_graph_depth=2 if config.mode == ExecutionMode.FUSED else 1,
             max_graph_nodes=40 if config.mode == ExecutionMode.FUSED else 20,
             enable_graceful_degradation=True,
             enable_entity_extraction=True,
-            entity_extraction_method="auto",  # spaCy → regex → payload
+            entity_extraction_method="spacy",  # spaCy with fallback to regex → payload
         )
 
         return shuttle_config

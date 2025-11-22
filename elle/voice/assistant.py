@@ -12,6 +12,7 @@ from pathlib import Path
 
 from elle.voice.whisper_stt import WhisperSTT
 from elle.voice.llm_parser import LLMParser, ParsedCommand
+from elle.voice.command_parser import CommandGrammarParser, StructuredCommand, CommandType
 from elle.voice.tts import TextToSpeech, VoiceGender
 from elle.voice.wake_word import WakeWordDetector
 from elle.voice.threads import ThreadManager
@@ -53,7 +54,8 @@ class VoiceAssistant:
 
         # Initialize components
         self.stt = WhisperSTT(model=whisper_model)
-        self.parser = LLMParser(use_llm=use_llm_parser)
+        self.parser = LLMParser(use_llm=use_llm_parser)  # Milestone 1: Conversational
+        self.command_parser = CommandGrammarParser()  # Milestone 2: Command Mode
         self.tts = TextToSpeech(rate=tts_rate, voice_gender=VoiceGender.FEMALE)
         self.wake_detector = WakeWordDetector()
         self.editor = VoiceSOPEditor(sop_dir=sop_dir)
@@ -62,6 +64,7 @@ class VoiceAssistant:
         # Session state
         self.is_listening = False
         self.context = {}
+        self.command_mode = True  # Milestone 2: Default to Command Mode (concise)
 
     async def initialize(self):
         """Initialize assistant (loads SOPs, initializes RAG, etc.)"""
@@ -73,6 +76,9 @@ class VoiceAssistant:
     async def process_voice_input(self, text: str) -> str:
         """
         Process voice input: parse and execute command
+
+        Milestone 1: Conversational Mode (natural language)
+        Milestone 2: Command Mode (structured shortcuts)
 
         Args:
             text: Transcribed voice text
@@ -86,40 +92,119 @@ class VoiceAssistant:
         # Store user message in active thread
         self.thread_manager.add_message_to_active("user", text)
 
-        # Parse command
+        # Try Command Mode first (Milestone 2)
+        if self.command_mode:
+            commands = self.command_parser.parse(text)
+
+            # Handle command chaining (t3; run analyze)
+            if len(commands) > 1:
+                responses = []
+                for cmd in commands:
+                    resp = await self._handle_structured_command(cmd)
+                    if resp:
+                        responses.append(resp)
+                response = ". ".join(responses) if responses else "Done"
+            else:
+                # Single command
+                cmd = commands[0]
+
+                # Check if fallback to conversational mode
+                if cmd.command_type == CommandType.CONVERSATIONAL:
+                    # Switch to conversational parser
+                    response = await self._handle_conversational(text)
+                else:
+                    # Handle structured command
+                    response = await self._handle_structured_command(cmd)
+        else:
+            # Conversational Mode only (Milestone 1)
+            response = await self._handle_conversational(text)
+
+        # Store assistant response in active thread
+        self.thread_manager.add_message_to_active("assistant", response)
+
+        return response
+
+    async def _handle_conversational(self, text: str) -> str:
+        """Handle conversational mode (Milestone 1)"""
         command = self.parser.parse(text)
 
         if self.verbose:
-            print(f"Parsed command: {command.command_type}")
+            print(f"[Conversational] Parsed: {command.command_type}")
             print(f"  Confidence: {command.confidence:.1%}")
-            print(f"  Entity: {command.entity}")
-            print(f"  Intent: {command.intent}")
 
-        # Handle thread commands
+        # Handle thread commands (Milestone 1 syntax)
         if command.command_type == "thread_create":
-            response = self._handle_thread_create(command)
+            return self._handle_thread_create(command)
         elif command.command_type == "thread_switch":
-            response = self._handle_thread_switch(command)
+            return self._handle_thread_switch(command)
         elif command.command_type == "thread_list":
-            response = self._handle_thread_list(command)
+            return self._handle_thread_list(command)
         elif command.command_type == "thread_summarize":
-            response = self._handle_thread_summarize(command)
+            return self._handle_thread_summarize(command)
         # Handle unknown commands
         elif command.command_type == "unknown":
-            response = "I didn't understand that command. Try 'show bread SOP', 'start a new thread', or 'list my threads'."
+            return "I didn't understand that command. Try 't3' or 'threads'."
         # Process other commands through voice SOP editor
         else:
             try:
                 # Get thread context (recent messages) for better query understanding
                 thread_context = self._get_thread_context()
                 response = await self.editor.process_voice_command(text, thread_context=thread_context)
+                return response
             except Exception as e:
-                response = f"Error processing command: {str(e)}"
+                return f"Error processing command: {str(e)}"
 
-        # Store assistant response in active thread
-        self.thread_manager.add_message_to_active("assistant", response)
+    async def _handle_structured_command(self, cmd: StructuredCommand) -> str:
+        """
+        Handle structured command (Milestone 2)
 
-        return response
+        Args:
+            cmd: StructuredCommand from CommandGrammarParser
+
+        Returns:
+            Response text (brief, <500ms)
+        """
+        if self.verbose:
+            print(f"[Command Mode] {cmd.command_type.value} {cmd.parameters}")
+
+        # Navigation commands
+        if cmd.command_type == CommandType.BACK:
+            return self._handle_nav_back()
+        elif cmd.command_type == CommandType.NEXT:
+            return self._handle_nav_next()
+        elif cmd.command_type == CommandType.HOME:
+            return self._handle_nav_home()
+
+        # Thread operations
+        elif cmd.command_type == CommandType.THREAD_SWITCH:
+            return self._handle_thread_switch_structured(cmd)
+        elif cmd.command_type == CommandType.THREAD_LIST:
+            return self._handle_thread_list_structured(cmd)
+        elif cmd.command_type == CommandType.THREAD_CREATE:
+            return self._handle_thread_create_structured(cmd)
+        elif cmd.command_type == CommandType.THREAD_DELETE:
+            return self._handle_thread_delete(cmd)
+
+        # Task operations
+        elif cmd.command_type == CommandType.TASK_RUN:
+            return await self._handle_task_run(cmd)
+        elif cmd.command_type == CommandType.TASK_STOP:
+            return self._handle_task_stop()
+        elif cmd.command_type == CommandType.TASK_PAUSE:
+            return self._handle_task_pause()
+        elif cmd.command_type == CommandType.TASK_RESUME:
+            return self._handle_task_resume()
+        elif cmd.command_type == CommandType.TASK_STATUS:
+            return self._handle_task_status()
+
+        # Query operations
+        elif cmd.command_type == CommandType.ENTITY_LOOKUP:
+            return await self._handle_entity_lookup(cmd)
+        elif cmd.command_type == CommandType.SEARCH:
+            return await self._handle_search(cmd)
+
+        else:
+            return "Unknown command"
 
     def _handle_thread_create(self, command: ParsedCommand) -> str:
         """Handle thread creation command"""

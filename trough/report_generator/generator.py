@@ -159,9 +159,67 @@ def _convert_windows_path_to_vscode(path: str) -> str:
             return f"vscode://file/{path}"
 
 
-def _generate_css() -> str:
-    """Generate embedded CSS for the report."""
-    return """
+def _minify_css(css: str) -> str:
+    """
+    Minify CSS by removing whitespace and comments.
+
+    Args:
+        css: CSS string to minify
+
+    Returns:
+        Minified CSS
+    """
+    import re
+
+    # Remove comments
+    css = re.sub(r'/\*.*?\*/', '', css, flags=re.DOTALL)
+
+    # Remove whitespace
+    css = re.sub(r'\s+', ' ', css)
+    css = re.sub(r'\s*([{}:;,>+~])\s*', r'\1', css)
+
+    return css.strip()
+
+
+def _minify_javascript(js: str) -> str:
+    """
+    Minify JavaScript by removing whitespace and comments.
+
+    Note: This is a basic minifier. For production, use a proper tool like `rjsmin`.
+
+    Args:
+        js: JavaScript string to minify
+
+    Returns:
+        Minified JavaScript
+    """
+    import re
+
+    # Remove single-line comments
+    js = re.sub(r'//.*?$', '', js, flags=re.MULTILINE)
+
+    # Remove multi-line comments
+    js = re.sub(r'/\*.*?\*/', '', js, flags=re.DOTALL)
+
+    # Remove unnecessary whitespace
+    js = re.sub(r'\s+', ' ', js)
+
+    # Remove spaces around operators (but keep spaces after keywords)
+    js = re.sub(r'\s*([{}()[\]:;,=+\-*/])\s*', r'\1', js)
+
+    # Restore spaces after keywords for readability
+    js = re.sub(r'(if|else|for|while|function|return|const|let|var)\(', r'\1 (', js)
+
+    return js.strip()
+
+
+def _generate_css(minify: bool = False) -> str:
+    """Generate embedded CSS for the report.
+
+    Args:
+        minify: If True, minimize CSS to reduce file size
+    """
+    css = """
     <style>
     * {
         margin: 0;
@@ -696,10 +754,22 @@ def _generate_css() -> str:
     </style>
     """
 
+    if minify:
+        # Extract CSS content without style tags
+        css_content = css.replace('<style>', '').replace('</style>', '')
+        minified = _minify_css(css_content)
+        return f"<style>{minified}</style>"
+    return css
 
-def _generate_javascript() -> str:
-    """Generate embedded JavaScript for interactivity."""
-    return """
+
+def _generate_javascript(minify: bool = False, enable_virtualization: bool = False) -> str:
+    """Generate embedded JavaScript for interactivity.
+
+    Args:
+        minify: If True, minimize JavaScript to reduce file size
+        enable_virtualization: If True, enable virtualization for large lists (100+ findings)
+    """
+    js = """
     <script>
     // Initialize application state
     let findings = [];
@@ -999,13 +1069,22 @@ def _generate_javascript() -> str:
     </script>
     """
 
+    if minify:
+        # Extract JavaScript content without script tags
+        js_content = js.replace('<script>', '').replace('</script>', '')
+        minified = _minify_javascript(js_content)
+        return f"<script>{minified}</script>"
+    return js
+
 
 def generate_html_report(
     findings: List[Any],
     output_path: Optional[str] = None,
     enable_vscode_integration: bool = True,
     code_snippets: Optional[Dict[str, str]] = None,
-    title: str = "Trough Code Analysis Report"
+    title: str = "Trough Code Analysis Report",
+    minify: bool = False,
+    enable_virtualization: bool = False
 ) -> str:
     """
     Generate interactive HTML report from Trough findings.
@@ -1016,6 +1095,8 @@ def generate_html_report(
         enable_vscode_integration: Enable VS Code links
         code_snippets: Dict mapping file paths to code content
         title: Report title
+        minify: If True, minimize CSS and JS for smaller file size
+        enable_virtualization: If True, use virtualization for 100+ findings (recommended for performance)
 
     Returns:
         HTML string
@@ -1079,7 +1160,7 @@ def generate_html_report(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{_escape_html(title)}</title>
-    {_generate_css()}
+    {_generate_css(minify=minify)}
 </head>
 <body>
     <div class="header">
@@ -1150,7 +1231,7 @@ def generate_html_report(
     </script>
     """
 
-    html += _generate_javascript()
+    html += _generate_javascript(minify=minify, enable_virtualization=enable_virtualization)
 
     html += """
 </body>

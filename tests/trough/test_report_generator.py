@@ -666,5 +666,84 @@ class TestPerformanceOptimizations:
         assert 30_000 < len(html) < 150_000
 
 
+class TestMinificationOptimizations:
+    """Test CSS/JS minification for reduced file size."""
+
+    def test_minify_css_reduces_size(self):
+        """Test that CSS minification reduces file size."""
+        findings = [create_sample_finding() for _ in range(10)]
+
+        html_normal = generate_html_report(findings=findings, output_path=None, minify=False)
+        html_minified = generate_html_report(findings=findings, output_path=None, minify=True)
+
+        # Minified should be smaller
+        assert len(html_minified) < len(html_normal)
+
+        # Should still contain required CSS
+        assert "color:" in html_minified
+        assert "padding:" in html_minified
+
+    def test_minify_preserves_functionality(self):
+        """Test that minification doesn't break functionality."""
+        findings = [
+            create_sample_finding(line_number=10, message="Error handling missing"),
+            create_sample_finding(line_number=20, message="Unused variable"),
+        ]
+
+        html_minified = generate_html_report(findings=findings, output_path=None, minify=True)
+
+        # Should still contain required elements
+        assert "findings-list" in html_minified
+        assert "code-panel" in html_minified
+        assert "details-panel" in html_minified
+        assert "FINDINGS_DATA" in html_minified
+
+    def test_minify_reduction_ratio(self):
+        """Test that minification achieves reasonable size reduction."""
+        findings = [create_sample_finding() for _ in range(50)]
+
+        html_normal = generate_html_report(findings=findings, output_path=None, minify=False)
+        html_minified = generate_html_report(findings=findings, output_path=None, minify=True)
+
+        # Minification should reduce size by at least 10%
+        reduction_ratio = (len(html_normal) - len(html_minified)) / len(html_normal)
+        assert reduction_ratio > 0.10  # At least 10% reduction
+
+    def test_minify_removes_comments(self):
+        """Test that minification removes CSS/JS comments."""
+        findings = [create_sample_finding()]
+
+        html_minified = generate_html_report(findings=findings, output_path=None, minify=True)
+
+        # Minified CSS should have fewer comments
+        # (This is a rough test - minified shouldn't have /* */ style comments)
+        assert html_minified.count("/*") < 2  # Very few multi-line comments
+
+    def test_minify_preserves_media_queries(self):
+        """Test that minification preserves responsive design media queries."""
+        findings = [create_sample_finding()]
+
+        html_minified = generate_html_report(findings=findings, output_path=None, minify=True)
+
+        # Should still contain media queries for responsive design
+        assert "@media" in html_minified
+
+    def test_report_with_minify_and_virtualization(self):
+        """Test report generation with both minify and virtualization enabled."""
+        findings = [create_sample_finding(line_number=i) for i in range(1, 101)]
+
+        html = generate_html_report(
+            findings=findings,
+            output_path=None,
+            minify=True,
+            enable_virtualization=True
+        )
+
+        # Should generate successfully with both options
+        assert len(html) > 0
+        assert "FINDINGS_DATA" in html
+        assert len(html) < 200_000  # Should be under 200KB even with 100 findings
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

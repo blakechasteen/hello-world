@@ -29,7 +29,7 @@ from .trajectories import (
     TRAJECTORY_BY_NAME,
 )
 from .trajectory_bandit import TrajectoryBandit, RewardCalculator
-from .mcts import MCTSState, NeighborMap, run_mcts_with_timeout
+from .mcts import MCTSState, NeighborMap, run_mcts_search
 
 logger = logging.getLogger(__name__)
 
@@ -411,13 +411,12 @@ class Shuttle:
                         else:
                             return 0.9
 
-                    mcts_result = run_mcts_with_timeout(
+                    mcts_result = run_mcts_search(
                         initial_node_id=anchor_ids[0],
                         neighbor_map=neighbor_map,
                         max_depth=traversal_config.max_depth,
                         num_simulations=self.config.mcts_simulations,
-                        rollout_fn=rollout_fn,
-                        timeout_ms=self.config.mcts_timeout_ms
+                        rollout_fn=rollout_fn
                     )
 
                     selected_nodes = mcts_result.state.selected_nodes

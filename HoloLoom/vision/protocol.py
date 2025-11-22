@@ -108,21 +108,26 @@ class HandPose:
 @dataclass
 class DepthMap:
     """Monocular depth estimation result"""
-    depth_array: np.ndarray  # HxW depth map
+    depth: np.ndarray  # HxW depth map
+    width: int
+    height: int
     min_depth: float
     max_depth: float
+    unit: str = "normalized"  # normalized, meters, disparity
     confidence_map: Optional[np.ndarray] = None
     timestamp: datetime = field(default_factory=datetime.now)
 
 
 @dataclass
 class Marker:
-    """Detected marker (QR code, ArUco, etc.)"""
-    marker_id: str
-    marker_type: str  # "qr", "aruco", "apriltag"
-    content: str  # Decoded content
-    corners: List[Tuple[float, float]]  # 4 corner points
-    pose: Optional[Dict[str, Any]] = None  # 3D pose if available
+    """Detected marker (QR code, ArUco, AprilTag)"""
+    id: str  # Marker ID or decoded data
+    marker_type: str  # "aruco", "qr_code", "apriltag"
+    corners: List[List[float]]  # 4 corner points [[x, y], ...]
+    center: Tuple[float, float]  # Center point (x, y)
+    position: Optional[List[float]] = None  # 3D position [x, y, z] in meters
+    rotation: Optional[List[float]] = None  # Rotation vector [rx, ry, rz]
+    data: Optional[str] = None  # Decoded data (for QR codes)
     confidence: float = 1.0
     timestamp: datetime = field(default_factory=datetime.now)
 
