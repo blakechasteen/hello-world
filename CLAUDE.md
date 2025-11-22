@@ -612,6 +612,235 @@ See [HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md](HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.m
 
 ---
 
+## Context Packing System (November 2025)
+
+**Status**: ✅ Production Ready
+**Location**: `HoloLoom/context_packing/`
+**Performance**: 40-90% token savings
+**Documentation**: [README.md](HoloLoom/context_packing/README.md)
+
+Physics-inspired context compression that achieves 40-90% token savings while preserving information density through beta wave activation spreading, multi-signal importance scoring, and Matryoshka-aware embedding compression.
+
+### Overview
+
+The Context Packing System solves the LLM context window problem by intelligently compressing memory retrieval results before sending to language models. Unlike simple truncation or random sampling, it uses:
+
+1. **Beta Wave Activation Spreading** - Neuroscience-inspired (12-30 Hz) physics-based propagation across knowledge graphs
+2. **Multi-Signal Importance Scoring** - Combines 6 importance signals (recency, relevance, centrality, frequency, confidence, heat)
+3. **Matryoshka-Aware Compression** - Multi-scale embeddings (384D/256D/128D) optimize detail vs compression tradeoff
+
+### Quick Start
+
+```python
+from HoloLoom.context_packing import ContextPacker, ContextPackerConfig
+
+# Create packer with balanced preset (40-60% savings)
+config = ContextPackerConfig.balanced()
+packer = ContextPacker(config)
+
+# Pack context to fit budget
+result = packer.pack(
+    query="What is Thompson Sampling?",
+    candidate_nodes=memory_nodes,
+    graph=knowledge_graph,
+    target_tokens=2000
+)
+
+print(f"Compressed: {result.original_count} -> {result.compressed_count}")
+print(f"Token savings: {result.token_savings}")
+print(f"Compression ratio: {result.compression_ratio:.1%}")
+```
+
+**Output**:
+```
+Compressed: 50 -> 25 nodes
+Token savings: 1250 tokens
+Compression ratio: 50.0%
+```
+
+### Core Features
+
+#### 1. Beta Wave Activation Spreading
+
+Physics-based activation propagation across knowledge graphs using neuroscience-inspired beta wave dynamics (12-30 Hz):
+
+```python
+from HoloLoom.context_packing import ActivationSpreader
+
+spreader = ActivationSpreader()
+activation_map = spreader.spread_activation(
+    source_nodes=["thompson_sampling"],
+    graph=knowledge_graph,
+    max_hops=3,
+    decay_rate=0.7
+)
+
+# Activated nodes with activation levels
+# {"thompson_sampling": 1.0, "exploration": 0.7, "bayesian": 0.7, ...}
+```
+
+**Key Properties**:
+- Exponential decay per hop (models energy dissipation)
+- Frequency-dependent propagation (higher freq = faster spread)
+- Multi-source activation (multiple query concepts activate simultaneously)
+- Directional spreading (follows edge semantics)
+
+#### 2. Multi-Signal Importance Scoring
+
+Combines 6 importance signals to rank memory nodes:
+
+1. **Recency** - How recently accessed (exponential decay)
+2. **Relevance** - Semantic similarity to query (cosine similarity)
+3. **Centrality** - Graph importance (PageRank/betweenness/closeness)
+4. **Access Frequency** - Historical access count (logarithmic scaling)
+5. **Confidence** - Historical confidence scores
+6. **Heat** - Hot pattern feedback score
+
+```python
+from HoloLoom.context_packing import ImportanceScorer
+
+scorer = ImportanceScorer()
+importance_scores = scorer.score_batch(
+    node_ids=candidate_nodes,
+    query="Explain Thompson Sampling",
+    graph=knowledge_graph
+)
+
+# Importance scores: {"node_id": 0.92, ...}
+```
+
+#### 3. Matryoshka-Aware Compression
+
+Multi-scale compression using Matryoshka embeddings:
+
+- **High importance** (>0.75): 384D (full detail)
+- **Medium importance** (0.5-0.75): 256D (moderate detail)
+- **Low importance** (0.25-0.5): 128D (minimal detail)
+- **Very low** (<0.25): Dropped
+
+```python
+from HoloLoom.context_packing import ContextCompressor
+
+compressor = ContextCompressor()
+kept_nodes, scale_assignments = compressor.matryoshka_compress(
+    nodes=all_candidates,
+    importance_scores=importance_scores
+)
+
+# Scale assignments: {"node_1": 384, "node_2": 256, "node_3": 128}
+```
+
+### Configuration Presets
+
+| Preset | Compression Ratio | Token Savings | Use Case |
+|--------|------------------|---------------|----------|
+| **Aggressive** | 30% kept | 60-90% savings | Tight token budgets |
+| **Balanced** | 50% kept | 40-60% savings | **General use (default)** |
+| **Conservative** | 70% kept | 20-40% savings | Quality-critical |
+| **Research** | 90% kept | 10-20% savings | Research queries |
+
+```python
+# Aggressive compression (60-90% savings)
+config = ContextPackerConfig.aggressive()
+
+# Balanced compression (40-60% savings) - Default
+config = ContextPackerConfig.balanced()
+
+# Conservative compression (20-40% savings)
+config = ContextPackerConfig.conservative()
+
+# Research mode (minimal compression)
+config = ContextPackerConfig.research()
+```
+
+### Performance
+
+**Latency**: <50ms for 100 nodes (spreading + scoring + compression)
+
+**Token Savings**:
+- Balanced preset: 40-60% token savings
+- Aggressive preset: 60-90% token savings
+- Preserves information density via importance-based selection
+- Multi-scale embeddings optimize detail vs compression tradeoff
+
+### Integration with HoloLoom
+
+Context packing integrates seamlessly with HoloLoom's memory system:
+
+```python
+from HoloLoom import HoloLoom
+from HoloLoom.context_packing import ContextPacker
+
+async with HoloLoom() as loom:
+    # Retrieve initial candidates from memory
+    memories = await loom.recall("Thompson Sampling", k=50)
+    candidate_nodes = [m.node_id for m in memories]
+
+    # Get knowledge graph
+    graph = loom.memory_backend.graph
+
+    # Pack context
+    packer = ContextPacker()
+    result = packer.pack(
+        query="Explain Thompson Sampling",
+        candidate_nodes=candidate_nodes,
+        graph=graph,
+        target_tokens=2000
+    )
+
+    # Use compressed context for generation
+    compressed_memories = [m for m in memories if m.node_id in result.compressed_nodes]
+```
+
+### Running the Demo
+
+```bash
+PYTHONPATH=. python HoloLoom/context_packing/demo_context_packing.py
+```
+
+Demonstrates:
+- Beta wave activation spreading
+- Multi-signal importance scoring
+- Matryoshka-aware compression
+- Complete packing pipeline with all 4 presets
+- Adaptive packing within token budget
+
+### Key Files
+
+- `protocol.py` (120 lines) - Protocol definitions
+- `config.py` (180 lines) - Configuration classes with 4 presets
+- `activation_spreader.py` (580 lines) - Beta wave propagation
+- `importance_scorer.py` (420 lines) - Multi-signal scoring
+- `context_compressor.py` (650 lines) - Matryoshka compression
+- `packer.py` (720 lines) - Main orchestrator
+- `demo_context_packing.py` (340 lines) - Comprehensive demo
+- `tests/test_context_packing.py` (580 lines) - Test suite
+
+**Total**: ~3,590 lines
+
+### When to Use
+
+**✅ Use Context Packing when**:
+- Working with large knowledge graphs (>50 nodes)
+- LLM context window is limited (GPT-3.5: 4k, GPT-4: 8k)
+- Need to maximize information density per token
+- Want physics-based intelligent compression (not random sampling)
+- Have hierarchical or connected knowledge (benefits from graph traversal)
+
+**🟡 Consider alternatives when**:
+- Knowledge base is tiny (<20 nodes) - overhead not worth it
+- All nodes are equally important - no benefit from importance scoring
+- Need guaranteed inclusion of specific nodes - use manual filtering
+
+### References
+
+- **Beta Waves**: Neuroscience concept (12-30 Hz brain waves representing focused attention)
+- **Matryoshka Embeddings**: Multi-scale embeddings (Kusupati et al., 2022)
+- **PageRank**: Google's original web page ranking algorithm
+- **Thompson Sampling**: Bayesian approach to exploration/exploitation
+
+---
+
 ## LangChain Integration (November 2025)
 
 **Status**: ✅ Production Ready (v1.0.0)
