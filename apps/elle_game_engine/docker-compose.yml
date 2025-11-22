@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # BigPlay Engine API Server
+  bigplay:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ELLE_LLM_PROVIDER=${ELLE_LLM_PROVIDER:-dummy}
+      - ELLE_LLM_MODEL=${ELLE_LLM_MODEL:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://postgres:password@postgres:5432/bigplay
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./sessions:/app/sessions
+      - ./fine_tuning_data:/app/fine_tuning_data
+    networks:
+      - bigplay-network
+
+  # Redis - Shared world state and pub/sub
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - bigplay-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # PostgreSQL - Persistent world state backup
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=bigplay
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - bigplay-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  redis-data:
+  postgres-data:
+
+networks:
+  bigplay-network:
+    driver: bridge

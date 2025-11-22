@@ -42,6 +42,7 @@ from .streaming import create_streaming_client, StreamChunk
 from .quest import QuestGenerator, Quest, QuestStatus, QuestGenerationError
 from .emotion import EmotionalState, EmotionEngine
 from .voice import create_voice_engine, VoiceEngine, VoiceProfile, Emotion, AudioFormat
+from .multiplayer import SharedWorldState, MultiplayerWebSocketManager, SessionCoordinator
 
 
 # ============================================================================
@@ -1169,6 +1170,239 @@ def create_app() -> FastAPI:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=str(e)
             )
+
+    # ========================================================================
+    # Multiplayer Endpoints (Phase 4A)
+    # ========================================================================
+
+    # Initialize multiplayer components
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+    _world_state = None
+    _ws_manager = None
+    _session_coordinator = None
+
+    async def get_world_state():
+        """Get or create SharedWorldState instance"""
+        nonlocal _world_state
+        if _world_state is None:
+            _world_state = SharedWorldState(redis_url=redis_url)
+            await _world_state.connect()
+        return _world_state
+
+    async def get_ws_manager():
+        """Get or create MultiplayerWebSocketManager instance"""
+        nonlocal _ws_manager
+        if _ws_manager is None:
+            _ws_manager = MultiplayerWebSocketManager(redis_url=redis_url)
+            await _ws_manager.connect()
+            await _ws_manager.start_redis_listener()
+            await _ws_manager.start_heartbeat(interval=30)
+        return _ws_manager
+
+    async def get_session_coordinator():
+        """Get or create SessionCoordinator instance"""
+        nonlocal _session_coordinator
+        if _session_coordinator is None:
+            _session_coordinator = SessionCoordinator(redis_url=redis_url)
+            await _session_coordinator.connect()
+        return _session_coordinator
+
+    # World State Endpoints
+
+    @app.get("/elle/game/multiplayer/world")
+    async def get_world_state_endpoint():
+        """
+        Get current world state (flags, active players, etc.)
+
+        Returns:
+            - flags: All world flags
+            - active_players: Set of active player IDs
+            - statistics: World state statistics
+        """
+        world = await get_world_state()
+
+        flags = await world.get_all_flags()
+        active_players = await world.get_active_players()
+        stats = await world.get_statistics()
+
+        return {
+            "flags": {key: flag.to_dict() for key, flag in flags.items()},
+            "active_players": list(active_players),
+            "statistics": stats
+        }
+
+    @app.post("/elle/game/multiplayer/world/flag")
+    async def set_world_flag(flag: str, value: bool, player_id: str = "system"):
+        """
+        Set world flag and broadcast to all players.
+
+        Args:
+            flag: Flag name (e.g., "gate_opened", "boss_defeated")
+            value: Flag value (True/False)
+            player_id: Player who set the flag (default: "system")
+        """
+        world = await get_world_state()
+        flag_obj = await world.set_flag(flag, value, player_id)
+
+        return {
+            "status": "success",
+            "flag": flag_obj.to_dict()
+        }
+
+    # NPC Lock Endpoints
+
+    @app.post("/elle/game/multiplayer/npc/{npc_id}/lock")
+    async def acquire_npc_lock_endpoint(npc_id: str, player_id: str, timeout: int = 30):
+        """
+        Acquire exclusive lock on NPC for conversation.
+
+        Args:
+            npc_id: NPC identifier
+            player_id: Player requesting lock
+            timeout: Lock timeout in seconds (default: 30)
+
+        Returns:
+            - acquired: True if lock acquired
+            - message: Status message
+        """
+        coordinator = await get_session_coordinator()
+        acquired = await coordinator.acquire_npc_lock(npc_id, player_id, timeout)
+
+        if acquired:
+            return {
+                "acquired": True,
+                "npc_id": npc_id,
+                "player_id": player_id,
+                "expires_in_seconds": timeout,
+                "message": f"Lock acquired on {npc_id}"
+            }
+        else:
+            lock_info = await coordinator.get_npc_lock_info(npc_id)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "acquired": False,
+                    "message": f"NPC {npc_id} is currently in conversation",
+                    "locked_by": lock_info.get("player_id") if lock_info else None,
+                    "remaining_seconds": lock_info.get("remaining_seconds") if lock_info else None
+                }
+            )
+
+    @app.post("/elle/game/multiplayer/npc/{npc_id}/unlock")
+    async def release_npc_lock_endpoint(npc_id: str, player_id: str):
+        """
+        Release NPC lock.
+
+        Args:
+            npc_id: NPC identifier
+            player_id: Player releasing lock
+        """
+        coordinator = await get_session_coordinator()
+        released = await coordinator.release_npc_lock(npc_id, player_id)
+
+        if released:
+            return {
+                "status": "success",
+                "message": f"Lock released on {npc_id}"
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No lock found for NPC {npc_id} or lock owned by different player"
+            )
+
+    @app.get("/elle/game/multiplayer/npc/{npc_id}/available")
+    async def check_npc_availability(npc_id: str):
+        """
+        Check if NPC is available for interaction.
+
+        Args:
+            npc_id: NPC identifier
+
+        Returns:
+            - available: True if NPC is not locked
+            - lock_info: Lock information if locked
+        """
+        coordinator = await get_session_coordinator()
+        available = await coordinator.is_npc_available(npc_id)
+
+        result = {"available": available}
+
+        if not available:
+            lock_info = await coordinator.get_npc_lock_info(npc_id)
+            result["lock_info"] = lock_info
+
+        return result
+
+    # WebSocket Endpoint
+
+    from fastapi import WebSocket, WebSocketDisconnect
+
+    @app.websocket("/elle/game/multiplayer/ws/{player_id}")
+    async def multiplayer_websocket(websocket: WebSocket, player_id: str):
+        """
+        WebSocket endpoint for real-time multiplayer updates.
+
+        Clients connect here to receive:
+        - World flag changes
+        - NPC state updates
+        - World events
+        - Player join/leave notifications
+
+        Args:
+            player_id: Player identifier
+        """
+        ws_manager = await get_ws_manager()
+        world = await get_world_state()
+
+        # Connect player
+        await ws_manager.connect_player(websocket, player_id)
+        await world.add_player(player_id)
+
+        # Define message handler
+        async def handle_message(player_id: str, data: dict):
+            """Handle messages from player"""
+            msg_type = data.get("type")
+
+            if msg_type == "heartbeat":
+                await world.player_heartbeat(player_id)
+            elif msg_type == "broadcast":
+                # Player wants to broadcast something
+                await ws_manager.broadcast({
+                    "type": "player_message",
+                    "player_id": player_id,
+                    "data": data.get("data"),
+                    "timestamp": time.time()
+                }, exclude=player_id)
+
+        # Listen for player messages
+        try:
+            await ws_manager.handle_player_message(player_id, websocket, handle_message)
+        finally:
+            # Cleanup
+            await world.remove_player(player_id)
+
+    # Statistics Endpoint
+
+    @app.get("/elle/game/multiplayer/stats")
+    async def get_multiplayer_stats():
+        """
+        Get multiplayer statistics.
+
+        Returns:
+            - world: World state statistics
+            - websockets: WebSocket connection statistics
+            - session_coordinator: Session coordination statistics
+        """
+        world = await get_world_state()
+        ws_manager = await get_ws_manager()
+        coordinator = await get_session_coordinator()
+
+        return {
+            "world": await world.get_statistics(),
+            "websockets": await ws_manager.get_statistics(),
+            "session_coordinator": await coordinator.get_statistics()
+        }
 
     return app
 
