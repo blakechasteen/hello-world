@@ -1,0 +1,28 @@
+{
+  "format_version": "1.0",
+  "skill": {
+    "name": "continuous_learning_capture",
+    "version": "1.0.0",
+    "author": "HoloLoom Team",
+    "category": "meta",
+    "tags": [
+      "learning",
+      "automation",
+      "skill-creation",
+      "meta-skill",
+      "continuous-improvement"
+    ],
+    "description": "Captures \"learning moments\" from user sessions and automatically proposes new skills based on patterns, successful interactions, and user feedback.",
+    "capabilities": [
+      "File system access (read) - to read interaction logs",
+      "File system access (write) - to create skill proposals",
+      "User interaction (questions) - to confirm skill creation"
+    ],
+    "dependencies": []
+  },
+  "package": {
+    "created_at": "2025-11-18T05:29:28.202931",
+    "source_path": "skills/meta/continuous_learning_capture",
+    "builder_version": "1.0.0"
+  }
+}

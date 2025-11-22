@@ -1,0 +1,28 @@
+{
+  "format_version": "1.0",
+  "skill": {
+    "name": "token_budget_adviser",
+    "version": "1.0.0",
+    "author": "HoloLoom Team",
+    "category": "meta",
+    "tags": [
+      "optimization",
+      "tokens",
+      "cost",
+      "efficiency",
+      "meta-skill"
+    ],
+    "description": "Analyzes skills for token efficiency and provides optimization recommendations to reduce cost and latency while maintaining quality.",
+    "capabilities": [
+      "File system access (read) - to read skill files",
+      "File system access (write) - to write optimization reports",
+      "User interaction (questions) - for interactive optimization"
+    ],
+    "dependencies": []
+  },
+  "package": {
+    "created_at": "2025-11-18T05:29:28.197402",
+    "source_path": "skills/meta/token_budget_adviser",
+    "builder_version": "1.0.0"
+  }
+}
