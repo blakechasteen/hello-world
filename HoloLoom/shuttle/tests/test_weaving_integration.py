@@ -261,7 +261,8 @@ async def test_shuttle_stage_select_threads(mock_kg, mock_retriever):
     # Create temporal window
     temporal_window = TemporalWindow(
         start=datetime.now() - timedelta(days=1),
-        end=datetime.now()
+        end=datetime.now(),
+        max_age=timedelta(days=7)
     )
 
     query = Query(text="What is Thompson Sampling?")
@@ -296,7 +297,8 @@ async def test_shuttle_stage_fallback_on_error(mock_kg, mock_retriever):
 
     temporal_window = TemporalWindow(
         start=datetime.now() - timedelta(days=1),
-        end=datetime.now()
+        end=datetime.now(),
+        max_age=timedelta(days=7)
     )
 
     query = Query(text="test")

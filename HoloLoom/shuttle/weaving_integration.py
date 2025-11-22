@@ -401,7 +401,7 @@ class ShuttleStage:
 
             return threads
 
-        except ShuttleError as e:
+        except (ShuttleError, AttributeError, Exception) as e:
             self.logger.error(f"[SHUTTLE] Thread selection failed: {e}")
 
             # Graceful degradation: Fall back to simple retrieval
@@ -429,7 +429,7 @@ class ShuttleStage:
         shards = []
 
         # Add Warp results (semantic search)
-        for i, item in enumerate(weave_result.warp_results):
+        for i, item in enumerate(weave_result.fuzzy_evidence):
             shard = MemoryShard(
                 id=f"warp_{item.get('id', i)}",
                 text=item.get('text', ''),
