@@ -27,7 +27,7 @@ from dataclasses import dataclass
 
 # Import core types
 try:
-    from HoloLoom.Documentation.types import Query, MemoryShard
+    from HoloLoom.protocols.types import Query, MemoryShard
 except ImportError:
     # Fallback for circular imports
     from typing import Any

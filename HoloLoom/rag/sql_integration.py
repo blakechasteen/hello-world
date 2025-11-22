@@ -404,7 +404,7 @@ class TextToSQLTranslator:
         for attempt in range(max_retries):
             try:
                 # Call LLM
-                from HoloLoom.Documentation.types import Query
+                from HoloLoom.protocols.types import Query
                 query_obj = Query(text=prompt)
                 spacetime = await self.llm_provider.weave(query_obj, use_llm=True)
 

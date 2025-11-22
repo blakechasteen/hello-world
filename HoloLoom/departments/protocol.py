@@ -625,6 +625,7 @@ class DepartmentConfig:
     - confidence_range: Expected confidence bounds
     - enable_learning: Can it improve?
     - enable_verification: Should responses be verified?
+    - memory capacities: Three-tier memory limits
 
     Example:
         config = DepartmentConfig(
@@ -644,6 +645,11 @@ class DepartmentConfig:
     enable_verification: bool = True                 # Verify responses?
     max_latency_ms: float = 5000.0                   # Max execution time
     retry_on_failure: bool = True                    # Retry failed tasks?
+
+    # Three-tier memory capacity limits
+    short_term_capacity: int = 100                   # Recent interactions (this session)
+    medium_term_capacity: int = 500                  # Session patterns (hours to days)
+    long_term_capacity: int = 2000                   # Institutional knowledge (weeks to months)
 
 
 @dataclass

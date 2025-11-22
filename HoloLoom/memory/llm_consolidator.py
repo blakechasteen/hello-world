@@ -30,7 +30,7 @@ import logging
 import os
 import json
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 

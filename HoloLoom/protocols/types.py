@@ -26,19 +26,19 @@ import time
 class ComplexityLevel(Enum):
     """
     Progressive complexity levels for mythRL Shuttle.
-    
+
     Philosophy: 3-5-7-9 Progressive Complexity System
     - LITE (3 steps): Essential operations only - Extract → Route → Execute
     - FAST (5 steps): + Pattern Selection + Temporal Windows
     - FULL (7 steps): + Decision Engine + Synthesis Bridge
     - RESEARCH (9 steps): + Advanced WarpSpace + Full Tracing
-    
+
     Performance Targets:
     - LITE: <50ms - Perfect for simple queries, greetings
     - FAST: <150ms - Search patterns with temporal awareness
     - FULL: <300ms - Complex analysis with decision engine
     - RESEARCH: No limit - Maximum capability deployment
-    
+
     Examples:
         >>> ComplexityLevel.LITE.value
         3
@@ -46,9 +46,27 @@ class ComplexityLevel(Enum):
         9
     """
     LITE = 3      # Essential: Extract → Route → Execute
-    FAST = 5      # + Pattern Selection + Temporal Windows  
+    FAST = 5      # + Pattern Selection + Temporal Windows
     FULL = 7      # + Decision Engine + Synthesis Bridge
     RESEARCH = 9  # + Advanced WarpSpace + Full Tracing
+
+
+class BanditStrategy(Enum):
+    """
+    Thompson Sampling bandit exploration strategies.
+
+    Determines how the policy engine balances neural network predictions
+    with Thompson Sampling exploration:
+
+    - EPSILON_GREEDY: 90% exploitation (neural), 10% exploration (Thompson)
+    - BAYESIAN_BLEND: 70% neural predictions + 30% Thompson Sampling priors
+    - PURE_THOMPSON: 100% Thompson Sampling (ignores neural network)
+
+    Default: EPSILON_GREEDY (safe exploration with strong neural guidance)
+    """
+    EPSILON_GREEDY = "epsilon_greedy"
+    BAYESIAN_BLEND = "bayesian_blend"
+    PURE_THOMPSON = "pure_thompson"
 
 
 # ============================================================================
@@ -304,6 +322,96 @@ class MythRLResult:
 
 
 # ============================================================================
+# Legacy HoloLoom Types (from Documentation.types)
+# ============================================================================
+
+Vector = List[float]  # Embedding vector
+
+
+@dataclass
+class Query:
+    """Simple query type for HoloLoom."""
+    text: str
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class Context:
+    """Context for query processing."""
+    memories: List[Any] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class Features:
+    """Extracted features from query."""
+    motifs: List[str] = field(default_factory=list)
+    embeddings: Optional[Vector] = None
+    spectral: Optional[Vector] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class MemoryShard:
+    """Memory shard from SpinningWheel."""
+    id: str
+    text: str
+    entities: List[str] = field(default_factory=list)
+    motifs: List[str] = field(default_factory=list)
+    episode: Optional[str] = None
+    timestamp: Optional[float] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class PolicyAction:
+    """Action selected by policy."""
+    tool: str
+    confidence: float
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ActionPlan:
+    """Plan of actions to execute."""
+    actions: List[PolicyAction] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ToolCall:
+    """Tool invocation."""
+    tool: str
+    args: Dict[str, Any] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ToolResult:
+    """Result from tool execution."""
+    success: bool
+    output: Any
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class Response:
+    """Response from HoloLoom."""
+    text: str
+    confidence: float
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class Motif:
+    """Detected pattern or motif in text."""
+    pattern: str
+    span: Optional[tuple[int, int]] = None
+    score: float = 0.0
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+# ============================================================================
 # Exports
 # ============================================================================
 
@@ -311,4 +419,16 @@ __all__ = [
     'ComplexityLevel',
     'ProvenanceTrace',
     'MythRLResult',
+    # Legacy types
+    'Query',
+    'Context',
+    'Features',
+    'Vector',
+    'MemoryShard',
+    'Motif',
+    'PolicyAction',
+    'ActionPlan',
+    'ToolCall',
+    'ToolResult',
+    'Response',
 ]

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Voice UX - Milestone 1 Demo</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/thread_ui.css">
+    <link rel="stylesheet" href="css/voice_controls.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #1a1a1a;
+        }
+
+        .demo-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .demo-header p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .demo-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #28a745;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .demo-help {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-help h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+        }
+
+        .demo-help h3 {
+            font-size: 16px;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .demo-help ul {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #666;
+        }
+
+        .demo-help code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            color: #e83e8c;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 968px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .demo-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-section h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .browser-support {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        .browser-support strong {
+            color: #856404;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .status-item__label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .status-item__value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .status-item--success {
+            background: #d4edda;
+            border-left: 3px solid #28a745;
+        }
+
+        .status-item--error {
+            background: #f8d7da;
+            border-left: 3px solid #dc3545;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- Header -->
+        <div class="demo-header">
+            <h1>🎤 HoloLoom Voice UX</h1>
+            <p>Milestone 1: Conversational Mode + Basic Thread Management</p>
+            <span class="demo-badge">November 2025 - Production Ready</span>
+        </div>
+
+        <!-- Help Section -->
+        <div class="demo-help">
+            <h2>📖 How to Use Voice Commands</h2>
+
+            <h3>Thread Management:</h3>
+            <ul>
+                <li><code>"Create a new thread about machine learning"</code> - Create and activate a new thread</li>
+                <li><code>"Switch to the machine learning thread"</code> - Switch to existing thread</li>
+                <li><code>"Close the machine learning thread"</code> - Archive a thread (requires confirmation)</li>
+                <li><code>"Summarize threads"</code> - List all active threads with summaries</li>
+            </ul>
+
+            <h3>System Control:</h3>
+            <ul>
+                <li><code>"Loom, pause"</code> or <code>"Stop"</code> - Stop all tasks</li>
+                <li><code>"Loom, help"</code> or <code>"Help"</code> - Show help message</li>
+            </ul>
+
+            <h3>Conversational:</h3>
+            <ul>
+                <li><code>"What is Thompson Sampling?"</code> - Ask questions</li>
+                <li><code>"Thanks"</code> or <code>"Got it"</code> - Acknowledgments</li>
+                <li>Any natural statement - System responds conversationally</li>
+            </ul>
+
+            <div class="browser-support">
+                <strong>⚠️ Browser Support:</strong> Voice UX requires the Web Speech API (Chrome, Edge, Safari).
+                Firefox may require enabling speech recognition in settings.
+            </div>
+        </div>
+
+        <!-- Voice Controls and Thread List Grid -->
+        <div class="demo-grid">
+            <!-- Voice Controls Section -->
+            <div class="demo-section">
+                <h3>Voice Controls</h3>
+                <div id="voice-controls-container"></div>
+            </div>
+
+            <!-- System Status Section -->
+            <div class="demo-section">
+                <h3>System Status</h3>
+                <div class="status-grid">
+                    <div class="status-item" id="status-speech-api">
+                        <span class="status-item__label">Speech API:</span>
+                        <span class="status-item__value">Checking...</span>
+                    </div>
+                    <div class="status-item" id="status-tts-api">
+                        <span class="status-item__label">TTS API:</span>
+                        <span class="status-item__value">Checking...</span>
+                    </div>
+                    <div class="status-item" id="status-battery">
+                        <span class="status-item__label">Battery:</span>
+                        <span class="status-item__value">Unknown</span>
+                    </div>
+                    <div class="status-item" id="status-network">
+                        <span class="status-item__label">Network:</span>
+                        <span class="status-item__value">Unknown</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thread List -->
+        <div id="thread-list-container"></div>
+
+        <!-- Metrics Panel -->
+        <div id="metrics-panel-container"></div>
+
+        <!-- Footer -->
+        <footer>
+            <p>HoloLoom Voice UX - Milestone 1 (6-week MVP)</p>
+            <p>Integrated with Phase 3.11 Performance Monitoring</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/analytics_monitor.js"></script>
+    <script src="js/voice_input_pipeline.js"></script>
+    <script src="js/thread_state_manager.js"></script>
+    <script src="js/voice_orchestrator.js"></script>
+    <script src="js/thread_ui_component.js"></script>
+    <script src="js/voice_ui_integration.js"></script>
+
+    <script>
+        // Initialize demo
+        let voiceUI = null;
+
+        async function initializeDemo() {
+            console.log('[Demo] Starting initialization...');
+
+            // Check browser support
+            checkBrowserSupport();
+
+            // Create voice UI integration
+            voiceUI = new VoiceUIIntegration({
+                containerSelector: '#voice-controls-container',
+                enableVoiceButton: true,
+                enableMetrics: true,
+                enablePerformanceMonitoring: true
+            });
+
+            // Initialize
+            await voiceUI.initialize();
+
+            // Move thread list to correct container
+            const threadList = document.querySelector('.thread-list-view');
+            if (threadList) {
+                document.getElementById('thread-list-container').appendChild(threadList);
+            }
+
+            // Move metrics panel to correct container
+            const metricsPanel = document.querySelector('.voice-metrics-panel');
+            if (metricsPanel) {
+                document.getElementById('metrics-panel-container').appendChild(metricsPanel);
+            }
+
+            // Update system status
+            updateSystemStatus();
+
+            console.log('[Demo] Initialization complete!');
+        }
+
+        /**
+         * Check browser support for required APIs
+         */
+        function checkBrowserSupport() {
+            // Check Web Speech API
+            const speechApiStatus = document.getElementById('status-speech-api');
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                speechApiStatus.classList.add('status-item--success');
+                speechApiStatus.querySelector('.status-item__value').textContent = '✓ Available';
+            } else {
+                speechApiStatus.classList.add('status-item--error');
+                speechApiStatus.querySelector('.status-item__value').textContent = '✗ Not Available';
+            }
+
+            // Check TTS API
+            const ttsApiStatus = document.getElementById('status-tts-api');
+            if ('speechSynthesis' in window) {
+                ttsApiStatus.classList.add('status-item--success');
+                ttsApiStatus.querySelector('.status-item__value').textContent = '✓ Available';
+            } else {
+                ttsApiStatus.classList.add('status-item--error');
+                ttsApiStatus.querySelector('.status-item__value').textContent = '✗ Not Available';
+            }
+        }
+
+        /**
+         * Update system status (battery, network)
+         */
+        async function updateSystemStatus() {
+            // Battery status
+            if ('getBattery' in navigator) {
+                try {
+                    const battery = await navigator.getBattery();
+                    const batteryStatus = document.getElementById('status-battery');
+                    const level = Math.round(battery.level * 100);
+                    const charging = battery.charging ? '⚡' : '';
+                    batteryStatus.querySelector('.status-item__value').textContent = `${level}% ${charging}`;
+
+                    if (level < 30 && !battery.charging) {
+                        batteryStatus.classList.add('status-item--error');
+                    } else {
+                        batteryStatus.classList.add('status-item--success');
+                    }
+                } catch (e) {
+                    console.warn('Battery API error:', e);
+                }
+            }
+
+            // Network status
+            if ('connection' in navigator || 'mozConnection' in navigator || 'webkitConnection' in navigator) {
+                const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                if (connection) {
+                    const networkStatus = document.getElementById('status-network');
+                    networkStatus.querySelector('.status-item__value').textContent = connection.effectiveType || 'Unknown';
+                    networkStatus.classList.add('status-item--success');
+                }
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeDemo();
+
+            // Update system status every 10 seconds
+            setInterval(updateSystemStatus, 10000);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (voiceUI) {
+                voiceUI.destroy();
+            }
+        });
+    </script>
+</body>
+</html>

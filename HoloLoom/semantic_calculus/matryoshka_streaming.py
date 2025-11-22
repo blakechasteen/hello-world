@@ -216,7 +216,7 @@ class MatryoshkaSemanticCalculus:
         print(f"   Paragraph-level: {len(self.spectrum_paragraph.dimensions)}D")
         self.spectrum_paragraph.learn_axes(sentence_embed_fn)  # Reuse sentence embedder
 
-        print("✅ Matryoshka semantic axes learned!\n")
+        print("[OK] Matryoshka semantic axes learned!\n")
 
         # Create windows for each scale
         self.windows = {
@@ -324,7 +324,7 @@ class MatryoshkaSemanticCalculus:
             if len(spectrum.dimensions) > 0 and hasattr(spectrum.dimensions[0], 'axis') and spectrum.dimensions[0].axis is not None:
                 axis_dim = len(spectrum.dimensions[0].axis)
                 if axis_dim != len(embedding_scaled):
-                    print(f"⚠️  MISMATCH at {scale.scale_name}: embedding={len(embedding_scaled)}D, axis={axis_dim}D")
+                    print(f"[WARN] MISMATCH at {scale.scale_name}: embedding={len(embedding_scaled)}D, axis={axis_dim}D")
                     # Pad or truncate embedding to match axis dimension
                     if len(embedding_scaled) < axis_dim:
                         embedding_scaled = np.pad(embedding_scaled, (0, axis_dim - len(embedding_scaled)))

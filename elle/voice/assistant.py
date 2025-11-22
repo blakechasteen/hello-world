@@ -7,13 +7,14 @@ Created: 2025-11-15
 """
 
 import asyncio
-from typing import Optional, Callable
+from typing import Optional, Callable, List
 from pathlib import Path
 
 from elle.voice.whisper_stt import WhisperSTT
 from elle.voice.llm_parser import LLMParser, ParsedCommand
 from elle.voice.tts import TextToSpeech, VoiceGender
 from elle.voice.wake_word import WakeWordDetector
+from elle.voice.threads import ThreadManager
 from elle.voice_interface import VoiceSOPEditor
 
 
@@ -56,6 +57,7 @@ class VoiceAssistant:
         self.tts = TextToSpeech(rate=tts_rate, voice_gender=VoiceGender.FEMALE)
         self.wake_detector = WakeWordDetector()
         self.editor = VoiceSOPEditor(sop_dir=sop_dir)
+        self.thread_manager = ThreadManager()  # Thread management for conversations
 
         # Session state
         self.is_listening = False
@@ -81,6 +83,9 @@ class VoiceAssistant:
         if not text:
             return "I didn't hear that. Please try again."
 
+        # Store user message in active thread
+        self.thread_manager.add_message_to_active("user", text)
+
         # Parse command
         command = self.parser.parse(text)
 
@@ -90,16 +95,121 @@ class VoiceAssistant:
             print(f"  Entity: {command.entity}")
             print(f"  Intent: {command.intent}")
 
+        # Handle thread commands
+        if command.command_type == "thread_create":
+            response = self._handle_thread_create(command)
+        elif command.command_type == "thread_switch":
+            response = self._handle_thread_switch(command)
+        elif command.command_type == "thread_list":
+            response = self._handle_thread_list(command)
+        elif command.command_type == "thread_summarize":
+            response = self._handle_thread_summarize(command)
         # Handle unknown commands
-        if command.command_type == "unknown":
-            return "I didn't understand that command. Try 'show bread SOP' or 'start baking bread'."
+        elif command.command_type == "unknown":
+            response = "I didn't understand that command. Try 'show bread SOP', 'start a new thread', or 'list my threads'."
+        # Process other commands through voice SOP editor
+        else:
+            try:
+                # Get thread context (recent messages) for better query understanding
+                thread_context = self._get_thread_context()
+                response = await self.editor.process_voice_command(text, thread_context=thread_context)
+            except Exception as e:
+                response = f"Error processing command: {str(e)}"
 
-        # Process command through voice SOP editor
-        try:
-            response = await self.editor.process_voice_command(text)
-            return response
-        except Exception as e:
-            return f"Error processing command: {str(e)}"
+        # Store assistant response in active thread
+        self.thread_manager.add_message_to_active("assistant", response)
+
+        return response
+
+    def _handle_thread_create(self, command: ParsedCommand) -> str:
+        """Handle thread creation command"""
+        topic = command.parameters.get("thread_topic", "").strip()
+
+        if not topic:
+            return "What topic should this thread be about?"
+
+        # Create thread with topic as both name and topic
+        thread = self.thread_manager.create_thread(name=topic, topic=topic)
+
+        return f"Created new thread '{topic}'. What would you like to discuss?"
+
+    def _handle_thread_switch(self, command: ParsedCommand) -> str:
+        """Handle thread switch command"""
+        thread_name = command.parameters.get("thread_name", "").strip()
+
+        if not thread_name:
+            return "Which thread do you want to switch to?"
+
+        # Switch to thread
+        thread = self.thread_manager.switch_thread(thread_name)
+
+        if thread:
+            msg_count = len(thread.messages)
+            return f"Switched to thread '{thread.name}'. {msg_count} messages in this thread."
+        else:
+            return f"Thread '{thread_name}' not found. Say 'list my threads' to see available threads."
+
+    def _handle_thread_list(self, command: ParsedCommand) -> str:
+        """Handle thread list command"""
+        threads = self.thread_manager.list_threads()
+
+        if not threads:
+            return "You have no threads yet. Say 'start a new thread for [topic]' to create one."
+
+        # Build response
+        active_id = self.thread_manager.active_thread_id
+        thread_list = []
+
+        for i, thread in enumerate(threads, 1):
+            active_marker = "★ " if thread.id == active_id else "  "
+            msg_count = len(thread.messages)
+            thread_list.append(f"{active_marker}{i}. {thread.name} ({msg_count} messages)")
+
+        response = "Your threads:\n" + "\n".join(thread_list)
+        return response
+
+    def _handle_thread_summarize(self, command: ParsedCommand) -> str:
+        """Handle thread summarize command"""
+        thread_name = command.parameters.get("thread_name")
+
+        # Get thread (active if no name specified)
+        if thread_name:
+            thread = self.thread_manager.get_thread_by_name(thread_name)
+            if not thread:
+                return f"Thread '{thread_name}' not found."
+        else:
+            thread = self.thread_manager.get_active_thread()
+            if not thread:
+                return "No active thread to summarize."
+
+        # Generate summary
+        summary = thread.get_summary()
+        return summary
+
+    def _get_thread_context(self, n: int = 10) -> List[str]:
+        """
+        Get recent conversation context from active thread
+
+        Args:
+            n: Number of recent messages to include
+
+        Returns:
+            List of message strings in format "role: content"
+        """
+        thread = self.thread_manager.get_active_thread()
+        if not thread:
+            return []
+
+        # Get last N messages
+        recent_messages = thread.get_last_n_messages(n)
+
+        # Format as "role: content" strings
+        context = []
+        for msg in recent_messages:
+            role_label = "User" if msg.role == "user" else "Elle"
+            context.append(f"{role_label}: {msg.content}")
+
+        return context
 
     async def listen_and_respond(self) -> bool:
         """

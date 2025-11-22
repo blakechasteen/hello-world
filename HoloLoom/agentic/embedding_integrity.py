@@ -28,7 +28,7 @@ from pathlib import Path
 import json
 import numpy as np
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 
@@ -278,12 +278,14 @@ class EmbeddingIntegrityMonitor:
         if not self.canary_set:
             self.logger.warning("No canary set available, skipping determinism check")
             return DeterminismCheck(
-                passed=True,
+                passed=False,  # Failed because test was skipped
                 canary_size=0,
                 median_cosine_delta=0.0,
                 p95_cosine_delta=0.0,
                 max_cosine_delta=0.0,
-                failures=[]
+                failures=[("SKIPPED", 0.0)],  # Indicate test was skipped
+                median_threshold=median_threshold,
+                p95_threshold=p95_threshold
             )
 
         # Sample canary set

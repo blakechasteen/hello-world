@@ -37,7 +37,7 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceScore
 )
 from HoloLoom.spinningWheel.importance import ImportanceScorer
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 # Try to import whisper
 try:

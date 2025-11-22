@@ -44,7 +44,7 @@ from HoloLoom.agents.types import AgentProfile
 from HoloLoom.agents import PROFILES
 from HoloLoom.memory.graph import KG
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 
 
 # ============================================================================

@@ -89,7 +89,7 @@ from sse_starlette.sse import EventSourceResponse
 
 # HoloLoom Core
 from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
 # Agentic Reasoning

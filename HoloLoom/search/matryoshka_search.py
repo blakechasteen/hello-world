@@ -33,7 +33,7 @@ import numpy as np
 
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 from .protocol import (
     SearchConfig,

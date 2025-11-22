@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from HoloLoom.memory.weaving_adapter import WeavingMemoryAdapter, create_weaving_memory
-from HoloLoom.Documentation.types import MemoryShard, Query
+from HoloLoom.protocols.types import MemoryShard, Query
 from HoloLoom.config import Config, MemoryBackend
 
 

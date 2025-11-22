@@ -34,7 +34,7 @@ from typing import Dict, List, Any, Optional, TYPE_CHECKING
 from datetime import datetime, timedelta
 
 # Shared types
-from HoloLoom.Documentation.types import Query, Context, Features, MemoryShard
+from HoloLoom.protocols.types import Query, Context, Features, MemoryShard
 
 # mythRL Protocol-based architecture types
 from HoloLoom.protocols import (
@@ -64,6 +64,31 @@ from HoloLoom.memory.base import create_retriever
 from HoloLoom.memory.graph import KG  # Yarn Graph for thread storage
 from HoloLoom.policy.unified import create_policy
 from HoloLoom.alignment.safety_guardrails import create_guardrails, SafetyGuardrails
+
+# Tool Execution (Elegance Pass: Extracted to tools/ module - November 2025)
+from HoloLoom.tools import ToolExecutor
+
+# Initialization Functions (Elegance Pass: Extracted to orchestrator/initialization/ - November 2025 Phase 2)
+from HoloLoom.orchestrator.initialization import (
+    initialize_config_and_memory,
+    initialize_reflection_and_caching,
+    initialize_recursive_learning,
+    initialize_components,
+    initialize_production_hardening,
+    initialize_semantic_cache,
+    initialize_linguistic_gate,
+)
+
+# Core Logic Functions (Elegance Pass: Extracted to orchestrator/core/ - November 2025 Phase 3)
+from HoloLoom.orchestrator.core import (
+    assess_complexity_level,
+    create_provenance_trace,
+    get_reflection_metrics,
+    get_recursive_learning_stats,
+    get_metrics,
+    start_background_consolidation,
+    spawn_background_task,
+)
 
 # Production Hardening (Part 5: Days 21-25)
 try:
@@ -108,6 +133,19 @@ from HoloLoom.routing.query_classifier import QueryClassifier, QueryComplexity
 from HoloLoom.routing.fast_paths import FastPathRouter, handle_trivial_query, handle_simple_query
 from HoloLoom.routing.classifier_factory import create_classifier, create_fast_path_router
 
+# Shuttle Integration (January 2025 - MCTS-powered Warp↔Yarn intersection)
+try:
+    from HoloLoom.shuttle.weaving_integration import ShuttleStage, create_shuttle_stage
+    SHUTTLE_AVAILABLE = True
+except ImportError:
+    SHUTTLE_AVAILABLE = False
+    import warnings
+    warnings.warn(
+        "Shuttle integration not available. Install shuttle module for "
+        "MCTS-powered Warp↔Yarn intersection at Step 3.",
+        ImportWarning
+    )
+
 # Unified Physics Engine (Phases 1-4 integrated)
 try:
     from HoloLoom.physics import UnifiedPhysicsEngine, UnifiedPhysicsResult
@@ -142,178 +180,6 @@ logging.basicConfig(level=logging.INFO)
 
 if TYPE_CHECKING:
     from HoloLoom.awareness.llm_integration import OllamaLLM
-
-
-# ============================================================================
-# Tool Execution
-# ============================================================================
-
-class ToolExecutor:
-    """
-    Executes tools based on convergence engine decisions.
-
-    In production, this would call actual APIs, databases, etc.
-    """
-
-    def __init__(self, llm: Optional['OllamaLLM'] = None):
-        self.tools = ["answer", "search", "notion_write", "calc"]
-        self.logger = logging.getLogger(__name__)
-
-        # Initialize LLM (lazy loading)
-        self.llm = llm
-        if self.llm is None:
-            try:
-                from HoloLoom.awareness.llm_integration import OllamaLLM
-                self.llm = OllamaLLM(model="llama3.2:3b")
-                self.logger.info("Initialized Ollama LLM (llama3.2:3b)")
-            except Exception as e:
-                self.logger.warning(f"LLM unavailable, using fallback: {e}")
-                self.llm = None
-
-    async def execute(self, tool: str, query: Query, context: Context) -> Dict:
-        """
-        Execute a tool based on the convergence decision.
-
-        Args:
-            tool: Tool name from CollapseResult
-            query: Original query
-            context: Retrieved context
-
-        Returns:
-            Dict with execution results
-        """
-        self.logger.info(f"Executing tool: {tool}")
-
-        # Tool implementations (stubs - replace with real implementations)
-        tool_handlers = {
-            "answer": self._handle_answer,
-            "search": self._handle_search,
-            "notion_write": self._handle_notion_write,
-            "calc": self._handle_calc
-        }
-
-        handler = tool_handlers.get(tool, self._handle_unknown)
-        return await handler(query, context)
-
-    async def _handle_answer(self, query: Query, context: Context) -> Dict:
-        """Generate an answer based on context."""
-        # Use packed context if available (beta wave optimization)
-        packed_ctx = context.metadata.get('packed_context') if context and hasattr(context, 'metadata') else None
-
-        if packed_ctx:
-            # Use optimized physics-based packed context
-            # Format: query section + awareness section + memory section
-            llm_context = packed_ctx.format_for_llm(include_metadata=False)
-            context_tokens = packed_ctx.total_tokens
-            packing_stats = {
-                'using_packed_context': True,
-                'elements_included': packed_ctx.elements_included,
-                'elements_compressed': packed_ctx.elements_compressed,
-                'elements_excluded': packed_ctx.elements_excluded,
-                'avg_activation': packed_ctx.avg_activation,
-                'token_budget_used': f"{packed_ctx.total_tokens}/{context.metadata.get('packing_stats', {}).get('budget_available', 'N/A')}"
-            }
-            self.logger.debug(
-                f"Using packed context: {packed_ctx.elements_included} elements, "
-                f"{context_tokens} tokens (avg_activation={packed_ctx.avg_activation:.3f})"
-            )
-        else:
-            # Use raw shard texts (legacy behavior)
-            shard_texts = context.shard_texts[:5] if context and hasattr(context, 'shard_texts') else []
-            llm_context = "\n\n".join(shard_texts)
-            context_tokens = len(llm_context) // 4  # Rough token estimate
-            packing_stats = {
-                'using_packed_context': False,
-                'raw_shards_count': len(shard_texts)
-            }
-            self.logger.debug(f"Using raw context: {len(shard_texts)} shards")
-
-        # Build LLM prompt
-        system_prompt = (
-            "You are a helpful AI assistant. "
-            "Answer based on the provided context. "
-            "Be concise and accurate."
-        )
-
-        user_prompt = f"""Context:
-{llm_context}
-
-Question: {query.text}
-
-Answer:"""
-
-        # Call LLM if available
-        if self.llm and hasattr(self.llm, 'is_available') and self.llm.is_available():
-            try:
-                response = await self.llm.generate(
-                    prompt=user_prompt,
-                    system_prompt=system_prompt,
-                    max_tokens=500,
-                    temperature=0.7
-                )
-
-                return {
-                    "tool": "answer",
-                    "result": response.content,  # ✅ Actual LLM response!
-                    "confidence": 0.85,
-                    "sources": len(context.shards) if context and hasattr(context, 'shards') else 0,
-                    "llm_provider": response.provider.value if hasattr(response, 'provider') else "ollama",
-                    "llm_model": response.model if hasattr(response, 'model') else "unknown",
-                    "usage": response.usage if hasattr(response, 'usage') else {},
-                    "context_tokens": context_tokens,
-                    "packing_stats": packing_stats
-                }
-            except Exception as e:
-                self.logger.error(f"LLM generation failed: {e}")
-                # Fall through to fallback
-
-        # Fallback (LLM unavailable)
-        self.logger.warning("Using fallback response (LLM unavailable)")
-        return {
-            "tool": "answer",
-            "result": f"[Fallback] Generated answer for: {query.text}\n\nContext: {llm_context[:300]}...",
-            "confidence": 0.5,
-            "sources": len(context.shards) if context and hasattr(context, 'shards') else 0,
-            "context_preview": llm_context[:200] + "..." if len(llm_context) > 200 else llm_context,
-            "context_tokens": context_tokens,
-            "packing_stats": packing_stats
-        }
-
-    async def _handle_search(self, query: Query, context: Context) -> Dict:
-        """Perform a search."""
-        return {
-            "tool": "search",
-            "result": "Search results based on query",
-            "sources": ["source1", "source2", "source3"],
-            "count": 3
-        }
-
-    async def _handle_notion_write(self, query: Query, context: Context) -> Dict:
-        """Write to Notion database."""
-        return {
-            "tool": "notion_write",
-            "result": "Successfully wrote to Notion database",
-            "status": "success",
-            "page_id": "mock_page_123"
-        }
-
-    async def _handle_calc(self, query: Query, context: Context) -> Dict:
-        """Perform calculation."""
-        return {
-            "tool": "calc",
-            "result": "Calculation completed",
-            "value": 42,
-            "expression": "mock_calculation"
-        }
-
-    async def _handle_unknown(self, query: Query, context: Context) -> Dict:
-        """Handle unknown tool."""
-        return {
-            "tool": "unknown",
-            "result": "Unknown tool",
-            "error": "Tool not implemented",
-            "status": "error"
-        }
 
 
 # ============================================================================
@@ -429,7 +295,10 @@ class WeavingOrchestrator:
         rate_limit_concurrent: int = 50,
         enable_circuit_breakers: bool = True,
         circuit_breaker_threshold: int = 5,
-        enable_health_checks: bool = True
+        enable_health_checks: bool = True,
+        enable_auto_enhancement: bool = False,  # Meta-Prompt Auto-Enhancement
+        # Consciousness Integration (Phase 1 - November 2025)
+        awareness_layer: Optional[Any] = None,  # AwarenessGraph for epistemic consciousness
     ):
         """
         Initialize the Weaving Shuttle with mythRL protocol enhancements.
@@ -457,6 +326,11 @@ class WeavingOrchestrator:
             enable_circuit_breakers: Enable circuit breaker protection (default True)
             circuit_breaker_threshold: Failures before circuit opens (default 5)
             enable_health_checks: Enable health check system (default True)
+            enable_auto_enhancement: Enable Meta-Prompt auto-enhancement (default False)
+            awareness_layer: Optional AwarenessGraph for epistemic consciousness integration (default None)
+                - If None, auto-creates AwarenessGraph with semantic calculus
+                - Enables epistemic self-awareness, uncertainty quantification, meta-confidence
+                - Injects awareness context into weaving cycle and Spacetime results
 
         Note:
             Memory sources (priority order):
@@ -479,6 +353,25 @@ class WeavingOrchestrator:
         self.logger = logging.getLogger(__name__)
         self.enable_semantic_cache = enable_semantic_cache
         self.enable_dashboards = enable_dashboards
+
+        # Meta-Prompt Auto-Enhancement
+        self.enable_auto_enhancement = enable_auto_enhancement
+        self.meta_prompt_template = None
+        if self.enable_auto_enhancement:
+            try:
+                # Load template from standard location
+                import os
+                template_path = os.path.join("promptly_skills", "meta_prompt", "template.md")
+                if os.path.exists(template_path):
+                    with open(template_path, "r", encoding="utf-8") as f:
+                        self.meta_prompt_template = f.read()
+                    self.logger.info("Meta-Prompt template loaded for auto-enhancement")
+                else:
+                    self.logger.warning(f"Meta-Prompt template not found at {template_path}")
+                    self.enable_auto_enhancement = False
+            except Exception as e:
+                self.logger.warning(f"Failed to load Meta-Prompt template: {e}")
+                self.enable_auto_enhancement = False
 
         # Phase 3.1: Stage tracking callback for monitoring
         self.stage_callback = stage_callback
@@ -504,7 +397,8 @@ class WeavingOrchestrator:
         self.error_handler: Optional['ErrorHandler'] = None
 
         if self.enable_production_hardening:
-            self._initialize_production_hardening(
+            initialize_production_hardening(
+                orchestrator=self,
                 production_config=production_config,
                 rate_limit_qps=rate_limit_qps,
                 rate_limit_concurrent=rate_limit_concurrent,
@@ -514,7 +408,8 @@ class WeavingOrchestrator:
             )
 
         # Initialize configuration and memory
-        self._initialize_config_and_memory(
+        initialize_config_and_memory(
+            orchestrator=self,
             memory=memory,
             yarn_graph=yarn_graph,
             shards=shards,
@@ -523,582 +418,33 @@ class WeavingOrchestrator:
         )
 
         # Initialize weaving components
-        self._initialize_components()
+        initialize_components(orchestrator=self)
 
         # Initialize reflection, caching, and dashboards
-        self._initialize_reflection_and_caching(
+        initialize_reflection_and_caching(
+            orchestrator=self,
             enable_reflection=enable_reflection,
             reflection_capacity=reflection_capacity
         )
 
+        # Initialize awareness layer (Consciousness Integration - Phase 1, November 2025)
+        self.awareness_layer = awareness_layer
+        if self.awareness_layer is None and hasattr(self, 'semantic_spectrum'):
+            # Auto-create awareness layer with semantic calculus
+            try:
+                from HoloLoom.memory.awareness_graph import AwarenessGraph
+                # Use existing graph backend and semantic calculus
+                self.awareness_layer = AwarenessGraph(
+                    graph_backend=self.yarn_graph._graph if hasattr(self, 'yarn_graph') else None,
+                    semantic_calculus=self.semantic_spectrum,
+                    vector_store=None  # Optional, not required
+                )
+                self.logger.info("Auto-created AwarenessGraph for consciousness integration")
+            except Exception as e:
+                self.logger.warning(f"Failed to auto-create AwarenessGraph: {e}")
+                self.awareness_layer = None
+
         self.logger.info("WeavingOrchestrator initialization complete")
-
-    def _initialize_config_and_memory(
-        self,
-        memory,
-        yarn_graph,
-        shards,
-        pattern_preference,
-        enable_complexity_auto_detect
-    ):
-        """
-        Initialize memory configuration, pattern card, and protocol architecture.
-
-        Validates memory sources, sets up mythRL protocols, and configures
-        complexity detection thresholds.
-        """
-        # Validate memory configuration
-        if memory is None and yarn_graph is None and shards is None:
-            raise ValueError("Either 'memory', 'yarn_graph', or 'shards' must be provided")
-
-        # Deprecation warning for shards parameter
-        if shards is not None and yarn_graph is None and memory is None:
-            import warnings
-            warnings.warn(
-                "Using 'shards' parameter is deprecated. "
-                "Please use 'yarn_graph' (KG instance) for full metaphor support. "
-                "Example: yarn_graph=KG() with memories added via yarn_graph.store().",
-                DeprecationWarning,
-                stacklevel=2
-            )
-
-        self.memory = memory  # Backend memory store
-        self.yarn_graph_param = yarn_graph  # User-provided Yarn Graph (KG)
-        self.shards = shards or []  # Static shards (backward compatibility)
-
-        # mythRL Protocol-based architecture
-        self.enable_complexity_auto_detect = enable_complexity_auto_detect
-        self._protocols: Dict[str, Any] = {}  # Registered protocol implementations
-        self._complexity_thresholds = {
-            # Word count thresholds
-            'lite_max_words': 2,      # Up to 2 words = LITE (greetings, simple commands)
-            'fast_max_words': 20,     # 3-20 words = FAST (standard questions)
-            'full_max_words': 50,     # 21-50 words = FULL (detailed queries)
-
-            # Intent patterns for sophisticated detection
-            'greeting_patterns': ['hi', 'hello', 'hey', 'thanks', 'thank you', 'bye', 'goodbye'],
-            'simple_commands': ['show', 'list', 'get', 'find', 'open'],
-            'question_words': ['what', 'why', 'how', 'when', 'where', 'who', 'which', 'whose', 'whom'],
-            'knowledge_verbs': ['explain', 'describe', 'tell', 'define', 'clarify', 'elaborate'],
-            'analysis_verbs': ['analyze', 'compare', 'evaluate', 'assess', 'investigate', 'examine'],
-            'research_keywords': ['research', 'deep', 'comprehensive', 'detailed', 'thorough', 'in-depth', 'extensive']
-        }
-
-        # Multipass Memory Crawling Configuration
-        # Recursive gated retrieval with Matryoshka importance gating
-        self._crawl_config = {
-            ComplexityLevel.LITE: {
-                'passes': 1,
-                'thresholds': [0.7],           # Single pass, high threshold
-                'limits': [5],                  # 5 items max
-                'graph_expansion': False        # No graph traversal
-            },
-            ComplexityLevel.FAST: {
-                'passes': 2,
-                'thresholds': [0.6, 0.75],     # Broad → focused
-                'limits': [8, 12],              # 8 initial, 12 expansion
-                'graph_expansion': True         # Light graph traversal
-            },
-            ComplexityLevel.FULL: {
-                'passes': 3,
-                'thresholds': [0.6, 0.75, 0.85],  # Progressive gating
-                'limits': [12, 20, 15],           # Expanding search space
-                'graph_expansion': True           # Full graph traversal
-            },
-            ComplexityLevel.RESEARCH: {
-                'passes': 4,
-                'thresholds': [0.5, 0.65, 0.8, 0.9],  # Maximum depth
-                'limits': [20, 30, 25, 15],            # Deep exploration
-                'graph_expansion': True                 # Aggressive graph traversal
-            }
-        }
-        self.logger.info(f"mythRL protocol system enabled (auto_detect={enable_complexity_auto_detect})")
-
-        # Create a single shared SafetyGuardrails instance used across components
-        try:
-            # Check if guardrails should be disabled via config or environment variable
-            import os
-            testing_mode = (not getattr(self.cfg, 'enable_safety_guardrails', True) or
-                           os.getenv("DISABLE_GUARDRAILS"))
-            self.guardrails: SafetyGuardrails = create_guardrails(testing_mode=testing_mode)
-            if testing_mode:
-                self.logger.info("Shared SafetyGuardrails created in testing mode (approval bypassed)")
-            else:
-                self.logger.info("Shared SafetyGuardrails instance created and will be threaded to components")
-        except Exception as e:
-            self.logger.warning(f"Failed to initialize shared guardrails: {e}. Falling back to local guardrails where needed.")
-            self.guardrails = None
-
-        # Determine pattern card from config or preference
-        if pattern_preference:
-            self.default_pattern = pattern_preference
-        elif self.cfg.mode == ExecutionMode.BARE:
-            self.default_pattern = PatternCard.BARE
-        elif self.cfg.mode == ExecutionMode.FAST:
-            self.default_pattern = PatternCard.FAST
-        else:
-            self.default_pattern = PatternCard.FUSED
-
-        self.logger.info(f"Initializing WeavingOrchestrator with pattern: {self.default_pattern.value}")
-
-        # Lifecycle management
-        self._background_tasks: List[asyncio.Task] = []
-        self._bg_lock = asyncio.Lock()  # Protect concurrent access to _background_tasks
-        self._closed = False
-
-    def _initialize_reflection_and_caching(
-        self,
-        enable_reflection: bool,
-        reflection_capacity: int
-    ):
-        """
-        Initialize reflection loop, query cache, and dashboard constructor.
-
-        Sets up learning systems and performance optimizations.
-        """
-        # Initialize reflection loop
-        self.enable_reflection = enable_reflection
-        if enable_reflection:
-            self.reflection_buffer = ReflectionBuffer(
-                capacity=reflection_capacity,
-                persist_path="./reflections",
-                learning_window=100
-            )
-            self.logger.info("Reflection loop enabled")
-        else:
-            self.reflection_buffer = None
-            self.logger.info("Reflection loop disabled")
-
-        # Initialize performance cache
-        self.query_cache = QueryCache(max_size=50, ttl_seconds=300)
-        self.logger.info("Query cache enabled (max_size=50, ttl=300s)")
-
-        # Initialize smart query routing (November 2025 - Performance Optimization)
-        self.query_classifier = create_classifier(self.cfg)
-        self.fast_path_router = create_fast_path_router(self, self.cfg) if self.query_classifier else None
-
-        if self.query_classifier and self.fast_path_router:
-            self.logger.info(f"✅ Smart query routing enabled "
-                            f"(classifier={self.cfg.routing_classifier}, "
-                            f"semantic_tier={self.cfg.enable_semantic_tier})")
-        else:
-            self.logger.info("Smart query routing disabled")
-
-        # Initialize dashboard constructor (Edward Tufte Machine)
-        if self.enable_dashboards:
-            from HoloLoom.visualization.constructor import DashboardConstructor
-            self.dashboard_constructor = DashboardConstructor()
-            self.logger.info("Dashboard generation enabled (Edward Tufte Machine)")
-        else:
-            self.dashboard_constructor = None
-            self.logger.info("Dashboard generation disabled")
-
-    def _initialize_recursive_learning(self):
-        """
-        Initialize recursive learning components (lazy initialization).
-
-        This is called on first weave() when enable_recursive_learning=True.
-        Initializes:
-        - Scratchpad for provenance tracking
-        - Pattern learner for successful query patterns
-        - Hot pattern tracker for adaptive retrieval
-        - Advanced refiner for low-confidence queries
-        - Background learner for Thompson Sampling and policy updates
-        """
-        if self._recursive_components is not None:
-            return  # Already initialized
-
-        try:
-            from HoloLoom.recursive.scratchpad import Scratchpad
-            from HoloLoom.recursive.loop_integration import PatternLearner
-            from HoloLoom.recursive.hot_patterns import HotPatternTracker
-            from HoloLoom.recursive.advanced_refinement import AdvancedRefiner
-            from HoloLoom.recursive.full_learning_loop import (
-                ThompsonPriors,
-                PolicyWeights,
-                BackgroundLearner,
-                LearningMetrics
-            )
-
-            self.logger.info("Initializing recursive learning components...")
-
-            # Components dictionary
-            components = {}
-
-            # 1. Scratchpad (Phase 1)
-            if self.cfg.recursive_learning_enable_scratchpad:
-                components['scratchpad'] = Scratchpad(capacity=1000)
-                self.logger.info("  [Phase 1] Scratchpad enabled (provenance tracking)")
-
-            # 2. Pattern Learner (Phase 2)
-            components['pattern_learner'] = PatternLearner()
-            self.logger.info("  [Phase 2] Pattern learner enabled")
-
-            # 3. Hot Pattern Tracker (Phase 3)
-            if self.cfg.recursive_learning_enable_hot_patterns:
-                components['hot_tracker'] = HotPatternTracker()
-                self.logger.info("  [Phase 3] Hot pattern tracker enabled")
-
-            # 4. Advanced Refiner (Phase 4)
-            components['refiner'] = AdvancedRefiner(
-                orchestrator=self,
-                scratchpad=components.get('scratchpad'),
-                enable_learning=True
-            )
-            self.logger.info("  [Phase 4] Advanced refiner enabled")
-
-            # 5. Background Learner (Phase 5)
-            components['thompson_priors'] = ThompsonPriors()
-            components['policy_weights'] = PolicyWeights()
-            components['metrics'] = LearningMetrics()
-
-            if self.cfg.recursive_learning_enable_background:
-                components['background_learner'] = BackgroundLearner(
-                    orchestrator=self,
-                    thompson_priors=components['thompson_priors'],
-                    policy_weights=components['policy_weights'],
-                    update_interval=self.cfg.recursive_learning_update_interval
-                )
-                self.logger.info("  [Phase 5] Background learner enabled")
-            else:
-                components['background_learner'] = None
-
-            self._recursive_components = components
-
-            # Note: Background learner.start() should be called asynchronously in weave()
-            # Cannot use await here since _initialize_recursive_learning is synchronous
-            self.logger.info("Recursive learning initialization complete")
-
-        except ImportError as e:
-            self.logger.warning(
-                f"Failed to initialize recursive learning components: {e}. "
-                f"Recursive learning will be disabled. "
-                f"Install dependencies or disable via config.enable_recursive_learning=False"
-            )
-            self.enable_recursive_learning = False
-            self._recursive_components = None
-
-    def _initialize_components(self):
-        """Initialize all weaving architecture components."""
-
-        # 1. Loom Command - Pattern selection
-        self.loom_command = LoomCommand(
-            default_pattern=self.default_pattern,
-            auto_select=True,
-            guardrails=self.guardrails,
-        )
-
-        # 2. Yarn Graph / Memory Backend - Thread storage
-        # Priority: memory > yarn_graph > shards (for backward compatibility)
-        if self.memory:
-            # Use persistent memory backend (UnifiedMemory, etc.)
-            from HoloLoom.memory.weaving_adapter import WeavingMemoryAdapter
-            if isinstance(self.memory, WeavingMemoryAdapter):
-                self.yarn_graph = self.memory
-            else:
-                # Wrap raw memory in adapter (use "factory" type for protocol backends)
-                self.yarn_graph = WeavingMemoryAdapter(backend=self.memory, backend_type="factory")
-            self.logger.info("Using persistent memory backend")
-        elif self.yarn_graph_param:
-            # Use KG instance directly (preferred modern API)
-            self.yarn_graph = self.yarn_graph_param
-            self.logger.info(f"Using Yarn Graph (KG) with {self.yarn_graph.G.number_of_nodes()} nodes")
-        else:
-            # Use in-memory YarnGraph with shards (backward compatibility)
-            self.yarn_graph = YarnGraph(self.shards)
-            self.logger.info(f"Using in-memory YarnGraph (legacy) with {len(self.shards)} shards")
-
-        # 3. Component factories (will be instantiated per-query with pattern spec)
-        self.embedder = MatryoshkaEmbeddings(
-            sizes=self.cfg.scales,
-            base_model_name=self.cfg.base_model_name
-        )
-
-        # 3a. Semantic Cache - Three-tier caching for 244D semantic projections
-        if self.enable_semantic_cache:
-            self._initialize_semantic_cache()
-        else:
-            self.semantic_cache = None
-            self.semantic_spectrum = None
-
-        # 3b. Phase 5: Linguistic Matryoshka Gate (optional)
-        if self.cfg.enable_linguistic_gate:
-            self._initialize_linguistic_gate()
-        else:
-            self.linguistic_gate = None
-
-        # 4. Tool Executor
-        self.tool_executor = ToolExecutor()
-
-        # 4a. Gradient Flow Router (Phase 1: Physics-based tool selection)
-        # Uses gradient descent to route queries to optimal tools based on cost/quality/latency
-        try:
-            tool_configs = [
-                ToolConfig("answer", cost=0.3, quality=0.8, latency=100),
-                ToolConfig("search", cost=0.5, quality=0.7, latency=150),
-                ToolConfig("notion_write", cost=0.6, quality=0.75, latency=120),
-                ToolConfig("calc", cost=0.1, quality=0.9, latency=50)
-            ]
-            self.gradient_router = ToolRouter(
-                tools=tool_configs,
-                cost_weight=0.3,
-                quality_weight=0.5,  # Favor quality
-                latency_weight=0.2
-            )
-            self.logger.info("Gradient flow router initialized (Phase 1 integration)")
-        except Exception as e:
-            self.logger.warning(f"Failed to initialize gradient flow router: {e}")
-            self.gradient_router = None
-
-        # 4b. Unified Physics Engine (Phases 1-4: Complete physics stack)
-        # Coordinates gradient flow, fluid dynamics, thermodynamics, and wave mechanics
-        # for self-optimizing behavior across routing, packing, exploration, and pattern detection
-        self.unified_physics = None
-        if UNIFIED_PHYSICS_AVAILABLE and self.cfg.enable_unified_physics:
-            try:
-                self.unified_physics = UnifiedPhysicsEngine(
-                    enable_routing=True,        # Phase 1: Gradient flow routing
-                    enable_packing=True,        # Phase 2: Fluid dynamics context packing
-                    enable_thermodynamics=True, # Phase 3: Exploration/exploitation balance
-                    enable_wave_mechanics=True, # Phase 4: Pattern detection
-                    mode="adaptive"            # Adaptive strategy selection
-                )
-                self.logger.info("✓ Unified Physics Engine initialized (Phases 1-4 complete)")
-                self.logger.info("  → Routing: Gradient flow (optimal tool selection)")
-                self.logger.info("  → Packing: Fluid dynamics (context optimization)")
-                self.logger.info("  → Exploration: Thermodynamics (F = E - T*S)")
-                self.logger.info("  → Patterns: Wave mechanics (interference detection)")
-            except Exception as e:
-                self.logger.warning(f"Failed to initialize unified physics: {e}")
-                self.unified_physics = None
-        elif not UNIFIED_PHYSICS_AVAILABLE:
-            self.logger.debug("Unified physics not available (import failed)")
-        else:
-            self.logger.debug("Unified physics disabled in config")
-
-        # 4c. Statistical Mechanics Engine (Phase 5: Memory consolidation)
-        # Uses Gibbs distribution for emergent clustering and phase transition detection
-        if self.enable_statistical_mechanics:
-            try:
-                self.stat_mech_engine = StatisticalMechanicsEngine(
-                    temperature=self.consolidation_temperature,
-                    cooling_rate=self.consolidation_cooling_rate
-                )
-                self.logger.info("✓ Statistical Mechanics Engine initialized (Phase 5 complete)")
-                self.logger.info(f"  → Consolidation interval: {self.consolidation_interval}s")
-                self.logger.info(f"  → Initial temperature: {self.consolidation_temperature}")
-                self.logger.info(f"  → Cooling rate: {self.consolidation_cooling_rate}")
-            except Exception as e:
-                self.logger.warning(f"Failed to initialize statistical mechanics: {e}")
-                self.stat_mech_engine = None
-        elif not STATISTICAL_MECHANICS_AVAILABLE:
-            self.logger.debug("Statistical mechanics not available (import failed)")
-        else:
-            self.logger.debug("Statistical mechanics disabled")
-
-        # 5. Retriever (for context)
-        # Only create traditional retriever if using shards (legacy path)
-        if self.shards:
-            # Legacy YarnGraph has .shards dict
-            if hasattr(self.yarn_graph, 'shards'):
-                self.retriever = create_retriever(
-                    shards=list(self.yarn_graph.shards.values()),
-                    emb=self.embedder,
-                    fusion_weights=self.cfg.fusion_weights
-                )
-            else:
-                # Direct shards list (shouldn't happen with new API)
-                self.retriever = create_retriever(
-                    shards=self.shards,
-                    emb=self.embedder,
-                    fusion_weights=self.cfg.fusion_weights
-                )
-        else:
-            # Using KG or dynamic memory backend - retriever not needed
-            # Thread selection happens via yarn_graph.select_threads()
-            self.retriever = None
-
-        self.logger.debug("All weaving components initialized")
-
-    def _initialize_production_hardening(
-        self,
-        production_config,
-        rate_limit_qps,
-        rate_limit_concurrent,
-        enable_circuit_breakers,
-        circuit_breaker_threshold,
-        enable_health_checks
-    ):
-        """
-        Initialize production hardening components (Part 5: Days 21-25).
-
-        Creates monitoring, circuit breakers, rate limiting, health checks,
-        and error handling components for production deployment.
-
-        Features:
-        - System monitoring (performance, resources, learning metrics)
-        - Circuit breaker protection for backend failures
-        - Rate limiting (token bucket + sliding window + concurrent)
-        - Health check system for load balancers
-        - Error handler with retry and fallback
-
-        Performance: <1ms overhead per query
-        """
-        if not PRODUCTION_HARDENING_AVAILABLE:
-            self.logger.warning("Production hardening unavailable (context module not found)")
-            return
-
-        self.logger.info("Initializing production hardening...")
-
-        # Load or create production configuration
-        if production_config is None:
-            production_config = ProductionConfig.from_environment()
-            self.logger.info(f"  Auto-detected environment: {production_config.environment.value}")
-        else:
-            self.logger.info(f"  Using provided config: {production_config.environment.value}")
-
-        # Validate configuration
-        errors = production_config.validate()
-        if errors:
-            self.logger.error(f"Production config validation failed: {errors}")
-            raise ValueError(f"Invalid production configuration: {errors}")
-
-        # Create system monitor
-        self.monitor = create_system_monitor()
-        self.logger.info("  System monitor enabled (performance + resources + learning)")
-
-        # Create circuit breaker registry (if enabled)
-        if enable_circuit_breakers:
-            self.breaker_registry = create_circuit_breaker_registry()
-            self.logger.info(
-                f"  Circuit breakers enabled "
-                f"(threshold: {circuit_breaker_threshold})"
-            )
-        else:
-            self.breaker_registry = None
-            self.logger.info("  Circuit breakers disabled")
-
-        # Create rate limiter
-        self.rate_limiter = create_rate_limiter(
-            rate=rate_limit_qps,
-            capacity=int(rate_limit_qps * 0.2),  # 20% burst capacity
-            max_concurrent=rate_limit_concurrent
-        )
-        self.logger.info(
-            f"  Rate limiter enabled "
-            f"(qps: {rate_limit_qps}, concurrent: {rate_limit_concurrent})"
-        )
-
-        # Create health checker (if enabled)
-        if enable_health_checks:
-            self.health_checker = create_health_checker(
-                performance_monitor=self.monitor.performance if self.monitor else None,
-                resource_monitor=self.monitor.resources if self.monitor else None,
-                learning_monitor=self.monitor.learning if self.monitor else None,
-                circuit_breaker_registry=self.breaker_registry
-            )
-            self.logger.info("  Health checker enabled (5 component checks)")
-        else:
-            self.health_checker = None
-            self.logger.info("  Health checks disabled")
-
-        # Create error handler
-        self.error_handler = create_error_handler()
-        self.logger.info("  Error handler enabled (retry + fallback)")
-
-        self.logger.info("Production hardening initialization complete (<1ms overhead)")
-
-    def _initialize_semantic_cache(self):
-        """
-        Initialize three-tier semantic cache for 244D projections.
-
-        This provides 3-10× speedup for semantic projections by caching at
-        the semantic dimension level instead of just the embedding level.
-        """
-        try:
-            from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
-            from HoloLoom.performance.semantic_cache import AdaptiveSemanticCache
-
-            self.logger.info("Initializing semantic cache...")
-
-            # Create global semantic spectrum
-            self.semantic_spectrum = SemanticSpectrum(dimensions=EXTENDED_244_DIMENSIONS)
-
-            # Learn axes using embedder
-            self.logger.info("  Learning semantic axes...")
-            self.semantic_spectrum.learn_axes(lambda word: self.embedder.encode([word])[0])
-
-            # Initialize adaptive semantic cache
-            self.semantic_cache = AdaptiveSemanticCache(
-                semantic_spectrum=self.semantic_spectrum,
-                embedder=self.embedder,
-                hot_size=1000,  # Pre-loaded narrative patterns
-                warm_size=5000   # LRU cache for recent queries
-            )
-
-            self.logger.info("  Semantic cache enabled (hot=1000, warm=5000)")
-
-        except Exception as e:
-            self.logger.warning(f"Failed to initialize semantic cache: {e}")
-            self.logger.warning("Falling back to direct semantic computation")
-            self.semantic_cache = None
-            self.semantic_spectrum = None
-
-    def _initialize_linguistic_gate(self):
-        """
-        Initialize Phase 5 Linguistic Matryoshka Gate.
-
-        This provides 10-300× speedup through:
-        1. Universal Grammar phrase chunking (X-bar theory)
-        2. 3-tier compositional cache (parse/merge/semantic)
-        3. Progressive linguistic filtering
-        """
-        try:
-            from HoloLoom.embedding.linguistic_matryoshka_gate import (
-                LinguisticMatryoshkaGate,
-                LinguisticGateConfig,
-                LinguisticFilterMode
-            )
-
-            self.logger.info("Initializing Phase 5 Linguistic Matryoshka Gate...")
-
-            # Map config string to enum
-            mode_map = {
-                'disabled': LinguisticFilterMode.DISABLED,
-                'prefilter': LinguisticFilterMode.PREFILTER,
-                'embedding': LinguisticFilterMode.EMBEDDING,
-                'both': LinguisticFilterMode.BOTH
-            }
-            linguistic_mode = mode_map.get(self.cfg.linguistic_mode, LinguisticFilterMode.DISABLED)
-
-            # Create configuration
-            gate_config = LinguisticGateConfig(
-                linguistic_mode=linguistic_mode,
-                use_compositional_cache=self.cfg.use_compositional_cache,
-                parse_cache_size=self.cfg.parse_cache_size,
-                merge_cache_size=self.cfg.merge_cache_size,
-                linguistic_weight=self.cfg.linguistic_weight,
-                prefilter_similarity_threshold=self.cfg.prefilter_similarity_threshold,
-                prefilter_keep_ratio=self.cfg.prefilter_keep_ratio
-            )
-
-            # Create linguistic gate
-            self.linguistic_gate = LinguisticMatryoshkaGate(
-                embedder=self.embedder,
-                config=gate_config
-            )
-
-            self.logger.info(
-                f"  Phase 5 enabled: mode={linguistic_mode.value}, "
-                f"cache={self.cfg.use_compositional_cache}, "
-                f"parse_cache={self.cfg.parse_cache_size}, "
-                f"merge_cache={self.cfg.merge_cache_size}"
-            )
-
-        except Exception as e:
-            self.logger.warning(f"Failed to initialize linguistic gate: {e}")
-            self.logger.warning("Falling back to standard matryoshka gate")
-            self.linguistic_gate = None
 
     def _analyze_semantics(self, text: str) -> Optional[Dict[str, float]]:
         """
@@ -1153,112 +499,6 @@ class WeavingOrchestrator:
         """
         self._protocols[protocol_name] = implementation
         self.logger.info(f"Registered protocol: {protocol_name}")
-
-    def _assess_complexity_level(self, query: Query, trace: Optional[ProvenanceTrace] = None) -> ComplexityLevel:
-        """
-        Assess query complexity using hybrid word count + intent detection.
-        
-        **Progressive Complexity (3-5-7-9):**
-        - LITE (3): Greetings, simple commands (1-3 words, no questions)
-        - FAST (5): Questions, knowledge queries (4-20 words OR question indicators)
-        - FULL (7): Detailed analysis (21-50 words, complex questions)
-        - RESEARCH (9): Deep research (analysis verbs, research keywords, 50+ words)
-        
-        **Intent Detection:**
-        - Greetings: "hi", "hello", "thanks" → LITE
-        - Questions: "what", "how", "why" → FAST (minimum)
-        - Knowledge: "explain", "describe" → FAST (minimum)
-        - Analysis: "analyze", "compare" → RESEARCH
-        - Research: "comprehensive", "detailed" → RESEARCH
-        
-        Args:
-            query: User query
-            trace: Optional provenance trace to record decision
-        
-        Returns:
-            ComplexityLevel (LITE/FAST/FULL/RESEARCH)
-        """
-        if not self.enable_complexity_auto_detect:
-            # Map pattern card to complexity level
-            if self.default_pattern == PatternCard.BARE:
-                return ComplexityLevel.LITE
-            elif self.default_pattern == PatternCard.FAST:
-                return ComplexityLevel.FAST
-            else:  # FUSED
-                return ComplexityLevel.FULL
-        
-        text = query.text.lower()
-        words = text.split()
-        word_count = len(words)
-        
-        # Extract intent patterns
-        thresholds = self._complexity_thresholds
-        
-        # Check for specific intent patterns
-        is_greeting = any(pattern in text for pattern in thresholds['greeting_patterns'])
-        is_simple_command = any(cmd in words for cmd in thresholds['simple_commands'])
-        has_question_word = any(q in words for q in thresholds['question_words'])
-        has_question_mark = '?' in text
-        has_knowledge_verb = any(verb in words for verb in thresholds['knowledge_verbs'])
-        has_analysis_verb = any(verb in words for verb in thresholds['analysis_verbs'])
-        has_research_keyword = any(keyword in text for keyword in thresholds['research_keywords'])
-        
-        # Determine complexity with sophisticated intent detection
-        # Priority: Research > Full > Fast > Lite
-        
-        # RESEARCH: Analysis verbs, research keywords, or very long queries
-        if has_analysis_verb or has_research_keyword or word_count > thresholds['full_max_words']:
-            level = ComplexityLevel.RESEARCH
-            reason = f"analysis_verb={has_analysis_verb}, research_keyword={has_research_keyword}, long_query={word_count > thresholds['full_max_words']}"
-        
-        # FULL: Detailed questions (21-50 words) or complex knowledge requests
-        elif word_count >= thresholds['fast_max_words']:  # Changed > to >= (includes 20-word boundary)
-            level = ComplexityLevel.FULL
-            reason = f"word_count={word_count} >= {thresholds['fast_max_words']}"
-        
-        # FAST: Questions, knowledge verbs, or 4-20 words
-        elif has_question_word or has_question_mark or has_knowledge_verb or word_count > thresholds['lite_max_words']:
-            # Exception: Pure greetings stay LITE even if >3 words (but not if they have question words)
-            if is_greeting and word_count <= 5 and not (has_question_word or has_question_mark):
-                level = ComplexityLevel.LITE
-                reason = f"greeting_pattern (word_count={word_count})"
-            else:
-                level = ComplexityLevel.FAST
-                reason = f"question={has_question_word or has_question_mark}, knowledge_verb={has_knowledge_verb}, word_count={word_count}"
-        
-        # LITE: Simple greetings, short commands (1-3 words, no questions)
-        else:
-            level = ComplexityLevel.LITE
-            reason = f"simple_query (word_count={word_count})"
-        
-        if trace:
-            trace.add_shuttle_event(
-                "complexity_assessment",
-                f"Assessed complexity: {level.name}",
-                {
-                    'word_count': word_count,
-                    'is_greeting': is_greeting,
-                    'has_question': has_question_word or has_question_mark,
-                    'has_knowledge_verb': has_knowledge_verb,
-                    'has_analysis_verb': has_analysis_verb,
-                    'has_research_keyword': has_research_keyword,
-                    'complexity_level': level.name,
-                    'reason': reason
-                }
-            )
-        
-        return level
-
-    def _create_provenance_trace(self, query: Query, complexity: ComplexityLevel) -> ProvenanceTrace:
-        """Create a new provenance trace for this operation."""
-        operation_id = f"weave_{int(time.time() * 1000)}"
-        trace = ProvenanceTrace(
-            operation_id=operation_id,
-            complexity_level=complexity,
-            start_time=time.perf_counter()
-        )
-        trace.add_shuttle_event("weave_start", f"Beginning weave for query: {query.text[:50]}...")
-        return trace
 
     async def _multipass_memory_crawl(
         self,
@@ -1429,6 +669,57 @@ class WeavingOrchestrator:
                 self.logger.warning(f"Stage callback error: {e}")
 
     # ========================================================================
+    # Meta-Prompt Integration (Proto-LLM Call)
+    # ========================================================================
+
+    async def proto_llm_call(self, query_text: str) -> str:
+        """
+        Execute Proto-LLM call to enhance casual prompt using Meta-Prompt Skill.
+
+        Transforms: "help me with python"
+        Into: "Role: Python Expert... Objective: ..."
+
+        Uses the 7-component framework from promptly_skills/meta_prompt/template.md.
+        """
+        if not self.meta_prompt_template:
+            return query_text
+
+        start_time = time.time()
+        self.logger.info(f"[METAPROMPT] Enhancing query: '{query_text}'")
+
+        try:
+            # Format template
+            prompt = self.meta_prompt_template.replace("{user_request}", query_text)
+
+            # Use existing LLM if available
+            if self.tool_executor and self.tool_executor.llm:
+                response = await self.tool_executor.llm.generate(
+                    prompt=prompt,
+                    system_prompt="You are a prompt engineering expert.",
+                    max_tokens=1000,
+                    temperature=0.3
+                )
+                enhanced_text = response.content
+            else:
+                # Fallback if no LLM available (shouldn't happen in production)
+                self.logger.warning("[METAPROMPT] No LLM available for enhancement")
+                return query_text
+
+            # Extract just the structured prompt if possible (simple heuristic)
+            if "## STRUCTURED PROMPT" in enhanced_text:
+                parts = enhanced_text.split("## STRUCTURED PROMPT")
+                if len(parts) > 1:
+                    enhanced_text = parts[1].split("## JUSTIFICATION")[0].strip()
+
+            duration = (time.time() - start_time) * 1000
+            self.logger.info(f"[METAPROMPT] Enhancement complete in {duration:.1f}ms")
+            return enhanced_text
+
+        except Exception as e:
+            self.logger.error(f"[METAPROMPT] Enhancement failed: {e}")
+            return query_text
+
+    # ========================================================================
     # Main Weaving Cycle
     # ========================================================================
 
@@ -1436,7 +727,8 @@ class WeavingOrchestrator:
         self,
         query: Query,
         pattern_override: Optional[PatternCard] = None,
-        complexity: Optional[ComplexityLevel] = None
+        complexity: Optional[ComplexityLevel] = None,
+        auto_enhance: Optional[bool] = None
     ) -> Spacetime:
         """
         Execute the complete 9-step weaving cycle with mythRL progressive complexity.
@@ -1486,6 +778,11 @@ class WeavingOrchestrator:
                 - ComplexityLevel.FULL: 7-step production path
                 - ComplexityLevel.RESEARCH: 9-step research path
 
+            auto_enhance: Override auto-enhancement setting
+                - True: Force meta-prompt enhancement
+                - False: Disable meta-prompt enhancement
+                - None: Use default configuration
+
         Returns:
             Spacetime: Complete woven fabric containing:
                 - response: Generated response text
@@ -1503,7 +800,7 @@ class WeavingOrchestrator:
 
         Example:
             >>> from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-            >>> from HoloLoom.Documentation.types import Query
+            >>> from HoloLoom.protocols.types import Query
             >>> from HoloLoom.config import Config
             >>>
             >>> config = Config.fast()
@@ -1559,6 +856,23 @@ class WeavingOrchestrator:
         self.logger.info(f"[WEAVING] Beginning weaving cycle for query: '{query.text}'")
 
         # ====================================================================
+        # STEP 0: Meta-Prompt Enhancement (Proto-LLM Call)
+        # ====================================================================
+        should_enhance = auto_enhance if auto_enhance is not None else self.enable_auto_enhancement
+
+        if should_enhance:
+            try:
+                enhanced_text = await self.proto_llm_call(query.text)
+                # Update query with enhanced text, preserving metadata
+                original_text = query.text
+                query = Query(text=enhanced_text, metadata=query.metadata)
+                query.metadata['original_query'] = original_text
+                query.metadata['enhanced'] = True
+                self.logger.info(f"[WEAVING] Using enhanced query ({len(original_text)} -> {len(enhanced_text)} chars)")
+            except Exception as e:
+                self.logger.warning(f"[WEAVING] Auto-enhancement failed: {e}")
+
+        # ====================================================================
         # PRODUCTION HARDENING (Part 5: Days 21-25)
         # ====================================================================
         # Rate limiting, circuit breakers, monitoring
@@ -1576,6 +890,46 @@ class WeavingOrchestrator:
         # Recursive Learning: Initialize components on first use (lazy init)
         if self.enable_recursive_learning and self._recursive_components is None:
             self._initialize_recursive_learning()
+
+        # ====================================================================
+        # CONSCIOUSNESS INTEGRATION (Phase 1 - November 2025)
+        # ====================================================================
+        # Perceive query through awareness layer for epistemic consciousness
+        awareness_context = None
+        if self.awareness_layer:
+            try:
+                perception_start = time.perf_counter()
+                # Perceive query through awareness layer
+                awareness_perception = await self.awareness_layer.perceive(query.text)
+                perception_time = (time.perf_counter() - perception_start) * 1000
+
+                # Build awareness context for downstream use
+                awareness_context = {
+                    'semantic_position': awareness_perception.get('position'),
+                    'activation_level': awareness_perception.get('activation', 0.0),
+                    'perception_time_ms': perception_time,
+                }
+
+                # Get awareness metrics for provenance
+                metrics = self.awareness_layer.get_metrics()
+                awareness_context.update({
+                    'active_nodes': metrics.get('active_nodes', 0),
+                    'coherence': metrics.get('coherence', {}).get('global_coherence', 0.0),
+                    'shift_detected': metrics.get('shift_detected', False),
+                })
+
+                self.logger.info(
+                    f"[AWARENESS] Perception complete: "
+                    f"activation={awareness_context['activation_level']:.3f}, "
+                    f"coherence={awareness_context['coherence']:.3f}, "
+                    f"time={perception_time:.2f}ms"
+                )
+
+                stage_timings['awareness_perception'] = perception_time
+
+            except Exception as e:
+                self.logger.warning(f"[AWARENESS] Perception failed, continuing without awareness: {e}")
+                awareness_context = None
 
         # ====================================================================
         # SMART QUERY ROUTING (November 2025 - Performance Optimization)
@@ -1609,10 +963,10 @@ class WeavingOrchestrator:
 
         # mythRL: Assess complexity level (3-5-7-9 system)
         if complexity is None:
-            complexity = self._assess_complexity_level(query)
-        
+            complexity = assess_complexity_level(self, query)
+
         # mythRL: Create provenance trace
-        provenance = self._create_provenance_trace(query, complexity)
+        provenance = create_provenance_trace(self, query, complexity)
         
         self.logger.info(f"[mythRL] Complexity: {complexity.name} ({complexity.value} steps)")
 
@@ -1676,19 +1030,39 @@ class WeavingOrchestrator:
             self._emit_stage_event(2, "Chrono Trigger", duration)
 
             # ================================================================
-            # STEP 3: Yarn Graph threads selected
+            # STEP 3: Thread Selection (Shuttle or Yarn Graph)
             # ================================================================
             step_start = time.time()
-            self._emit_stage_event(3, "Yarn Graph")
 
-            threads = self.yarn_graph.select_threads(temporal_window, query)
+            if self.enable_shuttle and self.shuttle_stage:
+                # MCTS-powered Warp↔Yarn intersection
+                self._emit_stage_event(3, "Shuttle (Warp↔Yarn MCTS)")
+
+                threads = await self.shuttle_stage.select_threads(
+                    temporal_window=temporal_window,
+                    query=query,
+                    trajectory_name=None  # Auto-select via Thompson Sampling
+                )
+
+                duration = (time.time() - step_start) * 1000
+                self.logger.info(f"  [3] Shuttle selected {len(threads)} threads in {duration:.1f}ms")
+                stage_timings['shuttle_selection'] = duration
+                self._emit_stage_event(3, "Shuttle", duration)
+
+            else:
+                # Fallback: Simple Yarn Graph thread selection
+                self._emit_stage_event(3, "Yarn Graph")
+
+                threads = self.yarn_graph.select_threads(temporal_window, query)
+
+                duration = (time.time() - step_start) * 1000
+                self.logger.info(f"  [3] Selected {len(threads)} threads from Yarn Graph")
+                stage_timings['thread_selection'] = duration
+                self._emit_stage_event(3, "Yarn Graph", duration)
+
+            # Continue with thread processing (unchanged)
             thread_ids = [s.id for s in threads]
             thread_texts = [s.text for s in threads]
-
-            duration = (time.time() - step_start) * 1000
-            self.logger.info(f"  [3] Selected {len(threads)} threads from Yarn Graph")
-            stage_timings['thread_selection'] = duration
-            self._emit_stage_event(3, "Yarn Graph", duration)
 
             # ================================================================
             # STEPS 4-6: PARALLELIZED - Feature Extraction, Warp Tensioning, and Memory Retrieval
@@ -2101,6 +1475,21 @@ class WeavingOrchestrator:
                 metrics={'spectral': dot_plasma.get('spectral')},
                 metadata=dot_plasma.get('metadata', {})
             )
+
+            # Inject awareness metrics into features (Consciousness Integration - Phase 1)
+            if awareness_context:
+                features.metadata['awareness'] = {
+                    'activation_level': awareness_context.get('activation_level', 0.0),
+                    'coherence': awareness_context.get('coherence', 0.0),
+                    'active_nodes': awareness_context.get('active_nodes', 0),
+                    'shift_detected': awareness_context.get('shift_detected', False),
+                }
+                self.logger.debug(
+                    f"[AWARENESS] Injected epistemic context into features: "
+                    f"activation={awareness_context.get('activation_level', 0.0):.3f}, "
+                    f"coherence={awareness_context.get('coherence', 0.0):.3f}"
+                )
+
             context.features = features
 
             # ================================================================
@@ -2118,7 +1507,7 @@ class WeavingOrchestrator:
             except asyncio.TimeoutError:
                 self.logger.error("Policy decision timed out after 200ms, using safe default")
                 # Create safe default action plan
-                from HoloLoom.Documentation.types import ActionPlan
+                from HoloLoom.protocols.types import ActionPlan
                 action_plan = ActionPlan(
                     tool="answer",
                     confidence=0.5,
@@ -2242,6 +1631,22 @@ class WeavingOrchestrator:
                 }
             else:
                 metadata['semantic_cache'] = {'enabled': False}
+
+            # Inject awareness context into metadata (Consciousness Integration - Phase 1)
+            if awareness_context:
+                metadata['awareness'] = {
+                    'activation_level': awareness_context.get('activation_level', 0.0),
+                    'coherence': awareness_context.get('coherence', 0.0),
+                    'active_nodes': awareness_context.get('active_nodes', 0),
+                    'shift_detected': awareness_context.get('shift_detected', False),
+                    'semantic_position': awareness_context.get('semantic_position'),
+                    'perception_time_ms': awareness_context.get('perception_time_ms', 0.0),
+                }
+                self.logger.info(
+                    f"[AWARENESS] Epistemic context added to Spacetime: "
+                    f"activation={awareness_context.get('activation_level', 0.0):.3f}, "
+                    f"coherence={awareness_context.get('coherence', 0.0):.3f}"
+                )
 
             spacetime = Spacetime(
                 query_text=query.text,
@@ -2607,20 +2012,6 @@ class WeavingOrchestrator:
 
         self.logger.info(f"Applied {applied_count}/{len(signals)} learning signals")
 
-    def get_reflection_metrics(self) -> Optional[Dict[str, Any]]:
-        """Get reflection metrics if reflection is enabled."""
-        if not self.enable_reflection:
-            return None
-
-        metrics = self.reflection_buffer.get_metrics()
-        return {
-            'total_cycles': metrics.total_cycles,
-            'success_rate': self.reflection_buffer.get_success_rate(),
-            'tool_success_rates': metrics.tool_success_rates,
-            'tool_recommendations': self.reflection_buffer.get_tool_recommendations(),
-            'pattern_success_rates': metrics.pattern_success_rates
-        }
-
     async def weave_and_reflect(
         self,
         query: Query,
@@ -2751,71 +2142,6 @@ class WeavingOrchestrator:
 
         return spacetime
 
-    def get_recursive_learning_stats(self) -> Optional[Dict[str, Any]]:
-        """
-        Get comprehensive recursive learning statistics.
-
-        Returns None if recursive learning is disabled.
-
-        Returns:
-            Dict with learning metrics, Thompson priors, policy weights, etc.
-        """
-        if not self.enable_recursive_learning or not self._recursive_components:
-            return None
-
-        components = self._recursive_components
-        stats = {
-            "enabled": True,
-            "queries_processed": components['metrics'].queries_processed,
-            "avg_confidence": components['metrics'].avg_confidence,
-            "thompson_priors": {
-                tool: {
-                    "expected_reward": components['thompson_priors'].get_expected_reward(tool),
-                    "uncertainty": components['thompson_priors'].get_uncertainty(tool),
-                    **priors
-                }
-                for tool, priors in components['thompson_priors'].tool_priors.items()
-            },
-            "policy_weights": {
-                adapter: {
-                    "weight": components['policy_weights'].get_weight(adapter),
-                    "success_rate": components['policy_weights'].get_success_rate(adapter),
-                    "total_uses": components['policy_weights'].adapter_total[adapter]
-                }
-                for adapter in components['policy_weights'].adapter_weights.keys()
-            },
-        }
-
-        # Add hot patterns if available
-        if components.get('hot_tracker'):
-            hot_patterns = components['hot_tracker'].get_hot_patterns(limit=10)
-            stats["hot_patterns"] = [
-                {
-                    "element_id": record.element_id,
-                    "heat_score": record.heat_score,
-                    "access_count": record.access_count,
-                    "success_rate": record.success_rate,
-                    "avg_confidence": record.avg_confidence
-                }
-                for record in hot_patterns
-            ]
-
-        # Add learned patterns if available
-        if components.get('pattern_learner'):
-            learned_patterns = components['pattern_learner'].get_hot_patterns()
-            stats["learned_patterns"] = [
-                {
-                    "motifs": pattern.motifs[:3],
-                    "tool": pattern.tool,
-                    "query_type": pattern.query_type,
-                    "occurrences": pattern.occurrences,
-                    "avg_confidence": pattern.avg_confidence
-                }
-                for pattern in learned_patterns[:10]
-            ]
-
-        return stats
-
     # ========================================================================
     # Memory Backend Helpers
     # ========================================================================
@@ -2919,218 +2245,6 @@ class WeavingOrchestrator:
         return False
 
     # ========================================================================
-    # Statistical Mechanics (Phase 5) - Memory Consolidation
-    # ========================================================================
-
-    def _shards_to_microstates(self, shards: List[MemoryShard]) -> List['Microstate']:
-        """
-        Convert memory shards to microstates for statistical mechanics.
-
-        Args:
-            shards: Memory shards to convert
-
-        Returns:
-            List of Microstate objects
-        """
-        if not STATISTICAL_MECHANICS_AVAILABLE:
-            return []
-
-        microstates = []
-        for shard in shards:
-            # Get embedding (use first scale if available)
-            state_vector = None
-            if hasattr(shard, 'embedding') and shard.embedding is not None:
-                state_vector = shard.embedding
-            elif hasattr(shard, 'embeddings') and shard.embeddings:
-                # Use first available embedding
-                state_vector = shard.embeddings[0] if isinstance(shard.embeddings, list) else shard.embeddings
-            elif hasattr(shard, 'metadata') and 'embedding' in shard.metadata:
-                # Check metadata for embedding
-                state_vector = shard.metadata['embedding']
-
-            if state_vector is None:
-                # Skip shards without embeddings
-                self.logger.warning(f"Shard {shard.id} has no embedding, skipping consolidation")
-                continue
-
-            microstate = Microstate(
-                id=shard.id,
-                state_vector=np.array(state_vector),
-                energy=0.0,  # Will be computed by engine
-                metadata={
-                    'source': shard.metadata.get('source', 'unknown') if hasattr(shard, 'metadata') else 'unknown',
-                    'content_preview': shard.text[:100] if hasattr(shard, 'text') else ''
-                }
-            )
-            microstates.append(microstate)
-
-        return microstates
-
-    def _macrostates_to_shards(self, macrostates: List['Macrostate']) -> List[MemoryShard]:
-        """
-        Convert consolidated macrostates back to memory shards.
-
-        Each macrostate becomes a consolidated shard representing the cluster.
-
-        Args:
-            macrostates: Consolidated macrostates
-
-        Returns:
-            List of consolidated memory shards
-        """
-        consolidated_shards = []
-
-        for i, macro in enumerate(macrostates):
-            # Get representative microstate (centroid)
-            if not macro.microstates:
-                continue
-
-            # Use first microstate as representative (could compute centroid instead)
-            representative = macro.microstates[0]
-
-            # Merge content from all microstates
-            merged_content = f"[Consolidated Cluster {i}]\n\n"
-            for j, micro in enumerate(macro.microstates[:5]):  # Limit to first 5
-                preview = micro.metadata.get('content_preview', '')
-                merged_content += f"{j+1}. {preview}...\n"
-
-            if len(macro.microstates) > 5:
-                merged_content += f"... and {len(macro.microstates) - 5} more memories\n"
-
-            # Create consolidated shard
-            consolidated_shard = MemoryShard(
-                id=f"{macro.label}_consolidated",
-                text=merged_content,
-                metadata={
-                    'embedding': representative.state_vector.tolist(),
-                    'source': 'statistical_mechanics_consolidation',
-                    'cluster_label': macro.label,
-                    'cluster_size': len(macro.microstates),
-                    'average_energy': macro.average_energy,
-                    'entropy': macro.entropy,
-                    'free_energy': macro.free_energy,
-                    'order_parameter': macro.order_parameter,
-                    'member_ids': [m.id for m in macro.microstates],
-                    'consolidation_timestamp': datetime.now().isoformat()
-                }
-            )
-            consolidated_shards.append(consolidated_shard)
-
-        return consolidated_shards
-
-    async def _background_consolidation_loop(self):
-        """
-        Background loop for periodic memory consolidation.
-
-        Runs every consolidation_interval seconds, consolidates memory shards
-        via statistical mechanics, and detects phase transitions.
-        """
-        self.logger.info(f"Starting background consolidation loop (interval={self.consolidation_interval}s)")
-
-        while not self._closed:
-            try:
-                await asyncio.sleep(self.consolidation_interval)
-
-                if self._closed:
-                    break
-
-                self.logger.info("[CONSOLIDATION] Starting periodic memory consolidation...")
-
-                # Get current shards
-                if hasattr(self.yarn_graph, 'shards') and isinstance(self.yarn_graph.shards, dict):
-                    current_shards = list(self.yarn_graph.shards.values())
-                elif hasattr(self.yarn_graph, 'shards') and isinstance(self.yarn_graph.shards, list):
-                    current_shards = self.yarn_graph.shards
-                else:
-                    current_shards = self.shards
-
-                if len(current_shards) < 3:
-                    self.logger.debug(f"[CONSOLIDATION] Skipping (only {len(current_shards)} shards, need at least 3)")
-                    continue
-
-                # Convert to microstates
-                microstates = self._shards_to_microstates(current_shards)
-
-                if len(microstates) < 3:
-                    self.logger.debug(f"[CONSOLIDATION] Skipping (only {len(microstates)} valid microstates)")
-                    continue
-
-                # Consolidate via Gibbs distribution
-                consolidation_start = time.time()
-                macrostates = self.stat_mech_engine.consolidate_memories(
-                    microstates,
-                    num_clusters=None  # Auto-detect optimal clusters
-                )
-                consolidation_time = (time.time() - consolidation_start) * 1000
-
-                self.logger.info(f"[CONSOLIDATION] Consolidated {len(microstates)} → {len(macrostates)} clusters ({consolidation_time:.1f}ms)")
-
-                # Detect phase transitions
-                transition = self.stat_mech_engine.detect_phase_transition()
-
-                if transition:
-                    self.logger.info(
-                        f"[PHASE TRANSITION] Detected at T={transition.critical_temperature:.2f}"
-                    )
-                    self.logger.info(
-                        f"  Type: {transition.phase_type.value}, "
-                        f"Order: {transition.order_before:.3f} → {transition.order_after:.3f}"
-                    )
-                    # Could trigger actions here (save checkpoint, notify, etc.)
-
-                # Get statistics
-                stats = self.stat_mech_engine.get_statistics()
-                self.logger.info(
-                    f"[STATISTICS] T={stats['temperature']:.2f}, "
-                    f"S={stats['entropy']:.3f}, "
-                    f"F={stats['free_energy']:.3f}"
-                )
-
-                # Replace shards with consolidated macrostates (optional - could keep both)
-                # For now, we keep original shards and just log consolidation results
-                # In production, you might want to:
-                # 1. Archive original shards
-                # 2. Replace with consolidated shards
-                # 3. Update yarn_graph
-
-                # Example: Replace shards (commented out for safety)
-                # consolidated_shards = self._macrostates_to_shards(macrostates)
-                # if hasattr(self.yarn_graph, 'shards'):
-                #     self.yarn_graph.shards = {s.id: s for s in consolidated_shards}
-                # self.shards = consolidated_shards
-
-                # Cool temperature (simulated annealing)
-                self.stat_mech_engine.anneal()
-
-            except asyncio.CancelledError:
-                self.logger.info("[CONSOLIDATION] Background consolidation cancelled")
-                break
-            except Exception as e:
-                self.logger.error(f"[CONSOLIDATION] Error during consolidation: {e}", exc_info=True)
-                # Continue running despite errors
-
-        self.logger.info("[CONSOLIDATION] Background consolidation loop stopped")
-
-    def start_background_consolidation(self):
-        """
-        Start background consolidation loop.
-
-        Should be called after initialization if statistical mechanics is enabled.
-        """
-        if not self.enable_statistical_mechanics or not self.stat_mech_engine:
-            self.logger.warning("Statistical mechanics not enabled, cannot start consolidation")
-            return
-
-        if self._consolidation_task is not None:
-            self.logger.warning("Background consolidation already running")
-            return
-
-        # Create background task
-        self._consolidation_task = asyncio.create_task(self._background_consolidation_loop())
-        self._background_tasks.append(self._consolidation_task)
-        self.logger.info("Background consolidation started")
-
-    # ========================================================================
     # Cache and Statistics
     # ========================================================================
 
@@ -3222,39 +2336,6 @@ class WeavingOrchestrator:
         self._closed = True
         self.logger.info("WeavingOrchestrator closed successfully")
 
-    def spawn_background_task(self, coro) -> asyncio.Task:
-        """
-        Spawn a background task and track it for cleanup.
-
-        NOTE: While this method is synchronous, _background_tasks access is
-        protected by _bg_lock in async contexts. Since asyncio is single-threaded,
-        synchronous appends are safe, but removal via callback needs protection.
-
-        Args:
-            coro: Coroutine to run in background
-
-        Returns:
-            asyncio.Task object
-
-        Usage:
-            task = shuttle.spawn_background_task(some_async_function())
-        """
-        task = asyncio.create_task(coro)
-
-        # Append is atomic in Python, safe in single-threaded asyncio
-        self._background_tasks.append(task)
-
-        # Clean up completed tasks (callback is synchronous, but list operations are atomic)
-        def cleanup_callback(t):
-            try:
-                self._background_tasks.remove(t)
-            except ValueError:
-                pass  # Already removed
-
-        task.add_done_callback(cleanup_callback)
-
-        return task
-
     def save_dashboard(self, spacetime: Spacetime, output_path: str) -> None:
         """
         Save dashboard from Spacetime to HTML file (Edward Tufte Machine).
@@ -3320,37 +2401,6 @@ class WeavingOrchestrator:
                 "timestamp": time.time()
             }
 
-    def get_metrics(self) -> Optional[Dict[str, Any]]:
-        """
-        Get production monitoring metrics.
-
-        Returns performance, resource, and learning metrics for observability.
-
-        Returns:
-            Dict with metrics or None if production hardening disabled
-
-        Example:
-            >>> orch = WeavingOrchestrator(..., enable_production_hardening=True)
-            >>> metrics = orch.get_metrics()
-            >>> print(f"QPS: {metrics['performance']['qps']}")
-            >>> print(f"Error rate: {metrics['performance']['error_rate']}")
-            >>> print(f"P95 latency: {metrics['performance']['latency_p95']}ms")
-        """
-        if not self.enable_production_hardening or not self.monitor:
-            self.logger.warning("[PRODUCTION] Monitoring not enabled")
-            return None
-
-        try:
-            return {
-                "performance": self.monitor.performance.get_metrics(),
-                "resources": self.monitor.resources.get_metrics(),
-                "learning": self.monitor.learning.get_metrics(),
-                "timestamp": time.time()
-            }
-        except Exception as e:
-            self.logger.error(f"[PRODUCTION] Failed to get metrics: {e}")
-            return {"error": str(e), "timestamp": time.time()}
-
     def get_circuit_breaker_status(self) -> Optional[Dict[str, Any]]:
         """
         Get circuit breaker states for all registered backends.
@@ -3389,88 +2439,3 @@ class WeavingOrchestrator:
         except Exception as e:
             self.logger.error(f"[PRODUCTION] Failed to get breaker status: {e}")
             return {"error": str(e), "timestamp": time.time()}
-
-
-# ============================================================================
-# Main Entry Point (for testing)
-# ============================================================================
-
-async def main():
-    """Example usage of WeavingOrchestrator."""
-    print("\n" + "="*80)
-    print("HoloLoom Weaving Shuttle - Full Architecture Demo")
-    print("="*80 + "\n")
-
-    # Create sample memory shards
-    shards = [
-        MemoryShard(
-            id="shard_001",
-            text="Thompson Sampling is a Bayesian approach to the multi-armed bandit problem.",
-            episode="docs",
-            entities=["Thompson Sampling", "Bayesian", "multi-armed bandit"],
-            motifs=["ALGORITHM", "OPTIMIZATION"]
-        ),
-        MemoryShard(
-            id="shard_002",
-            text="The algorithm balances exploration and exploitation by sampling from posterior distributions.",
-            episode="docs",
-            entities=["exploration", "exploitation", "posterior"],
-            motifs=["ALGORITHM", "PROBABILITY"]
-        ),
-        MemoryShard(
-            id="shard_003",
-            text="Hive Jodi has 8 frames of brood and is very active with goldenrod flow.",
-            episode="inspection_2025_10_13",
-            entities=["Hive Jodi", "brood", "goldenrod"],
-            motifs=["HIVE_INSPECTION", "SEASONAL"]
-        )
-    ]
-
-    # Test all three patterns
-    for mode in [ExecutionMode.BARE, ExecutionMode.FAST, ExecutionMode.FUSED]:
-        print(f"\n{'='*80}")
-        print(f"Testing {mode.value.upper()} Mode")
-        print(f"{'='*80}\n")
-
-        # Create config
-        if mode == ExecutionMode.BARE:
-            config = Config.bare()
-        elif mode == ExecutionMode.FAST:
-            config = Config.fast()
-        else:
-            config = Config.fused()
-
-        # Create shuttle
-        print("Initializing WeavingOrchestrator...")
-        shuttle = WeavingOrchestrator(cfg=config, shards=shards)
-        print("Shuttle ready!\n")
-
-        # Process a query
-        query = Query(text="What is Thompson Sampling?")
-        print(f"Processing query: '{query.text}'")
-        print("-" * 80)
-
-        spacetime = await shuttle.weave(query)
-
-        # Print spacetime
-        print("\n" + "="*80)
-        print("SPACETIME FABRIC")
-        print("="*80)
-        print(f"Query: {spacetime.query_text}")
-        print(f"Tool Used: {spacetime.tool_used}")
-        print(f"Confidence: {spacetime.confidence:.2f}")
-        print(f"Response: {spacetime.response}")
-        print(f"\nTrace:")
-        print(f"  Duration: {spacetime.trace.duration_ms:.1f}ms")
-        print(f"  Motifs: {len(spacetime.trace.motifs_detected)}")
-        print(f"  Scales: {spacetime.trace.embedding_scales_used}")
-        print(f"  Threads: {len(spacetime.trace.threads_activated)}")
-        print(f"  Context Shards: {spacetime.trace.context_shards_count}")
-        print(f"\nStage Timings:")
-        for stage, duration in spacetime.trace.stage_durations.items():
-            print(f"  {stage:25s}: {duration:6.1f}ms")
-        print("="*80)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

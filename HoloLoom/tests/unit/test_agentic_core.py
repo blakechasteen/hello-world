@@ -24,7 +24,7 @@ from HoloLoom.agentic.core import (
     VerificationResult,
 )
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 
 
 # ============================================================================
@@ -88,7 +88,7 @@ async def orchestrator(mock_config, mock_shards):
 async def test_direct_mode_basic(orchestrator):
     """Test DIRECT mode returns single answer."""
     # Mock weaver response
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     mock_spacetime = Spacetime(
         response="Thompson Sampling is a probabilistic method.",
@@ -116,7 +116,7 @@ async def test_direct_mode_basic(orchestrator):
 @pytest.mark.asyncio
 async def test_direct_mode_low_confidence(orchestrator):
     """Test DIRECT mode with low confidence."""
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     mock_spacetime = Spacetime(
         response="Not sure about this.",
@@ -143,7 +143,7 @@ async def test_direct_mode_low_confidence(orchestrator):
 @pytest.mark.asyncio
 async def test_verify_mode_success(orchestrator):
     """Test VERIFY mode generates verification."""
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     # Mock initial answer
     answer_spacetime = Spacetime(
@@ -179,7 +179,7 @@ async def test_verify_mode_success(orchestrator):
 @pytest.mark.asyncio
 async def test_verify_mode_contradiction(orchestrator):
     """Test VERIFY mode detects contradictions."""
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     answer_spacetime = Spacetime(
         response="Thompson Sampling is deterministic.",
@@ -215,7 +215,7 @@ async def test_verify_mode_contradiction(orchestrator):
 @pytest.mark.asyncio
 async def test_research_mode_multi_query(orchestrator):
     """Test RESEARCH mode explores multiple angles."""
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     # Mock multiple sub-query responses
     spacetimes = [
@@ -246,7 +246,7 @@ async def test_research_mode_multi_query(orchestrator):
 @pytest.mark.asyncio
 async def test_research_mode_synthesis(orchestrator):
     """Test RESEARCH mode synthesizes multiple answers."""
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     spacetimes = [
         Spacetime(response="Aspect 1: Exploration", confidence=0.9, context_used=[], tool_used="answer", metadata={}),
@@ -273,7 +273,7 @@ async def test_research_mode_synthesis(orchestrator):
 @pytest.mark.asyncio
 async def test_plan_execute_mode_basic(orchestrator):
     """Test PLAN_EXECUTE mode decomposes goal."""
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     # Mock plan generation
     plan_spacetime = Spacetime(
@@ -313,7 +313,7 @@ async def test_auto_mode_selection(orchestrator):
     # This would test the _select_mode() method if it exists
     # For now, test that mode is respected
 
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
     mock_spacetime = Spacetime(
         response="Answer",
         confidence=0.9,
@@ -334,7 +334,7 @@ async def test_auto_mode_selection(orchestrator):
 @pytest.mark.asyncio
 async def test_max_steps_limit(orchestrator):
     """Test max_steps parameter limits iterations."""
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     spacetimes = [
         Spacetime(response=f"Query {i}", confidence=0.8, context_used=[], tool_used="answer", metadata={})
@@ -354,7 +354,7 @@ async def test_max_steps_limit(orchestrator):
 @pytest.mark.asyncio
 async def test_confidence_tracking(orchestrator):
     """Test confidence is tracked correctly."""
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     mock_spacetime = Spacetime(
         response="High confidence answer",
@@ -392,7 +392,7 @@ async def test_weaver_failure_handling(orchestrator):
 @pytest.mark.asyncio
 async def test_empty_query_handling(orchestrator):
     """Test handling of empty queries."""
-    from HoloLoom.Documentation.types import Spacetime
+    from HoloLoom.protocols.types import Spacetime
 
     mock_spacetime = Spacetime(
         response="Cannot process empty query",

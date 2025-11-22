@@ -24,7 +24,7 @@ from HoloLoom.policy.bayesian_policy import (
 )
 from HoloLoom.policy.unified import create_policy, NeuralCore
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.Documentation.types import Features, Context
+from HoloLoom.protocols.types import Features, Context
 
 
 # ============================================================================

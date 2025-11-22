@@ -29,7 +29,7 @@ from datetime import datetime, timedelta
 import asyncio
 import logging
 
-from HoloLoom.Documentation.types import MemoryShard, Query, Features
+from HoloLoom.protocols.types import MemoryShard, Query, Features
 
 logger = logging.getLogger(__name__)
 

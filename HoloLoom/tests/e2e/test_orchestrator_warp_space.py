@@ -6,7 +6,7 @@ Verifies the complete weaving cycle includes WarpSpace compute operations.
 import pytest
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 
 
 @pytest.mark.asyncio

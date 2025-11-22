@@ -23,7 +23,7 @@ from HoloLoom.agents.types import (
     WorkingMemoryState,
     AgentProfile
 )
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
 
 

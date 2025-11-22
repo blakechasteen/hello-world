@@ -28,7 +28,7 @@ from enum import Enum
 from typing import List, Optional, Dict, Any, Callable
 from datetime import datetime
 
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.recursive.scratchpad import Scratchpad, ScratchpadEntry

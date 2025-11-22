@@ -1080,7 +1080,7 @@ class KG:
         Returns:
             List[MemoryShard]: Selected threads from the graph
         """
-        from HoloLoom.Documentation.types import MemoryShard
+        from HoloLoom.protocols.types import MemoryShard
         from datetime import datetime
 
         query_text = query.text if hasattr(query, 'text') else str(query)

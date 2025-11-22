@@ -14,7 +14,7 @@ from HoloLoom.recursive.advanced_refinement import (
     AdvancedRefiner,
     refine_with_strategy
 )
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.recursive.scratchpad import Scratchpad
 from datetime import datetime

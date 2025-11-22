@@ -1166,6 +1166,303 @@
         #analytics-cards-container.snap-to-grid {
             scroll-snap-type: y mandatory;
         }
+
+        /* ==============================================
+           PHASE 3.11: MOBILE & TOUCH OPTIMIZATION
+           ============================================== */
+
+        /* Touch-Optimized Card Dragging */
+        .draggable-card.touch-active {
+            opacity: 0.8;
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+
+        .draggable-card.dragging-touch {
+            opacity: 0.7;
+            transform: scale(1.05);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+        }
+
+        /* Touch Feedback Indicator */
+        .touch-indicator {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.2);
+            border: 2px solid rgba(52, 152, 219, 0.5);
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            z-index: 10000;
+        }
+
+        .touch-indicator.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        /* Mobile Breakpoint Styles */
+        @media (max-width: 768px) {
+            /* Mobile: Stack everything vertically */
+            header {
+                padding: 0.75rem 1rem;
+            }
+
+            header h1 {
+                font-size: 1.25rem;
+            }
+
+            .status-bar {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                font-size: 0.75rem;
+            }
+
+            nav {
+                padding: 0 1rem;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            nav button {
+                padding: 0.75rem 1rem;
+                font-size: 0.8125rem;
+            }
+
+            main {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .card-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            /* Make buttons touch-friendly (minimum 44px touch target) */
+            button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            /* Larger touch targets for card controls */
+            .card-size-btn,
+            .card-visibility-btn,
+            .drag-handle {
+                min-width: 44px;
+                min-height: 44px;
+                padding: 0.75rem;
+            }
+
+            /* Mobile grid layouts */
+            #analytics-cards-container {
+                display: grid;
+                gap: 1rem;
+            }
+
+            #analytics-cards-container.layout-1-column {
+                grid-template-columns: 1fr;
+            }
+
+            #analytics-cards-container.layout-2-column {
+                grid-template-columns: 1fr;
+            }
+
+            #analytics-cards-container.layout-3-column {
+                grid-template-columns: 1fr;
+            }
+
+            /* Mobile card sizes */
+            .card.size-small {
+                max-height: 250px;
+            }
+
+            .card.size-medium {
+                max-height: none;
+            }
+
+            .card.size-large {
+                max-height: none;
+                min-height: 400px;
+            }
+        }
+
+        /* Tablet Breakpoint Styles */
+        @media (min-width: 769px) and (max-width: 1200px) {
+            header {
+                padding: 1rem 1.5rem;
+            }
+
+            main {
+                padding: 1.5rem;
+            }
+
+            /* Tablet grid layouts */
+            #analytics-cards-container.layout-2-column {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            #analytics-cards-container.layout-3-column {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* Touch targets still larger on tablet */
+            button {
+                min-height: 40px;
+                min-width: 40px;
+            }
+        }
+
+        /* Desktop and Widescreen (maintain existing behavior) */
+        @media (min-width: 1201px) {
+            #analytics-cards-container.layout-2-column {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            #analytics-cards-container.layout-3-column {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Orientation-Specific Styles */
+        @media (orientation: portrait) {
+            /* Portrait: Prefer vertical stacking */
+            .card {
+                max-width: 100%;
+            }
+
+            /* Hide less critical elements in portrait */
+            .metric-trend {
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (orientation: landscape) and (max-width: 768px) {
+            /* Landscape mobile: Use two columns if possible */
+            #analytics-cards-container.layout-auto {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .card {
+                padding: 0.75rem;
+            }
+        }
+
+        /* Touch Device Detection (via hover capability) */
+        @media (hover: none) and (pointer: coarse) {
+            /* Touch-only devices */
+
+            /* Remove hover effects */
+            button:hover,
+            nav button:hover {
+                background: none;
+            }
+
+            /* Show visual feedback on active instead */
+            button:active {
+                transform: scale(0.95);
+                transition: transform 0.1s;
+            }
+
+            /* Larger spacing between interactive elements */
+            .card-actions {
+                gap: 0.75rem;
+            }
+
+            /* Disable drag cursor (use long-press instead) */
+            .drag-handle {
+                cursor: default;
+            }
+
+            /* Show touch instruction */
+            .drag-handle::after {
+                content: "Long press to drag";
+                display: block;
+                font-size: 0.7rem;
+                color: var(--secondary);
+                opacity: 0.6;
+                margin-top: 0.25rem;
+            }
+        }
+
+        /* High-DPI Displays (Retina) */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            /* Sharper borders and shadows on high-DPI */
+            .card {
+                box-shadow: 0 0.5px 1.5px var(--shadow);
+            }
+
+            button {
+                border-width: 0.5px;
+            }
+        }
+
+        /* Reduced Motion Preference */
+        @media (prefers-reduced-motion: reduce) {
+            .draggable-card,
+            .draggable-card.dragging,
+            .touch-indicator,
+            button {
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+
+        /* Dark Mode Support (future-proof) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #34495e;
+                --secondary: #7f8c8d;
+                --bg: #2c3e50;
+                --text: #ecf0f1;
+                --border: #34495e;
+                --shadow: rgba(0, 0, 0, 0.3);
+            }
+
+            .card {
+                background: #34495e;
+            }
+
+            button.secondary {
+                background: #2c3e50;
+                color: #ecf0f1;
+            }
+        }
+
+        /* Print Styles (bonus) */
+        @media print {
+            header,
+            nav,
+            .card-actions,
+            .drag-handle {
+                display: none;
+            }
+
+            .card {
+                break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid var(--border);
+            }
+
+            #analytics-cards-container {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1858,6 +2155,373 @@
                 </div>
             </div>
 
+            <!-- Phase 3.11: Mobile & Touch Optimization -->
+            <div class="card" style="background: #fff9e6; border-left: 4px solid #f39c12;">
+                <div class="card-header">
+                    <div class="card-title">
+                        📱 Mobile & Touch Optimization
+                        <span id="mobile-active-badge" style="display: none; background: #f39c12; color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; margin-left: 0.5rem;"></span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="secondary" onclick="analyticsMonitor?.applyBreakpointLayout()">Apply Layout</button>
+                        <button class="secondary" onclick="analyticsMonitor?.resetGestureSettings(); location.reload();">Reset</button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <!-- Mobile Templates -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">
+                            Mobile Templates
+                        </label>
+                        <select id="mobile-template-selector" onchange="analyticsMonitor?.applyMobileTemplate(this.value); updateMobileUI();" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+                            <option value="">-- Select Template --</option>
+                            <option value="mobile-compact">📱 Mobile Compact</option>
+                            <option value="mobile-focused">🎯 Mobile Focused</option>
+                            <option value="tablet-split">📱✨ Tablet Split</option>
+                            <option value="tablet-grid">📱📊 Tablet Grid</option>
+                            <option value="touch-optimized">👆 Touch Optimized</option>
+                        </select>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary);">
+                            Pre-configured mobile layouts
+                        </div>
+                    </div>
+
+                    <!-- Current Breakpoint -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">
+                            Current Breakpoint
+                        </label>
+                        <div id="current-breakpoint" style="padding: 0.75rem; background: #fff; border: 1px solid var(--border); border-radius: 4px; font-size: 0.875rem; font-weight: 600; color: var(--accent);">
+                            Desktop (1200px+)
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary);">
+                            Detected screen size category
+                        </div>
+                    </div>
+
+                    <!-- Touch Gestures -->
+                    <div>
+                        <label style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">
+                            Touch Gestures
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="enable-swipe-reorder" checked onchange="updateTouchSettings()">
+                            Enable Swipe Reorder
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                            <input type="checkbox" id="enable-haptic" checked onchange="updateTouchSettings()">
+                            Haptic Feedback
+                        </label>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary);">
+                            Long-press cards to drag on mobile
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Breakpoint Editor -->
+                <div style="margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid var(--border); border-radius: 4px;">
+                    <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;">Breakpoint Editor</div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                        <div>
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: block;">Mobile (&lt; px)</label>
+                            <input type="number" id="breakpoint-mobile" value="768" min="320" max="1024" onchange="updateBreakpoints()" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: block;">Tablet (&lt; px)</label>
+                            <input type="number" id="breakpoint-tablet" value="1200" min="769" max="1600" onchange="updateBreakpoints()" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: block;">Desktop (&lt; px)</label>
+                            <input type="number" id="breakpoint-desktop" value="1920" min="1201" max="3840" onchange="updateBreakpoints()" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gesture Sensitivity -->
+                <div style="margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid var(--border); border-radius: 4px;">
+                    <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;">Gesture Sensitivity</div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between;">
+                                <span>Swipe Sensitivity</span>
+                                <span id="swipe-value" style="color: var(--accent); font-weight: 600;">50px</span>
+                            </label>
+                            <input type="range" id="swipe-sensitivity" min="20" max="100" value="50" onchange="document.getElementById('swipe-value').textContent = this.value + 'px'; updateGestureSensitivity();" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between;">
+                                <span>Long Press Duration</span>
+                                <span id="longpress-value" style="color: var(--accent); font-weight: 600;">500ms</span>
+                            </label>
+                            <input type="range" id="longpress-duration" min="200" max="1000" value="500" step="50" onchange="document.getElementById('longpress-value').textContent = this.value + 'ms'; updateGestureSensitivity();" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between;">
+                                <span>Drag Threshold</span>
+                                <span id="drag-value" style="color: var(--accent); font-weight: 600;">10px</span>
+                            </label>
+                            <input type="range" id="drag-threshold" min="5" max="30" value="10" onchange="document.getElementById('drag-value').textContent = this.value + 'px'; updateGestureSensitivity();" style="width: 100%;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orientation Settings -->
+                <div style="margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid var(--border); border-radius: 4px;">
+                    <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;">Orientation Settings</div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                                <input type="checkbox" id="auto-adjust-orientation" checked onchange="updateOrientationSettings()">
+                                Auto-Adjust on Orientation Change
+                            </label>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: block;">Portrait Layout</label>
+                            <select id="portrait-layout" onchange="updateOrientationSettings()" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                                <option value="1-column">1 Column</option>
+                                <option value="2-column">2 Columns</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: block;">Landscape Layout</label>
+                            <select id="landscape-layout" onchange="updateOrientationSettings()" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                                <option value="2-column">2 Columns</option>
+                                <option value="3-column">3 Columns</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3.11.1: Advanced Touch Gestures -->
+                <div style="margin-top: 1rem; padding: 1rem; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px;">
+                    <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #2e7d32;">
+                        ✨ Advanced Touch Gestures (Phase 3.11.1)
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                <input type="checkbox" id="enable-pinch-zoom" checked onchange="toggleAdvancedGesture('pinch')">
+                                🔍 Pinch-to-Zoom
+                            </label>
+                            <div style="font-size: 0.75rem; color: var(--secondary); margin-left: 1.5rem;">
+                                Two-finger pinch to zoom card content
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                <input type="checkbox" id="enable-swipe-delete" checked onchange="toggleAdvancedGesture('swipe')">
+                                👈 Swipe-to-Delete
+                            </label>
+                            <div style="font-size: 0.75rem; color: var(--secondary); margin-left: 1.5rem;">
+                                Swipe left to hide card
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                <input type="checkbox" id="enable-double-tap" checked onchange="toggleAdvancedGesture('doubletap')">
+                                👆👆 Double-Tap-to-Expand
+                            </label>
+                            <div style="font-size: 0.75rem; color: var(--secondary); margin-left: 1.5rem;">
+                                Double-tap to toggle card size
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gesture Settings -->
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #4caf50;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div>
+                                <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between;">
+                                    <span>Swipe Delete Threshold</span>
+                                    <span id="swipe-delete-value" style="color: #2e7d32; font-weight: 600;">100px</span>
+                                </label>
+                                <input type="range" id="swipe-delete-threshold" min="50" max="200" value="100" step="10"
+                                    onchange="document.getElementById('swipe-delete-value').textContent = this.value + 'px'; updateAdvancedGestureSettings();"
+                                    style="width: 100%;">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between;">
+                                    <span>Double-Tap Interval</span>
+                                    <span id="double-tap-value" style="color: #2e7d32; font-weight: 600;">300ms</span>
+                                </label>
+                                <input type="range" id="double-tap-interval" min="200" max="500" value="300" step="50"
+                                    onchange="document.getElementById('double-tap-value').textContent = this.value + 'ms'; updateAdvancedGestureSettings();"
+                                    style="width: 100%;">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between;">
+                                    <span>Pinch Zoom Range</span>
+                                    <span id="pinch-zoom-value" style="color: #2e7d32; font-weight: 600;">0.5x - 3.0x</span>
+                                </label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="number" id="pinch-zoom-min" min="0.5" max="1.0" value="0.5" step="0.1"
+                                        onchange="updatePinchZoomRange()"
+                                        style="width: 50%; padding: 0.25rem; border: 1px solid var(--border); border-radius: 4px;">
+                                    <input type="number" id="pinch-zoom-max" min="1.0" max="5.0" value="3.0" step="0.5"
+                                        onchange="updatePinchZoomRange()"
+                                        style="width: 50%; padding: 0.25rem; border: 1px solid var(--border); border-radius: 4px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3.11.2: Gesture Macros -->
+                <div style="margin-top: 1rem; padding: 1rem; background: #e3f2fd; border: 1px solid #2196f3; border-radius: 4px;">
+                    <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #1565c0;">
+                        🎬 Gesture Macros (Phase 3.11.2)
+                    </div>
+
+                    <!-- Recording Controls -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <button id="gesture-record-btn" class="primary" onclick="toggleGestureRecording()" style="flex: 1;">
+                            🔴 Start Recording
+                        </button>
+                        <button class="secondary" onclick="clearRecordedGesture()" style="flex: 1;">
+                            🗑️ Clear
+                        </button>
+                        <button class="secondary" onclick="saveGestureMacro()" style="flex: 1;">
+                            💾 Save Macro
+                        </button>
+                    </div>
+
+                    <!-- Gesture Shortcuts -->
+                    <div style="margin-bottom: 1rem;">
+                        <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">
+                            Gesture Shortcuts:
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem;">
+                            <div style="padding: 0.5rem; background: #fff; border: 1px solid #2196f3; border-radius: 4px; font-size: 0.75rem;">
+                                <strong>Z-shape</strong> → Reset Layout
+                            </div>
+                            <div style="padding: 0.5rem; background: #fff; border: 1px solid #2196f3; border-radius: 4px; font-size: 0.75rem;">
+                                <strong>Circle</strong> → Refresh All
+                            </div>
+                            <div style="padding: 0.5rem; background: #fff; border: 1px solid #2196f3; border-radius: 4px; font-size: 0.75rem;">
+                                <strong>Horizontal Line</strong> → Toggle Compact
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pattern Recognition Settings -->
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="enable-pattern-recognition" checked onchange="togglePatternRecognition()">
+                            Enable Pattern Recognition
+                        </label>
+                        <div style="margin-top: 0.5rem;">
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between;">
+                                <span>Recognition Threshold</span>
+                                <span id="recognition-threshold-value" style="color: #1565c0; font-weight: 600;">70%</span>
+                            </label>
+                            <input type="range" id="recognition-threshold" min="50" max="90" value="70" step="5"
+                                onchange="document.getElementById('recognition-threshold-value').textContent = this.value + '%'; updateRecognitionThreshold();"
+                                style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <!-- Saved Macros List -->
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #2196f3;">
+                        <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">
+                            Saved Macros:
+                        </div>
+                        <div id="saved-macros-list" style="font-size: 0.75rem; color: var(--secondary);">
+                            No saved macros yet. Record a gesture and save it!
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <button class="secondary" onclick="exportGestureMacros()" style="flex: 1; font-size: 0.75rem;">
+                                📤 Export
+                            </button>
+                            <button class="secondary" onclick="importGestureMacros()" style="flex: 1; font-size: 0.75rem;">
+                                📥 Import
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3.11.3: Mobile Performance Mode -->
+                <div style="margin-top: 1rem; padding: 1rem; background: #fce4ec; border: 1px solid #e91e63; border-radius: 4px;">
+                    <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #c2185b;">
+                        ⚡ Mobile Performance Mode (Phase 3.11.3)
+                    </div>
+
+                    <!-- Performance Mode Toggle -->
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 600;">
+                            <input type="checkbox" id="enable-performance-mode" onchange="togglePerformanceMode()">
+                            🔋 Enable Performance Mode
+                        </label>
+                        <div style="font-size: 0.75rem; color: var(--secondary); margin-left: 1.5rem; margin-top: 0.25rem;">
+                            Reduces animations and pauses background updates
+                        </div>
+                    </div>
+
+                    <!-- Battery Monitor -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+                        <div style="padding: 0.75rem; background: #fff; border: 1px solid #e91e63; border-radius: 4px;">
+                            <div style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 0.25rem;">Battery Level</div>
+                            <div id="battery-level" style="font-size: 1.25rem; font-weight: 600; color: #c2185b;">
+                                Unknown
+                            </div>
+                        </div>
+                        <div style="padding: 0.75rem; background: #fff; border: 1px solid #e91e63; border-radius: 4px;">
+                            <div style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 0.25rem;">Charging Status</div>
+                            <div id="charging-status" style="font-size: 1.25rem; font-weight: 600; color: #c2185b;">
+                                Unknown
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Settings -->
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="auto-enable-low-battery" checked onchange="updatePerformanceSettings()">
+                            Auto-Enable on Low Battery
+                        </label>
+                        <div style="margin-left: 1.5rem;">
+                            <label style="font-size: 0.875rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between;">
+                                <span>Battery Threshold</span>
+                                <span id="battery-threshold-value" style="color: #c2185b; font-weight: 600;">20%</span>
+                            </label>
+                            <input type="range" id="battery-threshold" min="10" max="50" value="20" step="5"
+                                onchange="document.getElementById('battery-threshold-value').textContent = this.value + '%'; updatePerformanceSettings();"
+                                style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <!-- Performance Features -->
+                    <div style="padding: 1rem; background: #fff; border: 1px solid #e91e63; border-radius: 4px;">
+                        <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Performance Features:</div>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="reduced-animations" onchange="updatePerformanceSettings()">
+                            Reduced Animations
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="pause-background-updates" onchange="updatePerformanceSettings()">
+                            Pause Background Updates
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                            <input type="checkbox" id="virtualized-rendering" onchange="updatePerformanceSettings()">
+                            Virtualized Rendering (>20 cards)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Info Banner -->
+                <div style="margin-top: 1rem; padding: 0.75rem; background: #fff3cd; border-left: 4px solid #f39c12; border-radius: 4px; font-size: 0.875rem;">
+                    <strong>📱 Mobile Tips:</strong> Use <strong>long press</strong> to drag cards on touch devices. Templates auto-optimize for your screen size. Adjust sensitivity for your device's touch response.
+                </div>
+            </div>
+
             <!-- Analytics Cards Container (Phase 3.9: Grid Layout Target) -->
             <div id="analytics-cards-container" class="layout-auto">
 
@@ -2251,6 +2915,452 @@
             // Cleanup Phase 3.4 dashboards
             if (window.analyticsMonitor) window.analyticsMonitor.destroy?.();
         });
+
+        // ================================================
+        // PHASE 3.11: MOBILE & TOUCH HELPER FUNCTIONS
+        // ================================================
+
+        function updateMobileUI() {
+            // Update mobile template badge if template is active
+            const templateSelector = document.getElementById('mobile-template-selector');
+            const badge = document.getElementById('mobile-active-badge');
+
+            if (templateSelector && badge) {
+                if (templateSelector.value) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = templateSelector.options[templateSelector.selectedIndex].text;
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+
+            // Update current breakpoint display
+            updateCurrentBreakpoint();
+        }
+
+        function updateCurrentBreakpoint() {
+            if (!window.analyticsMonitor) return;
+
+            const breakpoint = window.analyticsMonitor.getActiveBreakpoint();
+            const display = document.getElementById('current-breakpoint');
+
+            if (display) {
+                const labels = {
+                    'mobile': 'Mobile (<768px)',
+                    'tablet': 'Tablet (768px-1200px)',
+                    'desktop': 'Desktop (1200px-1920px)',
+                    'widescreen': 'Widescreen (>1920px)'
+                };
+                display.textContent = labels[breakpoint] || breakpoint;
+            }
+        }
+
+        function updateTouchSettings() {
+            if (!window.analyticsMonitor) return;
+
+            const enableSwipe = document.getElementById('enable-swipe-reorder')?.checked ?? true;
+            const enableHaptic = document.getElementById('enable-haptic')?.checked ?? true;
+
+            // Update touch settings in analyticsMonitor
+            window.analyticsMonitor.dashboardLayout.touchSettings.enableSwipeReorder = enableSwipe;
+
+            // Haptic is browser-level, just note the preference
+            console.log(`[Control Panel] Touch settings updated: swipe=${enableSwipe}, haptic=${enableHaptic}`);
+
+            // Save layout
+            window.analyticsMonitor.saveDashboardLayout();
+        }
+
+        function updateBreakpoints() {
+            if (!window.analyticsMonitor) return;
+
+            const mobile = parseInt(document.getElementById('breakpoint-mobile')?.value || 768);
+            const tablet = parseInt(document.getElementById('breakpoint-tablet')?.value || 1200);
+            const desktop = parseInt(document.getElementById('breakpoint-desktop')?.value || 1920);
+
+            // Validate ordering
+            if (mobile >= tablet) {
+                alert('Mobile breakpoint must be less than tablet breakpoint');
+                document.getElementById('breakpoint-mobile').value = 768;
+                return;
+            }
+            if (tablet >= desktop) {
+                alert('Tablet breakpoint must be less than desktop breakpoint');
+                document.getElementById('breakpoint-tablet').value = 1200;
+                return;
+            }
+
+            // Set breakpoints
+            window.analyticsMonitor.setBreakpoint('mobile', mobile);
+            window.analyticsMonitor.setBreakpoint('tablet', tablet);
+            window.analyticsMonitor.setBreakpoint('desktop', desktop);
+
+            console.log(`[Control Panel] Breakpoints updated: mobile=${mobile}, tablet=${tablet}, desktop=${desktop}`);
+
+            // Update display
+            updateCurrentBreakpoint();
+        }
+
+        function updateGestureSensitivity() {
+            if (!window.analyticsMonitor) return;
+
+            const swipeSensitivity = parseInt(document.getElementById('swipe-sensitivity')?.value || 50);
+            const longPressDuration = parseInt(document.getElementById('longpress-duration')?.value || 500);
+            const dragThreshold = parseInt(document.getElementById('drag-threshold')?.value || 10);
+
+            // Update settings
+            window.analyticsMonitor.setGestureSensitivity('swipeSensitivity', swipeSensitivity);
+            window.analyticsMonitor.setGestureSensitivity('longPressDuration', longPressDuration);
+            window.analyticsMonitor.setGestureSensitivity('dragThreshold', dragThreshold);
+
+            console.log(`[Control Panel] Gesture sensitivity updated: swipe=${swipeSensitivity}, longpress=${longPressDuration}, drag=${dragThreshold}`);
+        }
+
+        function updateOrientationSettings() {
+            if (!window.analyticsMonitor) return;
+
+            const autoAdjust = document.getElementById('auto-adjust-orientation')?.checked ?? true;
+            const portraitLayout = document.getElementById('portrait-layout')?.value || '1-column';
+            const landscapeLayout = document.getElementById('landscape-layout')?.value || '2-column';
+
+            // Update orientation settings
+            window.analyticsMonitor.dashboardLayout.orientationSettings.autoAdjust = autoAdjust;
+            window.analyticsMonitor.setOrientationLayout('portrait', portraitLayout);
+            window.analyticsMonitor.setOrientationLayout('landscape', landscapeLayout);
+
+            console.log(`[Control Panel] Orientation settings updated: auto=${autoAdjust}, portrait=${portraitLayout}, landscape=${landscapeLayout}`);
+
+            // Save layout
+            window.analyticsMonitor.saveDashboardLayout();
+        }
+
+        // Update current breakpoint on window resize
+        window.addEventListener('resize', () => {
+            updateCurrentBreakpoint();
+        });
+
+        // Initialize mobile UI on page load (when analytics monitor is ready)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                updateMobileUI();
+                updateCurrentBreakpoint();
+                updateBatteryDisplay(); // Phase 3.11.3
+            }, 1000); // Wait for analyticsMonitor to initialize
+        });
+
+        // PHASE 3.11.1: ADVANCED GESTURE HELPER FUNCTIONS
+        // ================================================
+
+        function toggleAdvancedGesture(gestureType) {
+            if (!window.analyticsMonitor) return;
+
+            const enablePinch = document.getElementById('enable-pinch-zoom')?.checked ?? true;
+            const enableSwipe = document.getElementById('enable-swipe-delete')?.checked ?? true;
+            const enableDoubleTap = document.getElementById('enable-double-tap')?.checked ?? true;
+
+            // Update settings in analyticsMonitor
+            window.analyticsMonitor.advancedGestures.enablePinchZoom = enablePinch;
+            window.analyticsMonitor.advancedGestures.enableSwipeToDelete = enableSwipe;
+            window.analyticsMonitor.advancedGestures.enableDoubleTap = enableDoubleTap;
+
+            console.log(`[Control Panel] Advanced gesture toggled: ${gestureType} (pinch=${enablePinch}, swipe=${enableSwipe}, doubleTap=${enableDoubleTap})`);
+        }
+
+        function updateAdvancedGestureSettings() {
+            if (!window.analyticsMonitor) return;
+
+            const swipeThreshold = parseInt(document.getElementById('swipe-delete-threshold')?.value || 100);
+            const doubleTapInterval = parseInt(document.getElementById('double-tap-interval')?.value || 300);
+
+            // Update settings
+            window.analyticsMonitor.advancedGestures.swipeDeleteThreshold = swipeThreshold;
+            window.analyticsMonitor.advancedGestures.doubleTapInterval = doubleTapInterval;
+
+            console.log(`[Control Panel] Advanced gesture settings updated: swipeThreshold=${swipeThreshold}, doubleTapInterval=${doubleTapInterval}`);
+        }
+
+        function updatePinchZoomRange() {
+            if (!window.analyticsMonitor) return;
+
+            const minZoom = parseFloat(document.getElementById('pinch-zoom-min')?.value || 0.5);
+            const maxZoom = parseFloat(document.getElementById('pinch-zoom-max')?.value || 3.0);
+
+            // Validate
+            if (minZoom >= maxZoom) {
+                alert('Min zoom must be less than max zoom');
+                document.getElementById('pinch-zoom-min').value = 0.5;
+                document.getElementById('pinch-zoom-max').value = 3.0;
+                return;
+            }
+
+            // Update settings
+            window.analyticsMonitor.advancedGestures.pinchZoomMin = minZoom;
+            window.analyticsMonitor.advancedGestures.pinchZoomMax = maxZoom;
+
+            // Update display
+            document.getElementById('pinch-zoom-value').textContent = `${minZoom}x - ${maxZoom}x`;
+
+            console.log(`[Control Panel] Pinch zoom range updated: ${minZoom}x - ${maxZoom}x`);
+        }
+
+        // PHASE 3.11.2: GESTURE MACRO HELPER FUNCTIONS
+        // =============================================
+
+        function toggleGestureRecording() {
+            if (!window.analyticsMonitor) return;
+
+            const btn = document.getElementById('gesture-record-btn');
+            const isRecording = window.analyticsMonitor.gestureMacros.recording;
+
+            if (!isRecording) {
+                // Start recording
+                window.analyticsMonitor.startGestureRecording();
+                btn.textContent = '⏹️ Stop Recording';
+                btn.classList.remove('primary');
+                btn.classList.add('danger');
+                console.log('[Control Panel] Gesture recording started');
+            } else {
+                // Stop recording
+                const gesture = window.analyticsMonitor.stopGestureRecording();
+                btn.textContent = '🔴 Start Recording';
+                btn.classList.remove('danger');
+                btn.classList.add('primary');
+                console.log('[Control Panel] Gesture recording stopped:', gesture);
+
+                // Recognize pattern
+                const pattern = window.analyticsMonitor.recognizeGesturePattern(gesture);
+                if (pattern) {
+                    alert(`Recognized pattern: ${pattern}`);
+                }
+            }
+        }
+
+        function clearRecordedGesture() {
+            if (!window.analyticsMonitor) return;
+
+            // Reset recording state
+            window.analyticsMonitor.gestureMacros.recordedGesture = [];
+            window.analyticsMonitor.gestureMacros.recording = false;
+
+            // Reset button
+            const btn = document.getElementById('gesture-record-btn');
+            btn.textContent = '🔴 Start Recording';
+            btn.classList.remove('danger');
+            btn.classList.add('primary');
+
+            console.log('[Control Panel] Recorded gesture cleared');
+        }
+
+        function saveGestureMacro() {
+            if (!window.analyticsMonitor) return;
+
+            const gesture = window.analyticsMonitor.gestureMacros.recordedGesture;
+            if (gesture.length === 0) {
+                alert('No recorded gesture to save. Record a gesture first!');
+                return;
+            }
+
+            // Prompt for macro name
+            const name = prompt('Enter macro name:');
+            if (!name) return;
+
+            // Save macro
+            window.analyticsMonitor.saveGestureMacro(name, gesture);
+
+            // Update UI
+            updateSavedMacrosList();
+
+            alert(`Gesture macro "${name}" saved!`);
+            console.log(`[Control Panel] Gesture macro saved: ${name}`);
+        }
+
+        function updateSavedMacrosList() {
+            if (!window.analyticsMonitor) return;
+
+            const listElement = document.getElementById('saved-macros-list');
+            const macros = window.analyticsMonitor.gestureMacros.savedMacros;
+
+            if (Object.keys(macros).length === 0) {
+                listElement.innerHTML = 'No saved macros yet. Record a gesture and save it!';
+                return;
+            }
+
+            // Build list
+            let html = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+            for (const [name, macro] of Object.entries(macros)) {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #fff; border: 1px solid #2196f3; border-radius: 4px;">
+                        <span style="font-weight: 600;">${name}</span>
+                        <div style="display: flex; gap: 0.25rem;">
+                            <button class="secondary" onclick="playbackGestureMacro('${name}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">▶️ Play</button>
+                            <button class="danger" onclick="deleteGestureMacro('${name}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+
+            listElement.innerHTML = html;
+        }
+
+        function playbackGestureMacro(name) {
+            if (!window.analyticsMonitor) return;
+
+            window.analyticsMonitor.playbackGesture(name);
+            console.log(`[Control Panel] Playing gesture macro: ${name}`);
+        }
+
+        function deleteGestureMacro(name) {
+            if (!window.analyticsMonitor) return;
+
+            if (!confirm(`Delete macro "${name}"?`)) return;
+
+            delete window.analyticsMonitor.gestureMacros.savedMacros[name];
+            localStorage.setItem('analytics_gesture_macros', JSON.stringify(window.analyticsMonitor.gestureMacros.savedMacros));
+
+            updateSavedMacrosList();
+            console.log(`[Control Panel] Deleted gesture macro: ${name}`);
+        }
+
+        function exportGestureMacros() {
+            if (!window.analyticsMonitor) return;
+
+            const data = window.analyticsMonitor.exportGestureMacros();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gesture_macros.json';
+            a.click();
+
+            URL.revokeObjectURL(url);
+            console.log('[Control Panel] Gesture macros exported');
+        }
+
+        function importGestureMacros() {
+            if (!window.analyticsMonitor) return;
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        window.analyticsMonitor.importGestureMacros(event.target.result);
+                        updateSavedMacrosList();
+                        alert('Gesture macros imported successfully!');
+                        console.log('[Control Panel] Gesture macros imported');
+                    } catch (error) {
+                        alert('Failed to import gesture macros: ' + error.message);
+                        console.error('[Control Panel] Import error:', error);
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            input.click();
+        }
+
+        function togglePatternRecognition() {
+            if (!window.analyticsMonitor) return;
+
+            const enabled = document.getElementById('enable-pattern-recognition')?.checked ?? true;
+            window.analyticsMonitor.gestureMacros.recognitionEnabled = enabled;
+
+            console.log(`[Control Panel] Pattern recognition ${enabled ? 'enabled' : 'disabled'}`);
+        }
+
+        function updateRecognitionThreshold() {
+            if (!window.analyticsMonitor) return;
+
+            const threshold = parseInt(document.getElementById('recognition-threshold')?.value || 70) / 100;
+            window.analyticsMonitor.gestureMacros.recognitionThreshold = threshold;
+
+            console.log(`[Control Panel] Recognition threshold updated: ${threshold}`);
+        }
+
+        // PHASE 3.11.3: PERFORMANCE MODE HELPER FUNCTIONS
+        // ================================================
+
+        function togglePerformanceMode() {
+            if (!window.analyticsMonitor) return;
+
+            const enabled = document.getElementById('enable-performance-mode')?.checked ?? false;
+
+            if (enabled) {
+                window.analyticsMonitor.enablePerformanceMode();
+            } else {
+                window.analyticsMonitor.disablePerformanceMode();
+            }
+
+            // Update checkboxes to reflect actual state
+            document.getElementById('reduced-animations').checked = window.analyticsMonitor.performanceMode.reducedAnimations;
+            document.getElementById('pause-background-updates').checked = window.analyticsMonitor.performanceMode.pauseBackgroundUpdates;
+            document.getElementById('virtualized-rendering').checked = window.analyticsMonitor.performanceMode.virtualizedRendering;
+
+            console.log(`[Control Panel] Performance mode ${enabled ? 'enabled' : 'disabled'}`);
+        }
+
+        function updatePerformanceSettings() {
+            if (!window.analyticsMonitor) return;
+
+            const autoEnable = document.getElementById('auto-enable-low-battery')?.checked ?? true;
+            const threshold = parseInt(document.getElementById('battery-threshold')?.value || 20);
+            const reducedAnimations = document.getElementById('reduced-animations')?.checked ?? false;
+            const pauseUpdates = document.getElementById('pause-background-updates')?.checked ?? false;
+            const virtualized = document.getElementById('virtualized-rendering')?.checked ?? false;
+
+            // Update settings
+            window.analyticsMonitor.performanceMode.autoEnableOnLowBattery = autoEnable;
+            window.analyticsMonitor.performanceMode.batteryThreshold = threshold;
+            window.analyticsMonitor.performanceMode.reducedAnimations = reducedAnimations;
+            window.analyticsMonitor.performanceMode.pauseBackgroundUpdates = pauseUpdates;
+            window.analyticsMonitor.performanceMode.virtualizedRendering = virtualized;
+
+            // Apply CSS class for reduced animations
+            if (reducedAnimations) {
+                document.body.classList.add('performance-mode');
+            } else {
+                document.body.classList.remove('performance-mode');
+            }
+
+            // Enable/disable virtualized rendering
+            if (virtualized) {
+                window.analyticsMonitor.enableVirtualizedRendering();
+            } else {
+                window.analyticsMonitor.disableVirtualizedRendering();
+            }
+
+            console.log(`[Control Panel] Performance settings updated: autoEnable=${autoEnable}, threshold=${threshold}%, reducedAnimations=${reducedAnimations}, pauseUpdates=${pauseUpdates}, virtualized=${virtualized}`);
+        }
+
+        function updateBatteryDisplay() {
+            if (!window.analyticsMonitor) return;
+
+            // Update battery level and charging status from analyticsMonitor
+            const batteryLevel = window.analyticsMonitor.performanceMode.currentBatteryLevel;
+            const isCharging = window.analyticsMonitor.performanceMode.isCharging;
+
+            const levelElement = document.getElementById('battery-level');
+            const statusElement = document.getElementById('charging-status');
+
+            if (levelElement) {
+                levelElement.textContent = batteryLevel !== 100 ? `${batteryLevel}%` : 'Unknown';
+            }
+
+            if (statusElement) {
+                statusElement.textContent = isCharging ? '⚡ Charging' : '🔋 On Battery';
+            }
+
+            // Schedule next update
+            setTimeout(updateBatteryDisplay, 30000); // Update every 30 seconds
+        }
     </script>
 
     <!-- Phase 2 Dashboard Modules -->

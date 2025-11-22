@@ -7,11 +7,13 @@ import * as vscode from 'vscode';
 import { HoloLoomBridge } from './HoloLoomBridge';
 import { AgentPanel } from './AgentPanel';
 import { CodeContextProvider } from './CodeContextProvider';
+import { MCPServer } from './MCPServer';
 
 let bridge: HoloLoomBridge;
 let agentPanel: AgentPanel | undefined;
 let contextProvider: CodeContextProvider;
 let statusBarItem: vscode.StatusBarItem;
+let mcpServer: MCPServer;
 
 async function updateServerStatus() {
     const healthy = await bridge.healthCheck();
@@ -38,6 +40,23 @@ export async function activate(context: vscode.ExtensionContext) {
     const serverUrl = config.get<string>('serverUrl', 'http://localhost:8000');
 
     bridge = new HoloLoomBridge(serverUrl);
+
+    // Initialize MCP Server
+    const mcpPort = config.get<number>('mcpPort', 9001);
+    const enableMCP = config.get<boolean>('enableMCP', true);
+
+    if (enableMCP) {
+        try {
+            mcpServer = new MCPServer(contextProvider, bridge, mcpPort);
+            await mcpServer.start();
+            console.log(`MCP Server started on ws://localhost:${mcpPort}`);
+        } catch (error: any) {
+            console.error(`Failed to start MCP Server: ${error.message}`);
+            vscode.window.showWarningMessage(
+                `Could not start Claude Code MCP Server on port ${mcpPort}. Matrix integration will be unavailable.`
+            );
+        }
+    }
 
     // Status bar
     statusBarItem = vscode.window.createStatusBarItem(
@@ -286,8 +305,15 @@ async function executeQuery(
 }
 
 export async function deactivate() {
+    // Stop MCP Server
+    if (mcpServer) {
+        await mcpServer.stop();
+    }
+
+    // Stop HoloLoom bridge
     if (bridge) {
         await bridge.stop();
     }
+
     console.log('Squad extension deactivated');
 }

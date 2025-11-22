@@ -39,7 +39,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from dataclasses import dataclass
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.web_dashboard.conversation_manager import ConversationManager, Message, Conversation
 
 

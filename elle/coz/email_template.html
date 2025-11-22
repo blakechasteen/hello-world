@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COZ Daily Brief - {date}</title>
+    <style>
+        body, table, td, a {{ -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }}
+        body {{
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+        }}
+        .email-container {{
+            max-width: 700px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }}
+        .email-header {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            padding: 30px 40px;
+            text-align: center;
+        }}
+        .email-header h1 {{ margin: 0 0 10px 0; font-size: 28px; font-weight: 600; }}
+        .email-header .date {{ font-size: 16px; opacity: 0.9; }}
+        .email-content {{ padding: 40px; }}
+        .metrics-dashboard {{
+            display: table;
+            width: 100%;
+            margin: 20px 0 30px 0;
+            border-collapse: separate;
+            border-spacing: 10px;
+        }}
+        .metric-card {{
+            display: table-cell;
+            width: 25%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+        }}
+        .metric-label {{ font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px; }}
+        .metric-value {{ font-size: 24px; font-weight: 700; color: #333; }}
+        .summary-content {{
+            background: #f9fafb;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }}
+        .action-item {{
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }}
+        .email-footer {{
+            background: #f9fafb;
+            padding: 30px 40px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+        }}
+        @media only screen and (max-width: 600px) {{
+            .metrics-dashboard {{ display: block; }}
+            .metric-card {{ display: block; width: 100%; margin-bottom: 10px; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>🐝 COZ Daily Intelligence Brief</h1>
+            <div class="date">{date}</div>
+        </div>
+        <div class="email-content">
+            <h2 style="margin-top: 0;">Performance Dashboard</h2>
+            <div class="metrics-dashboard">
+                <div class="metric-card">
+                    <div class="metric-label">Profit Margin</div>
+                    <div class="metric-value">{profit_margin}%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Efficiency</div>
+                    <div class="metric-value">{efficiency}%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Waste Rate</div>
+                    <div class="metric-value">{waste_rate}%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Fulfillment</div>
+                    <div class="metric-value">{fulfillment}%</div>
+                </div>
+            </div>
+            <div class="summary-content">
+                {summary_html}
+            </div>
+            <div class="action-items">
+                <h2>🎯 Top Action Items</h2>
+                {action_items_html}
+            </div>
+        </div>
+        <div class="email-footer">
+            <p><strong>COZ Intelligence System</strong></p>
+            <p>Powered by HoloLoom AI • Generated: {generation_time}</p>
+        </div>
+    </div>
+</body>
+</html>

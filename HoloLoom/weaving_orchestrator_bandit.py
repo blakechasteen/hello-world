@@ -43,7 +43,7 @@ from dataclasses import dataclass, field
 # Core HoloLoom
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 
 # Thompson Sampling
 from HoloLoom.ts_core import create_thompson_sampler

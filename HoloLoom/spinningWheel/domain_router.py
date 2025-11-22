@@ -17,7 +17,7 @@ from dataclasses import dataclass
 import re
 
 from HoloLoom.spinningWheel.protocol import BaseSpinner, SpinResult
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 
 # ============================================================================

@@ -1,0 +1,28 @@
+{
+  "policies": {
+    "project_blockers": {
+      "successes": 0,
+      "failures": 0
+    },
+    "who_owns_this": {
+      "successes": 0,
+      "failures": 1
+    },
+    "timeline": {
+      "successes": 1,
+      "failures": 1
+    },
+    "conceptual": {
+      "successes": 0,
+      "failures": 0
+    },
+    "hierarchical": {
+      "successes": 0,
+      "failures": 0
+    },
+    "exploratory": {
+      "successes": 0,
+      "failures": 0
+    }
+  }
+}

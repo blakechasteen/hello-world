@@ -1,0 +1,90 @@
+{
+  "date": "2025-11-22",
+  "summary": "# COZ Daily Intelligence Brief\n**Generated**: 2025-11-22 05:01\n\n## Financial Overview\n\n## Customer Insights\n- **Total Customers**: 0\n- **Avg Orders/Customer**: 0.0\n\n## Key Recommendations\n1. \ud83d\udcc9 Low sellthrough (0.0%). Reduce batch sizes.\n2. \ud83d\udcc8 Low repeat orders. Implement loyalty program.",
+  "profit": {
+    "error": "'FinancialsParser' object has no attribute 'get_revenue_summary'"
+  },
+  "efficiency": {
+    "top_overruns": [],
+    "category_efficiency": {},
+    "insights": []
+  },
+  "cost": {
+    "expensive_tasks": [],
+    "cost_breakdown": {
+      "material_percent": 0.0,
+      "labor_percent": 0.0,
+      "overhead_percent": 0.0
+    },
+    "overhead_rate": {
+      "overhead_rate": 0.0,
+      "total_direct_costs": 0.0,
+      "total_overhead": 0.0
+    },
+    "insights": []
+  },
+  "production": {
+    "production_vs_sops": {},
+    "time_variances": {
+      "overall_efficiency": 100.0,
+      "below_target": false
+    },
+    "output_efficiency": {
+      "waste_rate": 0.0,
+      "sellthrough_rate": 0.0
+    },
+    "insights": [
+      "\ud83d\udcc9 Low sellthrough (0.0%). Reduce batch sizes."
+    ]
+  },
+  "waste": {
+    "waste_analysis": {
+      "total_waste": 0,
+      "waste_reasons": {},
+      "high_waste_products": []
+    },
+    "overproduction_alerts": [],
+    "quality_issues": [],
+    "recommended_actions": [],
+    "insights": []
+  },
+  "orders": {
+    "fulfillment_schedule": {
+      "Critical (Overdue/Due Today)": [],
+      "High (Due in 2-3 Days)": [],
+      "Medium (Due This Week)": [],
+      "Low (Due Later)": []
+    },
+    "production_plan": [],
+    "capacity_analysis": {
+      "total_hours_required": 0.0,
+      "orders_pending": 0,
+      "critical_orders": 0
+    },
+    "insights": []
+  },
+  "customers": {
+    "customer_summary": {},
+    "top_customers": {},
+    "customer_metrics": {
+      "total_customers": 0,
+      "avg_orders_per_customer": 0,
+      "avg_revenue_per_customer": 0
+    },
+    "at_risk_customers": [],
+    "insights": [
+      "\ud83d\udcc8 Low repeat orders. Implement loyalty program."
+    ]
+  },
+  "action_items": [
+    "\ud83d\udcc8 Low repeat orders. Implement loyalty program."
+  ],
+  "performance_indicators": {
+    "profit_margin": 0.0,
+    "hourly_profit": 0.0,
+    "task_efficiency": 0.0,
+    "waste_rate": 0.0,
+    "order_fulfillment_rate": 0.0
+  },
+  "refinement_used": false
+}

@@ -17,7 +17,7 @@ import time
 
 from HoloLoom.hololoom import HoloLoom
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 from HoloLoom.rag.reranking import create_reranker, Reranker
 
 # Custom embedding plugins (graceful degradation if unavailable)
@@ -68,22 +68,29 @@ class RAGResult:
         response: LLM-generated answer
         sources: List of retrieved source texts
         confidence: Confidence score (0.0-1.0)
+        epistemic_confidence: Epistemic uncertainty score from awareness layer (0.0-1.0)
+            - Tracks system's self-awareness of knowledge gaps
+            - Derived from awareness graph activation, coherence, and shift detection
+            - Lower values indicate higher epistemic uncertainty (less confident about confidence)
         reasoning_mode: Mode used ("direct", "verify", "research", "plan_execute")
-        metadata: Additional info (latency_ms, cache_hit, tool_used, rerank_latency, etc.)
+        metadata: Additional info (latency_ms, cache_hit, tool_used, rerank_latency, awareness, etc.)
     """
     response: str
     sources: List[str]
     confidence: float
+    epistemic_confidence: Optional[float] = None  # Consciousness Integration - Phase 1 (Nov 2025)
     reasoning_mode: str = "direct"
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         """Human-readable representation."""
+        epistemic_str = f"  epistemic: {self.epistemic_confidence:.2f}\n" if self.epistemic_confidence is not None else ""
         return (
             f"RAGResult(\n"
             f"  response: {self.response[:100]}...\n"
             f"  sources: {len(self.sources)} items\n"
             f"  confidence: {self.confidence:.2f}\n"
+            f"{epistemic_str}"
             f"  mode: {self.reasoning_mode}\n"
             f")"
         )
@@ -439,11 +446,52 @@ class SimpleRAG(StreamingRAGMixin):
                 answer = f"No relevant information found for: {question}"
                 confidence = 0.1
 
+        # 3.5. Consciousness Integration - Analyze retrieval uncertainty (Phase 1, Nov 2025)
+        epistemic_confidence = None
+        awareness_metadata = {}
+        if self.loom and hasattr(self.loom, 'awareness') and self.loom.awareness:
+            try:
+                # Get awareness metrics for epistemic uncertainty analysis
+                awareness_metrics = self.loom.get_metrics()
+
+                # Calculate epistemic confidence from awareness signals
+                # High coherence + high activation = high epistemic confidence
+                # Low coherence or low activation = epistemic uncertainty
+                coherence = awareness_metrics.get('coherence', {}).get('global_coherence', 0.5)
+                activation_density = awareness_metrics.get('activation', {}).get('density', 0.5)
+
+                # Weighted combination (coherence is stronger signal for epistemic confidence)
+                epistemic_confidence = (0.7 * coherence) + (0.3 * activation_density)
+
+                # Adjust for number of sources (more sources = higher epistemic confidence)
+                if len(sources) == 0:
+                    epistemic_confidence *= 0.3  # Very uncertain with no sources
+                elif len(sources) < 3:
+                    epistemic_confidence *= 0.7  # Moderate uncertainty with few sources
+
+                # Store awareness context for provenance
+                awareness_metadata = {
+                    'epistemic_confidence': epistemic_confidence,
+                    'coherence': coherence,
+                    'activation_density': activation_density,
+                    'active_nodes': awareness_metrics.get('activation', {}).get('active_nodes', 0),
+                }
+
+                logger.debug(
+                    f"[AWARENESS] Epistemic analysis: confidence={epistemic_confidence:.3f}, "
+                    f"coherence={coherence:.3f}, activation={activation_density:.3f}, sources={len(sources)}"
+                )
+
+            except Exception as e:
+                logger.warning(f"[AWARENESS] Epistemic analysis failed: {e}")
+                epistemic_confidence = None
+
         # 4. Create result
         result = RAGResult(
             response=answer,
             sources=sources,
             confidence=confidence,
+            epistemic_confidence=epistemic_confidence,  # Consciousness Integration - Phase 1
             reasoning_mode=mode,
             metadata={
                 'n_sources': len(sources),
@@ -451,6 +499,7 @@ class SimpleRAG(StreamingRAGMixin):
                 'cache_hit': False,
                 'rerank_latency_ms': rerank_latency_ms,
                 'reranking_enabled': self.enable_reranking,
+                'awareness': awareness_metadata,  # Epistemic context
             }
         )
 

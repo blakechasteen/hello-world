@@ -20,7 +20,7 @@ import time
 import asyncio
 
 from HoloLoom.protocols import RetrievalStrategy, RetrievalResult, SpringActivationMetadata
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.memory.spring_dynamics import SpringDynamics, SpringConfig
 
 

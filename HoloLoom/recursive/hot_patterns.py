@@ -32,7 +32,7 @@ from HoloLoom.recursive.loop_integration import (
     LearningLoopConfig
 )
 from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.config import Config
 
 logger = logging.getLogger(__name__)
@@ -635,7 +635,7 @@ if __name__ == "__main__":
     print("""
 from HoloLoom.recursive import HotPatternFeedbackEngine, HotPatternConfig
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 
 config = Config.fast()
 hot_config = HotPatternConfig(

@@ -8,7 +8,7 @@ import asyncio
 import pytest
 from HoloLoom.config import Config
 from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 
 
 @pytest.mark.asyncio

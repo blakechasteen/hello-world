@@ -16,7 +16,7 @@ from HoloLoom.recursive.loop_integration import (
     weave_with_learning
 )
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.config import Config
 
 

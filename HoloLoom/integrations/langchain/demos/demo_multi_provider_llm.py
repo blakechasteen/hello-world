@@ -10,14 +10,24 @@ Date: 2025-11-20
 
 from pathlib import Path
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+import os
 
-from HoloLoom.integrations.langchain import (
-    MultiProviderLLM,
-    create_llm,
-    list_llm_providers,
-    create_best_available_llm
-)
+# Add repository root to path
+repo_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(repo_root))
+os.chdir(repo_root)
+
+# Try to import, but don't fail if not available
+try:
+    from HoloLoom.integrations.langchain import (
+        MultiProviderLLM,
+        create_llm,
+        list_llm_providers,
+        create_best_available_llm
+    )
+    IMPORTS_AVAILABLE = True
+except ImportError:
+    IMPORTS_AVAILABLE = False
 
 
 def demo_basic_usage():
@@ -26,21 +36,21 @@ def demo_basic_usage():
     print("Demo 1: Basic LLM Usage")
     print("="*60 + "\n")
 
-    print("🤖 OpenAI (GPT-4)")
+    print("[OpenAI (GPT-4)]")
     print("""
     llm = MultiProviderLLM(provider='openai', model='gpt-4')
     response = llm('Explain quantum computing')
     print(response)
     """)
 
-    print("\n🤖 Anthropic (Claude)")
+    print("\n[Anthropic (Claude)]")
     print("""
     llm = MultiProviderLLM(provider='anthropic', model='claude-3-5-sonnet-20241022')
     response = llm('Write a Python function')
     print(response)
     """)
 
-    print("\n🤖 Local (Ollama)")
+    print("\n[Local (Ollama)]")
     print("""
     llm = MultiProviderLLM(provider='ollama', model='llama3.2:3b')
     response = llm('Hello, how are you?')
@@ -54,7 +64,7 @@ def demo_chat_mode():
     print("Demo 2: Chat Mode")
     print("="*60 + "\n")
 
-    print("💬 Multi-Turn Conversation:")
+    print("[Multi-Turn Conversation]")
     print("""
     llm = MultiProviderLLM(provider='anthropic')
 
@@ -75,7 +85,7 @@ def demo_streaming():
     print("Demo 3: Streaming")
     print("="*60 + "\n")
 
-    print("📡 Token-by-Token Streaming:")
+    print("[Token-by-Token Streaming]")
     print("""
     llm = MultiProviderLLM(provider='openai')
 
@@ -90,7 +100,7 @@ def demo_auto_fallback():
     print("Demo 4: Auto-Fallback")
     print("="*60 + "\n")
 
-    print("🔄 Automatic Provider Selection:")
+    print("[Automatic Provider Selection]")
     print("""
     from HoloLoom.integrations.langchain import create_best_available_llm
 
@@ -143,7 +153,7 @@ def demo_usage_tracking():
     print("Demo 6: Usage Tracking")
     print("="*60 + "\n")
 
-    print("📊 Track Token Usage:")
+    print("[Track Token Usage]")
     print("""
     llm = MultiProviderLLM(provider='openai')
 
@@ -167,7 +177,7 @@ def demo_integration_with_hololoom():
     print("Demo 7: Integration with HoloLoom")
     print("="*60 + "\n")
 
-    print("🧠 HoloLoom Recall + LLM Generation:")
+    print("[HoloLoom Recall + LLM Generation]")
     print("""
     from HoloLoom import HoloLoom
     from HoloLoom.integrations.langchain import MultiProviderLLM

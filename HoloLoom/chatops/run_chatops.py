@@ -46,6 +46,15 @@ except ImportError:
     FULL_FEATURES = False
     print("Warning: Some features unavailable (ChatOps skills or HoloLoom config)")
 
+# Claude Code integration
+try:
+    from HoloLoom.departments.claude_code import ClaudeCodeDepartment
+    from HoloLoom.chatops.handlers.code_handlers import register_code_handlers
+    CLAUDE_CODE_AVAILABLE = True
+except ImportError as e:
+    CLAUDE_CODE_AVAILABLE = False
+    print(f"Warning: Claude Code integration unavailable: {e}")
+
 
 logger = logging.getLogger(__name__)
 
@@ -359,6 +368,7 @@ class ChatOpsRunner:
         self.bot: Optional[MatrixBot] = None
         self.chatops: Optional[ChatOpsOrchestrator] = None
         self.skills: Optional[ChatOpsSkills] = None
+        self.claude_code: Optional['ClaudeCodeDepartment'] = None
         self.running = False
 
     async def setup(self) -> None:
@@ -395,6 +405,29 @@ class ChatOpsRunner:
         # Register command handlers
         register_builtin_commands(self.bot, self.chatops, self.skills)
 
+        # Initialize Claude Code Department if available
+        if CLAUDE_CODE_AVAILABLE:
+            try:
+                claude_code_config = self.config.get("claude_code", {})
+                mcp_server_url = claude_code_config.get("mcp_server_url", "ws://localhost:9001")
+                enable_claude_code = claude_code_config.get("enabled", True)
+
+                if enable_claude_code:
+                    self.claude_code = ClaudeCodeDepartment(
+                        mcp_server_url=mcp_server_url,
+                        auto_reconnect=True
+                    )
+                    logger.info(f"Claude Code Department initialized (MCP: {mcp_server_url})")
+
+                    # Register code command handlers
+                    register_code_handlers(self.bot, self.chatops, self.claude_code)
+                    logger.info("Claude Code commands registered")
+                else:
+                    logger.info("Claude Code integration disabled in config")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Claude Code Department: {e}")
+                self.claude_code = None
+
         logger.info("Setup complete")
 
     async def start(self) -> None:
@@ -404,6 +437,15 @@ class ChatOpsRunner:
         # Start chatops orchestrator
         await self.chatops.start()
 
+        # Start Claude Code Department
+        if self.claude_code:
+            try:
+                await self.claude_code.start()
+                logger.info("Claude Code Department started")
+            except Exception as e:
+                logger.error(f"Failed to start Claude Code Department: {e}")
+                # Continue without Claude Code
+
         # Start bot (runs until stopped)
         self.running = True
         await self.bot.start()
@@ -412,6 +454,10 @@ class ChatOpsRunner:
         """Stop the bot gracefully."""
         logger.info("Stopping HoloLoom ChatOps...")
         self.running = False
+
+        # Stop Claude Code Department
+        if self.claude_code:
+            await self.claude_code.stop()
 
         if self.chatops:
             await self.chatops.stop()

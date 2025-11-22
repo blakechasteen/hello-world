@@ -41,7 +41,7 @@ from HoloLoom.spinningWheel.protocol import (
     SpinnerCapabilities
 )
 from HoloLoom.spinningWheel.importance import ImportanceScorer
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 # Try to import pandas (required)
 try:

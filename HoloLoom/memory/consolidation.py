@@ -34,7 +34,7 @@ from enum import Enum
 import asyncio
 import logging
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.memory.lifecycle_manager import (
     ContextStreamManager,
     MemoryScope,

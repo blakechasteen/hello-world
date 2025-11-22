@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from HoloLoom.Documentation.types import Query, MemoryShard, Features
+    from HoloLoom.protocols.types import Query, MemoryShard, Features
     from HoloLoom.memory.cache import create_memory_manager
     from HoloLoom.memory.graph import KG
     from HoloLoom.memory.mem0_adapter import (

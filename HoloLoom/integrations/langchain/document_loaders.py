@@ -82,22 +82,23 @@ except ImportError:
         metadata: Dict[str, Any]
 
 
-# Document type to loader mapping
-LOADER_REGISTRY = {
-    # Text
-    '.txt': TextLoader,
-    '.md': UnstructuredMarkdownLoader,
-    '.markdown': UnstructuredMarkdownLoader,
+# Document type to loader mapping (only if LangChain available)
+if LANGCHAIN_AVAILABLE:
+    LOADER_REGISTRY = {
+        # Text
+        '.txt': TextLoader,
+        '.md': UnstructuredMarkdownLoader,
+        '.markdown': UnstructuredMarkdownLoader,
 
-    # PDFs
-    '.pdf': PyPDFLoader,
+        # PDFs
+        '.pdf': PyPDFLoader,
 
-    # Office
-    '.docx': UnstructuredWordDocumentLoader,
-    '.doc': UnstructuredWordDocumentLoader,
-    '.pptx': UnstructuredPowerPointLoader,
-    '.ppt': UnstructuredPowerPointLoader,
-    '.xlsx': UnstructuredExcelLoader,
+        # Office
+        '.docx': UnstructuredWordDocumentLoader,
+        '.doc': UnstructuredWordDocumentLoader,
+        '.pptx': UnstructuredPowerPointLoader,
+        '.ppt': UnstructuredPowerPointLoader,
+        '.xlsx': UnstructuredExcelLoader,
     '.xls': UnstructuredExcelLoader,
 
     # Code
@@ -126,7 +127,9 @@ LOADER_REGISTRY = {
     '.png': UnstructuredImageLoader,
     '.jpg': UnstructuredImageLoader,
     '.jpeg': UnstructuredImageLoader,
-}
+    }
+else:
+    LOADER_REGISTRY = {}
 
 
 class UniversalDocumentLoader:

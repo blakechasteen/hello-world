@@ -134,12 +134,13 @@ class VoiceSOPEditor:
             print(f"✗ Failed to initialize HoloLoom: {e}")
             self.use_hololoom = False
 
-    async def process_voice_command(self, text: str) -> str:
+    async def process_voice_command(self, text: str, thread_context: Optional[List[str]] = None) -> str:
         """
         Process a voice command
 
         Args:
             text: Transcribed voice input
+            thread_context: Optional list of recent conversation messages for context
 
         Returns:
             Response text (for text-to-speech)
@@ -155,6 +156,9 @@ class VoiceSOPEditor:
 
         if not command:
             return "I didn't understand that command. Try 'show bread SOP' or 'start baking bread'."
+
+        # Store thread context for handlers to use
+        command.params['thread_context'] = thread_context
 
         # Route to appropriate handler
         if command.command_type == "sop_show":
@@ -353,13 +357,22 @@ class VoiceSOPEditor:
             return str(e)
 
     async def _handle_query(self, command: VoiceCommand) -> str:
-        """Answer a knowledge query using HoloLoom RAG"""
+        """Answer a knowledge query using HoloLoom RAG with thread context"""
         query_text = command.params["query_text"]
+        thread_context = command.params.get("thread_context", [])
 
         if self.use_hololoom and self.rag:
             try:
+                # Build enriched query with thread context
+                if thread_context and len(thread_context) > 0:
+                    # Add recent conversation context to help RAG understand query better
+                    context_str = "\n".join(thread_context[-5:])  # Last 5 messages
+                    enriched_query = f"Conversation context:\n{context_str}\n\nCurrent question: {query_text}"
+                else:
+                    enriched_query = query_text
+
                 # Use HoloLoom RAG for sophisticated retrieval
-                result = await self.rag.query(query_text, mode="direct")
+                result = await self.rag.query(enriched_query, mode="direct")
                 return result.response
             except Exception as e:
                 print(f"✗ HoloLoom query failed: {e}")

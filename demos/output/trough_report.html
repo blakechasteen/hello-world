@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trough Code Analysis - Sample Report</title>
+    
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+        font-size: 28px;
+        margin-bottom: 5px;
+    }
+
+    .header .subtitle {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .container {
+        display: flex;
+        height: calc(100vh - 100px);
+        gap: 0;
+    }
+
+    .panel {
+        overflow-y: auto;
+        border-right: 1px solid #e0e0e0;
+    }
+
+    .panel:last-child {
+        border-right: none;
+    }
+
+    .findings-panel {
+        flex: 1;
+        max-width: 350px;
+        background: white;
+    }
+
+    .code-panel {
+        flex: 1.5;
+        background: #2d2d2d;
+        color: #f8f8f2;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 12px;
+        overflow-x: auto;
+    }
+
+    .details-panel {
+        flex: 1;
+        background: white;
+        padding: 20px;
+    }
+
+    /* Findings List */
+    .findings-list {
+        list-style: none;
+    }
+
+    .finding-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: background 0.2s, border-left 0.2s;
+        border-left: 4px solid transparent;
+    }
+
+    .finding-item:hover {
+        background: #f9f9f9;
+    }
+
+    .finding-item.active {
+        background: #e8f4f8;
+        border-left-color: #667eea;
+    }
+
+    .finding-item .line-number {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 4px;
+    }
+
+    .finding-item .message {
+        font-size: 13px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 6px;
+    }
+
+    .severity-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 10px;
+        font-weight: bold;
+        color: white;
+    }
+
+    /* Search and Filters */
+    .search-bar {
+        padding: 15px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .search-bar input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    .filter-controls {
+        padding: 12px 15px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .filter-button {
+        padding: 4px 10px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        background: white;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+
+    .filter-button:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .filter-button.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    /* Code Panel */
+    .code-panel pre {
+        padding: 0;
+        margin: 0;
+        background: transparent;
+    }
+
+    .code-panel code {
+        font-family: inherit;
+    }
+
+    .hljs-linenumber {
+        color: #666;
+        margin-right: 15px;
+        user-select: none;
+    }
+
+    .highlight-line {
+        background: rgba(255, 235, 59, 0.2);
+        display: block;
+    }
+
+    /* Details Panel */
+    .detail-section {
+        margin-bottom: 20px;
+    }
+
+    .detail-section h3 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-section p {
+        font-size: 13px;
+        color: #555;
+        line-height: 1.6;
+    }
+
+    .suggestion-box {
+        background: #f0f9ff;
+        border-left: 4px solid #3b82f6;
+        padding: 10px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #1e40af;
+        margin: 10px 0;
+    }
+
+    .code-snippet {
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 11px;
+        overflow-x: auto;
+        margin: 8px 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn:hover {
+        background: #f5f5f5;
+        border-color: #999;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .btn-primary:hover {
+        background: #5568d3;
+        border-color: #5568d3;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #333;
+    }
+
+    /* Empty state */
+    .empty-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #999;
+        text-align: center;
+        padding: 30px;
+    }
+
+    .empty-state-content {
+        max-width: 300px;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+
+    .empty-state h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        font-size: 13px;
+        color: #bbb;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+        padding: 15px;
+        background: #f9f9f9;
+        border-bottom: 1px solid #e0e0e0;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        font-size: 12px;
+    }
+
+    .stat {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 16px;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: #999;
+        margin-top: 2px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .container {
+            flex-direction: column;
+        }
+
+        .findings-panel,
+        .code-panel,
+        .details-panel {
+            max-width: none;
+            flex: 1;
+            min-height: 0;
+        }
+    }
+
+    /* Scrollbar styling */
+    .panel::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .panel::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .panel::-webkit-scrollbar-thumb {
+        background: #bbb;
+        border-radius: 4px;
+    }
+
+    .panel::-webkit-scrollbar-thumb:hover {
+        background: #999;
+    }
+
+    /* Pygments override for better colors in dark theme */
+    .code-panel .highlight {
+        background: transparent;
+    }
+    </style>
+    
+</head>
+<body>
+    <div class="header">
+        <h1>Trough Code Analysis - Sample Report</h1>
+        <div class="subtitle">Generated on 2025-11-22 04:35:01</div>
+    </div>
+
+    <div class="container">
+        <!-- Findings Panel -->
+        <div class="panel findings-panel">
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value">14</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: #e74c3c;">2</div>
+                    <div class="stat-label">Critical</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: #e67e22;">1</div>
+                    <div class="stat-label">High</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: #f39c12;">5</div>
+                    <div class="stat-label">Medium</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: #3498db;">6</div>
+                    <div class="stat-label">Low</div>
+                </div>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search findings...">
+            </div>
+
+            <div class="filter-controls">
+<button class="filter-button" data-filter-type="severity" data-filter-value="critical">CRITICAL</button><button class="filter-button" data-filter-type="severity" data-filter-value="high">HIGH</button><button class="filter-button" data-filter-type="severity" data-filter-value="medium">MEDIUM</button><button class="filter-button" data-filter-type="severity" data-filter-value="low">LOW</button></div>
+<ul class="findings-list" id="findings-list"></ul></div><div class="panel code-panel" id="code-panel"></div><div class="panel details-panel" id="details-panel"></div></div>
+    <script>
+    window.FINDINGS_DATA = [{"category": "hardcoded_values", "severity": "critical", "message": "Hardcoded hardcoded API key detected", "file_path": "sample_code.py", "line_number": 7, "code_snippet": "import json\n\n# Issue 1: Hardcoded secrets\nAPI_KEY = \"sk-1234567890abcdefghijklmnopqrstuvwxyz\"\nPASSWORD = \"admin123\"\n\n# Issue 2: Missing error handling", "suggestion": "Move to environment variable (os.getenv() or process.env)", "confidence": 1.0}, {"category": "hardcoded_values", "severity": "critical", "message": "Hardcoded hardcoded password detected", "file_path": "sample_code.py", "line_number": 8, "code_snippet": "\n# Issue 1: Hardcoded secrets\nAPI_KEY = \"sk-1234567890abcdefghijklmnopqrstuvwxyz\"\nPASSWORD = \"admin123\"\n\n# Issue 2: Missing error handling\ndef load_config(filename):", "suggestion": "Move to environment variable (os.getenv() or process.env)", "confidence": 1.0}, {"category": "resource_leak", "severity": "high", "message": "File 'config_file' opened but never closed (use 'with' statement)", "file_path": "sample_code.py", "line_number": 13, "code_snippet": "# Issue 2: Missing error handling\ndef load_config(filename):\n    \"\"\"Load configuration without error handling.\"\"\"\n    config_file = open(\"config.json\")  # Resource leak: no close()\n    data = config_file.read()\n    config = json.loads(data)  # No try/catch\n", "suggestion": "Use: with open(...) as config_file:", "confidence": 1.0}, {"category": "error_handling", "severity": "medium", "message": "File operation without error handling (use try/except or 'with' statement)", "file_path": "sample_code.py", "line_number": 13, "code_snippet": "# Issue 2: Missing error handling\ndef load_config(filename):\n    \"\"\"Load configuration without error handling.\"\"\"\n    config_file = open(\"config.json\")  # Resource leak: no close()\n    data = config_file.read()\n    config = json.loads(data)  # No try/catch\n", "suggestion": "Wrap in try/except or use 'with open(...) as f:'", "confidence": 1.0}, {"category": "error_handling", "severity": "medium", "message": "File operation without error handling (use try/except or 'with' statement)", "file_path": "sample_code.py", "line_number": 14, "code_snippet": "def load_config(filename):\n    \"\"\"Load configuration without error handling.\"\"\"\n    config_file = open(\"config.json\")  # Resource leak: no close()\n    data = config_file.read()\n    config = json.loads(data)  # No try/catch\n\n    # Issue 3: Dictionary access without get()", "suggestion": "Wrap in try/except or use 'with open(...) as f:'", "confidence": 1.0}, {"category": "error_handling", "severity": "medium", "message": "Dictionary access without KeyError handling", "file_path": "sample_code.py", "line_number": 18, "code_snippet": "    config = json.loads(data)  # No try/catch\n\n    # Issue 3: Dictionary access without get()\n    user_id = config[\"user_id\"]  # KeyError if missing\n\n    return config\n", "suggestion": "Use .get(key, default) instead of [key]", "confidence": 1.0}, {"category": "incomplete", "severity": "medium", "message": "TODO comment indicates incomplete code", "file_path": "sample_code.py", "line_number": 26, "code_snippet": "# Issue 4: Incomplete implementation\nasync def fetch_data(url):\n    \"\"\"Fetch data from URL - TODO: implement retry logic.\"\"\"\n    # TODO: Add exponential backoff\n    # TODO: Handle connection timeouts\n    pass\n", "suggestion": "Complete the implementation", "confidence": 1.0}, {"category": "incomplete", "severity": "medium", "message": "TODO comment indicates incomplete code", "file_path": "sample_code.py", "line_number": 27, "code_snippet": "async def fetch_data(url):\n    \"\"\"Fetch data from URL - TODO: implement retry logic.\"\"\"\n    # TODO: Add exponential backoff\n    # TODO: Handle connection timeouts\n    pass\n\n", "suggestion": "Complete the implementation", "confidence": 1.0}, {"category": "dead_code", "severity": "low", "message": "Unused import 'sys'", "file_path": "sample_code.py", "line_number": 3, "code_snippet": "import sys", "suggestion": "Remove import statement", "confidence": 1.0}, {"category": "hardcoded_values", "severity": "low", "message": "Magic number 1234567890 should be a named constant", "file_path": "sample_code.py", "line_number": 7, "code_snippet": "import json\n\n# Issue 1: Hardcoded secrets\nAPI_KEY = \"sk-1234567890abcdefghijklmnopqrstuvwxyz\"\nPASSWORD = \"admin123\"\n\n# Issue 2: Missing error handling", "suggestion": "Define as constant: MAX_RETRIES = 1234567890", "confidence": 1.0}, {"category": "hardcoded_values", "severity": "low", "message": "Magic number 123 should be a named constant", "file_path": "sample_code.py", "line_number": 8, "code_snippet": "\n# Issue 1: Hardcoded secrets\nAPI_KEY = \"sk-1234567890abcdefghijklmnopqrstuvwxyz\"\nPASSWORD = \"admin123\"\n\n# Issue 2: Missing error handling\ndef load_config(filename):", "suggestion": "Define as constant: MAX_RETRIES = 123", "confidence": 1.0}, {"category": "hardcoded_values", "severity": "low", "message": "Magic number 9999 should be a named constant", "file_path": "sample_code.py", "line_number": 34, "code_snippet": "# Issue 5: Magic numbers\ndef process_records(records):\n    \"\"\"Process records with magic numbers.\"\"\"\n    if len(records) > 9999:  # Magic number\n        print(\"Too many records\")\n\n    for i in range(len(records)):  # Could use enumerate", "suggestion": "Define as constant: MAX_RETRIES = 9999", "confidence": 1.0}, {"category": "off_by_one", "severity": "low", "message": "Use enumerate() instead of range(len(records))", "file_path": "sample_code.py", "line_number": 37, "code_snippet": "    if len(records) > 9999:  # Magic number\n        print(\"Too many records\")\n\n    for i in range(len(records)):  # Could use enumerate\n        if i < 100:  # Magic number\n            process_single(records[i])\n", "suggestion": "for i, item in enumerate(records):", "confidence": 1.0}, {"category": "hardcoded_values", "severity": "low", "message": "Magic number 100 should be a named constant", "file_path": "sample_code.py", "line_number": 38, "code_snippet": "        print(\"Too many records\")\n\n    for i in range(len(records)):  # Could use enumerate\n        if i < 100:  # Magic number\n            process_single(records[i])\n\n", "suggestion": "Define as constant: MAX_RETRIES = 100", "confidence": 1.0}];
+    window.CODE_SNIPPETS = {"sample_code.py": "\nimport os\nimport sys\nimport json\n\n# Issue 1: Hardcoded secrets\nAPI_KEY = \"sk-1234567890abcdefghijklmnopqrstuvwxyz\"\nPASSWORD = \"admin123\"\n\n# Issue 2: Missing error handling\ndef load_config(filename):\n    \"\"\"Load configuration without error handling.\"\"\"\n    config_file = open(\"config.json\")  # Resource leak: no close()\n    data = config_file.read()\n    config = json.loads(data)  # No try/catch\n\n    # Issue 3: Dictionary access without get()\n    user_id = config[\"user_id\"]  # KeyError if missing\n\n    return config\n\n\n# Issue 4: Incomplete implementation\nasync def fetch_data(url):\n    \"\"\"Fetch data from URL - TODO: implement retry logic.\"\"\"\n    # TODO: Add exponential backoff\n    # TODO: Handle connection timeouts\n    pass\n\n\n# Issue 5: Magic numbers\ndef process_records(records):\n    \"\"\"Process records with magic numbers.\"\"\"\n    if len(records) > 9999:  # Magic number\n        print(\"Too many records\")\n\n    for i in range(len(records)):  # Could use enumerate\n        if i < 100:  # Magic number\n            process_single(records[i])\n\n\n# Issue 6: Copy-paste duplication\ndef validate_email(email):\n    \"\"\"Validate email address.\"\"\"\n    if \"@\" not in email:\n        return False\n    if \".\" not in email.split(\"@\")[1]:\n        return False\n    return True\n\n\ndef validate_phone(phone):\n    \"\"\"Validate phone number - copy-paste from email.\"\"\"\n    if \"@\" not in phone:  # Wrong check for phone!\n        return False\n    if \".\" not in phone.split(\"@\")[1]:  # Wrong check for phone!\n        return False\n    return True\n\n\n# Issue 7: Unused imports\ndef get_current_user():\n    \"\"\"Get current user - uses sys but not sys.\"\"\"\n    return os.environ.get(\"USER\")\n"};
+    window.SEVERITY_BADGES = {"critical": "<span class=\"severity-badge\" style=\"background-color:#e74c3c\">CRITICAL</span>", "high": "<span class=\"severity-badge\" style=\"background-color:#e67e22\">HIGH</span>", "medium": "<span class=\"severity-badge\" style=\"background-color:#f39c12\">MEDIUM</span>", "low": "<span class=\"severity-badge\" style=\"background-color:#3498db\">LOW</span>", "info": "<span class=\"severity-badge\" style=\"background-color:#95a5a6\">INFO</span>"};
+    </script>
+    
+    <script>
+    // Initialize application state
+    let findings = [];
+    let selectedFindingIndex = -1;
+
+    // DOM elements
+    const findingsListEl = document.getElementById('findings-list');
+    const codePanelEl = document.getElementById('code-panel');
+    const detailsPanelEl = document.getElementById('details-panel');
+    const searchInputEl = document.getElementById('search-input');
+    const filterButtonsEl = document.querySelectorAll('.filter-button');
+
+    // Current filters
+    let activeFilters = {
+        severity: [],
+        category: []
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        findings = window.FINDINGS_DATA || [];
+        renderFindings();
+
+        // Setup event listeners
+        searchInputEl?.addEventListener('input', handleSearch);
+        filterButtonsEl.forEach(btn => {
+            btn.addEventListener('click', handleFilter);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', handleKeyboard);
+    });
+
+    function renderFindings(filtered_findings = null) {
+        const toRender = filtered_findings || findings;
+        findingsListEl.innerHTML = '';
+
+        if (toRender.length === 0) {
+            findingsListEl.innerHTML = '<div class="empty-state"><div class="empty-state-content"><div class="empty-state-icon">✓</div><h2>All Clear!</h2><p>No issues found</p></div></div>';
+            return;
+        }
+
+        toRender.forEach((finding, index) => {
+            const item = document.createElement('li');
+            item.className = 'finding-item';
+            if (index === 0) item.classList.add('active');
+
+            const lineNum = finding.line_number || 'N/A';
+            const category = finding.category || 'unknown';
+            const severity = finding.severity || 'info';
+
+            item.innerHTML = `
+                <div class="line-number">Line ${lineNum}</div>
+                <div class="message">${escapeHtml(finding.message)}</div>
+                <div>${window.SEVERITY_BADGES[severity] || severity}</div>
+            `;
+
+            item.addEventListener('click', () => selectFinding(toRender.indexOf(finding)));
+            findingsListEl.appendChild(item);
+        });
+
+        // Select first finding
+        if (toRender.length > 0) {
+            selectFinding(0);
+        }
+    }
+
+    function selectFinding(index) {
+        // Update active state
+        const items = findingsListEl.querySelectorAll('.finding-item');
+        items.forEach(item => item.classList.remove('active'));
+        if (items[index]) {
+            items[index].classList.add('active');
+            items[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Get the actual finding
+        const filteredFindings = getFilteredFindings();
+        const finding = filteredFindings[index];
+        selectedFindingIndex = findings.indexOf(finding);
+
+        // Update code panel
+        updateCodePanel(finding);
+
+        // Update details panel
+        updateDetailsPanel(finding);
+    }
+
+    function updateCodePanel(finding) {
+        const code = window.CODE_SNIPPETS[finding.file_path] || '';
+        const lines = code.split('\n');
+        const lineNum = finding.line_number - 1;
+
+        // Create highlighted code view
+        let html = '<pre>';
+        lines.forEach((line, i) => {
+            const lineNo = i + 1;
+            const isHighlight = Math.abs(i - lineNum) <= 2;
+            const className = isHighlight ? 'highlight-line' : '';
+
+            // Escape HTML and add line numbers
+            const escaped = escapeHtml(line);
+            html += `<div class="${className}"><span class="hljs-linenumber">${lineNo}</span>${escaped || ' '}</div>`;
+        });
+        html += '</pre>';
+
+        codePanelEl.innerHTML = html;
+    }
+
+    function updateDetailsPanel(finding) {
+        const vscodeLink = createVSCodeLink(finding.file_path, finding.line_number);
+        const severity = finding.severity || 'info';
+
+        let html = `
+            <div class="detail-section">
+                <h3>Issue Details</h3>
+                <p><strong>Category:</strong> ${escapeHtml(finding.category)}</p>
+                <p><strong>File:</strong> ${escapeHtml(finding.file_path)}</p>
+                <p><strong>Line:</strong> ${finding.line_number}</p>
+            </div>
+
+            <div class="detail-section">
+                <h3>Message</h3>
+                <p>${escapeHtml(finding.message)}</p>
+            </div>
+
+            <div class="detail-section">
+                <h3>Code Snippet</h3>
+                <div class="code-snippet">${escapeHtml(finding.code_snippet)}</div>
+            </div>
+
+            <div class="detail-section">
+                <h3>Suggestion</h3>
+                <div class="suggestion-box">${escapeHtml(finding.suggestion)}</div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="${vscodeLink}" class="btn btn-primary" target="_blank">
+                    Open in VS Code
+                </a>
+            </div>
+        `;
+
+        detailsPanelEl.innerHTML = html;
+    }
+
+    function handleSearch(e) {
+        const query = e.target.value.toLowerCase();
+        const filtered = findings.filter(f =>
+            f.message.toLowerCase().includes(query) ||
+            f.category.toLowerCase().includes(query) ||
+            f.file_path.toLowerCase().includes(query)
+        );
+        renderFindings(filtered);
+    }
+
+    function handleFilter(e) {
+        const filterType = e.target.dataset.filterType;
+        const filterValue = e.target.dataset.filterValue;
+
+        // Toggle filter
+        if (!activeFilters[filterType]) {
+            activeFilters[filterType] = [];
+        }
+
+        const idx = activeFilters[filterType].indexOf(filterValue);
+        if (idx > -1) {
+            activeFilters[filterType].splice(idx, 1);
+            e.target.classList.remove('active');
+        } else {
+            activeFilters[filterType].push(filterValue);
+            e.target.classList.add('active');
+        }
+
+        // Re-render with filters
+        const filtered = getFilteredFindings();
+        renderFindings(filtered);
+    }
+
+    function getFilteredFindings() {
+        return findings.filter(f => {
+            // Severity filter
+            if (activeFilters.severity.length > 0 &&
+                !activeFilters.severity.includes(f.severity)) {
+                return false;
+            }
+
+            // Category filter
+            if (activeFilters.category.length > 0 &&
+                !activeFilters.category.includes(f.category)) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+
+    function handleKeyboard(e) {
+        const filteredFindings = getFilteredFindings();
+        const currentIndex = filteredFindings.findIndex(f => f === findings[selectedFindingIndex]);
+
+        if (e.key === 'ArrowUp' && currentIndex > 0) {
+            e.preventDefault();
+            selectFinding(currentIndex - 1);
+        } else if (e.key === 'ArrowDown' && currentIndex < filteredFindings.length - 1) {
+            e.preventDefault();
+            selectFinding(currentIndex + 1);
+        } else if (e.key === 'Enter') {
+            // Open in VS Code
+            const link = document.querySelector('.btn-primary');
+            if (link) link.click();
+        }
+    }
+
+    function createVSCodeLink(filePath, lineNumber) {
+        // Convert Windows paths
+        let path = filePath.replace(/\\/g, '/');
+        if (path.includes(':')) {
+            // Windows path
+            return `vscode://file/${path}:${lineNumber}`;
+        } else {
+            // Unix path
+            return `vscode://file${path}:${lineNumber}`;
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    </script>
+    
+</body>
+</html>

@@ -381,13 +381,22 @@ class SafetyGuardrails:
             logger.addHandler(handler)
             logger.setLevel(logging.INFO)
 
-    def evaluate(self, request: ActionRequest, text_input: Optional[str] = None) -> SafetyDecision:
+    def evaluate(
+        self,
+        request: ActionRequest,
+        text_input: Optional[str] = None,
+        epistemic_confidence: Optional[float] = None  # Consciousness Integration - Phase 1 (Nov 2025)
+    ) -> SafetyDecision:
         """
         Evaluate action request against safety policies.
 
         Args:
             request: Action request to evaluate
             text_input: Optional text input to check for adversarial patterns
+            epistemic_confidence: Optional epistemic confidence from awareness layer (0.0-1.0)
+                - Tracks system's self-awareness of knowledge gaps
+                - Low values indicate epistemic humility (aware of uncertainty)
+                - Used to adjust risk scoring and require approval when uncertain
 
         Returns:
             Safety decision
@@ -404,8 +413,61 @@ class SafetyGuardrails:
                     metadata={"adversarial_detected": True}
                 )
 
+        # Consciousness Integration - Phase 1 (Nov 2025)
+        # Epistemic humility check: Low epistemic confidence = higher risk
+        epistemic_risk_adjustment = RiskLevel.SAFE
+        epistemic_metadata = {}
+
+        if epistemic_confidence is not None:
+            epistemic_metadata = {
+                'epistemic_confidence': epistemic_confidence,
+                'epistemic_humility_enabled': True,
+            }
+
+            # Very low epistemic confidence (< 0.3) indicates high uncertainty
+            # → Increase risk level and require human approval
+            if epistemic_confidence < 0.3:
+                epistemic_risk_adjustment = RiskLevel.HIGH
+                epistemic_metadata['epistemic_warning'] = 'Very uncertain - requires approval'
+                logger.warning(
+                    f"[EPISTEMIC] Low epistemic confidence ({epistemic_confidence:.3f}) "
+                    f"for action '{request.action}' - escalating to HIGH risk"
+                )
+
+            # Moderate epistemic confidence (0.3-0.6) indicates some uncertainty
+            # → Moderate risk adjustment
+            elif epistemic_confidence < 0.6:
+                epistemic_risk_adjustment = RiskLevel.MEDIUM
+                epistemic_metadata['epistemic_warning'] = 'Moderate uncertainty detected'
+                logger.info(
+                    f"[EPISTEMIC] Moderate epistemic confidence ({epistemic_confidence:.3f}) "
+                    f"for action '{request.action}' - elevated monitoring"
+                )
+
+            # High epistemic confidence (>= 0.6) indicates low uncertainty
+            # → No adjustment needed
+            else:
+                epistemic_metadata['epistemic_status'] = 'High confidence - no adjustment'
+                logger.debug(
+                    f"[EPISTEMIC] High epistemic confidence ({epistemic_confidence:.3f}) "
+                    f"for action '{request.action}'"
+                )
+
         # Assess risk level
         risk_level = self.policy.get_risk_level(request)
+
+        # Apply epistemic risk adjustment (take maximum of base risk and epistemic risk)
+        if epistemic_risk_adjustment != RiskLevel.SAFE:
+            risk_levels_ordered = [RiskLevel.SAFE, RiskLevel.LOW, RiskLevel.MEDIUM, RiskLevel.HIGH, RiskLevel.CRITICAL]
+            base_risk_idx = risk_levels_ordered.index(risk_level)
+            epistemic_risk_idx = risk_levels_ordered.index(epistemic_risk_adjustment)
+
+            if epistemic_risk_idx > base_risk_idx:
+                logger.info(
+                    f"[EPISTEMIC] Adjusting risk from {risk_level.value} to {epistemic_risk_adjustment.value} "
+                    f"due to epistemic uncertainty"
+                )
+                risk_level = epistemic_risk_adjustment
 
         # Check if approval required
         requires_approval = self.policy.requires_approval(request, risk_level)
@@ -432,17 +494,25 @@ class SafetyGuardrails:
 
         # Store in history
         self.action_history.append(request)
+
+        # Build decision metadata with epistemic context
+        decision_metadata = {
+            "action": request.action,
+            "category": request.category.value,
+            "user_id": request.user_id,
+            "session_id": request.session_id,
+        }
+
+        # Add epistemic metadata (Consciousness Integration - Phase 1)
+        if epistemic_metadata:
+            decision_metadata['epistemic'] = epistemic_metadata
+
         decision = SafetyDecision(
             allowed=allowed,
             risk_level=risk_level,
             reason=reason,
             requires_approval=requires_approval,
-            metadata={
-                "action": request.action,
-                "category": request.category.value,
-                "user_id": request.user_id,
-                "session_id": request.session_id,
-            },
+            metadata=decision_metadata,
             context=request.context,
             alternative_action=alternative_action,
         )

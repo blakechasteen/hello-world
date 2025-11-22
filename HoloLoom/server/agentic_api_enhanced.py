@@ -37,7 +37,7 @@ from pydantic import BaseModel, Field
 
 # HoloLoom imports
 from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.memory.graph import KG
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 

@@ -369,10 +369,12 @@ class TestRefineMethod:
             metadata={},
         )
 
+        # Save original score before refinement (refine modifies in place)
+        original_score = response.confidence.score
         refined = await planning_department.refine(response)
 
         # Confidence should improve
-        assert refined.confidence.score > response.confidence.score
+        assert refined.confidence.score > original_score
         assert "refinement" in refined.metadata
 
     @pytest.mark.asyncio

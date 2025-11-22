@@ -133,6 +133,7 @@ class OllamaLLM:
         system_prompt: Optional[str] = None,
         max_tokens: int = 500,
         temperature: float = 0.7,
+        format: Optional[str] = None,
         **kwargs
     ) -> LLMResponse:
         """
@@ -143,6 +144,7 @@ class OllamaLLM:
             system_prompt: Optional system prompt
             max_tokens: Max tokens to generate
             temperature: Sampling temperature (0.0-2.0)
+            format: Optional format (e.g. "json")
 
         Returns:
             LLMResponse with generated content
@@ -173,7 +175,8 @@ class OllamaLLM:
                 options={
                     "num_predict": max_tokens,
                     "temperature": temperature,
-                }
+                },
+                format=format
             )
 
             content = response['message']['content']

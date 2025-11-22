@@ -419,10 +419,11 @@ class HallucinationDetector:
         if similar:
             best_similarity = similar[0][1]
             if best_similarity > 0.8:
-                # Likely a typo, not hallucination
-                base_confidence = 0.95
+                # Likely a typo, not hallucination - LOW confidence
+                base_confidence = 0.05
             elif best_similarity > 0.6:
-                base_confidence = 0.7
+                # Medium similarity - MEDIUM confidence
+                base_confidence = 0.5
 
         # Higher confidence for common patterns
         if ref.name.startswith('_'):

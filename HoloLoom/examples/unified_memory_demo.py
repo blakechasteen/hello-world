@@ -24,11 +24,11 @@ from datetime import datetime
 
 # Protocol and stores
 from HoloLoom.memory.protocol import (
-    UnifiedMemoryInterface,
     Memory,
     Strategy,
     create_unified_memory
 )
+from HoloLoom.memory.unified import UnifiedMemory
 
 from HoloLoom.memory.stores import InMemoryStore
 
@@ -81,28 +81,25 @@ async def example_1_in_memory():
     
     # Create store
     store = InMemoryStore()
-    memory = UnifiedMemoryInterface(store=store)
+    memory = UnifiedMemory(backend=store)
     
     print("1. Storing memories...")
     # Store some memories
     mem1 = await memory.store(
         "Hive Jodi has 8 frames of brood, very active",
-        context={'place': 'apiary', 'time': 'morning'},
-        user_id="blake"
+        context={'place': 'apiary', 'time': 'morning'}
     )
     print(f"   ✓ Stored: {mem1}")
     
     mem2 = await memory.store(
         "Need to prep hives for winter - add insulation",
-        context={'place': 'apiary', 'time': 'evening'},
-        user_id="blake"
+        context={'place': 'apiary', 'time': 'evening'}
     )
     print(f"   ✓ Stored: {mem2}")
     
     mem3 = await memory.store(
         "Harvested 2 gallons of honey from Hive Matriarch",
-        context={'place': 'apiary', 'time': 'afternoon'},
-        user_id="blake"
+        context={'place': 'apiary', 'time': 'afternoon'}
     )
     print(f"   ✓ Stored: {mem3}")
     
@@ -110,19 +107,19 @@ async def example_1_in_memory():
     
     # Semantic search
     print("\n   Strategy: SEMANTIC (text similarity)")
-    results = await memory.recall("winter preparation", strategy=Strategy.SEMANTIC, user_id="blake")
+    results = await memory.recall("winter preparation", strategy=Strategy.SEMANTIC)
     for i, (mem, score) in enumerate(zip(results.memories, results.scores), 1):
         print(f"     [{i}] Score: {score:.3f} | {mem.text[:60]}...")
     
     # Temporal search
     print("\n   Strategy: TEMPORAL (most recent)")
-    results = await memory.recall("hive", strategy=Strategy.TEMPORAL, user_id="blake")
+    results = await memory.recall("hive", strategy=Strategy.TEMPORAL)
     for i, (mem, score) in enumerate(zip(results.memories, results.scores), 1):
         print(f"     [{i}] Score: {score:.3f} | {mem.text[:60]}...")
     
     # Fused search
     print("\n   Strategy: FUSED (combined)")
-    results = await memory.recall("honey bees", strategy=Strategy.FUSED, user_id="blake")
+    results = await memory.recall("honey bees", strategy=Strategy.FUSED)
     for i, (mem, score) in enumerate(zip(results.memories, results.scores), 1):
         print(f"     [{i}] Score: {score:.3f} | {mem.text[:60]}...")
     
@@ -222,7 +219,7 @@ async def example_2_hybrid():
     
     # Create hybrid store
     hybrid = HybridMemoryStore(backends=backends, fusion_method="weighted")
-    memory = UnifiedMemoryInterface(store=hybrid)
+    memory = UnifiedMemory(backend=hybrid)
     
     print(f"\n1. Storing memories across {len(backends)} backends...")
     
@@ -233,8 +230,7 @@ async def example_2_hybrid():
             'time': 'morning',
             'people': ['Blake'],
             'topics': ['beekeeping', 'inspection', 'brood']
-        },
-        user_id="blake"
+        }
     )
     print(f"   ✓ Stored: {mem1}")
     
@@ -245,8 +241,7 @@ async def example_2_hybrid():
             'time': 'evening',
             'people': ['Blake'],
             'topics': ['beekeeping', 'winter', 'preparation']
-        },
-        user_id="blake"
+        }
     )
     print(f"   ✓ Stored: {mem2}")
     
@@ -257,8 +252,7 @@ async def example_2_hybrid():
             'time': 'afternoon',
             'people': ['Blake'],
             'topics': ['beekeeping', 'harvest', 'honey']
-        },
-        user_id="blake"
+        }
     )
     print(f"   ✓ Stored: {mem3}")
     
@@ -268,8 +262,7 @@ async def example_2_hybrid():
     print("\n2. Hybrid recall with weighted fusion...")
     results = await memory.recall(
         "how should I prepare hives for winter?",
-        strategy=Strategy.FUSED,
-        user_id="blake"
+        strategy=Strategy.FUSED
     )
     
     print(f"\n   Found {len(results.memories)} memories:")
@@ -329,13 +322,12 @@ async def example_3_factory():
     print("\n2. Storing a test memory...")
     mem_id = await memory.store(
         "Test memory from factory example",
-        context={'test': True},
-        user_id="blake"
+        context={'test': True}
     )
     print(f"   ✓ Stored: {mem_id}")
     
     print("\n3. Recalling...")
-    results = await memory.recall("test", user_id="blake")
+    results = await memory.recall("test")
     print(f"   Found {len(results.memories)} memories")
     
     print("\n✓ Example 3 complete!\n")

@@ -156,7 +156,7 @@ class HybridMemoryStore:
         """
         # Validation
         if not memory or not memory.id:
-            raise ValueError("✗ Cannot store: memory or memory.id is None")
+            raise ValueError("[X] Cannot store: memory or memory.id is None")
 
         guardrail_decision = self._evaluate_guardrails(
             action="memory_store",
@@ -176,7 +176,7 @@ class HybridMemoryStore:
                 await backend.store(memory, user_id)
                 stored_count += 1
             except Exception as e:
-                warnings.warn(f"⚠ Store failed ({name}): {e}")
+                warnings.warn(f"[WARN] Store failed ({name}): {e}")
 
         # Log success if any backend succeeded
         if stored_count > 0:
@@ -270,13 +270,13 @@ class HybridMemoryStore:
             try:
                 results[name] = await backend.recall(query, limit=limit * 2)
             except Exception as e:
-                warnings.warn(f"⚠ Recall failed ({name}): {e}")
+                warnings.warn(f"[WARN] Recall failed ({name}): {e}")
 
         # ============================================================
         # Emergency Fallback (all backends failed)
         # ============================================================
         if not results and self.fallback:
-            warnings.warn("⚠ All production backends failed, using emergency fallback")
+            warnings.warn("[WARN] All production backends failed, using emergency fallback")
             result = await self.fallback.recall(query, limit=limit)
             return RetrievalResult(
                 memories=result.memories,
@@ -454,8 +454,8 @@ async def create_memory_backend(
     # ============================================================
     if backend == MemoryBackend.INMEMORY:
         if not NETWORKX_AVAILABLE:
-            raise ValueError("✗ NetworkX unavailable - cannot initialize INMEMORY backend")
-        print("✓ [INMEMORY] Using NetworkX backend (dev mode)")
+            raise ValueError("[X] NetworkX unavailable - cannot initialize INMEMORY backend")
+        print("[OK] [INMEMORY] Using NetworkX backend (dev mode)")
         backend_instance = NetworkXKG()
         return GuardrailedMemoryStore(backend=backend_instance, guardrails=guardrails)
 
@@ -471,14 +471,14 @@ async def create_memory_backend(
     elif backend == MemoryBackend.HYPERSPACE:
         try:
             from HoloLoom.memory.hyperspace_backend import create_hyperspace_backend
-            print("✓ [HYPERSPACE] Initializing research backend")
+            print("[OK] [HYPERSPACE] Initializing research backend")
             backend_instance = create_hyperspace_backend(config)
             return GuardrailedMemoryStore(backend=backend_instance, guardrails=guardrails)
         except ImportError as e:
-            warnings.warn(f"⚠ HYPERSPACE unavailable ({e}), falling back to HYBRID")
+            warnings.warn(f"[WARN] HYPERSPACE unavailable ({e}), falling back to HYBRID")
             return await _create_hybrid(config, guardrails=guardrails)
 
-    raise ValueError(f"✗ Unknown backend: {backend}")
+    raise ValueError(f"[X] Unknown backend: {backend}")
 
 
 def _try_init_neo4j(config: Config) -> tuple[Any, Optional[str]]:
@@ -509,11 +509,11 @@ def _try_init_neo4j(config: Config) -> tuple[Any, Optional[str]]:
             password=config.neo4j_password,
             database=config.neo4j_database
         ))
-        print(f"✓ [Neo4j] Connected: {config.neo4j_uri}")
+        print(f"[OK] [Neo4j] Connected: {config.neo4j_uri}")
         return neo4j, None
     except Exception as e:
         error_msg = str(e)
-        warnings.warn(f"⚠ Neo4j connection failed: {error_msg}")
+        warnings.warn(f"[WARN] Neo4j connection failed: {error_msg}")
         return None, error_msg
 
 
@@ -543,11 +543,11 @@ def _try_init_qdrant(config: Config) -> tuple[Any, Optional[str]]:
             url=f"http://{config.qdrant_host}:{config.qdrant_port}",
             collection_prefix=config.qdrant_collection
         )
-        print(f"✓ [Qdrant] Connected: {config.qdrant_host}:{config.qdrant_port}")
+        print(f"[OK] [Qdrant] Connected: {config.qdrant_host}:{config.qdrant_port}")
         return qdrant, None
     except Exception as e:
         error_msg = str(e)
-        warnings.warn(f"⚠ Qdrant connection failed: {error_msg}")
+        warnings.warn(f"[WARN] Qdrant connection failed: {error_msg}")
         return None, error_msg
 
 
@@ -566,10 +566,10 @@ def _create_fallback_backend() -> Any:
         - In-memory only, data not persisted
     """
     if not NETWORKX_AVAILABLE:
-        raise ValueError("✗ No backends available (NetworkX also unavailable)")
+        raise ValueError("[X] No backends available (NetworkX also unavailable)")
 
     print("\n" + "="*60)
-    print("⚠  FALLBACK MODE: NetworkX In-Memory")
+    print("[WARN]  FALLBACK MODE: NetworkX In-Memory")
     print("="*60)
     print("Using NetworkX fallback (limited to current session)")
     print("\nTo enable production backends:")
@@ -636,14 +636,14 @@ async def _create_hybrid(
     # Status Reporting
     # ============================================================
     if backends_available:
-        print(f"✓ [HYBRID] Active backends: {', '.join(backends_available)}")
+        print(f"[OK] [HYBRID] Active backends: {', '.join(backends_available)}")
 
     # ============================================================
     # Auto-Fallback (if no production backends)
     # ============================================================
     if not neo4j and not qdrant:
         for failure in backends_failed:
-            print(f"  ✗ {failure}")
+            print(f"  [X] {failure}")
 
         fallback = _create_fallback_backend()
 
@@ -832,7 +832,7 @@ async def check_backend_health(backend: MemoryStore) -> Dict[str, Any]:
     if not backend:
         return {
             'status': 'unhealthy',
-            'message': '✗ Backend is None',
+            'message': '[X] Backend is None',
             'type': 'None'
         }
 
@@ -843,13 +843,13 @@ async def check_backend_health(backend: MemoryStore) -> Dict[str, Any]:
         except Exception as e:
             return {
                 'status': 'unhealthy',
-                'message': f'⚠ Health check failed: {str(e)}',
+                'message': f'[WARN] Health check failed: {str(e)}',
                 'type': type(backend).__name__
             }
 
     # Fallback for backends without health_check()
     return {
         'status': 'unknown',
-        'message': '⚠ Backend does not implement health_check()',
+        'message': '[WARN] Backend does not implement health_check()',
         'type': type(backend).__name__
     }

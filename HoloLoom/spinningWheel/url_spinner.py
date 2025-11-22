@@ -44,7 +44,7 @@ try:
 except ImportError:
     WEB_AVAILABLE = False
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,

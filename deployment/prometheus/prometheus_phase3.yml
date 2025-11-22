@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'hololoom-production'
+    environment: 'prod'
+    component: 'phase3-adaptive-learning'
+
+# Load alerting rules
+rule_files:
+  - 'prometheus_rules.yml'
+
+# Scrape configurations
+scrape_configs:
+  # HoloLoom Phase 3 Metrics (from /metrics endpoint)
+  - job_name: 'hololoom-phase3'
+    honor_labels: true
+    static_configs:
+      - targets: ['host.docker.internal:8000']
+        labels:
+          service: 'hololoom'
+          component: 'adaptive-learning'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+# Alertmanager configuration (optional - configure if using Alertmanager)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['localhost:9093']

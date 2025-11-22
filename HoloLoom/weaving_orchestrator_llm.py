@@ -19,7 +19,7 @@ Installation:
 
 import logging
 from typing import Dict, Optional, Any
-from HoloLoom.Documentation.types import Query, Context
+from HoloLoom.protocols.types import Query, Context
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator as BaseOrchestrator, ToolExecutor as BaseToolExecutor
 
 # LLM imports

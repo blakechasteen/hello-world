@@ -37,7 +37,7 @@ import logging
 
 from HoloLoom.memory.spring_dynamics import SpringDynamics, SpringConfig
 from HoloLoom.memory.graph import KG
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 

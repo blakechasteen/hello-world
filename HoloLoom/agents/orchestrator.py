@@ -22,7 +22,7 @@ from HoloLoom.agents.types import AgentProfile, AgentStats
 from HoloLoom.agents.working_memory import AgentWorkingMemory
 from HoloLoom.agents.learner import WorkingMemoryLearner
 from HoloLoom.memory.graph import KG
-from HoloLoom.Documentation.types import Query, MemoryShard, Context
+from HoloLoom.protocols.types import Query, MemoryShard, Context
 from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.config import Config
 

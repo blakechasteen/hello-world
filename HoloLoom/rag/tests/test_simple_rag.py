@@ -8,7 +8,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from HoloLoom.rag import SimpleRAG, RAGResult
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 
 
 # ============================================================================

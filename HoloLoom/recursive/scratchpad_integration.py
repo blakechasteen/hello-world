@@ -28,7 +28,7 @@ from datetime import datetime
 # HoloLoom components
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.config import Config
 
 # Scratchpad components (standalone, was from Promptly)
@@ -659,7 +659,7 @@ async def weave_with_scratchpad(
     Usage:
         from HoloLoom.recursive import weave_with_scratchpad
         from HoloLoom.config import Config
-        from HoloLoom.Documentation.types import Query
+        from HoloLoom.protocols.types import Query
 
         spacetime, scratchpad = await weave_with_scratchpad(
             Query(text="How does Thompson Sampling work?"),
@@ -691,7 +691,7 @@ if __name__ == "__main__":
     print("""
 from HoloLoom.recursive import ScratchpadOrchestrator, ScratchpadConfig
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 
 config = Config.fast()
 scratchpad_config = ScratchpadConfig(

@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 # Import BanditStrategy from shared types (no circular dependency!)
-from HoloLoom.Documentation.types import BanditStrategy
+from HoloLoom.protocols.types import BanditStrategy
 
 
 class KGBackend(Enum):
@@ -112,7 +112,11 @@ class Config:
 
     # Model selection
     base_model_name: Optional[str] = None  # Uses env var HOLOLOOM_BASE_ENCODER if None
-    
+
+    # LLM Provider Configuration (for metaprompting, agentic reasoning, LLM-enhanced features)
+    llm_provider: Optional[str] = None  # LLM provider: 'anthropic', 'google', 'openai', 'ollama'
+    llm_model: Optional[str] = None  # Model name (e.g., 'claude-3-5-sonnet-20241022', 'gpt-4', 'gemini-pro')
+
     # Execution mode
     mode: ExecutionMode = ExecutionMode.FUSED
     fast_mode: bool = False  # If True, force fast retrieval regardless of mode
@@ -231,6 +235,10 @@ class Config:
     linguistic_weight: float = 0.3  # Weight for linguistic features (0-1)
     prefilter_similarity_threshold: float = 0.3  # Min syntactic similarity for pre-filter
     prefilter_keep_ratio: float = 0.7  # Keep top 70% of candidates after linguistic filter
+
+    # Shuttle Integration (January 2025) - MCTS-powered Warp↔Yarn intersection
+    enable_shuttle: bool = True  # Enable Shuttle for intelligent thread selection at Step 3
+    shuttle_mode: str = "auto"  # Shuttle mode: "auto" (derive from execution mode), "full", "lite", "minimal"
 
     # Priority 2: Riemannian Embeddings (Mathematical Moonshot)
     use_riemannian: bool = False  # Enable Riemannian manifold structure for embeddings

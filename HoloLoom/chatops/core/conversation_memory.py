@@ -31,7 +31,7 @@ import hashlib
 
 try:
     from HoloLoom.memory.graph import KG, KGEdge
-    from HoloLoom.Documentation.types import MemoryShard
+    from HoloLoom.protocols.types import MemoryShard
     import networkx as nx
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:

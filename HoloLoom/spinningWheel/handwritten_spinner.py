@@ -38,7 +38,7 @@ from typing import List, Dict, Any, Optional
 import time
 import re
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,

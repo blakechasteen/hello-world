@@ -50,7 +50,7 @@ try:
 except ImportError:
     pass
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,

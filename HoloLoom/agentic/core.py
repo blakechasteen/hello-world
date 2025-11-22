@@ -23,7 +23,7 @@ from typing import List, Dict, Optional, Any
 from enum import Enum
 from datetime import datetime
 
-from HoloLoom.Documentation.types import Query, Context, MemoryShard
+from HoloLoom.protocols.types import Query, Context, MemoryShard
 from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.recursive import FullLearningEngine, ActionItemTracker, ActionStatus
@@ -93,6 +93,11 @@ class AgenticResult:
     total_queries: int = 0
     total_duration_ms: float = 0.0
 
+    # Consciousness Integration - Phase 1 (Nov 2025)
+    # Epistemic confidence aggregated across all reasoning steps
+    # Tracks system's self-awareness of knowledge gaps throughout multi-query reasoning
+    aggregated_epistemic_confidence: Optional[float] = None
+
 
 # ============================================================================
 # Agentic Orchestrator
@@ -122,13 +127,17 @@ class AgenticOrchestrator:
         audit_trail: Optional[AuditTrail] = None,
         enable_verification: bool = True,
         enable_goal_tracking: bool = True,
-        llm: Optional[Any] = None  # LLM for intelligent query generation
+        llm: Optional[Any] = None,  # LLM for intelligent query generation
+        awareness_layer: Optional[Any] = None,  # Consciousness Integration - Phase 1 (Nov 2025)
+        epistemic_threshold: float = 0.3  # Early stopping threshold for epistemic confidence
     ):
         self.learning_engine = learning_engine
         self.audit_trail = audit_trail or AuditTrail()
         self.enable_verification = enable_verification
         self.enable_goal_tracking = enable_goal_tracking
         self.llm = llm  # LLM for agentic search
+        self.awareness_layer = awareness_layer  # Consciousness Integration - Phase 1
+        self.epistemic_threshold = epistemic_threshold  # Early stopping threshold
 
         # Goal tracker (extends action items)
         self.goal_tracker = ActionItemTracker() if enable_goal_tracking else None
@@ -142,6 +151,15 @@ class AgenticOrchestrator:
                 self.llm = orchestrator.tool_executor.llm
                 if self.llm:
                     self.logger.info("LLM-activated agentic search enabled")
+
+        # Consciousness Integration - Phase 1 (Nov 2025)
+        # Extract awareness_layer from learning_engine's orchestrator if not provided
+        if self.awareness_layer is None and hasattr(learning_engine, 'orchestrator'):
+            orchestrator = learning_engine.orchestrator
+            if hasattr(orchestrator, 'awareness_layer'):
+                self.awareness_layer = orchestrator.awareness_layer
+                if self.awareness_layer:
+                    self.logger.info("Awareness layer extracted from orchestrator for epistemic tracking")
 
     async def reason(
         self,
@@ -207,6 +225,10 @@ class AgenticOrchestrator:
         """Direct answer without verification."""
         spacetime = await self.learning_engine.weave(query)
 
+        # Consciousness Integration - Phase 1 (Nov 2025)
+        # Extract epistemic confidence from spacetime
+        epistemic_conf = self._extract_epistemic_confidence(spacetime)
+
         # Generate LLM answer if available
         if self.llm:
             try:
@@ -259,8 +281,10 @@ Please provide a clear and concise answer based on the context above."""
                 "type": "direct_answer",
                 "query": query.text,
                 "confidence": spacetime.confidence,
+                "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
                 "llm_generated": bool(self.llm)
-            }]
+            }],
+            aggregated_epistemic_confidence=epistemic_conf  # Single step, so no aggregation needed
         )
 
     async def _verify_answer(
@@ -271,14 +295,22 @@ Please provide a clear and concise answer based on the context above."""
     ) -> AgenticResult:
         """Answer with verification loop."""
         steps = []
+        epistemic_confidences = []  # Consciousness Integration - Phase 1 (Nov 2025)
 
         # Step 1: Initial answer
         self.logger.info(f"[AGENTIC] Initial answer: {query.text}")
         spacetime = await self.learning_engine.weave(query)
+
+        # Consciousness Integration - Phase 1
+        epistemic_conf = self._extract_epistemic_confidence(spacetime)
+        if epistemic_conf is not None:
+            epistemic_confidences.append(epistemic_conf)
+
         steps.append({
             "type": "initial_answer",
             "query": query.text,
             "confidence": spacetime.confidence,
+            "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
             "tool_used": spacetime.metadata.get("tool_used")
         })
 
@@ -291,7 +323,8 @@ Please provide a clear and concise answer based on the context above."""
             initial_result=spacetime,
             verification_queries=verification_queries,
             max_loops=max_loops,
-            steps=steps
+            steps=steps,
+            epistemic_confidences=epistemic_confidences  # Consciousness Integration - Phase 1
         )
 
         # Step 4: Refine if needed
@@ -302,11 +335,22 @@ Please provide a clear and concise answer based on the context above."""
                 refined_query,
                 enable_refinement=True
             )
+
+            # Consciousness Integration - Phase 1
+            epistemic_conf = self._extract_epistemic_confidence(spacetime)
+            if epistemic_conf is not None:
+                epistemic_confidences.append(epistemic_conf)
+
             steps.append({
                 "type": "refinement",
                 "query": refined_query.text,
-                "confidence": spacetime.confidence
+                "confidence": spacetime.confidence,
+                "epistemic_confidence": epistemic_conf  # Consciousness Integration - Phase 1
             })
+
+        # Consciousness Integration - Phase 1
+        # Aggregate epistemic confidence across all steps
+        aggregated_epistemic = self._aggregate_epistemic_confidence(epistemic_confidences)
 
         return AgenticResult(
             spacetime=spacetime,
@@ -314,7 +358,8 @@ Please provide a clear and concise answer based on the context above."""
             reasoning_mode=ReasoningMode.VERIFY,
             verification=verification,
             total_queries=len(steps),
-            steps_taken=steps
+            steps_taken=steps,
+            aggregated_epistemic_confidence=aggregated_epistemic  # Consciousness Integration - Phase 1
         )
 
     async def _research_query(
@@ -323,10 +368,11 @@ Please provide a clear and concise answer based on the context above."""
         intent: AgenticIntent,
         max_steps: int
     ) -> AgenticResult:
-        """Multi-query exploration with LLM-activated intelligent search."""
+        """Multi-query exploration with LLM-activated intelligent search and epistemic tracking."""
         steps = []
         evidence = []
         initial_findings = None
+        epistemic_confidences = []  # Consciousness Integration - Phase 1 (Nov 2025)
 
         # Step 1: Generate research questions (LLM-activated)
         research_queries = await self._generate_research_queries(
@@ -335,10 +381,24 @@ Please provide a clear and concise answer based on the context above."""
             initial_findings=initial_findings
         )
 
-        # Step 2: Execute research queries
+        # Step 2: Execute research queries with epistemic tracking
         for i, rq in enumerate(research_queries):
+            # Consciousness Integration - Phase 1
+            # Early stopping if epistemic confidence drops too low
+            if self._should_stop_early(i, epistemic_confidences, max_steps):
+                self.logger.warning(
+                    f"[EPISTEMIC] Stopping research early at query {i+1} "
+                    f"due to low epistemic confidence"
+                )
+                break
+
             self.logger.info(f"[AGENTIC] Research query {i+1}/{len(research_queries)}: {rq}")
             result = await self.learning_engine.weave(Query(text=rq))
+
+            # Consciousness Integration - Phase 1
+            epistemic_conf = self._extract_epistemic_confidence(result)
+            if epistemic_conf is not None:
+                epistemic_confidences.append(epistemic_conf)
 
             finding = result.response if hasattr(result, 'response') else str(result)
             evidence.append(finding)
@@ -346,6 +406,7 @@ Please provide a clear and concise answer based on the context above."""
                 "type": "research_query",
                 "query": rq,
                 "confidence": result.confidence,
+                "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
                 "findings": finding[:200]
             })
 
@@ -356,21 +417,33 @@ Please provide a clear and concise answer based on the context above."""
         # Step 3: Synthesize findings
         synthesis_query = self._create_synthesis_query(query, evidence)
         final_result = await self.learning_engine.weave(Query(text=synthesis_query))
+
+        # Consciousness Integration - Phase 1
+        epistemic_conf = self._extract_epistemic_confidence(final_result)
+        if epistemic_conf is not None:
+            epistemic_confidences.append(epistemic_conf)
+
         steps.append({
             "type": "synthesis",
             "query": synthesis_query,
             "confidence": final_result.confidence,
+            "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
             "sources": len(evidence)
         })
 
         intent.evidence_gathered = evidence
+
+        # Consciousness Integration - Phase 1
+        # Aggregate epistemic confidence across all research steps
+        aggregated_epistemic = self._aggregate_epistemic_confidence(epistemic_confidences)
 
         return AgenticResult(
             spacetime=final_result,
             intent=intent,
             reasoning_mode=ReasoningMode.RESEARCH,
             total_queries=len(steps),
-            steps_taken=steps
+            steps_taken=steps,
+            aggregated_epistemic_confidence=aggregated_epistemic  # Consciousness Integration - Phase 1
         )
 
     async def _plan_and_execute(
@@ -379,8 +452,9 @@ Please provide a clear and concise answer based on the context above."""
         intent: AgenticIntent,
         max_steps: int
     ) -> AgenticResult:
-        """Goal decomposition and execution."""
+        """Goal decomposition and execution with epistemic tracking."""
         steps = []
+        epistemic_confidences = []  # Consciousness Integration - Phase 1 (Nov 2025)
 
         # Step 1: Decompose goal into sub-goals
         sub_goals = self._decompose_goal(query)
@@ -388,17 +462,32 @@ Please provide a clear and concise answer based on the context above."""
 
         self.logger.info(f"[AGENTIC] Decomposed into {len(sub_goals)} sub-goals")
 
-        # Step 2: Execute sub-goals
+        # Step 2: Execute sub-goals with epistemic tracking
         results = []
         for i, sub_goal in enumerate(sub_goals[:max_steps]):
+            # Consciousness Integration - Phase 1
+            # Early stopping if epistemic confidence drops too low
+            if self._should_stop_early(i, epistemic_confidences, max_steps):
+                self.logger.warning(
+                    f"[EPISTEMIC] Stopping sub-goal execution early at step {i+1} "
+                    f"due to low epistemic confidence"
+                )
+                break
+
             self.logger.info(f"[AGENTIC] Executing sub-goal {i+1}: {sub_goal}")
             result = await self.learning_engine.weave(Query(text=sub_goal))
             results.append(result)
+
+            # Consciousness Integration - Phase 1
+            epistemic_conf = self._extract_epistemic_confidence(result)
+            if epistemic_conf is not None:
+                epistemic_confidences.append(epistemic_conf)
 
             steps.append({
                 "type": "sub_goal",
                 "goal": sub_goal,
                 "confidence": result.confidence,
+                "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
                 "completed": result.confidence >= intent.confidence_threshold
             })
 
@@ -408,23 +497,144 @@ Please provide a clear and concise answer based on the context above."""
             synthesis_query += f"\n{i+1}. {r.metadata.get('response', '')[:200]}"
 
         final_result = await self.learning_engine.weave(Query(text=synthesis_query))
+
+        # Consciousness Integration - Phase 1
+        epistemic_conf = self._extract_epistemic_confidence(final_result)
+        if epistemic_conf is not None:
+            epistemic_confidences.append(epistemic_conf)
+
         steps.append({
             "type": "synthesis",
             "confidence": final_result.confidence,
+            "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
             "sub_goals_completed": sum(1 for s in steps if s.get("completed", False))
         })
+
+        # Consciousness Integration - Phase 1
+        # Aggregate epistemic confidence across all steps
+        aggregated_epistemic = self._aggregate_epistemic_confidence(epistemic_confidences)
 
         return AgenticResult(
             spacetime=final_result,
             intent=intent,
             reasoning_mode=ReasoningMode.PLAN_EXECUTE,
             total_queries=len(steps),
-            steps_taken=steps
+            steps_taken=steps,
+            aggregated_epistemic_confidence=aggregated_epistemic  # Consciousness Integration - Phase 1
         )
 
     # ========================================================================
     # Helper Methods
     # ========================================================================
+
+    def _extract_epistemic_confidence(self, spacetime: Spacetime) -> Optional[float]:
+        """
+        Extract epistemic confidence from spacetime metadata.
+
+        Consciousness Integration - Phase 1 (Nov 2025)
+        Epistemic confidence represents the system's self-awareness of knowledge gaps.
+
+        Args:
+            spacetime: Spacetime result from weaving
+
+        Returns:
+            Epistemic confidence (0.0-1.0) or None if unavailable
+        """
+        if not spacetime or not hasattr(spacetime, 'metadata'):
+            return None
+
+        awareness_metadata = spacetime.metadata.get('awareness', {})
+        if not awareness_metadata:
+            return None
+
+        # Calculate epistemic confidence from awareness metrics
+        # Similar to RAG integration: 70% coherence + 30% activation
+        coherence = awareness_metadata.get('coherence', 0.5)
+        activation = awareness_metadata.get('activation_level', 0.5)
+
+        epistemic_confidence = (0.7 * coherence) + (0.3 * activation)
+
+        # Penalize if semantic shift detected (indicates unstable understanding)
+        if awareness_metadata.get('shift_detected', False):
+            epistemic_confidence *= 0.8
+
+        return epistemic_confidence
+
+    def _should_stop_early(
+        self,
+        current_step: int,
+        epistemic_confidences: List[float],
+        max_steps: int
+    ) -> bool:
+        """
+        Determine if reasoning should stop early due to low epistemic confidence.
+
+        Consciousness Integration - Phase 1 (Nov 2025)
+        Early stopping prevents wasted computation when system is very uncertain.
+
+        Args:
+            current_step: Current step number (0-indexed)
+            epistemic_confidences: List of epistemic confidences so far
+            max_steps: Maximum allowed steps
+
+        Returns:
+            True if should stop early, False otherwise
+        """
+        if not epistemic_confidences or current_step >= max_steps:
+            return False
+
+        # Check if last 2 steps have very low epistemic confidence
+        recent_confidences = epistemic_confidences[-2:]
+        if len(recent_confidences) >= 2:
+            avg_recent = sum(recent_confidences) / len(recent_confidences)
+            if avg_recent < self.epistemic_threshold:
+                self.logger.warning(
+                    f"[EPISTEMIC] Early stopping at step {current_step}: "
+                    f"avg epistemic confidence {avg_recent:.3f} < threshold {self.epistemic_threshold}"
+                )
+                return True
+
+        return False
+
+    def _aggregate_epistemic_confidence(
+        self,
+        epistemic_confidences: List[float]
+    ) -> Optional[float]:
+        """
+        Aggregate epistemic confidence across all reasoning steps.
+
+        Consciousness Integration - Phase 1 (Nov 2025)
+
+        Uses weighted average: recent steps weighted higher than early steps.
+
+        Args:
+            epistemic_confidences: List of epistemic confidences from each step
+
+        Returns:
+            Aggregated epistemic confidence or None
+        """
+        if not epistemic_confidences:
+            return None
+
+        # Weighted average: more recent steps have higher weight
+        # Weight formula: step_weight = (step_idx + 1) / total_steps
+        total_weight = 0.0
+        weighted_sum = 0.0
+
+        for idx, conf in enumerate(epistemic_confidences):
+            weight = (idx + 1) / len(epistemic_confidences)  # Linear ramp: 1/n, 2/n, ..., n/n
+            weighted_sum += conf * weight
+            total_weight += weight
+
+        aggregated = weighted_sum / total_weight if total_weight > 0 else None
+
+        if aggregated is not None:
+            self.logger.info(
+                f"[EPISTEMIC] Aggregated epistemic confidence: {aggregated:.3f} "
+                f"(from {len(epistemic_confidences)} steps)"
+            )
+
+        return aggregated
 
     def _extract_goal(self, query: Query) -> str:
         """Extract high-level goal from query."""
@@ -464,16 +674,31 @@ Please provide a clear and concise answer based on the context above."""
         initial_result: Spacetime,
         verification_queries: List[str],
         max_loops: int,
-        steps: List[Dict]
+        steps: List[Dict],
+        epistemic_confidences: List[float]  # Consciousness Integration - Phase 1 (Nov 2025)
     ) -> VerificationResult:
-        """Execute verification loops."""
+        """Execute verification loops with epistemic tracking."""
         contradictions = []
         supporting = []
         sources = []
 
-        for vq in verification_queries[:max_loops]:
+        for i, vq in enumerate(verification_queries[:max_loops]):
+            # Consciousness Integration - Phase 1
+            # Early stopping if epistemic confidence is very low
+            if self._should_stop_early(i + 1, epistemic_confidences, max_loops):
+                self.logger.warning(
+                    f"[EPISTEMIC] Stopping verification early at step {i+1} "
+                    f"due to low epistemic confidence"
+                )
+                break
+
             self.logger.info(f"[AGENTIC] Verification: {vq}")
             result = await self.learning_engine.weave(Query(text=vq))
+
+            # Consciousness Integration - Phase 1
+            epistemic_conf = self._extract_epistemic_confidence(result)
+            if epistemic_conf is not None:
+                epistemic_confidences.append(epistemic_conf)
 
             response = result.metadata.get("response", "")
             sources.append(vq)
@@ -488,6 +713,7 @@ Please provide a clear and concise answer based on the context above."""
                 "type": "verification",
                 "query": vq,
                 "confidence": result.confidence,
+                "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
                 "finding": "contradiction" if contradictions else "supporting"
             })
 

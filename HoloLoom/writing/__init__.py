@@ -80,7 +80,7 @@ async def write(
 
     Example:
         >>> from HoloLoom.writing import write
-        >>> from HoloLoom.Documentation.types import MemoryShard
+        >>> from HoloLoom.protocols.types import MemoryShard
         >>>
         >>> memories = [
         ...     MemoryShard(

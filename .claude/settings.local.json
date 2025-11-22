@@ -83,7 +83,12 @@
       "Bash(PYTHONPATH=. timeout 90 python -m pytest:*)",
       "Bash(PYTHONPATH=../.. timeout 120 python:*)",
       "Bash(echo:*)",
-      "Bash(temp.py)"
+      "Bash(temp.py)",
+      "Bash(for branch in origin/codex/create-json-for-mongodb-conversation-stream origin/codex/create-json-for-mongodb-conversation-stream-rxw6up origin/codex/update-orchestrator origin/copilot/review-codebase)",
+      "Bash(do echo \"=== $branch ===\" git log master..$branch --oneline)",
+      "Bash(PYTHONPATH=. .venv/Scripts/python.exe -m pytest:*)",
+      "Bash(git merge:*)",
+      "Bash(pytest:*)"
     ],
     "deny": [],
     "ask": []

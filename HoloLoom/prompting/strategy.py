@@ -270,6 +270,6 @@ class LLMPoweredStrategy(PromptingStrategy):
             from HoloLoom.config import Config
             self.orchestrator = WeavingOrchestrator(cfg=Config.fast())
 
-        from HoloLoom.Documentation.types import Query
+        from HoloLoom.protocols.types import Query
         spacetime = await self.orchestrator.weave(Query(text=prompt))
         return spacetime.response

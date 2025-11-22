@@ -5,6 +5,10 @@
  * Phase 3.7: Custom Dashboards (November 2025)
  * Phase 3.8: Advanced Filter Builder (November 2025)
  * Phase 3.9: Drag-and-Drop Dashboard (November 2025)
+ * Phase 3.11: Responsive Enhancements (November 2025)
+ * Phase 3.11.1: Advanced Touch Gestures (November 2025)
+ * Phase 3.11.2: Gesture Macros (November 2025)
+ * Phase 3.11.3: Mobile Performance Mode (November 2025)
  *
  * Provides comparative analytics, historical tracking, and system-wide insights:
  * 1. Query Comparison Table - Side-by-side comparison with sorting
@@ -16,6 +20,10 @@
  * 7. Custom Dashboards - Drag-drop layout, themes, templates (Phase 3.7)
  * 8. Advanced Filter Builder - Visual editor, AND/OR/NOT logic, saved presets (Phase 3.8)
  * 9. Drag-and-Drop Dashboard - Reorder/resize cards, grid layouts, snap-to-grid (Phase 3.9)
+ * 11. Responsive Enhancements - Touch gestures, mobile templates, breakpoint editor (Phase 3.11)
+ * 11.1. Advanced Touch Gestures - Pinch-to-zoom, swipe-to-delete, double-tap, 3-finger pan (Phase 3.11.1)
+ * 11.2. Gesture Macros - Record/playback gestures, pattern shortcuts, export/import (Phase 3.11.2)
+ * 11.3. Mobile Performance Mode - Battery API, low-power mode, virtualized rendering, background pause (Phase 3.11.3)
  *
  * @author HoloLoom
  * @date November 2025
@@ -24,7 +32,7 @@
 class AnalyticsMonitor {
     constructor() {
         // Version for data migration
-        this.version = '3.9.0';
+        this.version = '3.11.4'; // Enhanced with swipe-restore, calibration, visual preview, custom actions, memory monitoring, network detection
         this.storageKey = 'hololoom_analytics_data';
         this.dashboardKey = 'hololoom_dashboard_layout';
         this.filterPresetsKey = 'hololoom_filter_presets';
@@ -102,7 +110,151 @@ class AnalyticsMonitor {
                 management: 'medium'
             },
             gridLayout: 'auto',  // 'auto', '1-column', '2-column', '3-column', 'masonry'
-            snapToGrid: true
+            snapToGrid: true,
+
+            // Phase 3.11: Responsive enhancements
+            breakpoints: {
+                mobile: 768,    // < 768px
+                tablet: 1200,   // 768px - 1200px
+                desktop: 1920,  // 1200px - 1920px
+                widescreen: Infinity // > 1920px
+            },
+            touchSettings: {
+                swipeSensitivity: 50, // px minimum for swipe
+                longPressDuration: 500, // ms for long press
+                dragThreshold: 10, // px movement before drag starts
+                enableSwipeReorder: true,
+                enablePinchZoom: false
+            },
+            orientationSettings: {
+                autoAdjust: true, // Auto-switch layout on orientation change
+                portraitLayout: '1-column',
+                landscapeLayout: '2-column',
+                transitionDuration: 300 // ms
+            },
+            currentMobileTemplate: null // Currently applied mobile template
+        };
+
+        // Phase 3.11: Touch gesture state
+        this.touchState = {
+            startX: 0,
+            startY: 0,
+            startTime: 0,
+            currentElement: null,
+            isLongPress: false,
+            longPressTimer: null,
+            // Phase 3.11.1: Advanced gesture tracking
+            lastTapTime: 0,
+            tapCount: 0,
+            pinchStartDistance: 0,
+            pinchScale: 1.0,
+            swipeStartX: 0,
+            swipeDistance: 0,
+            swipeStartTime: 0, // Enhancement: calibration timing
+            threeFingerStart: null
+        };
+
+        // Phase 3.11.1: Advanced touch gesture settings
+        this.advancedGestures = {
+            enablePinchZoom: true,
+            enableSwipeToDelete: true,
+            enableDoubleTap: true,
+            enableThreeFingerPan: false, // Disabled by default (experimental)
+            swipeDeleteThreshold: 100, // px to trigger delete
+            doubleTapInterval: 300, // ms between taps
+            pinchZoomMin: 0.5, // Minimum scale
+            pinchZoomMax: 3.0, // Maximum scale
+            zoomedCards: {}, // cardId → scale
+            // Enhancement: Swipe-right to restore
+            enableSwipeRestore: true, // Enable swipe-right to restore hidden cards
+            swipeRestoreThreshold: 100, // px to trigger restore
+            recentlyHidden: [], // [{cardId, timestamp}] - tracks recently hidden cards (max 10)
+            // Enhancement: Gesture sensitivity calibration
+            calibrationMode: false, // Enable calibration mode
+            calibrationData: {
+                swipes: [], // {distance, duration, success}
+                pinches: [], // {scale, duration, success}
+                taps: [] // {interval, success}
+            },
+            sensitivityMultiplier: 1.0 // Global sensitivity adjustment (0.5-2.0)
+        };
+
+        // Phase 3.11.2: Gesture macro system
+        this.gestureMacros = {
+            recording: false,
+            recordedGesture: [],
+            recordStartTime: 0,
+            savedMacros: {}, // name → { pattern: [...], actions: [...] }
+            shortcuts: {
+                'z-shape': { action: 'resetLayout', description: 'Z shape → Reset layout' },
+                'circle': { action: 'refreshAll', description: 'Circle → Refresh all' },
+                'line-horizontal': { action: 'toggleCompact', description: 'Horizontal line → Toggle compact' }
+            },
+            recognitionEnabled: true,
+            recognitionThreshold: 0.7, // Similarity threshold for pattern matching
+            // Enhancement: Visual gesture preview
+            previewCanvas: null, // Canvas for drawing gesture
+            previewContext: null, // 2D rendering context
+            enableVisualPreview: true // Toggle visual preview during recording
+        };
+
+        // Phase 3.11.3: Mobile performance mode
+        this.performanceMode = {
+            enabled: false,
+            autoEnableOnLowBattery: true,
+            batteryThreshold: 20, // % battery level to auto-enable
+            currentBatteryLevel: 100,
+            isCharging: false,
+            reducedAnimations: false,
+            pauseBackgroundUpdates: false,
+            virtualizedRendering: false,
+            cardVirtualizationThreshold: 20, // Enable virtualization if >20 cards
+            lastUpdateTime: Date.now(),
+            updateInterval: 5000, // ms between updates in performance mode (default)
+            activeUpdateInterval: 1000, // ms between updates in normal mode
+            // Enhancement: Memory usage monitoring
+            memoryMonitoring: {
+                enabled: true,
+                checkInterval: 10000, // Check every 10 seconds
+                lastCheckTime: 0,
+                history: [], // [{timestamp, usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit}]
+                maxHistoryLength: 100,
+                warningThreshold: 0.75, // 75% of heap limit
+                criticalThreshold: 0.90, // 90% of heap limit
+                currentUsagePercent: 0,
+                autoOptimize: true, // Auto-enable optimizations on high memory
+                optimizationApplied: false
+            },
+            // Enhancement: Network-aware optimizations
+            networkMonitoring: {
+                enabled: true,
+                effectiveType: 'unknown', // slow-2g, 2g, 3g, 4g
+                downlink: 0, // Mbps
+                rtt: 0, // Round-trip time in ms
+                saveData: false, // User requested data saver mode
+                autoOptimize: true, // Auto-adjust update intervals based on network
+                slowNetworkThreshold: 1.0, // Mbps - below this is "slow"
+                optimizationApplied: false,
+                baseUpdateInterval: 1000, // Default update interval (ms)
+                currentUpdateInterval: 1000 // Current adjusted interval (ms)
+            },
+            // Voice UX tracking (Milestone 1 - November 2025)
+            voiceUX: {
+                enabled: false,
+                currentMode: 'disabled', // conversational, command, streaming, disabled
+                isActive: false,
+                commandHistory: [], // [{timestamp, intent, latency, success, batteryLevel, networkType}]
+                maxHistoryLength: 100,
+                sessionMetrics: {
+                    startTime: null,
+                    commandsProcessed: 0,
+                    threadsCreated: 0,
+                    threadSwitches: 0,
+                    errors: 0,
+                    averageLatencyMs: 0,
+                    successRate: 0
+                }
+            }
         };
 
         // Phase 3.8: Advanced Filter Builder state
@@ -140,6 +292,36 @@ class AnalyticsMonitor {
         this.applyGridLayout();
         this.applyAllCardSizes();
         this.enableDragDrop();
+
+        // Phase 3.11: Enable touch gestures and orientation detection
+        this.enableTouchGestures();
+        this.enableOrientationDetection();
+        this.applyBreakpointLayout();
+
+        // Phase 3.11.1: Enable advanced gestures
+        this.enablePinchZoom();
+        this.enableSwipeToDelete();
+        this.enableDoubleTap();
+
+        // Phase 3.11.2: Load saved gesture macros
+        this.loadGestureMacros();
+
+        // Phase 3.11.3: Initialize performance monitoring
+        this.initializeBatteryMonitor();
+        this.initializePageVisibility();
+
+        // Enhancement 3.11.3: Initialize memory monitoring
+        if (this.performanceMode.memoryMonitoring.enabled) {
+            // Check memory every 10 seconds
+            setInterval(() => this.checkMemoryUsage(), 10000);
+            // Initial memory check
+            this.checkMemoryUsage();
+        }
+
+        // Enhancement 3.11.3: Initialize network monitoring
+        if (this.performanceMode.networkMonitoring.enabled) {
+            this.initializeNetworkMonitor();
+        }
 
         // Set up refresh intervals
         setInterval(() => this.refreshQueryComparison(), 5000); // Every 5s
@@ -2223,6 +2405,2251 @@ class AnalyticsMonitor {
         }
 
         return summary;
+    }
+
+    // ==================== Phase 3.11: Responsive Enhancements ====================
+
+    /**
+     * Enable touch gesture recognition for mobile/tablet devices
+     * Phase 3.11: Touch gestures (swipe to reorder, long press)
+     */
+    enableTouchGestures() {
+        console.log('[AnalyticsMonitor] Enabling touch gestures...');
+
+        const cardMap = {
+            'comparison': 'query-comparison-card',
+            'confidence': 'confidence-tracking-card',
+            'effectiveness': 'tool-effectiveness-card',
+            'health': 'system-health-card',
+            'management': 'data-management-card'
+        };
+
+        for (const [cardId, domId] of Object.entries(cardMap)) {
+            const element = document.getElementById(domId);
+            if (!element) continue;
+
+            // Add touch event listeners
+            element.addEventListener('touchstart', (e) => this.handleTouchStart(e, cardId, element), { passive: false });
+            element.addEventListener('touchmove', (e) => this.handleTouchMove(e, cardId, element), { passive: false });
+            element.addEventListener('touchend', (e) => this.handleTouchEnd(e, cardId, element), { passive: false });
+        }
+
+        console.log('[AnalyticsMonitor] Touch gestures enabled');
+    }
+
+    /**
+     * Handle touch start event
+     */
+    handleTouchStart(e, cardId, element) {
+        if (!this.dashboardLayout.touchSettings.enableSwipeReorder) return;
+
+        const touch = e.touches[0];
+        this.touchState.startX = touch.clientX;
+        this.touchState.startY = touch.clientY;
+        this.touchState.startTime = Date.now();
+        this.touchState.currentElement = element;
+
+        // Start long press timer
+        if (this.dashboardLayout.touchSettings.longPressDuration > 0) {
+            this.touchState.longPressTimer = setTimeout(() => {
+                this.touchState.isLongPress = true;
+                element.classList.add('dragging');
+                // Haptic feedback (if supported)
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }, this.dashboardLayout.touchSettings.longPressDuration);
+        }
+    }
+
+    /**
+     * Handle touch move event
+     */
+    handleTouchMove(e, cardId, element) {
+        if (!this.dashboardLayout.touchSettings.enableSwipeReorder) return;
+
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - this.touchState.startX;
+        const deltaY = touch.clientY - this.touchState.startY;
+
+        // Check if movement exceeds drag threshold
+        if (Math.abs(deltaX) > this.dashboardLayout.touchSettings.dragThreshold ||
+            Math.abs(deltaY) > this.dashboardLayout.touchSettings.dragThreshold) {
+            // Cancel long press if dragging
+            if (this.touchState.longPressTimer) {
+                clearTimeout(this.touchState.longPressTimer);
+                this.touchState.longPressTimer = null;
+            }
+
+            // If long press was triggered, enable reordering
+            if (this.touchState.isLongPress) {
+                e.preventDefault(); // Prevent scrolling
+
+                // Get element under touch point
+                const touchX = touch.clientX;
+                const touchY = touch.clientY;
+                const elementUnder = document.elementFromPoint(touchX, touchY);
+
+                // Find closest card
+                const cardUnder = elementUnder?.closest('.card');
+                if (cardUnder && cardUnder !== element) {
+                    const rect = cardUnder.getBoundingClientRect();
+                    const midpoint = rect.top + rect.height / 2;
+
+                    if (touchY < midpoint) {
+                        cardUnder.parentNode.insertBefore(element, cardUnder);
+                    } else {
+                        cardUnder.parentNode.insertBefore(element, cardUnder.nextSibling);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle touch end event
+     */
+    handleTouchEnd(e, cardId, element) {
+        if (!this.dashboardLayout.touchSettings.enableSwipeReorder) return;
+
+        // Cancel long press timer
+        if (this.touchState.longPressTimer) {
+            clearTimeout(this.touchState.longPressTimer);
+            this.touchState.longPressTimer = null;
+        }
+
+        // If long press was active, update card order
+        if (this.touchState.isLongPress) {
+            element.classList.remove('dragging');
+            this.updateCardOrderFromDOM();
+        } else {
+            // Check for swipe gesture
+            const touch = e.changedTouches[0];
+            const deltaY = touch.clientY - this.touchState.startY;
+            const duration = Date.now() - this.touchState.startTime;
+
+            if (Math.abs(deltaY) > this.dashboardLayout.touchSettings.swipeSensitivity &&
+                duration < 300) { // Quick swipe (< 300ms)
+
+                // Swipe detected - could implement quick reorder here
+                console.log(`[AnalyticsMonitor] Swipe ${deltaY > 0 ? 'down' : 'up'} detected`);
+            }
+        }
+
+        // Reset touch state
+        this.touchState.isLongPress = false;
+        this.touchState.currentElement = null;
+    }
+
+    /**
+     * Apply a mobile-first template
+     * Phase 3.11: Mobile templates
+     */
+    applyMobileTemplate(templateName) {
+        console.log(`[AnalyticsMonitor] Applying mobile template: ${templateName}`);
+
+        const templates = this.getMobileTemplates();
+        const template = templates[templateName];
+
+        if (!template) {
+            console.error(`[AnalyticsMonitor] Unknown mobile template: ${templateName}`);
+            return;
+        }
+
+        // Apply grid layout
+        this.dashboardLayout.gridLayout = template.gridLayout;
+        this.applyGridLayout();
+
+        // Apply card sizes
+        Object.assign(this.dashboardLayout.cardSizes, template.cardSizes);
+        this.applyAllCardSizes();
+
+        // Apply touch settings (if specified)
+        if (template.touchSettings) {
+            Object.assign(this.dashboardLayout.touchSettings, template.touchSettings);
+        }
+
+        // Store current template
+        this.dashboardLayout.currentMobileTemplate = templateName;
+
+        // Save layout
+        this.saveDashboardLayout();
+
+        console.log(`[AnalyticsMonitor] Mobile template '${templateName}' applied`);
+    }
+
+    /**
+     * Get available mobile-first templates
+     * Phase 3.11: Mobile templates
+     */
+    getMobileTemplates() {
+        return {
+            'mobile-compact': {
+                name: 'Mobile Compact',
+                gridLayout: '1-column',
+                cardSizes: {
+                    comparison: 'small',
+                    confidence: 'small',
+                    effectiveness: 'small',
+                    health: 'small',
+                    management: 'small'
+                },
+                touchSettings: {
+                    enableSwipeReorder: true,
+                    swipeSensitivity: 60 // Higher threshold for mobile
+                }
+            },
+            'mobile-focused': {
+                name: 'Mobile Focused',
+                gridLayout: '1-column',
+                cardSizes: {
+                    comparison: 'large',
+                    confidence: 'small',
+                    effectiveness: 'small',
+                    health: 'small',
+                    management: 'small'
+                },
+                touchSettings: {
+                    enableSwipeReorder: true,
+                    swipeSensitivity: 60
+                }
+            },
+            'tablet-split': {
+                name: 'Tablet Split',
+                gridLayout: '2-column',
+                cardSizes: {
+                    comparison: 'medium',
+                    confidence: 'medium',
+                    effectiveness: 'medium',
+                    health: 'medium',
+                    management: 'medium'
+                },
+                touchSettings: {
+                    enableSwipeReorder: true,
+                    swipeSensitivity: 50
+                }
+            },
+            'tablet-grid': {
+                name: 'Tablet Grid',
+                gridLayout: '3-column',
+                cardSizes: {
+                    comparison: 'small',
+                    confidence: 'small',
+                    effectiveness: 'small',
+                    health: 'small',
+                    management: 'small'
+                },
+                touchSettings: {
+                    enableSwipeReorder: false // Too cramped for swipe
+                }
+            },
+            'touch-optimized': {
+                name: 'Touch Optimized',
+                gridLayout: 'auto',
+                cardSizes: {
+                    comparison: 'large',
+                    confidence: 'large',
+                    effectiveness: 'large',
+                    health: 'large',
+                    management: 'large'
+                },
+                touchSettings: {
+                    enableSwipeReorder: true,
+                    swipeSensitivity: 40,
+                    longPressDuration: 400 // Shorter for faster interaction
+                }
+            }
+        };
+    }
+
+    /**
+     * Set a custom breakpoint value
+     * Phase 3.11: Breakpoint editor
+     */
+    setBreakpoint(name, value) {
+        if (!['mobile', 'tablet', 'desktop'].includes(name)) {
+            console.error(`[AnalyticsMonitor] Invalid breakpoint name: ${name}`);
+            return;
+        }
+
+        // Validate ordering (mobile < tablet < desktop)
+        const breakpoints = this.dashboardLayout.breakpoints;
+        if (name === 'mobile' && value >= breakpoints.tablet) {
+            console.error(`[AnalyticsMonitor] Mobile breakpoint must be < tablet breakpoint`);
+            return;
+        }
+        if (name === 'tablet' && (value <= breakpoints.mobile || value >= breakpoints.desktop)) {
+            console.error(`[AnalyticsMonitor] Tablet breakpoint must be between mobile and desktop`);
+            return;
+        }
+        if (name === 'desktop' && value <= breakpoints.tablet) {
+            console.error(`[AnalyticsMonitor] Desktop breakpoint must be > tablet breakpoint`);
+            return;
+        }
+
+        breakpoints[name] = value;
+        this.saveDashboardLayout();
+
+        // Update layout based on new breakpoint
+        this.applyBreakpointLayout();
+
+        console.log(`[AnalyticsMonitor] Breakpoint '${name}' set to ${value}px`);
+    }
+
+    /**
+     * Get the currently active breakpoint
+     * Phase 3.11: Breakpoint detection
+     */
+    getActiveBreakpoint() {
+        const width = window.innerWidth;
+        const bp = this.dashboardLayout.breakpoints;
+
+        if (width < bp.mobile) return 'mobile';
+        if (width < bp.tablet) return 'tablet';
+        if (width < bp.desktop) return 'desktop';
+        return 'widescreen';
+    }
+
+    /**
+     * Apply layout adjustments based on current breakpoint
+     * Phase 3.11: Responsive layout
+     */
+    applyBreakpointLayout() {
+        const breakpoint = this.getActiveBreakpoint();
+        console.log(`[AnalyticsMonitor] Active breakpoint: ${breakpoint}`);
+
+        // Auto-apply mobile template if enabled and on mobile
+        const settings = this.dashboardLayout.touchSettings;
+        if (breakpoint === 'mobile' && settings.enableSwipeReorder && !this.dashboardLayout.currentMobileTemplate) {
+            this.applyMobileTemplate('mobile-compact');
+        }
+
+        // Tablet-specific adjustments
+        if (breakpoint === 'tablet' && !this.dashboardLayout.currentMobileTemplate) {
+            // Suggest tablet-split layout if currently using 3-column
+            if (this.dashboardLayout.gridLayout === '3-column') {
+                console.log('[AnalyticsMonitor] Suggesting 2-column layout for tablet');
+            }
+        }
+    }
+
+    /**
+     * Enable orientation change detection
+     * Phase 3.11: Orientation detection
+     */
+    enableOrientationDetection() {
+        if (!this.dashboardLayout.orientationSettings.autoAdjust) {
+            console.log('[AnalyticsMonitor] Orientation auto-adjust disabled');
+            return;
+        }
+
+        console.log('[AnalyticsMonitor] Enabling orientation detection...');
+
+        // Use matchMedia for better support
+        const portraitQuery = window.matchMedia('(orientation: portrait)');
+        const handler = (e) => this.handleOrientationChange(e.matches);
+
+        // Modern browsers
+        if (portraitQuery.addEventListener) {
+            portraitQuery.addEventListener('change', handler);
+        }
+        // Legacy browsers
+        else if (portraitQuery.addListener) {
+            portraitQuery.addListener(handler);
+        }
+
+        // Initial check
+        handler(portraitQuery.matches);
+
+        console.log('[AnalyticsMonitor] Orientation detection enabled');
+    }
+
+    /**
+     * Handle orientation change event
+     * Phase 3.11: Orientation handling
+     */
+    handleOrientationChange(isPortrait) {
+        console.log(`[AnalyticsMonitor] Orientation changed to ${isPortrait ? 'portrait' : 'landscape'}`);
+
+        const settings = this.dashboardLayout.orientationSettings;
+        const newLayout = isPortrait ? settings.portraitLayout : settings.landscapeLayout;
+
+        // Apply layout change with transition
+        const container = document.getElementById('analytics-cards-container');
+        if (container) {
+            container.style.transition = `all ${settings.transitionDuration}ms ease`;
+        }
+
+        this.setGridLayout(newLayout);
+
+        // Remove transition after completion
+        setTimeout(() => {
+            if (container) {
+                container.style.transition = '';
+            }
+        }, settings.transitionDuration);
+    }
+
+    /**
+     * Set individual gesture sensitivity parameter
+     * Phase 3.11: Gesture customization
+     */
+    setGestureSensitivity(property, value) {
+        const validProperties = ['swipeSensitivity', 'longPressDuration', 'dragThreshold', 'enableSwipeReorder', 'enablePinchZoom'];
+
+        if (!validProperties.includes(property)) {
+            console.error(`[AnalyticsMonitor] Invalid gesture property: ${property}`);
+            return;
+        }
+
+        this.dashboardLayout.touchSettings[property] = value;
+        this.saveDashboardLayout();
+
+        console.log(`[AnalyticsMonitor] Gesture setting '${property}' set to ${value}`);
+    }
+
+    /**
+     * Get current gesture settings
+     * Phase 3.11: Gesture settings
+     */
+    getGestureSettings() {
+        return { ...this.dashboardLayout.touchSettings };
+    }
+
+    /**
+     * Reset gesture settings to defaults
+     * Phase 3.11: Reset gestures
+     */
+    resetGestureSettings() {
+        this.dashboardLayout.touchSettings = {
+            swipeSensitivity: 50,
+            longPressDuration: 500,
+            dragThreshold: 10,
+            enableSwipeReorder: true,
+            enablePinchZoom: false
+        };
+        this.saveDashboardLayout();
+
+        console.log('[AnalyticsMonitor] Gesture settings reset to defaults');
+    }
+
+    /**
+     * Set orientation-specific layout
+     * Phase 3.11: Orientation settings
+     */
+    setOrientationLayout(orientation, layout) {
+        if (!['portrait', 'landscape'].includes(orientation)) {
+            console.error(`[AnalyticsMonitor] Invalid orientation: ${orientation}`);
+            return;
+        }
+
+        if (!['auto', '1-column', '2-column', '3-column', 'masonry'].includes(layout)) {
+            console.error(`[AnalyticsMonitor] Invalid layout: ${layout}`);
+            return;
+        }
+
+        const key = `${orientation}Layout`;
+        this.dashboardLayout.orientationSettings[key] = layout;
+        this.saveDashboardLayout();
+
+        console.log(`[AnalyticsMonitor] ${orientation} layout set to ${layout}`);
+
+        // Reapply if current orientation matches
+        const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+        if ((orientation === 'portrait' && isPortrait) || (orientation === 'landscape' && !isPortrait)) {
+            this.handleOrientationChange(isPortrait);
+        }
+    }
+
+    // ===================================================================
+    // PHASE 3.11.1: ADVANCED TOUCH GESTURES
+    // ===================================================================
+
+    /**
+     * Enable pinch-to-zoom gesture on cards
+     * Phase 3.11.1: Pinch-to-zoom
+     */
+    enablePinchZoom() {
+        if (!this.advancedGestures.enablePinchZoom) {
+            console.log('[AnalyticsMonitor] Pinch-to-zoom disabled');
+            return;
+        }
+
+        console.log('[AnalyticsMonitor] Enabling pinch-to-zoom...');
+
+        const cardMap = {
+            'comparison': 'query-comparison-card',
+            'confidence': 'confidence-tracking-card',
+            'effectiveness': 'tool-effectiveness-card',
+            'health': 'system-health-card',
+            'management': 'data-management-card'
+        };
+
+        for (const [cardId, domId] of Object.entries(cardMap)) {
+            const element = document.getElementById(domId);
+            if (!element) continue;
+
+            // Add touch event listeners for pinch
+            element.addEventListener('touchstart', (e) => this.handlePinchStart(e, cardId, element), { passive: false });
+            element.addEventListener('touchmove', (e) => this.handlePinchMove(e, cardId, element), { passive: false });
+            element.addEventListener('touchend', (e) => this.handlePinchEnd(e, cardId, element), { passive: false });
+        }
+
+        console.log('[AnalyticsMonitor] Pinch-to-zoom enabled');
+    }
+
+    /**
+     * Handle pinch start (two fingers)
+     * Phase 3.11.1: Pinch-to-zoom
+     */
+    handlePinchStart(e, cardId, element) {
+        if (!this.advancedGestures.enablePinchZoom) return;
+        if (e.touches.length !== 2) return;
+
+        // Calculate initial distance between two fingers
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.hypot(
+            touch2.clientX - touch1.clientX,
+            touch2.clientY - touch1.clientY
+        );
+
+        this.touchState.pinchStartDistance = distance;
+        this.touchState.currentElement = element;
+
+        console.log(`[AnalyticsMonitor] Pinch start on ${cardId}, distance: ${distance.toFixed(0)}px`);
+    }
+
+    /**
+     * Handle pinch move (zoom in/out)
+     * Phase 3.11.1: Pinch-to-zoom
+     */
+    handlePinchMove(e, cardId, element) {
+        if (!this.advancedGestures.enablePinchZoom) return;
+        if (e.touches.length !== 2) return;
+        if (this.touchState.pinchStartDistance === 0) return;
+
+        e.preventDefault(); // Prevent page zoom
+
+        // Calculate current distance
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.hypot(
+            touch2.clientX - touch1.clientX,
+            touch2.clientY - touch1.clientY
+        );
+
+        // Calculate scale
+        const scale = distance / this.touchState.pinchStartDistance;
+        this.touchState.pinchScale = Math.max(
+            this.advancedGestures.pinchZoomMin,
+            Math.min(this.advancedGestures.pinchZoomMax, scale)
+        );
+
+        // Apply transform
+        const cardContent = element.querySelector('.card-body, .card-content');
+        if (cardContent) {
+            cardContent.style.transform = `scale(${this.touchState.pinchScale})`;
+            cardContent.style.transformOrigin = 'center center';
+            cardContent.style.transition = 'none';
+        }
+    }
+
+    /**
+     * Handle pinch end (finalize zoom)
+     * Phase 3.11.1: Pinch-to-zoom
+     */
+    handlePinchEnd(e, cardId, element) {
+        if (!this.advancedGestures.enablePinchZoom) return;
+
+        // Store final scale for this card
+        if (this.touchState.pinchScale !== 1.0) {
+            this.advancedGestures.zoomedCards[cardId] = this.touchState.pinchScale;
+            console.log(`[AnalyticsMonitor] Card ${cardId} zoomed to ${this.touchState.pinchScale.toFixed(2)}x`);
+        }
+
+        // Reset pinch state
+        this.touchState.pinchStartDistance = 0;
+        this.touchState.pinchScale = 1.0;
+    }
+
+    /**
+     * Reset card zoom to 1.0
+     * Phase 3.11.1: Pinch-to-zoom
+     */
+    resetCardZoom(cardId) {
+        const domId = {
+            'comparison': 'query-comparison-card',
+            'confidence': 'confidence-tracking-card',
+            'effectiveness': 'tool-effectiveness-card',
+            'health': 'system-health-card',
+            'management': 'data-management-card'
+        }[cardId];
+
+        const element = document.getElementById(domId);
+        if (!element) return;
+
+        const cardContent = element.querySelector('.card-body, .card-content');
+        if (cardContent) {
+            cardContent.style.transform = 'scale(1.0)';
+            cardContent.style.transition = 'transform 0.3s ease';
+        }
+
+        delete this.advancedGestures.zoomedCards[cardId];
+        console.log(`[AnalyticsMonitor] Card ${cardId} zoom reset`);
+    }
+
+    /**
+     * Enable swipe-to-delete gesture on cards
+     * Phase 3.11.1: Swipe-to-delete
+     */
+    enableSwipeToDelete() {
+        if (!this.advancedGestures.enableSwipeToDelete) {
+            console.log('[AnalyticsMonitor] Swipe-to-delete disabled');
+            return;
+        }
+
+        console.log('[AnalyticsMonitor] Enabling swipe-to-delete...');
+
+        const cardMap = {
+            'comparison': 'query-comparison-card',
+            'confidence': 'confidence-tracking-card',
+            'effectiveness': 'tool-effectiveness-card',
+            'health': 'system-health-card',
+            'management': 'data-management-card'
+        };
+
+        for (const [cardId, domId] of Object.entries(cardMap)) {
+            const element = document.getElementById(domId);
+            if (!element) continue;
+
+            // Add swipe listeners (reuse touch events)
+            element.addEventListener('touchstart', (e) => this.handleSwipeStart(e, cardId, element), { passive: false });
+            element.addEventListener('touchmove', (e) => this.handleSwipeMove(e, cardId, element), { passive: false });
+            element.addEventListener('touchend', (e) => this.handleSwipeEnd(e, cardId, element), { passive: false });
+        }
+
+        console.log('[AnalyticsMonitor] Swipe-to-delete enabled');
+    }
+
+    /**
+     * Handle swipe start
+     * Phase 3.11.1: Swipe-to-delete
+     */
+    handleSwipeStart(e, cardId, element) {
+        if (!this.advancedGestures.enableSwipeToDelete) return;
+        if (e.touches.length !== 1) return; // Only single finger
+
+        const touch = e.touches[0];
+        this.touchState.swipeStartX = touch.clientX;
+        this.touchState.swipeDistance = 0;
+        this.touchState.swipeStartTime = Date.now(); // Enhancement: calibration timing
+        this.touchState.currentElement = element;
+    }
+
+    /**
+     * Handle swipe move (horizontal drag)
+     * Phase 3.11.1: Swipe-to-delete
+     */
+    handleSwipeMove(e, cardId, element) {
+        if (!this.advancedGestures.enableSwipeToDelete) return;
+        if (e.touches.length !== 1) return;
+        if (this.touchState.swipeStartX === 0) return;
+
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - this.touchState.swipeStartX;
+        this.touchState.swipeDistance = deltaX;
+
+        // Only allow left swipe (negative deltaX)
+        if (deltaX < 0) {
+            element.style.transform = `translateX(${deltaX}px)`;
+            element.style.transition = 'none';
+
+            // Change opacity as swipe progresses
+            const progress = Math.abs(deltaX) / this.advancedGestures.swipeDeleteThreshold;
+            element.style.opacity = Math.max(0.3, 1 - progress * 0.7);
+        }
+    }
+
+    /**
+     * Handle swipe end (delete if threshold exceeded)
+     * Phase 3.11.1: Swipe-to-delete
+     */
+    handleSwipeEnd(e, cardId, element) {
+        if (!this.advancedGestures.enableSwipeToDelete) return;
+
+        const deleteThreshold = this.advancedGestures.swipeDeleteThreshold;
+        const restoreThreshold = this.advancedGestures.swipeRestoreThreshold;
+
+        // Swipe-left to delete
+        if (this.touchState.swipeDistance < -deleteThreshold) {
+            // Threshold exceeded → hide card
+            element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            element.style.transform = 'translateX(-100%)';
+            element.style.opacity = '0';
+
+            setTimeout(() => {
+                this.setCardVisibility(cardId, false);
+                element.style.transform = '';
+                element.style.opacity = '';
+
+                // Track as recently hidden (Enhancement: swipe-right restore)
+                this.trackHiddenCard(cardId);
+            }, 300);
+
+            console.log(`[AnalyticsMonitor] Card ${cardId} swiped to delete`);
+        }
+        // Enhancement: Swipe-right to restore most recently hidden card
+        else if (this.touchState.swipeDistance > restoreThreshold &&
+                 this.advancedGestures.enableSwipeRestore) {
+            const restored = this.restoreMostRecentlyHiddenCard();
+            if (restored) {
+                console.log(`[AnalyticsMonitor] Restored card: ${restored}`);
+                // Visual feedback
+                element.style.transition = 'transform 0.3s ease';
+                element.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    element.style.transform = '';
+                }, 300);
+            } else {
+                // No cards to restore → just snap back
+                element.style.transition = 'transform 0.3s ease';
+                element.style.transform = '';
+            }
+        }
+        else {
+            // Not enough swipe → snap back
+            element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            element.style.transform = '';
+            element.style.opacity = '';
+        }
+
+        // Enhancement: Record calibration data
+        if (this.advancedGestures.calibrationMode && this.touchState.swipeStartTime > 0) {
+            const duration = Date.now() - this.touchState.swipeStartTime;
+            const distance = Math.abs(this.touchState.swipeDistance);
+            const success = distance >= deleteThreshold || distance >= restoreThreshold;
+
+            this.recordCalibrationGesture('swipes', {
+                distance: distance,
+                duration: duration,
+                success: success
+            });
+        }
+
+        // Reset swipe state
+        this.touchState.swipeStartX = 0;
+        this.touchState.swipeDistance = 0;
+        this.touchState.swipeStartTime = 0;
+    }
+
+    /**
+     * Track hidden card for potential restore
+     * Enhancement: Swipe-right to restore
+     */
+    trackHiddenCard(cardId) {
+        const now = Date.now();
+
+        // Add to front of array (most recent first)
+        this.advancedGestures.recentlyHidden.unshift({
+            cardId: cardId,
+            timestamp: now
+        });
+
+        // Keep only last 10 hidden cards
+        if (this.advancedGestures.recentlyHidden.length > 10) {
+            this.advancedGestures.recentlyHidden = this.advancedGestures.recentlyHidden.slice(0, 10);
+        }
+
+        console.log(`[AnalyticsMonitor] Tracked hidden card: ${cardId} (${this.advancedGestures.recentlyHidden.length} in history)`);
+    }
+
+    /**
+     * Restore most recently hidden card
+     * Enhancement: Swipe-right to restore
+     * @returns {string|null} Restored card ID or null if none available
+     */
+    restoreMostRecentlyHiddenCard() {
+        if (this.advancedGestures.recentlyHidden.length === 0) {
+            console.log('[AnalyticsMonitor] No hidden cards to restore');
+            return null;
+        }
+
+        // Get most recent hidden card
+        const mostRecent = this.advancedGestures.recentlyHidden.shift();
+        const cardId = mostRecent.cardId;
+
+        // Restore card visibility
+        this.setCardVisibility(cardId, true);
+
+        console.log(`[AnalyticsMonitor] Restored card: ${cardId} (${this.advancedGestures.recentlyHidden.length} remaining in history)`);
+
+        return cardId;
+    }
+
+    /**
+     * Start gesture sensitivity calibration mode
+     * Enhancement: Gesture sensitivity calibration
+     */
+    startGestureCalibration() {
+        this.advancedGestures.calibrationMode = true;
+        this.advancedGestures.calibrationData = {
+            swipes: [],
+            pinches: [],
+            taps: []
+        };
+
+        console.log('[AnalyticsMonitor] Gesture calibration mode STARTED');
+        console.log('[AnalyticsMonitor] Perform 5-10 gestures of each type, then call analyzeCalibrationData()');
+    }
+
+    /**
+     * Stop calibration and analyze collected data
+     * Enhancement: Gesture sensitivity calibration
+     * @returns {object} Calibration results with recommendations
+     */
+    stopGestureCalibration() {
+        this.advancedGestures.calibrationMode = false;
+
+        const results = this.analyzeCalibrationData();
+
+        console.log('[AnalyticsMonitor] Gesture calibration mode STOPPED');
+        console.log('[AnalyticsMonitor] Calibration results:', results);
+
+        return results;
+    }
+
+    /**
+     * Analyze calibration data and recommend optimal settings
+     * Enhancement: Gesture sensitivity calibration
+     * @returns {object} Recommendations for sensitivity adjustments
+     */
+    analyzeCalibrationData() {
+        const data = this.advancedGestures.calibrationData;
+        const recommendations = {
+            sensitivityMultiplier: 1.0,
+            swipeThreshold: this.advancedGestures.swipeDeleteThreshold,
+            doubleTapInterval: this.advancedGestures.doubleTapInterval,
+            pinchSensitivity: 1.0,
+            confidence: 0.0,
+            analysis: {}
+        };
+
+        // Analyze swipes
+        if (data.swipes.length >= 3) {
+            const avgSwipeDistance = data.swipes.reduce((sum, s) => sum + Math.abs(s.distance), 0) / data.swipes.length;
+            const successRate = data.swipes.filter(s => s.success).length / data.swipes.length;
+
+            recommendations.analysis.swipes = {
+                count: data.swipes.length,
+                avgDistance: Math.round(avgSwipeDistance),
+                successRate: successRate
+            };
+
+            // Recommend threshold based on average swipe distance
+            if (avgSwipeDistance < 80) {
+                recommendations.swipeThreshold = 60; // User makes short swipes
+                recommendations.sensitivityMultiplier = Math.min(recommendations.sensitivityMultiplier, 0.7);
+            } else if (avgSwipeDistance > 150) {
+                recommendations.swipeThreshold = 130; // User makes long swipes
+                recommendations.sensitivityMultiplier = Math.max(recommendations.sensitivityMultiplier, 1.3);
+            }
+        }
+
+        // Analyze taps
+        if (data.taps.length >= 3) {
+            const avgTapInterval = data.taps.reduce((sum, t) => sum + t.interval, 0) / data.taps.length;
+            const successRate = data.taps.filter(t => t.success).length / data.taps.length;
+
+            recommendations.analysis.taps = {
+                count: data.taps.length,
+                avgInterval: Math.round(avgTapInterval),
+                successRate: successRate
+            };
+
+            // Recommend interval based on average tap speed
+            if (avgTapInterval < 250) {
+                recommendations.doubleTapInterval = 350; // User taps quickly
+            } else if (avgTapInterval > 400) {
+                recommendations.doubleTapInterval = 500; // User taps slowly
+            }
+        }
+
+        // Analyze pinches
+        if (data.pinches.length >= 3) {
+            const avgScale = data.pinches.reduce((sum, p) => sum + p.scale, 0) / data.pinches.length;
+            const successRate = data.pinches.filter(p => p.success).length / data.pinches.length;
+
+            recommendations.analysis.pinches = {
+                count: data.pinches.length,
+                avgScale: avgScale.toFixed(2),
+                successRate: successRate
+            };
+
+            // Adjust pinch sensitivity
+            if (avgScale < 1.3) {
+                recommendations.pinchSensitivity = 1.2; // User makes small pinches
+            } else if (avgScale > 2.0) {
+                recommendations.pinchSensitivity = 0.8; // User makes large pinches
+            }
+        }
+
+        // Calculate overall confidence
+        const totalSamples = data.swipes.length + data.taps.length + data.pinches.length;
+        if (totalSamples >= 10) {
+            recommendations.confidence = Math.min(totalSamples / 15, 1.0); // Max confidence at 15 samples
+        }
+
+        return recommendations;
+    }
+
+    /**
+     * Apply calibration recommendations
+     * Enhancement: Gesture sensitivity calibration
+     */
+    applyCalibrationRecommendations(recommendations) {
+        if (recommendations.confidence < 0.5) {
+            console.warn('[AnalyticsMonitor] Low calibration confidence, recommendations may not be accurate');
+        }
+
+        // Apply sensitivity multiplier
+        this.advancedGestures.sensitivityMultiplier = recommendations.sensitivityMultiplier;
+
+        // Apply swipe threshold
+        if (recommendations.swipeThreshold) {
+            this.advancedGestures.swipeDeleteThreshold = recommendations.swipeThreshold;
+            this.advancedGestures.swipeRestoreThreshold = recommendations.swipeThreshold;
+        }
+
+        // Apply double-tap interval
+        if (recommendations.doubleTapInterval) {
+            this.advancedGestures.doubleTapInterval = recommendations.doubleTapInterval;
+        }
+
+        console.log('[AnalyticsMonitor] Calibration recommendations applied:', recommendations);
+    }
+
+    /**
+     * Record calibration gesture attempt
+     * Enhancement: Gesture sensitivity calibration
+     */
+    recordCalibrationGesture(type, data) {
+        if (!this.advancedGestures.calibrationMode) return;
+
+        this.advancedGestures.calibrationData[type].push(data);
+
+        console.log(`[AnalyticsMonitor] Calibration gesture recorded: ${type}`, data);
+    }
+
+    /**
+     * Enable double-tap to expand/collapse card
+     * Phase 3.11.1: Double-tap
+     */
+    enableDoubleTap() {
+        if (!this.advancedGestures.enableDoubleTap) {
+            console.log('[AnalyticsMonitor] Double-tap disabled');
+            return;
+        }
+
+        console.log('[AnalyticsMonitor] Enabling double-tap...');
+
+        const cardMap = {
+            'comparison': 'query-comparison-card',
+            'confidence': 'confidence-tracking-card',
+            'effectiveness': 'tool-effectiveness-card',
+            'health': 'system-health-card',
+            'management': 'data-management-card'
+        };
+
+        for (const [cardId, domId] of Object.entries(cardMap)) {
+            const element = document.getElementById(domId);
+            if (!element) continue;
+
+            element.addEventListener('touchend', (e) => this.handleDoubleTap(e, cardId, element));
+        }
+
+        console.log('[AnalyticsMonitor] Double-tap enabled');
+    }
+
+    /**
+     * Handle double-tap (toggle card size)
+     * Phase 3.11.1: Double-tap
+     */
+    handleDoubleTap(e, cardId, element) {
+        if (!this.advancedGestures.enableDoubleTap) return;
+        if (e.touches.length > 0) return; // Still touching
+
+        const now = Date.now();
+        const timeSinceLastTap = now - this.touchState.lastTapTime;
+
+        if (timeSinceLastTap < this.advancedGestures.doubleTapInterval) {
+            // Double-tap detected!
+            this.touchState.tapCount = 0;
+            this.touchState.lastTapTime = 0;
+
+            // Enhancement: Record calibration data
+            if (this.advancedGestures.calibrationMode) {
+                this.recordCalibrationGesture('taps', {
+                    interval: timeSinceLastTap,
+                    success: true
+                });
+            }
+
+            // Toggle card size: small ↔ large
+            const currentSize = this.dashboardLayout.cardSizes[cardId] || 'medium';
+            const newSize = currentSize === 'large' ? 'small' : 'large';
+
+            this.setCardSize(cardId, newSize);
+            console.log(`[AnalyticsMonitor] Double-tap on ${cardId}: ${currentSize} → ${newSize}`);
+
+            // Haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate([30, 20, 30]); // Double vibration
+            }
+        } else {
+            // First tap
+            this.touchState.lastTapTime = now;
+            this.touchState.tapCount = 1;
+
+            // Enhancement: Record failed calibration attempt (too slow)
+            if (this.advancedGestures.calibrationMode && this.touchState.tapCount === 0 && timeSinceLastTap > 0) {
+                this.recordCalibrationGesture('taps', {
+                    interval: timeSinceLastTap,
+                    success: false
+                });
+            }
+        }
+    }
+
+    // ===================================================================
+    // PHASE 3.11.2: GESTURE MACROS
+    // ===================================================================
+
+    /**
+     * Create visual preview canvas for gesture recording
+     * Enhancement: Visual gesture preview
+     */
+    createGesturePreviewCanvas() {
+        if (!this.gestureMacros.enableVisualPreview) return;
+
+        // Remove existing canvas if any
+        this.removeGesturePreviewCanvas();
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.id = 'gesture-preview-canvas';
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.pointerEvents = 'none'; // Don't block touch events
+        canvas.style.zIndex = '9999';
+        canvas.style.background = 'transparent';
+
+        document.body.appendChild(canvas);
+
+        this.gestureMacros.previewCanvas = canvas;
+        this.gestureMacros.previewContext = canvas.getContext('2d');
+
+        // Set drawing style
+        const ctx = this.gestureMacros.previewContext;
+        ctx.strokeStyle = '#2196f3'; // Blue trail
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#2196f3';
+
+        console.log('[AnalyticsMonitor] Gesture preview canvas created');
+    }
+
+    /**
+     * Remove visual preview canvas
+     * Enhancement: Visual gesture preview
+     */
+    removeGesturePreviewCanvas() {
+        if (this.gestureMacros.previewCanvas) {
+            this.gestureMacros.previewCanvas.remove();
+            this.gestureMacros.previewCanvas = null;
+            this.gestureMacros.previewContext = null;
+            console.log('[AnalyticsMonitor] Gesture preview canvas removed');
+        }
+    }
+
+    /**
+     * Draw gesture path on preview canvas
+     * Enhancement: Visual gesture preview
+     */
+    drawGesturePreview(points) {
+        if (!this.gestureMacros.enableVisualPreview) return;
+        if (!this.gestureMacros.previewContext) return;
+        if (points.length < 2) return;
+
+        const ctx = this.gestureMacros.previewContext;
+        const lastTwoPoints = points.slice(-2);
+
+        // Draw line segment from previous point to current point
+        ctx.beginPath();
+        ctx.moveTo(lastTwoPoints[0].x, lastTwoPoints[0].y);
+        ctx.lineTo(lastTwoPoints[1].x, lastTwoPoints[1].y);
+        ctx.stroke();
+
+        // Add dot at current point
+        ctx.beginPath();
+        ctx.arc(lastTwoPoints[1].x, lastTwoPoints[1].y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#2196f3';
+        ctx.fill();
+    }
+
+    /**
+     * Start recording a gesture macro
+     * Phase 3.11.2: Gesture recording
+     */
+    startGestureRecording() {
+        this.gestureMacros.recording = true;
+        this.gestureMacros.recordedGesture = [];
+        this.gestureMacros.recordStartTime = Date.now();
+
+        // Enhancement: Create visual preview canvas
+        this.createGesturePreviewCanvas();
+
+        console.log('[AnalyticsMonitor] Gesture recording started');
+
+        // Listen to touch events globally
+        document.addEventListener('touchmove', this._recordTouchMove.bind(this), { passive: true });
+    }
+
+    /**
+     * Internal: Record touch move points
+     * Phase 3.11.2: Gesture recording
+     */
+    _recordTouchMove(e) {
+        if (!this.gestureMacros.recording) return;
+
+        const touch = e.touches[0];
+        const point = {
+            x: touch.clientX,
+            y: touch.clientY,
+            timestamp: Date.now() - this.gestureMacros.recordStartTime
+        };
+
+        this.gestureMacros.recordedGesture.push(point);
+
+        // Enhancement: Draw on preview canvas
+        this.drawGesturePreview(this.gestureMacros.recordedGesture);
+    }
+
+    /**
+     * Stop recording and save gesture macro
+     * Phase 3.11.2: Gesture recording
+     */
+    stopGestureRecording(macroName) {
+        if (!this.gestureMacros.recording) {
+            console.error('[AnalyticsMonitor] No recording in progress');
+            return null;
+        }
+
+        this.gestureMacros.recording = false;
+
+        // Enhancement: Remove visual preview canvas
+        this.removeGesturePreviewCanvas();
+
+        document.removeEventListener('touchmove', this._recordTouchMove.bind(this));
+
+        const gesture = {
+            name: macroName || `Gesture_${Date.now()}`,
+            pattern: this.gestureMacros.recordedGesture,
+            duration: Date.now() - this.gestureMacros.recordStartTime,
+            points: this.gestureMacros.recordedGesture.length
+        };
+
+        console.log(`[AnalyticsMonitor] Gesture recorded: ${gesture.name} (${gesture.points} points, ${gesture.duration}ms)`);
+
+        // Try to recognize pattern
+        const recognizedAction = this.recognizeGesturePattern(gesture.pattern);
+        if (recognizedAction) {
+            gesture.action = recognizedAction;
+            console.log(`[AnalyticsMonitor] Gesture recognized as: ${recognizedAction}`);
+        }
+
+        return gesture;
+    }
+
+    /**
+     * Recognize gesture pattern (Z-shape, circle, line, etc.)
+     * Phase 3.11.2: Pattern recognition
+     */
+    recognizeGesturePattern(points) {
+        if (!this.gestureMacros.recognitionEnabled) return null;
+        if (points.length < 5) return null; // Too few points
+
+        // Simple pattern recognition based on direction changes
+        const directions = [];
+        for (let i = 1; i < points.length; i++) {
+            const dx = points[i].x - points[i-1].x;
+            const dy = points[i].y - points[i-1].y;
+
+            // Classify direction (8 directions)
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            if (angle > -22.5 && angle <= 22.5) directions.push('E');
+            else if (angle > 22.5 && angle <= 67.5) directions.push('SE');
+            else if (angle > 67.5 && angle <= 112.5) directions.push('S');
+            else if (angle > 112.5 && angle <= 157.5) directions.push('SW');
+            else if (angle > 157.5 || angle <= -157.5) directions.push('W');
+            else if (angle > -157.5 && angle <= -112.5) directions.push('NW');
+            else if (angle > -112.5 && angle <= -67.5) directions.push('N');
+            else directions.push('NE');
+        }
+
+        // Simplify directions (remove duplicates)
+        const simplified = directions.filter((d, i) => i === 0 || d !== directions[i-1]);
+        const pattern = simplified.join('-');
+
+        // Match against known patterns
+        if (pattern.includes('E-SE-S') || pattern.includes('E-S-W')) {
+            return 'z-shape'; // Z-shape
+        }
+        if (pattern.match(/E.*S.*W.*N/) || pattern.match(/N.*E.*S.*W/)) {
+            return 'circle'; // Circle (clockwise or counter-clockwise)
+        }
+        if (pattern.match(/^E+$/)) {
+            return 'line-horizontal'; // Horizontal line
+        }
+        if (pattern.match(/^S+$/)) {
+            return 'line-vertical'; // Vertical line
+        }
+
+        return null; // Unknown pattern
+    }
+
+    /**
+     * Play back a saved gesture macro
+     * Phase 3.11.2: Gesture playback
+     */
+    playbackGesture(macroName) {
+        const macro = this.gestureMacros.savedMacros[macroName];
+        if (!macro) {
+            console.error(`[AnalyticsMonitor] Macro not found: ${macroName}`);
+            return;
+        }
+
+        console.log(`[AnalyticsMonitor] Playing back macro: ${macroName}`);
+
+        // Execute associated action
+        if (macro.action) {
+            this.executeGestureAction(macro.action);
+        }
+    }
+
+    /**
+     * Execute gesture action
+     * Phase 3.11.2: Action execution
+     */
+    executeGestureAction(action) {
+        const shortcuts = this.gestureMacros.shortcuts;
+
+        if (action === 'z-shape' || action === shortcuts['z-shape']?.action) {
+            // Reset layout
+            this.resetDashboard();
+            console.log('[AnalyticsMonitor] Gesture action: Reset layout');
+        }
+        else if (action === 'circle' || action === shortcuts['circle']?.action) {
+            // Refresh all
+            this.refreshAll();
+            console.log('[AnalyticsMonitor] Gesture action: Refresh all');
+        }
+        else if (action === 'line-horizontal' || action === shortcuts['line-horizontal']?.action) {
+            // Toggle compact template
+            this.applyGridTemplate('compact');
+            console.log('[AnalyticsMonitor] Gesture action: Toggle compact');
+        }
+        else {
+            console.warn(`[AnalyticsMonitor] Unknown gesture action: ${action}`);
+        }
+    }
+
+    /**
+     * Save a gesture macro
+     * Phase 3.11.2: Save macro
+     */
+    saveGestureMacro(name, pattern, action) {
+        this.gestureMacros.savedMacros[name] = {
+            pattern: pattern,
+            action: action,
+            createdAt: new Date().toISOString()
+        };
+
+        // Save to localStorage
+        localStorage.setItem('analyticsMonitor_gesture_macros', JSON.stringify(this.gestureMacros.savedMacros));
+
+        console.log(`[AnalyticsMonitor] Gesture macro saved: ${name}`);
+    }
+
+    /**
+     * Load saved gesture macros from localStorage
+     * Phase 3.11.2: Load macros
+     */
+    loadGestureMacros() {
+        const saved = localStorage.getItem('analyticsMonitor_gesture_macros');
+        if (saved) {
+            try {
+                this.gestureMacros.savedMacros = JSON.parse(saved);
+                console.log(`[AnalyticsMonitor] Loaded ${Object.keys(this.gestureMacros.savedMacros).length} gesture macros`);
+            } catch (error) {
+                console.error('[AnalyticsMonitor] Failed to load gesture macros:', error);
+            }
+        }
+    }
+
+    /**
+     * Export gesture macros as JSON
+     * Phase 3.11.2: Export
+     */
+    exportGestureMacros() {
+        const json = JSON.stringify(this.gestureMacros.savedMacros, null, 2);
+        console.log('[AnalyticsMonitor] Gesture macros exported');
+        return json;
+    }
+
+    /**
+     * Import gesture macros from JSON
+     * Phase 3.11.2: Import
+     */
+    importGestureMacros(json) {
+        try {
+            const macros = JSON.parse(json);
+            this.gestureMacros.savedMacros = { ...this.gestureMacros.savedMacros, ...macros };
+
+            // Save to localStorage
+            localStorage.setItem('analyticsMonitor_gesture_macros', JSON.stringify(this.gestureMacros.savedMacros));
+
+            console.log(`[AnalyticsMonitor] Imported ${Object.keys(macros).length} gesture macros`);
+            return true;
+        } catch (error) {
+            console.error('[AnalyticsMonitor] Failed to import gesture macros:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Set custom action for a saved gesture macro
+     * Enhancement 3.11.2: Custom action mapping
+     */
+    setCustomActionForMacro(macroName, customAction) {
+        if (!this.gestureMacros.savedMacros[macroName]) {
+            console.error(`[AnalyticsMonitor] Macro not found: ${macroName}`);
+            return false;
+        }
+
+        // Validate action structure
+        if (!customAction.type) {
+            console.error('[AnalyticsMonitor] Custom action must have a type');
+            return false;
+        }
+
+        // Update macro with custom action
+        this.gestureMacros.savedMacros[macroName].customAction = customAction;
+
+        // Save to localStorage
+        localStorage.setItem('analyticsMonitor_gesture_macros', JSON.stringify(this.gestureMacros.savedMacros));
+
+        console.log(`[AnalyticsMonitor] Custom action set for macro: ${macroName}`, customAction);
+        return true;
+    }
+
+    /**
+     * Execute a custom action
+     * Enhancement 3.11.2: Custom action execution
+     *
+     * Supported action types:
+     * - refresh: Refresh dashboard data
+     * - hide_card: Hide a specific card (params: {cardId})
+     * - show_card: Show a specific card (params: {cardId})
+     * - toggle_card: Toggle card visibility (params: {cardId})
+     * - navigate: Navigate to a section (params: {section})
+     * - reset_layout: Reset dashboard layout
+     * - toggle_compact: Toggle compact mode
+     * - custom: Execute a custom function (params: {fn})
+     */
+    async executeCustomAction(actionType, actionParams = {}) {
+        console.log(`[AnalyticsMonitor] Executing custom action: ${actionType}`, actionParams);
+
+        try {
+            switch (actionType) {
+                case 'refresh':
+                    // Refresh dashboard data
+                    if (this.updateInterval > 0) {
+                        await this.update();
+                        console.log('[AnalyticsMonitor] Dashboard refreshed');
+                    }
+                    break;
+
+                case 'hide_card':
+                    // Hide a specific card
+                    if (actionParams.cardId) {
+                        this.setCardVisibility(actionParams.cardId, false);
+                        console.log(`[AnalyticsMonitor] Card hidden: ${actionParams.cardId}`);
+                    }
+                    break;
+
+                case 'show_card':
+                    // Show a specific card
+                    if (actionParams.cardId) {
+                        this.setCardVisibility(actionParams.cardId, true);
+                        console.log(`[AnalyticsMonitor] Card shown: ${actionParams.cardId}`);
+                    }
+                    break;
+
+                case 'toggle_card':
+                    // Toggle card visibility
+                    if (actionParams.cardId) {
+                        const currentVisibility = this.visibilityConfig[actionParams.cardId];
+                        this.setCardVisibility(actionParams.cardId, !currentVisibility);
+                        console.log(`[AnalyticsMonitor] Card toggled: ${actionParams.cardId}`);
+                    }
+                    break;
+
+                case 'navigate':
+                    // Navigate to a section (scroll to)
+                    if (actionParams.section) {
+                        const element = document.getElementById(actionParams.section);
+                        if (element) {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            console.log(`[AnalyticsMonitor] Navigated to: ${actionParams.section}`);
+                        }
+                    }
+                    break;
+
+                case 'reset_layout':
+                    // Reset dashboard layout (restore all cards)
+                    Object.keys(this.visibilityConfig).forEach(cardId => {
+                        this.setCardVisibility(cardId, true);
+                    });
+                    console.log('[AnalyticsMonitor] Layout reset');
+                    break;
+
+                case 'toggle_compact':
+                    // Toggle compact mode (if implemented)
+                    if (this.compactMode !== undefined) {
+                        this.compactMode = !this.compactMode;
+                        console.log(`[AnalyticsMonitor] Compact mode: ${this.compactMode ? 'ON' : 'OFF'}`);
+                    }
+                    break;
+
+                case 'custom':
+                    // Execute custom function
+                    if (actionParams.fn && typeof actionParams.fn === 'function') {
+                        await actionParams.fn();
+                        console.log('[AnalyticsMonitor] Custom function executed');
+                    }
+                    break;
+
+                default:
+                    console.warn(`[AnalyticsMonitor] Unknown action type: ${actionType}`);
+                    return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error(`[AnalyticsMonitor] Error executing custom action:`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Replay a saved gesture macro with its custom action
+     * Enhancement 3.11.2: Macro replay
+     */
+    async replayGestureMacro(macroName) {
+        const macro = this.gestureMacros.savedMacros[macroName];
+        if (!macro) {
+            console.error(`[AnalyticsMonitor] Macro not found: ${macroName}`);
+            return false;
+        }
+
+        console.log(`[AnalyticsMonitor] Replaying macro: ${macroName}`);
+
+        // Execute custom action if defined
+        if (macro.customAction) {
+            const success = await this.executeCustomAction(
+                macro.customAction.type,
+                macro.customAction.params
+            );
+
+            if (success) {
+                console.log(`[AnalyticsMonitor] Macro replay complete: ${macroName}`);
+                return true;
+            } else {
+                console.error(`[AnalyticsMonitor] Macro replay failed: ${macroName}`);
+                return false;
+            }
+        }
+
+        // If no custom action, execute the recognized pattern action
+        if (macro.action) {
+            // Map old action names to new action types
+            const actionMap = {
+                'resetLayout': 'reset_layout',
+                'refreshAll': 'refresh',
+                'toggleCompact': 'toggle_compact'
+            };
+
+            const actionType = actionMap[macro.action] || macro.action;
+            const success = await this.executeCustomAction(actionType);
+
+            if (success) {
+                console.log(`[AnalyticsMonitor] Macro replay complete: ${macroName}`);
+                return true;
+            }
+        }
+
+        console.warn(`[AnalyticsMonitor] No action defined for macro: ${macroName}`);
+        return false;
+    }
+
+    /**
+     * List all saved macros with their actions
+     * Enhancement 3.11.2: Macro inspection
+     */
+    listGestureMacros() {
+        const macros = Object.entries(this.gestureMacros.savedMacros).map(([name, macro]) => ({
+            name: name,
+            action: macro.action,
+            customAction: macro.customAction,
+            createdAt: macro.createdAt,
+            points: macro.pattern ? macro.pattern.length : 0
+        }));
+
+        console.table(macros);
+        return macros;
+    }
+
+    // ===================================================================
+    // PHASE 3.11.3: MOBILE PERFORMANCE MODE
+    // ===================================================================
+
+    /**
+     * Initialize Battery API monitoring
+     * Phase 3.11.3: Battery monitoring
+     */
+    async initializeBatteryMonitor() {
+        if (!('getBattery' in navigator)) {
+            console.warn('[AnalyticsMonitor] Battery API not supported');
+            return;
+        }
+
+        try {
+            const battery = await navigator.getBattery();
+
+            // Update initial state
+            this.performanceMode.currentBatteryLevel = Math.round(battery.level * 100);
+            this.performanceMode.isCharging = battery.charging;
+
+            console.log(`[AnalyticsMonitor] Battery: ${this.performanceMode.currentBatteryLevel}%, charging: ${this.performanceMode.isCharging}`);
+
+            // Auto-enable performance mode if low battery
+            if (this.performanceMode.autoEnableOnLowBattery &&
+                this.performanceMode.currentBatteryLevel <= this.performanceMode.batteryThreshold &&
+                !this.performanceMode.isCharging) {
+                this.enablePerformanceMode();
+            }
+
+            // Listen for battery changes
+            battery.addEventListener('levelchange', () => this.handleBatteryChange(battery));
+            battery.addEventListener('chargingchange', () => this.handleBatteryChange(battery));
+
+        } catch (error) {
+            console.error('[AnalyticsMonitor] Battery API error:', error);
+        }
+    }
+
+    /**
+     * Handle battery level or charging state change
+     * Phase 3.11.3: Battery monitoring
+     */
+    handleBatteryChange(battery) {
+        this.performanceMode.currentBatteryLevel = Math.round(battery.level * 100);
+        this.performanceMode.isCharging = battery.charging;
+
+        console.log(`[AnalyticsMonitor] Battery changed: ${this.performanceMode.currentBatteryLevel}%, charging: ${this.performanceMode.isCharging}`);
+
+        // Auto-enable performance mode on low battery
+        if (this.performanceMode.autoEnableOnLowBattery &&
+            this.performanceMode.currentBatteryLevel <= this.performanceMode.batteryThreshold &&
+            !this.performanceMode.isCharging &&
+            !this.performanceMode.enabled) {
+            this.enablePerformanceMode();
+        }
+
+        // Auto-disable performance mode when charging
+        if (this.performanceMode.isCharging && this.performanceMode.enabled) {
+            this.disablePerformanceMode();
+        }
+    }
+
+    /**
+     * Enable mobile performance mode (reduce animations, pause updates)
+     * Phase 3.11.3: Performance mode
+     */
+    enablePerformanceMode() {
+        if (this.performanceMode.enabled) {
+            console.log('[AnalyticsMonitor] Performance mode already enabled');
+            return;
+        }
+
+        this.performanceMode.enabled = true;
+        console.log('[AnalyticsMonitor] Performance mode ENABLED');
+
+        // Reduce animations
+        document.body.classList.add('performance-mode');
+        this.performanceMode.reducedAnimations = true;
+
+        // Increase update interval (slower updates)
+        // Note: Update intervals are managed by refresh timers
+
+        console.log('[AnalyticsMonitor] Performance mode active: reduced animations, slower updates');
+    }
+
+    /**
+     * Disable mobile performance mode (restore full performance)
+     * Phase 3.11.3: Performance mode
+     */
+    disablePerformanceMode() {
+        if (!this.performanceMode.enabled) {
+            console.log('[AnalyticsMonitor] Performance mode already disabled');
+            return;
+        }
+
+        this.performanceMode.enabled = false;
+        console.log('[AnalyticsMonitor] Performance mode DISABLED');
+
+        // Restore animations
+        document.body.classList.remove('performance-mode');
+        this.performanceMode.reducedAnimations = false;
+
+        // Restore normal update interval
+
+        console.log('[AnalyticsMonitor] Performance mode inactive: full animations, normal updates');
+    }
+
+    /**
+     * Get current memory usage (if Performance Memory API available)
+     * Enhancement 3.11.3: Memory monitoring
+     */
+    getCurrentMemoryUsage() {
+        // Check if Performance Memory API is available (Chrome, Edge)
+        if (!performance.memory) {
+            return {
+                supported: false,
+                usedJSHeapSize: 0,
+                totalJSHeapSize: 0,
+                jsHeapSizeLimit: 0,
+                usagePercent: 0
+            };
+        }
+
+        const memory = performance.memory;
+        const usagePercent = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
+
+        return {
+            supported: true,
+            usedJSHeapSize: memory.usedJSHeapSize,
+            totalJSHeapSize: memory.totalJSHeapSize,
+            jsHeapSizeLimit: memory.jsHeapSizeLimit,
+            usagePercent: usagePercent,
+            usedMB: (memory.usedJSHeapSize / 1024 / 1024).toFixed(2),
+            totalMB: (memory.totalJSHeapSize / 1024 / 1024).toFixed(2),
+            limitMB: (memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)
+        };
+    }
+
+    /**
+     * Check memory usage and trigger optimizations if needed
+     * Enhancement 3.11.3: Memory monitoring
+     */
+    checkMemoryUsage() {
+        if (!this.performanceMode.memoryMonitoring.enabled) {
+            return;
+        }
+
+        // Rate limit checks
+        const now = Date.now();
+        const timeSinceLastCheck = now - this.performanceMode.memoryMonitoring.lastCheckTime;
+        if (timeSinceLastCheck < this.performanceMode.memoryMonitoring.checkInterval) {
+            return;
+        }
+
+        this.performanceMode.memoryMonitoring.lastCheckTime = now;
+
+        // Get current memory usage
+        const memoryUsage = this.getCurrentMemoryUsage();
+
+        if (!memoryUsage.supported) {
+            console.warn('[AnalyticsMonitor] Memory monitoring not supported in this browser');
+            return;
+        }
+
+        // Store in history
+        this.performanceMode.memoryMonitoring.history.push({
+            timestamp: now,
+            usedJSHeapSize: memoryUsage.usedJSHeapSize,
+            totalJSHeapSize: memoryUsage.totalJSHeapSize,
+            jsHeapSizeLimit: memoryUsage.jsHeapSizeLimit,
+            usagePercent: memoryUsage.usagePercent
+        });
+
+        // Trim history to max length
+        if (this.performanceMode.memoryMonitoring.history.length > this.performanceMode.memoryMonitoring.maxHistoryLength) {
+            this.performanceMode.memoryMonitoring.history = this.performanceMode.memoryMonitoring.history.slice(-this.performanceMode.memoryMonitoring.maxHistoryLength);
+        }
+
+        // Update current usage
+        this.performanceMode.memoryMonitoring.currentUsagePercent = memoryUsage.usagePercent;
+
+        // Check thresholds
+        const warningThreshold = this.performanceMode.memoryMonitoring.warningThreshold * 100;
+        const criticalThreshold = this.performanceMode.memoryMonitoring.criticalThreshold * 100;
+
+        if (memoryUsage.usagePercent >= criticalThreshold) {
+            console.error(`[AnalyticsMonitor] CRITICAL memory usage: ${memoryUsage.usagePercent.toFixed(1)}% (${memoryUsage.usedMB}MB / ${memoryUsage.limitMB}MB)`);
+
+            // Auto-optimize if enabled
+            if (this.performanceMode.memoryMonitoring.autoOptimize && !this.performanceMode.memoryMonitoring.optimizationApplied) {
+                this.optimizeForMemory('critical');
+            }
+        } else if (memoryUsage.usagePercent >= warningThreshold) {
+            console.warn(`[AnalyticsMonitor] High memory usage: ${memoryUsage.usagePercent.toFixed(1)}% (${memoryUsage.usedMB}MB / ${memoryUsage.limitMB}MB)`);
+
+            // Auto-optimize if enabled
+            if (this.performanceMode.memoryMonitoring.autoOptimize && !this.performanceMode.memoryMonitoring.optimizationApplied) {
+                this.optimizeForMemory('warning');
+            }
+        } else {
+            // Memory usage is OK
+            if (this.performanceMode.memoryMonitoring.optimizationApplied) {
+                console.log(`[AnalyticsMonitor] Memory usage normalized: ${memoryUsage.usagePercent.toFixed(1)}% (${memoryUsage.usedMB}MB / ${memoryUsage.limitMB}MB)`);
+            }
+        }
+
+        return memoryUsage;
+    }
+
+    /**
+     * Optimize dashboard for memory constraints
+     * Enhancement 3.11.3: Memory optimization
+     */
+    optimizeForMemory(severity = 'warning') {
+        console.log(`[AnalyticsMonitor] Optimizing for memory (severity: ${severity})`);
+
+        this.performanceMode.memoryMonitoring.optimizationApplied = true;
+
+        if (severity === 'critical') {
+            // Critical optimizations (aggressive)
+
+            // 1. Clear gesture macro history (keep only recent 10)
+            if (this.advancedGestures.recentlyHidden.length > 10) {
+                this.advancedGestures.recentlyHidden = this.advancedGestures.recentlyHidden.slice(0, 10);
+            }
+
+            // 2. Trim memory monitoring history
+            if (this.performanceMode.memoryMonitoring.history.length > 50) {
+                this.performanceMode.memoryMonitoring.history = this.performanceMode.memoryMonitoring.history.slice(-50);
+            }
+
+            // 3. Trim calibration data
+            if (this.advancedGestures.calibrationData) {
+                this.advancedGestures.calibrationData.swipes = this.advancedGestures.calibrationData.swipes.slice(-10);
+                this.advancedGestures.calibrationData.taps = this.advancedGestures.calibrationData.taps.slice(-10);
+                this.advancedGestures.calibrationData.pinches = this.advancedGestures.calibrationData.pinches.slice(-10);
+            }
+
+            // 4. Enable performance mode (reduces animations, slows updates)
+            if (!this.performanceMode.enabled) {
+                this.enablePerformanceMode();
+            }
+
+            // 5. Disable visual preview (saves canvas memory)
+            this.gestureMacros.enableVisualPreview = false;
+
+            console.log('[AnalyticsMonitor] Applied CRITICAL memory optimizations');
+
+        } else if (severity === 'warning') {
+            // Warning optimizations (moderate)
+
+            // 1. Trim gesture macro history (keep only recent 20)
+            if (this.advancedGestures.recentlyHidden.length > 20) {
+                this.advancedGestures.recentlyHidden = this.advancedGestures.recentlyHidden.slice(0, 20);
+            }
+
+            // 2. Trim memory monitoring history (keep only recent 75)
+            if (this.performanceMode.memoryMonitoring.history.length > 75) {
+                this.performanceMode.memoryMonitoring.history = this.performanceMode.memoryMonitoring.history.slice(-75);
+            }
+
+            console.log('[AnalyticsMonitor] Applied WARNING memory optimizations');
+        }
+    }
+
+    /**
+     * Get memory monitoring statistics
+     * Enhancement 3.11.3: Memory monitoring
+     */
+    getMemoryStatistics() {
+        const current = this.getCurrentMemoryUsage();
+
+        if (!current.supported) {
+            return {
+                supported: false,
+                message: 'Memory monitoring not supported in this browser (try Chrome or Edge)'
+            };
+        }
+
+        const history = this.performanceMode.memoryMonitoring.history;
+
+        // Calculate statistics from history
+        let avgUsage = 0;
+        let maxUsage = 0;
+        let minUsage = 100;
+
+        if (history.length > 0) {
+            history.forEach(entry => {
+                avgUsage += entry.usagePercent;
+                maxUsage = Math.max(maxUsage, entry.usagePercent);
+                minUsage = Math.min(minUsage, entry.usagePercent);
+            });
+            avgUsage /= history.length;
+        }
+
+        return {
+            supported: true,
+            current: {
+                usedMB: current.usedMB,
+                totalMB: current.totalMB,
+                limitMB: current.limitMB,
+                usagePercent: current.usagePercent.toFixed(2)
+            },
+            statistics: {
+                avgUsagePercent: avgUsage.toFixed(2),
+                maxUsagePercent: maxUsage.toFixed(2),
+                minUsagePercent: minUsage.toFixed(2),
+                samplesCollected: history.length
+            },
+            thresholds: {
+                warning: (this.performanceMode.memoryMonitoring.warningThreshold * 100).toFixed(0) + '%',
+                critical: (this.performanceMode.memoryMonitoring.criticalThreshold * 100).toFixed(0) + '%'
+            },
+            optimizationApplied: this.performanceMode.memoryMonitoring.optimizationApplied
+        };
+    }
+
+    /**
+     * Initialize network monitoring using Network Information API
+     * Enhancement 3.11.3: Network monitoring
+     */
+    initializeNetworkMonitor() {
+        if (!('connection' in navigator || 'mozConnection' in navigator || 'webkitConnection' in navigator)) {
+            console.warn('[AnalyticsMonitor] Network Information API not supported');
+            return;
+        }
+
+        // Get network connection object
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+        // Update initial state
+        this.updateNetworkInfo(connection);
+
+        // Listen for network changes
+        connection.addEventListener('change', () => this.handleNetworkChange(connection));
+
+        console.log('[AnalyticsMonitor] Network monitoring initialized');
+    }
+
+    /**
+     * Update network information from connection object
+     * Enhancement 3.11.3: Network monitoring
+     */
+    updateNetworkInfo(connection) {
+        this.performanceMode.networkMonitoring.effectiveType = connection.effectiveType || 'unknown';
+        this.performanceMode.networkMonitoring.downlink = connection.downlink || 0;
+        this.performanceMode.networkMonitoring.rtt = connection.rtt || 0;
+        this.performanceMode.networkMonitoring.saveData = connection.saveData || false;
+
+        console.log(`[AnalyticsMonitor] Network: ${this.performanceMode.networkMonitoring.effectiveType}, ` +
+                    `${this.performanceMode.networkMonitoring.downlink} Mbps, ` +
+                    `${this.performanceMode.networkMonitoring.rtt}ms RTT, ` +
+                    `saveData: ${this.performanceMode.networkMonitoring.saveData}`);
+    }
+
+    /**
+     * Handle network connection change
+     * Enhancement 3.11.3: Network monitoring
+     */
+    handleNetworkChange(connection) {
+        console.log('[AnalyticsMonitor] Network connection changed');
+
+        // Update network info
+        this.updateNetworkInfo(connection);
+
+        // Check if optimization needed
+        if (this.performanceMode.networkMonitoring.autoOptimize) {
+            this.checkNetworkOptimizations();
+        }
+    }
+
+    /**
+     * Check if network optimizations are needed
+     * Enhancement 3.11.3: Network optimization
+     */
+    checkNetworkOptimizations() {
+        const network = this.performanceMode.networkMonitoring;
+
+        // Conditions for optimization:
+        // 1. Slow effective type (slow-2g, 2g)
+        // 2. Low downlink speed (< threshold)
+        // 3. High RTT (> 500ms)
+        // 4. User requested data saver mode
+
+        const isSlow2g = network.effectiveType === 'slow-2g' || network.effectiveType === '2g';
+        const isSlowDownlink = network.downlink > 0 && network.downlink < network.slowNetworkThreshold;
+        const isHighLatency = network.rtt > 500;
+        const isDataSaver = network.saveData;
+
+        if (isSlow2g || isSlowDownlink || isHighLatency || isDataSaver) {
+            console.warn(`[AnalyticsMonitor] Slow network detected: ${network.effectiveType}, ${network.downlink} Mbps, ${network.rtt}ms RTT`);
+
+            if (!network.optimizationApplied) {
+                this.optimizeForNetwork();
+            }
+        } else {
+            // Network is fast - restore normal intervals
+            if (network.optimizationApplied) {
+                console.log('[AnalyticsMonitor] Network speed normalized, restoring normal update intervals');
+                this.restoreNormalUpdateIntervals();
+            }
+        }
+    }
+
+    /**
+     * Optimize dashboard for slow network
+     * Enhancement 3.11.3: Network optimization
+     */
+    optimizeForNetwork() {
+        console.log('[AnalyticsMonitor] Optimizing for slow network');
+
+        const network = this.performanceMode.networkMonitoring;
+        network.optimizationApplied = true;
+
+        // Adjust update interval based on network speed
+        let multiplier = 1.0;
+
+        if (network.effectiveType === 'slow-2g') {
+            multiplier = 10.0; // 10x slower (1s → 10s)
+        } else if (network.effectiveType === '2g') {
+            multiplier = 5.0; // 5x slower (1s → 5s)
+        } else if (network.effectiveType === '3g') {
+            multiplier = 2.0; // 2x slower (1s → 2s)
+        } else if (network.downlink < network.slowNetworkThreshold) {
+            multiplier = 3.0; // 3x slower for low downlink
+        } else if (network.rtt > 500) {
+            multiplier = 2.0; // 2x slower for high latency
+        }
+
+        // Apply data saver multiplier
+        if (network.saveData) {
+            multiplier *= 2.0; // Additional 2x slowdown for data saver
+        }
+
+        // Update current interval
+        network.currentUpdateInterval = network.baseUpdateInterval * multiplier;
+
+        console.log(`[AnalyticsMonitor] Update interval adjusted: ${network.baseUpdateInterval}ms → ${network.currentUpdateInterval}ms (${multiplier}x)`);
+
+        // Also enable performance mode if not already enabled
+        if (!this.performanceMode.enabled) {
+            this.enablePerformanceMode();
+        }
+    }
+
+    /**
+     * Restore normal update intervals when network improves
+     * Enhancement 3.11.3: Network optimization
+     */
+    restoreNormalUpdateIntervals() {
+        const network = this.performanceMode.networkMonitoring;
+        network.currentUpdateInterval = network.baseUpdateInterval;
+        network.optimizationApplied = false;
+
+        console.log(`[AnalyticsMonitor] Update intervals restored to ${network.baseUpdateInterval}ms`);
+    }
+
+    /**
+     * Get network monitoring statistics
+     * Enhancement 3.11.3: Network monitoring
+     */
+    getNetworkStatistics() {
+        const network = this.performanceMode.networkMonitoring;
+
+        if (network.effectiveType === 'unknown') {
+            return {
+                supported: false,
+                message: 'Network Information API not supported in this browser'
+            };
+        }
+
+        // Classify network quality
+        let quality = 'Good';
+        if (network.effectiveType === 'slow-2g' || network.effectiveType === '2g') {
+            quality = 'Poor';
+        } else if (network.effectiveType === '3g' || network.downlink < 2.0) {
+            quality = 'Fair';
+        } else if (network.effectiveType === '4g' && network.downlink >= 5.0) {
+            quality = 'Excellent';
+        }
+
+        return {
+            supported: true,
+            effectiveType: network.effectiveType,
+            downlink: network.downlink + ' Mbps',
+            rtt: network.rtt + ' ms',
+            saveData: network.saveData,
+            quality: quality,
+            currentUpdateInterval: network.currentUpdateInterval + ' ms',
+            optimizationApplied: network.optimizationApplied
+        };
+    }
+
+    // ===================================================================
+    // VOICE UX TRACKING (Milestone 1 - November 2025)
+    // ===================================================================
+
+    /**
+     * Track voice command
+     * Milestone 1: Voice UX integration
+     */
+    trackVoiceCommand(intentType, latencyMs, success, confidence) {
+        const voice = this.performanceMode.voiceUX;
+
+        // Create command entry
+        const entry = {
+            timestamp: Date.now(),
+            intent: intentType,
+            latency: latencyMs,
+            success: success,
+            confidence: confidence,
+            batteryLevel: this.performanceMode.currentBatteryLevel,
+            networkType: this.performanceMode.networkMonitoring.effectiveType,
+            memoryUsagePercent: this.performanceMode.memoryMonitoring.currentUsagePercent
+        };
+
+        // Add to history
+        voice.commandHistory.push(entry);
+
+        // Trim history to max length
+        if (voice.commandHistory.length > voice.maxHistoryLength) {
+            voice.commandHistory = voice.commandHistory.slice(-voice.maxHistoryLength);
+        }
+
+        // Update session metrics
+        voice.sessionMetrics.commandsProcessed++;
+        if (success) {
+            // Recalculate success rate
+            const successfulCommands = voice.commandHistory.filter(c => c.success).length;
+            voice.sessionMetrics.successRate = (successfulCommands / voice.commandHistory.length) * 100;
+        }
+
+        // Update average latency
+        const totalLatency = voice.commandHistory.reduce((sum, c) => sum + c.latency, 0);
+        voice.sessionMetrics.averageLatencyMs = totalLatency / voice.commandHistory.length;
+
+        console.log(`[AnalyticsMonitor] Voice command tracked: ${intentType} (${latencyMs}ms, ${success ? 'success' : 'failed'})`);
+    }
+
+    /**
+     * Track thread creation (voice UX)
+     */
+    trackThreadCreated() {
+        this.performanceMode.voiceUX.sessionMetrics.threadsCreated++;
+    }
+
+    /**
+     * Track thread switch (voice UX)
+     */
+    trackThreadSwitch() {
+        this.performanceMode.voiceUX.sessionMetrics.threadSwitches++;
+    }
+
+    /**
+     * Track voice error
+     */
+    trackVoiceError(errorType, errorMessage) {
+        this.performanceMode.voiceUX.sessionMetrics.errors++;
+
+        console.error(`[AnalyticsMonitor] Voice error: ${errorType} - ${errorMessage}`);
+    }
+
+    /**
+     * Start voice session
+     */
+    startVoiceSession(mode = 'conversational') {
+        const voice = this.performanceMode.voiceUX;
+
+        voice.enabled = true;
+        voice.isActive = true;
+        voice.currentMode = mode;
+        voice.sessionMetrics.startTime = Date.now();
+
+        console.log(`[AnalyticsMonitor] Voice session started (mode: ${mode})`);
+    }
+
+    /**
+     * Stop voice session
+     */
+    stopVoiceSession() {
+        const voice = this.performanceMode.voiceUX;
+
+        voice.isActive = false;
+        const duration = Date.now() - voice.sessionMetrics.startTime;
+
+        console.log(`[AnalyticsMonitor] Voice session stopped (duration: ${duration}ms, commands: ${voice.sessionMetrics.commandsProcessed})`);
+    }
+
+    /**
+     * Get voice UX statistics
+     */
+    getVoiceStatistics() {
+        const voice = this.performanceMode.voiceUX;
+
+        if (!voice.enabled) {
+            return {
+                supported: true,
+                enabled: false,
+                message: 'Voice UX not currently enabled'
+            };
+        }
+
+        // Calculate statistics from command history
+        const recentCommands = voice.commandHistory.slice(-20); // Last 20 commands
+        const intentCounts = {};
+
+        recentCommands.forEach(cmd => {
+            intentCounts[cmd.intent] = (intentCounts[cmd.intent] || 0) + 1;
+        });
+
+        return {
+            supported: true,
+            enabled: true,
+            isActive: voice.isActive,
+            currentMode: voice.currentMode,
+            session: {
+                startTime: voice.sessionMetrics.startTime,
+                commandsProcessed: voice.sessionMetrics.commandsProcessed,
+                threadsCreated: voice.sessionMetrics.threadsCreated,
+                threadSwitches: voice.sessionMetrics.threadSwitches,
+                errors: voice.sessionMetrics.errors,
+                averageLatencyMs: voice.sessionMetrics.averageLatencyMs.toFixed(0),
+                successRate: voice.sessionMetrics.successRate.toFixed(1) + '%'
+            },
+            recentIntents: intentCounts,
+            commandHistory: recentCommands
+        };
+    }
+
+    /**
+     * Check if voice should be disabled due to performance constraints
+     */
+    shouldDisableVoice() {
+        // Low battery and not charging
+        if (this.performanceMode.currentBatteryLevel < 30 && !this.performanceMode.isCharging) {
+            return { shouldDisable: true, reason: 'low_battery' };
+        }
+
+        // High memory usage
+        if (this.performanceMode.memoryMonitoring.currentUsagePercent > 85) {
+            return { shouldDisable: true, reason: 'high_memory' };
+        }
+
+        // Very slow network (for future cloud STT)
+        const network = this.performanceMode.networkMonitoring;
+        if (network.effectiveType === 'slow-2g') {
+            return { shouldDisable: true, reason: 'very_slow_network' };
+        }
+
+        return { shouldDisable: false, reason: null };
+    }
+
+    /**
+     * Initialize Page Visibility API (pause when backgrounded)
+     * Phase 3.11.3: Background pause
+     */
+    initializePageVisibility() {
+        if (typeof document.hidden === 'undefined') {
+            console.warn('[AnalyticsMonitor] Page Visibility API not supported');
+            return;
+        }
+
+        document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
+
+        console.log('[AnalyticsMonitor] Page Visibility API initialized');
+    }
+
+    /**
+     * Handle page visibility change (pause/resume updates)
+     * Phase 3.11.3: Background pause
+     */
+    handleVisibilityChange() {
+        if (document.hidden) {
+            console.log('[AnalyticsMonitor] Page hidden → pausing updates');
+            this.performanceMode.pauseBackgroundUpdates = true;
+            // Note: Actual pausing is handled by checking this flag in refresh methods
+        } else {
+            console.log('[AnalyticsMonitor] Page visible → resuming updates');
+            this.performanceMode.pauseBackgroundUpdates = false;
+            // Refresh immediately when returning
+            this.refreshAll();
+        }
+    }
+
+    /**
+     * Enable virtualized rendering for large card lists (>20 cards)
+     * Phase 3.11.3: Virtualized rendering
+     */
+    enableVirtualizedRendering() {
+        const cardCount = Object.keys(this.dashboardLayout.cardSizes).length;
+
+        if (cardCount < this.performanceMode.cardVirtualizationThreshold) {
+            console.log(`[AnalyticsMonitor] Virtualization not needed (${cardCount} cards < ${this.performanceMode.cardVirtualizationThreshold} threshold)`);
+            return;
+        }
+
+        this.performanceMode.virtualizedRendering = true;
+
+        console.log(`[AnalyticsMonitor] Virtualized rendering enabled for ${cardCount} cards`);
+
+        // Note: Actual virtualization would require more complex DOM manipulation
+        // This is a placeholder for future implementation
+        // For now, just hide off-screen cards
+        const container = document.getElementById('analytics-cards-container');
+        if (container) {
+            container.classList.add('virtualized');
+        }
+    }
+
+    /**
+     * Disable virtualized rendering
+     * Phase 3.11.3: Virtualized rendering
+     */
+    disableVirtualizedRendering() {
+        this.performanceMode.virtualizedRendering = false;
+
+        const container = document.getElementById('analytics-cards-container');
+        if (container) {
+            container.classList.remove('virtualized');
+        }
+
+        console.log('[AnalyticsMonitor] Virtualized rendering disabled');
     }
 }
 

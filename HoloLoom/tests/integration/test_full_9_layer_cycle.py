@@ -34,7 +34,7 @@ from typing import List
 
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
 
 

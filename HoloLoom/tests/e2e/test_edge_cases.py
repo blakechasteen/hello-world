@@ -21,7 +21,7 @@ import asyncio
 
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 
 
 class TestEmptyInputs:

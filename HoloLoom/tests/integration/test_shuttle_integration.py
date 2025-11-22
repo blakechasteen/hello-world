@@ -2,7 +2,7 @@
 import asyncio
 from HoloLoom.weaving_shuttle import WeavingShuttle
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.protocols import ComplexityLevel
 
 async def main():

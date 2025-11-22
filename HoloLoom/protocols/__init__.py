@@ -36,6 +36,7 @@ Date: 2025-10-27 (Phase 1 Protocol Standardization - Task 1.1)
 
 from .types import (
     ComplexityLevel,
+    BanditStrategy,
     ProvenanceTrace,
     MythRLResult,
 )
@@ -99,7 +100,7 @@ from .retrieval import (
 # ============================================================================
 
 try:
-    from HoloLoom.Documentation.types import (
+    from HoloLoom.protocols.types import (
         Query, Features, Context, Response, MemoryShard,
         PolicyAction, ActionPlan, ToolCall, ToolResult, Vector
     )
@@ -124,6 +125,7 @@ ToolExecutionProtocol = ToolExecutor
 __all__ = [
     # ===== Core Types =====
     'ComplexityLevel',
+    'BanditStrategy',
     'ProvenanceTrace',
     'MythRLResult',
 

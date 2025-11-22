@@ -1,0 +1,496 @@
+/**
+ * Thread UI Component Styles
+ * Milestone 1: Card-based thread visualization
+ * Date: November 2025
+ *
+ * Styling for conversation thread cards with:
+ * - State-based color coding (inactive, active, background, archived)
+ * - Smooth transitions and animations
+ * - Hover effects
+ * - Responsive layout
+ */
+
+/* ============================================================================
+   Thread List View Container
+   ============================================================================ */
+
+.thread-list-view {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.thread-list-view__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.thread-list-view__header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.thread-list-view__create-btn {
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.thread-list-view__create-btn:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.thread-list-view__create-btn:active {
+    transform: translateY(0);
+}
+
+.thread-list-view__list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.thread-list-view__empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+    font-size: 16px;
+    font-style: italic;
+}
+
+
+/* ============================================================================
+   Thread Card Base
+   ============================================================================ */
+
+.thread-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.thread-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.thread-card:active {
+    transform: translateY(0);
+}
+
+/* Highlight animation */
+.thread-card--highlighted {
+    animation: highlight-pulse 1s ease;
+}
+
+@keyframes highlight-pulse {
+    0%, 100% {
+        background: white;
+    }
+    50% {
+        background: #fff3cd;
+    }
+}
+
+
+/* ============================================================================
+   Thread Card States
+   ============================================================================ */
+
+/* Active state - Blue border and background tint */
+.thread-card--active {
+    border-color: #007bff;
+    background: linear-gradient(135deg, #e3f2fd 0%, white 100%);
+    border-width: 3px;
+}
+
+.thread-card--active:hover {
+    border-color: #0056b3;
+}
+
+/* Background state - Gray border, dimmed */
+.thread-card--background {
+    border-color: #bbb;
+    background: #f8f9fa;
+    opacity: 0.85;
+}
+
+.thread-card--background:hover {
+    opacity: 1;
+    border-color: #999;
+}
+
+/* Inactive state - Light gray */
+.thread-card--inactive {
+    border-color: #ddd;
+    opacity: 0.7;
+}
+
+.thread-card--inactive:hover {
+    opacity: 1;
+    border-color: #bbb;
+}
+
+/* Archived state - Muted green tint */
+.thread-card--archived {
+    border-color: #28a745;
+    background: #f1f9f4;
+    opacity: 0.6;
+}
+
+.thread-card--archived:hover {
+    opacity: 1;
+    border-color: #1e7e34;
+}
+
+
+/* ============================================================================
+   Thread Card Header
+   ============================================================================ */
+
+.thread-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.thread-card__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.thread-card__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-left: 10px;
+}
+
+/* Active badge - Blue */
+.thread-card--active .thread-card__badge {
+    background: #007bff;
+    color: white;
+}
+
+/* Background badge - Gray */
+.thread-card--background .thread-card__badge {
+    background: #6c757d;
+    color: white;
+}
+
+/* Inactive badge - Light gray */
+.thread-card--inactive .thread-card__badge {
+    background: #e0e0e0;
+    color: #666;
+}
+
+/* Archived badge - Green */
+.thread-card--archived .thread-card__badge {
+    background: #28a745;
+    color: white;
+}
+
+
+/* ============================================================================
+   Thread Card Summary
+   ============================================================================ */
+
+.thread-card__summary {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.thread-card--active .thread-card__summary {
+    color: #444;
+}
+
+
+/* ============================================================================
+   Thread Card Footer
+   ============================================================================ */
+
+.thread-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.thread-card__message-count {
+    font-weight: 500;
+}
+
+.thread-card__last-active {
+    font-style: italic;
+}
+
+
+/* ============================================================================
+   Thread Card Actions
+   ============================================================================ */
+
+.thread-card__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.thread-card__btn {
+    padding: 6px 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.thread-card__btn:hover {
+    background: #f8f9fa;
+    border-color: #bbb;
+    color: #333;
+}
+
+.thread-card__btn:active {
+    transform: scale(0.95);
+}
+
+/* Activate button - Blue accent */
+.thread-card__btn--activate {
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.thread-card__btn--activate:hover {
+    background: #007bff;
+    color: white;
+}
+
+/* Archive button - Gray accent */
+.thread-card__btn--archive {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.thread-card__btn--archive:hover {
+    background: #6c757d;
+    color: white;
+}
+
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .thread-list-view {
+        padding: 12px;
+    }
+
+    .thread-list-view__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .thread-list-view__header h2 {
+        font-size: 20px;
+    }
+
+    .thread-card__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .thread-card__title {
+        white-space: normal;
+    }
+
+    .thread-card__badge {
+        margin-left: 0;
+    }
+
+    .thread-card__footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .thread-card__actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .thread-card__btn {
+        flex: 1;
+    }
+}
+
+
+/* ============================================================================
+   Dark Mode Support (Optional)
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+    .thread-list-view {
+        color: #e0e0e0;
+    }
+
+    .thread-list-view__header {
+        border-bottom-color: #444;
+    }
+
+    .thread-list-view__header h2 {
+        color: #e0e0e0;
+    }
+
+    .thread-card {
+        background: #2a2a2a;
+        border-color: #444;
+    }
+
+    .thread-card--active {
+        background: linear-gradient(135deg, #1a3a5a 0%, #2a2a2a 100%);
+        border-color: #4a90e2;
+    }
+
+    .thread-card--background {
+        background: #1a1a1a;
+        border-color: #555;
+    }
+
+    .thread-card--inactive {
+        background: #222;
+        border-color: #333;
+    }
+
+    .thread-card--archived {
+        background: #1a2e1a;
+        border-color: #3a7a3a;
+    }
+
+    .thread-card__title {
+        color: #e0e0e0;
+    }
+
+    .thread-card__summary {
+        color: #aaa;
+    }
+
+    .thread-card--active .thread-card__summary {
+        color: #ccc;
+    }
+
+    .thread-card__footer {
+        border-top-color: #444;
+        color: #888;
+    }
+
+    .thread-card__btn {
+        background: #333;
+        border-color: #555;
+        color: #aaa;
+    }
+
+    .thread-card__btn:hover {
+        background: #444;
+        border-color: #666;
+        color: #e0e0e0;
+    }
+
+    .thread-card__btn--activate {
+        border-color: #4a90e2;
+        color: #4a90e2;
+    }
+
+    .thread-card__btn--activate:hover {
+        background: #4a90e2;
+        color: white;
+    }
+
+    .thread-card__btn--archive {
+        border-color: #888;
+        color: #888;
+    }
+
+    .thread-card__btn--archive:hover {
+        background: #888;
+        color: white;
+    }
+}
+
+
+/* ============================================================================
+   Accessibility
+   ============================================================================ */
+
+.thread-card:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.thread-card__btn:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .thread-card,
+    .thread-card__btn,
+    .thread-list-view__create-btn {
+        transition: none;
+    }
+
+    .thread-card--highlighted {
+        animation: none;
+        background: #fff3cd;
+    }
+}

@@ -189,6 +189,48 @@ class LLMParser:
                 raw_text=text
             )
 
+        # Thread Create: "start a new thread for X"
+        match = re.match(r"(?:start|create|open)\s+(?:a\s+)?(?:new\s+)?thread\s+(?:for|about|on)\s+(.+)", text)
+        if match:
+            return ParsedCommand(
+                command_type="thread_create",
+                action="create",
+                parameters={"thread_topic": match.group(1).strip()},
+                raw_text=text
+            )
+
+        # Thread Switch: "go back to X" / "switch to X"
+        match = re.match(r"(?:go back to|switch to|open|activate)\s+(?:thread\s+)?(.+)", text)
+        if match and "thread" in text.lower():
+            return ParsedCommand(
+                command_type="thread_switch",
+                action="switch",
+                parameters={"thread_name": match.group(1).strip()},
+                raw_text=text
+            )
+
+        # Thread List: "list my threads" / "what threads"
+        if any(phrase in text for phrase in ["list threads", "show threads", "what threads", "my threads"]):
+            return ParsedCommand(
+                command_type="thread_list",
+                action="list",
+                raw_text=text
+            )
+
+        # Thread Summarize: "summarize thread X" / "summarize active thread"
+        match = re.match(r"summarize\s+(?:thread\s+)?(.+)", text)
+        if match:
+            thread_name = match.group(1).strip()
+            # Check for "active" or "current"
+            if thread_name in ["active", "current", "this"]:
+                thread_name = None  # Summarize active thread
+            return ParsedCommand(
+                command_type="thread_summarize",
+                action="summarize",
+                parameters={"thread_name": thread_name},
+                raw_text=text
+            )
+
         # Unknown command
         return ParsedCommand(
             command_type="unknown",

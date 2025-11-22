@@ -30,7 +30,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 
 logger = logging.getLogger(__name__)

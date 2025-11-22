@@ -74,7 +74,7 @@ from HoloLoom.policy.unified import (
 )
 
 # Import types
-from HoloLoom.Documentation.types import Features, Context, ActionPlan
+from HoloLoom.protocols.types import Features, Context, ActionPlan
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 
 logger = logging.getLogger(__name__)

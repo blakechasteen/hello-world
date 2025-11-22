@@ -42,7 +42,7 @@ import time
 import re
 from decimal import Decimal
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,

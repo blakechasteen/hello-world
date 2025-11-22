@@ -30,6 +30,7 @@ from HoloLoom.departments.protocol import (
     PrivacyEnvelope,
     VerificationResult,
     DSStarCheck,
+    DepartmentConfig,
 )
 from HoloLoom.departments.base import BaseDepartment
 
@@ -74,7 +75,16 @@ class RAGDepartment(BaseDepartment):
             enable_reranking: Enable cross-encoder reranking for precision boost
             department_id: Department identifier for registry
         """
-        super().__init__(department_id=department_id)
+        # Initialize base department
+        dept_config = DepartmentConfig(name=department_id, domain="general")
+        super().__init__(
+            name=department_id,
+            domain="general",
+            version="1.0.0",
+            supported_tasks=["question_answering", "document_search", "batch_processing"],
+            confidence_range=(0.7, 0.95),
+            config=dept_config
+        )
 
         self.config = config or Config.fast()
         self.llm_provider = llm_provider
@@ -161,12 +171,12 @@ class RAGDepartment(BaseDepartment):
         start_time = time.time()
 
         # Extract query parameters
-        query_text = request.query.get("query", "")
+        query_text = request.parameters.get("query", "")
         if not query_text:
             raise ValueError("Request must contain 'query' field")
 
-        mode = request.query.get("mode", "verify")
-        max_sources = request.query.get("max_sources", 5)
+        mode = request.parameters.get("mode", "verify")
+        max_sources = request.parameters.get("max_sources", 5)
 
         # Validate query length (approximate token count)
         if len(query_text.split()) > 1000:
@@ -174,10 +184,11 @@ class RAGDepartment(BaseDepartment):
 
         logger.info(f"Executing RAG query: {query_text[:50]}... (mode={mode})")
 
-        # Privacy check
-        if request.privacy_envelope:
-            if request.privacy_envelope.privacy_level.value > 2:  # RESTRICTED or higher
-                logger.warning(f"High privacy level: {request.privacy_envelope.privacy_level}")
+        # Privacy check (optional attribute)
+        privacy_envelope = getattr(request, 'privacy_envelope', None)
+        if privacy_envelope:
+            if privacy_envelope.privacy_level.value > 2:  # RESTRICTED or higher
+                logger.warning(f"High privacy level: {privacy_envelope.privacy_level}")
                 # Could implement differential privacy here
 
         # Execute RAG query
@@ -209,8 +220,8 @@ class RAGDepartment(BaseDepartment):
 
             # Create response
             response = DepartmentResponse(
-                department_id=self.department_id,
-                request_id=request.request_id,
+                department_id=self.name,  # BaseDepartment stores as self.name
+                request_id=request.task_id,  # DepartmentRequest uses task_id
                 response={
                     "answer": rag_result.response,
                     "sources": rag_result.sources,
@@ -244,8 +255,8 @@ class RAGDepartment(BaseDepartment):
             )
 
             return DepartmentResponse(
-                department_id=self.department_id,
-                request_id=request.request_id,
+                department_id=self.name,  # BaseDepartment stores as self.name
+                request_id=request.task_id,  # DepartmentRequest uses task_id
                 response={
                     "answer": f"Unable to process query: {str(e)}",
                     "sources": [],
@@ -584,7 +595,7 @@ class RAGDepartment(BaseDepartment):
             "confidence_stats": confidence_stats,
             "query_patterns": self._query_patterns,
             "refinement_stats": refinement_stats,
-            "department_metrics": await super().get_metrics(),
+            "department_metrics": self._metrics,  # Direct access to BaseDepartment metrics
         }
 
     async def health_check(self) -> bool:

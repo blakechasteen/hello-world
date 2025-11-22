@@ -32,7 +32,7 @@ from pathlib import Path
 
 # HoloLoom imports
 try:
-    from HoloLoom.Documentation.types import Query, Context, Features, MemoryShard
+    from HoloLoom.protocols.types import Query, Context, Features, MemoryShard
     from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
     from HoloLoom.memory.graph import KG
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator

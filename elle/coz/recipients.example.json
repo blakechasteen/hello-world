@@ -1,0 +1,15 @@
+{
+  "managers": [
+    "manager1@example.com",
+    "manager2@example.com"
+  ],
+  "team_leads": [
+    "lead1@example.com"
+  ],
+  "executives": [
+    "ceo@example.com"
+  ],
+  "all": [
+    "stakeholder@example.com"
+  ]
+}

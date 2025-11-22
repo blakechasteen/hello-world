@@ -23,7 +23,7 @@ from typing import List, Dict
 # Core imports
 from HoloLoom.config import Config
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 
 # Test utilities
 def create_test_shards() -> List[MemoryShard]:

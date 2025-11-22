@@ -28,7 +28,7 @@ import numpy as np
 import networkx as nx
 import warnings
 
-from HoloLoom.Documentation.types import Vector
+from HoloLoom.protocols.types import Vector
 
 try:
     from scipy.sparse import csr_matrix

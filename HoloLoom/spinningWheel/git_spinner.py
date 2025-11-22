@@ -27,7 +27,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import time
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinnerCapabilities,

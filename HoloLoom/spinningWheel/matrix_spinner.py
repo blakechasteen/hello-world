@@ -46,7 +46,7 @@ try:
 except ImportError:
     MATRIX_AVAILABLE = False
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,

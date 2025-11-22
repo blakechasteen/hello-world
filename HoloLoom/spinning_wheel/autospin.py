@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 
 try:
-    from HoloLoom.Documentation.types import Query, MemoryShard
+    from HoloLoom.protocols.types import Query, MemoryShard
     from HoloLoom.config import Config
     from HoloLoom.orchestrator import HoloLoomOrchestrator
     from HoloLoom.spinning_wheel import TextSpinner, TextSpinnerConfig

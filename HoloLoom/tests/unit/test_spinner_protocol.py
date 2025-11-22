@@ -19,7 +19,7 @@ import time
 from pathlib import Path
 from typing import List, Any, AsyncIterator
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.spinningWheel.protocol import (
     SpinnerStatus,
     SpinnerCapabilities,

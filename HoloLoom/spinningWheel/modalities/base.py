@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any
 from dataclasses import dataclass
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 
 @dataclass

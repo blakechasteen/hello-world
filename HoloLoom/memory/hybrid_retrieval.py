@@ -28,7 +28,7 @@ import math
 import re
 from collections import Counter
 
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.memory.graph import KG
 
 logger = logging.getLogger(__name__)

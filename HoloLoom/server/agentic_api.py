@@ -16,6 +16,7 @@ Usage:
 
 import asyncio
 import logging
+import threading
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from collections import defaultdict, deque
@@ -32,7 +33,7 @@ from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode, Agentic
 # from HoloLoom.agentic.ai_slop_detector import AISlopDetector
 from HoloLoom.agentic.ml_logic_detector import MLLogicDetector, Language as CodeLanguage
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.alignment.audit_trail import AuditTrail
 
 
@@ -62,6 +63,7 @@ class RateLimiter:
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.requests: Dict[str, deque] = defaultdict(deque)
+        self.lock = threading.Lock()  # Thread-safe access
 
     async def check_rate_limit(self, client_id: str) -> bool:
         """
@@ -73,20 +75,21 @@ class RateLimiter:
         Returns:
             True if within limit, False if exceeded
         """
-        now = time()
-        cutoff = now - self.window_seconds
+        with self.lock:  # Thread-safe critical section
+            now = time()
+            cutoff = now - self.window_seconds
 
-        # Remove old requests outside window
-        while self.requests[client_id] and self.requests[client_id][0] < cutoff:
-            self.requests[client_id].popleft()
+            # Remove old requests outside window
+            while self.requests[client_id] and self.requests[client_id][0] < cutoff:
+                self.requests[client_id].popleft()
 
-        # Check if limit exceeded
-        if len(self.requests[client_id]) >= self.max_requests:
-            return False
+            # Check if limit exceeded
+            if len(self.requests[client_id]) >= self.max_requests:
+                return False
 
-        # Record this request
-        self.requests[client_id].append(now)
-        return True
+            # Record this request
+            self.requests[client_id].append(now)
+            return True
 
     def get_remaining(self, client_id: str) -> int:
         """Get remaining requests for client."""
@@ -634,12 +637,7 @@ async def query_endpoint(request: QueryRequest):
         # Return error with retry suggestion
         raise HTTPException(
             status_code=500,
-            detail={
-                "error": str(e),
-                "type": type(e).__name__,
-                "message": "Internal server error. Please try again.",
-                "retry_suggested": True
-            }
+            detail=f"Internal server error: {str(e)}. Please try again."
         )
 
 

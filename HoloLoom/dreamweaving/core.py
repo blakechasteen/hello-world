@@ -24,7 +24,7 @@ import json
 from datetime import datetime
 
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.memory.graph import KG, KGEdge
 

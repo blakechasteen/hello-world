@@ -32,7 +32,7 @@ from HoloLoom.recursive.scratchpad_integration import (
     ScratchpadConfig
 )
 from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.config import Config
 
 # Scratchpad components (standalone, was from Promptly)
@@ -634,7 +634,7 @@ if __name__ == "__main__":
     print("""
 from HoloLoom.recursive import LearningLoopEngine, LearningLoopConfig
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 
 config = Config.fast()
 loop_config = LearningLoopConfig(

@@ -48,7 +48,7 @@ import json
 
 # Type imports
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.fabric.spacetime import Spacetime
 
 # Optional DSPy import with graceful degradation

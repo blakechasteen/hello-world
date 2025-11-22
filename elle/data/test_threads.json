@@ -1,0 +1,47 @@
+{
+  "threads": {
+    "0027b2de-259a-47a2-8489-b9d5a0ee46bf": {
+      "id": "0027b2de-259a-47a2-8489-b9d5a0ee46bf",
+      "name": "Baking Bread",
+      "topic": "Discussing sourdough bread recipes",
+      "messages": [
+        {
+          "id": "90d6fa8f-5f01-423c-abe5-78fb1dd60768",
+          "role": "user",
+          "content": "How long should I proof sourdough?",
+          "timestamp": "2025-11-22T04:51:45.121876",
+          "metadata": {}
+        },
+        {
+          "id": "94f49af4-53dc-4acd-942d-891169b9444a",
+          "role": "assistant",
+          "content": "Bulk fermentation: 4-6 hours. Final proof: 2-4 hours.",
+          "timestamp": "2025-11-22T04:51:45.123395",
+          "metadata": {}
+        }
+      ],
+      "created_at": "2025-11-22T04:50:46.531383",
+      "updated_at": "2025-11-22T04:51:45.123395",
+      "metadata": {}
+    },
+    "9c0d7bcf-75f4-4767-8ef8-bcaf4d0939ef": {
+      "id": "9c0d7bcf-75f4-4767-8ef8-bcaf4d0939ef",
+      "name": "Baking Bread",
+      "topic": "Discussing sourdough bread recipes",
+      "messages": [],
+      "created_at": "2025-11-22T04:51:45.116841",
+      "updated_at": "2025-11-22T04:51:45.116841",
+      "metadata": {}
+    },
+    "1e13bd90-2c6c-4fa9-a515-492bc944fa26": {
+      "id": "1e13bd90-2c6c-4fa9-a515-492bc944fa26",
+      "name": "Biochar",
+      "topic": "Learning about biochar production",
+      "messages": [],
+      "created_at": "2025-11-22T04:51:45.117841",
+      "updated_at": "2025-11-22T04:51:45.117841",
+      "metadata": {}
+    }
+  },
+  "active_thread_id": "1e13bd90-2c6c-4fa9-a515-492bc944fa26"
+}

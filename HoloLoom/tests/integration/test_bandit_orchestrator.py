@@ -19,7 +19,7 @@ from HoloLoom.weaving_orchestrator_bandit import (
     create_bandit_orchestrator,
 )
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 
 
 # ============================================================================

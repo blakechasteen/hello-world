@@ -19,7 +19,7 @@ from HoloLoom.agents.working_memory_mcts import MCTSWorkingMemory
 from HoloLoom.agents.learner_mcts import MCTSLearner
 from HoloLoom.agents.types import AgentProfile, AgentStats
 from HoloLoom.memory.graph import KG
-from HoloLoom.Documentation.types import Query
+from HoloLoom.protocols.types import Query
 from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.config import Config
 

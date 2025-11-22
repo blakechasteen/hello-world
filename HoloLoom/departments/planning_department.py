@@ -27,6 +27,7 @@ from HoloLoom.departments.protocol import (
     ConfidenceMetadata,
     VerificationResult,
     DSStarCheck,
+    DepartmentConfig,
 )
 from HoloLoom.departments.base import BaseDepartment
 
@@ -106,7 +107,23 @@ class PlanningDepartment(BaseDepartment):
         Args:
             department_id: Department identifier for registry
         """
-        super().__init__(department_id=department_id)
+        # Create department config
+        config = DepartmentConfig(
+            name=department_id,
+            domain="general",
+        )
+
+        super().__init__(
+            name=department_id,
+            domain="general",
+            version="1.0.0",
+            supported_tasks=["goal_decomposition", "dependency_detection", "plan_validation", "plan_optimization"],
+            confidence_range=(0.6, 0.95),
+            config=config,
+        )
+
+        # Store department_id for backward compatibility
+        self.department_id = department_id
 
         # Learning statistics
         self._plan_history: List[Plan] = []
@@ -406,16 +423,17 @@ class PlanningDepartment(BaseDepartment):
         # (In production, would actually re-run optimization with different parameters)
         # For now, just increase confidence slightly to simulate improvement
 
+        original_confidence = response.confidence.score
         refined_confidence = min(response.confidence.score + 0.1, 1.0)
 
         response.confidence.score = refined_confidence
         response.metadata["refinement"] = {
-            "original_confidence": response.confidence.score,
+            "original_confidence": original_confidence,
             "improvement": 0.1,
             "strategy": "re-optimization",
         }
 
-        logger.info(f"✓ Refinement complete: {response.confidence.score:.2f} → {refined_confidence:.2f}")
+        logger.info(f"✓ Refinement complete: {original_confidence:.2f} → {refined_confidence:.2f}")
 
         return response
 
@@ -509,7 +527,6 @@ class PlanningDepartment(BaseDepartment):
             "plan_stats": plan_stats,
             "optimization_stats": self._optimization_stats,
             "decomposition_patterns": self._decomposition_patterns,
-            "department_metrics": await super().get_metrics(),
         }
 
     async def health_check(self) -> bool:

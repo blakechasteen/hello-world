@@ -32,7 +32,7 @@ from pydantic import BaseModel, Field
 
 from HoloLoom.agentic import WebResearchOrchestrator, ReasoningMode
 from HoloLoom.config import Config
-from HoloLoom.Documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.alignment.audit_trail import AuditTrail
 
 

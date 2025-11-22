@@ -15,21 +15,19 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from HoloLoom.integrations.langchain import UniversalDocumentLoader, load_documents
-
-
 def demo_basic_loading():
     """Demo basic document loading."""
     print("\n" + "="*60)
     print("Demo 1: Basic Document Loading")
     print("="*60 + "\n")
 
-    loader = UniversalDocumentLoader()
-
     # Example 1: Text file (if exists)
     print("1️⃣  Text File Loading")
     print("   Status: Would load .txt, .md files")
-    print("   Usage: loader.load('document.txt')\n")
+    print("   Usage:")
+    print("   from HoloLoom.integrations.langchain import UniversalDocumentLoader")
+    print("   loader = UniversalDocumentLoader()")
+    print("   shards = loader.load('document.txt')\n")
 
     # Example 2: PDF (if exists)
     print("2️⃣  PDF Loading")

@@ -23,7 +23,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 # Import shared types from the canonical location
-from HoloLoom.Documentation.types import Query, Features, Vector, Motif
+from HoloLoom.protocols.types import Query, Features, Vector, Motif
 
 # Import canonical protocols
 from HoloLoom.protocols import MotifDetector as CanonicalMotifDetector
