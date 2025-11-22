@@ -99,23 +99,25 @@ class UnifiedMemory:
         enable_neo4j: bool = True,
         enable_qdrant: bool = True,
         enable_hofstadter: bool = True,
-        backend: Optional[Any] = None
+        backend: Optional[Any] = None,
+        enable_conductor: bool = True
     ):
         """
         Initialize unified memory system.
-        
+
         Args:
             user_id: User identifier for personalization
             enable_*: Feature flags for each subsystem
             backend: Optional explicit backend store (dependency injection)
+            enable_conductor: Enable Memory Conductor for intelligent multi-system coordination
         """
         self.user_id = user_id
-        
+
         if backend:
             # Use injected backend
             self._backend = backend
             self._backend_available = True
-            
+
             # Import protocol types needed for operation
             try:
                 from .protocol import Memory as ProtocolMemory, MemoryQuery, Strategy as ProtocolStrategy
@@ -134,6 +136,27 @@ class UnifiedMemory:
                 enable_qdrant,
                 enable_hofstadter
             )
+
+        # Initialize Memory Conductor for intelligent strategy selection
+        self._conductor = None
+        self._conductor_available = False
+        if enable_conductor and self._backend_available and self._backend:
+            try:
+                from ..memory_symphony import MemoryConductor, MemoryStrategy as MS
+                self._conductor = MemoryConductor(
+                    memory_backend=self._backend,
+                    enable_cache=True,
+                    enable_hot_patterns=True,
+                    enable_awareness=True,
+                    enable_spring_dynamics=False,  # Optional advanced feature
+                    enable_multi_wave=False,       # Optional advanced feature
+                    default_strategy=MS.AUTO,
+                    verbose=False
+                )
+                self._conductor_available = True
+            except (ImportError, Exception):
+                # Graceful fallback - conductor optional
+                pass
     
     def _init_subsystems(self, *flags):
         """Initialize backend systems (internal)."""
@@ -240,17 +263,21 @@ class UnifiedMemory:
     ) -> List[Memory]:
         """
         Recall relevant memories.
-        
+
+        Now powered by Memory Conductor for intelligent multi-system coordination!
+        Automatically routes queries through Vector Memory, Knowledge Graph, Cache,
+        Hot Patterns, Awareness Graph, and optionally Spring Dynamics and Multi-Wave Engine.
+
         Args:
             query: What are you looking for?
             strategy: How to search (recent/similar/connected/resonant/balanced)
             limit: Max number of memories
             time_range: Optional (start, end) timestamps
             context_filter: Optional filters (place, people, topics)
-        
+
         Returns:
             List of Memory objects, sorted by relevance
-        
+
         Example:
             # Find similar memories
             memories = memory.recall(
@@ -258,7 +285,7 @@ class UnifiedMemory:
                 strategy=RecallStrategy.SIMILAR,
                 limit=3
             )
-            
+
             # Find recent memories at apiary
             memories = memory.recall(
                 "hive status",
@@ -266,7 +293,39 @@ class UnifiedMemory:
                 context_filter={'place': 'apiary'}
             )
         """
-        # Strategy dispatch:
+        # Route through Memory Conductor if available
+        if self._conductor_available and self._conductor:
+            import asyncio
+            try:
+                from ..memory_symphony import MemoryQuery
+
+                # Map user-facing RecallStrategy to MemoryStrategy
+                mem_strategy = self._map_strategy(strategy)
+
+                # Create conductor query
+                mem_query = MemoryQuery(
+                    text=query,
+                    k=limit,
+                    strategy=mem_strategy,
+                    min_relevance=0.0,
+                    include_metadata=True,
+                    enable_spreading=True,
+                    max_hops=3
+                )
+
+                # Execute through conductor
+                coordination_result = asyncio.run(self._conductor.recall(mem_query))
+
+                # Convert results
+                memories = asyncio.run(self._convert_results(coordination_result))
+
+                return memories
+
+            except Exception:
+                # Graceful fallback to original implementation
+                pass
+
+        # Fallback: Original strategy dispatch
         if strategy == RecallStrategy.RECENT:
             return self._recall_temporal(query, limit, time_range)
         elif strategy == RecallStrategy.SIMILAR:
@@ -429,9 +488,70 @@ class UnifiedMemory:
         }
     
     # ========================================================================
+    # Conductor Integration Helpers
+    # ========================================================================
+
+    def _map_strategy(self, recall_strategy: RecallStrategy):
+        """
+        Map RecallStrategy (user-facing) to MemoryStrategy (conductor).
+
+        Mapping:
+        - RECENT → FAST (temporal queries are simple)
+        - SIMILAR → FAST (vector-only semantic search)
+        - CONNECTED → BALANCED (needs graph traversal)
+        - RESONANT → DEEP (complex pattern matching)
+        - BALANCED → AUTO (let conductor decide)
+        """
+        try:
+            from ..memory_symphony import MemoryStrategy as MS
+        except ImportError:
+            return None
+
+        mapping = {
+            RecallStrategy.RECENT: MS.FAST,
+            RecallStrategy.SIMILAR: MS.FAST,
+            RecallStrategy.CONNECTED: MS.BALANCED,
+            RecallStrategy.RESONANT: MS.DEEP,
+            RecallStrategy.BALANCED: MS.AUTO
+        }
+
+        return mapping.get(recall_strategy, MS.AUTO)
+
+    async def _convert_results(self, coordination_result) -> List[Memory]:
+        """
+        Convert MemoryCoordinationResult → List[Memory].
+
+        Args:
+            coordination_result: MemoryCoordinationResult from conductor
+
+        Returns:
+            List of Memory objects (user-facing)
+        """
+        from datetime import datetime
+
+        memories = []
+        for result in coordination_result.results:
+            # Convert MemoryResult to Memory
+            memory = Memory(
+                id=result.node_id,
+                text=result.content,
+                timestamp=datetime.now().isoformat(),  # Placeholder - would use actual timestamp
+                context={
+                    'source_system': result.source_system.value,
+                    'activation': result.activation,
+                    'heat': result.heat,
+                    **result.metadata
+                },
+                relevance=result.relevance
+            )
+            memories.append(memory)
+
+        return memories
+
+    # ========================================================================
     # Internal Strategy Implementations (Hidden from User)
     # ========================================================================
-    
+
     def _recall_temporal(self, query, limit, time_range) -> List[Memory]:
         """Temporal strategy: Neo4j time threads."""
         # v1.0.1: Use in-memory store with temporal sorting
