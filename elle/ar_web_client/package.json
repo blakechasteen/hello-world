@@ -22,7 +22,9 @@
     "@tensorflow/tfjs-backend-webgl": "^4.15.0",
     "@tensorflow-models/coco-ssd": "^2.2.3",
     "@mediapipe/hands": "^0.4.1675469240",
-    "@mediapipe/camera_utils": "^0.3.1675465747"
+    "@mediapipe/camera_utils": "^0.3.1675465747",
+    "onnxruntime-web": "^1.16.3",
+    "jsqr": "^1.4.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",

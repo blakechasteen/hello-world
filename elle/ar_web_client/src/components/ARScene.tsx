@@ -22,14 +22,21 @@ import ARPath from './ARPath'
 import {
   getObjectDetectionService,
   getHandTrackingService,
+  getDepthEstimationService,
+  getMarkerDetectionService,
+  createDefaultCameraCalibration,
   type DetectedObject,
   type HandPose,
+  type DepthMap,
+  type Marker,
 } from '../services'
 
 interface ARSceneProps {
   visualizations: any[]
   onContextUpdate: (context: any) => void
   enableVision?: boolean // Enable vision processing (default: true)
+  enableDepth?: boolean // Enable depth estimation (default: false)
+  enableMarkers?: boolean // Enable marker detection (default: false)
   visionUpdateInterval?: number // Vision update interval in ms (default: 100)
 }
 
@@ -37,6 +44,8 @@ export default function ARScene({
   visualizations,
   onContextUpdate,
   enableVision = true,
+  enableDepth = false,
+  enableMarkers = false,
   visionUpdateInterval = 100,
 }: ARSceneProps) {
   const { camera, gl } = useThree()
@@ -46,11 +55,15 @@ export default function ARScene({
   // Vision state
   const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([])
   const [handPoses, setHandPoses] = useState<HandPose[]>([])
+  const [depthMap, setDepthMap] = useState<DepthMap | null>(null)
+  const [markers, setMarkers] = useState<Marker[]>([])
   const [visionInitialized, setVisionInitialized] = useState(false)
 
   // Vision services
   const objectDetectionService = useRef(getObjectDetectionService())
   const handTrackingService = useRef(getHandTrackingService())
+  const depthEstimationService = useRef(getDepthEstimationService())
+  const markerDetectionService = useRef(getMarkerDetectionService())
 
   // Canvas for camera feed processing
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -71,19 +84,48 @@ export default function ARScene({
 
   // Initialize vision services
   useEffect(() => {
-    if (!enableVision) return
+    if (!enableVision && !enableDepth && !enableMarkers) return
 
     const initVision = async () => {
       try {
+        let initialized = true
+
         // Initialize object detection
-        const objDetInit = await objectDetectionService.current.initialize()
-        console.log('Object detection initialized:', objDetInit)
+        if (enableVision) {
+          const objDetInit = await objectDetectionService.current.initialize()
+          console.log('Object detection initialized:', objDetInit)
+          initialized = initialized && objDetInit
 
-        // Initialize hand tracking
-        const handInit = await handTrackingService.current.initialize()
-        console.log('Hand tracking initialized:', handInit)
+          // Initialize hand tracking
+          const handInit = await handTrackingService.current.initialize()
+          console.log('Hand tracking initialized:', handInit)
+          initialized = initialized && handInit
+        }
 
-        setVisionInitialized(objDetInit && handInit)
+        // Initialize depth estimation
+        if (enableDepth) {
+          const depthInit = await depthEstimationService.current.initialize()
+          console.log('Depth estimation initialized:', depthInit)
+          initialized = initialized && depthInit
+        }
+
+        // Initialize marker detection
+        if (enableMarkers) {
+          const markerInit = await markerDetectionService.current.initialize()
+          console.log('Marker detection initialized:', markerInit)
+          initialized = initialized && markerInit
+
+          // Set camera calibration for pose estimation
+          if (gl.domElement) {
+            const calibration = createDefaultCameraCalibration(
+              gl.domElement.width,
+              gl.domElement.height
+            )
+            markerDetectionService.current.setCameraCalibration(calibration)
+          }
+        }
+
+        setVisionInitialized(initialized)
       } catch (error) {
         console.error('Failed to initialize vision services:', error)
         setVisionInitialized(false)
@@ -94,14 +136,22 @@ export default function ARScene({
 
     // Cleanup
     return () => {
-      objectDetectionService.current.cleanup()
-      handTrackingService.current.cleanup()
+      if (enableVision) {
+        objectDetectionService.current.cleanup()
+        handTrackingService.current.cleanup()
+      }
+      if (enableDepth) {
+        depthEstimationService.current.cleanup()
+      }
+      if (enableMarkers) {
+        markerDetectionService.current.cleanup()
+      }
     }
-  }, [enableVision])
+  }, [enableVision, enableDepth, enableMarkers, gl])
 
   // Create canvas for camera feed processing
   useEffect(() => {
-    if (!enableVision || !visionInitialized) return
+    if ((!enableVision && !enableDepth && !enableMarkers) || !visionInitialized) return
 
     // Create off-screen canvas
     const canvas = document.createElement('canvas')
@@ -110,7 +160,7 @@ export default function ARScene({
     canvasRef.current = canvas
 
     console.log('Vision canvas created')
-  }, [enableVision, visionInitialized])
+  }, [enableVision, enableDepth, enableMarkers, visionInitialized])
 
   // Update AR context every frame (with vision processing)
   useFrame(async () => {
@@ -124,7 +174,7 @@ export default function ARScene({
     // Process vision data (throttled)
     const now = performance.now()
     if (
-      enableVision &&
+      (enableVision || enableDepth || enableMarkers) &&
       visionInitialized &&
       canvasRef.current &&
       now - lastVisionUpdate.current > visionUpdateInterval
@@ -140,16 +190,32 @@ export default function ARScene({
           ctx.drawImage(gl.domElement, 0, 0, canvas.width, canvas.height)
 
           // Run object detection
-          const objects = await objectDetectionService.current.detectObjects(
-            canvas,
-            20, // maxDetections
-            0.5 // minConfidence
-          )
-          setDetectedObjects(objects)
+          if (enableVision) {
+            const objects = await objectDetectionService.current.detectObjects(
+              canvas,
+              20, // maxDetections
+              0.5 // minConfidence
+            )
+            setDetectedObjects(objects)
 
-          // Run hand tracking
-          const hands = await handTrackingService.current.processFrame(canvas)
-          setHandPoses(hands)
+            // Run hand tracking
+            const hands = await handTrackingService.current.processFrame(canvas)
+            setHandPoses(hands)
+          }
+
+          // Run depth estimation
+          if (enableDepth) {
+            const depth = await depthEstimationService.current.estimateDepth(canvas)
+            setDepthMap(depth)
+          }
+
+          // Run marker detection
+          if (enableMarkers) {
+            const detectedMarkers = await markerDetectionService.current.detectMarkers(
+              canvas
+            )
+            setMarkers(detectedMarkers)
+          }
         }
       } catch (error) {
         console.error('Vision processing error:', error)
@@ -179,6 +245,16 @@ export default function ARScene({
         handId: hand.handId,
         gesture: hand.gesture,
         confidence: hand.confidence,
+      })),
+      depthAvailable: depthMap !== null,
+      depthRange: depthMap
+        ? { min: depthMap.minDepth, max: depthMap.maxDepth }
+        : undefined,
+      markers: markers.map((marker) => ({
+        id: marker.id,
+        type: marker.markerType,
+        position: marker.position,
+        rotation: marker.rotation,
       })),
       sessionId: session.mode || 'unknown',
       platform: 'webxr',
@@ -244,6 +320,50 @@ export default function ARScene({
               size: 1.0,
             }}
           />
+        ))}
+
+      {/* Render detected markers */}
+      {enableMarkers &&
+        markers.map((marker) => (
+          <group key={marker.id}>
+            {/* Marker label */}
+            <AROverlay
+              id={`marker_${marker.id}`}
+              content={`${marker.markerType.toUpperCase()}: ${marker.id.substring(0, 10)}`}
+              position={
+                marker.position
+                  ? {
+                      x: marker.position[0],
+                      y: marker.position[1] + 0.1,
+                      z: marker.position[2],
+                    }
+                  : {
+                      x: (marker.center[0] / 640 - 0.5) * 2,
+                      y: 1.0,
+                      z: -1.5,
+                    }
+              }
+              style={{
+                color: '#ff00ff',
+                opacity: 0.9,
+                size: 0.7,
+              }}
+            />
+
+            {/* Marker visualization (cube at marker position if pose available) */}
+            {marker.position && (
+              <mesh
+                position={[
+                  marker.position[0],
+                  marker.position[1],
+                  marker.position[2],
+                ]}
+              >
+                <boxGeometry args={[0.05, 0.05, 0.05]} />
+                <meshStandardMaterial color="#ff00ff" opacity={0.7} transparent />
+              </mesh>
+            )}
+          </group>
         ))}
 
       {/* Render visualizations from Elle */}
