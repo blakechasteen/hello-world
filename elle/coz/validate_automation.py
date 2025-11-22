@@ -201,7 +201,9 @@ def validate_action_items(brief: dict) -> bool:
     else:
         print(f"  [OK] Generated {len(action_items)} action items")
         for i, item in enumerate(action_items[:3], 1):
-            print(f"     {i}. {item[:80]}...")
+            # Strip emoji and non-ASCII characters for console compatibility
+            safe_item = item.encode('ascii', errors='ignore').decode('ascii')
+            print(f"     {i}. {safe_item[:80]}...")
 
     return True
 
