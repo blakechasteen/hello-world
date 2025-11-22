@@ -196,8 +196,8 @@ class AutoFixer:
 
         # Calculate quality improvement
         quality_improvement = (
-            findings_after.quality_metrics.total_score -
-            findings_before.quality_metrics.total_score
+            findings_after.quality_metrics.overall_score() -
+            findings_before.quality_metrics.overall_score()
         )
 
         return FixResult(
@@ -245,8 +245,15 @@ class AutoFixer:
             suggestion = finding.suggestion
 
             # Extract replacement from suggestion
-            # Format: "Replace with: 'plain language'"
-            match = re.search(r"Replace with: ['\"](.+?)['\"]", suggestion)
+            # Format: "Replace with 'plain language'" or "Replace with: 'plain language'"
+            match = re.search(r"Replace with:? ['\"](.+?)['\"]", suggestion)
+            if not match:
+                # Try alternative format: "Use 'plain language'"
+                match = re.search(r"[Uu]se ['\"](.+?)['\"]", suggestion)
+            if not match:
+                # Try alternative format: "Say 'plain language'"
+                match = re.search(r"[Ss]ay ['\"](.+?)['\"]", suggestion)
+
             if not match:
                 failed += 1
                 continue

@@ -76,10 +76,10 @@ class TestJargonFixer:
         # Should fix multiple instances
         assert result.fixes_applied >= 2
         # Jargon should be reduced
-        jargon_count_before = len(result.findings_before.get_findings_by_category(
+        jargon_count_before = len(result.findings_before.findings_by_category(
             FindingCategory.CORPORATE_JARGON
         ))
-        jargon_count_after = len(result.findings_after.get_findings_by_category(
+        jargon_count_after = len(result.findings_after.findings_by_category(
             FindingCategory.CORPORATE_JARGON
         ))
         assert jargon_count_after < jargon_count_before
@@ -221,7 +221,7 @@ class TestPassiveVoiceFixer:
         result = fixer.fix(text, categories=[FindingCategory.PASSIVE_VOICE])
 
         # Passive voice should be detected
-        passive_findings = result.findings_before.get_findings_by_category(
+        passive_findings = result.findings_before.findings_by_category(
             FindingCategory.PASSIVE_VOICE
         )
         assert len(passive_findings) > 0
@@ -275,8 +275,8 @@ class TestFullPipeline:
         result = fixer.fix(text)
 
         # Quality should improve (fewer issues = higher score)
-        score_before = result.findings_before.quality_metrics.total_score
-        score_after = result.findings_after.quality_metrics.total_score
+        score_before = result.findings_before.quality_metrics.overall_score()
+        score_after = result.findings_after.quality_metrics.overall_score()
 
         assert score_after >= score_before
         assert result.quality_improvement == score_after - score_before

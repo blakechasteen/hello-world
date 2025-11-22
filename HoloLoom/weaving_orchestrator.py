@@ -90,6 +90,12 @@ from HoloLoom.orchestrator.core import (
     spawn_background_task,
 )
 
+# Retrieval Functions (Elegance Pass: Extracted to orchestrator/retrieval/ - November 2025 Phase 6)
+from HoloLoom.orchestrator.retrieval import (
+    multipass_memory_crawl,
+    query_memory_backend,
+)
+
 # Production Hardening (Part 5: Days 21-25)
 try:
     from HoloLoom.context import (
@@ -1195,7 +1201,7 @@ class WeavingOrchestrator:
                 # Use multipass memory crawling for intelligent retrieval
                 if self.memory:
                     # NEW: Multipass crawling with gated retrieval and graph traversal
-                    shards = await self._multipass_memory_crawl(query, complexity, provenance)
+                    shards = await multipass_memory_crawl(self, query, complexity, provenance)
                     shard_texts = [shard.text for shard in shards]
                     # Create hits format for compatibility
                     hits = [(shard, 1.0) for shard in shards]
