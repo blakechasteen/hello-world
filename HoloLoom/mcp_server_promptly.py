@@ -15,6 +15,7 @@ Features:
 - Recursive weaving with strategy selection
 - Memory operations (experience, recall, reflect)
 - Analytics (summaries, trends, recommendations)
+- Prompt refinement (7-component metaprompt framework)
 - Complete reasoning provenance
 
 Usage:
@@ -66,6 +67,7 @@ from HoloLoom.agentic.skill_agents import (
     SkillExecutor,
     list_available_skills
 )
+from HoloLoom.prompting.metaprompt import create_metaprompt_auto, enhance_request
 
 # Initialize logging
 logging.basicConfig(
@@ -187,6 +189,33 @@ async def list_tools() -> List[Tool]:
                 "type": "object",
                 "properties": {},
                 "required": []
+            }
+        ),
+        Tool(
+            name="refine_prompt",
+            description="Refine a casual prompt into a structured, high-quality prompt using the 7-component metaprompt framework (ROLE, OBJECTIVE, PROCESS, FORMAT, CONSTRAINTS, UNCERTAINTY, VALIDATION) with model-specific optimizations.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "prompt": {
+                        "type": "string",
+                        "description": "Casual prompt to refine (e.g., 'write a Python function', 'help me prepare for meeting')"
+                    },
+                    "provider": {
+                        "type": "string",
+                        "enum": ["anthropic", "google", "openai", "auto"],
+                        "description": "LLM provider for model-specific optimizations. 'anthropic' adds Claude thinking tags (+30% quality), 'google' adds Gemini multimodal (+25%), 'openai' adds GPT structured outputs (+20%). Default: auto (uses current config)"
+                    },
+                    "apply_strategy": {
+                        "type": "boolean",
+                        "description": "Auto-detect and apply prompting strategy (verify, critique, decompose, etc.) if confidence > threshold. Default: true"
+                    },
+                    "confidence_threshold": {
+                        "type": "number",
+                        "description": "Minimum confidence (0.0-1.0) to apply auto-detected strategy. Default: 0.7"
+                    }
+                },
+                "required": ["prompt"]
             }
         ),
     ])
@@ -396,6 +425,8 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             return await handle_weave(arguments)
         elif name == "hololoom_analytics_summary":
             return await handle_analytics_summary(arguments)
+        elif name == "refine_prompt":
+            return await handle_refine_prompt(arguments)
 
         # Professional skill tools
         elif name.startswith("skill_"):
@@ -537,6 +568,94 @@ async def handle_analytics_summary(args: Dict[str, Any]) -> List[TextContent]:
         return [TextContent(
             type="text",
             text=json.dumps(summary, indent=2)
+        )]
+
+
+async def handle_refine_prompt(args: Dict[str, Any]) -> List[TextContent]:
+    """
+    Handle refine_prompt tool.
+
+    Transforms casual prompts into structured 7-component metaprompts with
+    model-specific optimizations (thinking tags for Claude, multimodal for Gemini, etc.).
+    """
+    # Extract parameters
+    prompt = args["prompt"]
+    provider = args.get("provider", "auto")
+    apply_strategy = args.get("apply_strategy", True)
+    confidence_threshold = args.get("confidence_threshold", 0.7)
+
+    try:
+        # Determine provider
+        if provider == "auto":
+            # Use config's provider or default to anthropic
+            provider_to_use = config.llm_provider if hasattr(config, 'llm_provider') and config.llm_provider else "anthropic"
+        else:
+            provider_to_use = provider
+
+        # Create temporary config with specified provider
+        temp_config = Config.fast()
+        temp_config.llm_provider = provider_to_use
+
+        # Refine prompt
+        if apply_strategy:
+            # Use auto-detection with strategy
+            refined = create_metaprompt_auto(
+                request=prompt,
+                config=temp_config,
+                confidence_threshold=confidence_threshold
+            )
+
+            logger.info(
+                f"Refined prompt with strategy auto-detection "
+                f"(provider: {provider_to_use}, threshold: {confidence_threshold})"
+            )
+        else:
+            # Simple refinement without strategy
+            refined = enhance_request(prompt, provider=provider_to_use)
+
+            logger.info(f"Refined prompt without strategy (provider: {provider_to_use})")
+
+        # Build result with metadata
+        result = {
+            "status": "success",
+            "original_prompt": prompt[:100] + "..." if len(prompt) > 100 else prompt,
+            "refined_prompt": refined,
+            "provider": provider_to_use,
+            "strategy_applied": apply_strategy,
+            "confidence_threshold": confidence_threshold if apply_strategy else None,
+            "framework": "7-component (ROLE, OBJECTIVE, PROCESS, FORMAT, CONSTRAINTS, UNCERTAINTY, VALIDATION)",
+            "expansion_ratio": round(len(refined) / len(prompt), 1) if len(prompt) > 0 else 0,
+        }
+
+        return [TextContent(
+            type="text",
+            text=json.dumps(result, indent=2)
+        )]
+
+    except FileNotFoundError as e:
+        # CORE_TEMPLATE.md not found
+        logger.error(f"Meta-prompt template not found: {e}")
+        return [TextContent(
+            type="text",
+            text=json.dumps({
+                "status": "error",
+                "error": "CORE_TEMPLATE.md not found",
+                "message": str(e),
+                "help": "Ensure promptly_skills/meta_prompt/CORE_TEMPLATE.md exists in repository"
+            }, indent=2)
+        )]
+
+    except Exception as e:
+        # Generic error - return original prompt with warning
+        logger.error(f"Error refining prompt: {e}", exc_info=True)
+        return [TextContent(
+            type="text",
+            text=json.dumps({
+                "status": "warning",
+                "error": str(e),
+                "message": "Refinement failed, returning original prompt",
+                "original_prompt": prompt
+            }, indent=2)
         )]
 
 
