@@ -1,87 +1,700 @@
 {
   "date": "2025-11-22",
-  "summary": "# COZ Daily Intelligence Brief\n**Generated**: 2025-11-22 05:09\n\n## Financial Overview\n\n## Customer Insights\n- **Total Customers**: 0\n- **Avg Orders/Customer**: 0.0\n\n## Key Recommendations\n1. \ud83d\udcc9 Low sellthrough (0.0%). Reduce batch sizes.\n2. \ud83d\udcc8 Low repeat orders. Implement loyalty program.",
+  "summary": "# COZ Daily Intelligence Brief\n**Generated**: 2025-11-22 21:35\n\n## Financial Overview\n- **Net Profit**: $-450.00\n- **Profit Margin**: -14240.0%\n- **Hourly Profit**: $-16.98/hour\n\n## Customer Insights\n- **Total Customers**: 12\n- **Avg Orders/Customer**: 1.0\n\n## Key Recommendations\n1. \ud83d\udea8 CRITICAL: Operating at a loss. Review pricing and costs immediately.\n2. \ud83d\udcb0 Hourly profit ($-16.98) below target ($15.00). Focus on high-margin tasks.\n3. \u26a0\ufe0f 'Research new recipe' had worst overrun: 50.0% over estimate\n4. \ud83d\udcc2 'R&D' category has lowest efficiency: 67.0%\n5. \ud83d\udcb8 'Research new recipe' most expensive: $130.5. Review for optimization opportunities.",
   "profit": {
-    "error": "'FinancialsParser' object has no attribute 'get_revenue_summary'"
+    "total_revenue": 316.0,
+    "total_costs": 766.0,
+    "total_labor": 662.5,
+    "total_expenses": 0.0,
+    "net_profit": -450.0,
+    "profit_margin": -142.4,
+    "hourly_profit": -16.98,
+    "breakeven_hours": 30.6,
+    "recommendations": [
+      "\ud83d\udea8 CRITICAL: Operating at a loss. Review pricing and costs immediately.",
+      "\ud83d\udcb0 Hourly profit ($-16.98) below target ($15.00). Focus on high-margin tasks."
+    ],
+    "total_hours_worked": 26.5
   },
   "efficiency": {
-    "top_overruns": [],
-    "category_efficiency": {},
-    "insights": []
+    "top_overruns": [
+      {
+        "task_id": "KB-003",
+        "task_name": "Research new recipe",
+        "category": "R&D",
+        "estimated_hours": 3.0,
+        "actual_hours": 4.5,
+        "variance_percent": 50.0,
+        "notes": "Multiple test iterations needed"
+      },
+      {
+        "task_id": "KB-008",
+        "task_name": "Update website",
+        "category": "Marketing",
+        "estimated_hours": 2.0,
+        "actual_hours": 3.0,
+        "variance_percent": 50.0,
+        "notes": "Added new product photos and descriptions"
+      },
+      {
+        "task_id": "KB-012",
+        "task_name": "Social media posts",
+        "category": "Marketing",
+        "estimated_hours": 0.5,
+        "actual_hours": 0.75,
+        "variance_percent": 50.0,
+        "notes": "Created Instagram reels"
+      },
+      {
+        "task_id": "KB-005",
+        "task_name": "Customer consultation",
+        "category": "Sales",
+        "estimated_hours": 1.5,
+        "actual_hours": 2.0,
+        "variance_percent": 33.3,
+        "notes": "Detailed questions about compost kits"
+      },
+      {
+        "task_id": "KB-001",
+        "task_name": "Bake bread loaves",
+        "category": "Bakery",
+        "estimated_hours": 2.0,
+        "actual_hours": 2.5,
+        "variance_percent": 25.0,
+        "notes": "Mixing took longer than expected"
+      }
+    ],
+    "category_efficiency": {
+      "Bakery": {
+        "entries_count": 2,
+        "total_estimated_hours": 3.5,
+        "total_actual_hours": 4.2,
+        "variance_hours": 0.8,
+        "avg_efficiency_score": 0.83
+      },
+      "Fulfillment": {
+        "entries_count": 2,
+        "total_estimated_hours": 4.0,
+        "total_actual_hours": 3.2,
+        "variance_hours": -0.8,
+        "avg_efficiency_score": 1.27
+      },
+      "R&D": {
+        "entries_count": 1,
+        "total_estimated_hours": 3.0,
+        "total_actual_hours": 4.5,
+        "variance_hours": 1.5,
+        "avg_efficiency_score": 0.67
+      },
+      "Production": {
+        "entries_count": 2,
+        "total_estimated_hours": 6.5,
+        "total_actual_hours": 6.0,
+        "variance_hours": -0.5,
+        "avg_efficiency_score": 1.07
+      },
+      "Sales": {
+        "entries_count": 1,
+        "total_estimated_hours": 1.5,
+        "total_actual_hours": 2.0,
+        "variance_hours": 0.5,
+        "avg_efficiency_score": 0.75
+      },
+      "Operations": {
+        "entries_count": 1,
+        "total_estimated_hours": 1.0,
+        "total_actual_hours": 0.5,
+        "variance_hours": -0.5,
+        "avg_efficiency_score": 2.0
+      },
+      "Marketing": {
+        "entries_count": 2,
+        "total_estimated_hours": 2.5,
+        "total_actual_hours": 3.8,
+        "variance_hours": 1.2,
+        "avg_efficiency_score": 0.67
+      },
+      "Procurement": {
+        "entries_count": 1,
+        "total_estimated_hours": 2.0,
+        "total_actual_hours": 2.2,
+        "variance_hours": 0.2,
+        "avg_efficiency_score": 0.89
+      }
+    },
+    "insights": [
+      "\u26a0\ufe0f 'Research new recipe' had worst overrun: 50.0% over estimate",
+      "\ud83d\udcc2 'R&D' category has lowest efficiency: 67.0%"
+    ]
   },
   "cost": {
-    "expensive_tasks": [],
+    "expensive_tasks": [
+      {
+        "task_id": "KB-003",
+        "task_name": "Research new recipe",
+        "total_cost": 130.5,
+        "material_cost": 8.0,
+        "labor_cost": 112.5,
+        "overhead_cost": 10.0
+      },
+      {
+        "task_id": "KB-004",
+        "task_name": "Prepare biochar batch",
+        "total_cost": 110.5,
+        "material_cost": 15.0,
+        "labor_cost": 87.5,
+        "overhead_cost": 8.0
+      },
+      {
+        "task_id": "KB-009",
+        "task_name": "Fulfill wholesale order",
+        "total_cost": 80.5,
+        "material_cost": 12.0,
+        "labor_cost": 62.5,
+        "overhead_cost": 6.0
+      },
+      {
+        "task_id": "KB-008",
+        "task_name": "Update website",
+        "total_cost": 80.0,
+        "material_cost": 0.0,
+        "labor_cost": 75.0,
+        "overhead_cost": 5.0
+      },
+      {
+        "task_id": "KB-011",
+        "task_name": "Compost kit assembly",
+        "total_cost": 74.5,
+        "material_cost": 6.5,
+        "labor_cost": 62.5,
+        "overhead_cost": 5.5
+      }
+    ],
     "cost_breakdown": {
-      "material_percent": 0.0,
-      "labor_percent": 0.0,
-      "overhead_percent": 0.0
+      "material_percent": 6.3,
+      "labor_percent": 86.5,
+      "overhead_percent": 7.2
     },
     "overhead_rate": {
-      "overhead_rate": 0.0,
-      "total_direct_costs": 0.0,
-      "total_overhead": 0.0
+      "overhead_rate": 7.8,
+      "total_direct_costs": 710.5,
+      "total_overhead": 55.5
     },
-    "insights": []
+    "insights": [
+      "\ud83d\udcb8 'Research new recipe' most expensive: $130.5. Review for optimization opportunities."
+    ]
   },
   "production": {
-    "production_vs_sops": {},
+    "production_vs_sops": {
+      "Bread Loaf": {
+        "avg_produced_per_run": 11.2,
+        "sellthrough_rate": 82.2,
+        "waste_rate": 6.7
+      },
+      "Cookies": {
+        "avg_produced_per_run": 36.0,
+        "sellthrough_rate": 94.4,
+        "waste_rate": 5.6
+      },
+      "Biochar Kit": {
+        "avg_produced_per_run": 7.5,
+        "sellthrough_rate": 80.0,
+        "waste_rate": 0.0
+      },
+      "Custom Cake": {
+        "avg_produced_per_run": 1.0,
+        "sellthrough_rate": 100.0,
+        "waste_rate": 0.0
+      },
+      "Compost Kit": {
+        "avg_produced_per_run": 3.5,
+        "sellthrough_rate": 57.1,
+        "waste_rate": 0.0
+      }
+    },
     "time_variances": {
       "overall_efficiency": 100.0,
       "below_target": false
     },
     "output_efficiency": {
-      "waste_rate": 0.0,
-      "sellthrough_rate": 0.0
+      "waste_rate": 5.1,
+      "sellthrough_rate": 88.6
     },
-    "insights": [
-      "\ud83d\udcc9 Low sellthrough (0.0%). Reduce batch sizes."
-    ]
+    "insights": []
   },
   "waste": {
     "waste_analysis": {
       "total_waste": 0,
-      "waste_reasons": {},
+      "waste_reasons": {
+        "Overproduction": 8,
+        "Quality issue": 1
+      },
       "high_waste_products": []
     },
-    "overproduction_alerts": [],
-    "quality_issues": [],
-    "recommended_actions": [],
-    "insights": []
+    "overproduction_alerts": [
+      {
+        "date": "2025-11-21",
+        "product": "Biochar Kit",
+        "produced": 10,
+        "sold": 7,
+        "sellthrough_rate": 70.0,
+        "unsold": 3,
+        "reason": "Low demand"
+      },
+      {
+        "date": "2025-11-21",
+        "product": "Compost Kit",
+        "produced": 3,
+        "sold": 2,
+        "sellthrough_rate": 66.7,
+        "unsold": 1,
+        "reason": "Low demand"
+      },
+      {
+        "date": "2025-11-20",
+        "product": "Compost Kit",
+        "produced": 4,
+        "sold": 2,
+        "sellthrough_rate": 50.0,
+        "unsold": 2,
+        "reason": "Low demand"
+      }
+    ],
+    "quality_issues": [
+      {
+        "date": "2025-11-21",
+        "product": "Bread Loaf",
+        "quantity_wasted": 1,
+        "reason": "Quality issue",
+        "notes": "1 loaf burnt - discarded"
+      }
+    ],
+    "recommended_actions": [
+      {
+        "priority": "HIGH",
+        "action": "Reduce batch sizes based on demand forecast",
+        "expected_impact": "Save ~8 units per period"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Review quality control processes",
+        "expected_impact": "Reduce 1 units waste"
+      }
+    ],
+    "insights": [
+      "\ud83d\udea8 Overproduction waste: 8 units",
+      "\u26a0\ufe0f Quality issues: 1 units wasted"
+    ]
   },
   "orders": {
     "fulfillment_schedule": {
-      "Critical (Overdue/Due Today)": [],
-      "High (Due in 2-3 Days)": [],
-      "Medium (Due This Week)": [],
+      "Critical (Overdue/Due Today)": [
+        {
+          "order_id": "ORD-009",
+          "customer_name": "Iris Anderson",
+          "order_date": "2025-11-20T00:00:00",
+          "due_date": "2025-11-19T00:00:00",
+          "status": "Overdue",
+          "products": [
+            "Bread Loaf"
+          ],
+          "quantities": [
+            2
+          ],
+          "total_price": 12.0,
+          "notes": "Forgot to prepare - need to contact",
+          "days_until_due": -3,
+          "is_overdue": true,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-004",
+          "customer_name": "David Brown",
+          "order_date": "2025-11-20T00:00:00",
+          "due_date": "2025-11-21T00:00:00",
+          "status": "In Progress",
+          "products": [
+            "Biochar Kit"
+          ],
+          "quantities": [
+            3
+          ],
+          "total_price": 75.0,
+          "notes": "Wholesale order for garden center",
+          "days_until_due": -1,
+          "is_overdue": true,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-002",
+          "customer_name": "Bob Jones",
+          "order_date": "2025-11-19T00:00:00",
+          "due_date": "2025-11-22T00:00:00",
+          "status": "In Progress",
+          "products": [
+            "Bread Loaf"
+          ],
+          "quantities": [
+            5
+          ],
+          "total_price": 30.0,
+          "notes": "First-time customer from Instagram",
+          "days_until_due": 0,
+          "is_overdue": false,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-010",
+          "customer_name": "Jack Thomas",
+          "order_date": "2025-11-21T00:00:00",
+          "due_date": "2025-11-22T00:00:00",
+          "status": "In Progress",
+          "products": [
+            "Cookies"
+          ],
+          "quantities": [
+            36
+          ],
+          "total_price": 36.0,
+          "notes": "School bake sale",
+          "days_until_due": 0,
+          "is_overdue": false,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-005",
+          "customer_name": "Emily Davis",
+          "order_date": "2025-11-21T00:00:00",
+          "due_date": "2025-11-23T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Bread Loaf",
+            "Compost Kit"
+          ],
+          "quantities": [
+            4,
+            2
+          ],
+          "total_price": 64.0,
+          "notes": "Starting composting setup",
+          "days_until_due": 1,
+          "is_overdue": false,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-012",
+          "customer_name": "Leo Garcia",
+          "order_date": "2025-11-20T00:00:00",
+          "due_date": "2025-11-23T00:00:00",
+          "status": "In Progress",
+          "products": [
+            "Biochar Kit"
+          ],
+          "quantities": [
+            5
+          ],
+          "total_price": 125.0,
+          "notes": "Bulk order for community garden",
+          "days_until_due": 1,
+          "is_overdue": false,
+          "fulfillment_priority": 1
+        }
+      ],
+      "High (Due in 2-3 Days)": [
+        {
+          "order_id": "ORD-008",
+          "customer_name": "Henry Taylor",
+          "order_date": "2025-11-19T00:00:00",
+          "due_date": "2025-11-24T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Biochar Kit",
+            "Compost Kit"
+          ],
+          "quantities": [
+            2,
+            2
+          ],
+          "total_price": 70.0,
+          "notes": "Sustainability enthusiast",
+          "days_until_due": 2,
+          "is_overdue": false,
+          "fulfillment_priority": 2
+        },
+        {
+          "order_id": "ORD-003",
+          "customer_name": "Carol White",
+          "order_date": "2025-11-20T00:00:00",
+          "due_date": "2025-11-25T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Custom Cake"
+          ],
+          "quantities": [
+            1
+          ],
+          "total_price": 45.0,
+          "notes": "Birthday cake - chocolate with vanilla frosting",
+          "days_until_due": 3,
+          "is_overdue": false,
+          "fulfillment_priority": 2
+        }
+      ],
+      "Medium (Due This Week)": [
+        {
+          "order_id": "ORD-011",
+          "customer_name": "Karen Martinez",
+          "order_date": "2025-11-21T00:00:00",
+          "due_date": "2025-11-26T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Bread Loaf"
+          ],
+          "quantities": [
+            10
+          ],
+          "total_price": 60.0,
+          "notes": "Weekly bread subscription",
+          "days_until_due": 4,
+          "is_overdue": false,
+          "fulfillment_priority": 3
+        },
+        {
+          "order_id": "ORD-006",
+          "customer_name": "Frank Miller",
+          "order_date": "2025-11-21T00:00:00",
+          "due_date": "2025-11-28T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Custom Cake"
+          ],
+          "quantities": [
+            1
+          ],
+          "total_price": 50.0,
+          "notes": "Anniversary cake",
+          "days_until_due": 6,
+          "is_overdue": false,
+          "fulfillment_priority": 3
+        }
+      ],
       "Low (Due Later)": []
     },
-    "production_plan": [],
+    "production_plan": [
+      {
+        "order_id": "ORD-010",
+        "product": "Cookies",
+        "quantity": 36,
+        "due_date": "2025-11-22",
+        "estimated_time_hours": 79.2,
+        "priority": "Critical (Overdue/Due Today)"
+      },
+      {
+        "order_id": "ORD-012",
+        "product": "Biochar Kit",
+        "quantity": 2,
+        "due_date": "2025-11-23",
+        "estimated_time_hours": 4.4,
+        "priority": "Critical (Overdue/Due Today)"
+      },
+      {
+        "order_id": "ORD-003",
+        "product": "Custom Cake",
+        "quantity": 1,
+        "due_date": "2025-11-25",
+        "estimated_time_hours": 2.2,
+        "priority": "High (Due in 2-3 Days)"
+      },
+      {
+        "order_id": "ORD-011",
+        "product": "Bread Loaf",
+        "quantity": 5,
+        "due_date": "2025-11-26",
+        "estimated_time_hours": 11.0,
+        "priority": "Medium (Due This Week)"
+      },
+      {
+        "order_id": "ORD-006",
+        "product": "Custom Cake",
+        "quantity": 1,
+        "due_date": "2025-11-28",
+        "estimated_time_hours": 2.2,
+        "priority": "Medium (Due This Week)"
+      }
+    ],
     "capacity_analysis": {
-      "total_hours_required": 0.0,
-      "orders_pending": 0,
-      "critical_orders": 0
+      "total_hours_required": 99.0,
+      "orders_pending": 10,
+      "critical_orders": 6
     },
-    "insights": []
+    "insights": [
+      "\ud83d\udea8 6 critical orders! Prioritize immediately.",
+      "\u26a0\ufe0f 99.0h of production needed. Consider additional capacity.",
+      "\ud83d\udcc5 2 overdue orders. Expedite fulfillment."
+    ]
   },
   "customers": {
-    "customer_summary": {},
-    "top_customers": {},
+    "customer_summary": {
+      "Alice Smith": {
+        "total_orders": 1,
+        "fulfilled_orders": 1,
+        "pending_orders": 0,
+        "total_revenue": 26.0,
+        "avg_order_value": 26.0,
+        "fulfillment_rate": 1.0
+      },
+      "Bob Jones": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 30.0,
+        "avg_order_value": 30.0,
+        "fulfillment_rate": 0.0
+      },
+      "Carol White": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 45.0,
+        "avg_order_value": 45.0,
+        "fulfillment_rate": 0.0
+      },
+      "David Brown": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 75.0,
+        "avg_order_value": 75.0,
+        "fulfillment_rate": 0.0
+      },
+      "Emily Davis": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 64.0,
+        "avg_order_value": 64.0,
+        "fulfillment_rate": 0.0
+      },
+      "Frank Miller": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 50.0,
+        "avg_order_value": 50.0,
+        "fulfillment_rate": 0.0
+      },
+      "Grace Wilson": {
+        "total_orders": 1,
+        "fulfilled_orders": 1,
+        "pending_orders": 0,
+        "total_revenue": 24.0,
+        "avg_order_value": 24.0,
+        "fulfillment_rate": 1.0
+      },
+      "Henry Taylor": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 70.0,
+        "avg_order_value": 70.0,
+        "fulfillment_rate": 0.0
+      },
+      "Iris Anderson": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 12.0,
+        "avg_order_value": 12.0,
+        "fulfillment_rate": 0.0
+      },
+      "Jack Thomas": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 36.0,
+        "avg_order_value": 36.0,
+        "fulfillment_rate": 0.0
+      },
+      "Karen Martinez": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 60.0,
+        "avg_order_value": 60.0,
+        "fulfillment_rate": 0.0
+      },
+      "Leo Garcia": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 125.0,
+        "avg_order_value": 125.0,
+        "fulfillment_rate": 0.0
+      }
+    },
+    "top_customers": {
+      "Leo Garcia": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 125.0,
+        "avg_order_value": 125.0,
+        "fulfillment_rate": 0.0
+      },
+      "David Brown": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 75.0,
+        "avg_order_value": 75.0,
+        "fulfillment_rate": 0.0
+      },
+      "Henry Taylor": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 70.0,
+        "avg_order_value": 70.0,
+        "fulfillment_rate": 0.0
+      },
+      "Emily Davis": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 64.0,
+        "avg_order_value": 64.0,
+        "fulfillment_rate": 0.0
+      },
+      "Karen Martinez": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 60.0,
+        "avg_order_value": 60.0,
+        "fulfillment_rate": 0.0
+      }
+    },
     "customer_metrics": {
-      "total_customers": 0,
-      "avg_orders_per_customer": 0,
-      "avg_revenue_per_customer": 0
+      "total_customers": 12,
+      "avg_orders_per_customer": 1.0,
+      "avg_revenue_per_customer": 51.42
     },
     "at_risk_customers": [],
     "insights": [
+      "\u2b50 Top customer: Leo Garcia ($125.00 revenue)",
       "\ud83d\udcc8 Low repeat orders. Implement loyalty program."
     ]
   },
   "action_items": [
-    "\ud83d\udcc8 Low repeat orders. Implement loyalty program."
+    "\ud83d\udea8 CRITICAL: Operating at a loss. Review pricing and costs immediately.",
+    "\ud83d\udcb0 Hourly profit ($-16.98) below target ($15.00). Focus on high-margin tasks.",
+    "\u26a0\ufe0f 'Research new recipe' had worst overrun: 50.0% over estimate",
+    "\ud83d\udcc2 'R&D' category has lowest efficiency: 67.0%",
+    "\ud83d\udcb8 'Research new recipe' most expensive: $130.5. Review for optimization opportunities."
   ],
   "performance_indicators": {
-    "profit_margin": 0.0,
-    "hourly_profit": 0.0,
+    "profit_margin": -142.4,
+    "hourly_profit": -16.98,
     "task_efficiency": 0.0,
     "waste_rate": 0.0,
     "order_fulfillment_rate": 0.0

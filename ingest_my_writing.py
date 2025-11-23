@@ -12,8 +12,10 @@ async def ingest_creative_writing():
     print("📚 Creative Writing AI - Loading your stories...\n")
 
     config = Config.fast()
+    config.enable_smart_routing = True  # ⚡ Phase 1: 15x speedup for simple queries!
 
     async with SimpleRAG(config=config) as rag:
+        print("⚡ Smart routing enabled\n")
         # ========================================
         # CUSTOMIZE THESE PATHS TO YOUR FILES!
         # ========================================

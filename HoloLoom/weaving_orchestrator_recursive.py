@@ -46,7 +46,8 @@ from typing import Optional
 from dataclasses import dataclass
 
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, Spacetime, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
+from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.convergence.recursive_engine import (
     RecursiveConvergenceEngine,

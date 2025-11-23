@@ -24,7 +24,7 @@ from typing import List, Dict, Set, Optional, Tuple
 from dataclasses import dataclass
 import logging
 
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 

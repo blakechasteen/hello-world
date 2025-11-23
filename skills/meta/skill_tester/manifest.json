@@ -21,8 +21,8 @@
     "dependencies": []
   },
   "package": {
-    "created_at": "2025-11-18T05:29:28.206815",
-    "source_path": "skills/meta/skill_tester",
+    "created_at": "2025-11-22T18:00:12.240063",
+    "source_path": "skills\\meta\\skill_tester",
     "builder_version": "1.0.0"
   }
 }

@@ -1,0 +1,102 @@
+"""
+HoloLoom Skills System
+======================
+Production-ready skill templates for agentic reasoning.
+
+Integrated from Promptly (November 2025) - 13 skill templates with package management.
+
+This module provides:
+- 13 pre-built skill templates for common AI tasks
+- Package manager for importing/exporting skills
+- Integration with HoloLoom's agentic reasoning modes
+- Custom skill creation framework
+
+Quick Start:
+-----------
+```python
+from HoloLoom.agentic.skills import SkillLoader, list_templates
+
+# List available templates
+templates = list_templates()
+
+# Load a skill
+skill = SkillLoader.load('code_reviewer')
+
+# Execute skill in agentic context
+from HoloLoom.agentic import AgenticOrchestrator
+orchestrator = AgenticOrchestrator(cfg=config, shards=shards)
+result = await orchestrator.execute_skill(skill, context)
+```
+
+Available Templates:
+-------------------
+Base Templates (8):
+1. code_reviewer - Review code for best practices, bugs, security
+2. api_designer - Design RESTful APIs with OpenAPI specs
+3. data_analyzer - Analyze datasets and generate insights
+4. documentation_writer - Generate comprehensive documentation
+5. test_generator - Generate comprehensive unit tests
+6. prompt_engineer - Optimize and improve prompts
+7. sql_designer - Design database schemas and queries
+8. error_handler - Design robust error handling
+
+Extended Templates (5):
+9. sql_optimizer - Optimize SQL queries for performance
+10. ui_designer - Design accessible UIs with UX best practices
+11. system_architect - Design scalable system architectures
+12. refactoring_expert - Refactor code for maintainability
+13. security_auditor - Audit code for security vulnerabilities
+
+Integration:
+-----------
+Skills integrate seamlessly with HoloLoom's agentic reasoning:
+
+DIRECT mode: Single skill execution
+VERIFY mode: Skill + verification loop
+RESEARCH mode: Multi-skill exploration
+PLAN_EXECUTE mode: Goal decomposition with skills
+
+See README.md for complete documentation.
+"""
+
+from HoloLoom.agentic.skills.skill_loader import (
+    SkillLoader,
+    Skill,
+    SkillMetadata,
+    SkillFile,
+)
+from HoloLoom.agentic.skills.templates import (
+    TEMPLATES,
+    EXTENDED_TEMPLATES,
+    get_all_templates,
+    list_templates,
+    get_template,
+)
+from HoloLoom.agentic.skills.manager import (
+    PackageManager,
+    PromptPackage,
+    quick_export,
+    quick_import,
+)
+
+__all__ = [
+    # Core
+    'SkillLoader',
+    'Skill',
+    'SkillMetadata',
+    'SkillFile',
+    # Templates
+    'TEMPLATES',
+    'EXTENDED_TEMPLATES',
+    'get_all_templates',
+    'list_templates',
+    'get_template',
+    # Package Management
+    'PackageManager',
+    'PromptPackage',
+    'quick_export',
+    'quick_import',
+]
+
+__version__ = "1.0.0"
+__author__ = "HoloLoom (Integrated from Promptly)"

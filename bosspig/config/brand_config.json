@@ -1,0 +1,206 @@
+{
+  "brand_name": "TechCorp",
+  "version": "1.0.0",
+  "last_updated": "2025-11-22",
+
+  "capitalization_rules": {
+    "description": "Brand names and product names that must use specific capitalization",
+    "patterns": {
+      "TechCorp": {
+        "correct": "TechCorp",
+        "incorrect_patterns": ["techcorp", "Techcorp", "TECHCORP", "Tech Corp"],
+        "severity": "high"
+      },
+      "CloudSync": {
+        "correct": "CloudSync",
+        "incorrect_patterns": ["cloudsync", "Cloudsync", "Cloud Sync", "cloud sync"],
+        "severity": "high"
+      },
+      "DataVault": {
+        "correct": "DataVault",
+        "incorrect_patterns": ["datavault", "Datavault", "Data Vault", "data vault"],
+        "severity": "medium"
+      },
+      "iPhone": {
+        "correct": "iPhone",
+        "incorrect_patterns": ["iphone", "Iphone", "IPhone", "I-Phone"],
+        "severity": "high"
+      },
+      "GitHub": {
+        "correct": "GitHub",
+        "incorrect_patterns": ["github", "Github", "GithHub", "Git Hub"],
+        "severity": "medium"
+      }
+    }
+  },
+
+  "prohibited_terms": {
+    "description": "Terms that should never appear in official communications",
+    "terms": [
+      {
+        "pattern": "\\bcheap\\b",
+        "reason": "Use 'cost-effective' or 'affordable' instead",
+        "severity": "high",
+        "replacement": "cost-effective"
+      },
+      {
+        "pattern": "\\bfree\\b(?!dom|lance|\\s+trial)",
+        "reason": "Avoid 'free' except in 'freedom', 'freelance', or 'free trial'",
+        "severity": "medium",
+        "replacement": "no-cost"
+      },
+      {
+        "pattern": "\\bbuy now\\b",
+        "reason": "Too aggressive. Use 'get started' or 'explore options'",
+        "severity": "high",
+        "replacement": "get started"
+      },
+      {
+        "pattern": "\\bcompetitors?\\b",
+        "reason": "Use 'alternatives' or 'other solutions'",
+        "severity": "medium",
+        "replacement": "alternatives"
+      },
+      {
+        "pattern": "\\bguarantee[d]?\\b",
+        "reason": "Legal risk. Use 'commitment' or 'promise'",
+        "severity": "critical",
+        "replacement": "commitment"
+      },
+      {
+        "pattern": "\\bbest\\b(?!\\s+practices)",
+        "reason": "Subjective claim. Use 'leading' or 'high-quality'",
+        "severity": "medium",
+        "replacement": "leading"
+      },
+      {
+        "pattern": "#1\\b",
+        "reason": "Unsubstantiated claim. Use 'industry-leading'",
+        "severity": "high",
+        "replacement": "industry-leading"
+      },
+      {
+        "pattern": "\\bunlimited\\b",
+        "reason": "Often misleading. Specify actual limits",
+        "severity": "high",
+        "replacement": "generous limits"
+      }
+    ]
+  },
+
+  "preferred_terminology": {
+    "description": "Company-preferred terms to maintain consistent messaging",
+    "preferences": [
+      {
+        "avoid": "\\bcustomers?\\b",
+        "prefer": "clients",
+        "reason": "We call them 'clients' not 'customers'",
+        "severity": "medium"
+      },
+      {
+        "avoid": "\\bbugs?\\b",
+        "prefer": "issues",
+        "reason": "Use 'issues' or 'defects' in customer-facing docs",
+        "severity": "low"
+      },
+      {
+        "avoid": "\\bpurchase\\b",
+        "prefer": "subscription",
+        "reason": "Our business model is subscription-based",
+        "severity": "medium"
+      },
+      {
+        "avoid": "\\blogin\\b",
+        "prefer": "sign in",
+        "reason": "UI consistency: always 'sign in' not 'login'",
+        "severity": "low"
+      },
+      {
+        "avoid": "\\bapp\\b(?!lication|le)",
+        "prefer": "application",
+        "reason": "Use full word 'application' in formal docs",
+        "severity": "low"
+      },
+      {
+        "avoid": "\\bemail\\b",
+        "prefer": "e-mail",
+        "reason": "AP style: hyphenate 'e-mail'",
+        "severity": "info"
+      },
+      {
+        "avoid": "\\bweb site\\b",
+        "prefer": "website",
+        "reason": "One word: 'website'",
+        "severity": "info"
+      },
+      {
+        "avoid": "\\bclick here\\b",
+        "prefer": "descriptive link text",
+        "reason": "Accessibility: use descriptive link text",
+        "severity": "medium"
+      }
+    ]
+  },
+
+  "tone_rules": {
+    "description": "Writing tone and style enforcement",
+    "rules": [
+      {
+        "name": "excessive_exclamation",
+        "pattern": "!{2,}",
+        "message": "Use single exclamation marks only",
+        "severity": "medium",
+        "category": "punctuation"
+      },
+      {
+        "name": "all_caps_words",
+        "pattern": "\\b[A-Z]{4,}\\b",
+        "message": "Avoid all-caps words (except acronyms like 'API', 'HTML')",
+        "severity": "medium",
+        "category": "capitalization",
+        "exceptions": ["API", "HTML", "CSS", "JSON", "XML", "HTTP", "HTTPS", "SQL", "REST", "SOAP", "AWS", "GCP", "CEO", "CTO", "VP", "SVP", "EVP", "USA", "UK", "EU", "GDPR", "HIPAA", "SOC2"]
+      },
+      {
+        "name": "excessive_question_marks",
+        "pattern": "\\?{2,}",
+        "message": "Use single question marks only",
+        "severity": "medium",
+        "category": "punctuation"
+      },
+      {
+        "name": "emoji_usage",
+        "pattern": "[😀-🙏🌀-🗿🚀-🛿]",
+        "message": "Emojis not allowed in formal business communications",
+        "severity": "high",
+        "category": "formatting"
+      },
+      {
+        "name": "excessive_ellipsis",
+        "pattern": "\\.{4,}",
+        "message": "Use exactly three dots for ellipsis (...)",
+        "severity": "low",
+        "category": "punctuation"
+      },
+      {
+        "name": "informal_contractions",
+        "pattern": "\\b(ain't|gonna|wanna|gotta|kinda|sorta|dunno|ya|yep|nope|ok|umm|hmm)\\b",
+        "message": "Avoid informal contractions in business writing",
+        "severity": "medium",
+        "category": "formality"
+      }
+    ]
+  },
+
+  "examples": {
+    "good": [
+      "TechCorp's CloudSync service provides a cost-effective solution for clients.",
+      "Sign in to your account to get started with our industry-leading platform.",
+      "Contact us to explore subscription options that fit your needs."
+    ],
+    "bad": [
+      "techcorp's cloudsync is the #1 free service! Buy now!!!",
+      "Login to get the cheapest and best unlimited storage guaranteed.",
+      "Click here to see why we beat all competitors 😀"
+    ]
+  }
+}

@@ -1,0 +1,143 @@
+# Prometheus Alert Rules for COZ Daily Brief Automation
+#
+# These rules define alerts that fire when certain conditions are met.
+# Alerts are sent to Alertmanager (if configured) or visible in Prometheus UI.
+#
+# Created: 2025-11-22
+# Part of: Production Deployment (Monitoring Setup)
+
+groups:
+  - name: coz_automation_alerts
+    interval: 1m  # Evaluate every 1 minute
+
+    rules:
+      # CRITICAL: System unhealthy
+      - alert: COZAutomationUnhealthy
+        expr: coz_automation_health_status < 1
+        for: 10m  # Alert if unhealthy for 10 minutes
+        labels:
+          severity: critical
+          component: automation
+        annotations:
+          summary: "COZ automation system is unhealthy"
+          description: "Health status: {{ $value }} (0=unhealthy, 1=degraded, 2=healthy). System has been unhealthy for 10+ minutes."
+          dashboard: "http://localhost:3000/d/coz-automation"
+
+      # CRITICAL: No recent briefs generated
+      - alert: COZNoRecentBrief
+        expr: coz_automation_check_status{check="recent_briefs"} == 0
+        for: 24h  # Alert if no brief for 24 hours
+        labels:
+          severity: critical
+          component: automation
+        annotations:
+          summary: "No COZ daily brief generated in 24 hours"
+          description: "Last brief was generated >24 hours ago. Check scheduler and automation service."
+          dashboard: "http://localhost:3000/d/coz-automation"
+
+      # WARNING: Parser initialization failure
+      - alert: COZParserFailure
+        expr: coz_automation_check_status{check="parsers"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          component: parsers
+        annotations:
+          summary: "COZ parser initialization failed"
+          description: "One or more parsers failed to initialize. Check CSV file paths and format."
+
+      # WARNING: Low disk space
+      - alert: COZLowDiskSpace
+        expr: coz_automation_check_status{check="disk_space"} == 0
+        for: 1h
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "COZ automation low disk space"
+          description: "Available disk space below 100MB threshold. Clean up old briefs or increase storage."
+
+      # WARNING: Output directory issues
+      - alert: COZOutputDirectoryError
+        expr: coz_automation_check_status{check="output_directory"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "COZ output directory not writable"
+          description: "Cannot write to output directory. Check permissions and disk space."
+
+      # INFO: HoloLoom refinement unavailable (not critical)
+      - alert: COZHoloLoomUnavailable
+        expr: coz_automation_check_status{check="hololoom"} == 0
+        for: 1h
+        labels:
+          severity: info
+          component: optional-features
+        annotations:
+          summary: "HoloLoom refinement unavailable"
+          description: "HoloLoom refinement module not available. System will run without refinement (this is normal if refinement disabled)."
+
+      # WARNING: Multiple failed checks (degraded state)
+      - alert: COZSystemDegraded
+        expr: coz_automation_checks_failed >= 2
+        for: 10m
+        labels:
+          severity: warning
+          component: automation
+        annotations:
+          summary: "COZ automation system degraded"
+          description: "{{ $value }} health checks failing. System is degraded but may still be operational."
+          dashboard: "http://localhost:3000/d/coz-automation"
+
+  - name: coz_automation_performance
+    interval: 5m  # Evaluate every 5 minutes
+
+    rules:
+      # WARNING: Generation time spike
+      - alert: COZGenerationTimeSlow
+        expr: rate(coz_automation_generation_time_ms[5m]) > 5000
+        for: 15m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "COZ brief generation time increased"
+          description: "Average generation time: {{ $value }}ms (expected <2000ms). System may be under load."
+
+      # WARNING: High error rate
+      - alert: COZHighErrorRate
+        expr: rate(coz_automation_errors_total[5m]) > 0.01
+        for: 10m
+        labels:
+          severity: warning
+          component: automation
+        annotations:
+          summary: "COZ automation error rate elevated"
+          description: "Error rate: {{ $value }} errors/sec. Check logs for details."
+
+  - name: coz_automation_trends
+    interval: 1h  # Evaluate every hour (slower metrics)
+
+    rules:
+      # INFO: Brief generation frequency drop
+      - alert: COZGenerationFrequencyDrop
+        expr: |
+          (
+            rate(coz_automation_briefs_generated_total[24h])
+            /
+            rate(coz_automation_briefs_generated_total[7d] offset 7d)
+          ) < 0.8
+        for: 24h
+        labels:
+          severity: info
+          component: automation
+        annotations:
+          summary: "COZ brief generation frequency decreased"
+          description: "Generation frequency dropped by {{ $value }}% compared to last week. May indicate scheduler issues."
+
+# Alert severity levels:
+# - critical: System is down or data loss risk (page on-call)
+# - warning: System degraded but operational (notify team)
+# - info: Informational, no action required (log only)

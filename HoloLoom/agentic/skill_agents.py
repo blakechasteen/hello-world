@@ -41,7 +41,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
 from HoloLoom.protocols.recursive_reasoning import ReasoningStrategy
 

@@ -634,51 +634,6 @@ class MCDropout:
 
 
 @dataclass
-class VariationalPosterior:
-    """Thin wrapper representing a diagonal Gaussian variational posterior.
-
-    Tests expect attributes: mean, log_sigma, dim and methods: sample(), log_prob(),
-    kl_divergence(...).
-    """
-
-    mean: np.ndarray
-    log_sigma: np.ndarray
-    dim: Optional[int] = None
-
-    def __post_init__(self):
-        if self.dim is None:
-            self.dim = int(self.mean.shape[0])
-
-    def sample(self, n_samples: int = 1) -> np.ndarray:
-        rng = np.random.default_rng()
-        eps = rng.standard_normal((n_samples, self.dim))
-        return self.mean + np.exp(self.log_sigma) * eps
-
-    def log_prob(self, theta: np.ndarray) -> float:
-        # Gaussian log-prob (diagonal)
-        theta = np.asarray(theta).reshape(-1)
-        var = np.exp(2 * self.log_sigma)
-        const = -0.5 * self.dim * np.log(2 * np.pi)
-        lp = const - 0.5 * np.sum(np.log(var)) - 0.5 * np.sum((theta - self.mean) ** 2 / var)
-        return float(lp)
-
-    def kl_divergence(self, prior_mean: Optional[np.ndarray] = None, prior_log_sigma: Optional[np.ndarray] = None) -> float:
-        # KL between two diagonal Gaussians q ~ N(m, s^2) and p ~ N(0, 1) by default
-        q_mean = np.asarray(self.mean)
-        q_var = np.exp(2 * self.log_sigma)
-
-        if prior_mean is None:
-            prior_mean = np.zeros_like(q_mean)
-        if prior_log_sigma is None:
-            prior_log_sigma = np.zeros_like(self.log_sigma)
-
-        p_var = np.exp(2 * prior_log_sigma)
-
-        kl = 0.5 * np.sum((q_var + (q_mean - prior_mean) ** 2) / p_var - 1 + 2 * (prior_log_sigma - self.log_sigma))
-        return float(kl)
-
-
-@dataclass
 class ELBOObjective:
     """Simple ELBO objective helper used by tests.
 

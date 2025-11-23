@@ -85,11 +85,12 @@ class IntelligenceEngine:
         # Get data from parsers
         time_summary = self.sync.time_tracking.get_time_summary() if hasattr(self.sync, 'time_tracking') else {}
         cost_summary = self.sync.cost_tracking.get_cost_summary() if hasattr(self.sync, 'cost_tracking') else {}
-        financial_summary = self.sync.financials.get_revenue_summary() if hasattr(self.sync, 'financials') else {}
+        # Revenue comes from customer orders (fulfilled orders)
+        revenue_pipeline = self.sync.customer_orders.get_revenue_pipeline() if hasattr(self.sync, 'customer_orders') else {}
 
         # Calculate totals
         total_hours = time_summary.get('total_actual_hours', 0.0)
-        total_revenue = financial_summary.get('total_revenue', 0.0)
+        total_revenue = revenue_pipeline.get('Fulfilled', 0.0) + revenue_pipeline.get('In Progress', 0.0)
         total_costs = cost_summary.get('total_cost', 0.0)
         total_labor = total_hours * hourly_rate
         total_expenses = 0.0  # TODO: Add when expenses parser exists

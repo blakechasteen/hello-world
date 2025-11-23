@@ -59,7 +59,7 @@ except ImportError:
 
 # HoloLoom imports
 from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
 from HoloLoom.protocols.recursive_reasoning import ReasoningStrategy
 from HoloLoom.agentic.skill_agents import (

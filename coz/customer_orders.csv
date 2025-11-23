@@ -1,0 +1,13 @@
+Order ID,Customer Name,Order Date,Due Date,Status,Products,Quantities,Total Price,Notes
+ORD-001,Alice Smith,2025-11-18,2025-11-20,Fulfilled,"Bread Loaf,Cookies","2,12",26.00,Weekly regular customer
+ORD-002,Bob Jones,2025-11-19,2025-11-22,In Progress,Bread Loaf,5,30.00,First-time customer from Instagram
+ORD-003,Carol White,2025-11-20,2025-11-25,Pending,Custom Cake,1,45.00,Birthday cake - chocolate with vanilla frosting
+ORD-004,David Brown,2025-11-20,2025-11-21,In Progress,Biochar Kit,3,75.00,Wholesale order for garden center
+ORD-005,Emily Davis,2025-11-21,2025-11-23,Pending,"Bread Loaf,Compost Kit","4,2",64.00,Starting composting setup
+ORD-006,Frank Miller,2025-11-21,2025-11-28,Pending,Custom Cake,1,50.00,Anniversary cake
+ORD-007,Grace Wilson,2025-11-18,2025-11-20,Fulfilled,Cookies,24,24.00,Party order
+ORD-008,Henry Taylor,2025-11-19,2025-11-24,Pending,"Biochar Kit,Compost Kit","2,2",70.00,Sustainability enthusiast
+ORD-009,Iris Anderson,2025-11-20,2025-11-19,Overdue,Bread Loaf,2,12.00,Forgot to prepare - need to contact
+ORD-010,Jack Thomas,2025-11-21,2025-11-22,In Progress,Cookies,36,36.00,School bake sale
+ORD-011,Karen Martinez,2025-11-21,2025-11-26,Pending,Bread Loaf,10,60.00,Weekly bread subscription
+ORD-012,Leo Garcia,2025-11-20,2025-11-23,In Progress,Biochar Kit,5,125.00,Bulk order for community garden

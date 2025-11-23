@@ -132,6 +132,66 @@ class Marker:
     timestamp: datetime = field(default_factory=datetime.now)
 
 
+@dataclass
+class SegmentationMask:
+    """Semantic segmentation result (Phase 5)"""
+    mask: np.ndarray  # HxW segmentation mask (class IDs per pixel)
+    class_names: List[str]  # Class names indexed by ID
+    num_classes: int
+    width: int
+    height: int
+    confidence_map: Optional[np.ndarray] = None  # HxW confidence per pixel
+    timestamp: datetime = field(default_factory=datetime.now)
+
+    def get_class_mask(self, class_id: int) -> np.ndarray:
+        """Get binary mask for specific class"""
+        return (self.mask == class_id).astype(np.uint8)
+
+    def get_class_pixels(self, class_id: int) -> int:
+        """Count pixels of specific class"""
+        return np.sum(self.mask == class_id)
+
+
+@dataclass
+class Keypoint:
+    """Single body keypoint (Phase 5)"""
+    x: float  # 0.0-1.0 normalized
+    y: float
+    z: float  # Depth (if available)
+    visibility: float  # 0.0-1.0
+    presence: float = 1.0  # Whether keypoint is present in frame
+
+
+@dataclass
+class BodyPose:
+    """Full-body pose with 33 keypoints (MediaPipe Pose) (Phase 5)"""
+    keypoints: List[Keypoint]  # 33 keypoints
+    world_keypoints: Optional[List[Keypoint]] = None  # 3D world coordinates
+    confidence: float = 0.0
+    timestamp: datetime = field(default_factory=datetime.now)
+
+
+@dataclass
+class SLAMPose:
+    """SLAM camera pose estimate (Phase 5)"""
+    position: Tuple[float, float, float]  # (x, y, z) in meters
+    orientation: Tuple[float, float, float, float]  # Quaternion (x, y, z, w)
+    covariance: Optional[np.ndarray] = None  # 6x6 pose covariance
+    tracking_quality: float = 0.0  # 0.0-1.0
+    num_features: int = 0  # Number of tracked features
+    timestamp: datetime = field(default_factory=datetime.now)
+
+
+@dataclass
+class MapPoint:
+    """3D map point from SLAM (Phase 5)"""
+    id: int
+    position: Tuple[float, float, float]  # (x, y, z) in meters
+    descriptor: Optional[np.ndarray] = None
+    num_observations: int = 0
+    confidence: float = 1.0
+
+
 # ============================================================================
 # Vision Processor Protocol
 # ============================================================================

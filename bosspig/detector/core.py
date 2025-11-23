@@ -19,6 +19,8 @@ from pathlib import Path
 class Severity(Enum):
     """Severity classification for detected issues"""
     CRITICAL = "critical"  # Major issues that must be fixed
+    HIGH = "high"          # High priority issues
+    MEDIUM = "medium"      # Medium priority issues
     WARNING = "warning"    # Issues that should be fixed
     INFO = "info"          # Minor issues, suggestions
 
@@ -41,6 +43,21 @@ class FindingCategory(Enum):
     COMPLIANCE_ISSUES = "compliance_issues"
     MEETING_NOTES_ANTIPATTERNS = "meeting_notes_antipatterns"
     EMAIL_ANTIPATTERNS = "email_antipatterns"
+    # Category 16: Specificity Enforcement
+    VAGUE_LANGUAGE = "vague_language"
+    UNMEASURABLE_CLAIM = "unmeasurable_claim"
+    RELATIVE_WITHOUT_BASELINE = "relative_without_baseline"
+    # Category 17: Brand Guidelines Compliance
+    BRAND_CAPITALIZATION = "brand_capitalization"
+    PROHIBITED_TERM = "prohibited_term"
+    NON_PREFERRED_TERM = "non_preferred_term"
+    TONE_VIOLATION = "tone_violation"
+    # Category 18: Governance & Policy Tools
+    MISSING_SECTION = "missing_section"
+    MISSING_DISCLAIMER = "missing_disclaimer"
+    MISSING_APPROVAL = "missing_approval"
+    MISSING_VERSION_CONTROL = "missing_version_control"
+    COMPLIANCE_VIOLATION = "compliance_violation"
 
 
 @dataclass

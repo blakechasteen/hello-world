@@ -12,10 +12,12 @@ async def main():
 
     # Configuration
     config = Config.fast()  # Fast mode = good balance
+    config.enable_smart_routing = True  # ⚡ Phase 1: 15x speedup for simple queries!
 
     # Create RAG system
     async with SimpleRAG(config=config) as rag:
-        print("✓ RAG system initialized\n")
+        print("✓ RAG system initialized")
+        print("⚡ Smart routing enabled (15x speedup for simple queries)\n")
 
         # ========================================
         # STEP 1: INGEST YOUR DATA

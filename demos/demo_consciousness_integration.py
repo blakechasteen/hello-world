@@ -40,28 +40,36 @@ def create_test_shards() -> List[MemoryShard]:
     """Create test knowledge base about Thompson Sampling."""
     shards = [
         MemoryShard(
+            id="shard_1",
             text="Thompson Sampling is a Bayesian approach to the exploration-exploitation dilemma in reinforcement learning.",
-            source="textbook",
+            entities=["Thompson Sampling", "Bayesian", "exploration-exploitation", "reinforcement learning"],
+            motifs=["definition", "bayesian_method"],
             timestamp=1.0,
-            embedding=None
+            metadata={"source": "textbook"}
         ),
         MemoryShard(
+            id="shard_2",
             text="Thompson Sampling maintains Beta distributions for each action, updating alpha/beta parameters based on rewards.",
-            source="paper",
+            entities=["Thompson Sampling", "Beta distributions", "alpha", "beta", "rewards"],
+            motifs=["algorithm", "parameters"],
             timestamp=2.0,
-            embedding=None
+            metadata={"source": "paper"}
         ),
         MemoryShard(
+            id="shard_3",
             text="Compared to epsilon-greedy, Thompson Sampling achieves better regret bounds in multi-armed bandit problems.",
-            source="research",
+            entities=["Thompson Sampling", "epsilon-greedy", "regret bounds", "multi-armed bandit"],
+            motifs=["comparison", "performance"],
             timestamp=3.0,
-            embedding=None
+            metadata={"source": "research"}
         ),
         MemoryShard(
+            id="shard_4",
             text="Thompson Sampling is particularly effective when you need to balance exploration and exploitation naturally.",
-            source="tutorial",
+            entities=["Thompson Sampling", "exploration", "exploitation"],
+            motifs=["use_case", "effectiveness"],
             timestamp=4.0,
-            embedding=None
+            metadata={"source": "tutorial"}
         ),
     ]
     return shards
@@ -84,21 +92,21 @@ async def demo_1_weaving_orchestrator():
         spacetime = await orchestrator.weave(query)
 
         # Display results
-        print("\n📊 Weaving Orchestrator Results:")
+        print("\n[Results] Weaving Orchestrator:")
         print(f"  Query: {query.text}")
         print(f"  Confidence: {spacetime.confidence:.3f}")
 
         # Check awareness metadata
         if 'awareness' in spacetime.metadata:
             awareness = spacetime.metadata['awareness']
-            print(f"\n🧠 Awareness Context:")
+            print(f"\n[Awareness] Context:")
             print(f"  Activation Level: {awareness.get('activation_level', 0.0):.3f}")
             print(f"  Coherence: {awareness.get('coherence', 0.0):.3f}")
             print(f"  Active Nodes: {awareness.get('active_nodes', 0)}")
             print(f"  Shift Detected: {awareness.get('shift_detected', False)}")
             print(f"  Perception Time: {awareness.get('perception_time_ms', 0.0):.2f}ms")
         else:
-            print("\n⚠️  Awareness context not available (awareness_layer may be disabled)")
+            print("\n[Warning] Awareness context not available (awareness_layer may be disabled)")
 
         return spacetime
 
@@ -122,24 +130,24 @@ async def demo_2_rag_epistemic():
         result = await rag.query(query, mode="direct")
 
         # Display results
-        print(f"\n📊 RAG Results:")
+        print(f"\n[Results] RAG:")
         print(f"  Query: {query}")
         print(f"  Response: {result.response[:200]}...")
         print(f"  Confidence: {result.confidence:.3f}")
 
         if result.epistemic_confidence is not None:
-            print(f"\n🧠 Epistemic Confidence: {result.epistemic_confidence:.3f}")
+            print(f"\n[Epistemic] Confidence: {result.epistemic_confidence:.3f}")
             print(f"  (System's self-awareness of knowledge gaps)")
 
             # Interpret epistemic confidence
             if result.epistemic_confidence < 0.3:
-                print(f"  ⚠️  Very uncertain - requires more context")
+                print(f"  [Warning] Very uncertain - requires more context")
             elif result.epistemic_confidence < 0.6:
-                print(f"  🟡 Moderate uncertainty")
+                print(f"  [Caution] Moderate uncertainty")
             else:
-                print(f"  ✅ High confidence in answer quality")
+                print(f"  [OK] High confidence in answer quality")
         else:
-            print(f"\n⚠️  Epistemic confidence not available (awareness layer may be disabled)")
+            print(f"\n[Warning] Epistemic confidence not available (awareness layer may be disabled)")
 
         return result
 
@@ -161,7 +169,7 @@ async def demo_3_alignment_epistemic_humility():
         ("execute_code", 0.2, "Low confidence code execution"),
     ]
 
-    print("\n🛡️  Testing Safety Guardrails with Epistemic Humility:")
+    print("\n[Safety] Testing Guardrails with Epistemic Humility:")
 
     for action, epistemic_conf, description in test_cases:
         request = ActionRequest(
@@ -183,7 +191,7 @@ async def demo_3_alignment_epistemic_humility():
 
         # Check if epistemic humility adjusted risk
         if 'epistemic_warning' in decision.metadata:
-            print(f"    ⚠️  Epistemic Warning: {decision.metadata['epistemic_warning']}")
+            print(f"    [Warning] Epistemic: {decision.metadata['epistemic_warning']}")
 
 
 async def demo_4_agentic_multi_query():
@@ -219,7 +227,7 @@ async def demo_4_agentic_multi_query():
         result = await agent.reason(query, mode=mode, max_steps=3)
 
         # Display results
-        print(f"\n📊 Agentic Results:")
+        print(f"\n[Results] Agentic:")
         print(f"  Total Steps: {result.total_queries}")
         print(f"  Final Confidence: {result.spacetime.confidence:.3f}")
 
@@ -227,10 +235,10 @@ async def demo_4_agentic_multi_query():
             print(f"  Aggregated Epistemic Confidence: {result.aggregated_epistemic_confidence:.3f}")
             print(f"  (Weighted average across all reasoning steps)")
         else:
-            print(f"  ⚠️  Epistemic confidence not available")
+            print(f"  [Warning] Epistemic confidence not available")
 
         # Show step-by-step epistemic confidence
-        print(f"\n📈 Step-by-Step Epistemic Confidence:")
+        print(f"\n[Analysis] Step-by-Step Epistemic Confidence:")
         for i, step in enumerate(result.steps_taken):
             step_type = step.get('type', 'unknown')
             confidence = step.get('confidence', 0.0)
@@ -243,7 +251,7 @@ async def demo_4_agentic_multi_query():
 
         # Show verification results if available
         if result.verification:
-            print(f"\n✅ Verification:")
+            print(f"\n[Verification] Results:")
             print(f"  Verified: {result.verification.verified}")
             print(f"  Contradictions: {len(result.verification.contradictions)}")
             print(f"  Supporting Evidence: {len(result.verification.supporting_evidence)}")
@@ -270,12 +278,12 @@ async def main():
         await demo_4_agentic_multi_query()
 
         print("\n" + "="*80)
-        print("✅ All demos completed successfully!")
+        print("[SUCCESS] All demos completed successfully!")
         print("="*80)
 
     except Exception as e:
         logger.error(f"Demo failed: {e}", exc_info=True)
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
 
 
 if __name__ == "__main__":

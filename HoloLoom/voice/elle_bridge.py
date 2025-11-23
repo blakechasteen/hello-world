@@ -19,7 +19,7 @@ import time
 
 # HoloLoom imports
 try:
-    from HoloLoom.documentation.types import Query, ModalityType
+    from HoloLoom.protocols.types import Query, ModalityType
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError:

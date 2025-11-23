@@ -1,16 +1,16 @@
 """
-🐷 Wilbur - The AST Auto-Fixer Piglet
-=====================================
+🔷 Neo - The AST Auto-Fixer
+===========================
 
-"Some Pig wrote this code. I'm just making it prize-winning!" - Wilbur
+"There is no spoon... only abstract syntax trees" - Neo
 
 Phase 2 of xTerminator: Automated AST transformations for safe code fixes.
 
-Charlotte's Web of Wisdom:
-- "A function extracted is better than a function duplicated!"
-- "Dead code is like rotten food - throw it out!"
-- "Magic numbers are like mud - best cleaned up!"
-- "Templeton says: Unused imports are garbage - recycle them!"
+The Resistance's Code Wisdom:
+- "Bend the code, don't break it!" - Neo
+- "I've seen dead code you wouldn't believe" - Deckard
+- "No magic numbers, only constants" - Neo
+- "Time to retire this dangerous import" - Deckard
 
 Features:
 - 6 AST transformations (extract function, remove dead code, etc.)
@@ -61,9 +61,9 @@ class TransformationResult:
 
 class ASTFixer:
     """
-    🐷 AST Auto-Fixer - Transforms code safely using AST manipulations.
+    🔷 AST Auto-Fixer - Transforms code safely using AST manipulations.
 
-    "Some Pig wrote this code. I'm just making it prize-winning!" - Wilbur
+    "There is no spoon... only abstract syntax trees" - Neo
 
     Implements 6 core transformations:
     1. Extract Function - Deduplicate copy-paste code
@@ -100,7 +100,7 @@ class ASTFixer:
         Returns:
             (fixed_code, diff) tuple or None if fix failed
         """
-        # Charlotte's First Rule: Safety checks!
+        # Neo's First Rule: Safety checks!
         if not proposal.safe_to_autofix:
             return None
 
@@ -124,7 +124,7 @@ class ASTFixer:
             proposal.metadata['error'] = result.error
             return None
 
-        # Generate diff with Charlotte's commentary
+        # Generate diff with Resistance commentary
         diff = self._generate_diff(
             full_code,
             result.transformed_code,
@@ -171,7 +171,7 @@ class ASTFixer:
         """
         Extract duplicated code into a new function.
 
-        "A function extracted is better than a function duplicated!" - Charlotte
+        "There is no duplication... only structure" - Neo
         """
         try:
             # Find the duplicated code block
@@ -249,7 +249,7 @@ class ASTFixer:
         """
         Remove unreachable or dead code.
 
-        "Dead code is like rotten food - throw it out!" - Templeton
+        "I've seen dead code you people wouldn't believe" - Deckard
         """
         try:
             # Use AST visitor to find dead code
@@ -302,7 +302,7 @@ class ASTFixer:
         """
         Remove unused import statements.
 
-        "Unused imports are garbage - recycle them!" - Templeton
+        "Time to retire this dangerous import" - Deckard
         """
         try:
             # Find all imports
@@ -369,7 +369,7 @@ class ASTFixer:
         """
         Extract hardcoded values to module-level constants.
 
-        "Magic numbers are like mud - best cleaned up!" - Wilbur
+        "No magic numbers, only constants" - Neo
         """
         try:
             context = proposal.context
@@ -449,7 +449,7 @@ class ASTFixer:
         """
         Rename variable to follow conventions.
 
-        "Consistency is key - even for a humble pig!" - Wilbur
+        "Come with me if you want consistent naming" - Sarah Connor
         """
         try:
             # Extract old and new variable names from proposal
@@ -509,7 +509,7 @@ class ASTFixer:
         """
         Add missing type hints to function definitions.
 
-        "Types make code trustworthy!" - Charlotte
+        "Type safety protects the future" - Sarah Connor
         """
         try:
             context = proposal.context
@@ -595,7 +595,7 @@ class ASTFixer:
         proposal: FixProposal
     ) -> str:
         """
-        Generate unified diff with Charlotte's commentary.
+        Generate unified diff with Resistance commentary.
         """
         # Generate unified diff
         original_lines = original.splitlines(keepends=True)
@@ -611,29 +611,29 @@ class ASTFixer:
 
         diff_text = ''.join(diff)
 
-        # Add Charlotte's commentary
-        header = self._get_charlotte_commentary(proposal)
+        # Add Resistance commentary
+        header = self._get_resistance_commentary(proposal)
 
         return f"{header}\n\n{diff_text}"
 
-    def _get_charlotte_commentary(self, proposal: FixProposal) -> str:
-        """Get Charlotte's wisdom for this fix"""
+    def _get_resistance_commentary(self, proposal: FixProposal) -> str:
+        """Get the Resistance's wisdom for this fix"""
         category = proposal.issue_category.lower()
 
         if 'copy' in category or 'paste' in category:
-            return "🕷️ Charlotte says: 'A function extracted is better than a function duplicated!'"
+            return "🔷 Neo says: 'There is no duplication... only structure'"
         elif 'dead' in category:
-            return "🐀 Templeton's Rule: 'Dead code is like rotten food - throw it out!'"
+            return "🔍 Deckard: 'I've seen dead code you people wouldn't believe'"
         elif 'import' in category:
-            return "🐀 Templeton says: 'Unused imports are garbage - recycle them!'"
+            return "🔍 Deckard says: 'Time to retire this dangerous import'"
         elif 'magic' in category or 'hardcoded' in category:
-            return "🐷 Wilbur's Wisdom: 'Magic numbers are like mud - best cleaned up!'"
+            return "🔷 Neo's Wisdom: 'No magic numbers, only constants'"
         elif 'naming' in category:
-            return "🐷 Wilbur says: 'Consistency is key - even for a humble pig!'"
+            return "🔫 Sarah Connor says: 'Come with me if you want consistent naming'"
         elif 'type' in category:
-            return "🕷️ Charlotte says: 'Types make code trustworthy!'"
+            return "🔫 Sarah Connor says: 'Type safety protects the future'"
         else:
-            return "🐷 Some Pig made this code prize-winning!"
+            return "⚡ TRON: 'Fighting for the Users - End of line'"
 
     def _generate_function_name(
         self,

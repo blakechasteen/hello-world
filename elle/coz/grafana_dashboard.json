@@ -1,0 +1,402 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "UNHEALTHY"
+                },
+                "1": {
+                  "color": "orange",
+                  "index": 1,
+                  "text": "DEGRADED"
+                },
+                "2": {
+                  "color": "green",
+                  "index": 2,
+                  "text": "HEALTHY"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 2
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "8.0.0",
+      "targets": [
+        {
+          "expr": "coz_automation_health_status",
+          "refId": "A"
+        }
+      ],
+      "title": "Overall Health Status",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.0.0",
+      "targets": [
+        {
+          "expr": "coz_automation_check_status",
+          "legendFormat": "{{check}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Health Checks (5 checks)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "8.0.0",
+      "targets": [
+        {
+          "expr": "coz_automation_checks_failed",
+          "refId": "A"
+        }
+      ],
+      "title": "Failed Checks",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 12
+      },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "8.0.0",
+      "targets": [
+        {
+          "expr": "coz_automation_checks_total",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Checks",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 6,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "pluginVersion": "8.0.0",
+      "targets": [
+        {
+          "expr": "coz_automation_health_status",
+          "legendFormat": "Health Status",
+          "refId": "A"
+        },
+        {
+          "expr": "coz_automation_checks_failed",
+          "legendFormat": "Failed Checks",
+          "refId": "B"
+        }
+      ],
+      "title": "Health Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "content": "# COZ Daily Brief Automation - Monitoring Dashboard\n\n## Health Status Indicators\n\n- **HEALTHY (2)**: All systems operational\n- **DEGRADED (1)**: Some checks failing but system functional\n- **UNHEALTHY (0)**: Critical failure, system needs attention\n\n## Health Checks\n\n1. **output_directory**: Can write to output directory\n2. **disk_space**: Sufficient disk space (>100MB)\n3. **parsers**: COZ parsers initialized successfully\n4. **recent_briefs**: Recent briefs generated (<48 hours)\n5. **hololoom**: HoloLoom refinement available (optional)\n\n## Quick Actions\n\n- Check health: `python elle/coz/health_check.py`\n- View logs: `sudo journalctl -u coz-daily-brief -f`\n- Restart service: `sudo systemctl restart coz-daily-brief`\n- Generate brief manually: `python elle/coz/daily_brief_automation.py --once`\n\n## Alert Thresholds\n\n- **CRITICAL**: Health status < 1 for >10 minutes\n- **WARNING**: Failed checks >= 2 for >10 minutes\n- **INFO**: No recent brief for >24 hours",
+        "mode": "markdown"
+      },
+      "pluginVersion": "8.0.0",
+      "title": "Dashboard Guide",
+      "type": "text"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 7,
+      "options": {
+        "content": "## Recent Metrics\n\n**Last Update**: {{ coz_automation_last_check_timestamp_ms }}\n\n**System Status**:\n- Overall Health: {{ coz_automation_health_status }}\n- Failed Checks: {{ coz_automation_checks_failed }}\n- Total Checks: {{ coz_automation_checks_total }}\n\n**Individual Checks**:\n- Output Directory: {{ coz_automation_check_status{check=\"output_directory\"} }}\n- Disk Space: {{ coz_automation_check_status{check=\"disk_space\"} }}\n- Parsers: {{ coz_automation_check_status{check=\"parsers\"} }}\n- Recent Briefs: {{ coz_automation_check_status{check=\"recent_briefs\"} }}\n- HoloLoom: {{ coz_automation_check_status{check=\"hololoom\"} }}\n\n## Prometheus Queries\n\n```promql\n# Overall health\ncoz_automation_health_status\n\n# Failed checks over time\nrate(coz_automation_checks_failed[5m])\n\n# Check status by type\ncoz_automation_check_status{check=\"parsers\"}\n```",
+        "mode": "markdown"
+      },
+      "pluginVersion": "8.0.0",
+      "title": "Current Status",
+      "type": "text"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [
+    "coz",
+    "automation",
+    "daily-brief"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "COZ Daily Brief Automation",
+  "uid": "coz-automation",
+  "version": 1,
+  "description": "Monitoring dashboard for COZ daily brief automation system with health checks and performance metrics"
+}

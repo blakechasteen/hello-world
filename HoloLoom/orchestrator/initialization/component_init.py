@@ -149,7 +149,7 @@ def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
     if SHUTTLE_AVAILABLE and orchestrator.enable_shuttle:
         try:
             # Create retriever for Warp adapter
-            from HoloLoom.memory.backend_factory import create_retriever
+            from HoloLoom.memory.base import create_retriever
             retriever = create_retriever(orchestrator.cfg)
 
             # Create ShuttleStage with auto-derived config
@@ -269,7 +269,7 @@ def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
     # 5. Retriever (for context)
     # Only create traditional retriever if using shards (legacy path)
     if orchestrator.shards:
-        from HoloLoom.memory.backend_factory import create_retriever
+        from HoloLoom.memory.base import create_retriever
         # Legacy YarnGraph has .shards dict
         if hasattr(orchestrator.yarn_graph, 'shards'):
             orchestrator.retriever = create_retriever(

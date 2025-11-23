@@ -1,0 +1,276 @@
+{
+  "document_type": "technical_documentation",
+  "version": "1.0.0",
+  "last_updated": "2025-11-22",
+
+  "required_sections": {
+    "description": "Sections that must appear in all documents of this type",
+    "sections": [
+      {
+        "name": "Purpose",
+        "patterns": ["^\\s*#+\\s*Purpose", "^\\s*#+\\s*Overview", "^\\s*#+\\s*Introduction"],
+        "severity": "high",
+        "required": true
+      },
+      {
+        "name": "Scope",
+        "patterns": ["^\\s*#+\\s*Scope", "^\\s*#+\\s*Applicability"],
+        "severity": "medium",
+        "required": true
+      },
+      {
+        "name": "Responsibilities",
+        "patterns": ["^\\s*#+\\s*Responsibilities", "^\\s*#+\\s*Roles", "^\\s*#+\\s*Ownership"],
+        "severity": "medium",
+        "required": true
+      },
+      {
+        "name": "References",
+        "patterns": ["^\\s*#+\\s*References", "^\\s*#+\\s*Related Documents", "^\\s*#+\\s*See Also"],
+        "severity": "low",
+        "required": false
+      },
+      {
+        "name": "Version History",
+        "patterns": ["^\\s*#+\\s*Version History", "^\\s*#+\\s*Changelog", "^\\s*#+\\s*Revision History"],
+        "severity": "medium",
+        "required": true
+      }
+    ]
+  },
+
+  "required_disclaimers": {
+    "description": "Legal disclaimers and notices that must appear",
+    "disclaimers": [
+      {
+        "name": "Confidentiality Notice",
+        "patterns": [
+          "\\bconfidential\\b",
+          "\\bproprietary\\b",
+          "\\binternal use only\\b"
+        ],
+        "required_for": ["technical_documentation", "strategic_plans"],
+        "severity": "high",
+        "location": "beginning"
+      },
+      {
+        "name": "HIPAA Compliance",
+        "patterns": [
+          "HIPAA compliant",
+          "Protected Health Information",
+          "\\bPHI\\b"
+        ],
+        "required_for": ["healthcare"],
+        "severity": "critical",
+        "location": "any"
+      },
+      {
+        "name": "Data Retention",
+        "patterns": [
+          "data retention",
+          "retention policy",
+          "record keeping"
+        ],
+        "required_for": ["data_policies"],
+        "severity": "high",
+        "location": "any"
+      },
+      {
+        "name": "Export Control",
+        "patterns": [
+          "export control",
+          "ITAR",
+          "EAR"
+        ],
+        "required_for": ["technical_documentation"],
+        "severity": "medium",
+        "location": "any"
+      }
+    ]
+  },
+
+  "approval_workflows": {
+    "description": "Approval metadata that should be present",
+    "workflows": [
+      {
+        "name": "Author Information",
+        "patterns": [
+          "\\bAuthor:\\s*\\S+",
+          "\\bWritten by:\\s*\\S+",
+          "\\bCreated by:\\s*\\S+"
+        ],
+        "severity": "medium",
+        "required": true
+      },
+      {
+        "name": "Reviewer Approval",
+        "patterns": [
+          "\\bReviewed by:\\s*\\S+",
+          "\\bReviewer:\\s*\\S+",
+          "\\bApproved by:\\s*\\S+"
+        ],
+        "severity": "high",
+        "required": true
+      },
+      {
+        "name": "Approval Date",
+        "patterns": [
+          "\\bApproval Date:\\s*\\d{4}-\\d{2}-\\d{2}",
+          "\\bApproved on:\\s*\\d{4}-\\d{2}-\\d{2}",
+          "\\bDate Approved:\\s*\\d{4}-\\d{2}-\\d{2}"
+        ],
+        "severity": "high",
+        "required": true
+      },
+      {
+        "name": "Document Status",
+        "patterns": [
+          "\\bStatus:\\s*(Draft|Review|Approved|Archived)",
+          "\\bDocument Status:\\s*(Draft|Review|Approved|Archived)"
+        ],
+        "severity": "medium",
+        "required": true
+      }
+    ]
+  },
+
+  "version_control": {
+    "description": "Version control metadata requirements",
+    "requirements": [
+      {
+        "name": "Version Number",
+        "patterns": [
+          "\\bVersion:\\s*\\d+\\.\\d+(\\.\\d+)?",
+          "\\bv\\d+\\.\\d+(\\.\\d+)?\\b",
+          "\\bVersion Number:\\s*\\d+\\.\\d+"
+        ],
+        "severity": "high",
+        "required": true
+      },
+      {
+        "name": "Last Updated Date",
+        "patterns": [
+          "\\bLast Updated:\\s*\\d{4}-\\d{2}-\\d{2}",
+          "\\bUpdated:\\s*\\d{4}-\\d{2}-\\d{2}",
+          "\\bRevised:\\s*\\d{4}-\\d{2}-\\d{2}"
+        ],
+        "severity": "medium",
+        "required": true
+      },
+      {
+        "name": "Change Summary",
+        "patterns": [
+          "^#+\\s*Changes",
+          "^#+\\s*What's New",
+          "^#+\\s*Modifications"
+        ],
+        "severity": "low",
+        "required": false
+      }
+    ]
+  },
+
+  "compliance_frameworks": {
+    "description": "Industry compliance framework requirements",
+    "frameworks": [
+      {
+        "name": "HIPAA",
+        "required_elements": [
+          {
+            "element": "PHI Handling",
+            "patterns": ["Protected Health Information", "\\bPHI\\b"],
+            "severity": "critical"
+          },
+          {
+            "element": "Access Controls",
+            "patterns": ["access control", "authentication", "authorization"],
+            "severity": "critical"
+          },
+          {
+            "element": "Audit Trail",
+            "patterns": ["audit log", "audit trail", "logging"],
+            "severity": "high"
+          },
+          {
+            "element": "Encryption",
+            "patterns": ["encryption", "encrypted", "TLS", "SSL"],
+            "severity": "critical"
+          }
+        ]
+      },
+      {
+        "name": "SOC2",
+        "required_elements": [
+          {
+            "element": "Security Controls",
+            "patterns": ["security control", "security measure", "safeguard"],
+            "severity": "high"
+          },
+          {
+            "element": "Availability",
+            "patterns": ["uptime", "availability", "SLA", "service level"],
+            "severity": "high"
+          },
+          {
+            "element": "Confidentiality",
+            "patterns": ["confidential", "data classification", "sensitive"],
+            "severity": "high"
+          },
+          {
+            "element": "Processing Integrity",
+            "patterns": ["data integrity", "validation", "verification"],
+            "severity": "medium"
+          }
+        ]
+      },
+      {
+        "name": "GDPR",
+        "required_elements": [
+          {
+            "element": "Data Subject Rights",
+            "patterns": ["right to access", "right to erasure", "data portability"],
+            "severity": "critical"
+          },
+          {
+            "element": "Lawful Basis",
+            "patterns": ["lawful basis", "consent", "legitimate interest"],
+            "severity": "critical"
+          },
+          {
+            "element": "Data Protection",
+            "patterns": ["data protection", "privacy by design", "pseudonymization"],
+            "severity": "high"
+          },
+          {
+            "element": "Breach Notification",
+            "patterns": ["breach notification", "incident response", "72 hour"],
+            "severity": "critical"
+          }
+        ]
+      }
+    ]
+  },
+
+  "document_types": {
+    "technical_documentation": {
+      "required_sections": ["Purpose", "Scope", "Responsibilities", "Version History"],
+      "required_disclaimers": ["Confidentiality Notice"],
+      "compliance_frameworks": []
+    },
+    "healthcare": {
+      "required_sections": ["Purpose", "Scope", "Responsibilities"],
+      "required_disclaimers": ["Confidentiality Notice", "HIPAA Compliance"],
+      "compliance_frameworks": ["HIPAA"]
+    },
+    "data_policies": {
+      "required_sections": ["Purpose", "Scope", "Responsibilities", "Version History"],
+      "required_disclaimers": ["Data Retention"],
+      "compliance_frameworks": ["SOC2", "GDPR"]
+    },
+    "strategic_plans": {
+      "required_sections": ["Purpose", "Scope"],
+      "required_disclaimers": ["Confidentiality Notice"],
+      "compliance_frameworks": []
+    }
+  }
+}

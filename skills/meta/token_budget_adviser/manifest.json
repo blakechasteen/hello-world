@@ -21,8 +21,8 @@
     "dependencies": []
   },
   "package": {
-    "created_at": "2025-11-18T05:29:28.197402",
-    "source_path": "skills/meta/token_budget_adviser",
+    "created_at": "2025-11-22T18:00:12.266681",
+    "source_path": "skills\\meta\\token_budget_adviser",
     "builder_version": "1.0.0"
   }
 }

@@ -1,0 +1,48 @@
+# Zero-G Backend Requirements (MVP)
+# Python 3.9+
+
+# Core Dependencies (minimal for MVP)
+# No external dependencies required for MVP!
+# All MVP functionality uses Python standard library only.
+
+# Optional Dependencies (for production)
+# Uncomment as needed for post-MVP enhancements:
+
+# Web Framework
+# fastapi==0.104.1
+# uvicorn==0.24.0
+# pydantic==2.5.0
+
+# Async Support
+# aiohttp==3.9.0
+# asyncio-mqtt==0.16.1
+
+# Data Handling
+# numpy==1.24.3
+# pandas==2.0.3
+
+# Vector Store (for production WarpSpace)
+# qdrant-client==1.7.0
+# faiss-cpu==1.7.4
+
+# Graph Database (for production YarnGraph)
+# neo4j==5.14.1
+# networkx==3.2.1
+
+# Embeddings (for production WarpSpace)
+# sentence-transformers==2.2.2
+# torch==2.1.0
+
+# Testing
+# pytest==7.4.3
+# pytest-asyncio==0.21.1
+# pytest-cov==4.1.0
+
+# Logging & Monitoring
+# structlog==23.2.0
+# prometheus-client==0.19.0
+
+# Development
+# black==23.12.0
+# mypy==1.7.1
+# ruff==0.1.7

@@ -14,7 +14,8 @@ import time
 from typing import Optional
 from datetime import datetime
 
-from HoloLoom.documentation.types import Query, Spacetime, Features
+from HoloLoom.protocols.types import Query, Features
+from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.protocols.recursive_reasoning import (
     RecursiveReasoningProtocol,
     RecursiveConfig,

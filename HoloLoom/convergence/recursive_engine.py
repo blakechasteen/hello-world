@@ -14,7 +14,8 @@ import logging
 from typing import Optional, Callable
 from dataclasses import dataclass
 
-from HoloLoom.documentation.types import Query, Spacetime, Features
+from HoloLoom.protocols.types import Query, Features
+from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy
 from HoloLoom.convergence.recursive_reasoner import (
     BaseRecursiveReasoner,

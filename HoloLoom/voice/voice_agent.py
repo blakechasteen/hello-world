@@ -60,7 +60,7 @@ except ImportError:
 # HoloLoom imports
 try:
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.documentation.types import Query, ModalityType
+    from HoloLoom.protocols.types import Query, ModalityType
     from HoloLoom.memory.graph import KG, KGEdge
     HOLOLOOM_AVAILABLE = True
 except ImportError:

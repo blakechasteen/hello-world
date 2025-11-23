@@ -21,8 +21,8 @@
     "dependencies": []
   },
   "package": {
-    "created_at": "2025-11-18T05:29:28.202931",
-    "source_path": "skills/meta/continuous_learning_capture",
+    "created_at": "2025-11-22T18:00:12.170476",
+    "source_path": "skills\\meta\\continuous_learning_capture",
     "builder_version": "1.0.0"
   }
 }

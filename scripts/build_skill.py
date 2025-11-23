@@ -12,7 +12,7 @@ Usage:
 
 Features:
     - Validates skill.markdown schema
-    - Packages skill directory → .zip
+    - Packages skill directory -> .zip
     - Creates .skill format (renamed .zip with metadata)
     - Generates manifest.json
     - Outputs to skills/dist/
@@ -225,7 +225,7 @@ class SkillBuilder:
         skill_name = validation.metadata.name
 
         if validate_only:
-            print(f"✓ Validation passed for {skill_name}")
+            print(f"[OK] Validation passed for {skill_name}")
             if warnings:
                 print(f"  Warnings: {len(warnings)}")
                 for w in warnings:
@@ -287,12 +287,12 @@ class SkillBuilder:
                         results.append(result)
 
                         if result.success:
-                            print(f"✓ {result.skill_name} built successfully")
+                            print(f"[OK] {result.skill_name} built successfully")
                             if result.output_files:
                                 for f in result.output_files:
-                                    print(f"  → {f}")
+                                    print(f"  -> {f}")
                         else:
-                            print(f"✗ {result.skill_name} build failed")
+                            print(f"[FAIL] {result.skill_name} build failed")
                             for e in result.errors:
                                 print(f"  Error: {e}")
 
@@ -322,7 +322,7 @@ def print_summary(results: List[BuildResult]):
             if not r.success:
                 print(f"  - {r.skill_name}")
                 for e in r.errors[:3]:  # Show first 3 errors
-                    print(f"    → {e}")
+                    print(f"    -> {e}")
 
     total_warnings = sum(len(r.warnings) for r in results)
     if total_warnings > 0:
@@ -399,14 +399,14 @@ Examples:
         result = builder.build_skill(Path(args.skill_path), args.validate_only)
 
         if result.success:
-            print(f"\n✓ {result.skill_name} built successfully")
+            print(f"\n[OK] {result.skill_name} built successfully")
             if result.output_files:
                 print("Output files:")
                 for f in result.output_files:
-                    print(f"  → {f}")
+                    print(f"  -> {f}")
             sys.exit(0)
         else:
-            print(f"\n✗ {result.skill_name} build failed")
+            print(f"\n[FAIL] {result.skill_name} build failed")
             print("Errors:")
             for e in result.errors:
                 print(f"  - {e}")

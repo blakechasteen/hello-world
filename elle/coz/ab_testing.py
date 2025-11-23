@@ -359,13 +359,13 @@ class ABTester:
 
         # Recommendation
         if refined_wins > raw_wins * 1.5:
-            print("✅ RECOMMENDATION: Enable refinement in production")
+            print("[OK] RECOMMENDATION: Enable refinement in production")
             print(f"   Refined variant wins {refined_wins/total*100:.0f}% of tests")
         elif raw_wins > refined_wins:
-            print("⚠️  RECOMMENDATION: Keep refinement disabled")
+            print("[WARN] RECOMMENDATION: Keep refinement disabled")
             print(f"   Raw variant is sufficient ({raw_wins/total*100:.0f}% wins)")
         else:
-            print("🤔 RECOMMENDATION: Run more tests for statistical significance")
+            print("[INFO] RECOMMENDATION: Run more tests for statistical significance")
             print(f"   Results inconclusive (need {max(10-total, 0)} more iterations)")
 
         print("=" * 70)

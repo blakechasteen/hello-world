@@ -66,6 +66,10 @@ class VoiceAssistant:
         self.context = {}
         self.command_mode = True  # Milestone 2: Default to Command Mode (concise)
 
+        # Navigation history (Milestone 2)
+        self.navigation_history = []  # List of thread IDs
+        self.navigation_position = -1  # Current position in history
+
     async def initialize(self):
         """Initialize assistant (loads SOPs, initializes RAG, etc.)"""
         if self.verbose:
@@ -295,6 +299,217 @@ class VoiceAssistant:
             context.append(f"{role_label}: {msg.content}")
 
         return context
+
+    # ========================================================================
+    # Milestone 2: Structured Command Handlers
+    # ========================================================================
+
+    # Navigation Handlers
+    def _handle_nav_back(self) -> str:
+        """Navigate to previous thread in history"""
+        if len(self.navigation_history) < 2:
+            return "No previous thread"
+
+        # Current thread is at end of history, go to previous
+        self.navigation_history.pop()  # Remove current
+        prev_thread_id = self.navigation_history[-1]
+
+        # Switch to previous thread
+        thread = self.thread_manager.get_thread(prev_thread_id)
+        if thread:
+            self.thread_manager.active_thread_id = prev_thread_id
+            return f"Back to {thread.name}"
+        else:
+            return "Thread not found"
+
+    def _handle_nav_next(self) -> str:
+        """Navigate to next thread in history (forward)"""
+        if self.navigation_position >= len(self.navigation_history) - 1:
+            return "No next thread"
+
+        self.navigation_position += 1
+        next_thread_id = self.navigation_history[self.navigation_position]
+
+        thread = self.thread_manager.get_thread(next_thread_id)
+        if thread:
+            self.thread_manager.active_thread_id = next_thread_id
+            return f"Next: {thread.name}"
+        else:
+            return "Thread not found"
+
+    def _handle_nav_home(self) -> str:
+        """Navigate to default/first thread"""
+        threads = self.thread_manager.list_threads()
+        if not threads:
+            return "No threads available"
+
+        # Switch to first thread
+        first_thread = threads[0]
+        self.thread_manager.active_thread_id = first_thread.id
+        self._add_to_navigation_history(first_thread.id)
+        return f"Home: {first_thread.name}"
+
+    # Structured Thread Handlers (Brief Responses)
+    def _handle_thread_switch_structured(self, cmd: StructuredCommand) -> str:
+        """Switch thread using ID or name - brief response"""
+        if "thread_id" in cmd.parameters:
+            thread_id = cmd.parameters["thread_id"]
+            threads = self.thread_manager.list_threads()
+
+            # Find thread by index (1-based)
+            if 1 <= thread_id <= len(threads):
+                thread = threads[thread_id - 1]
+                self.thread_manager.active_thread_id = thread.id
+                self._add_to_navigation_history(thread.id)
+                return f"Thread {thread_id}"
+            else:
+                return f"No thread {thread_id}"
+
+        elif "thread_name" in cmd.parameters:
+            thread_name = cmd.parameters["thread_name"]
+            thread = self.thread_manager.switch_thread(thread_name)
+
+            if thread:
+                self._add_to_navigation_history(thread.id)
+                return f"{thread.name}"
+            else:
+                return f"No thread {thread_name}"
+
+        return "Invalid thread"
+
+    def _handle_thread_list_structured(self, cmd: StructuredCommand) -> str:
+        """List threads - brief response"""
+        threads = self.thread_manager.list_threads()
+
+        if not threads:
+            return "No threads"
+
+        # Brief list: just count and names
+        names = [t.name for t in threads[:3]]  # First 3 only
+        response = f"{len(threads)} threads"
+
+        if len(threads) <= 3:
+            response += f": {', '.join(names)}"
+
+        return response
+
+    def _handle_thread_create_structured(self, cmd: StructuredCommand) -> str:
+        """Create thread - brief response"""
+        topic = cmd.parameters.get("topic", "").strip()
+
+        if not topic:
+            return "Need topic"
+
+        thread = self.thread_manager.create_thread(name=topic, topic=topic)
+        self._add_to_navigation_history(thread.id)
+        return f"Created {topic}"
+
+    def _handle_thread_delete(self, cmd: StructuredCommand) -> str:
+        """Delete thread by ID"""
+        thread_id_index = cmd.parameters.get("thread_id")
+        threads = self.thread_manager.list_threads()
+
+        if 1 <= thread_id_index <= len(threads):
+            thread = threads[thread_id_index - 1]
+            thread_name = thread.name
+
+            # Remove from navigation history
+            if thread.id in self.navigation_history:
+                self.navigation_history.remove(thread.id)
+
+            # Delete thread
+            self.thread_manager.threads = [t for t in self.thread_manager.threads if t.id != thread.id]
+
+            # Switch to first thread if deleted active
+            if self.thread_manager.active_thread_id == thread.id and threads:
+                self.thread_manager.active_thread_id = threads[0].id
+
+            return f"Deleted {thread_name}"
+        else:
+            return f"No thread {thread_id_index}"
+
+    # Task Handlers
+    async def _handle_task_run(self, cmd: StructuredCommand) -> str:
+        """Execute task"""
+        task_name = cmd.parameters.get("task_name", "")
+
+        if not task_name:
+            return "Need task name"
+
+        # Placeholder: Task execution system to be implemented in Phase 3
+        # For now, acknowledge the command
+        return f"Running {task_name}"
+
+    def _handle_task_stop(self) -> str:
+        """Stop current task"""
+        # Placeholder: Task control to be implemented in Phase 3
+        return "Stopped"
+
+    def _handle_task_pause(self) -> str:
+        """Pause current task"""
+        # Placeholder: Task control to be implemented in Phase 3
+        return "Paused"
+
+    def _handle_task_resume(self) -> str:
+        """Resume paused task"""
+        # Placeholder: Task control to be implemented in Phase 3
+        return "Resumed"
+
+    def _handle_task_status(self) -> str:
+        """Show task status"""
+        # Placeholder: Task status to be implemented in Phase 3
+        return "No tasks running"
+
+    # Query Handlers
+    async def _handle_entity_lookup(self, cmd: StructuredCommand) -> str:
+        """Quick entity reference lookup"""
+        entity = cmd.parameters.get("entity", "")
+
+        if not entity:
+            return "Need entity name"
+
+        # Use VoiceSOPEditor for entity lookup
+        try:
+            query = f"What is {entity}?"
+            thread_context = self._get_thread_context()
+            response = await self.editor.process_voice_command(query, thread_context=thread_context)
+            return response
+        except Exception as e:
+            return f"Lookup failed: {str(e)}"
+
+    async def _handle_search(self, cmd: StructuredCommand) -> str:
+        """Knowledge base search"""
+        query = cmd.parameters.get("query", "")
+
+        if not query:
+            return "Need search query"
+
+        # Use VoiceSOPEditor for search
+        try:
+            search_query = f"Find {query}"
+            thread_context = self._get_thread_context()
+            response = await self.editor.process_voice_command(search_query, thread_context=thread_context)
+            return response
+        except Exception as e:
+            return f"Search failed: {str(e)}"
+
+    # Helper Methods
+    def _add_to_navigation_history(self, thread_id: str):
+        """Add thread to navigation history"""
+        # Avoid duplicates - only add if different from current
+        if not self.navigation_history or self.navigation_history[-1] != thread_id:
+            self.navigation_history.append(thread_id)
+
+            # Limit history to last 20 threads
+            if len(self.navigation_history) > 20:
+                self.navigation_history.pop(0)
+
+            # Reset forward navigation position
+            self.navigation_position = len(self.navigation_history) - 1
+
+    # ========================================================================
+    # End of Milestone 2 Handlers
+    # ========================================================================
 
     async def listen_and_respond(self) -> bool:
         """

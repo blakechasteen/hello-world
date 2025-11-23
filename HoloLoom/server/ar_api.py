@@ -15,9 +15,15 @@ Endpoints:
     - POST /ar/vision/detect_objects - Object detection (Phase 2)
     - POST /ar/vision/analyze_scene - Scene analysis (Phase 2)
     - POST /ar/vision/track_hands - Hand tracking (Phase 2)
+    - POST /ar/vision/estimate_depth - Depth estimation (Phase 4)
+    - POST /ar/vision/detect_markers - Marker detection (Phase 4)
+    - POST /ar/vision/segment_image - Semantic segmentation (Phase 5)
+    - POST /ar/vision/estimate_pose - Full-body pose estimation (Phase 5)
+    - POST /ar/vision/track_camera - SLAM camera tracking (Phase 5)
 
 Created: 2025-11-22 (Phase 1 Prototype)
 Updated: 2025-11-22 (Phase 2 - Vision Endpoints)
+Updated: 2025-11-22 (Phase 5 - Advanced Vision)
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile
@@ -127,6 +133,55 @@ class VisionHandsResponse(BaseModel):
     processing_time_ms: float
 
 
+class VisionDepthResponse(BaseModel):
+    """Depth estimation response (Phase 4)"""
+    depth_available: bool
+    width: int
+    height: int
+    min_depth: float
+    max_depth: float
+    unit: str  # normalized, meters, disparity
+    processing_time_ms: float
+
+
+class VisionMarkersResponse(BaseModel):
+    """Marker detection response (Phase 4)"""
+    markers: List[Dict[str, Any]]  # Marker serialized
+    count: int
+    processing_time_ms: float
+
+
+# ============================================================================
+# Vision Request/Response Models (Phase 5)
+# ============================================================================
+
+class VisionSegmentationResponse(BaseModel):
+    """Semantic segmentation response (Phase 5)"""
+    width: int
+    height: int
+    num_classes: int
+    class_names: List[str]
+    class_distribution: Dict[str, float]  # Percentage per class
+    processing_time_ms: float
+
+
+class VisionPoseResponse(BaseModel):
+    """Pose estimation response (Phase 5)"""
+    poses: List[Dict[str, Any]]  # BodyPose serialized
+    count: int
+    processing_time_ms: float
+
+
+class VisionSLAMResponse(BaseModel):
+    """SLAM camera tracking response (Phase 5)"""
+    position: List[float]  # [x, y, z]
+    orientation: List[float]  # Quaternion [x, y, z, w]
+    tracking_quality: float
+    num_features: int
+    map_points: int
+    processing_time_ms: float
+
+
 # ============================================================================
 # Session Management
 # ============================================================================
@@ -231,6 +286,15 @@ class ARAPI:
         self.hand_tracker = None
         self.vision_initialized = False
 
+        # Phase 4 processors
+        self.depth_estimator = None
+        self.marker_detector = None
+
+        # Phase 5 processors
+        self.semantic_segmenter = None
+        self.pose_estimator = None
+        self.slam_processor = None
+
         # Setup CORS
         self.app.add_middleware(
             CORSMiddleware,
@@ -272,6 +336,55 @@ class ARAPI:
             self.scene_analyzer = create_scene_analyzer()
             self.hand_tracker = create_hand_tracker(backend="mock")
             self.vision_initialized = False
+
+        # Initialize Phase 4 processors
+        try:
+            from HoloLoom.vision import create_depth_estimator, create_marker_detector
+
+            self.depth_estimator = create_depth_estimator(model="midas_small")
+            await self.depth_estimator.initialize()
+
+            self.marker_detector = create_marker_detector(marker_type="aruco")
+            await self.marker_detector.initialize()
+
+            logger.info("Phase 4 vision processors initialized successfully")
+        except Exception as e:
+            logger.warning(f"Phase 4 vision initialization failed: {e}")
+            self.depth_estimator = None
+            self.marker_detector = None
+
+        # Initialize Phase 5 processors
+        try:
+            from HoloLoom.vision import (
+                create_semantic_segmenter,
+                create_pose_estimator,
+                create_slam_processor,
+            )
+
+            self.semantic_segmenter = create_semantic_segmenter(
+                model="deeplabv3_resnet50",
+                dataset="coco"
+            )
+            await self.semantic_segmenter.initialize()
+
+            self.pose_estimator = create_pose_estimator(
+                model_complexity=1,  # Full model
+                enable_segmentation=False
+            )
+            await self.pose_estimator.initialize()
+
+            self.slam_processor = create_slam_processor(
+                feature_detector="orb",
+                max_features=500
+            )
+            await self.slam_processor.initialize()
+
+            logger.info("Phase 5 vision processors initialized successfully")
+        except Exception as e:
+            logger.warning(f"Phase 5 vision initialization failed: {e}")
+            self.semantic_segmenter = None
+            self.pose_estimator = None
+            self.slam_processor = None
 
         logger.info("AR API initialized")
 
@@ -587,6 +700,243 @@ class ARAPI:
 
             except Exception as e:
                 logger.error(f"Hand tracking error: {e}", exc_info=True)
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.post("/ar/vision/estimate_depth", response_model=VisionDepthResponse)
+        async def estimate_depth_endpoint(file: UploadFile = File(...)):
+            """
+            Depth estimation endpoint (Phase 4).
+
+            Estimates depth map from uploaded image using MiDaS or ZoeDepth.
+            Returns depth map metadata and processing time.
+            """
+            if not self.depth_estimator:
+                raise HTTPException(status_code=503, detail="Depth estimator not initialized")
+
+            try:
+                import time
+                start_time = time.time()
+
+                # Read image file
+                contents = await file.read()
+                image = Image.open(BytesIO(contents))
+                frame = np.array(image)
+
+                # Estimate depth
+                depth_map = await self.depth_estimator.estimate_depth(frame)
+
+                processing_time = (time.time() - start_time) * 1000
+
+                return VisionDepthResponse(
+                    depth_available=True,
+                    width=depth_map.width,
+                    height=depth_map.height,
+                    min_depth=float(depth_map.min_depth),
+                    max_depth=float(depth_map.max_depth),
+                    unit=depth_map.unit,
+                    processing_time_ms=processing_time,
+                )
+
+            except Exception as e:
+                logger.error(f"Depth estimation error: {e}", exc_info=True)
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.post("/ar/vision/detect_markers", response_model=VisionMarkersResponse)
+        async def detect_markers_endpoint(file: UploadFile = File(...)):
+            """
+            Marker detection endpoint (Phase 4).
+
+            Detects ArUco markers, QR codes, or AprilTags in uploaded image.
+            Returns markers with 2D corners and optional 6-DOF pose if camera calibrated.
+            """
+            if not self.marker_detector:
+                raise HTTPException(status_code=503, detail="Marker detector not initialized")
+
+            try:
+                import time
+                start_time = time.time()
+
+                # Read image file
+                contents = await file.read()
+                image = Image.open(BytesIO(contents))
+                frame = np.array(image)
+
+                # Detect markers
+                markers = await self.marker_detector.detect_markers(frame)
+
+                processing_time = (time.time() - start_time) * 1000
+
+                return VisionMarkersResponse(
+                    markers=[
+                        {
+                            "id": marker.id,
+                            "markerType": marker.marker_type,
+                            "corners": marker.corners,
+                            "center": marker.center,
+                            "position": marker.position,
+                            "rotation": marker.rotation,
+                            "data": marker.data,
+                            "confidence": marker.confidence,
+                        }
+                        for marker in markers
+                    ],
+                    count=len(markers),
+                    processing_time_ms=processing_time,
+                )
+
+            except Exception as e:
+                logger.error(f"Marker detection error: {e}", exc_info=True)
+                raise HTTPException(status_code=500, detail=str(e))
+
+        # ====================================================================
+        # Vision Processing Endpoints (Phase 5)
+        # ====================================================================
+
+        @self.app.post("/ar/vision/segment_image", response_model=VisionSegmentationResponse)
+        async def segment_image_endpoint(file: UploadFile = File(...)):
+            """
+            Semantic segmentation endpoint (Phase 5).
+
+            Performs pixel-level semantic segmentation using DeepLabV3 or SegFormer.
+            Returns segmentation mask, class distribution, and processing time.
+            """
+            if not self.semantic_segmenter:
+                raise HTTPException(status_code=503, detail="Semantic segmenter not initialized")
+
+            try:
+                import time
+                start_time = time.time()
+
+                # Read image file
+                contents = await file.read()
+                image = Image.open(BytesIO(contents))
+                frame = np.array(image)
+
+                # Segment image
+                segmentation = await self.semantic_segmenter.process_frame(frame)
+
+                # Calculate class distribution
+                from HoloLoom.vision import get_class_distribution
+                class_dist = get_class_distribution(segmentation)
+
+                processing_time = (time.time() - start_time) * 1000
+
+                return VisionSegmentationResponse(
+                    width=segmentation.width,
+                    height=segmentation.height,
+                    num_classes=segmentation.num_classes,
+                    class_names=segmentation.class_names,
+                    class_distribution=class_dist,
+                    processing_time_ms=processing_time,
+                )
+
+            except Exception as e:
+                logger.error(f"Semantic segmentation error: {e}", exc_info=True)
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.post("/ar/vision/estimate_pose", response_model=VisionPoseResponse)
+        async def estimate_pose_endpoint(file: UploadFile = File(...)):
+            """
+            Pose estimation endpoint (Phase 5).
+
+            Estimates full-body pose using MediaPipe Pose with 33 keypoints.
+            Returns body poses with 3D world coordinates, visibility scores, and gesture detection.
+            """
+            if not self.pose_estimator:
+                raise HTTPException(status_code=503, detail="Pose estimator not initialized")
+
+            try:
+                import time
+                start_time = time.time()
+
+                # Read image file
+                contents = await file.read()
+                image = Image.open(BytesIO(contents))
+                frame = np.array(image)
+
+                # Estimate pose
+                pose = await self.pose_estimator.process_frame(frame)
+
+                processing_time = (time.time() - start_time) * 1000
+
+                # Serialize pose
+                if pose:
+                    from HoloLoom.vision import detect_gesture
+
+                    gesture = detect_gesture(pose)
+
+                    poses_data = [
+                        {
+                            "keypoints": [
+                                {
+                                    "x": kp.x,
+                                    "y": kp.y,
+                                    "z": kp.z,
+                                    "visibility": kp.visibility,
+                                    "presence": kp.presence,
+                                }
+                                for kp in pose.keypoints
+                            ],
+                            "confidence": pose.confidence,
+                            "gesture": gesture,
+                        }
+                    ]
+                else:
+                    poses_data = []
+
+                return VisionPoseResponse(
+                    poses=poses_data,
+                    count=len(poses_data),
+                    processing_time_ms=processing_time,
+                )
+
+            except Exception as e:
+                logger.error(f"Pose estimation error: {e}", exc_info=True)
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.post("/ar/vision/track_camera", response_model=VisionSLAMResponse)
+        async def track_camera_endpoint(file: UploadFile = File(...)):
+            """
+            SLAM camera tracking endpoint (Phase 5).
+
+            Estimates camera pose using visual SLAM with ORB features.
+            Returns 6-DOF camera pose (position + orientation), tracking quality,
+            and number of tracked features.
+
+            Note: This endpoint processes a single frame. For real-time tracking,
+            use WebSocket with sequential frames to maintain SLAM state.
+            """
+            if not self.slam_processor:
+                raise HTTPException(status_code=503, detail="SLAM processor not initialized")
+
+            try:
+                import time
+                start_time = time.time()
+
+                # Read image file
+                contents = await file.read()
+                image = Image.open(BytesIO(contents))
+                frame = np.array(image)
+
+                # Track camera pose
+                slam_pose = await self.slam_processor.process_frame(frame)
+
+                processing_time = (time.time() - start_time) * 1000
+
+                # Get map points
+                map_points = self.slam_processor.get_map_points()
+
+                return VisionSLAMResponse(
+                    position=list(slam_pose.position),
+                    orientation=list(slam_pose.orientation),
+                    tracking_quality=slam_pose.tracking_quality,
+                    num_features=slam_pose.num_features,
+                    map_points=len(map_points),
+                    processing_time_ms=processing_time,
+                )
+
+            except Exception as e:
+                logger.error(f"SLAM tracking error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
 
     def _deserialize_context(self, data: Dict[str, Any]) -> ARContext:

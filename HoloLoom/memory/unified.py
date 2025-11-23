@@ -1040,6 +1040,119 @@ class UnifiedMemory:
             context={}
         )
 
+    # ========================================================================
+    # Production Health Checks (Priority #3)
+    # ========================================================================
+
+    def health_check(self) -> Dict[str, Any]:
+        """
+        Comprehensive health check for production deployments.
+
+        Returns system status, component availability, and performance metrics.
+        Used by Kubernetes liveness/readiness probes and monitoring systems.
+
+        Returns:
+            dict: Health status with the following structure:
+                {
+                    "status": "healthy" | "degraded" | "unhealthy",
+                    "timestamp": ISO timestamp,
+                    "components": {
+                        "backend": {"available": bool, "type": str},
+                        "conductor": {"available": bool, "enabled": bool},
+                        "graph": {"available": bool, "nodes": int, "edges": int},
+                        "awareness": {"available": bool}
+                    },
+                    "metrics": {
+                        "total_memories": int,
+                        "uptime_seconds": float
+                    },
+                    "errors": List[str]  # Any non-critical issues
+                }
+        """
+        from datetime import datetime
+        import time
+
+        health = {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "components": {},
+            "metrics": {},
+            "errors": []
+        }
+
+        # Check backend availability
+        health["components"]["backend"] = {
+            "available": self._backend_available,
+            "type": type(self._backend).__name__ if self._backend else "None"
+        }
+
+        # Check Memory Conductor availability
+        health["components"]["conductor"] = {
+            "available": self._conductor_available,
+            "enabled": self._conductor is not None
+        }
+
+        # Check graph backend
+        if self._backend_available and self._backend:
+            if hasattr(self._backend, 'graph'):
+                graph = self._backend.graph
+                if hasattr(graph, 'G'):
+                    health["components"]["graph"] = {
+                        "available": True,
+                        "nodes": graph.G.number_of_nodes(),
+                        "edges": graph.G.number_of_edges()
+                    }
+                else:
+                    health["components"]["graph"] = {"available": False}
+                    health["errors"].append("Graph backend missing G attribute")
+            else:
+                health["components"]["graph"] = {"available": False}
+                health["errors"].append("Backend missing graph attribute")
+        else:
+            health["components"]["graph"] = {"available": False}
+            health["errors"].append("Backend not available")
+
+        # Check awareness graph
+        if self._backend_available and self._backend:
+            if hasattr(self._backend, 'awareness_graph'):
+                health["components"]["awareness"] = {"available": True}
+            else:
+                health["components"]["awareness"] = {"available": False}
+        else:
+            health["components"]["awareness"] = {"available": False}
+
+        # Collect metrics
+        if self._backend_available and self._backend:
+            try:
+                # Count total memories (approximation)
+                if hasattr(self._backend, 'graph') and hasattr(self._backend.graph, 'G'):
+                    health["metrics"]["total_memories"] = self._backend.graph.G.number_of_nodes()
+                else:
+                    health["metrics"]["total_memories"] = 0
+            except Exception as e:
+                health["errors"].append(f"Failed to count memories: {str(e)}")
+                health["metrics"]["total_memories"] = 0
+        else:
+            health["metrics"]["total_memories"] = 0
+
+        # Calculate uptime (if tracking start time)
+        if hasattr(self, '_start_time'):
+            health["metrics"]["uptime_seconds"] = time.time() - self._start_time
+        else:
+            # Set start time for future health checks
+            self._start_time = time.time()
+            health["metrics"]["uptime_seconds"] = 0.0
+
+        # Determine overall status
+        if not self._backend_available:
+            health["status"] = "unhealthy"
+        elif health["errors"]:
+            health["status"] = "degraded"
+        else:
+            health["status"] = "healthy"
+
+        return health
+
 
 # ============================================================================
 # Example Usage - Clean and Intuitive

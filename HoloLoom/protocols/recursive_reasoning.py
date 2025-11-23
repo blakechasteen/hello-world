@@ -15,7 +15,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from abc import abstractmethod
 
-from HoloLoom.documentation.types import Features, Query, Spacetime
+from HoloLoom.protocols.types import Features, Query
+from HoloLoom.fabric.spacetime import Spacetime
 
 
 class ReasoningStrategy(Enum):

@@ -21,7 +21,9 @@
     "@tensorflow/tfjs": "^4.15.0",
     "@tensorflow/tfjs-backend-webgl": "^4.15.0",
     "@tensorflow-models/coco-ssd": "^2.2.3",
+    "@tensorflow-models/body-pix": "^2.2.1",
     "@mediapipe/hands": "^0.4.1675469240",
+    "@mediapipe/pose": "^0.5.1675469404",
     "@mediapipe/camera_utils": "^0.3.1675465747",
     "onnxruntime-web": "^1.16.3",
     "jsqr": "^1.4.0"

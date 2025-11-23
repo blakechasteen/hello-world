@@ -27,24 +27,40 @@ from .core import (
     DocumentStats
 )
 from .jargon_dict import load_jargon_dictionary, JARGON_REPLACEMENTS
+from .specificity import SpecificityDetector
+from .brand_guidelines import BrandGuidelinesDetector
+from .governance import GovernanceDetector
 
 
 class BossPigDetector:
     """
     Main BossPig detection engine.
 
-    Detects 5 categories of business slop (MVP):
+    Detects 15 categories of business slop:
     1. Corporate jargon
     2. Vague commitments
     3. Missing dates/deadlines
     4. AI hallucination markers
     5. Passive voice
+    6. Specificity enforcement (vague language, unmeasurable claims, relative statements)
+    7. Brand capitalization
+    8. Prohibited terms
+    9. Non-preferred terminology
+    10. Tone violations
+    11. Missing required sections
+    12. Missing required disclaimers
+    13. Missing approval metadata
+    14. Missing version control metadata
+    15. Compliance framework violations
     """
 
     def __init__(
         self,
         jargon_dict_path: Optional[Path] = None,
-        enable_nlp: bool = False
+        enable_nlp: bool = False,
+        brand_config_path: Optional[Path] = None,
+        governance_config_path: Optional[Path] = None,
+        document_type: str = "technical_documentation"
     ):
         """
         Initialize BossPig detector.
@@ -52,10 +68,25 @@ class BossPigDetector:
         Args:
             jargon_dict_path: Optional path to custom jargon dictionary JSON
             enable_nlp: Enable spaCy for NLP analysis (passive voice detection)
+            brand_config_path: Optional path to custom brand_config.json
+            governance_config_path: Optional path to custom governance_config.json
+            document_type: Type of document for governance validation (technical_documentation, healthcare, data_policies, etc.)
         """
         self.jargon_dict = load_jargon_dictionary(jargon_dict_path)
         self.matcher = PatternMatcher(case_sensitive=False)
         self.enable_nlp = enable_nlp
+
+        # Initialize specificity detector (Category 16)
+        self.specificity_detector = SpecificityDetector()
+
+        # Initialize brand guidelines detector (Category 17)
+        self.brand_detector = BrandGuidelinesDetector(config_path=brand_config_path)
+
+        # Initialize governance detector (Category 18)
+        self.governance_detector = GovernanceDetector(
+            config_path=governance_config_path,
+            document_type=document_type
+        )
 
         # Try to import spaCy for passive voice detection
         self.nlp = None
@@ -97,6 +128,15 @@ class BossPigDetector:
         findings.extend(self.detect_missing_dates(text))
         findings.extend(self.detect_ai_hallucinations(text))
         findings.extend(self.detect_passive_voice(text))
+
+        # Category 16: Specificity Enforcement (new)
+        findings.extend(self.specificity_detector.analyze(text))
+
+        # Category 17: Brand Guidelines Compliance (new)
+        findings.extend(self.brand_detector.analyze(text))
+
+        # Category 18: Governance & Policy Tools (new)
+        findings.extend(self.governance_detector.analyze(text))
 
         # Calculate quality metrics
         metrics = self.calculate_quality_metrics(text, findings, doc_stats)
@@ -420,8 +460,9 @@ class BossPigDetector:
         # Clarity score: 1.0 - (jargon_count / total_words)
         clarity_score = max(0.0, 1.0 - (jargon_count / total_words))
 
-        # Specificity score: 1.0 - (vague_phrases / total_sentences)
-        specificity_score = max(0.0, 1.0 - ((vague_count + missing_dates_count) / total_sentences))
+        # Specificity score: Use advanced SpecificityDetector scoring (Category 16)
+        # This includes vague language, unmeasurable claims, and relative statements
+        specificity_score = self.specificity_detector.calculate_specificity_score(text, findings)
 
         # Actionability score: Assume 1 action item per paragraph is ideal
         # Deduct for passive voice (unclear ownership)

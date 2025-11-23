@@ -35,6 +35,8 @@ from HoloLoom.agentic.ml_logic_detector import MLLogicDetector, Language as Code
 from HoloLoom.config import Config
 from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.alignment.audit_trail import AuditTrail
+from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest, RiskLevel
+from HoloLoom.alignment.deception_detection import DeceptionDetector
 
 
 logging.basicConfig(level=logging.INFO)
@@ -316,6 +318,8 @@ class ServerState:
     """Global server state."""
     orchestrator: Optional[Any] = None
     audit_trail: Optional[AuditTrail] = None
+    safety_guardrails: Optional[SafetyGuardrails] = None  # Safety guardrails for risk gating
+    deception_detector: Optional[DeceptionDetector] = None  # Deception detection
     config: Optional[Config] = None
     shards: List[MemoryShard] = []
     memory_backend: Optional[Any] = None  # Persistent memory backend
@@ -351,6 +355,17 @@ async def startup():
 
     # Initialize audit trail
     state.audit_trail = AuditTrail(persist_path="./alignment_logs")
+
+    # Initialize alignment framework (safety guardrails + deception detection)
+    try:
+        state.safety_guardrails = SafetyGuardrails(
+            testing_mode=True,  # Auto-approve for demo (correct parameter name)
+        )
+        state.deception_detector = DeceptionDetector()
+        logger.info("✅ Alignment framework initialized (SafetyGuardrails + DeceptionDetection)")
+    except Exception as e:
+        logger.warning(f"⚠️  Alignment framework initialization failed: {e}")
+        logger.warning("   Proceeding without safety gating (NOT RECOMMENDED for production)")
 
     # ✅ Create persistent memory backend
     try:
@@ -582,7 +597,69 @@ async def query_endpoint(request: QueryRequest):
                 "workspace": request.context.workspace,
             }
 
-        # Run agentic reasoning
+        # ========================================================================
+        # SAFETY GATING (Alignment Framework Integration)
+        # ========================================================================
+        if state.safety_guardrails:
+            # Import ActionCategory for safety evaluation
+            from HoloLoom.alignment.safety_guardrails import ActionCategory
+
+            # Create action request for safety evaluation
+            action_request = ActionRequest(
+                action="code_analysis" if request.context else "text_query",
+                category=ActionCategory.QUERY if not request.context else ActionCategory.CODE_EXECUTION,
+                context={
+                    "query": text_value,
+                    "mode": request.mode,
+                    "max_steps": request.max_steps,
+                    "has_code_context": request.context is not None,
+                    "source": "vscode_extension",
+                    "timestamp": start_time.isoformat()
+                }
+            )
+
+            # Evaluate safety (synchronous method, not async)
+            gate_result = state.safety_guardrails.evaluate(action_request)
+
+            # Log safety decision
+            logger.info(f"🛡️  Safety Gate: {gate_result.risk_level.value} risk "
+                       f"(score={gate_result.safety_score:.2f}, allowed={gate_result.allowed})")
+
+            # Handle high-risk or blocked actions
+            if not gate_result.allowed:
+                # Blocked by safety guardrails
+                error_msg = (
+                    f"Query blocked by safety guardrails: {gate_result.reason}. "
+                    f"Risk level: {gate_result.risk_level.value} "
+                    f"(safety score: {gate_result.safety_score:.2f})"
+                )
+                logger.warning(f"⚠️  {error_msg}")
+
+                # Return 403 Forbidden (request valid but forbidden)
+                raise HTTPException(
+                    status_code=403,
+                    detail={
+                        "error": "safety_guardrail_blocked",
+                        "reason": gate_result.reason,
+                        "risk_level": gate_result.risk_level.value,
+                        "safety_score": gate_result.safety_score,
+                        "message": error_msg
+                    }
+                )
+
+            # Add safety metadata to query
+            if not query.metadata:
+                query.metadata = {}
+            query.metadata["safety_evaluation"] = {
+                "risk_level": gate_result.risk_level.value,
+                "safety_score": gate_result.safety_score,
+                "allowed": gate_result.allowed
+            }
+        # ========================================================================
+        # END SAFETY GATING
+        # ========================================================================
+
+        # Run agentic reasoning (now safety-approved)
         logger.info(f"Query: {request.text[:100]}... (mode={request.mode})")
         result: AgenticResult = await orchestrator.reason(
             query,
@@ -604,8 +681,46 @@ async def query_endpoint(request: QueryRequest):
         if state.stats:
             state.stats.record_query(request.mode, latency_ms, success=True)
 
+        # ========================================================================
+        # AUDIT TRAIL LOGGING (Alignment Framework Integration)
+        # ========================================================================
+        if state.audit_trail:
+            try:
+                # Import required enums
+                from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+
+                # Log decision (synchronous method with correct signature)
+                state.audit_trail.log_decision(
+                    decision_type=DecisionType.TOOL_SELECTION,
+                    outcome=OutcomeType.APPROVED,
+                    reason=f"Agentic reasoning completed successfully in {request.mode} mode",
+                    query_text=text_value,
+                    action_description=f"agentic_reasoning_{request.mode}",
+                    risk_level=query.metadata.get("safety_evaluation", {}).get("risk_level") if query.metadata else None,
+                    confidence=result.spacetime.confidence,
+                    metadata={
+                        "code_context": request.context.dict() if request.context else None,
+                        "max_steps": request.max_steps,
+                        "reasoning_mode": result.reasoning_mode.value,
+                        "steps_taken": len(result.steps_taken),
+                        "total_queries": result.total_queries,
+                        "timestamp": start_time.isoformat(),
+                        "query_id": result.spacetime.query_id,
+                        "latency_ms": latency_ms,
+                        "verification": result.verification is not None,
+                        "safety_score": query.metadata.get("safety_evaluation", {}).get("safety_score") if query.metadata else None
+                    }
+                )
+                logger.debug(f"📝 Logged to audit trail: query_id={result.spacetime.query_id}")
+            except Exception as e:
+                # Audit logging should never crash the request
+                logger.error(f"Failed to log to audit trail: {e}")
+        # ========================================================================
+        # END AUDIT TRAIL LOGGING
+        # ========================================================================
+
         # Format response (matches TypeScript AgenticResult interface)
-        return AgenticResponse(
+        response_obj = AgenticResponse(
             response=response_text,
             confidence=result.spacetime.confidence,
             reasoning_mode=result.reasoning_mode.value,
@@ -616,6 +731,12 @@ async def query_endpoint(request: QueryRequest):
             timestamp=start_time.isoformat(),
             query_id=result.spacetime.query_id
         )
+
+        # Add safety metadata to response logging (for transparency)
+        if query.metadata and "safety_evaluation" in query.metadata:
+            logger.info(f"🔒 Safety: {query.metadata['safety_evaluation']}")
+
+        return response_obj
 
     except HTTPException as e:
         # HTTPException (4xx) - user error, track but don't retry
@@ -670,6 +791,31 @@ async def get_stats():
         base_stats["audit_trail_entries"] = len(state.audit_trail.logs)
 
     return base_stats
+
+
+@app.get("/safety-stats")
+async def get_safety_stats():
+    """
+    Get safety guardrails statistics.
+
+    Useful for monitoring and investor demo.
+
+    Returns:
+        Dict with safety metrics
+    """
+    if not state.safety_guardrails:
+        return {
+            "enabled": False,
+            "message": "Safety guardrails not initialized"
+        }
+
+    # SafetyGuardrails doesn't have get_stats() - return basic status
+    return {
+        "enabled": True,
+        "testing_mode": True,
+        "deception_detection_enabled": state.deception_detector is not None,
+        "message": "Safety guardrails active (testing mode - auto-approves for demo)"
+    }
 
 
 @app.get("/audit-trail")

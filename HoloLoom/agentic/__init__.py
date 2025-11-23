@@ -57,6 +57,16 @@ from .embedding_integrity import (
     QualityMetrics,
 )
 
+from .skills import (
+    execute_skill,
+    list_available_skills,
+    get_registry,
+    SkillRegistry,
+    SkillExecutor,
+    SkillTemplate,
+    SkillExecutionResult,
+)
+
 __all__ = [
     # Core agentic reasoning
     "AgenticOrchestrator",
@@ -76,4 +86,13 @@ __all__ = [
     "EmbeddingIntegrityMonitor",
     "DeterminismCheck",
     "QualityMetrics",
+
+    # Skills system
+    "execute_skill",
+    "list_available_skills",
+    "get_registry",
+    "SkillRegistry",
+    "SkillExecutor",
+    "SkillTemplate",
+    "SkillExecutionResult",
 ]
