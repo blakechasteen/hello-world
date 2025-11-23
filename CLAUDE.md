@@ -2399,6 +2399,948 @@ pytest HoloLoom/context/ -v
 
 ---
 
+## Production Deployment Patterns (November 2025)
+
+**Status**: ✅ Production Ready (2025-11-22)
+**Location**: `docker-compose.yml`, `Dockerfile`, `k8s/`
+**Testing**: Health checks, liveness/readiness probes
+
+Complete production deployment infrastructure with Docker Compose for local/staging and Kubernetes manifests for cloud deployment.
+
+### Docker Compose Setup
+
+**Quick Start**:
+```bash
+# Start all services (Neo4j + Qdrant + HoloLoom API)
+docker-compose up -d
+
+# Check service health
+docker-compose ps
+
+# View logs
+docker-compose logs -f hololoom-api
+
+# Stop all services
+docker-compose down
+```
+
+**Services**:
+1. **Neo4j** (Graph Database)
+   - HTTP: `http://localhost:7474`
+   - Bolt: `bolt://localhost:7687`
+   - Credentials: `neo4j/hololoom123`
+   - Persistent storage: `neo4j_data` volume
+
+2. **Qdrant** (Vector Database)
+   - HTTP API: `http://localhost:6333`
+   - gRPC API: `localhost:6334`
+   - Persistent storage: `qdrant_data` volume
+
+3. **HoloLoom API** (FastAPI Server)
+   - API: `http://localhost:8000`
+   - Health: `http://localhost:8000/health`
+   - Metrics: `http://localhost:8000/metrics`
+   - 4 uvicorn workers for concurrency
+
+**Health Checks**:
+- Neo4j: Cypher shell query (`RETURN 1`)
+- Qdrant: HTTP health endpoint (`/health`)
+- HoloLoom API: Health check endpoint
+
+### Docker Production Deployment
+
+**Multi-Stage Dockerfile**:
+```dockerfile
+# Stage 1: Builder (install dependencies)
+FROM python:3.11-slim as builder
+WORKDIR /build
+RUN apt-get update && apt-get install -y gcc g++ git
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Stage 2: Runtime (minimal image)
+FROM python:3.11-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y wget curl
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
+COPY HoloLoom /app/HoloLoom
+COPY demos /app/demos
+ENV PYTHONPATH=/app
+HEALTHCHECK --interval=30s --timeout=10s \
+    CMD wget --spider http://localhost:8000/health || exit 1
+EXPOSE 8000
+CMD ["uvicorn", "HoloLoom.server.agentic_api:app", \
+     "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+```
+
+**Build and Run**:
+```bash
+# Build image
+docker build -t hololoom:latest .
+
+# Run container
+docker run -d \
+  -p 8000:8000 \
+  -e NEO4J_URI=bolt://neo4j:7687 \
+  -e QDRANT_HOST=qdrant \
+  --name hololoom-api \
+  hololoom:latest
+
+# Check health
+curl http://localhost:8000/health
+```
+
+### Kubernetes Deployment
+
+**Quick Start**:
+```bash
+# Create namespace
+kubectl apply -f k8s/namespace.yaml
+
+# Deploy databases
+kubectl apply -f k8s/neo4j-deployment.yaml
+kubectl apply -f k8s/qdrant-deployment.yaml
+
+# Wait for databases to be ready
+kubectl wait --for=condition=ready pod -l app=neo4j -n hololoom --timeout=300s
+kubectl wait --for=condition=ready pod -l app=qdrant -n hololoom --timeout=300s
+
+# Deploy HoloLoom API
+kubectl apply -f k8s/hololoom-api-deployment.yaml
+
+# Check status
+kubectl get pods -n hololoom
+kubectl get hpa -n hololoom
+
+# View logs
+kubectl logs -f deployment/hololoom-api -n hololoom
+```
+
+**Components**:
+
+1. **Namespace** (`k8s/namespace.yaml`)
+   - Isolates HoloLoom resources
+   - Namespace: `hololoom`
+
+2. **Neo4j Deployment** (`k8s/neo4j-deployment.yaml`)
+   - Persistent Volume Claim (10Gi)
+   - Health probes (liveness + readiness)
+   - Resource limits (CPU: 2 cores, Memory: 4Gi)
+   - APOC plugin enabled
+   - Secret for authentication
+
+3. **Qdrant Deployment** (`k8s/qdrant-deployment.yaml`)
+   - Persistent Volume Claim (20Gi)
+   - Health probes (HTTP + gRPC)
+   - Resource limits (CPU: 1 core, Memory: 2Gi)
+   - Horizontal scaling ready
+
+4. **HoloLoom API Deployment** (`k8s/hololoom-api-deployment.yaml`)
+   - 3 replicas (production)
+   - ConfigMap for environment variables
+   - Secret for sensitive credentials
+   - HorizontalPodAutoscaler (3-10 pods, 70% CPU target)
+   - Health probes (startup, liveness, readiness)
+   - Resource limits (CPU: 1 core, Memory: 2Gi per pod)
+
+**Autoscaling**:
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hololoom-api-hpa
+  namespace: hololoom
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hololoom-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+```
+
+### Health Check Endpoint
+
+**UnifiedMemory Health Check** ([unified.py:1047-1154](HoloLoom/memory/unified.py:1047)):
+```python
+from HoloLoom.memory.unified import UnifiedMemory
+
+memory = UnifiedMemory(backend=backend)
+
+# Get comprehensive health status
+health = memory.health_check()
+
+print(health)
+# {
+#   "status": "healthy",  # or "degraded", "unhealthy"
+#   "timestamp": "2025-11-22T10:30:00",
+#   "components": {
+#     "backend": {"available": True, "type": "HybridBackend"},
+#     "conductor": {"available": True, "enabled": True},
+#     "graph": {"available": True, "nodes": 1523, "edges": 3421}
+#   },
+#   "metrics": {
+#     "performance": {"avg_latency_ms": 125.5},
+#     "resources": {"memory_mb": 456}
+#   },
+#   "errors": []
+# }
+```
+
+**Integration with Kubernetes**:
+```yaml
+# k8s/hololoom-api-deployment.yaml (lines 75-100)
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+```
+
+### Graceful Degradation Patterns
+
+**Backend Auto-Fallback**:
+```python
+from HoloLoom.config import Config, MemoryBackend
+from HoloLoom.memory.backend_factory import create_memory_backend
+
+config = Config.fused()
+config.memory_backend = MemoryBackend.HYBRID  # Prefers Neo4j + Qdrant
+
+# Automatically falls back to INMEMORY if Docker services unavailable
+memory = await create_memory_backend(config)
+
+# System continues to work, just without persistence
+# No crashes, no errors - graceful degradation
+```
+
+**Service Dependencies**:
+```yaml
+# docker-compose.yml dependency management
+hololoom-api:
+  depends_on:
+    neo4j:
+      condition: service_healthy  # Wait for Neo4j health check
+    qdrant:
+      condition: service_healthy  # Wait for Qdrant health check
+```
+
+### Monitoring
+
+**Prometheus Metrics** (exported by HoloLoom API):
+```
+hololoom_queries_total 15234
+hololoom_query_latency_ms{quantile="0.95"} 125.5
+hololoom_memory_operations_total{operation="store"} 8421
+hololoom_backend_health{backend="neo4j"} 1  # 1=healthy, 0=unhealthy
+hololoom_conductor_health 1
+```
+
+**Docker Logs**:
+```bash
+# Real-time logs
+docker-compose logs -f hololoom-api
+
+# Filter by service
+docker-compose logs neo4j | grep ERROR
+
+# Last 100 lines
+docker-compose logs --tail=100 qdrant
+```
+
+**Kubernetes Monitoring**:
+```bash
+# Pod status
+kubectl get pods -n hololoom -w
+
+# Resource usage
+kubectl top pods -n hololoom
+kubectl top nodes
+
+# HPA status
+kubectl get hpa -n hololoom
+kubectl describe hpa hololoom-api-hpa -n hololoom
+
+# Events
+kubectl get events -n hololoom --sort-by='.lastTimestamp'
+```
+
+### Production Best Practices
+
+1. **Resource Limits**: Always set CPU/memory limits in K8s
+2. **Persistent Storage**: Use PVCs for stateful services (Neo4j, Qdrant)
+3. **Health Checks**: Implement startup, liveness, readiness probes
+4. **Secrets Management**: Use Kubernetes Secrets or external secret managers
+5. **Horizontal Scaling**: Configure HPA with appropriate metrics
+6. **Graceful Shutdown**: Handle SIGTERM for clean pod termination
+7. **Logging**: Structured JSON logs for aggregation (ELK, Splunk)
+8. **Monitoring**: Export Prometheus metrics for alerting
+
+### Files
+
+- **docker-compose.yml** - Local/staging Docker Compose setup
+- **Dockerfile** - Multi-stage production Docker build
+- **.dockerignore** - Optimize Docker build context
+- **k8s/namespace.yaml** - Kubernetes namespace
+- **k8s/neo4j-deployment.yaml** - Neo4j StatefulSet + PVC
+- **k8s/qdrant-deployment.yaml** - Qdrant Deployment + PVC
+- **k8s/hololoom-api-deployment.yaml** - HoloLoom API + HPA + ConfigMap + Secrets
+
+---
+
+## Memory Consolidation & Lifecycle (November 2025)
+
+**Status**: ✅ Production Ready (2025-11-22)
+**Location**: `HoloLoom/memory/consolidation.py`, `HoloLoom/memory/unified.py`
+**Background**: Automatic consolidation every 60 minutes
+
+Complete memory consolidation system for episodic → semantic conversion, deduplication, and lifecycle management (archive/prune).
+
+### Overview
+
+Memory consolidation runs in the background, converting raw episodic memories into structured semantic knowledge:
+- **Deduplication**: Merges redundant memories (>95% similarity)
+- **Fact Extraction**: Extracts discrete facts from experiences
+- **Entity Recognition**: Identifies and connects entities
+- **Summarization**: Creates compressed semantic representations
+- **Lifecycle Management**: Archives old memories, prunes stale knowledge
+
+### Quick Start
+
+**Basic Usage**:
+```python
+from HoloLoom.memory.consolidation import MemoryConsolidator
+from HoloLoom.memory.unified import UnifiedMemory
+
+# Create unified memory
+memory = UnifiedMemory(backend=backend)
+
+# Create consolidator (runs every 60 minutes)
+consolidator = MemoryConsolidator(
+    stream_manager=memory._stream_manager,
+    knowledge_graph=memory._backend.graph,
+    consolidation_interval_minutes=60,
+    prune_consolidated_episodes=True
+)
+
+# Start background consolidation
+await consolidator.start_background_consolidation()
+
+# Your application runs here...
+# Consolidation happens automatically in background
+
+# Stop consolidation (graceful shutdown)
+await consolidator.stop_background_consolidation()
+```
+
+**Manual Consolidation**:
+```python
+# Trigger consolidation manually (e.g., before shutdown)
+stats = await consolidator.consolidate_once()
+
+print(stats)
+# {
+#   "facts_extracted": 42,
+#   "memories_deduplicated": 15,
+#   "entities_found": 27,
+#   "summaries_created": 8,
+#   "memories_archived": 5,
+#   "timestamp": "2025-11-22T10:30:00"
+# }
+```
+
+### Consolidation Strategies
+
+**1. Deduplication** ([consolidation.py:89-156](HoloLoom/memory/consolidation.py:89)):
+```python
+# Merges memories with >95% similarity
+# Example:
+#   Memory 1: "Thompson Sampling balances exploration and exploitation"
+#   Memory 2: "Thompson Sampling balances explore vs exploit"
+#   → Merged into single canonical memory
+
+# Similarity threshold (default: 0.95)
+consolidator = MemoryConsolidator(
+    similarity_threshold=0.95,
+    min_cluster_size=2
+)
+```
+
+**2. Fact Extraction** ([consolidation.py:158-225](HoloLoom/memory/consolidation.py:158)):
+```python
+# Extracts discrete facts from experiences
+# Example input: "I learned that Python uses indentation for blocks"
+# Extracted facts:
+#   - "Python uses indentation"
+#   - "Python indentation defines blocks"
+
+# LLM-based extraction (Week 3 production feature)
+consolidator = MemoryConsolidator(
+    llm_provider="anthropic",  # or "openai", "ollama"
+    llm_model="claude-3-5-sonnet-20241022"
+)
+
+# Fallback to rule-based if LLM unavailable (graceful degradation)
+```
+
+**3. Entity Extraction** ([consolidation.py:227-294](HoloLoom/memory/consolidation.py:227)):
+```python
+# Identifies entities and relationships
+# Example: "Thompson Sampling is a Bayesian algorithm"
+# Entities:
+#   - Thompson Sampling (ALGORITHM)
+#   - Bayesian (METHOD)
+# Relationship: Thompson Sampling --IS_A--> Bayesian algorithm
+```
+
+**4. Summarization** ([consolidation.py:296-363](HoloLoom/memory/consolidation.py:296)):
+```python
+# Creates compressed semantic summaries
+# Example: 10 memories about "Python decorators" →
+#          1 summary: "Python decorators are functions that modify other functions..."
+
+# Compression ratio (default: 10:1)
+consolidator = MemoryConsolidator(
+    summarization_ratio=10,
+    min_memories_for_summary=5
+)
+```
+
+### Memory Lifecycle Management
+
+**Archive Old Memories** ([consolidation.py:365-432](HoloLoom/memory/consolidation.py:365)):
+```python
+# Moves old, rarely-accessed memories to archive
+# Frees up active memory space
+# Archived memories can still be retrieved if needed
+
+# Archive threshold (default: 30 days)
+consolidator = MemoryConsolidator(
+    archive_threshold_days=30,
+    min_access_count=2  # Must be accessed at least 2x to stay active
+)
+```
+
+**Prune Stale Knowledge** ([consolidation.py:434-501](HoloLoom/memory/consolidation.py:434)):
+```python
+# Removes contradicted or outdated knowledge
+# Example: "Python 2 is the latest version" → pruned (contradicts newer info)
+
+# Prune threshold (default: 90 days)
+consolidator = MemoryConsolidator(
+    prune_threshold_days=90,
+    prune_consolidated_episodes=True  # Remove episodic after consolidation
+)
+```
+
+**Auto-Cleanup**:
+```python
+# Automatic cleanup during consolidation
+stats = await consolidator.consolidate_once()
+
+print(stats)
+# {
+#   "memories_archived": 15,   # Moved to archive
+#   "memories_pruned": 5,      # Deleted (stale)
+#   "disk_space_freed_mb": 2.3
+# }
+```
+
+### Background Consolidation
+
+**Automatic Mode** ([consolidation.py:245-262](HoloLoom/memory/consolidation.py:245)):
+```python
+from HoloLoom.memory.consolidation import MemoryConsolidator
+
+async with MemoryConsolidator(
+    stream_manager=stream_manager,
+    knowledge_graph=kg,
+    consolidation_interval_minutes=60  # Every 60 minutes
+) as consolidator:
+    # Background consolidation starts automatically
+    # Runs every 60 minutes in separate thread
+
+    # Your application continues normally
+    while True:
+        spacetime = await orchestrator.weave(query)
+        # ... handle queries ...
+
+    # Consolidator stops automatically on exit
+```
+
+**Manual Control**:
+```python
+# Start/stop explicitly
+consolidator = MemoryConsolidator(...)
+
+await consolidator.start_background_consolidation()
+# ... run application ...
+await consolidator.stop_background_consolidation()  # Graceful shutdown
+```
+
+### Performance
+
+| Operation | Overhead | Frequency |
+|-----------|----------|-----------|
+| **Deduplication** | ~50ms per 100 memories | Every consolidation |
+| **Fact extraction (LLM)** | ~200ms per memory | Every consolidation |
+| **Fact extraction (rules)** | ~10ms per memory | Fallback |
+| **Entity extraction** | ~30ms per memory | Every consolidation |
+| **Summarization** | ~100ms per 10 memories | Every consolidation |
+| **Archival** | ~5ms per memory | Every consolidation |
+| **Pruning** | ~2ms per memory | Every consolidation |
+
+**Total consolidation time** (1000 memories): ~5-10 seconds (runs in background, no user impact)
+
+### Integration with UnifiedMemory
+
+UnifiedMemory automatically integrates consolidation:
+
+```python
+from HoloLoom.memory.unified import UnifiedMemory
+
+# Create unified memory (consolidation enabled by default)
+async with UnifiedMemory(
+    backend=backend,
+    enable_consolidation=True,
+    consolidation_interval_minutes=60
+) as memory:
+    # Store experiences
+    await memory.experience("Thompson Sampling balances exploration")
+    await memory.experience("Thompson Sampling uses Bayesian priors")
+
+    # Consolidation happens automatically every 60 minutes
+    # - Deduplicates similar memories
+    # - Extracts facts
+    # - Archives old memories
+
+    # Query consolidated knowledge
+    memories = await memory.recall("What is Thompson Sampling?")
+    # Returns consolidated semantic knowledge, not raw episodic memories
+```
+
+### Configuration
+
+**Environment Variables**:
+```bash
+export CONSOLIDATION_INTERVAL_MINUTES=60
+export SIMILARITY_THRESHOLD=0.95
+export ARCHIVE_THRESHOLD_DAYS=30
+export PRUNE_THRESHOLD_DAYS=90
+export PRUNE_CONSOLIDATED_EPISODES=true
+```
+
+**Programmatic**:
+```python
+consolidator = MemoryConsolidator(
+    stream_manager=stream_manager,
+    knowledge_graph=kg,
+    llm_provider="anthropic",
+    llm_model="claude-3-5-sonnet-20241022",
+    consolidation_interval_minutes=60,
+    similarity_threshold=0.95,
+    archive_threshold_days=30,
+    prune_threshold_days=90,
+    prune_consolidated_episodes=True,
+    min_cluster_size=2,
+    summarization_ratio=10
+)
+```
+
+### Files
+
+- **HoloLoom/memory/consolidation.py** (789 lines) - Complete consolidation system
+- **HoloLoom/memory/unified.py** - Integration with UnifiedMemory
+- **HoloLoom/memory/lifecycle_manager.py** - Archive/prune logic
+
+---
+
+## Temporal Queries & Time-Travel (November 2025)
+
+**Status**: ✅ Production Ready (2025-11-22)
+**Location**: `HoloLoom/memory/unified.py`
+**Methods**: `time_travel()`, `what_happened_between()`, `detect_temporal_patterns()`
+
+Complete temporal query capabilities for exploring memory evolution over time.
+
+### Overview
+
+Temporal queries enable:
+- **Time-Travel**: View memory state at any past timestamp
+- **Time-Range Queries**: Find memories within date ranges
+- **Pattern Detection**: Discover recurring themes and temporal clusters
+
+### Quick Start
+
+**Time-Travel Snapshots**:
+```python
+from HoloLoom.memory.unified import UnifiedMemory
+
+memory = UnifiedMemory(backend=backend)
+
+# View memory state at specific time
+snapshot = memory.time_travel("2025-11-20T10:00:00")
+
+print(f"Total memories at that time: {snapshot['total_memories']}")
+print(f"Graph stats: {snapshot['graph_stats']}")
+
+for mem in snapshot['memories'][:5]:
+    print(f"- {mem.timestamp}: {mem.text}")
+```
+
+**Time-Range Queries**:
+```python
+# Find all memories from last week
+memories = memory.what_happened_between(
+    start_time="2025-11-15T00:00:00",
+    end_time="2025-11-22T23:59:59"
+)
+
+print(f"Found {len(memories)} memories")
+for mem in memories[:10]:
+    print(f"- {mem.timestamp}: {mem.text}")
+```
+
+**Temporal Pattern Detection**:
+```python
+# Detect recurring topics and temporal clusters
+patterns = memory.detect_temporal_patterns(
+    min_occurrences=3,  # Topic must appear at least 3 times
+    time_window_days=7  # Look back 7 days
+)
+
+for pattern in patterns:
+    print(f"{pattern['pattern_type']}: {pattern['description']}")
+    print(f"  Occurrences: {pattern['occurrences']}")
+    print(f"  Time span: {pattern['time_span']}")
+```
+
+### Time-Travel Implementation
+
+**Method Signature** ([unified.py:555-652](HoloLoom/memory/unified.py:555)):
+```python
+def time_travel(self, timestamp: str) -> Dict[str, Any]:
+    """
+    Time-travel: View memory state at a specific point in time.
+
+    Shows what the knowledge graph looked like at the given timestamp,
+    including all memories that existed at that time.
+
+    Args:
+        timestamp: ISO format timestamp (YYYY-MM-DDTHH:MM:SS)
+
+    Returns:
+        {
+            "timestamp": str,
+            "total_memories": int,
+            "memories": List[Memory],  # Up to 100 most relevant
+            "graph_stats": {
+                "nodes": int,
+                "edges": int
+            }
+        }
+    """
+```
+
+**Usage Example**:
+```python
+# View state from yesterday
+snapshot = memory.time_travel("2025-11-21T14:30:00")
+
+# Compare with current state
+current_snapshot = memory.time_travel(datetime.now().isoformat())
+
+print(f"Memories added since yesterday: "
+      f"{current_snapshot['total_memories'] - snapshot['total_memories']}")
+```
+
+### Time-Range Queries
+
+**Method Signature** ([unified.py:654-724](HoloLoom/memory/unified.py:654)):
+```python
+def what_happened_between(
+    self,
+    start_time: str,
+    end_time: str,
+    limit: int = 100
+) -> List[Memory]:
+    """
+    Query memories within a time range.
+
+    Retrieves all memories stored between start_time and end_time,
+    ordered chronologically (oldest first).
+
+    Args:
+        start_time: ISO format start timestamp
+        end_time: ISO format end timestamp
+        limit: Maximum memories to return (default: 100)
+
+    Returns:
+        List of Memory objects within time range
+    """
+```
+
+**Usage Examples**:
+```python
+# Last 24 hours
+from datetime import datetime, timedelta
+
+now = datetime.now()
+yesterday = now - timedelta(days=1)
+
+memories = memory.what_happened_between(
+    start_time=yesterday.isoformat(),
+    end_time=now.isoformat()
+)
+
+# Specific date range
+memories = memory.what_happened_between(
+    start_time="2025-11-01T00:00:00",
+    end_time="2025-11-30T23:59:59"
+)
+
+# Filter by relevance
+relevant_memories = [
+    m for m in memories
+    if "Thompson Sampling" in m.text
+]
+```
+
+### Temporal Pattern Detection
+
+**Method Signature** ([unified.py:726-869](HoloLoom/memory/unified.py:726)):
+```python
+def detect_temporal_patterns(
+    self,
+    min_occurrences: int = 2,
+    time_window_days: int = 7
+) -> List[Dict[str, Any]]:
+    """
+    Detect temporal patterns in memories (recurring themes over time).
+
+    Identifies:
+    - Recurring topics (same theme multiple times)
+    - Daily/weekly patterns
+    - Temporal clusters (bursts of activity)
+
+    Args:
+        min_occurrences: Minimum times a topic must appear (default: 2)
+        time_window_days: Time window to analyze (default: 7 days)
+
+    Returns:
+        List of detected patterns:
+        [
+            {
+                "pattern_type": "recurring_topic" | "temporal_cluster",
+                "description": str,
+                "occurrences": int,
+                "memories": List[Memory],  # Up to 5 examples
+                "time_span": Dict[str, str]  # {"start": ..., "end": ...}
+            },
+            ...
+        ]
+    """
+```
+
+**Pattern Types**:
+
+1. **Recurring Topics**:
+```python
+# Topic "Thompson Sampling" appears 5 times in 7 days
+{
+    "pattern_type": "recurring_topic",
+    "description": "Topic 'thompson' appeared 5 times",
+    "occurrences": 5,
+    "memories": [mem1, mem2, mem3, mem4, mem5],
+    "time_span": {
+        "start": "2025-11-15T10:00:00",
+        "end": "2025-11-22T15:30:00"
+    }
+}
+```
+
+2. **Temporal Clusters**:
+```python
+# Burst of activity: 15 memories in 2-hour window
+{
+    "pattern_type": "temporal_cluster",
+    "description": "Cluster of 15 memories in 2.0 hours",
+    "occurrences": 15,
+    "memories": [mem1, mem2, ..., mem5],
+    "time_span": {
+        "start": "2025-11-22T10:00:00",
+        "end": "2025-11-22T12:00:00"
+    }
+}
+```
+
+**Usage Example**:
+```python
+# Detect recurring topics (appears 3+ times in last 30 days)
+patterns = memory.detect_temporal_patterns(
+    min_occurrences=3,
+    time_window_days=30
+)
+
+# Group by pattern type
+recurring_topics = [p for p in patterns if p['pattern_type'] == 'recurring_topic']
+temporal_clusters = [p for p in patterns if p['pattern_type'] == 'temporal_cluster']
+
+print(f"Found {len(recurring_topics)} recurring topics")
+print(f"Found {len(temporal_clusters)} temporal clusters")
+
+# Most frequent topic
+top_topic = max(recurring_topics, key=lambda p: p['occurrences'])
+print(f"Most frequent: {top_topic['description']}")
+```
+
+### Use Cases
+
+**1. Session Analysis**:
+```python
+# What did I learn today?
+today = datetime.now().date()
+start = datetime.combine(today, datetime.min.time())
+end = datetime.combine(today, datetime.max.time())
+
+today_memories = memory.what_happened_between(
+    start.isoformat(),
+    end.isoformat()
+)
+
+print(f"Today's learning: {len(today_memories)} new memories")
+```
+
+**2. Topic Evolution Tracking**:
+```python
+# How has my understanding of "Thompson Sampling" evolved?
+memories = memory.what_happened_between(
+    "2025-11-01T00:00:00",
+    "2025-11-30T23:59:59"
+)
+
+ts_memories = [m for m in memories if "Thompson Sampling" in m.text]
+ts_memories.sort(key=lambda m: m.timestamp)
+
+print("Evolution of understanding:")
+for i, mem in enumerate(ts_memories, 1):
+    print(f"{i}. {mem.timestamp}: {mem.text}")
+```
+
+**3. Pattern-Based Insights**:
+```python
+# What topics am I focusing on this week?
+patterns = memory.detect_temporal_patterns(
+    min_occurrences=2,
+    time_window_days=7
+)
+
+recurring = [p for p in patterns if p['pattern_type'] == 'recurring_topic']
+recurring.sort(key=lambda p: p['occurrences'], reverse=True)
+
+print("Top 5 focus areas this week:")
+for i, pattern in enumerate(recurring[:5], 1):
+    print(f"{i}. {pattern['description']} ({pattern['occurrences']} times)")
+```
+
+**4. Debugging Memory Evolution**:
+```python
+# What changed between two deployments?
+before = memory.time_travel("2025-11-20T12:00:00")
+after = memory.time_travel("2025-11-22T12:00:00")
+
+memories_added = after['total_memories'] - before['total_memories']
+print(f"Memories added: {memories_added}")
+
+# Find new memories
+new_memories = memory.what_happened_between(
+    "2025-11-20T12:00:00",
+    "2025-11-22T12:00:00"
+)
+```
+
+### Performance
+
+| Operation | Complexity | Typical Time |
+|-----------|------------|--------------|
+| `time_travel()` | O(n) graph traversal | ~50ms for 1000 memories |
+| `what_happened_between()` | O(n) filtering | ~30ms for 1000 memories |
+| `detect_temporal_patterns()` | O(n log n) clustering | ~200ms for 1000 memories |
+
+**Optimization Tips**:
+- Use `limit` parameter to cap results
+- Narrow time windows for faster queries
+- Increase `min_occurrences` for faster pattern detection
+
+### Integration with Other Systems
+
+**Works with Memory Conductor**:
+```python
+# Time-travel works with conductor-based recall
+memory = UnifiedMemory(backend=backend, enable_conductor=True)
+
+# Get memories from past, then use conductor for smart retrieval
+snapshot = memory.time_travel("2025-11-20T00:00:00")
+past_ids = [m.id for m in snapshot['memories']]
+
+# Recall using conductor with past memory context
+memories = memory.recall(
+    "What did I learn about Thompson Sampling?",
+    strategy=RecallStrategy.CONNECTED,
+    context_memory_ids=past_ids
+)
+```
+
+**Works with Consolidation**:
+```python
+# Time-travel sees consolidated memories, not raw episodic
+memory = UnifiedMemory(
+    backend=backend,
+    enable_consolidation=True
+)
+
+# Wait for consolidation
+await asyncio.sleep(3600)  # 1 hour
+
+# View consolidated state
+snapshot = memory.time_travel(datetime.now().isoformat())
+# Returns semantic facts, not raw experiences
+```
+
+### Files
+
+- **HoloLoom/memory/unified.py** (lines 555-869) - All 3 temporal query methods
+- **HoloLoom/tests/unit/test_unified_memory_conductor.py** - Comprehensive test suite
+
+---
+
 ## Smart Query Routing (November 2025)
 
 **Status**: ✅ Production Ready

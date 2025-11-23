@@ -549,6 +549,326 @@ class UnifiedMemory:
         return memories
 
     # ========================================================================
+    # Temporal Queries (Priority #5)
+    # ========================================================================
+
+    def time_travel(self, timestamp: str) -> Dict[str, Any]:
+        """
+        Time-travel: View memory state at a specific point in time.
+
+        Shows what the knowledge graph looked like at the given timestamp,
+        including all memories that existed at that time.
+
+        Args:
+            timestamp: ISO format timestamp (e.g., "2025-11-22T10:30:00")
+
+        Returns:
+            dict: Snapshot of memory state at that time with:
+                {
+                    "timestamp": str,
+                    "total_memories": int,
+                    "memories": List[Memory],
+                    "graph_stats": {"nodes": int, "edges": int}
+                }
+
+        Example:
+            # What did I know on Nov 1st?
+            snapshot = memory.time_travel("2025-11-01T00:00:00")
+            print(f"Memories on Nov 1: {snapshot['total_memories']}")
+        """
+        from datetime import datetime
+
+        # Parse target timestamp
+        try:
+            target_time = datetime.fromisoformat(timestamp)
+        except:
+            return {
+                "error": "Invalid timestamp format. Use ISO format: YYYY-MM-DDTHH:MM:SS",
+                "timestamp": timestamp
+            }
+
+        snapshot = {
+            "timestamp": timestamp,
+            "total_memories": 0,
+            "memories": [],
+            "graph_stats": {"nodes": 0, "edges": 0}
+        }
+
+        # Get all memories from backend
+        if not self._backend_available or not self._backend:
+            return snapshot
+
+        # Filter memories by timestamp
+        if hasattr(self._backend, 'graph') and hasattr(self._backend.graph, 'G'):
+            graph = self._backend.graph
+            past_memories = []
+
+            for node_id in graph.G.nodes():
+                # Get node data
+                node_data = graph.G.nodes.get(node_id, {})
+
+                # Check if memory existed at target time
+                # Assuming node has 'created_at' or 'timestamp' metadata
+                mem_timestamp_str = node_data.get('timestamp') or node_data.get('created_at')
+
+                if mem_timestamp_str:
+                    try:
+                        mem_time = datetime.fromisoformat(mem_timestamp_str)
+                        if mem_time <= target_time:
+                            # This memory existed at target time
+                            mem = Memory(
+                                id=node_id,
+                                text=node_data.get('text', str(node_id)),
+                                timestamp=mem_timestamp_str,
+                                context=node_data.get('context', {})
+                            )
+                            past_memories.append(mem)
+                    except:
+                        pass
+
+            snapshot["total_memories"] = len(past_memories)
+            snapshot["memories"] = past_memories[:100]  # Limit to 100 for performance
+
+            # Count edges that existed at that time
+            edge_count = 0
+            for src, dst in graph.G.edges():
+                # Check if both nodes existed at target time
+                src_time = graph.G.nodes.get(src, {}).get('timestamp')
+                dst_time = graph.G.nodes.get(dst, {}).get('timestamp')
+
+                if src_time and dst_time:
+                    try:
+                        if (datetime.fromisoformat(src_time) <= target_time and
+                            datetime.fromisoformat(dst_time) <= target_time):
+                            edge_count += 1
+                    except:
+                        pass
+
+            snapshot["graph_stats"] = {
+                "nodes": len(past_memories),
+                "edges": edge_count
+            }
+
+        return snapshot
+
+    def what_happened_between(
+        self,
+        start_time: str,
+        end_time: str,
+        limit: int = 20
+    ) -> List[Memory]:
+        """
+        Query memories within a specific time range.
+
+        Args:
+            start_time: ISO format start timestamp
+            end_time: ISO format end timestamp
+            limit: Maximum number of memories to return
+
+        Returns:
+            List of Memory objects within the time range, sorted by timestamp
+
+        Example:
+            # What did I learn last week?
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            week_ago = now - timedelta(days=7)
+            memories = memory.what_happened_between(
+                week_ago.isoformat(),
+                now.isoformat()
+            )
+        """
+        from datetime import datetime
+
+        # Parse timestamps
+        try:
+            start_dt = datetime.fromisoformat(start_time)
+            end_dt = datetime.fromisoformat(end_time)
+        except:
+            return []
+
+        if not self._backend_available or not self._backend:
+            return []
+
+        # Get memories in time range
+        memories_in_range = []
+
+        if hasattr(self._backend, 'graph') and hasattr(self._backend.graph, 'G'):
+            graph = self._backend.graph
+
+            for node_id in graph.G.nodes():
+                node_data = graph.G.nodes.get(node_id, {})
+                mem_timestamp_str = node_data.get('timestamp') or node_data.get('created_at')
+
+                if mem_timestamp_str:
+                    try:
+                        mem_time = datetime.fromisoformat(mem_timestamp_str)
+
+                        if start_dt <= mem_time <= end_dt:
+                            mem = Memory(
+                                id=node_id,
+                                text=node_data.get('text', str(node_id)),
+                                timestamp=mem_timestamp_str,
+                                context=node_data.get('context', {})
+                            )
+                            memories_in_range.append(mem)
+                    except:
+                        pass
+
+        # Sort by timestamp (most recent first)
+        memories_in_range.sort(
+            key=lambda m: m.timestamp,
+            reverse=True
+        )
+
+        return memories_in_range[:limit]
+
+    def detect_temporal_patterns(
+        self,
+        min_occurrences: int = 2,
+        time_window_days: int = 7
+    ) -> List[Dict[str, Any]]:
+        """
+        Detect temporal patterns in memories (recurring themes over time).
+
+        Identifies:
+        - Recurring topics (same theme multiple times)
+        - Daily/weekly patterns
+        - Temporal clusters (bursts of activity)
+
+        Args:
+            min_occurrences: Minimum times a pattern must occur
+            time_window_days: Size of time window for clustering (days)
+
+        Returns:
+            List of temporal patterns, each with:
+                {
+                    "pattern_type": "recurring_topic" | "daily_pattern" | "cluster",
+                    "description": str,
+                    "occurrences": int,
+                    "memories": List[Memory],
+                    "time_span": str
+                }
+
+        Example:
+            patterns = memory.detect_temporal_patterns(min_occurrences=3)
+            for pattern in patterns:
+                print(f"{pattern['pattern_type']}: {pattern['description']}")
+        """
+        from datetime import datetime, timedelta
+        from collections import defaultdict
+
+        patterns = []
+
+        if not self._backend_available or not self._backend:
+            return patterns
+
+        # Get all memories with timestamps
+        timestamped_memories = []
+
+        if hasattr(self._backend, 'graph') and hasattr(self._backend.graph, 'G'):
+            graph = self._backend.graph
+
+            for node_id in graph.G.nodes():
+                node_data = graph.G.nodes.get(node_id, {})
+                mem_timestamp_str = node_data.get('timestamp') or node_data.get('created_at')
+
+                if mem_timestamp_str:
+                    try:
+                        mem_time = datetime.fromisoformat(mem_timestamp_str)
+                        mem = Memory(
+                            id=node_id,
+                            text=node_data.get('text', str(node_id)),
+                            timestamp=mem_timestamp_str,
+                            context=node_data.get('context', {})
+                        )
+                        timestamped_memories.append((mem_time, mem))
+                    except:
+                        pass
+
+        if len(timestamped_memories) < min_occurrences:
+            return patterns
+
+        # Sort by timestamp
+        timestamped_memories.sort(key=lambda x: x[0])
+
+        # Pattern 1: Recurring Topics (same words appearing multiple times)
+        topic_occurrences = defaultdict(list)
+
+        for mem_time, mem in timestamped_memories:
+            # Extract key words (simplified - could use NER)
+            words = set(mem.text.lower().split())
+
+            # Group by significant words (>4 characters)
+            for word in words:
+                if len(word) > 4:
+                    topic_occurrences[word].append((mem_time, mem))
+
+        # Find recurring topics
+        for topic, occurrences in topic_occurrences.items():
+            if len(occurrences) >= min_occurrences:
+                times = [t for t, _ in occurrences]
+                mems = [m for _, m in occurrences]
+
+                time_span = f"{times[0].date()} to {times[-1].date()}"
+
+                patterns.append({
+                    "pattern_type": "recurring_topic",
+                    "description": f"Topic '{topic}' appeared {len(occurrences)} times",
+                    "occurrences": len(occurrences),
+                    "memories": mems[:5],  # Limit to 5
+                    "time_span": time_span
+                })
+
+        # Pattern 2: Temporal Clusters (bursts of activity)
+        # Group memories into time windows
+        window = timedelta(days=time_window_days)
+        clusters = []
+        current_cluster = []
+        cluster_start = None
+
+        for mem_time, mem in timestamped_memories:
+            if not current_cluster:
+                # Start new cluster
+                current_cluster = [(mem_time, mem)]
+                cluster_start = mem_time
+            elif mem_time - cluster_start <= window:
+                # Add to current cluster
+                current_cluster.append((mem_time, mem))
+            else:
+                # Save current cluster if significant
+                if len(current_cluster) >= min_occurrences:
+                    clusters.append(current_cluster)
+
+                # Start new cluster
+                current_cluster = [(mem_time, mem)]
+                cluster_start = mem_time
+
+        # Don't forget last cluster
+        if len(current_cluster) >= min_occurrences:
+            clusters.append(current_cluster)
+
+        # Create pattern for each cluster
+        for cluster in clusters:
+            times = [t for t, _ in cluster]
+            mems = [m for _, m in cluster]
+
+            time_span = f"{times[0].date()} to {times[-1].date()}"
+
+            patterns.append({
+                "pattern_type": "temporal_cluster",
+                "description": f"Burst of {len(cluster)} memories in {time_window_days} days",
+                "occurrences": len(cluster),
+                "memories": mems[:5],
+                "time_span": time_span
+            })
+
+        # Sort patterns by occurrences (most frequent first)
+        patterns.sort(key=lambda p: p['occurrences'], reverse=True)
+
+        return patterns[:10]  # Return top 10 patterns
+
+    # ========================================================================
     # Internal Strategy Implementations (Hidden from User)
     # ========================================================================
 
