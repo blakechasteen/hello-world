@@ -89,7 +89,7 @@ class InventoryRecommendation:
     optimal_restock_date: Optional[date] = None
 
     # Reasoning
-    reasoning: str
+    reasoning: str = ""
     urgency_level: str = "normal"
 
 

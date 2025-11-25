@@ -224,11 +224,17 @@ async def demo_streaming_vs_batch(kg: KG, seed_nodes: List[str], importance_scor
     print("\n" + "-"*70)
     print("Results:")
     print("-"*70)
-    latency_reduction = (1 - first_chunk_time / batch_total_time) * 100
     print(f"  Batch time to first token:     {batch_total_time:.2f}ms")
     print(f"  Streaming time to first chunk: {first_chunk_time:.2f}ms")
-    print(f"  Latency reduction:             {latency_reduction:.1f}%")
-    print(f"  Speedup:                       {batch_total_time / first_chunk_time:.1f}x faster")
+
+    if batch_total_time > 0:
+        latency_reduction = (1 - first_chunk_time / batch_total_time) * 100
+        speedup = batch_total_time / first_chunk_time
+        print(f"  Latency reduction:             {latency_reduction:.1f}%")
+        print(f"  Speedup:                       {speedup:.1f}x faster")
+    else:
+        print(f"  Latency reduction:             N/A (batch too fast to measure)")
+        print(f"  Speedup:                       N/A")
 
     print("\n  [+] Streaming enables low-latency context availability")
     print("  [+] Can start generation before full expansion completes")

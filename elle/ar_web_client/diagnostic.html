@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elle AR - Diagnostics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #00ff88;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .ok {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .warn {
+            color: #ffaa00;
+            font-weight: bold;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .info-box {
+            background: rgba(102, 126, 234, 0.2);
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .success-box {
+            background: rgba(0, 255, 136, 0.2);
+            border-left: 4px solid #00ff88;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .steps {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .steps ol {
+            margin-left: 1.5rem;
+        }
+
+        .steps li {
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Elle AR - System Diagnostics</h1>
+
+    <h2>Browser Information</h2>
+    <div class="status">
+        <strong>User Agent:</strong><br/>
+        <code id="user-agent"></code>
+    </div>
+    <div class="status">
+        <strong>Platform:</strong> <span id="platform"></span>
+    </div>
+    <div class="status">
+        <strong>Current URL:</strong><br/>
+        <code id="current-url"></code>
+    </div>
+
+    <h2>API Support</h2>
+    <div class="status">
+        <strong>Camera API (getUserMedia):</strong> <span id="camera-api"></span>
+    </div>
+    <div class="status">
+        <strong>WebSocket API:</strong> <span id="websocket-api"></span>
+    </div>
+    <div class="status">
+        <strong>Speech Recognition:</strong> <span id="speech-api"></span>
+    </div>
+    <div class="status">
+        <strong>Speech Synthesis:</strong> <span id="tts-api"></span>
+    </div>
+
+    <h2>Security Context</h2>
+    <div class="status">
+        <strong>HTTPS Enabled:</strong> <span id="https-status"></span>
+    </div>
+    <div class="status">
+        <strong>Secure Context:</strong> <span id="secure-context"></span>
+    </div>
+
+    <div id="camera-warning" style="display: none;">
+        <div class="info-box">
+            <strong>⚠️ Camera Access Issue Detected</strong><br/>
+            <p>iPhone Safari requires HTTPS for camera access when using IP addresses.</p>
+            <div class="steps">
+                <strong>Solutions:</strong>
+                <ol>
+                    <li><strong>Use localhost</strong> (only works if testing on same device)</li>
+                    <li><strong>Deploy to Vercel</strong> (automatic HTTPS)</li>
+                    <li><strong>Use ngrok</strong> for HTTPS tunnel</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <h2>Network Test</h2>
+    <div class="status">
+        <strong>Backend URL:</strong><br/>
+        <code id="backend-url"></code>
+    </div>
+    <button id="test-connection">Test Backend Connection</button>
+    <div class="status" id="connection-result" style="display: none;">
+        <strong>Connection Test:</strong> <span id="connection-status"></span>
+    </div>
+
+    <h2>Camera Test</h2>
+    <button id="test-camera">Test Camera Access</button>
+    <div class="status" id="camera-result" style="display: none;">
+        <strong>Camera Test:</strong> <span id="camera-status"></span>
+    </div>
+
+    <div id="fix-steps" style="display: none;">
+        <h2>🛠️ How to Fix</h2>
+        <div class="steps" id="fix-instructions"></div>
+    </div>
+
+    <script>
+        // Get backend URL from demo.html
+        const BACKEND_URL = 'ws://172.17.160.1:8000/ws/ar';
+
+        // Browser info
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        document.getElementById('platform').textContent = navigator.platform;
+        document.getElementById('current-url').textContent = window.location.href;
+
+        // API support checks
+        function checkAPI(condition, elementId) {
+            const el = document.getElementById(elementId);
+            if (condition) {
+                el.innerHTML = '<span class="ok">✅ Supported</span>';
+                return true;
+            } else {
+                el.innerHTML = '<span class="error">❌ Not Supported</span>';
+                return false;
+            }
+        }
+
+        const hasCameraAPI = checkAPI(
+            navigator.mediaDevices && navigator.mediaDevices.getUserMedia,
+            'camera-api'
+        );
+
+        checkAPI(typeof WebSocket !== 'undefined', 'websocket-api');
+        checkAPI('webkitSpeechRecognition' in window, 'speech-api');
+        checkAPI('speechSynthesis' in window, 'tts-api');
+
+        // Security context
+        const isHTTPS = window.location.protocol === 'https:';
+        const isSecureContext = window.isSecureContext;
+
+        document.getElementById('https-status').innerHTML = isHTTPS
+            ? '<span class="ok">✅ HTTPS</span>'
+            : '<span class="warn">⚠️ HTTP (Camera may not work)</span>';
+
+        document.getElementById('secure-context').innerHTML = isSecureContext
+            ? '<span class="ok">✅ Secure</span>'
+            : '<span class="error">❌ Not Secure</span>';
+
+        // Show warning if camera API not available
+        if (!hasCameraAPI || !isSecureContext) {
+            document.getElementById('camera-warning').style.display = 'block';
+        }
+
+        // Backend connection test
+        document.getElementById('backend-url').textContent = BACKEND_URL;
+
+        document.getElementById('test-connection').addEventListener('click', async () => {
+            const resultEl = document.getElementById('connection-result');
+            const statusEl = document.getElementById('connection-status');
+            resultEl.style.display = 'block';
+            statusEl.innerHTML = '<span class="warn">⏳ Testing...</span>';
+
+            try {
+                const ws = new WebSocket(BACKEND_URL);
+
+                const timeout = setTimeout(() => {
+                    ws.close();
+                    statusEl.innerHTML = '<span class="error">❌ Connection timeout (10s)</span>';
+                    showFixSteps('backend');
+                }, 10000);
+
+                ws.onopen = () => {
+                    clearTimeout(timeout);
+                    statusEl.innerHTML = '<span class="ok">✅ Connected successfully!</span>';
+                    ws.close();
+                };
+
+                ws.onerror = (error) => {
+                    clearTimeout(timeout);
+                    statusEl.innerHTML = '<span class="error">❌ Connection failed</span>';
+                    showFixSteps('backend');
+                };
+
+            } catch (error) {
+                statusEl.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                showFixSteps('backend');
+            }
+        });
+
+        // Camera test
+        document.getElementById('test-camera').addEventListener('click', async () => {
+            const resultEl = document.getElementById('camera-result');
+            const statusEl = document.getElementById('camera-status');
+            resultEl.style.display = 'block';
+            statusEl.innerHTML = '<span class="warn">⏳ Requesting access...</span>';
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                statusEl.innerHTML = '<span class="error">❌ Camera API not available</span>';
+                showFixSteps('camera');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+
+                statusEl.innerHTML = '<span class="ok">✅ Camera access granted!</span>';
+
+                // Stop the stream
+                stream.getTracks().forEach(track => track.stop());
+
+            } catch (error) {
+                let errorMsg = error.message;
+                if (error.name === 'NotAllowedError') {
+                    errorMsg = 'Permission denied by user';
+                } else if (error.name === 'NotFoundError') {
+                    errorMsg = 'No camera found';
+                } else if (error.name === 'NotReadableError') {
+                    errorMsg = 'Camera in use by another app';
+                }
+
+                statusEl.innerHTML = `<span class="error">❌ ${errorMsg}</span>`;
+                showFixSteps('camera');
+            }
+        });
+
+        // Show fix steps
+        function showFixSteps(issue) {
+            const container = document.getElementById('fix-steps');
+            const instructions = document.getElementById('fix-instructions');
+            container.style.display = 'block';
+
+            if (issue === 'backend') {
+                instructions.innerHTML = `
+                    <strong>Backend Connection Failed</strong>
+                    <ol>
+                        <li>Check your PC's actual WiFi IP:
+                            <code>ipconfig | findstr IPv4</code>
+                            (NOT 172.x.x.x - that's WSL/virtual)
+                        </li>
+                        <li>Start HoloLoom backend:
+                            <code>python -m HoloLoom.server.agentic_api</code>
+                        </li>
+                        <li>Add firewall rule:
+                            <code>netsh advfirewall firewall add rule name="HoloLoom" dir=in action=allow protocol=TCP localport=8000</code>
+                        </li>
+                        <li>Make sure iPhone and PC are on <strong>same WiFi network</strong></li>
+                        <li>Update <code>demo.html</code> line 294 with correct IP</li>
+                    </ol>
+                `;
+            } else if (issue === 'camera') {
+                instructions.innerHTML = `
+                    <strong>Camera Access Failed</strong>
+                    <ol>
+                        <li><strong>HTTPS Required:</strong> iPhone Safari requires HTTPS for camera access via IP addresses</li>
+                        <li><strong>Option 1:</strong> Deploy to Vercel (automatic HTTPS):
+                            <code>vercel deploy</code>
+                        </li>
+                        <li><strong>Option 2:</strong> Use ngrok for HTTPS tunnel:
+                            <code>ngrok http 8080</code>
+                        </li>
+                        <li><strong>Option 3:</strong> Use the React app instead:
+                            <code>npm run dev</code> (supports HTTP on local network)
+                        </li>
+                        <li>Or check: Settings → Safari → Camera → Allow for this site</li>
+                    </ol>
+                `;
+            }
+        }
+
+        // Auto-detect issues
+        window.addEventListener('load', () => {
+            const issues = [];
+
+            if (!isSecureContext) {
+                issues.push('Camera requires HTTPS');
+                showFixSteps('camera');
+            }
+
+            if (BACKEND_URL.includes('172.17.') || BACKEND_URL.includes('172.18.')) {
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'info-box';
+                warningDiv.innerHTML = `
+                    <strong>⚠️ Potential IP Issue Detected</strong><br/>
+                    <p>Your backend URL uses <code>172.17.x.x</code> which is typically a WSL/Docker virtual network.</p>
+                    <p>Your actual WiFi IP is likely different. Run <code>ipconfig</code> and look for an IP starting with <code>192.168.x.x</code> or <code>10.x.x.x</code></p>
+                `;
+                document.querySelector('h2').after(warningDiv);
+            }
+        });
+    </script>
+</body>
+</html>

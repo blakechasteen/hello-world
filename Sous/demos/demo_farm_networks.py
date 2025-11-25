@@ -26,6 +26,7 @@ from decimal import Decimal
 
 # Import all Phase 3 components
 from sous.models.farm import Farm, FarmType, CertificationType
+from sous.models.organization import Location, OrganizationType
 from sous.models.marketplace import (
     Product, ProductCategory, ProductAvailability,
     Order, OrderStatus, OrderItem, FulfillmentMethod,
@@ -33,14 +34,14 @@ from sous.models.marketplace import (
 )
 from sous.models.csa import (
     CSASeasonType, CSAShareSize, CSADeliveryFrequency,
-    DeliveryMethod, create_subscription, create_season
+    DeliveryMethod, create_subscription, create_csa_season
 )
 from sous.services.farm_marketplace import FarmMarketplace
 from sous.services.csa_coordinator import CSACoordinator
 from sous.services.demand_forecaster import DemandForecaster
 from sous.services.loop_closure import (
     LoopClosureTracker, MaterialType, FlowStage,
-    create_material_flow, create_loop_connection
+    MaterialFlow, LoopConnection
 )
 from sous.services.transparency_dashboard import (
     TransparencyDashboard, create_transparency_dashboard
@@ -49,7 +50,7 @@ from sous.services.transparency_dashboard import (
 
 def load_sample_data():
     """Load sample farm data from JSON files"""
-    print("📂 Loading sample data...")
+    print("[DATA] Loading sample data...")
 
     data_dir = Path(__file__).parent.parent / "data"
 
@@ -65,10 +66,10 @@ def load_sample_data():
     with open(data_dir / "csa_seasons.json", "r") as f:
         csa_data = json.load(f)
 
-    print(f"   ✓ Loaded {len(farms_data['farms'])} farms")
-    print(f"   ✓ Loaded {len(products_data['products'])} products")
-    print(f"   ✓ Loaded {len(csa_data['seasons'])} CSA seasons")
-    print(f"   ✓ Loaded {len(csa_data['subscriptions'])} subscriptions")
+    print(f"   OK Loaded {len(farms_data['farms'])} farms")
+    print(f"   OK Loaded {len(products_data['products'])} products")
+    print(f"   OK Loaded {len(csa_data['seasons'])} CSA seasons")
+    print(f"   OK Loaded {len(csa_data['subscriptions'])} subscriptions")
     print()
 
     return farms_data, products_data, csa_data
@@ -76,31 +77,41 @@ def load_sample_data():
 
 def convert_farm_data(farm_dict):
     """Convert farm JSON to Farm object"""
-    return Farm(
-        farm_id=farm_dict["farm_id"],
-        name=farm_dict["name"],
-        farm_type=FarmType(farm_dict["farm_type"]),
+    # Create Location object
+    location = Location(
         address=farm_dict["location"]["address"],
         city=farm_dict["location"]["city"],
         state=farm_dict["location"]["state"],
-        zipcode=farm_dict["location"]["zipcode"],
+        zip_code=farm_dict["location"]["zipcode"],
+        latitude=farm_dict["location"]["coordinates"].get("lat") if "coordinates" in farm_dict["location"] else None,
+        longitude=farm_dict["location"]["coordinates"].get("lon") if "coordinates" in farm_dict["location"] else None
+    )
+
+    return Farm(
+        # Organization base fields
+        org_id=farm_dict["farm_id"],
+        name=farm_dict["name"],
+        org_type=OrganizationType.FARM,
+        location=location,
+        contact_name=f"{farm_dict['name']} Manager",
+        contact_email=farm_dict["contact"]["email"],
+        contact_phone=farm_dict["contact"]["phone"],
+
+        # Farm-specific fields
+        farm_type=FarmType(farm_dict["farm_type"]),
         total_acres=Decimal(str(farm_dict["total_acres"])),
-        organic_certified=farm_dict["organic_certified"],
         certifications=[
             CertificationType(cert) for cert in farm_dict["certifications"]
-        ] if farm_dict["certifications"] else [],
-        growing_zones=farm_dict["growing_zones"],
-        year_established=farm_dict["year_established"],
-        active=farm_dict["active"]
+        ] if farm_dict["certifications"] else []
     )
 
 
 def convert_product_data(product_dict):
     """Convert product JSON to Product object"""
     return create_product(
-        product_id=product_dict["product_id"],
         farm_id=product_dict["farm_id"],
         name=product_dict["name"],
+        description=product_dict["description"],
         category=ProductCategory(product_dict["category"]),
         price=Decimal(product_dict["price"]),
         unit=product_dict["unit"],
@@ -112,28 +123,28 @@ def convert_product_data(product_dict):
 async def demo_marketplace(marketplace, farms_data, products_data):
     """Demonstrate farm marketplace operations"""
     print("=" * 80)
-    print("🛒 FARM MARKETPLACE DEMO")
+    print("[MARKETPLACE] FARM MARKETPLACE DEMO")
     print("=" * 80)
     print()
 
     # Add farms to marketplace
-    print("➤ Adding farms to marketplace...")
+    print("> Adding farms to marketplace...")
     for farm_dict in farms_data["farms"]:
         farm = convert_farm_data(farm_dict)
-        marketplace.add_farm(farm)
-    print(f"   ✓ Added {len(marketplace.farms)} farms")
+        marketplace.register_farm(farm)
+    print(f"   OK Added {len(marketplace.farms)} farms")
     print()
 
     # Add products
-    print("➤ Adding products to marketplace...")
+    print("> Adding products to marketplace...")
     for product_dict in products_data["products"]:
         product = convert_product_data(product_dict)
         marketplace.add_product(product)
-    print(f"   ✓ Added {len(marketplace.products)} products")
+    print(f"   OK Added {len(marketplace.products)} products")
     print()
 
     # Search for organic vegetables
-    print("➤ Searching for organic vegetables...")
+    print("> Searching for organic vegetables...")
     results = marketplace.search_products(
         category=ProductCategory.VEGETABLES,
         organic_only=True
@@ -144,36 +155,37 @@ async def demo_marketplace(marketplace, farms_data, products_data):
     print()
 
     # Create a customer order
-    print("➤ Creating customer order...")
+    print("> Creating customer order...")
     customer_id = "customer_001"
 
-    # Get first 3 available products
-    available_products = [p for p in marketplace.products.values() if p.is_in_stock()][:3]
+    # Get first 3 available products from same farm
+    all_products = list(marketplace.products.values())
+    farm_id = "farm_001"  # Use Green Valley Urban Farm
+    available_products = [p for p in all_products if p.farm_id == farm_id and p.is_in_stock()][:3]
 
-    items = [
-        OrderItem(
+    # Add products to cart
+    for p in available_products:
+        marketplace.add_to_cart(
+            customer_id=customer_id,
+            farm_id=farm_id,
             product_id=p.product_id,
-            product_name=p.name,
-            quantity=Decimal("2"),
-            unit_price=p.price
+            quantity=Decimal("2")
         )
-        for p in available_products
-    ]
 
-    order = marketplace.create_order(
+    # Create order from cart
+    order = marketplace.create_order_from_cart(
         customer_id=customer_id,
-        farm_id=available_products[0].farm_id,
-        items=items,
+        farm_id=farm_id,
         fulfillment_method=FulfillmentMethod.PICKUP
     )
 
-    print(f"   ✓ Order {order.order_id} created")
+    print(f"   OK Order {order.order_id} created")
     print(f"      Total: ${order.total}")
     print(f"      Items: {len(order.items)}")
     print()
 
     # Get sales analytics
-    print("➤ Generating sales analytics...")
+    print("> Generating sales analytics...")
     end_date = date.today()
     start_date = end_date - timedelta(days=30)
 
@@ -190,19 +202,19 @@ async def demo_marketplace(marketplace, farms_data, products_data):
 async def demo_csa_coordinator(csa_coordinator, csa_data, farms_data):
     """Demonstrate CSA coordination"""
     print("=" * 80)
-    print("🥬 CSA COORDINATION DEMO")
+    print("[CSA] CSA COORDINATION DEMO")
     print("=" * 80)
     print()
 
     # Add farms
-    print("➤ Setting up CSA programs...")
+    print("> Setting up CSA programs...")
     for farm_dict in farms_data["farms"]:
         farm = convert_farm_data(farm_dict)
-        csa_coordinator.add_farm(farm)
+        csa_coordinator.register_farm(farm)
 
     # Create CSA seasons
     for season_dict in csa_data["seasons"]:
-        season = create_season(
+        season = create_csa_season(
             season_id=season_dict["season_id"],
             farm_id=season_dict["farm_id"],
             season_type=CSASeasonType(season_dict["season_type"]),
@@ -212,11 +224,11 @@ async def demo_csa_coordinator(csa_coordinator, csa_data, farms_data):
         )
         csa_coordinator.add_season(season)
 
-    print(f"   ✓ Created {len(csa_coordinator.seasons)} CSA seasons")
+    print(f"   OK Created {len(csa_coordinator.seasons)} CSA seasons")
     print()
 
     # Show active subscriptions
-    print("➤ Active CSA subscriptions:")
+    print("> Active CSA subscriptions:")
     active_subs = [s for s in csa_coordinator.subscriptions.values() if s.status == "active"]
     print(f"   Total active: {len(active_subs)}")
 
@@ -232,7 +244,7 @@ async def demo_csa_coordinator(csa_coordinator, csa_data, farms_data):
     print()
 
     # Get CSA analytics for a farm
-    print("➤ CSA analytics for Riverside Market Garden:")
+    print("> CSA analytics for Riverside Market Garden:")
     farm_id = "farm_002"
     season_id = "season_2025_summer"
 
@@ -248,20 +260,20 @@ async def demo_csa_coordinator(csa_coordinator, csa_data, farms_data):
 async def demo_demand_forecasting(forecaster, marketplace):
     """Demonstrate demand forecasting with HoloLoom"""
     print("=" * 80)
-    print("📊 DEMAND FORECASTING DEMO (HoloLoom ML)")
+    print("[FORECAST] DEMAND FORECASTING DEMO (HoloLoom ML)")
     print("=" * 80)
     print()
 
     # Initialize forecaster
     if forecaster.enabled:
-        print("✓ HoloLoom ML engine available")
+        print("OK HoloLoom ML engine available")
         await forecaster.initialize()
     else:
         print("⚠ HoloLoom unavailable - using baseline forecasting")
     print()
 
     # Record some historical sales
-    print("➤ Recording historical sales for learning...")
+    print("> Recording historical sales for learning...")
     products = list(marketplace.products.values())[:3]
 
     for product in products:
@@ -271,11 +283,11 @@ async def demo_demand_forecasting(forecaster, marketplace):
             quantity = Decimal("10") + Decimal(str(days_ago % 5))
             await forecaster.record_sale(product, quantity, product.price, sale_date)
 
-    print(f"   ✓ Recorded 30 days of sales for {len(products)} products")
+    print(f"   OK Recorded 30 days of sales for {len(products)} products")
     print()
 
     # Generate forecasts
-    print("➤ Generating 7-day demand forecasts...")
+    print("> Generating 7-day demand forecasts...")
     for product in products[:2]:
         forecast = await forecaster.forecast_demand(product, horizon_days=7)
 
@@ -287,7 +299,7 @@ async def demo_demand_forecasting(forecaster, marketplace):
         print()
 
     # Pricing recommendations
-    print("➤ Pricing optimization...")
+    print("> Pricing optimization...")
     product = products[0]
     pricing_rec = await forecaster.recommend_pricing(product)
 
@@ -303,45 +315,56 @@ async def demo_demand_forecasting(forecaster, marketplace):
 async def demo_loop_closure(loop_tracker):
     """Demonstrate circular economy tracking"""
     print("=" * 80)
-    print("♻️  CIRCULAR ECONOMY TRACKING DEMO")
+    print("[CIRCULAR]  CIRCULAR ECONOMY TRACKING DEMO")
     print("=" * 80)
     print()
 
     # Create loop connections
-    print("➤ Creating circular economy connections...")
+    print("> Creating circular economy connections...")
 
     # Restaurant → Farm loop
-    restaurant_to_farm = create_loop_connection(
+    restaurant_to_farm = LoopConnection(
         connection_id="loop_001",
         source_org_id="restaurant_001",
+        source_org_name="Local Restaurant",
         destination_org_id="farm_003",
-        material_types=[MaterialType.FOOD_SCRAPS, MaterialType.COMPOST]
+        destination_org_name="Willamette Valley Regenerative Farm",
+        material_types=[MaterialType.FOOD_SCRAPS, MaterialType.COMPOST],
+        active=True,
+        established_date=date.today() - timedelta(days=180)
     )
     loop_tracker.add_connection(restaurant_to_farm)
 
     # Store → Farm loop
-    store_to_farm = create_loop_connection(
+    store_to_farm = LoopConnection(
         connection_id="loop_002",
         source_org_id="grocery_store_001",
+        source_org_name="Community Grocery",
         destination_org_id="farm_002",
-        material_types=[MaterialType.ORGANIC_WASTE, MaterialType.COMPOST]
+        destination_org_name="Riverside Market Garden",
+        material_types=[MaterialType.ORGANIC_WASTE, MaterialType.COMPOST],
+        active=True,
+        established_date=date.today() - timedelta(days=90)
     )
     loop_tracker.add_connection(store_to_farm)
 
-    print(f"   ✓ Created {len(loop_tracker.connections)} circular loops")
+    print(f"   OK Created {len(loop_tracker.connections)} circular loops")
     print()
 
     # Record material flows
-    print("➤ Recording material flows...")
+    print("> Recording material flows...")
 
     # Scraps generated
-    flow1 = create_material_flow(
+    flow1 = MaterialFlow(
         flow_id="flow_001",
         source_org_id="restaurant_001",
+        source_org_name="Local Restaurant",
         destination_org_id="compost_facility_001",
+        destination_org_name="Community Compost",
         material_type=MaterialType.FOOD_SCRAPS,
         quantity_lbs=Decimal("500"),
-        stage=FlowStage.GENERATION
+        stage=FlowStage.GENERATION,
+        flow_date=date.today()
     )
     loop_tracker.record_material_generation(
         flow1.flow_id,
@@ -366,12 +389,12 @@ async def demo_loop_closure(loop_tracker):
         Decimal("10.0")  # acres
     )
 
-    print("   ✓ Recorded complete material flow cycle")
+    print("   OK Recorded complete material flow cycle")
     print("      Generation → Collection → Processing → Application")
     print()
 
     # Calculate circularity metrics
-    print("➤ Circularity metrics for Willamette Valley Regenerative Farm:")
+    print("> Circularity metrics for Willamette Valley Regenerative Farm:")
     end_date = date.today()
     start_date = end_date - timedelta(days=90)
 
@@ -386,7 +409,7 @@ async def demo_loop_closure(loop_tracker):
     print()
 
     # Network impact
-    print("➤ Network-wide impact report:")
+    print("> Network-wide impact report:")
     impact = loop_tracker.generate_impact_report(start_date, end_date)
 
     print(f"   Food scraps diverted: {impact['materials']['food_scraps_diverted_lbs']} lbs")
@@ -400,7 +423,7 @@ async def demo_loop_closure(loop_tracker):
 async def demo_transparency_dashboard(dashboard, marketplace, csa_coordinator, loop_tracker, forecaster):
     """Demonstrate sustainability transparency dashboard"""
     print("=" * 80)
-    print("🌱 SUSTAINABILITY TRANSPARENCY DASHBOARD")
+    print("[SUSTAINABILITY] SUSTAINABILITY TRANSPARENCY DASHBOARD")
     print("=" * 80)
     print()
 
@@ -411,7 +434,7 @@ async def demo_transparency_dashboard(dashboard, marketplace, csa_coordinator, l
     dashboard.forecaster = forecaster
 
     # Generate farm dashboard
-    print("➤ Generating farm sustainability dashboard...")
+    print("> Generating farm sustainability dashboard...")
     farm = marketplace.farms["farm_003"]  # Regenerative farm
 
     end_date = date.today()
@@ -478,14 +501,14 @@ async def demo_transparency_dashboard(dashboard, marketplace, csa_coordinator, l
 
     # Alerts
     if farm_dashboard.active_alerts:
-        print("   ⚠️  Active Alerts:")
+        print("   [WARNING]  Active Alerts:")
         for alert in farm_dashboard.active_alerts:
             print(f"      [{alert.severity.value.upper()}] {alert.title}")
             print(f"         {alert.description}")
         print()
 
     # Network dashboard
-    print("➤ Generating network-wide dashboard...")
+    print("> Generating network-wide dashboard...")
     network_dashboard = dashboard.generate_network_dashboard(start_date, end_date)
 
     print(f"   Total organizations: {network_dashboard.total_organizations}")
@@ -508,7 +531,7 @@ async def demo_transparency_dashboard(dashboard, marketplace, csa_coordinator, l
     print()
 
     # Top performers
-    print("   🏆 Top Performers:")
+    print("   [TOP] Top Performers:")
     print(f"      Carbon Sequestration:")
     for name, amount in network_dashboard.top_carbon_sequesterers[:3]:
         print(f"         {name}: {amount:,.0f} lbs")
@@ -523,16 +546,16 @@ async def demo_transparency_dashboard(dashboard, marketplace, csa_coordinator, l
     print()
 
     # Export dashboard data
-    print("➤ Exporting dashboard data...")
+    print("> Exporting dashboard data...")
     export_data = dashboard.export_dashboard(farm_dashboard)
-    print(f"   ✓ Dashboard exported ({len(json.dumps(export_data))} bytes)")
+    print(f"   OK Dashboard exported ({len(json.dumps(export_data))} bytes)")
     print()
 
 
 async def demo_scaling_potential():
     """Demonstrate scaling potential to 10k users, 125 farms"""
     print("=" * 80)
-    print("🚀 SCALING TO PRODUCTION")
+    print("[SCALING] SCALING TO PRODUCTION")
     print("=" * 80)
     print()
 
@@ -544,13 +567,13 @@ async def demo_scaling_potential():
     print()
 
     print("Production Scale Capabilities:")
-    print("   ✓ 125+ farms (25x current)")
-    print("   ✓ 10,000+ users (1000x current)")
-    print("   ✓ 500+ products per farm")
-    print("   ✓ 50+ CSA seasons per year")
-    print("   ✓ Real-time data streaming via HoloLoom")
-    print("   ✓ Advanced ML demand forecasting")
-    print("   ✓ Network-wide sustainability tracking")
+    print("   OK 125+ farms (25x current)")
+    print("   OK 10,000+ users (1000x current)")
+    print("   OK 500+ products per farm")
+    print("   OK 50+ CSA seasons per year")
+    print("   OK Real-time data streaming via HoloLoom")
+    print("   OK Advanced ML demand forecasting")
+    print("   OK Network-wide sustainability tracking")
     print()
 
     print("System Architecture:")
@@ -586,7 +609,7 @@ async def main():
     farms_data, products_data, csa_data = load_sample_data()
 
     # Initialize services
-    print("🔧 Initializing services...")
+    print("[INIT] Initializing services...")
     marketplace = FarmMarketplace()
     csa_coordinator = CSACoordinator()
     forecaster = DemandForecaster()
@@ -597,7 +620,7 @@ async def main():
         marketplace=marketplace,
         forecaster=forecaster
     )
-    print("   ✓ All services initialized")
+    print("   OK All services initialized")
     print()
 
     # Run demos
@@ -610,16 +633,16 @@ async def main():
 
     # Final summary
     print("=" * 80)
-    print("✅ DEMO COMPLETE")
+    print("[COMPLETE] DEMO COMPLETE")
     print("=" * 80)
     print()
     print("Phase 3 capabilities demonstrated:")
-    print("   ✓ Farm marketplace with product search and ordering")
-    print("   ✓ CSA coordination with subscription management")
-    print("   ✓ ML-powered demand forecasting via HoloLoom")
-    print("   ✓ Circular economy tracking with impact metrics")
-    print("   ✓ Comprehensive sustainability transparency")
-    print("   ✓ Real-time analytics and reporting")
+    print("   OK Farm marketplace with product search and ordering")
+    print("   OK CSA coordination with subscription management")
+    print("   OK ML-powered demand forecasting via HoloLoom")
+    print("   OK Circular economy tracking with impact metrics")
+    print("   OK Comprehensive sustainability transparency")
+    print("   OK Real-time analytics and reporting")
     print()
     print("Ready for production deployment at scale:")
     print("   • 10,000+ users")

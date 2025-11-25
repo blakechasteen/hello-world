@@ -106,29 +106,29 @@ async def demo_executor():
     executions = [
         {
             "skill_name": "graphviz",
-            "operation": "render",
+            "operation": "render_dot",
             "parameters": {
                 "dot_source": "digraph { A -> B; B -> C; }",
                 "format": "png",
-                "output_path": "/tmp/graph1.png"
+                "output": "/tmp/graph1.png"
             }
         },
         {
             "skill_name": "graphviz",
-            "operation": "render",
+            "operation": "render_dot",
             "parameters": {
                 "dot_source": "digraph { X -> Y; Y -> Z; }",
                 "format": "png",
-                "output_path": "/tmp/graph2.png"
+                "output": "/tmp/graph2.png"
             }
         },
         {
             "skill_name": "graphviz",
-            "operation": "render",
+            "operation": "render_dot",
             "parameters": {
                 "dot_source": "digraph { 1 -> 2; 2 -> 3; }",
                 "format": "png",
-                "output_path": "/tmp/graph3.png"
+                "output": "/tmp/graph3.png"
             }
         }
     ]
@@ -250,31 +250,31 @@ async def demo_parallel_workflow():
                     execute_step(
                         name="render_ml",
                         skill_name="graphviz",
-                        operation="render",
+                        operation="render_dot",
                         parameters={
                             "dot_source": "digraph { ML -> DL; DL -> NLP; }",
                             "format": "png",
-                            "output_path": "/tmp/parallel1.png"
+                            "output": "/tmp/parallel1.png"
                         }
                     ),
                     execute_step(
                         name="render_dl",
                         skill_name="graphviz",
-                        operation="render",
+                        operation="render_dot",
                         parameters={
                             "dot_source": "digraph { Input -> Hidden; Hidden -> Output; }",
                             "format": "png",
-                            "output_path": "/tmp/parallel2.png"
+                            "output": "/tmp/parallel2.png"
                         }
                     ),
                     execute_step(
                         name="render_rl",
                         skill_name="graphviz",
-                        operation="render",
+                        operation="render_dot",
                         parameters={
                             "dot_source": "digraph { State -> Action; Action -> Reward; }",
                             "format": "png",
-                            "output_path": "/tmp/parallel3.png"
+                            "output": "/tmp/parallel3.png"
                         }
                     )
                 ]
@@ -317,11 +317,11 @@ async def demo_metrics():
     for i in range(5):
         await executor.execute_single(
             skill_name="graphviz",
-            operation="render",
+            operation="render_dot",
             parameters={
                 "dot_source": f"digraph {{ Node{i} -> Node{i+1}; }}",
                 "format": "png",
-                "output_path": f"/tmp/metrics_{i}.png"
+                "output": f"/tmp/metrics_{i}.png"
             }
         )
 
@@ -343,9 +343,12 @@ async def demo_metrics():
     summary = tracker.get_summary()
     print(f"  Total skills: {summary['total_skills']}")
     print(f"  Total executions: {summary['total_executions']}")
-    print(f"  Success rate: {summary['success_rate']:.1%}")
-    print(f"  Avg time: {summary['avg_time_ms']:.1f}ms")
-    print(f"  Cache hit rate: {summary['cache_hit_rate']:.1%}")
+    if summary['total_executions'] > 0:
+        print(f"  Success rate: {summary['success_rate']:.1%}")
+        print(f"  Avg time: {summary['avg_time_ms']:.1f}ms")
+        print(f"  Cache hit rate: {summary['cache_hit_rate']:.1%}")
+    else:
+        print("  (No executions yet)")
 
     # Export metrics as JSON
     print("\n Exporting metrics to JSON...")

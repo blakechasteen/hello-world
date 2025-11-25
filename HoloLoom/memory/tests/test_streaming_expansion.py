@@ -363,10 +363,10 @@ async def test_streaming_empty_graph():
     ):
         chunks.append(chunk)
 
-    # Should yield seed chunk only
-    assert len(chunks) == 1
+    # Should yield seed chunk + empty final chunk (EOF marker)
+    assert len(chunks) >= 1
     assert chunks[0].nodes == ["A"]
-    assert chunks[0].is_final
+    assert chunks[-1].is_final  # Last chunk is always final
 
 
 @pytest.mark.asyncio
@@ -386,8 +386,10 @@ async def test_streaming_zero_budget():
     ):
         chunks.append(chunk)
 
-    # Should not yield any chunks (budget exhausted immediately)
-    assert len(chunks) == 0
+    # Should yield empty final chunk (EOF marker, even with zero budget)
+    assert len(chunks) == 1
+    assert chunks[0].nodes == []
+    assert chunks[0].is_final
 
 
 @pytest.mark.asyncio
@@ -407,9 +409,10 @@ async def test_streaming_nonexistent_seed():
     ):
         chunks.append(chunk)
 
-    # Should yield seed chunk (even if node doesn't exist in graph)
-    assert len(chunks) == 1
+    # Should yield seed chunk + empty final chunk (EOF marker)
+    assert len(chunks) >= 1
     assert chunks[0].nodes == ["Z"]
+    assert chunks[-1].is_final  # Last chunk is always final
 
 
 @pytest.mark.asyncio

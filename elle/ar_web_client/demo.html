@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Elle AR Demo - iPhone</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Camera Feed */
+        #camera {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* AR Overlays */
+        #overlays {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .ar-overlay {
+            position: absolute;
+            background: rgba(0, 255, 136, 0.9);
+            color: #000;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            max-width: 80%;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Status Bar */
+        #status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4444;
+        }
+
+        .status-dot.connected {
+            background: #00ff88;
+        }
+
+        /* Voice UI */
+        #voice-ui {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+        }
+
+        #voice-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        #voice-button:active {
+            transform: scale(0.95);
+        }
+
+        #voice-button.listening {
+            animation: pulse 1.5s ease-in-out infinite;
+            background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 8px 32px rgba(0, 255, 136, 0.5);
+            }
+            50% {
+                box-shadow: 0 8px 64px rgba(0, 255, 136, 0.8);
+            }
+        }
+
+        #transcript {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            max-width: 80vw;
+            min-height: 2rem;
+        }
+
+        /* Error/Info Messages */
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 16px;
+            max-width: 90%;
+            z-index: 100;
+            display: none;
+        }
+
+        #message.show {
+            display: block;
+        }
+
+        #message h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        #message p {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        #message .error {
+            color: #ff4444;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        #start-button {
+            margin-top: 1.5rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #start-button:active {
+            transform: scale(0.95);
+        }
+
+        #start-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Debug Console */
+        #debug {
+            position: absolute;
+            bottom: 140px;
+            left: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            font-family: monospace;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            z-index: 9;
+        }
+
+        #debug.show {
+            display: block;
+        }
+
+        .debug-line {
+            margin: 0.25rem 0;
+            color: #00ff88;
+        }
+
+        .debug-line.error {
+            color: #ff4444;
+        }
+
+        .debug-line.warn {
+            color: #ffaa00;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Camera Feed -->
+        <video id="camera" autoplay playsinline muted></video>
+
+        <!-- AR Overlays -->
+        <div id="overlays"></div>
+
+        <!-- Status Bar -->
+        <div id="status-bar">
+            <div class="status-item">
+                <div class="status-dot" id="connection-status"></div>
+                <span id="connection-text">Not Connected</span>
+            </div>
+            <div class="status-item">
+                <span id="session-id">Session: -</span>
+            </div>
+        </div>
+
+        <!-- Voice UI -->
+        <div id="voice-ui">
+            <button id="voice-button" aria-label="Voice Input">
+                🎤
+            </button>
+            <div id="transcript">Tap "Start AR" below</div>
+        </div>
+
+        <!-- Debug Console -->
+        <div id="debug"></div>
+
+        <!-- Messages -->
+        <div id="message">
+            <h2>Welcome to Elle AR</h2>
+            <p>Elle uses your camera for AR overlays.</p>
+            <p><strong>Make sure you:</strong></p>
+            <p>1. Updated backend URL in line 294<br/>
+               2. HoloLoom backend is running<br/>
+               3. iPhone and PC on same WiFi</p>
+            <button id="start-button">Start AR Session</button>
+            <div class="error" id="error-detail"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const BACKEND_URL = 'ws://172.17.160.1:8000/ws/ar'; // ⚠️ UPDATE THIS WITH YOUR PC'S IP
+        const WAKE_WORD = 'hey elle';
+        const ENABLE_DEBUG = true; // Set to false to hide debug console
+
+        // State
+        let ws = null;
+        let sessionId = null;
+        let isListening = false;
+        let recognition = null;
+        let camera = null;
+
+        // DOM Elements
+        const cameraEl = document.getElementById('camera');
+        const overlaysEl = document.getElementById('overlays');
+        const connectionStatus = document.getElementById('connection-status');
+        const connectionText = document.getElementById('connection-text');
+        const sessionIdEl = document.getElementById('session-id');
+        const voiceButton = document.getElementById('voice-button');
+        const transcriptEl = document.getElementById('transcript');
+        const messageEl = document.getElementById('message');
+        const startButton = document.getElementById('start-button');
+        const errorDetail = document.getElementById('error-detail');
+        const debugEl = document.getElementById('debug');
+
+        // Debug logging
+        function debug(message, level = 'info') {
+            if (!ENABLE_DEBUG) return;
+
+            const line = document.createElement('div');
+            line.className = `debug-line ${level}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugEl.appendChild(line);
+            debugEl.scrollTop = debugEl.scrollHeight;
+            console.log(message);
+        }
+
+        // Initialize
+        async function init() {
+            debug('Initializing Elle AR...', 'info');
+            startButton.disabled = true;
+            startButton.textContent = 'Starting...';
+
+            try {
+                // Check camera support
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('Camera API not supported');
+                }
+
+                debug('Requesting camera access...', 'info');
+
+                // Request camera access
+                camera = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+
+                debug('✅ Camera access granted', 'info');
+                cameraEl.srcObject = camera;
+                messageEl.classList.remove('show');
+
+                if (ENABLE_DEBUG) {
+                    debugEl.classList.add('show');
+                }
+
+                // Connect to HoloLoom backend
+                connectToBackend();
+
+                // Initialize voice recognition
+                initVoiceRecognition();
+
+                transcriptEl.textContent = 'Say "Hey Elle" to start';
+
+            } catch (error) {
+                debug(`❌ Error: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+
+                let errorMsg = '';
+                if (error.name === 'NotAllowedError') {
+                    errorMsg = 'Camera permission denied. Go to Settings → Safari → Camera → Allow';
+                } else if (error.name === 'NotFoundError') {
+                    errorMsg = 'No camera found on device';
+                } else {
+                    errorMsg = error.message;
+                }
+
+                showMessage('Camera Error', errorMsg);
+                startButton.disabled = false;
+                startButton.textContent = 'Try Again';
+            }
+        }
+
+        // Connect to HoloLoom backend
+        function connectToBackend() {
+            debug(`Connecting to backend: ${BACKEND_URL}`, 'info');
+
+            try {
+                ws = new WebSocket(BACKEND_URL);
+
+                ws.onopen = () => {
+                    debug('✅ Connected to HoloLoom', 'info');
+                    connectionStatus.classList.add('connected');
+                    connectionText.textContent = 'Connected';
+                    sessionId = generateSessionId();
+                    sessionIdEl.textContent = `Session: ${sessionId.substring(0, 8)}`;
+                };
+
+                ws.onmessage = (event) => {
+                    debug(`📩 Received response`, 'info');
+                    const data = JSON.parse(event.data);
+                    handleResponse(data);
+                };
+
+                ws.onerror = (error) => {
+                    debug(`❌ WebSocket error: ${error}`, 'error');
+                    connectionText.textContent = 'Connection Error';
+                };
+
+                ws.onclose = () => {
+                    debug('Disconnected from HoloLoom', 'warn');
+                    connectionStatus.classList.remove('connected');
+                    connectionText.textContent = 'Disconnected';
+
+                    // Auto-reconnect after 5 seconds
+                    setTimeout(() => {
+                        debug('Attempting reconnect...', 'info');
+                        connectToBackend();
+                    }, 5000);
+                };
+
+            } catch (error) {
+                debug(`❌ Connection error: ${error.message}`, 'error');
+                connectionText.textContent = 'Connection Failed';
+            }
+        }
+
+        // Initialize voice recognition
+        function initVoiceRecognition() {
+            if (!('webkitSpeechRecognition' in window)) {
+                debug('⚠️ Voice recognition not supported', 'warn');
+                transcriptEl.textContent = 'Voice not supported - use backend query instead';
+                return;
+            }
+
+            debug('Initializing voice recognition...', 'info');
+
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                debug('🎤 Voice recognition started', 'info');
+                isListening = true;
+                voiceButton.classList.add('listening');
+            };
+
+            recognition.onresult = (event) => {
+                const result = event.results[event.results.length - 1];
+                const transcript = result[0].transcript.toLowerCase().trim();
+
+                transcriptEl.textContent = transcript;
+
+                // Check for wake word
+                if (transcript.includes(WAKE_WORD)) {
+                    debug(`Wake word detected: "${transcript}"`, 'info');
+                    transcriptEl.textContent = '👂 Listening...';
+                } else if (result.isFinal && transcript.length > WAKE_WORD.length) {
+                    // Send query to HoloLoom
+                    sendQuery(transcript);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                debug(`Speech recognition error: ${event.error}`, 'error');
+                isListening = false;
+                voiceButton.classList.remove('listening');
+            };
+
+            recognition.onend = () => {
+                debug('🎤 Voice recognition ended', 'info');
+                isListening = false;
+                voiceButton.classList.remove('listening');
+
+                // Auto-restart
+                if (camera) {
+                    setTimeout(() => {
+                        try {
+                            recognition.start();
+                        } catch (e) {
+                            debug(`Voice restart error: ${e.message}`, 'warn');
+                        }
+                    }, 500);
+                }
+            };
+
+            // Start recognition
+            try {
+                recognition.start();
+                debug('✅ Voice recognition active', 'info');
+            } catch (error) {
+                debug(`Voice start error: ${error.message}`, 'error');
+            }
+        }
+
+        // Send query to HoloLoom
+        function sendQuery(text) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                debug('❌ Cannot send - not connected to backend', 'error');
+                transcriptEl.textContent = 'Not connected to backend';
+                return;
+            }
+
+            const query = {
+                query: text,
+                context: {
+                    sessionId: sessionId,
+                    platform: 'webxr_iphone',
+                    timestamp: new Date().toISOString()
+                },
+                mode: 'verify',
+                max_steps: 5
+            };
+
+            debug(`📤 Sending query: "${text}"`, 'info');
+            transcriptEl.textContent = `Processing: "${text}"`;
+
+            ws.send(JSON.stringify(query));
+        }
+
+        // Handle response from HoloLoom
+        function handleResponse(data) {
+            const { response, visualizations, confidence } = data;
+
+            debug(`Response received (confidence: ${confidence})`, 'info');
+
+            // Show response as AR overlay
+            if (response) {
+                createAROverlay(response, confidence);
+
+                // Speak response (optional)
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(response);
+                    speechSynthesis.speak(utterance);
+                }
+            }
+
+            // Render visualizations
+            if (visualizations && visualizations.length > 0) {
+                debug(`Rendering ${visualizations.length} visualizations`, 'info');
+                visualizations.forEach(viz => renderVisualization(viz));
+            }
+
+            transcriptEl.textContent = 'Say "Hey Elle" to ask another question';
+        }
+
+        // Create AR overlay
+        function createAROverlay(text, confidence = 1.0) {
+            debug(`Creating AR overlay: "${text.substring(0, 50)}..."`, 'info');
+
+            const overlay = document.createElement('div');
+            overlay.className = 'ar-overlay';
+            overlay.textContent = text;
+
+            // Position based on confidence (higher = more centered)
+            overlay.style.left = '50%';
+            overlay.style.transform = 'translateX(-50%)';
+            overlay.style.top = `${30 + (1 - confidence) * 20}%`;
+
+            overlaysEl.appendChild(overlay);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 300);
+            }, 5000);
+        }
+
+        // Render visualization
+        function renderVisualization(viz) {
+            // TODO: Implement different visualization types
+            debug(`Rendering visualization: ${viz.type}`, 'info');
+        }
+
+        // Show message
+        function showMessage(title, message) {
+            messageEl.querySelector('h2').textContent = title;
+            const pElements = messageEl.querySelectorAll('p');
+            if (pElements.length > 0) {
+                pElements[0].textContent = message;
+            }
+            errorDetail.textContent = message;
+            messageEl.classList.add('show');
+        }
+
+        // Generate session ID
+        function generateSessionId() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Event Listeners
+        startButton.addEventListener('click', () => {
+            init();
+        });
+
+        voiceButton.addEventListener('click', () => {
+            if (!isListening && recognition) {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    debug(`Manual voice start error: ${e.message}`, 'error');
+                }
+            }
+        });
+
+        // Show welcome message on mobile
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            debug('Mobile device detected', 'info');
+            messageEl.classList.add('show');
+        } else {
+            debug('Desktop detected - auto-starting', 'info');
+            init();
+        }
+
+        // Log initial configuration
+        debug(`Backend URL: ${BACKEND_URL}`, 'info');
+        debug(`Wake word: "${WAKE_WORD}"`, 'info');
+    </script>
+</body>
+</html>

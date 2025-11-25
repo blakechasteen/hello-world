@@ -206,7 +206,7 @@ class Farm(Organization):
 
     def __post_init__(self):
         """Initialize farm defaults"""
-        super().__post_init__()
+        # Set farm-specific organization type
         self.org_type = OrganizationType.FARM
 
         # Farms can both donate (surplus) and receive (food scraps for compost)

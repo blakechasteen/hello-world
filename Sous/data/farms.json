@@ -16,7 +16,9 @@
       },
       "total_acres": 0.5,
       "organic_certified": true,
-      "certifications": ["usda_organic"],
+      "certifications": [
+        "organic"
+      ],
       "practices": [
         "no_pesticides",
         "composting",
@@ -29,7 +31,9 @@
         "tomatoes",
         "peppers"
       ],
-      "growing_zones": ["8b"],
+      "growing_zones": [
+        "8b"
+      ],
       "year_established": 2019,
       "active": true,
       "contact": {
@@ -55,7 +59,10 @@
       },
       "total_acres": 5.0,
       "organic_certified": true,
-      "certifications": ["usda_organic", "naturally_grown"],
+      "certifications": [
+        "organic",
+        "naturally_grown"
+      ],
       "practices": [
         "crop_rotation",
         "cover_cropping",
@@ -68,7 +75,9 @@
         "flowers",
         "herbs"
       ],
-      "growing_zones": ["8b"],
+      "growing_zones": [
+        "8b"
+      ],
       "year_established": 2015,
       "active": true,
       "contact": {
@@ -81,7 +90,7 @@
     {
       "farm_id": "farm_003",
       "name": "Willamette Valley Regenerative Farm",
-      "farm_type": "regenerative",
+      "farm_type": "regenerative_farm",
       "location": {
         "address": "789 Prairie View Lane",
         "city": "Corvallis",
@@ -89,12 +98,16 @@
         "zipcode": "97330",
         "coordinates": {
           "lat": 44.5646,
-          "lon": -123.2620
+          "lon": -123.262
         }
       },
       "total_acres": 50.0,
       "organic_certified": true,
-      "certifications": ["usda_organic", "regenerative_certified", "biodynamic"],
+      "certifications": [
+        "organic",
+        "regenerative_organic",
+        "biodynamic"
+      ],
       "practices": [
         "no_till",
         "cover_cropping",
@@ -110,7 +123,9 @@
         "fruits",
         "pasture"
       ],
-      "growing_zones": ["8b"],
+      "growing_zones": [
+        "8b"
+      ],
       "year_established": 2010,
       "active": true,
       "contact": {
@@ -148,7 +163,9 @@
         "herbs",
         "flowers"
       ],
-      "growing_zones": ["8b"],
+      "growing_zones": [
+        "8b"
+      ],
       "year_established": 2020,
       "active": true,
       "contact": {
@@ -174,7 +191,9 @@
       },
       "total_acres": 8.0,
       "organic_certified": true,
-      "certifications": ["usda_organic"],
+      "certifications": [
+        "organic"
+      ],
       "practices": [
         "high_tunnel_growing",
         "season_extension",
@@ -188,7 +207,9 @@
         "lettuce",
         "carrots"
       ],
-      "growing_zones": ["5b"],
+      "growing_zones": [
+        "5b"
+      ],
       "year_established": 2017,
       "active": true,
       "contact": {

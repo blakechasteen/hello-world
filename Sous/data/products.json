@@ -10,7 +10,11 @@
       "quantity_available": "50",
       "description": "Fresh mix of lettuce, arugula, and baby spinach",
       "organic": true,
-      "seasonal_availability": ["spring", "summer", "fall"],
+      "seasonal_availability": [
+        "spring",
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 7,
       "availability": "in_stock",
@@ -26,7 +30,10 @@
       "quantity_available": "75",
       "description": "Aromatic sweet basil, perfect for pesto and caprese",
       "organic": true,
-      "seasonal_availability": ["summer", "fall"],
+      "seasonal_availability": [
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 5,
       "availability": "in_stock",
@@ -42,7 +49,10 @@
       "quantity_available": "40",
       "description": "Sweet, sun-ripened cherry tomatoes",
       "organic": true,
-      "seasonal_availability": ["summer", "fall"],
+      "seasonal_availability": [
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "room_temp",
       "shelf_life_days": 10,
       "availability": "in_stock",
@@ -58,7 +68,10 @@
       "quantity_available": "120",
       "description": "Assorted colorful heirloom varieties",
       "organic": true,
-      "seasonal_availability": ["summer", "fall"],
+      "seasonal_availability": [
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "room_temp",
       "shelf_life_days": 7,
       "availability": "in_stock",
@@ -74,7 +87,9 @@
       "quantity_available": "200",
       "description": "Fresh green zucchini",
       "organic": true,
-      "seasonal_availability": ["summer"],
+      "seasonal_availability": [
+        "summer"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 10,
       "availability": "in_stock",
@@ -90,7 +105,10 @@
       "quantity_available": "60",
       "description": "Sweet Oregon strawberries",
       "organic": true,
-      "seasonal_availability": ["spring", "summer"],
+      "seasonal_availability": [
+        "spring",
+        "summer"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 5,
       "availability": "in_stock",
@@ -106,7 +124,11 @@
       "quantity_available": "30",
       "description": "Seasonal mixed flower bouquet",
       "organic": true,
-      "seasonal_availability": ["spring", "summer", "fall"],
+      "seasonal_availability": [
+        "spring",
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "room_temp",
       "shelf_life_days": 7,
       "availability": "in_stock",
@@ -122,7 +144,12 @@
       "quantity_available": "150",
       "description": "Fresh eggs from free-range hens on pasture",
       "organic": true,
-      "seasonal_availability": ["spring", "summer", "fall", "winter"],
+      "seasonal_availability": [
+        "spring",
+        "summer",
+        "fall",
+        "winter"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 30,
       "availability": "in_stock",
@@ -138,7 +165,10 @@
       "quantity_available": "300",
       "description": "Sweet winter squash",
       "organic": true,
-      "seasonal_availability": ["fall", "winter"],
+      "seasonal_availability": [
+        "fall",
+        "winter"
+      ],
       "storage_requirements": "cool_dry",
       "shelf_life_days": 90,
       "availability": "in_stock",
@@ -148,13 +178,18 @@
       "product_id": "prod_010",
       "farm_id": "farm_003",
       "name": "Heritage Grain Flour",
-      "category": "grains",
+      "category": "other",
       "price": "12.00",
       "unit": "5lb_bag",
       "quantity_available": "80",
       "description": "Stone-ground heritage wheat flour",
       "organic": true,
-      "seasonal_availability": ["spring", "summer", "fall", "winter"],
+      "seasonal_availability": [
+        "spring",
+        "summer",
+        "fall",
+        "winter"
+      ],
       "storage_requirements": "cool_dry",
       "shelf_life_days": 180,
       "availability": "in_stock",
@@ -170,7 +205,11 @@
       "quantity_available": "100",
       "description": "Curly kale, rich in nutrients",
       "organic": true,
-      "seasonal_availability": ["fall", "winter", "spring"],
+      "seasonal_availability": [
+        "fall",
+        "winter",
+        "spring"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 10,
       "availability": "in_stock",
@@ -186,7 +225,10 @@
       "quantity_available": "80",
       "description": "Colorful sweet bell peppers",
       "organic": false,
-      "seasonal_availability": ["summer", "fall"],
+      "seasonal_availability": [
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 14,
       "availability": "in_stock",
@@ -202,7 +244,11 @@
       "quantity_available": "60",
       "description": "Fresh cilantro",
       "organic": false,
-      "seasonal_availability": ["spring", "summer", "fall"],
+      "seasonal_availability": [
+        "spring",
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 5,
       "availability": "in_stock",
@@ -218,7 +264,12 @@
       "quantity_available": "180",
       "description": "Year-round greenhouse-grown tomatoes",
       "organic": true,
-      "seasonal_availability": ["spring", "summer", "fall", "winter"],
+      "seasonal_availability": [
+        "spring",
+        "summer",
+        "fall",
+        "winter"
+      ],
       "storage_requirements": "room_temp",
       "shelf_life_days": 10,
       "availability": "in_stock",
@@ -234,7 +285,11 @@
       "quantity_available": "150",
       "description": "Crisp slicing cucumbers",
       "organic": true,
-      "seasonal_availability": ["spring", "summer", "fall"],
+      "seasonal_availability": [
+        "spring",
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 10,
       "availability": "in_stock",
@@ -250,7 +305,11 @@
       "quantity_available": "120",
       "description": "Colorful heirloom carrots with tops",
       "organic": true,
-      "seasonal_availability": ["spring", "summer", "fall"],
+      "seasonal_availability": [
+        "spring",
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 21,
       "availability": "in_stock",
@@ -266,7 +325,9 @@
       "quantity_available": "45",
       "description": "Sweet Pacific Northwest blueberries",
       "organic": true,
-      "seasonal_availability": ["summer"],
+      "seasonal_availability": [
+        "summer"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 7,
       "availability": "in_stock",
@@ -282,7 +343,10 @@
       "quantity_available": "250",
       "description": "Assorted winter squash varieties",
       "organic": true,
-      "seasonal_availability": ["fall", "winter"],
+      "seasonal_availability": [
+        "fall",
+        "winter"
+      ],
       "storage_requirements": "cool_dry",
       "shelf_life_days": 120,
       "availability": "in_stock",
@@ -298,7 +362,12 @@
       "quantity_available": "30",
       "description": "Nutrient-dense microgreens blend",
       "organic": true,
-      "seasonal_availability": ["spring", "summer", "fall", "winter"],
+      "seasonal_availability": [
+        "spring",
+        "summer",
+        "fall",
+        "winter"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 7,
       "availability": "in_stock",
@@ -314,7 +383,10 @@
       "quantity_available": "90",
       "description": "Spicy peppers grown in high tunnels",
       "organic": true,
-      "seasonal_availability": ["summer", "fall"],
+      "seasonal_availability": [
+        "summer",
+        "fall"
+      ],
       "storage_requirements": "refrigerate",
       "shelf_life_days": 14,
       "availability": "in_stock",

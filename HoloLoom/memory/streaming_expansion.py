@@ -135,7 +135,6 @@ class StreamingContextBuilder:
     def __init__(self):
         self.expander = AdaptiveExpander()
         self.relevance_scorer = RelevanceScorer()
-        self.budget_tracker = BudgetTracker()
 
     async def stream_expansion(
         self,
@@ -190,6 +189,9 @@ class StreamingContextBuilder:
         """
         start_time = time.time()
 
+        # Create budget tracker for this expansion
+        budget_tracker = BudgetTracker(token_budget)
+
         # Initialize tracking
         cumulative_tokens = 0
         chunk_index = 0
@@ -218,7 +220,7 @@ class StreamingContextBuilder:
             importance = importance_scores.get(seed, 0.5) if importance_scores else 0.5
 
             # Estimate tokens for seed
-            tokens = self.budget_tracker.estimate_tokens(seed, importance, content)
+            tokens = budget_tracker.estimate_tokens(seed, importance, content)
 
             if cumulative_tokens + tokens > token_budget:
                 # Budget exhausted on seed nodes
@@ -306,7 +308,7 @@ class StreamingContextBuilder:
                 importance = importance_scores.get(node_id, 0.5) if importance_scores else 0.5
 
                 # Estimate tokens
-                tokens = self.budget_tracker.estimate_tokens(node_id, importance, content)
+                tokens = budget_tracker.estimate_tokens(node_id, importance, content)
 
                 # Check budget
                 if cumulative_tokens + tokens > token_budget:
@@ -419,20 +421,22 @@ class StreamingContextBuilder:
             # Advance to next hop
             current_hop += 1
 
-        # Yield final chunk if any nodes remaining
-        if current_chunk_nodes:
-            chunk = ContextChunk(
-                nodes=current_chunk_nodes[:],
-                contents=current_chunk_contents.copy(),
-                relevance_scores=current_chunk_relevances.copy(),
-                hop_distance=current_hop - 1,
-                token_count=current_chunk_tokens,
-                cumulative_tokens=cumulative_tokens,
-                chunk_index=chunk_index,
-                is_final=True,
-                metadata={"yield_reason": "final_chunk", "stopping_reason": stopping_reason}
-            )
+        # Always yield final chunk to signal completion (even if empty)
+        # This ensures consistent behavior and clear EOF-like signal
+        chunk = ContextChunk(
+            nodes=current_chunk_nodes[:],
+            contents=current_chunk_contents.copy(),
+            relevance_scores=current_chunk_relevances.copy(),
+            hop_distance=current_hop - 1 if current_hop > 0 else 0,
+            token_count=current_chunk_tokens,
+            cumulative_tokens=cumulative_tokens,
+            chunk_index=chunk_index,
+            is_final=True,
+            metadata={"yield_reason": "final_chunk", "stopping_reason": stopping_reason}
+        )
 
+        if chunk.nodes or chunk_index == 0:
+            # Only add to summary if non-empty OR first chunk
             chunks_summary.append({
                 "chunk_index": chunk_index,
                 "nodes": len(chunk.nodes),
@@ -441,8 +445,8 @@ class StreamingContextBuilder:
                 "avg_relevance": chunk.avg_relevance
             })
 
-            yield chunk
-            chunk_index += 1
+        yield chunk
+        chunk_index += 1
 
         # Store result metadata for later retrieval
         execution_time_ms = (time.time() - start_time) * 1000
