@@ -1,0 +1,57 @@
+[
+  {
+    "recipe_id": "recipe_mashed_potatoes",
+    "description": "Mashed Potatoes x2",
+    "quantity": 4.0,
+    "unit": "cup",
+    "created_date": "2025-11-27",
+    "expiration_date": "2025-11-30",
+    "location": "fridge",
+    "consumed": false,
+    "notes": "Large amount left, enough for 4-5 servings"
+  },
+  {
+    "recipe_id": "recipe_stuffing",
+    "description": "Herb Stuffing x2",
+    "quantity": 6.0,
+    "unit": "cup",
+    "created_date": "2025-11-27",
+    "expiration_date": "2025-11-30",
+    "location": "fridge",
+    "consumed": false,
+    "notes": "Plenty left, great for sandwiches"
+  },
+  {
+    "recipe_id": "recipe_cranberry_sauce",
+    "description": "Cranberry Sauce",
+    "quantity": 2.0,
+    "unit": "cup",
+    "created_date": "2025-11-27",
+    "expiration_date": "2025-12-05",
+    "location": "fridge",
+    "consumed": false,
+    "notes": "Keeps well, can last a week"
+  },
+  {
+    "recipe_id": "recipe_sweet_potato_casserole",
+    "description": "Sweet Potato Casserole",
+    "quantity": 3.0,
+    "unit": "cup",
+    "created_date": "2025-11-27",
+    "expiration_date": "2025-11-29",
+    "location": "fridge",
+    "consumed": false,
+    "notes": "Half the casserole remaining"
+  },
+  {
+    "recipe_id": "recipe_green_beans",
+    "description": "Sautéed Green Beans (Haricots Verts)",
+    "quantity": 1.0,
+    "unit": "cup",
+    "created_date": "2025-11-27",
+    "expiration_date": "2025-11-28",
+    "location": "fridge",
+    "consumed": true,
+    "notes": "Eaten for lunch on Friday"
+  }
+]

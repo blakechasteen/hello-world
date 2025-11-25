@@ -1,0 +1,1577 @@
+[
+  {
+    "symbol_id": "caged_bird",
+    "description": "A bird in a cage, yearning for freedom",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "broken_mirror",
+    "description": "Shattered glass reflecting fragmented self-image",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "drowning",
+    "description": "Sinking into water, struggling for breath",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "metamorphosis",
+    "description": "Body transforming into something alien and strange",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "silk_thread",
+    "description": "A glowing thread connecting two distant points",
+    "emotion_tags": [
+      "connection",
+      "fate",
+      "love",
+      "continuity"
+    ],
+    "category": "connection",
+    "existing_references": [
+      "Chinese Red String legend",
+      "Penelope's weaving"
+    ]
+  },
+  {
+    "symbol_id": "iron_throne",
+    "description": "Seat of absolute power, cold and unwelcoming",
+    "emotion_tags": [
+      "power",
+      "dominance",
+      "isolation",
+      "responsibility"
+    ],
+    "category": "power",
+    "existing_references": [
+      "Game of Thrones",
+      "Shakespearean kingship"
+    ]
+  },
+  {
+    "symbol_id": "burnt_scroll",
+    "description": "Ancient text consumed by flame, knowledge lost forever",
+    "emotion_tags": [
+      "guilt",
+      "shame",
+      "irreversible_loss",
+      "punishment"
+    ],
+    "category": "guilt",
+    "existing_references": [
+      "Library of Alexandria",
+      "Qin Book Burning"
+    ]
+  },
+  {
+    "symbol_id": "dawn_breaking",
+    "description": "First light dispelling absolute darkness",
+    "emotion_tags": [
+      "hope",
+      "renewal",
+      "emergence",
+      "beginning"
+    ],
+    "category": "hope",
+    "existing_references": [
+      "Biblical Genesis",
+      "Dante Paradiso"
+    ]
+  },
+  {
+    "symbol_id": "two_wolves",
+    "description": "Internal conflict between light and shadow within",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "locked_door",
+    "description": "Barrier concealing unknown secrets behind",
+    "emotion_tags": [
+      "mystery",
+      "curiosity",
+      "forbidden",
+      "threshold"
+    ],
+    "category": "mystery",
+    "existing_references": [
+      "Through the Looking Glass",
+      "Bluebeard's Castle"
+    ]
+  },
+  {
+    "symbol_id": "thorn_crown",
+    "description": "Crown of painful beauty, suffering and nobility",
+    "emotion_tags": [
+      "trapped",
+      "suffering",
+      "martyrdom",
+      "nobility"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Christ Passion",
+      "Religious iconography"
+    ]
+  },
+  {
+    "symbol_id": "empty_nest",
+    "description": "Abandoned home of fledglings, marking departure",
+    "emotion_tags": [
+      "loss",
+      "separation",
+      "emptiness",
+      "transition"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Bowlby attachment theory",
+      "Empty Nest Syndrome"
+    ]
+  },
+  {
+    "symbol_id": "white_whale",
+    "description": "Massive creature of obsessive pursuit and danger",
+    "emotion_tags": [
+      "fear",
+      "obsession",
+      "danger",
+      "vengeance"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Melville Moby Dick",
+      "Ahab's quest"
+    ]
+  },
+  {
+    "symbol_id": "butterfly_emerging",
+    "description": "Caterpillar breaking free from chrysalis",
+    "emotion_tags": [
+      "transformation",
+      "beauty",
+      "growth",
+      "vulnerability"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Metamorphosis myth",
+      "Transformation archetypal"
+    ]
+  },
+  {
+    "symbol_id": "interlaced_hands",
+    "description": "Two hands clasped together in solidarity",
+    "emotion_tags": [
+      "connection",
+      "partnership",
+      "trust",
+      "intimacy"
+    ],
+    "category": "connection",
+    "existing_references": [
+      "Marriage symbolism",
+      "Relationship bonding"
+    ]
+  },
+  {
+    "symbol_id": "lightning_bolt",
+    "description": "Sudden strike of divine or natural force",
+    "emotion_tags": [
+      "power",
+      "sudden",
+      "devastating",
+      "revelation"
+    ],
+    "category": "power",
+    "existing_references": [
+      "Zeus attribute",
+      "Muhammad revelation"
+    ]
+  },
+  {
+    "symbol_id": "blood_on_hands",
+    "description": "Hands stained with blood, unable to wash clean",
+    "emotion_tags": [
+      "guilt",
+      "complicity",
+      "remorse",
+      "stain"
+    ],
+    "category": "guilt",
+    "existing_references": [
+      "Macbeth hand washing",
+      "Pilate's hands"
+    ]
+  },
+  {
+    "symbol_id": "garden_blooming",
+    "description": "Wild garden suddenly coming into full bloom",
+    "emotion_tags": [
+      "hope",
+      "abundance",
+      "renewal",
+      "fertility"
+    ],
+    "category": "hope",
+    "existing_references": [
+      "Eden Garden",
+      "Persephone return"
+    ]
+  },
+  {
+    "symbol_id": "sword_and_shield",
+    "description": "Opposing weapons locked in eternal struggle",
+    "emotion_tags": [
+      "conflict",
+      "balance",
+      "battle",
+      "paradox"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Yin-Yang",
+      "War symbolism"
+    ]
+  },
+  {
+    "symbol_id": "veil_torn",
+    "description": "Sacred veil ripped open, revealing what was hidden",
+    "emotion_tags": [
+      "mystery",
+      "revelation",
+      "exposure",
+      "transformation"
+    ],
+    "category": "mystery",
+    "existing_references": [
+      "Temple veil torn",
+      "Revelation imagery"
+    ]
+  },
+  {
+    "symbol_id": "prison_bars",
+    "description": "Metal bars cutting across vision and movement",
+    "emotion_tags": [
+      "trapped",
+      "restriction",
+      "punishment",
+      "confinement"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Imprisonment archetype",
+      "Captivity symbolism"
+    ]
+  },
+  {
+    "symbol_id": "abandoned_child",
+    "description": "Young child left alone in vast darkness",
+    "emotion_tags": [
+      "loss",
+      "abandonment",
+      "vulnerability",
+      "terror"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Hansel and Gretel",
+      "Foundling myths"
+    ]
+  },
+  {
+    "symbol_id": "shadow_stalker",
+    "description": "Dark figure pursuing relentlessly through night",
+    "emotion_tags": [
+      "fear",
+      "pursuit",
+      "paranoia",
+      "threat"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Shadow figure archetype",
+      "Stalking horror"
+    ]
+  },
+  {
+    "symbol_id": "phoenix_rising",
+    "description": "Bird emerging from ashes, reborn stronger",
+    "emotion_tags": [
+      "transformation",
+      "rebirth",
+      "resilience",
+      "renewal"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Phoenix mythology",
+      "Resurrection symbolism"
+    ]
+  },
+  {
+    "symbol_id": "heart_beating",
+    "description": "Heartbeat synchronizing between two beings",
+    "emotion_tags": [
+      "connection",
+      "synchronicity",
+      "love",
+      "vitality"
+    ],
+    "category": "connection",
+    "existing_references": [
+      "Heartbeat bonding",
+      "Love symbolism"
+    ]
+  },
+  {
+    "symbol_id": "crown_of_stars",
+    "description": "Crown made of celestial light and cosmic fire",
+    "emotion_tags": [
+      "power",
+      "transcendence",
+      "divine",
+      "majesty"
+    ],
+    "category": "power",
+    "existing_references": [
+      "Celestial crowning",
+      "Astronomical symbolism"
+    ]
+  },
+  {
+    "symbol_id": "betrayal_dagger",
+    "description": "Knife plunged in back by trusted ally",
+    "emotion_tags": [
+      "guilt",
+      "betrayal",
+      "trauma",
+      "trust_broken"
+    ],
+    "category": "guilt",
+    "existing_references": [
+      "Judas betrayal",
+      "Et tu Brute"
+    ]
+  },
+  {
+    "symbol_id": "sun_rising",
+    "description": "Golden sun breaking over dark horizon",
+    "emotion_tags": [
+      "hope",
+      "clarity",
+      "awakening",
+      "truth"
+    ],
+    "category": "hope",
+    "existing_references": [
+      "Dawn symbolism",
+      "Solar resurrection"
+    ]
+  },
+  {
+    "symbol_id": "divided_kingdom",
+    "description": "Land split in half by impassable chasm",
+    "emotion_tags": [
+      "conflict",
+      "separation",
+      "fracture",
+      "opposition"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Kingdom split",
+      "Civil war symbolism"
+    ]
+  },
+  {
+    "symbol_id": "sphinx_riddle",
+    "description": "Impossible question with deadly consequence",
+    "emotion_tags": [
+      "mystery",
+      "test",
+      "danger",
+      "knowledge"
+    ],
+    "category": "mystery",
+    "existing_references": [
+      "Greek Sphinx",
+      "Riddle tradition"
+    ]
+  },
+  {
+    "symbol_id": "shackled_hands",
+    "description": "Wrists bound by heavy iron chains",
+    "emotion_tags": [
+      "trapped",
+      "helplessness",
+      "slavery",
+      "bondage"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Slavery chains",
+      "Imprisonment"
+    ]
+  },
+  {
+    "symbol_id": "gravestone_sinking",
+    "description": "Tomb slowly disappearing into dark earth",
+    "emotion_tags": [
+      "loss",
+      "death",
+      "forgetting",
+      "erasure"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Death symbolism",
+      "Tomb imagery"
+    ]
+  },
+  {
+    "symbol_id": "abyss_yawning",
+    "description": "Bottomless void opening beneath feet",
+    "emotion_tags": [
+      "fear",
+      "vertigo",
+      "meaninglessness",
+      "void"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Existential abyss",
+      "Nietzsche abyss"
+    ]
+  },
+  {
+    "symbol_id": "serpent_shedding",
+    "description": "Snake leaving behind old skin for new",
+    "emotion_tags": [
+      "transformation",
+      "renewal",
+      "shedding",
+      "evolution"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Serpent symbolism",
+      "Rebirth archetype"
+    ]
+  },
+  {
+    "symbol_id": "lovers_entwined",
+    "description": "Two bodies intertwined in intimate embrace",
+    "emotion_tags": [
+      "connection",
+      "intimacy",
+      "union",
+      "belonging"
+    ],
+    "category": "connection",
+    "existing_references": [
+      "Love symbolism",
+      "Sacred union"
+    ]
+  },
+  {
+    "symbol_id": "burning_torch",
+    "description": "Flame held aloft, defying encroaching darkness",
+    "emotion_tags": [
+      "power",
+      "defiance",
+      "illumination",
+      "hope"
+    ],
+    "category": "power",
+    "existing_references": [
+      "Prometheus torch",
+      "Enlightenment fire"
+    ]
+  },
+  {
+    "symbol_id": "poison_cup",
+    "description": "Cup of sweet poison, death disguised as gift",
+    "emotion_tags": [
+      "guilt",
+      "poison",
+      "deception",
+      "harm"
+    ],
+    "category": "guilt",
+    "existing_references": [
+      "Hamlet poison",
+      "Snow White apple"
+    ]
+  },
+  {
+    "symbol_id": "rainbow_arc",
+    "description": "Spectrum of light bridging sky and earth",
+    "emotion_tags": [
+      "hope",
+      "promise",
+      "diversity",
+      "covenant"
+    ],
+    "category": "hope",
+    "existing_references": [
+      "Rainbow covenant",
+      "Bisect symbolism"
+    ]
+  },
+  {
+    "symbol_id": "gears_grinding",
+    "description": "Mechanical gears grinding in painful friction",
+    "emotion_tags": [
+      "conflict",
+      "friction",
+      "dysfunction",
+      "suffering"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Machine age",
+      "Mechanical symbolism"
+    ]
+  },
+  {
+    "symbol_id": "hooded_figure",
+    "description": "Faceless figure in heavy robes, identity hidden",
+    "emotion_tags": [
+      "mystery",
+      "death",
+      "unknown",
+      "fear"
+    ],
+    "category": "mystery",
+    "existing_references": [
+      "Grim Reaper",
+      "Death personified"
+    ]
+  },
+  {
+    "symbol_id": "chains_breaking",
+    "description": "Iron shackles snapping under tremendous force",
+    "emotion_tags": [
+      "trapped",
+      "liberation",
+      "strength",
+      "rebellion"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Freedom symbolism",
+      "Slave liberation"
+    ]
+  },
+  {
+    "symbol_id": "flowers_withering",
+    "description": "Beautiful blooms turning to dust and decay",
+    "emotion_tags": [
+      "loss",
+      "decay",
+      "transience",
+      "mortality"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Memento mori",
+      "Vanitas art"
+    ]
+  },
+  {
+    "symbol_id": "teeth_falling",
+    "description": "Teeth crumbling and falling from mouth",
+    "emotion_tags": [
+      "fear",
+      "aging",
+      "powerlessness",
+      "decay"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Anxiety dream",
+      "Psychoanalytic symbolism"
+    ]
+  },
+  {
+    "symbol_id": "chrysalis_splitting",
+    "description": "Protective cocoon opening to reveal vulnerable wings",
+    "emotion_tags": [
+      "transformation",
+      "vulnerability",
+      "emergence",
+      "risk"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Growth symbolism",
+      "Emergence archetype"
+    ]
+  },
+  {
+    "symbol_id": "souls_dancing",
+    "description": "Incorporeal souls moving in perfect synchrony",
+    "emotion_tags": [
+      "connection",
+      "harmony",
+      "transcendence",
+      "unity"
+    ],
+    "category": "connection",
+    "existing_references": [
+      "Soul connection",
+      "Spiritual union"
+    ]
+  },
+  {
+    "symbol_id": "titan_shoulders",
+    "description": "Standing on shoulders of giants, bearing great weight",
+    "emotion_tags": [
+      "power",
+      "burden",
+      "legacy",
+      "responsibility"
+    ],
+    "category": "power",
+    "existing_references": [
+      "Newton standing on shoulders",
+      "Legacy symbolism"
+    ]
+  },
+  {
+    "symbol_id": "scarlet_letter",
+    "description": "Mark of shame burned into skin or soul",
+    "emotion_tags": [
+      "guilt",
+      "shame",
+      "stigma",
+      "marking"
+    ],
+    "category": "guilt",
+    "existing_references": [
+      "Nathaniel Hawthorne novel",
+      "Shame symbolism"
+    ]
+  },
+  {
+    "symbol_id": "fountain_eternal",
+    "description": "Water flowing endlessly from mystical source",
+    "emotion_tags": [
+      "hope",
+      "renewal",
+      "abundance",
+      "eternal"
+    ],
+    "category": "hope",
+    "existing_references": [
+      "Holy Grail",
+      "Eternal source"
+    ]
+  },
+  {
+    "symbol_id": "scales_unbalanced",
+    "description": "Scales of justice tipped heavily to one side",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  },
+  {
+    "symbol_id": "oracle_speaking",
+    "description": "Mysterious voice uttering cryptic prophecy",
+    "emotion_tags": [
+      "mystery",
+      "fate",
+      "destiny",
+      "truth"
+    ],
+    "category": "mystery",
+    "existing_references": [
+      "Delphi oracle",
+      "Prophecy tradition"
+    ]
+  },
+  {
+    "symbol_id": "tower_imprisoning",
+    "description": "Tall stone tower with single window, isolated high",
+    "emotion_tags": [
+      "trapped",
+      "isolation",
+      "height",
+      "confinement"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Rapunzel tower",
+      "Imprisonment archetypes"
+    ]
+  },
+  {
+    "symbol_id": "caged_nightingale",
+    "description": "Caged Nightingale - variant of caged_bird",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "imprisoned_eagle",
+    "description": "Imprisoned Eagle - variant of caged_bird",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "caged_falcon",
+    "description": "Caged Falcon - variant of caged_bird",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "trapped_swallow",
+    "description": "Trapped Swallow - variant of caged_bird",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "confined_crow",
+    "description": "Confined Crow - variant of caged_bird",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "captive_sparrow",
+    "description": "Captive Sparrow - variant of caged_bird",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "caged_raven",
+    "description": "Caged Raven - variant of caged_bird",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "enclosed_phoenix",
+    "description": "Enclosed Phoenix - variant of caged_bird",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "locked_lark",
+    "description": "Locked Lark - variant of caged_bird",
+    "emotion_tags": [
+      "trapped",
+      "powerless",
+      "yearning",
+      "confined"
+    ],
+    "category": "trapped",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Maya Angelou Caged Bird"
+    ]
+  },
+  {
+    "symbol_id": "shattered_glass",
+    "description": "Shattered Glass - variant of broken_mirror",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "fractured_reflection",
+    "description": "Fractured Reflection - variant of broken_mirror",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "cracked_surface",
+    "description": "Cracked Surface - variant of broken_mirror",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "fragmented_image",
+    "description": "Fragmented Image - variant of broken_mirror",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "mirror_shards",
+    "description": "Mirror Shards - variant of broken_mirror",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "broken_reflection",
+    "description": "Broken Reflection - variant of broken_mirror",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "splintered_glass",
+    "description": "Splintered Glass - variant of broken_mirror",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "ruined_mirror",
+    "description": "Ruined Mirror - variant of broken_mirror",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "shattered_self",
+    "description": "Shattered Self - variant of broken_mirror",
+    "emotion_tags": [
+      "loss",
+      "fragmentation",
+      "identity_dissolution",
+      "broken"
+    ],
+    "category": "loss",
+    "existing_references": [
+      "Borges Library of Babel",
+      "Freud Mirror Stage"
+    ]
+  },
+  {
+    "symbol_id": "sinking_water",
+    "description": "Sinking Water - variant of drowning",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "suffocating_depths",
+    "description": "Suffocating Depths - variant of drowning",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "water_lungs",
+    "description": "Water Lungs - variant of drowning",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "struggling_surface",
+    "description": "Struggling Surface - variant of drowning",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "dark_deep",
+    "description": "Dark Deep - variant of drowning",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "panic_water",
+    "description": "Panic Water - variant of drowning",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "weighted_down",
+    "description": "Weighted Down - variant of drowning",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "underwater_tomb",
+    "description": "Underwater Tomb - variant of drowning",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "rising_water",
+    "description": "Rising Water - variant of drowning",
+    "emotion_tags": [
+      "fear",
+      "suffocation",
+      "helplessness",
+      "overwhelm"
+    ],
+    "category": "fear",
+    "existing_references": [
+      "Virginia Woolf The Waves",
+      "Plath's Bell Jar"
+    ]
+  },
+  {
+    "symbol_id": "body_change",
+    "description": "Body Change - variant of metamorphosis",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "alien_form",
+    "description": "Alien Form - variant of metamorphosis",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "unwilling_transformation",
+    "description": "Unwilling Transformation - variant of metamorphosis",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "insect_body",
+    "description": "Insect Body - variant of metamorphosis",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "grotesque_change",
+    "description": "Grotesque Change - variant of metamorphosis",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "monstrous_becoming",
+    "description": "Monstrous Becoming - variant of metamorphosis",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "shape_shifting",
+    "description": "Shape Shifting - variant of metamorphosis",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "forced_evolution",
+    "description": "Forced Evolution - variant of metamorphosis",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "self_dissolution",
+    "description": "Self Dissolution - variant of metamorphosis",
+    "emotion_tags": [
+      "transformation",
+      "alienation",
+      "horror",
+      "becoming"
+    ],
+    "category": "transformation",
+    "existing_references": [
+      "Kafka Metamorphosis",
+      "Ovid Metamorphoses"
+    ]
+  },
+  {
+    "symbol_id": "internal_battle",
+    "description": "Internal Battle - variant of two_wolves",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "dual_nature",
+    "description": "Dual Nature - variant of two_wolves",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "good_evil_fight",
+    "description": "Good Evil Fight - variant of two_wolves",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "opposing_forces",
+    "description": "Opposing Forces - variant of two_wolves",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "feeding_choice",
+    "description": "Feeding Choice - variant of two_wolves",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "wild_tame",
+    "description": "Wild Tame - variant of two_wolves",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "light_dark_battle",
+    "description": "Light Dark Battle - variant of two_wolves",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "nature_nurture",
+    "description": "Nature Nurture - variant of two_wolves",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "instinct_reason",
+    "description": "Instinct Reason - variant of two_wolves",
+    "emotion_tags": [
+      "conflict",
+      "duality",
+      "struggle",
+      "choice"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Native American teaching",
+      "Jung Shadow"
+    ]
+  },
+  {
+    "symbol_id": "weight_imbalance",
+    "description": "Weight Imbalance - variant of scales_unbalanced",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  },
+  {
+    "symbol_id": "unequal_sides",
+    "description": "Unequal Sides - variant of scales_unbalanced",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  },
+  {
+    "symbol_id": "scales_tipping",
+    "description": "Scales Tipping - variant of scales_unbalanced",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  },
+  {
+    "symbol_id": "justice_broken",
+    "description": "Justice Broken - variant of scales_unbalanced",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  },
+  {
+    "symbol_id": "heavy_side",
+    "description": "Heavy Side - variant of scales_unbalanced",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  },
+  {
+    "symbol_id": "light_side",
+    "description": "Light Side - variant of scales_unbalanced",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  },
+  {
+    "symbol_id": "balanced_moment",
+    "description": "Balanced Moment - variant of scales_unbalanced",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  },
+  {
+    "symbol_id": "scales_falling",
+    "description": "Scales Falling - variant of scales_unbalanced",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  },
+  {
+    "symbol_id": "weighed_judgment",
+    "description": "Weighed Judgment - variant of scales_unbalanced",
+    "emotion_tags": [
+      "conflict",
+      "injustice",
+      "imbalance",
+      "wrong"
+    ],
+    "category": "conflict",
+    "existing_references": [
+      "Justice symbolism",
+      "Imbalance archetype"
+    ]
+  }
+]

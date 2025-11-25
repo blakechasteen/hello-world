@@ -1,0 +1,95 @@
+[
+  {
+    "ingredient_id": "salt",
+    "quantity": 1.0,
+    "unit": "package",
+    "location": "pantry",
+    "purchased_date": "2024-08-15",
+    "notes": "Morton iodized salt, half used"
+  },
+  {
+    "ingredient_id": "vegan_butter",
+    "quantity": 2.0,
+    "unit": "package",
+    "location": "fridge",
+    "purchased_date": "2025-11-18",
+    "expiration_date": "2025-12-15",
+    "notes": "Earth Balance, 2 sticks remaining"
+  },
+  {
+    "ingredient_id": "oat_milk",
+    "quantity": 0.5,
+    "unit": "package",
+    "location": "fridge",
+    "purchased_date": "2025-11-15",
+    "expiration_date": "2025-11-30",
+    "opened_date": "2025-11-20",
+    "notes": "Oatly, half carton left"
+  },
+  {
+    "ingredient_id": "white_sugar",
+    "quantity": 2.0,
+    "unit": "lb",
+    "location": "pantry",
+    "purchased_date": "2025-09-10",
+    "notes": "Domino sugar, plenty left"
+  },
+  {
+    "ingredient_id": "brown_sugar",
+    "quantity": 1.0,
+    "unit": "lb",
+    "location": "pantry",
+    "purchased_date": "2025-10-05",
+    "notes": "Dark brown sugar"
+  },
+  {
+    "ingredient_id": "flour",
+    "quantity": 3.0,
+    "unit": "lb",
+    "location": "pantry",
+    "purchased_date": "2025-09-20",
+    "notes": "All-purpose flour"
+  },
+  {
+    "ingredient_id": "baking_powder",
+    "quantity": 1.0,
+    "unit": "package",
+    "location": "pantry",
+    "purchased_date": "2025-11-10",
+    "expiration_date": "2026-03-01",
+    "notes": "Unopened"
+  },
+  {
+    "ingredient_id": "cinnamon",
+    "quantity": 1.0,
+    "unit": "package",
+    "location": "pantry",
+    "purchased_date": "2025-01-20",
+    "notes": "Ground cinnamon"
+  },
+  {
+    "ingredient_id": "onions",
+    "quantity": 3.0,
+    "unit": "item",
+    "location": "counter",
+    "purchased_date": "2025-11-22",
+    "notes": "Yellow onions"
+  },
+  {
+    "ingredient_id": "frozen_corn",
+    "quantity": 2.0,
+    "unit": "package",
+    "location": "freezer",
+    "purchased_date": "2025-08-01",
+    "expiration_date": "2026-06-01",
+    "notes": "2 bags of frozen corn kernels"
+  },
+  {
+    "ingredient_id": "bouillon",
+    "quantity": 1.0,
+    "unit": "package",
+    "location": "pantry",
+    "purchased_date": "2025-06-12",
+    "notes": "Better Than Bouillon, vegetable flavor"
+  }
+]

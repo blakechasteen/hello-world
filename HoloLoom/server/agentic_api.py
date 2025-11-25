@@ -22,7 +22,7 @@ from datetime import datetime
 from collections import defaultdict, deque
 from time import time
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 
@@ -37,6 +37,14 @@ from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.alignment.audit_trail import AuditTrail
 from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest, RiskLevel
 from HoloLoom.alignment.deception_detection import DeceptionDetector
+
+# Agent Monitoring (Nov 2025)
+try:
+    from HoloLoom.agentic.monitoring import get_monitor, start_monitoring, stop_monitoring
+    MONITORING_AVAILABLE = True
+except ImportError:
+    MONITORING_AVAILABLE = False
+    logger.warning("Agent monitoring unavailable (monitoring.py not found)")
 
 
 logging.basicConfig(level=logging.INFO)
@@ -330,6 +338,7 @@ class ServerState:
     ml_logic_detector: Optional[MLLogicDetector] = None  # ML-based logic error detector
     rate_limiter: Optional[RateLimiter] = None  # Rate limiting
     stats: Optional[ServerStats] = None  # Server statistics
+    monitor: Optional[Any] = None  # Agent monitoring (Nov 2025)
 
 
 state = ServerState()
@@ -393,6 +402,18 @@ async def startup():
     state.ml_logic_detector = MLLogicDetector()
     logger.info("ML logic detector initialized (other detectors disabled)")
 
+    # Initialize agent monitoring (Nov 2025)
+    if MONITORING_AVAILABLE:
+        try:
+            state.monitor = get_monitor()
+            await start_monitoring()
+            logger.info("✅ Agent monitoring initialized (real-time tracking enabled)")
+        except Exception as e:
+            logger.warning(f"⚠️  Agent monitoring initialization failed: {e}")
+            state.monitor = None
+    else:
+        logger.info("Agent monitoring disabled (monitoring.py not available)")
+
     # Create orchestrator (lazy init - see get_orchestrator)
     logger.info("HoloLoom server ready!")
 
@@ -401,6 +422,16 @@ async def startup():
 async def shutdown():
     """Cleanup on shutdown."""
     logger.info("Shutting down HoloLoom server...")
+
+    # Stop agent monitoring
+    if MONITORING_AVAILABLE and state.monitor:
+        try:
+            await stop_monitoring()
+            logger.info("Agent monitoring stopped")
+        except Exception as e:
+            logger.warning(f"Error stopping monitoring: {e}")
+
+    # Close orchestrator
     if state.orchestrator:
         await state.orchestrator.close()
 
@@ -479,7 +510,8 @@ async def get_orchestrator():
             state.shards,
             enable_verification=True,
             enable_goal_tracking=True,
-            audit_trail=state.audit_trail
+            audit_trail=state.audit_trail,
+            monitor=state.monitor  # Agent monitoring (Nov 2025)
         )
         logger.info("Orchestrator ready!")
 
@@ -1960,6 +1992,363 @@ async def get_graph_data(
     except Exception as e:
         logger.error(f"Graph data export failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# REST Monitoring Endpoints (Agent Monitoring - Nov 2025)
+# ============================================================================
+
+@app.get("/api/monitor/sessions")
+async def get_monitor_sessions():
+    """
+    Get all active agent sessions.
+
+    Returns:
+        JSON with list of all active sessions and count
+
+    Example:
+        GET /api/monitor/sessions
+
+        Response:
+        {
+            "sessions": [
+                {
+                    "agent_id": "agent_abc123",
+                    "project": "mythRL",
+                    "query": "Explain Thompson Sampling",
+                    "mode": "research",
+                    "status": "running",
+                    "current_step": 2,
+                    "total_steps": 5,
+                    "feed_line1": "Research query 2/5",
+                    "feed_line2": "Exploring tradeoffs..."
+                },
+                ...
+            ],
+            "count": 3
+        }
+    """
+    if not MONITORING_AVAILABLE or not state.monitor:
+        raise HTTPException(status_code=503, detail="Monitoring unavailable")
+
+    try:
+        sessions = state.monitor.get_all_sessions()
+
+        # Serialize sessions
+        session_list = []
+        for session in sessions:
+            session_list.append({
+                "agent_id": session.agent_id,
+                "project": session.project,
+                "query": session.query,
+                "mode": session.mode,
+                "status": session.status.value,
+                "current_step": session.current_step,
+                "total_steps": session.total_steps,
+                "feed_line1": session.feed_line1,
+                "feed_line2": session.feed_line2,
+                "files": session.files,
+                "start_time": session.start_time,
+                "total_duration_ms": session.total_duration_ms
+            })
+
+        return {
+            "sessions": session_list,
+            "count": len(session_list)
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to get monitor sessions: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/monitor/sessions/{agent_id}")
+async def get_monitor_session(agent_id: str):
+    """
+    Get specific agent session with full tree structure.
+
+    Args:
+        agent_id: Agent identifier
+
+    Returns:
+        JSON with session details and reasoning tree
+
+    Example:
+        GET /api/monitor/sessions/agent_abc123
+
+        Response:
+        {
+            "agent_id": "agent_abc123",
+            "project": "mythRL",
+            "status": "completed",
+            "tree": {
+                "node_id": "agent_abc123_step_0",
+                "step_type": "initial_answer",
+                "children": [...]
+            },
+            ...
+        }
+    """
+    if not MONITORING_AVAILABLE or not state.monitor:
+        raise HTTPException(status_code=503, detail="Monitoring unavailable")
+
+    try:
+        session = state.monitor.get_session(agent_id)
+
+        if not session:
+            raise HTTPException(status_code=404, detail=f"Session {agent_id} not found")
+
+        # Serialize session with tree
+        return {
+            "agent_id": session.agent_id,
+            "project": session.project,
+            "query": session.query,
+            "mode": session.mode,
+            "status": session.status.value,
+            "current_step": session.current_step,
+            "total_steps": session.total_steps,
+            "feed_line1": session.feed_line1,
+            "feed_line2": session.feed_line2,
+            "files": session.files,
+            "start_time": session.start_time,
+            "total_duration_ms": session.total_duration_ms,
+            "tree": state.monitor._serialize_tree(session),
+            "metadata": session.metadata
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get session {agent_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/monitor/projects")
+async def get_monitor_projects():
+    """
+    Get list of all active projects.
+
+    Returns:
+        JSON with list of project names and count
+
+    Example:
+        GET /api/monitor/projects
+
+        Response:
+        {
+            "projects": ["mythRL", "squad", "elle"],
+            "count": 3
+        }
+    """
+    if not MONITORING_AVAILABLE or not state.monitor:
+        raise HTTPException(status_code=503, detail="Monitoring unavailable")
+
+    try:
+        projects = list(state.monitor.projects.keys())
+
+        return {
+            "projects": projects,
+            "count": len(projects)
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to get monitor projects: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/monitor/projects/{project}")
+async def get_monitor_project_agents(project: str):
+    """
+    Get all agents for a specific project.
+
+    Args:
+        project: Project name
+
+    Returns:
+        JSON with project name and agent sessions
+
+    Example:
+        GET /api/monitor/projects/mythRL
+
+        Response:
+        {
+            "project": "mythRL",
+            "agents": [
+                {
+                    "agent_id": "agent_abc123",
+                    "query": "Explain Thompson Sampling",
+                    "status": "running",
+                    ...
+                },
+                ...
+            ],
+            "count": 2
+        }
+    """
+    if not MONITORING_AVAILABLE or not state.monitor:
+        raise HTTPException(status_code=503, detail="Monitoring unavailable")
+
+    try:
+        sessions = state.monitor.get_project_agents(project)
+
+        # Serialize sessions
+        agent_list = []
+        for session in sessions:
+            agent_list.append({
+                "agent_id": session.agent_id,
+                "query": session.query,
+                "mode": session.mode,
+                "status": session.status.value,
+                "current_step": session.current_step,
+                "total_steps": session.total_steps,
+                "feed_line1": session.feed_line1,
+                "feed_line2": session.feed_line2,
+                "files": session.files,
+                "start_time": session.start_time,
+                "total_duration_ms": session.total_duration_ms
+            })
+
+        return {
+            "project": project,
+            "agents": agent_list,
+            "count": len(agent_list)
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to get agents for project {project}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/monitor/metrics")
+async def get_monitor_metrics():
+    """
+    Get performance metrics for agent monitoring.
+
+    Returns:
+        JSON with performance statistics
+
+    Example:
+        GET /api/monitor/metrics
+
+        Response:
+        {
+            "total_agents_started": 42,
+            "total_agents_completed": 38,
+            "total_agents_failed": 4,
+            "active_agents": 3,
+            "avg_latency_ms": 325.7,
+            "success_rate": 0.90,
+            "projects": ["mythRL", "squad", "elle"],
+            "ws_connections": 2
+        }
+    """
+    if not MONITORING_AVAILABLE or not state.monitor:
+        raise HTTPException(status_code=503, detail="Monitoring unavailable")
+
+    try:
+        metrics = state.monitor.get_metrics()
+        return metrics
+
+    except Exception as e:
+        logger.error(f"Failed to get monitor metrics: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# WebSocket Endpoints (Agent Monitoring - Nov 2025)
+# ============================================================================
+
+@app.websocket("/ws/monitor")
+async def websocket_monitor(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time agent monitoring.
+
+    Streams agent status updates, step completions, and feed updates.
+
+    Message Types:
+        - agent_started: New agent began reasoning
+        - agent_step: Agent completed a reasoning step
+        - agent_status: Agent status changed (RUNNING/WAITING/COMPLETED/FAILED)
+        - agent_feed: Two-line feed update
+        - agent_completed: Agent finished with tree structure
+        - agent_failed: Agent encountered error
+
+    Example Client (TypeScript):
+        const ws = new WebSocket('ws://localhost:8000/ws/monitor');
+        ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            console.log('Agent update:', message);
+        };
+    """
+    await websocket.accept()
+    logger.info(f"WebSocket client connected: {websocket.client}")
+
+    if not MONITORING_AVAILABLE or not state.monitor:
+        await websocket.send_json({
+            "type": "error",
+            "message": "Agent monitoring not available"
+        })
+        await websocket.close()
+        return
+
+    # Register WebSocket connection
+    state.monitor.register_ws_connection(websocket)
+    logger.info(f"WebSocket registered with monitor ({len(state.monitor.ws_connections)} total)")
+
+    try:
+        # Send initial state
+        await websocket.send_json({
+            "type": "connected",
+            "message": "Real-time agent monitoring active",
+            "active_agents": len(state.monitor.sessions),
+            "projects": list(state.monitor.projects.keys())
+        })
+
+        # Keep connection alive and handle incoming messages
+        while True:
+            try:
+                # Wait for client messages (ping, etc.)
+                data = await websocket.receive_text()
+
+                # Handle client requests
+                if data == "ping":
+                    await websocket.send_json({"type": "pong"})
+                elif data == "get_sessions":
+                    # Send current sessions
+                    sessions = []
+                    for session in state.monitor.get_all_sessions():
+                        sessions.append({
+                            "agent_id": session.agent_id,
+                            "project": session.project,
+                            "query": session.query,
+                            "mode": session.mode,
+                            "status": session.status.value,
+                            "current_step": session.current_step,
+                            "total_steps": session.total_steps
+                        })
+                    await websocket.send_json({
+                        "type": "sessions",
+                        "sessions": sessions
+                    })
+                elif data == "get_metrics":
+                    # Send performance metrics
+                    metrics = state.monitor.get_metrics()
+                    await websocket.send_json({
+                        "type": "metrics",
+                        "metrics": metrics
+                    })
+
+            except WebSocketDisconnect:
+                logger.info("WebSocket client disconnected")
+                break
+            except Exception as e:
+                logger.error(f"WebSocket error: {e}")
+                break
+
+    finally:
+        # Unregister on disconnect
+        state.monitor.unregister_ws_connection(websocket)
+        logger.info(f"WebSocket unregistered ({len(state.monitor.ws_connections)} remaining)")
 
 
 # ============================================================================

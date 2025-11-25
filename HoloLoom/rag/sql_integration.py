@@ -62,6 +62,9 @@ import logging
 import re
 import time
 
+# UnifiedMRF for enhanced prompting (Phase 2.1 - Nov 2025)
+from HoloLoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+
 # Optional dependencies (graceful degradation)
 try:
     from sqlalchemy import create_engine, text, MetaData, inspect
@@ -155,7 +158,8 @@ class SQLAdapter:
         connection_string: str,
         schema: Optional[Dict[str, List[str]]] = None,
         read_only: bool = True,
-        timeout: float = 5.0
+        timeout: float = 5.0,
+        model_provider: Optional[str] = None  # NEW (Phase 2.1)
     ):
         """
         Initialize SQL adapter.
@@ -170,6 +174,8 @@ class SQLAdapter:
                 Example: {"users": ["id", "name", "age"], "orders": [...]}
             read_only: Enforce read-only queries (blocks INSERT/UPDATE/DELETE)
             timeout: Query timeout in seconds
+            model_provider: LLM provider for prompt optimization
+                ("claude", "gemini", "gpt", "ollama"). NEW (Phase 2.1)
 
         Raises:
             RuntimeError: If SQLAlchemy unavailable
@@ -184,6 +190,10 @@ class SQLAdapter:
         self.timeout = timeout
         self.engine: Optional[Engine] = None
         self.schema: Dict[str, List[str]] = schema or {}
+        self.model_provider = model_provider  # NEW (Phase 2.1)
+
+        # UnifiedMRF for enhanced SQL translation prompts (Phase 2.1)
+        self.mrf = UnifiedMRF()
 
         # Stats
         self._stats = {
@@ -436,36 +446,122 @@ class TextToSQLTranslator:
         """
         Build schema-aware prompt for text-to-SQL translation.
 
+        **UPDATED (Phase 2.1 - Nov 2025):** Uses UnifiedMRF 7-component framework
+        with model-specific optimizations.
+
         Args:
             question: Natural language query
 
         Returns:
-            LLM prompt string
+            Enhanced LLM prompt string (traditional format if MRF unavailable)
         """
-        # Format schema for prompt
+        # Format schema for metaprompt context
         schema_str = "Database Schema:\n"
         for table, columns in self.schema.items():
             schema_str += f"\nTable: {table}\n"
             schema_str += f"Columns: {', '.join(columns)}\n"
 
-        prompt = f"""You are a SQL expert. Translate the following question to SQL.
+        # Use UnifiedMRF for enhanced prompting (Phase 2.1)
+        metaprompt = MetapromptConfig(
+            role=(
+                "You are an expert SQL translator with deep knowledge of:\n"
+                "- Standard SQL syntax (SELECT, JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT)\n"
+                "- Multi-database compatibility (SQLite, PostgreSQL, MySQL)\n"
+                "- Query optimization and index-friendly patterns\n"
+                "- Security best practices (parameterization, SQL injection prevention)\n"
+                "- Schema inference and table relationship detection"
+            ),
+            objective={
+                "primary": "Translate natural language questions into syntactically correct, secure SQL queries",
+                "secondary": [
+                    "Ensure read-only operations (SELECT only)",
+                    "Optimize for database performance and index usage",
+                    "Handle ambiguous queries gracefully with reasonable assumptions"
+                ]
+            },
+            process=[
+                {
+                    "step": "1. Schema Analysis",
+                    "actions": [
+                        f"Review available tables and columns:\n{schema_str}",
+                        "Identify which tables/columns are relevant to the question",
+                        "Detect any necessary JOINs based on table relationships"
+                    ]
+                },
+                {
+                    "step": "2. Query Construction",
+                    "actions": [
+                        "Start with SELECT statement",
+                        "Add necessary JOINs if multiple tables involved",
+                        "Include WHERE clauses for filtering",
+                        "Add GROUP BY if aggregations needed (COUNT, SUM, AVG, etc.)",
+                        "Include ORDER BY for sorted results if relevant",
+                        "Add LIMIT for result size control"
+                    ]
+                },
+                {
+                    "step": "3. Validation & Optimization",
+                    "actions": [
+                        "Verify all columns exist in schema",
+                        "Ensure query is read-only (no INSERT/UPDATE/DELETE/DROP)",
+                        "Check for proper JOIN syntax (INNER JOIN, LEFT JOIN, etc.)",
+                        "Optimize WHERE clause ordering for index usage"
+                    ]
+                }
+            ],
+            format_spec=(
+                "Return ONLY the SQL query string, no explanation or markdown formatting.\n"
+                "Format: Clean SQL on a single line or multiple lines (no code blocks).\n"
+                "Example: SELECT name, age FROM users WHERE age > 30 LIMIT 10"
+            ),
+            constraints=[
+                "MUST use SELECT for read operations only",
+                "MUST NOT include INSERT, UPDATE, DELETE, DROP, ALTER, CREATE, TRUNCATE",
+                "MUST use standard SQL compatible with SQLite, PostgreSQL, MySQL",
+                "MUST reference only tables/columns that exist in the provided schema",
+                "MUST use proper JOIN syntax if multiple tables needed",
+                "SHOULD include LIMIT clause to prevent unbounded result sets",
+                "SHOULD use parameterization-friendly patterns (avoid string concatenation in WHERE)"
+            ],
+            uncertainty=(
+                "If the question is ambiguous or could map to multiple interpretations:\n"
+                "- Choose the most common/reasonable interpretation\n"
+                "- Prefer simpler queries over complex multi-table JOINs\n"
+                "- Default to returning recent/relevant data (ORDER BY with LIMIT)\n"
+                "\n"
+                "If required columns are unclear:\n"
+                "- Infer likely columns from table names and common patterns\n"
+                "- Example: For 'users', likely columns include id, name, email, created_at"
+            ),
+            validation=[
+                "Query starts with SELECT (case-insensitive)",
+                "No dangerous keywords (INSERT, UPDATE, DELETE, DROP, etc.)",
+                "All referenced tables exist in schema",
+                "All referenced columns exist in their respective tables",
+                "JOIN syntax is valid (if used)",
+                "WHERE clause uses proper comparison operators (=, >, <, LIKE, IN, etc.)"
+            ]
+        )
 
-{schema_str}
+        # Map model provider string to ModelProvider enum
+        provider = None
+        if self.model_provider:
+            provider_map = {
+                "claude": ModelProvider.CLAUDE,
+                "gemini": ModelProvider.GEMINI,
+                "gpt": ModelProvider.GPT,
+                "ollama": ModelProvider.OLLAMA
+            }
+            provider = provider_map.get(self.model_provider.lower())
 
-Question: {question}
+        # Generate enhanced prompt using UnifiedMRF
+        enhanced_prompt = self.mrf.enhance_prompt(
+            metaprompt=metaprompt,
+            query=question,
+            model=provider
+        )
 
-Requirements:
-- Return ONLY the SQL query, no explanation
-- Use standard SQL syntax (compatible with SQLite, PostgreSQL, MySQL)
-- Use SELECT for read operations only
-- Do NOT include INSERT, UPDATE, DELETE, DROP, or other write operations
-- Use proper JOIN syntax if multiple tables needed
-- Include WHERE clauses for filtering
-- Use LIMIT for result size control
-
-SQL Query:"""
-
-        return prompt
+        return enhanced_prompt
 
     def _extract_sql(self, llm_response: str) -> str:
         """

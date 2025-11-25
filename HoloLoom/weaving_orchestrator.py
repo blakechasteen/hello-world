@@ -96,6 +96,16 @@ from HoloLoom.orchestrator.retrieval import (
     query_memory_backend,
 )
 
+# Physics Integration (Elegance Pass: Extracted to orchestrator/physics/ - November 2025 Phase 7)
+from HoloLoom.orchestrator.physics import (
+    weave_with_physics,
+)
+
+# Learning Integration (Elegance Pass: Extracted to orchestrator/learning/ - November 2025 Phase 8)
+from HoloLoom.orchestrator.learning import (
+    apply_recursive_learning,
+)
+
 # Production Hardening (Part 5: Days 21-25)
 try:
     from HoloLoom.context import (
@@ -769,11 +779,11 @@ class WeavingOrchestrator:
                 }
 
                 # Get awareness metrics for provenance
-                metrics = self.awareness_layer.get_metrics()
+                awareness_metrics = self.awareness_layer.get_metrics()
                 awareness_context.update({
-                    'active_nodes': metrics.get('active_nodes', 0),
-                    'coherence': metrics.get('coherence', {}).get('global_coherence', 0.0),
-                    'shift_detected': metrics.get('shift_detected', False),
+                    'active_nodes': awareness_metrics.get('active_nodes', 0),
+                    'coherence': awareness_metrics.get('coherence', {}).get('global_coherence', 0.0),
+                    'shift_detected': awareness_metrics.get('shift_detected', False),
                 })
 
                 self.logger.info(
@@ -1601,7 +1611,7 @@ class WeavingOrchestrator:
             # ================================================================
             if self.enable_recursive_learning and self._recursive_components:
                 try:
-                    spacetime = await self._apply_recursive_learning(spacetime, query)
+                    spacetime = await apply_recursive_learning(self, spacetime, query)
                 except Exception as e:
                     self.logger.warning(f"Recursive learning failed: {e}. Continuing with original spacetime.")
                     # Don't fail the weaving cycle if learning fails
@@ -1713,84 +1723,12 @@ class WeavingOrchestrator:
             >>> print(f"Physics routing: {physics.routing_decision.target}")
             >>> print(f"Temperature: {physics.exploration_temperature:.2f}")
             >>> print(f"Patterns: {len(physics.constructive_patterns)}")
+
+        Note:
+            Implementation extracted to orchestrator/physics/physics_integration.py
+            (Elegance Pass - Phase 7, November 2025)
         """
-        if not self.unified_physics:
-            self.logger.warning("Unified physics not available, falling back to standard weaving")
-            spacetime = await self.weave(query)
-            return spacetime, None
-
-        # Standard weaving to get base result
-        spacetime = await self.weave(query)
-
-        # Prepare physics inputs
-        actions = self.tool_executor.tools
-        action_metrics = {
-            "answer": {"cost": 0.3, "quality": 0.8, "latency": 0.1, "error": 0.1},
-            "search": {"cost": 0.6, "quality": 0.7, "latency": 0.2, "error": 0.15},
-            "notion_write": {"cost": 0.6, "quality": 0.75, "latency": 0.15, "error": 0.1},
-            "calc": {"cost": 0.1, "quality": 0.9, "latency": 0.05, "error": 0.05}
-        }
-
-        # Build graph structure for wave mechanics (if yarn_graph available)
-        graph_structure = None
-        if self.yarn_graph and hasattr(self.yarn_graph, 'G'):
-            # Extract edges from knowledge graph
-            graph_structure = [
-                (str(source), str(target))
-                for source, target in self.yarn_graph.G.edges()
-            ]
-
-        # Process through unified physics
-        physics_result = await self.unified_physics.process(
-            query=query.text,
-            actions=actions,
-            action_metrics=action_metrics,
-            graph_structure=graph_structure
-        )
-
-        # Enhance spacetime with physics provenance
-        if track_provenance and self.cfg.physics_track_provenance:
-            spacetime.metadata['unified_physics'] = {
-                # Phase 1: Routing
-                'routing_target': physics_result.routing_decision.target if physics_result.routing_decision else None,
-                'routing_loss': physics_result.routing_loss,
-                'routing_ms': physics_result.routing_ms,
-
-                # Phase 2: Packing (if available)
-                'context_efficiency': physics_result.context_efficiency,
-                'packing_ms': physics_result.packing_ms,
-
-                # Phase 3: Thermodynamics
-                'selected_action': physics_result.selected_action,
-                'exploration_temperature': physics_result.exploration_temperature,
-                'free_energy': physics_result.free_energy,
-                'thermodynamics_ms': physics_result.thermodynamics_ms,
-
-                # Phase 4: Wave Mechanics
-                'constructive_patterns': len(physics_result.constructive_patterns),
-                'destructive_patterns': len(physics_result.destructive_patterns),
-                'resonances': len(physics_result.resonances),
-                'wave_mechanics_ms': physics_result.wave_mechanics_ms,
-
-                # Unified metrics
-                'total_energy': physics_result.total_energy,
-                'total_entropy': physics_result.total_entropy,
-                'total_free_energy': physics_result.total_free_energy,
-                'physics_duration_ms': physics_result.duration_ms,
-
-                # System statistics
-                'physics_stats': self.unified_physics.get_statistics()
-            }
-
-            self.logger.info(
-                f"✓ Physics enhancement complete: "
-                f"routing={physics_result.routing_decision.target if physics_result.routing_decision else 'N/A'}, "
-                f"T={physics_result.exploration_temperature:.2f}, "
-                f"patterns={len(physics_result.constructive_patterns)}, "
-                f"F={physics_result.total_free_energy:.3f}"
-            )
-
-        return spacetime, physics_result if track_provenance else None
+        return await weave_with_physics(self, query, track_provenance)
 
     async def reflect(
         self,
@@ -1924,81 +1862,12 @@ class WeavingOrchestrator:
 
         Returns:
             Potentially refined spacetime (or original if no refinement needed)
+
+        Note:
+            Implementation extracted to orchestrator/learning/recursive_learning.py
+            (Elegance Pass - Phase 8, November 2025)
         """
-        if not self._recursive_components:
-            return spacetime
-
-        components = self._recursive_components
-        confidence = spacetime.trace.tool_confidence
-
-        # Phase 1: Scratchpad - Track provenance
-        if components.get('scratchpad'):
-            components['scratchpad'].add_entry(
-                thought=f"Query: {query.text[:100]}",
-                action=f"Tool: {spacetime.trace.tool_selected}, Adapter: {spacetime.trace.policy_adapter}",
-                observation=f"Confidence: {confidence:.2f}",
-                score=confidence
-            )
-
-        # Phase 2: Pattern Learning - Learn from high-confidence queries
-        if confidence >= self.cfg.recursive_learning_refinement_threshold:
-            # Learn pattern
-            components['pattern_learner'].learn_from_spacetime(spacetime)
-
-        # Phase 3: Hot Pattern Tracking - Track access frequency
-        if components.get('hot_tracker'):
-            components['hot_tracker'].record_access(spacetime)
-
-        # Phase 4: Refinement - Refine low-confidence results
-        if confidence < self.cfg.recursive_learning_refinement_threshold:
-            self.logger.info(
-                f"[LEARNING] Low confidence ({confidence:.2f}), triggering refinement"
-            )
-
-            refinement_result = await components['refiner'].refine(
-                query=query,
-                initial_spacetime=spacetime,
-                strategy=None,  # Auto-select
-                max_iterations=self.cfg.recursive_learning_max_iterations,
-                quality_threshold=0.9
-            )
-
-            spacetime = refinement_result.final_spacetime
-
-            # Log refinement to scratchpad
-            if components.get('scratchpad'):
-                components['scratchpad'].add_entry(
-                    thought=f"Refinement: {refinement_result.strategy_used.value}",
-                    action=f"Iterations: {refinement_result.iterations}",
-                    observation=refinement_result.summary(),
-                    score=refinement_result.trajectory[-1].score()
-                )
-
-        # Phase 5: Thompson Sampling and Policy Updates
-        tool = spacetime.trace.tool_selected
-        adapter = spacetime.trace.policy_adapter
-        final_confidence = spacetime.trace.tool_confidence
-
-        # Update Thompson priors
-        if final_confidence >= 0.75:
-            components['thompson_priors'].update_success(tool, final_confidence)
-        else:
-            components['thompson_priors'].update_failure(tool, final_confidence)
-
-        # Update policy weights
-        success = final_confidence >= 0.75
-        components['policy_weights'].update(adapter, success)
-
-        # Update metrics
-        components['metrics'].update(final_confidence)
-        components['metrics'].thompson_updates += 1
-        components['metrics'].policy_updates += 1
-
-        # Record for background learner
-        if components.get('background_learner'):
-            components['background_learner'].record_spacetime(spacetime)
-
-        return spacetime
+        return await apply_recursive_learning(self, spacetime, query)
 
     # ========================================================================
     # Memory Backend Helpers

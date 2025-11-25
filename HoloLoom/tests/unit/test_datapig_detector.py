@@ -121,7 +121,7 @@ def test_data_leak_ssn(detector):
 def test_data_leak_api_key(detector):
     """Test detection of API keys"""
     data = [
-        {"id": 1, "api_key": "sk_test_FAKE1234567890FAKE1234567890FAKE"},  # Fake test key (40 chars)
+        {"id": 1, "api_key": "test_key_OBVIOUSLY_FAKE_NOT_REAL_12345"},  # Clearly fake test key
         {"id": 2, "api_key": None},
     ]
 

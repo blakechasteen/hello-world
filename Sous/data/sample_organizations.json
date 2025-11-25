@@ -1,0 +1,371 @@
+{
+  "organizations": [
+    {
+      "org_id": "fb_community_food_bank",
+      "name": "Community Food Bank",
+      "org_type": "food_bank",
+      "location": {
+        "address": "123 Main Street",
+        "city": "Springfield",
+        "state": "IL",
+        "zip_code": "62701",
+        "latitude": 39.7817,
+        "longitude": -89.6501
+      },
+      "contact": {
+        "name": "Sarah Johnson",
+        "email": "sarah@communityfoodbank.org",
+        "phone": "(217) 555-0100"
+      },
+      "capabilities": {
+        "can_donate": true,
+        "can_receive": true,
+        "donation_capabilities": ["prepared_food", "fresh_produce", "packaged_goods", "frozen_items", "dairy", "meat"]
+      },
+      "logistics": {
+        "has_refrigeration": true,
+        "has_freezer": true,
+        "delivery_radius_miles": 10.0,
+        "can_pickup": true,
+        "can_deliver": true
+      },
+      "food_bank_specific": {
+        "max_families_per_day": 75,
+        "current_inventory_lbs": 2500.0,
+        "max_inventory_lbs": 10000.0,
+        "zip_codes_served": ["62701", "62702", "62703", "62704"],
+        "senior_program": true,
+        "snap_enrollment": true
+      },
+      "operating_hours": [
+        {"day": 1, "open": "09:00", "close": "17:00"},
+        {"day": 2, "open": "09:00", "close": "17:00"},
+        {"day": 3, "open": "09:00", "close": "17:00"},
+        {"day": 4, "open": "09:00", "close": "17:00"},
+        {"day": 5, "open": "09:00", "close": "15:00"}
+      ]
+    },
+    {
+      "org_id": "fb_north_side_pantry",
+      "name": "North Side Pantry",
+      "org_type": "food_bank",
+      "location": {
+        "address": "456 Oak Avenue",
+        "city": "Springfield",
+        "state": "IL",
+        "zip_code": "62702",
+        "latitude": 39.8105,
+        "longitude": -89.6440
+      },
+      "contact": {
+        "name": "Michael Chen",
+        "email": "michael@northsidepantry.org",
+        "phone": "(217) 555-0200"
+      },
+      "capabilities": {
+        "can_donate": false,
+        "can_receive": true,
+        "donation_capabilities": []
+      },
+      "logistics": {
+        "has_refrigeration": true,
+        "has_freezer": false,
+        "delivery_radius_miles": 5.0,
+        "can_pickup": true,
+        "can_deliver": false
+      },
+      "food_bank_specific": {
+        "max_families_per_day": 30,
+        "current_inventory_lbs": 800.0,
+        "max_inventory_lbs": 3000.0,
+        "zip_codes_served": ["62702", "62703"],
+        "nutrition_education": true
+      },
+      "operating_hours": [
+        {"day": 1, "open": "10:00", "close": "14:00"},
+        {"day": 3, "open": "10:00", "close": "14:00"},
+        {"day": 5, "open": "10:00", "close": "14:00"}
+      ]
+    },
+    {
+      "org_id": "rest_bella_cucina",
+      "name": "Bella Cucina",
+      "org_type": "restaurant",
+      "location": {
+        "address": "789 Washington Street",
+        "city": "Springfield",
+        "state": "IL",
+        "zip_code": "62701",
+        "latitude": 39.7990,
+        "longitude": -89.6443
+      },
+      "contact": {
+        "name": "Antonio Rossi",
+        "email": "antonio@bellacucina.com",
+        "phone": "(217) 555-0300"
+      },
+      "capabilities": {
+        "can_donate": true,
+        "can_receive": false,
+        "donation_capabilities": ["prepared_food", "baked_goods"]
+      },
+      "logistics": {
+        "has_refrigeration": true,
+        "has_freezer": true,
+        "delivery_radius_miles": 5.0,
+        "can_pickup": false,
+        "can_deliver": false
+      },
+      "restaurant_specific": {
+        "cuisine_type": "Italian",
+        "seating_capacity": 80,
+        "avg_daily_covers": 120,
+        "typical_surplus_lbs": 15.0,
+        "surplus_days": [0, 1, 2, 3, 4],
+        "surplus_time": "21:00",
+        "food_safety_certified": true,
+        "health_score": 98
+      },
+      "operating_hours": [
+        {"day": 1, "open": "11:00", "close": "22:00"},
+        {"day": 2, "open": "11:00", "close": "22:00"},
+        {"day": 3, "open": "11:00", "close": "22:00"},
+        {"day": 4, "open": "11:00", "close": "22:00"},
+        {"day": 5, "open": "11:00", "close": "23:00"},
+        {"day": 6, "open": "16:00", "close": "23:00"}
+      ]
+    },
+    {
+      "org_id": "rest_sunrise_diner",
+      "name": "Sunrise Diner",
+      "org_type": "restaurant",
+      "location": {
+        "address": "234 Lincoln Avenue",
+        "city": "Springfield",
+        "state": "IL",
+        "zip_code": "62703",
+        "latitude": 39.7654,
+        "longitude": -89.6398
+      },
+      "contact": {
+        "name": "Mary Thompson",
+        "email": "mary@sunrisediner.com",
+        "phone": "(217) 555-0400"
+      },
+      "capabilities": {
+        "can_donate": true,
+        "can_receive": false,
+        "donation_capabilities": ["prepared_food", "baked_goods"]
+      },
+      "logistics": {
+        "has_refrigeration": true,
+        "has_freezer": false,
+        "delivery_radius_miles": 3.0,
+        "can_pickup": false,
+        "can_deliver": false
+      },
+      "restaurant_specific": {
+        "cuisine_type": "American",
+        "seating_capacity": 50,
+        "avg_daily_covers": 80,
+        "typical_surplus_lbs": 10.0,
+        "surplus_days": [0, 1, 2, 3, 4],
+        "surplus_time": "14:00",
+        "food_safety_certified": true,
+        "health_score": 95
+      },
+      "operating_hours": [
+        {"day": 1, "open": "06:00", "close": "14:00"},
+        {"day": 2, "open": "06:00", "close": "14:00"},
+        {"day": 3, "open": "06:00", "close": "14:00"},
+        {"day": 4, "open": "06:00", "close": "14:00"},
+        {"day": 5, "open": "06:00", "close": "14:00"},
+        {"day": 6, "open": "07:00", "close": "15:00"},
+        {"day": 0, "open": "07:00", "close": "15:00"}
+      ]
+    },
+    {
+      "org_id": "store_fresh_market",
+      "name": "Fresh Market Grocery",
+      "org_type": "grocery_store",
+      "location": {
+        "address": "567 Market Street",
+        "city": "Springfield",
+        "state": "IL",
+        "zip_code": "62701",
+        "latitude": 39.7923,
+        "longitude": -89.6512
+      },
+      "contact": {
+        "name": "David Park",
+        "email": "david@freshmarket.com",
+        "phone": "(217) 555-0500"
+      },
+      "capabilities": {
+        "can_donate": true,
+        "can_receive": false,
+        "donation_capabilities": ["fresh_produce", "packaged_goods", "baked_goods", "dairy", "meat"]
+      },
+      "logistics": {
+        "has_refrigeration": true,
+        "has_freezer": true,
+        "delivery_radius_miles": 8.0,
+        "can_pickup": false,
+        "can_deliver": false
+      },
+      "grocery_store_specific": {
+        "store_chain": "Fresh Market",
+        "square_footage": 15000,
+        "has_bakery": true,
+        "has_deli": true,
+        "has_produce": true,
+        "has_meat_counter": true,
+        "corporate_donation_program": true,
+        "donation_window": ["18:00", "20:00"],
+        "avg_daily_donation_lbs": 35.0
+      },
+      "operating_hours": [
+        {"day": 1, "open": "07:00", "close": "21:00"},
+        {"day": 2, "open": "07:00", "close": "21:00"},
+        {"day": 3, "open": "07:00", "close": "21:00"},
+        {"day": 4, "open": "07:00", "close": "21:00"},
+        {"day": 5, "open": "07:00", "close": "21:00"},
+        {"day": 6, "open": "07:00", "close": "21:00"},
+        {"day": 0, "open": "08:00", "close": "20:00"}
+      ]
+    },
+    {
+      "org_id": "store_corner_market",
+      "name": "Corner Market",
+      "org_type": "grocery_store",
+      "location": {
+        "address": "890 Elm Street",
+        "city": "Springfield",
+        "state": "IL",
+        "zip_code": "62704",
+        "latitude": 39.7543,
+        "longitude": -89.6234
+      },
+      "contact": {
+        "name": "Lisa Rodriguez",
+        "email": "lisa@cornermarket.com",
+        "phone": "(217) 555-0600"
+      },
+      "capabilities": {
+        "can_donate": true,
+        "can_receive": false,
+        "donation_capabilities": ["fresh_produce", "packaged_goods", "baked_goods"]
+      },
+      "logistics": {
+        "has_refrigeration": true,
+        "has_freezer": false,
+        "delivery_radius_miles": 3.0,
+        "can_pickup": false,
+        "can_deliver": false
+      },
+      "grocery_store_specific": {
+        "store_chain": null,
+        "square_footage": 5000,
+        "has_bakery": true,
+        "has_deli": false,
+        "has_produce": true,
+        "has_meat_counter": false,
+        "corporate_donation_program": false,
+        "avg_daily_donation_lbs": 12.0
+      },
+      "operating_hours": [
+        {"day": 1, "open": "08:00", "close": "20:00"},
+        {"day": 2, "open": "08:00", "close": "20:00"},
+        {"day": 3, "open": "08:00", "close": "20:00"},
+        {"day": 4, "open": "08:00", "close": "20:00"},
+        {"day": 5, "open": "08:00", "close": "20:00"},
+        {"day": 6, "open": "09:00", "close": "18:00"}
+      ]
+    },
+    {
+      "org_id": "church_st_paul",
+      "name": "St. Paul's Community Church",
+      "org_type": "church",
+      "location": {
+        "address": "321 Jefferson Street",
+        "city": "Springfield",
+        "state": "IL",
+        "zip_code": "62702",
+        "latitude": 39.8034,
+        "longitude": -89.6378
+      },
+      "contact": {
+        "name": "Rev. James Wilson",
+        "email": "james@stpaulschurch.org",
+        "phone": "(217) 555-0700"
+      },
+      "capabilities": {
+        "can_donate": true,
+        "can_receive": true,
+        "donation_capabilities": ["prepared_food"]
+      },
+      "logistics": {
+        "has_refrigeration": true,
+        "has_freezer": false,
+        "delivery_radius_miles": 5.0,
+        "can_pickup": true,
+        "can_deliver": false
+      },
+      "church_specific": {
+        "denomination": "Methodist",
+        "congregation_size": 250,
+        "food_pantry_program": true,
+        "meal_program": true,
+        "meal_days": [3, 0],
+        "has_commercial_kitchen": true,
+        "has_food_pantry": true
+      },
+      "operating_hours": [
+        {"day": 0, "open": "08:00", "close": "13:00"},
+        {"day": 3, "open": "17:00", "close": "19:00"}
+      ]
+    },
+    {
+      "org_id": "church_grace_chapel",
+      "name": "Grace Chapel",
+      "org_type": "church",
+      "location": {
+        "address": "654 Monroe Avenue",
+        "city": "Springfield",
+        "state": "IL",
+        "zip_code": "62703",
+        "latitude": 39.7723,
+        "longitude": -89.6287
+      },
+      "contact": {
+        "name": "Pastor Emily Davis",
+        "email": "emily@gracechapel.org",
+        "phone": "(217) 555-0800"
+      },
+      "capabilities": {
+        "can_donate": false,
+        "can_receive": true,
+        "donation_capabilities": []
+      },
+      "logistics": {
+        "has_refrigeration": false,
+        "has_freezer": false,
+        "delivery_radius_miles": 0.0,
+        "can_pickup": true,
+        "can_deliver": false
+      },
+      "church_specific": {
+        "denomination": "Non-denominational",
+        "congregation_size": 150,
+        "food_pantry_program": true,
+        "meal_program": false,
+        "has_commercial_kitchen": false,
+        "has_food_pantry": true
+      },
+      "operating_hours": [
+        {"day": 0, "open": "09:00", "close": "12:00"},
+        {"day": 2, "open": "10:00", "close": "14:00"}
+      ]
+    }
+  ]
+}

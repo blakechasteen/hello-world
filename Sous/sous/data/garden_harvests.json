@@ -1,0 +1,62 @@
+[
+  {
+    "ingredient_id": "tomatoes",
+    "quantity": 12.0,
+    "unit": "item",
+    "harvest_date": "2025-08-15",
+    "garden_location": "backyard raised bed #2",
+    "season": "summer",
+    "estimated_value": 18.0,
+    "notes": "Cherokee Purple heirloom variety - incredible flavor"
+  },
+  {
+    "ingredient_id": "zucchini",
+    "quantity": 8.0,
+    "unit": "item",
+    "harvest_date": "2025-07-20",
+    "garden_location": "backyard raised bed #1",
+    "season": "summer",
+    "estimated_value": 12.0,
+    "notes": "Huge harvest! Gave some to neighbors"
+  },
+  {
+    "ingredient_id": "green_beans",
+    "quantity": 2.5,
+    "unit": "lb",
+    "harvest_date": "2025-07-28",
+    "garden_location": "backyard trellis",
+    "season": "summer",
+    "estimated_value": 8.75,
+    "notes": "Provider bush beans - second picking"
+  },
+  {
+    "ingredient_id": "kale",
+    "quantity": 3.0,
+    "unit": "bunch",
+    "harvest_date": "2025-11-10",
+    "garden_location": "front yard garden",
+    "season": "fall",
+    "estimated_value": 10.50,
+    "notes": "Dinosaur kale - sweetened after frost"
+  },
+  {
+    "ingredient_id": "bell_peppers",
+    "quantity": 6.0,
+    "unit": "item",
+    "harvest_date": "2025-09-05",
+    "garden_location": "backyard raised bed #2",
+    "season": "summer",
+    "estimated_value": 9.0,
+    "notes": "Mix of red, yellow, and orange California Wonder"
+  },
+  {
+    "ingredient_id": "spinach",
+    "quantity": 2.0,
+    "unit": "bunch",
+    "harvest_date": "2025-05-15",
+    "garden_location": "community garden plot",
+    "season": "spring",
+    "estimated_value": 7.0,
+    "notes": "Bloomsdale spinach - first harvest of season"
+  }
+]

@@ -53,7 +53,7 @@ class DailyBriefAutomation:
         self,
         hourly_rate: float = 25.0,
         output_dir: str = "./daily_briefs",
-        use_refinement: bool = True,
+        use_refinement: bool = False,  # Disabled per A/B testing (clarity 1.00 > actionability)
         refinement_provider: str = "anthropic"
     ):
         """
@@ -234,9 +234,9 @@ Examples:
         help='Output directory for brief files (default: ./daily_briefs)'
     )
     parser.add_argument(
-        '--no-refinement',
+        '--refinement',
         action='store_true',
-        help='Disable HoloLoom refinement (faster, raw metrics)'
+        help='Enable HoloLoom refinement (slower, higher quality). Disabled by default per A/B testing.'
     )
     parser.add_argument(
         '--refinement-provider',
@@ -252,7 +252,7 @@ Examples:
     automation = DailyBriefAutomation(
         hourly_rate=args.hourly_rate,
         output_dir=args.output_dir,
-        use_refinement=not args.no_refinement,
+        use_refinement=args.refinement,  # Disabled by default per A/B testing
         refinement_provider=args.refinement_provider
     )
 

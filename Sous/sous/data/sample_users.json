@@ -1,0 +1,159 @@
+{
+  "household": {
+    "household_id": "smith_family",
+    "name": "Smith Family Kitchen",
+    "members": ["alice", "bob", "carol"],
+    "address": "123 Main St, Anytown, USA",
+    "total_meals_cooked": 247,
+    "waste_prevented_kg": 15.3,
+    "food_shared_kg": 8.5,
+    "composted_kg": 3.2,
+    "carbon_saved_kg": 38.25
+  },
+  "users": [
+    {
+      "user_id": "alice",
+      "name": "Alice Smith",
+      "household_id": "smith_family",
+      "skills": {
+        "baking": 3.5,
+        "roasting": 3.0,
+        "knife_skills": 2.5,
+        "sauce_making": 2.0
+      },
+      "dietary_restrictions": [],
+      "favorite_cuisines": ["Italian", "French", "Mexican"],
+      "allergies": [],
+      "availability": [
+        {
+          "day_of_week": 5,
+          "start_time": "09:00:00",
+          "end_time": "20:00:00",
+          "notes": "Saturday - available all day"
+        },
+        {
+          "day_of_week": 6,
+          "start_time": "10:00:00",
+          "end_time": "18:00:00",
+          "notes": "Sunday - morning and afternoon"
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "17:00:00",
+          "end_time": "21:00:00",
+          "notes": "Thursday - evening for Thanksgiving prep"
+        }
+      ],
+      "preferred_meal_times": {
+        "breakfast": "08:00:00",
+        "lunch": "12:30:00",
+        "dinner": "18:30:00"
+      },
+      "total_points": 3450,
+      "level": 4,
+      "tasks_completed": 145,
+      "recipes_mastered": ["lasagna", "roast_chicken", "chocolate_cake", "bread", "pizza_dough"],
+      "achievements": [
+        "first_steps",
+        "task_master",
+        "week_warrior",
+        "zero_waste_hero"
+      ]
+    },
+    {
+      "user_id": "bob",
+      "name": "Bob Smith",
+      "household_id": "smith_family",
+      "skills": {
+        "grilling": 3.8,
+        "meat_prep": 3.2,
+        "vegetable_chopping": 2.8,
+        "marinating": 2.5
+      },
+      "dietary_restrictions": [],
+      "favorite_cuisines": ["American", "BBQ", "Asian"],
+      "allergies": [],
+      "availability": [
+        {
+          "day_of_week": 5,
+          "start_time": "14:00:00",
+          "end_time": "22:00:00",
+          "notes": "Saturday afternoon and evening"
+        },
+        {
+          "day_of_week": 6,
+          "start_time": "09:00:00",
+          "end_time": "22:00:00",
+          "notes": "Sunday - all day"
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "15:00:00",
+          "end_time": "23:00:00",
+          "notes": "Thursday - Thanksgiving day"
+        }
+      ],
+      "preferred_meal_times": {
+        "breakfast": "07:00:00",
+        "lunch": "12:00:00",
+        "dinner": "19:00:00"
+      },
+      "total_points": 2890,
+      "level": 3,
+      "tasks_completed": 98,
+      "recipes_mastered": ["grilled_steak", "burgers", "ribs", "turkey"],
+      "achievements": [
+        "first_steps",
+        "master_chef",
+        "team_player"
+      ]
+    },
+    {
+      "user_id": "carol",
+      "name": "Carol Smith",
+      "household_id": "smith_family",
+      "skills": {
+        "baking": 2.2,
+        "desserts": 3.0,
+        "salad_prep": 3.5,
+        "plating": 2.8
+      },
+      "dietary_restrictions": ["vegetarian"],
+      "favorite_cuisines": ["Mediterranean", "Indian", "Thai"],
+      "allergies": ["shellfish"],
+      "availability": [
+        {
+          "day_of_week": 5,
+          "start_time": "11:00:00",
+          "end_time": "16:00:00",
+          "notes": "Saturday - midday"
+        },
+        {
+          "day_of_week": 6,
+          "start_time": "13:00:00",
+          "end_time": "19:00:00",
+          "notes": "Sunday afternoon"
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "14:00:00",
+          "end_time": "20:00:00",
+          "notes": "Thursday - Thanksgiving afternoon"
+        }
+      ],
+      "preferred_meal_times": {
+        "breakfast": "09:00:00",
+        "lunch": "13:00:00",
+        "dinner": "18:00:00"
+      },
+      "total_points": 1820,
+      "level": 2,
+      "tasks_completed": 67,
+      "recipes_mastered": ["pumpkin_pie", "greek_salad", "hummus"],
+      "achievements": [
+        "first_steps",
+        "week_warrior"
+      ]
+    }
+  ]
+}

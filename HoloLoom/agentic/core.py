@@ -22,12 +22,22 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any
 from enum import Enum
 from datetime import datetime
+import uuid
 
 from HoloLoom.protocols.types import Query, Context, MemoryShard
 from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.recursive import FullLearningEngine, ActionItemTracker, ActionStatus
 from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
+
+# Agent Monitoring (Nov 2025)
+try:
+    from HoloLoom.agentic.monitoring import AgentMonitor, AgentStatus
+    MONITORING_AVAILABLE = True
+except ImportError:
+    MONITORING_AVAILABLE = False
+    AgentMonitor = None
+    AgentStatus = None
 
 
 logger = logging.getLogger(__name__)
@@ -129,7 +139,8 @@ class AgenticOrchestrator:
         enable_goal_tracking: bool = True,
         llm: Optional[Any] = None,  # LLM for intelligent query generation
         awareness_layer: Optional[Any] = None,  # Consciousness Integration - Phase 1 (Nov 2025)
-        epistemic_threshold: float = 0.3  # Early stopping threshold for epistemic confidence
+        epistemic_threshold: float = 0.3,  # Early stopping threshold for epistemic confidence
+        monitor: Optional[Any] = None  # Agent Monitor for real-time tracking (Nov 2025)
     ):
         self.learning_engine = learning_engine
         self.audit_trail = audit_trail or AuditTrail()
@@ -138,6 +149,7 @@ class AgenticOrchestrator:
         self.llm = llm  # LLM for agentic search
         self.awareness_layer = awareness_layer  # Consciousness Integration - Phase 1
         self.epistemic_threshold = epistemic_threshold  # Early stopping threshold
+        self.monitor = monitor if MONITORING_AVAILABLE else None  # Agent Monitor (Nov 2025)
 
         # Goal tracker (extends action items)
         self.goal_tracker = ActionItemTracker() if enable_goal_tracking else None
@@ -166,7 +178,8 @@ class AgenticOrchestrator:
         query: Query,
         mode: ReasoningMode = ReasoningMode.DIRECT,
         confidence_threshold: float = 0.85,
-        max_steps: int = 5
+        max_steps: int = 5,
+        project: str = "mythRL"  # Project name for monitoring
     ) -> AgenticResult:
         """
         Execute agentic reasoning with selected mode.
@@ -176,11 +189,28 @@ class AgenticOrchestrator:
             mode: Reasoning mode (DIRECT, VERIFY, RESEARCH, PLAN_EXECUTE)
             confidence_threshold: Minimum confidence for accepting result
             max_steps: Maximum reasoning steps
+            project: Project name for monitoring (default: mythRL)
 
         Returns:
             AgenticResult with complete reasoning trace
         """
         start_time = datetime.now()
+
+        # Generate agent ID for monitoring
+        agent_id = f"agent_{uuid.uuid4().hex[:8]}"
+
+        # Agent Monitoring: Start tracking
+        if self.monitor:
+            try:
+                await self.monitor.agent_started(
+                    agent_id=agent_id,
+                    project=project,
+                    query=query.text,
+                    mode=mode.value
+                )
+                await self.monitor.agent_status(agent_id, AgentStatus.RUNNING)
+            except Exception as e:
+                self.logger.warning(f"Monitoring failed: {e}")
 
         # Create intent
         intent = AgenticIntent(
@@ -200,30 +230,75 @@ class AgenticOrchestrator:
         )
 
         # Route to appropriate handler
-        if mode == ReasoningMode.DIRECT:
-            result = await self._direct_answer(query, intent)
-        elif mode == ReasoningMode.VERIFY:
-            result = await self._verify_answer(query, intent, max_steps)
-        elif mode == ReasoningMode.RESEARCH:
-            result = await self._research_query(query, intent, max_steps)
-        elif mode == ReasoningMode.PLAN_EXECUTE:
-            result = await self._plan_and_execute(query, intent, max_steps)
-        else:
-            raise ValueError(f"Unknown reasoning mode: {mode}")
+        try:
+            if mode == ReasoningMode.DIRECT:
+                result = await self._direct_answer(query, intent, agent_id)
+            elif mode == ReasoningMode.VERIFY:
+                result = await self._verify_answer(query, intent, max_steps, agent_id)
+            elif mode == ReasoningMode.RESEARCH:
+                result = await self._research_query(query, intent, max_steps, agent_id)
+            elif mode == ReasoningMode.PLAN_EXECUTE:
+                result = await self._plan_and_execute(query, intent, max_steps, agent_id)
+            else:
+                raise ValueError(f"Unknown reasoning mode: {mode}")
 
-        # Calculate duration
-        duration_ms = (datetime.now() - start_time).total_seconds() * 1000
-        result.total_duration_ms = duration_ms
+            # Calculate duration
+            duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+            result.total_duration_ms = duration_ms
 
-        return result
+            # Agent Monitoring: Completion
+            if self.monitor:
+                try:
+                    await self.monitor.agent_completed(
+                        agent_id=agent_id,
+                        steps=result.steps_taken,
+                        total_duration_ms=duration_ms
+                    )
+                    await self.monitor.agent_status(agent_id, AgentStatus.COMPLETED)
+                except Exception as e:
+                    self.logger.warning(f"Monitoring completion failed: {e}")
+
+            return result
+
+        except Exception as e:
+            # Agent Monitoring: Failure
+            if self.monitor:
+                try:
+                    await self.monitor.agent_failed(agent_id=agent_id, error=str(e))
+                    await self.monitor.agent_status(agent_id, AgentStatus.FAILED)
+                except Exception as mon_error:
+                    self.logger.warning(f"Monitoring failure notification failed: {mon_error}")
+            raise  # Re-raise original exception
 
     async def _direct_answer(
         self,
         query: Query,
-        intent: AgenticIntent
+        intent: AgenticIntent,
+        agent_id: str
     ) -> AgenticResult:
         """Direct answer without verification."""
+        # Agent Monitoring: Feed update
+        if self.monitor:
+            try:
+                await self.monitor.agent_feed(agent_id, f"Processing query: {query.text[:60]}...")
+            except Exception:
+                pass
+
         spacetime = await self.learning_engine.weave(query)
+
+        # Agent Monitoring: Step completion
+        if self.monitor:
+            try:
+                await self.monitor.agent_step(
+                    agent_id=agent_id,
+                    step=1,
+                    total_steps=1,
+                    step_type="direct_answer",
+                    confidence=spacetime.confidence,
+                    epistemic=self._extract_epistemic_confidence(spacetime)
+                )
+            except Exception:
+                pass
 
         # Consciousness Integration - Phase 1 (Nov 2025)
         # Extract epistemic confidence from spacetime
@@ -291,15 +366,37 @@ Please provide a clear and concise answer based on the context above."""
         self,
         query: Query,
         intent: AgenticIntent,
-        max_loops: int
+        max_loops: int,
+        agent_id: str
     ) -> AgenticResult:
         """Answer with verification loop."""
         steps = []
         epistemic_confidences = []  # Consciousness Integration - Phase 1 (Nov 2025)
 
+        # Agent Monitoring: Feed update
+        if self.monitor:
+            try:
+                await self.monitor.agent_feed(agent_id, f"Initial answer...", f"Query: {query.text[:50]}")
+            except Exception:
+                pass
+
         # Step 1: Initial answer
         self.logger.info(f"[AGENTIC] Initial answer: {query.text}")
         spacetime = await self.learning_engine.weave(query)
+
+        # Agent Monitoring: Step 1 completion
+        if self.monitor:
+            try:
+                await self.monitor.agent_step(
+                    agent_id=agent_id,
+                    step=1,
+                    total_steps=max_loops + 1,
+                    step_type="initial_answer",
+                    confidence=spacetime.confidence,
+                    epistemic=self._extract_epistemic_confidence(spacetime)
+                )
+            except Exception:
+                pass
 
         # Consciousness Integration - Phase 1
         epistemic_conf = self._extract_epistemic_confidence(spacetime)
@@ -366,7 +463,8 @@ Please provide a clear and concise answer based on the context above."""
         self,
         query: Query,
         intent: AgenticIntent,
-        max_steps: int
+        max_steps: int,
+        agent_id: str
     ) -> AgenticResult:
         """Multi-query exploration with LLM-activated intelligent search and epistemic tracking."""
         steps = []
@@ -381,6 +479,17 @@ Please provide a clear and concise answer based on the context above."""
             initial_findings=initial_findings
         )
 
+        # Agent Monitoring: Feed update
+        if self.monitor:
+            try:
+                await self.monitor.agent_feed(
+                    agent_id,
+                    f"Research mode: {len(research_queries)} queries",
+                    f"Topic: {query.text[:50]}"
+                )
+            except Exception:
+                pass
+
         # Step 2: Execute research queries with epistemic tracking
         for i, rq in enumerate(research_queries):
             # Consciousness Integration - Phase 1
@@ -392,8 +501,29 @@ Please provide a clear and concise answer based on the context above."""
                 )
                 break
 
+            # Agent Monitoring: Feed update for current research query
+            if self.monitor:
+                try:
+                    await self.monitor.agent_feed(agent_id, f"Research query {i+1}/{len(research_queries)}", rq[:60])
+                except Exception:
+                    pass
+
             self.logger.info(f"[AGENTIC] Research query {i+1}/{len(research_queries)}: {rq}")
             result = await self.learning_engine.weave(Query(text=rq))
+
+            # Agent Monitoring: Step completion
+            if self.monitor:
+                try:
+                    await self.monitor.agent_step(
+                        agent_id=agent_id,
+                        step=i + 1,
+                        total_steps=len(research_queries) + 1,
+                        step_type="research_query",
+                        confidence=result.confidence,
+                        epistemic=self._extract_epistemic_confidence(result)
+                    )
+                except Exception:
+                    pass
 
             # Consciousness Integration - Phase 1
             epistemic_conf = self._extract_epistemic_confidence(result)
@@ -450,7 +580,8 @@ Please provide a clear and concise answer based on the context above."""
         self,
         query: Query,
         intent: AgenticIntent,
-        max_steps: int
+        max_steps: int,
+        agent_id: str
     ) -> AgenticResult:
         """Goal decomposition and execution with epistemic tracking."""
         steps = []
@@ -461,6 +592,17 @@ Please provide a clear and concise answer based on the context above."""
         intent.sub_goals = sub_goals
 
         self.logger.info(f"[AGENTIC] Decomposed into {len(sub_goals)} sub-goals")
+
+        # Agent Monitoring: Feed update
+        if self.monitor:
+            try:
+                await self.monitor.agent_feed(
+                    agent_id,
+                    f"Plan & Execute: {len(sub_goals)} sub-goals",
+                    f"Goal: {query.text[:50]}"
+                )
+            except Exception:
+                pass
 
         # Step 2: Execute sub-goals with epistemic tracking
         results = []
@@ -474,9 +616,30 @@ Please provide a clear and concise answer based on the context above."""
                 )
                 break
 
+            # Agent Monitoring: Feed update for current sub-goal
+            if self.monitor:
+                try:
+                    await self.monitor.agent_feed(agent_id, f"Sub-goal {i+1}/{len(sub_goals)}", sub_goal[:60])
+                except Exception:
+                    pass
+
             self.logger.info(f"[AGENTIC] Executing sub-goal {i+1}: {sub_goal}")
             result = await self.learning_engine.weave(Query(text=sub_goal))
             results.append(result)
+
+            # Agent Monitoring: Step completion
+            if self.monitor:
+                try:
+                    await self.monitor.agent_step(
+                        agent_id=agent_id,
+                        step=i + 1,
+                        total_steps=len(sub_goals) + 1,
+                        step_type="sub_goal",
+                        confidence=result.confidence,
+                        epistemic=self._extract_epistemic_confidence(result)
+                    )
+                except Exception:
+                    pass
 
             # Consciousness Integration - Phase 1
             epistemic_conf = self._extract_epistemic_confidence(result)
@@ -879,7 +1042,8 @@ async def create_agentic_orchestrator(
     shards: List[MemoryShard],
     enable_verification: bool = True,
     enable_goal_tracking: bool = True,
-    audit_trail: Optional[AuditTrail] = None
+    audit_trail: Optional[AuditTrail] = None,
+    monitor: Optional[Any] = None  # Agent Monitor for real-time tracking (Nov 2025)
 ) -> AgenticOrchestrator:
     """
     Create agentic orchestrator with full learning system.
@@ -890,6 +1054,7 @@ async def create_agentic_orchestrator(
         enable_verification: Enable verification loops
         enable_goal_tracking: Enable goal/intent tracking
         audit_trail: Optional audit trail (creates new if None)
+        monitor: Optional agent monitor for real-time tracking (Nov 2025)
 
     Returns:
         AgenticOrchestrator ready to use
@@ -908,5 +1073,6 @@ async def create_agentic_orchestrator(
         learning_engine=learning_engine,
         audit_trail=audit_trail,
         enable_verification=enable_verification,
-        enable_goal_tracking=enable_goal_tracking
+        enable_goal_tracking=enable_goal_tracking,
+        monitor=monitor
     )

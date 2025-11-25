@@ -41,22 +41,22 @@ class SkillCreator:
             return False
 
         if category not in ["meta", "domain", "utility"]:
-            print(f"❌ Invalid category: {category}")
+            print(f"[FAIL] Invalid category: {category}")
             print("   Valid categories: meta, domain, utility")
             return False
 
         # Create skill directory
         skill_dir = self.skills_root / category / skill_name
         if skill_dir.exists():
-            print(f"❌ Skill already exists: {skill_dir}")
+            print(f"[FAIL] Skill already exists: {skill_dir}")
             return False
 
         skill_dir.mkdir(parents=True, exist_ok=True)
-        print(f"✅ Created directory: {skill_dir}")
+        print(f"[OK] Created directory: {skill_dir}")
 
         # Read template
         if not self.template_path.exists():
-            print(f"❌ Template not found: {self.template_path}")
+            print(f"[FAIL] Template not found: {self.template_path}")
             return False
 
         template_content = self.template_path.read_text(encoding="utf-8")
@@ -87,32 +87,32 @@ class SkillCreator:
         # Write skill.markdown
         skill_file = skill_dir / "skill.markdown"
         skill_file.write_text(skill_content, encoding="utf-8")
-        print(f"✅ Created skill file: {skill_file}")
+        print(f"[OK] Created skill file: {skill_file}")
 
         # Success message
-        print(f"\n🎉 Skill '{skill_name}' created successfully!")
-        print(f"\n📝 Next steps:")
+        print(f"\n[DONE] Skill '{skill_name}' created successfully!")
+        print(f"\n[*] Next steps:")
         print(f"   1. Edit {skill_file}")
         print(f"   2. Fill in all sections (input/output schemas, prompt template, examples)")
         print(f"   3. Validate: python scripts/build_skill.py {skill_dir} --validate-only")
         print(f"   4. Package: python scripts/build_skill.py {skill_dir}")
-        print(f"\n📚 See docs/skills_workflow.md for complete workflow")
+        print(f"\n[DOCS] See docs/skills_workflow.md for complete workflow")
 
         return True
 
     def _validate_skill_name(self, name: str) -> bool:
         """Validate skill name format"""
         if not name:
-            print("❌ Skill name cannot be empty")
+            print("[FAIL] Skill name cannot be empty")
             return False
 
         if not name.islower() or not all(c.isalnum() or c == "_" for c in name):
-            print("❌ Skill name must be lowercase with underscores only")
+            print("[FAIL] Skill name must be lowercase with underscores only")
             print("   Examples: hololoom_rag_helper, typescript_error_explainer")
             return False
 
         if name.startswith("_") or name.endswith("_"):
-            print("❌ Skill name cannot start or end with underscore")
+            print("[FAIL] Skill name cannot start or end with underscore")
             return False
 
         return True
@@ -189,7 +189,7 @@ Categories:
 
     # Interactive mode without skill name
     if args.interactive and not args.skill_name:
-        print("🎯 Interactive Skill Creation")
+        print("[>] Interactive Skill Creation")
         args.skill_name = input("Skill name (lowercase with underscores): ").strip()
         category_input = input("Category (meta/domain/utility) [domain]: ").strip()
         args.category = category_input if category_input else "domain"

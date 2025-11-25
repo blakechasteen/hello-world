@@ -1,0 +1,29 @@
+{
+  "id": "event_thanksgiving_2025",
+  "name": "Thanksgiving 2025",
+  "date": "2025-11-27",
+  "prep_days": ["2025-11-24", "2025-11-25", "2025-11-26"],
+  "appliances": [
+    {
+      "id": "oven_main",
+      "name": "Main Oven",
+      "type": "oven",
+      "capacity": 1,
+      "notes": ""
+    },
+    {
+      "id": "burner_1",
+      "name": "Front Right Burner",
+      "type": "burner",
+      "capacity": 1,
+      "notes": "only one good burner"
+    },
+    {
+      "id": "microwave",
+      "name": "Microwave",
+      "type": "microwave",
+      "capacity": 1,
+      "notes": ""
+    }
+  ]
+}

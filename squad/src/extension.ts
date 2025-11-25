@@ -8,12 +8,14 @@ import { HoloLoomBridge } from './HoloLoomBridge';
 import { AgentPanel } from './AgentPanel';
 import { CodeContextProvider } from './CodeContextProvider';
 import { MCPServer } from './MCPServer';
+import { AgentMonitorTreeProvider } from './AgentMonitorTreeProvider';
 
 let bridge: HoloLoomBridge;
 let agentPanel: AgentPanel | undefined;
 let contextProvider: CodeContextProvider;
 let statusBarItem: vscode.StatusBarItem;
 let mcpServer: MCPServer;
+let agentMonitorProvider: AgentMonitorTreeProvider;
 
 async function updateServerStatus() {
     const healthy = await bridge.healthCheck();
@@ -68,6 +70,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Check server health and update status
     await updateServerStatus();
+
+    // Initialize Agent Monitor Tree View
+    agentMonitorProvider = new AgentMonitorTreeProvider(serverUrl);
+    const treeView = vscode.window.createTreeView('hololoomAgents', {
+        treeDataProvider: agentMonitorProvider,
+        showCollapseAll: true
+    });
+    context.subscriptions.push(treeView);
+    context.subscriptions.push(agentMonitorProvider);
 
     // Register commands
     registerCommands(context);
@@ -221,6 +232,29 @@ function registerCommands(context: vscode.ExtensionContext) {
             agentPanel.show();
         })
     );
+
+    // Agent Monitor Commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('hololoom.refreshAgentMonitor', async () => {
+            await agentMonitorProvider.forceRefresh();
+            vscode.window.showInformationMessage('Agent monitor refreshed');
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('hololoom.showAgentDetails', async (session: any) => {
+            const panel = vscode.window.createWebviewPanel(
+                'agentDetails',
+                `Agent: ${session.agent_id}`,
+                vscode.ViewColumn.One,
+                {
+                    enableScripts: true
+                }
+            );
+
+            panel.webview.html = getAgentDetailsHtml(session);
+        })
+    );
 }
 
 async function executeQuery(
@@ -302,6 +336,160 @@ async function executeQuery(
             }
         }
     });
+}
+
+function getAgentDetailsHtml(session: any): string {
+    const tree = session.tree || {};
+    const duration = session.total_duration_ms
+        ? `${session.total_duration_ms.toFixed(0)}ms`
+        : 'In progress';
+
+    return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Agent Details</title>
+            <style>
+                body {
+                    font-family: var(--vscode-font-family);
+                    color: var(--vscode-foreground);
+                    background: var(--vscode-editor-background);
+                    padding: 20px;
+                    line-height: 1.6;
+                }
+                h1 {
+                    font-size: 24px;
+                    margin-bottom: 10px;
+                    border-bottom: 2px solid var(--vscode-panel-border);
+                    padding-bottom: 10px;
+                }
+                .metadata {
+                    display: grid;
+                    grid-template-columns: 150px 1fr;
+                    gap: 10px;
+                    margin: 20px 0;
+                    padding: 15px;
+                    background: var(--vscode-editor-inactiveSelectionBackground);
+                    border-radius: 5px;
+                }
+                .metadata-label {
+                    font-weight: bold;
+                    color: var(--vscode-textLink-foreground);
+                }
+                .status {
+                    display: inline-block;
+                    padding: 3px 10px;
+                    border-radius: 3px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+                .status-completed { background: #4CAF50; color: white; }
+                .status-running { background: #2196F3; color: white; }
+                .status-failed { background: #f44336; color: white; }
+                .tree {
+                    margin: 20px 0;
+                }
+                .tree-node {
+                    margin: 10px 0 10px 20px;
+                    padding: 10px;
+                    border-left: 3px solid var(--vscode-textLink-foreground);
+                    background: var(--vscode-editor-inactiveSelectionBackground);
+                    border-radius: 3px;
+                }
+                .confidence {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    background: var(--vscode-badge-background);
+                    color: var(--vscode-badge-foreground);
+                    border-radius: 3px;
+                    font-size: 11px;
+                    margin-left: 10px;
+                }
+                .files {
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: var(--vscode-editor-inactiveSelectionBackground);
+                    border-radius: 5px;
+                }
+                .file {
+                    padding: 5px;
+                    font-family: monospace;
+                    font-size: 12px;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>Agent Reasoning Details</h1>
+
+            <div class="metadata">
+                <div class="metadata-label">Agent ID:</div>
+                <div><code>${session.agent_id}</code></div>
+
+                <div class="metadata-label">Project:</div>
+                <div>${session.project}</div>
+
+                <div class="metadata-label">Query:</div>
+                <div>${session.query}</div>
+
+                <div class="metadata-label">Mode:</div>
+                <div>${session.mode}</div>
+
+                <div class="metadata-label">Status:</div>
+                <div><span class="status status-${session.status}">${session.status.toUpperCase()}</span></div>
+
+                <div class="metadata-label">Duration:</div>
+                <div>${duration}</div>
+
+                <div class="metadata-label">Steps:</div>
+                <div>${session.current_step} / ${session.total_steps}</div>
+            </div>
+
+            ${session.files && session.files.length > 0 ? `
+                <h2>Files</h2>
+                <div class="files">
+                    ${session.files.map((f: string) => `<div class="file">📄 ${f}</div>`).join('')}
+                </div>
+            ` : ''}
+
+            ${tree.node_id ? `
+                <h2>Reasoning Tree</h2>
+                <div class="tree">
+                    ${renderTreeNode(tree)}
+                </div>
+            ` : '<p><em>Reasoning tree not yet available</em></p>'}
+        </body>
+        </html>
+    `;
+}
+
+function renderTreeNode(node: any, depth: number = 0): string {
+    if (!node || !node.node_id) return '';
+
+    const confidence = node.confidence
+        ? `<span class="confidence">${(node.confidence * 100).toFixed(0)}% conf</span>`
+        : '';
+
+    const epistemic = node.epistemic_confidence
+        ? `<span class="confidence">${(node.epistemic_confidence * 100).toFixed(0)}% epistemic</span>`
+        : '';
+
+    let html = `
+        <div class="tree-node">
+            <strong>${node.step_type}</strong> ${confidence} ${epistemic}
+            ${node.query ? `<br><em>${node.query}</em>` : ''}
+            ${node.finding ? `<br>${node.finding.substring(0, 200)}${node.finding.length > 200 ? '...' : ''}` : ''}
+        </div>
+    `;
+
+    if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+            html += renderTreeNode(child, depth + 1);
+        }
+    }
+
+    return html;
 }
 
 export async function deactivate() {

@@ -1,0 +1,400 @@
+{
+  "seasons": [
+    {
+      "season_id": "season_2025_spring",
+      "farm_id": "farm_002",
+      "season_type": "spring",
+      "start_date": "2025-03-15",
+      "end_date": "2025-06-15",
+      "enrollment_deadline": "2025-03-01",
+      "total_shares_offered": 50,
+      "shares_sold": 42,
+      "share_prices": {
+        "mini": "300.00",
+        "small": "400.00",
+        "regular": "550.00",
+        "large": "750.00",
+        "family": "950.00"
+      },
+      "description": "Spring season featuring early greens, asparagus, strawberries, and spring vegetables",
+      "active": true
+    },
+    {
+      "season_id": "season_2025_summer",
+      "farm_id": "farm_002",
+      "season_type": "summer",
+      "start_date": "2025-06-20",
+      "end_date": "2025-09-20",
+      "enrollment_deadline": "2025-06-05",
+      "total_shares_offered": 60,
+      "shares_sold": 55,
+      "share_prices": {
+        "mini": "350.00",
+        "small": "475.00",
+        "regular": "650.00",
+        "large": "900.00",
+        "family": "1150.00"
+      },
+      "description": "Peak summer harvest with tomatoes, peppers, zucchini, berries, and melons",
+      "active": true
+    },
+    {
+      "season_id": "season_2025_fall",
+      "farm_id": "farm_002",
+      "season_type": "fall",
+      "start_date": "2025-09-25",
+      "end_date": "2025-12-20",
+      "enrollment_deadline": "2025-09-10",
+      "total_shares_offered": 50,
+      "shares_sold": 38,
+      "share_prices": {
+        "mini": "325.00",
+        "small": "425.00",
+        "regular": "575.00",
+        "large": "800.00",
+        "family": "1000.00"
+      },
+      "description": "Fall harvest with winter squash, root vegetables, brassicas, and storage crops",
+      "active": true
+    },
+    {
+      "season_id": "season_2025_year_round_003",
+      "farm_id": "farm_003",
+      "season_type": "year_round",
+      "start_date": "2025-01-01",
+      "end_date": "2025-12-31",
+      "enrollment_deadline": "2024-12-15",
+      "total_shares_offered": 100,
+      "shares_sold": 87,
+      "share_prices": {
+        "mini": "1200.00",
+        "small": "1600.00",
+        "regular": "2200.00",
+        "large": "3000.00",
+        "family": "3800.00"
+      },
+      "description": "Year-round shares from our regenerative farm featuring seasonal produce, eggs, and heritage grains",
+      "active": true
+    },
+    {
+      "season_id": "season_2025_summer_005",
+      "farm_id": "farm_005",
+      "season_type": "summer",
+      "start_date": "2025-06-15",
+      "end_date": "2025-09-30",
+      "enrollment_deadline": "2025-06-01",
+      "total_shares_offered": 40,
+      "shares_sold": 40,
+      "share_prices": {
+        "mini": "360.00",
+        "small": "490.00",
+        "regular": "675.00",
+        "large": "925.00",
+        "family": "1175.00"
+      },
+      "description": "High-altitude summer vegetables and extended season crops from our greenhouse",
+      "active": true
+    }
+  ],
+  "subscriptions": [
+    {
+      "subscription_id": "sub_001",
+      "member_id": "member_001",
+      "farm_id": "farm_002",
+      "season_id": "season_2025_spring",
+      "share_size": "regular",
+      "delivery_frequency": "weekly",
+      "delivery_method": "pickup",
+      "pickup_location_id": "pickup_downtown_eugene",
+      "start_date": "2025-03-15",
+      "end_date": "2025-06-15",
+      "total_cost": "550.00",
+      "amount_paid": "550.00",
+      "payment_status": "paid_in_full",
+      "status": "active",
+      "total_shares_expected": 13,
+      "shares_received": 8,
+      "preferences": {
+        "no_mushrooms": false,
+        "extra_greens": true,
+        "substitute_preferences": ["more_herbs", "more_tomatoes"]
+      }
+    },
+    {
+      "subscription_id": "sub_002",
+      "member_id": "member_002",
+      "farm_id": "farm_002",
+      "season_id": "season_2025_summer",
+      "share_size": "family",
+      "delivery_frequency": "weekly",
+      "delivery_method": "delivery",
+      "delivery_address": {
+        "street": "789 Oak Street",
+        "city": "Eugene",
+        "state": "OR",
+        "zipcode": "97401"
+      },
+      "start_date": "2025-06-20",
+      "end_date": "2025-09-20",
+      "total_cost": "1150.00",
+      "amount_paid": "575.00",
+      "payment_status": "partial",
+      "status": "active",
+      "total_shares_expected": 13,
+      "shares_received": 5,
+      "preferences": {
+        "no_mushrooms": false,
+        "extra_greens": false,
+        "substitute_preferences": []
+      }
+    },
+    {
+      "subscription_id": "sub_003",
+      "member_id": "member_003",
+      "farm_id": "farm_003",
+      "season_id": "season_2025_year_round_003",
+      "share_size": "regular",
+      "delivery_frequency": "weekly",
+      "delivery_method": "pickup",
+      "pickup_location_id": "pickup_corvallis_farmers_market",
+      "start_date": "2025-01-01",
+      "end_date": "2025-12-31",
+      "total_cost": "2200.00",
+      "amount_paid": "2200.00",
+      "payment_status": "paid_in_full",
+      "status": "active",
+      "total_shares_expected": 52,
+      "shares_received": 20,
+      "preferences": {
+        "no_mushrooms": false,
+        "extra_greens": false,
+        "substitute_preferences": ["more_eggs", "more_grains"]
+      }
+    },
+    {
+      "subscription_id": "sub_004",
+      "member_id": "member_004",
+      "farm_id": "farm_002",
+      "season_id": "season_2025_spring",
+      "share_size": "small",
+      "delivery_frequency": "biweekly",
+      "delivery_method": "pickup",
+      "pickup_location_id": "pickup_downtown_eugene",
+      "start_date": "2025-03-15",
+      "end_date": "2025-06-15",
+      "total_cost": "400.00",
+      "amount_paid": "400.00",
+      "payment_status": "paid_in_full",
+      "status": "active",
+      "total_shares_expected": 7,
+      "shares_received": 4,
+      "preferences": {
+        "no_mushrooms": true,
+        "extra_greens": true,
+        "substitute_preferences": ["more_herbs"]
+      }
+    },
+    {
+      "subscription_id": "sub_005",
+      "member_id": "member_005",
+      "farm_id": "farm_005",
+      "season_id": "season_2025_summer_005",
+      "share_size": "large",
+      "delivery_frequency": "weekly",
+      "delivery_method": "delivery",
+      "delivery_address": {
+        "street": "456 Pine Avenue",
+        "city": "Bend",
+        "state": "OR",
+        "zipcode": "97701"
+      },
+      "start_date": "2025-06-15",
+      "end_date": "2025-09-30",
+      "total_cost": "925.00",
+      "amount_paid": "925.00",
+      "payment_status": "paid_in_full",
+      "status": "active",
+      "total_shares_expected": 15,
+      "shares_received": 6,
+      "preferences": {
+        "no_mushrooms": false,
+        "extra_greens": false,
+        "substitute_preferences": []
+      }
+    },
+    {
+      "subscription_id": "sub_006",
+      "member_id": "member_006",
+      "farm_id": "farm_002",
+      "season_id": "season_2025_summer",
+      "share_size": "regular",
+      "delivery_frequency": "weekly",
+      "delivery_method": "pickup",
+      "pickup_location_id": "pickup_springfield",
+      "start_date": "2025-06-20",
+      "end_date": "2025-09-20",
+      "total_cost": "650.00",
+      "amount_paid": "650.00",
+      "payment_status": "paid_in_full",
+      "status": "paused",
+      "pause_reason": "vacation",
+      "pause_start_date": "2025-07-15",
+      "pause_end_date": "2025-08-05",
+      "total_shares_expected": 13,
+      "shares_received": 3,
+      "preferences": {
+        "no_mushrooms": false,
+        "extra_greens": true,
+        "substitute_preferences": []
+      }
+    },
+    {
+      "subscription_id": "sub_007",
+      "member_id": "member_007",
+      "farm_id": "farm_003",
+      "season_id": "season_2025_year_round_003",
+      "share_size": "mini",
+      "delivery_frequency": "biweekly",
+      "delivery_method": "pickup",
+      "pickup_location_id": "pickup_corvallis_farmers_market",
+      "start_date": "2025-01-01",
+      "end_date": "2025-12-31",
+      "total_cost": "1200.00",
+      "amount_paid": "1200.00",
+      "payment_status": "paid_in_full",
+      "status": "active",
+      "total_shares_expected": 26,
+      "shares_received": 10,
+      "preferences": {
+        "no_mushrooms": false,
+        "extra_greens": true,
+        "substitute_preferences": []
+      }
+    },
+    {
+      "subscription_id": "sub_008",
+      "member_id": "member_008",
+      "farm_id": "farm_002",
+      "season_id": "season_2025_fall",
+      "share_size": "regular",
+      "delivery_frequency": "weekly",
+      "delivery_method": "delivery",
+      "delivery_address": {
+        "street": "123 Maple Drive",
+        "city": "Eugene",
+        "state": "OR",
+        "zipcode": "97402"
+      },
+      "start_date": "2025-09-25",
+      "end_date": "2025-12-20",
+      "total_cost": "575.00",
+      "amount_paid": "0.00",
+      "payment_status": "pending",
+      "status": "pending",
+      "total_shares_expected": 12,
+      "shares_received": 0,
+      "preferences": {
+        "no_mushrooms": false,
+        "extra_greens": false,
+        "substitute_preferences": []
+      }
+    },
+    {
+      "subscription_id": "sub_009",
+      "member_id": "member_009",
+      "farm_id": "farm_005",
+      "season_id": "season_2025_summer_005",
+      "share_size": "mini",
+      "delivery_frequency": "weekly",
+      "delivery_method": "pickup",
+      "pickup_location_id": "pickup_bend_community_center",
+      "start_date": "2025-06-15",
+      "end_date": "2025-09-30",
+      "total_cost": "360.00",
+      "amount_paid": "360.00",
+      "payment_status": "paid_in_full",
+      "status": "active",
+      "total_shares_expected": 15,
+      "shares_received": 6,
+      "preferences": {
+        "no_mushrooms": true,
+        "extra_greens": false,
+        "substitute_preferences": []
+      }
+    },
+    {
+      "subscription_id": "sub_010",
+      "member_id": "member_010",
+      "farm_id": "farm_003",
+      "season_id": "season_2025_year_round_003",
+      "share_size": "family",
+      "delivery_frequency": "weekly",
+      "delivery_method": "delivery",
+      "delivery_address": {
+        "street": "890 Valley Road",
+        "city": "Corvallis",
+        "state": "OR",
+        "zipcode": "97330"
+      },
+      "start_date": "2025-01-01",
+      "end_date": "2025-12-31",
+      "total_cost": "3800.00",
+      "amount_paid": "1900.00",
+      "payment_status": "partial",
+      "status": "active",
+      "total_shares_expected": 52,
+      "shares_received": 20,
+      "preferences": {
+        "no_mushrooms": false,
+        "extra_greens": true,
+        "substitute_preferences": ["more_eggs", "more_vegetables"]
+      }
+    }
+  ],
+  "pickup_locations": [
+    {
+      "location_id": "pickup_downtown_eugene",
+      "name": "Downtown Eugene Farmers Market",
+      "address": "101 E Broadway",
+      "city": "Eugene",
+      "state": "OR",
+      "zipcode": "97401",
+      "pickup_days": ["saturday"],
+      "pickup_times": "9:00 AM - 1:00 PM",
+      "active": true
+    },
+    {
+      "location_id": "pickup_springfield",
+      "name": "Springfield Community Center",
+      "address": "250 A Street",
+      "city": "Springfield",
+      "state": "OR",
+      "zipcode": "97477",
+      "pickup_days": ["wednesday"],
+      "pickup_times": "4:00 PM - 7:00 PM",
+      "active": true
+    },
+    {
+      "location_id": "pickup_corvallis_farmers_market",
+      "name": "Corvallis Farmers Market",
+      "address": "Monroe Ave & 1st St",
+      "city": "Corvallis",
+      "state": "OR",
+      "zipcode": "97330",
+      "pickup_days": ["saturday"],
+      "pickup_times": "9:00 AM - 1:00 PM",
+      "active": true
+    },
+    {
+      "location_id": "pickup_bend_community_center",
+      "name": "Bend Community Center",
+      "address": "1515 NE 6th St",
+      "city": "Bend",
+      "state": "OR",
+      "zipcode": "97701",
+      "pickup_days": ["thursday"],
+      "pickup_times": "3:00 PM - 6:00 PM",
+      "active": true
+    }
+  ]
+}

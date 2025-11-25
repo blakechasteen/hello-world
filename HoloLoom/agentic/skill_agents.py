@@ -6,14 +6,19 @@ Skill Agent System for HoloLoom
 Loads YAML-based skill templates and executes them using HoloLoom's
 recursive weaving architecture.
 
+**UPDATED (Phase 1.3 - Nov 2025):** Enhanced with UnifiedMRF integration.
+
 Integrates Promptly's 13 professional skills with HoloLoom's:
 - Recursive reasoning strategies
 - Quality-driven refinement
 - Complete provenance tracking
 - Analytics integration
+- 7-component metaprompt framework
+- Model-specific optimizations
 
 Created: 2025-11-16
 Integration: Promptly Skills → HoloLoom Agents
+Enhanced: 2025-11-22 (UnifiedMRF integration)
 
 Usage:
     from HoloLoom.agentic.skill_agents import SkillRegistry, execute_skill
@@ -22,11 +27,12 @@ Usage:
     registry = SkillRegistry()
     await registry.load_all_skills()
 
-    # Execute a skill
+    # Execute a skill with metaprompt enhancement
     result = await execute_skill(
         skill_name="code-reviewer",
         parameters={"code": code, "language": "python"},
-        config=Config.fast()
+        config=Config.fast(),
+        model_provider="claude"  # Optional: claude, gemini, gpt, ollama
     )
 
     print(result.output)
@@ -44,6 +50,7 @@ from HoloLoom.config import Config
 from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
 from HoloLoom.protocols.recursive_reasoning import ReasoningStrategy
+from HoloLoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +69,34 @@ class SkillMetadata:
     tags: List[str]
     author: str
     created: str
+    updated: Optional[str] = None  # NEW: Track enhancement dates
+
+
+@dataclass
+class SkillMetaprompt:
+    """
+    7-component metaprompt framework for skills.
+
+    NEW in v1.1.0 (Phase 1.3): Enhanced prompting using UnifiedMRF.
+    """
+    role: str
+    objective: Dict[str, Any]  # {primary: str, secondary: List[str]}
+    process: List[Any]  # Can be strings or dicts
+    format: str
+    constraints: List[str]
+    uncertainty: str
+    validation: List[str]
+
+
+@dataclass
+class SkillModelConfig:
+    """Model-specific configuration for skills."""
+    preferred_provider: str = "claude"
+    fallback_providers: List[str] = field(default_factory=lambda: ["gpt", "ollama"])
+    claude_hints: Dict[str, Any] = field(default_factory=dict)
+    gemini_hints: Dict[str, Any] = field(default_factory=dict)
+    gpt_hints: Dict[str, Any] = field(default_factory=dict)
+    ollama_hints: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -85,7 +120,11 @@ class SkillParameter:
 
 @dataclass
 class SkillTemplate:
-    """Complete skill template loaded from YAML."""
+    """
+    Complete skill template loaded from YAML.
+
+    **UPDATED (Phase 1.3):** Added metaprompt and model_config fields.
+    """
     name: str
     version: str
     description: str
@@ -97,6 +136,10 @@ class SkillTemplate:
     output: Dict[str, Any]
     quality_checks: List[Dict[str, str]] = field(default_factory=list)
     examples: List[Dict[str, Any]] = field(default_factory=list)
+
+    # NEW: Metaprompt framework (Phase 1.3)
+    metaprompt: Optional[SkillMetaprompt] = None
+    model_config: Optional[SkillModelConfig] = None
 
 
 @dataclass
@@ -161,7 +204,11 @@ class SkillRegistry:
         self.logger.info(f"Loaded {len(self.skills)} skills successfully")
 
     def _load_skill_yaml(self, yaml_path: Path) -> SkillTemplate:
-        """Load a single skill template from YAML."""
+        """
+        Load a single skill template from YAML.
+
+        **UPDATED (Phase 1.3):** Parses metaprompt and model_config sections.
+        """
         with open(yaml_path, 'r') as f:
             data = yaml.safe_load(f)
 
@@ -174,7 +221,8 @@ class SkillRegistry:
             category=metadata_dict.get("category", "general"),
             tags=metadata_dict.get("tags", []),
             author=metadata_dict.get("author", "Unknown"),
-            created=metadata_dict.get("created", "Unknown")
+            created=metadata_dict.get("created", "Unknown"),
+            updated=metadata_dict.get("updated")  # NEW
         )
 
         # Parse reasoning config
@@ -198,6 +246,33 @@ class SkillRegistry:
             )
             parameters.append(param)
 
+        # NEW: Parse metaprompt (if present)
+        metaprompt = None
+        if "metaprompt" in data:
+            mp_dict = data["metaprompt"]
+            metaprompt = SkillMetaprompt(
+                role=mp_dict.get("role", ""),
+                objective=mp_dict.get("objective", {"primary": "", "secondary": []}),
+                process=mp_dict.get("process", []),
+                format=mp_dict.get("format", ""),
+                constraints=mp_dict.get("constraints", []),
+                uncertainty=mp_dict.get("uncertainty", ""),
+                validation=mp_dict.get("validation", [])
+            )
+
+        # NEW: Parse model_config (if present)
+        model_config = None
+        if "model_config" in data:
+            mc_dict = data["model_config"]
+            model_config = SkillModelConfig(
+                preferred_provider=mc_dict.get("preferred_provider", "claude"),
+                fallback_providers=mc_dict.get("fallback_providers", ["gpt", "ollama"]),
+                claude_hints=mc_dict.get("claude_hints", {}),
+                gemini_hints=mc_dict.get("gemini_hints", {}),
+                gpt_hints=mc_dict.get("gpt_hints", {}),
+                ollama_hints=mc_dict.get("ollama_hints", {})
+            )
+
         # Create skill template
         skill = SkillTemplate(
             name=data["name"],
@@ -210,7 +285,9 @@ class SkillRegistry:
             parameters=parameters,
             output=data.get("output", {}),
             quality_checks=data.get("quality_checks", []),
-            examples=data.get("examples", [])
+            examples=data.get("examples", []),
+            metaprompt=metaprompt,  # NEW
+            model_config=model_config  # NEW
         )
 
         return skill
@@ -242,11 +319,15 @@ class SkillExecutor:
     """
     Executes skills using HoloLoom's recursive weaving architecture.
 
+    **UPDATED (Phase 1.3):** Integrated with UnifiedMRF for enhanced prompting.
+
     Integrates skill templates with RecursiveWeavingOrchestrator for:
     - Quality-driven refinement
     - Strategy-based recursive reasoning
     - Complete provenance tracking
     - Analytics integration
+    - 7-component metaprompt framework
+    - Model-specific optimizations
     """
 
     def __init__(
@@ -254,7 +335,8 @@ class SkillExecutor:
         registry: SkillRegistry,
         config: Config,
         shards: Optional[List[MemoryShard]] = None,
-        enable_analytics: bool = True
+        enable_analytics: bool = True,
+        model_provider: Optional[str] = None
     ):
         """
         Initialize skill executor.
@@ -264,12 +346,17 @@ class SkillExecutor:
             config: HoloLoom configuration
             shards: Optional memory shards for context
             enable_analytics: Enable analytics tracking
+            model_provider: Optional model provider (claude, gemini, gpt, ollama)
         """
         self.registry = registry
         self.config = config
         self.shards = shards or []
         self.enable_analytics = enable_analytics
+        self.model_provider = model_provider
         self.logger = logging.getLogger("skill_executor")
+
+        # UnifiedMRF for enhanced prompting
+        self.mrf = UnifiedMRF()
 
     async def execute(
         self,
@@ -408,19 +495,61 @@ class SkillExecutor:
         return full_params
 
     def _build_prompt(self, skill: SkillTemplate, parameters: Dict[str, Any]) -> str:
-        """Build complete prompt from template and parameters."""
-        # Combine system prompt and user prompt
-        prompt_parts = []
+        """
+        Build complete prompt from template and parameters.
 
-        if skill.system_prompt:
-            prompt_parts.append(skill.system_prompt.strip())
+        **UPDATED (Phase 1.3):** Uses UnifiedMRF when metaprompt is present.
+        """
+        # If skill has metaprompt, use UnifiedMRF for enhanced prompting
+        if skill.metaprompt is not None:
+            # Convert SkillMetaprompt to MetapromptConfig
+            metaprompt_config = MetapromptConfig(
+                role=skill.metaprompt.role,
+                objective=skill.metaprompt.objective,
+                process=skill.metaprompt.process,
+                format_spec=skill.metaprompt.format,
+                constraints=skill.metaprompt.constraints,
+                uncertainty=skill.metaprompt.uncertainty,
+                validation=skill.metaprompt.validation
+            )
 
-        if skill.user_prompt_template:
             # Format user prompt with parameters
-            user_prompt = skill.user_prompt_template.format(**parameters)
-            prompt_parts.append(user_prompt.strip())
+            user_prompt = skill.user_prompt_template.format(**parameters) if skill.user_prompt_template else ""
 
-        return "\n\n".join(prompt_parts)
+            # Use UnifiedMRF to build enhanced prompt
+            # Determine model provider from skill config or fallback
+            provider = None
+            if skill.model_config and self.model_provider:
+                # Map string to ModelProvider enum
+                provider_map = {
+                    "claude": ModelProvider.CLAUDE,
+                    "gemini": ModelProvider.GEMINI,
+                    "gpt": ModelProvider.GPT,
+                    "ollama": ModelProvider.OLLAMA
+                }
+                provider = provider_map.get(self.model_provider.lower())
+
+            enhanced_prompt = self.mrf.enhance_prompt(
+                metaprompt=metaprompt_config,
+                query=user_prompt,
+                model=provider
+            )
+
+            return enhanced_prompt
+
+        # Fallback: Traditional system_prompt + user_prompt_template
+        else:
+            prompt_parts = []
+
+            if skill.system_prompt:
+                prompt_parts.append(skill.system_prompt.strip())
+
+            if skill.user_prompt_template:
+                # Format user prompt with parameters
+                user_prompt = skill.user_prompt_template.format(**parameters)
+                prompt_parts.append(user_prompt.strip())
+
+            return "\n\n".join(prompt_parts)
 
     def _parse_strategy(self, strategy_name: str) -> ReasoningStrategy:
         """Parse strategy name to ReasoningStrategy enum."""
@@ -464,10 +593,13 @@ async def execute_skill(
     shards: Optional[List[MemoryShard]] = None,
     override_strategy: Optional[str] = None,
     override_iterations: Optional[int] = None,
-    enable_analytics: bool = True
+    enable_analytics: bool = True,
+    model_provider: Optional[str] = None  # NEW (Phase 1.3)
 ) -> SkillExecutionResult:
     """
     Convenient function to execute a skill.
+
+    **UPDATED (Phase 1.3):** Added model_provider parameter for UnifiedMRF integration.
 
     Args:
         skill_name: Name of skill to execute
@@ -477,15 +609,25 @@ async def execute_skill(
         override_strategy: Override reasoning strategy
         override_iterations: Override max iterations
         enable_analytics: Enable analytics tracking
+        model_provider: Model provider for enhanced prompting ("claude", "gemini", "gpt", "ollama")
 
     Returns:
         SkillExecutionResult
 
     Example:
+        # Basic usage
         result = await execute_skill(
             "code-reviewer",
             {"code": code, "language": "python"},
             config=Config.fused()
+        )
+
+        # With model provider (enables UnifiedMRF enhancements)
+        result = await execute_skill(
+            "code-reviewer",
+            {"code": code, "language": "python"},
+            config=Config.fused(),
+            model_provider="claude"
         )
     """
     registry = await get_registry()
@@ -493,7 +635,8 @@ async def execute_skill(
         registry=registry,
         config=config or Config.fast(),
         shards=shards,
-        enable_analytics=enable_analytics
+        enable_analytics=enable_analytics,
+        model_provider=model_provider  # NEW
     )
 
     return await executor.execute(

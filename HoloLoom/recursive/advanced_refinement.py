@@ -1,13 +1,15 @@
 """
-Advanced Recursive Refinement - Phase 4
-========================================
+Advanced Recursive Refinement - Phase 4 (Enhanced with UnifiedMRF)
+====================================================================
 Multiple refinement strategies, quality trajectory tracking, and learning from
 successful refinements.
+
+**UPDATED (Phase 1.2 - Nov 2025):** Integrated with UnifiedMRF for enhanced prompting.
 
 Refinement Strategies:
 - REFINE: Iteratively expand and improve query
 - CRITIQUE: Self-critique result and regenerate
-- VERIFY: Multi-pass cross-check against multiple sources
+- VERIFY: Multi-pass cross-check against multiple sources (accuracy→completeness→consistency)
 - ELEGANCE: Iteratively polish for clarity, simplicity, and beauty
 - HOFSTADTER: Strange loop self-reference for deep reasoning
 
@@ -19,28 +21,88 @@ The ELEGANCE and VERIFY strategies embrace multiple passes:
 - Each pass improves a specific dimension (clarity, accuracy, simplicity)
 - Quality trajectory shows incremental improvement
 - Learning identifies when additional passes yield diminishing returns
+
+Integration with UnifiedMRF:
+- Refinement prompts use 7-component metaprompt framework
+- Model adapters optimize for Claude/Gemini/GPT/Ollama
+- Quality metrics track improvement trajectory
 """
 
 import asyncio
 import logging
+import warnings
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Dict, Any, Callable
+from typing import List, Optional, Dict, Any, Callable, Union
 from datetime import datetime
 
 from HoloLoom.protocols.types import Query
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.recursive.scratchpad import Scratchpad, ScratchpadEntry
+from HoloLoom.prompting.unified_mrf import (
+    UnifiedMRF,
+    RefinementStrategyType,
+    ModelProvider
+)
 
 
 class RefinementStrategy(Enum):
-    """Available refinement strategies"""
+    """
+    Available refinement strategies.
+
+    .. deprecated:: 1.1.0
+        `RefinementStrategy` is deprecated and will be removed in v2.0.0.
+        Use `RefinementStrategyType` from `HoloLoom.prompting.unified_mrf` instead.
+
+        Migration:
+            # Old (deprecated)
+            from HoloLoom.recursive.advanced_refinement import RefinementStrategy
+            strategy = RefinementStrategy.REFINE
+
+            # New (recommended)
+            from HoloLoom.prompting.unified_mrf import RefinementStrategyType
+            strategy = RefinementStrategyType.REFINE
+
+    **DEPRECATED (Phase 1.4 - Nov 2025):** This enum conflicts with
+    `HoloLoom.writing.core.protocol.RefinementStrategy`. To resolve naming collision,
+    use `RefinementStrategyType` from UnifiedMRF instead.
+
+    This enum is kept for backward compatibility with existing code.
+    Internally, we map to RefinementStrategyType from UnifiedMRF.
+    """
     REFINE = "refine"          # Iterative expansion and improvement
     CRITIQUE = "critique"      # Self-critique and regenerate
     VERIFY = "verify"          # Multi-pass cross-check multiple sources
     ELEGANCE = "elegance"      # Multi-pass polish for clarity and simplicity
     HOFSTADTER = "hofstadter"  # Strange loop self-reference
+
+    def __init__(self, value):
+        """Emit deprecation warning on initialization."""
+        warnings.warn(
+            "RefinementStrategy from HoloLoom.recursive.advanced_refinement is deprecated. "
+            "Use RefinementStrategyType from HoloLoom.prompting.unified_mrf instead. "
+            "This enum will be removed in v2.0.0.",
+            DeprecationWarning,
+            stacklevel=3
+        )
+
+    @classmethod
+    def to_unified_type(cls, strategy: 'RefinementStrategy') -> RefinementStrategyType:
+        """
+        Convert to UnifiedMRF RefinementStrategyType.
+
+        .. deprecated:: 1.1.0
+            Use `RefinementStrategyType` directly instead of converting.
+        """
+        mapping = {
+            cls.REFINE: RefinementStrategyType.REFINE,
+            cls.CRITIQUE: RefinementStrategyType.CRITIQUE,
+            cls.VERIFY: RefinementStrategyType.VERIFY,
+            cls.ELEGANCE: RefinementStrategyType.ELEGANCE,
+            cls.HOFSTADTER: RefinementStrategyType.HOFSTADTER,
+        }
+        return mapping[strategy]
 
 
 @dataclass
@@ -75,10 +137,14 @@ class QualityMetrics:
 
 @dataclass
 class RefinementResult:
-    """Result of refinement process with full trajectory"""
+    """
+    Result of refinement process with full trajectory.
+
+    **UPDATED (Phase 1.4):** strategy_used accepts both RefinementStrategy and RefinementStrategyType.
+    """
     final_spacetime: Spacetime
     trajectory: List[QualityMetrics]
-    strategy_used: RefinementStrategy
+    strategy_used: Union[RefinementStrategy, RefinementStrategyType]
     iterations: int
     improved: bool
     improvement_rate: float  # Quality improvement per iteration
@@ -123,18 +189,23 @@ class AdvancedRefiner:
     """
     Enhanced recursive refiner with multiple strategies and learning.
 
+    **UPDATED (Phase 1.2):** Integrated with UnifiedMRF for enhanced prompting.
+
     This refiner can:
     1. Apply different refinement strategies based on query type
     2. Track quality trajectories across iterations
     3. Learn which strategies work best for which queries
     4. Adapt strategy selection based on past successes
+    5. Use 7-component metaprompt framework for all refinements
+    6. Apply model-specific optimizations (Claude/Gemini/GPT/Ollama)
     """
 
     def __init__(
         self,
         orchestrator: WeavingOrchestrator,
         scratchpad: Optional[Scratchpad] = None,
-        enable_learning: bool = True
+        enable_learning: bool = True,
+        model_provider: Optional[ModelProvider] = None
     ):
         """
         Initialize advanced refiner.
@@ -143,11 +214,16 @@ class AdvancedRefiner:
             orchestrator: HoloLoom orchestrator
             scratchpad: Optional scratchpad for tracking
             enable_learning: Whether to learn from refinements
+            model_provider: Optional model provider for optimizations
         """
         self.orchestrator = orchestrator
         self.scratchpad = scratchpad
         self.enable_learning = enable_learning
+        self.model_provider = model_provider
         self.logger = logging.getLogger(f"{__name__}.AdvancedRefiner")
+
+        # UnifiedMRF for enhanced prompting
+        self.mrf = UnifiedMRF()
 
         # Learning: Track which strategies work best
         self.learned_patterns: Dict[str, RefinementPattern] = {}
@@ -159,23 +235,30 @@ class AdvancedRefiner:
         self,
         query: Query,
         initial_spacetime: Spacetime,
-        strategy: Optional[RefinementStrategy] = None,
+        strategy: Optional[Union[RefinementStrategy, RefinementStrategyType]] = None,
         max_iterations: int = 3,
         quality_threshold: float = 0.9
     ) -> RefinementResult:
         """
         Refine query using specified or auto-selected strategy.
 
+        **UPDATED (Phase 1.4):** Accepts Union[RefinementStrategy, RefinementStrategyType].
+
         Args:
             query: Original query
             initial_spacetime: Initial result to refine
-            strategy: Refinement strategy (auto-selected if None)
+            strategy: Refinement strategy (auto-selected if None).
+                     Accepts RefinementStrategy (deprecated) or RefinementStrategyType.
             max_iterations: Maximum iterations
             quality_threshold: Target quality threshold
 
         Returns:
             RefinementResult with full trajectory
         """
+        # Convert deprecated RefinementStrategy to RefinementStrategyType
+        if isinstance(strategy, RefinementStrategy):
+            strategy = RefinementStrategy.to_unified_type(strategy)
+
         # Auto-select strategy if not specified
         if strategy is None:
             strategy = self._select_strategy(query, initial_spacetime)
@@ -252,16 +335,18 @@ class AdvancedRefiner:
         self,
         query: Query,
         spacetime: Spacetime
-    ) -> RefinementStrategy:
+    ) -> RefinementStrategyType:
         """
         Auto-select best refinement strategy based on query and learned patterns.
+
+        **UPDATED (Phase 1.4):** Returns RefinementStrategyType instead of deprecated RefinementStrategy.
 
         Args:
             query: Query to refine
             spacetime: Current spacetime
 
         Returns:
-            Selected strategy
+            Selected strategy (RefinementStrategyType)
         """
         # Extract query characteristics
         query_len = len(query.text)
@@ -272,30 +357,38 @@ class AdvancedRefiner:
 
         # Low confidence + few threads → REFINE (need more context)
         if confidence < 0.6 and threads_count < 3:
-            return RefinementStrategy.REFINE
+            return RefinementStrategyType.REFINE
 
         # Medium confidence + many threads → CRITIQUE (refinement needed)
         if 0.6 <= confidence < 0.8 and threads_count >= 3:
-            return RefinementStrategy.CRITIQUE
+            return RefinementStrategyType.CRITIQUE
 
         # Long, complex query → HOFSTADTER (deep reasoning)
         if query_len > 100:
-            return RefinementStrategy.HOFSTADTER
+            return RefinementStrategyType.HOFSTADTER
 
         # Default: VERIFY (cross-check)
-        return RefinementStrategy.VERIFY
+        return RefinementStrategyType.VERIFY
 
     def _get_strategy_function(
         self,
-        strategy: RefinementStrategy
+        strategy: Union[RefinementStrategy, RefinementStrategyType]
     ) -> Callable:
-        """Get refinement function for strategy"""
+        """
+        Get refinement function for strategy.
+
+        **UPDATED (Phase 1.4):** Accepts both RefinementStrategy and RefinementStrategyType.
+        """
+        # Convert deprecated RefinementStrategy to RefinementStrategyType
+        if isinstance(strategy, RefinementStrategy):
+            strategy = RefinementStrategy.to_unified_type(strategy)
+
         strategy_map = {
-            RefinementStrategy.REFINE: self._refine_strategy,
-            RefinementStrategy.CRITIQUE: self._critique_strategy,
-            RefinementStrategy.VERIFY: self._verify_strategy,
-            RefinementStrategy.ELEGANCE: self._elegance_strategy,
-            RefinementStrategy.HOFSTADTER: self._hofstadter_strategy,
+            RefinementStrategyType.REFINE: self._refine_strategy,
+            RefinementStrategyType.CRITIQUE: self._critique_strategy,
+            RefinementStrategyType.VERIFY: self._verify_strategy,
+            RefinementStrategyType.ELEGANCE: self._elegance_strategy,
+            RefinementStrategyType.HOFSTADTER: self._hofstadter_strategy,
         }
         return strategy_map[strategy]
 
@@ -308,26 +401,21 @@ class AdvancedRefiner:
         """
         REFINE strategy: Iteratively expand query with more context.
 
+        **UPDATED (Phase 1.2):** Uses UnifiedMRF for prompt generation.
+
         Analyzes why previous result was insufficient and adds context.
         """
-        # Analyze what's missing
-        trace = previous_spacetime.trace
-        threads = trace.threads_activated
-        motifs = trace.motifs_detected
+        # Use UnifiedMRF to generate refined query
+        refined_result = await self.mrf.refine_response(
+            query=query.text,
+            response=previous_spacetime.response,
+            strategy=RefinementStrategyType.REFINE,
+            max_iterations=1,  # Single iteration per call
+            model=self.model_provider
+        )
 
-        # Build expanded query
-        expansion_parts = [query.text]
-
-        if len(threads) < 3:
-            expansion_parts.append("Please provide more context and background information.")
-
-        if len(motifs) < 2:
-            expansion_parts.append("Clarify the key concepts and their relationships.")
-
-        if trace.tool_confidence < 0.7:
-            expansion_parts.append("Include specific examples and details.")
-
-        expanded_text = " ".join(expansion_parts)
+        # Build expanded query using refined prompt
+        expanded_text = refined_result.refined_response
         expanded_query = Query(text=expanded_text, metadata=query.metadata)
 
         # Re-weave with expanded query
@@ -342,15 +430,21 @@ class AdvancedRefiner:
         """
         CRITIQUE strategy: Identify weaknesses and regenerate.
 
+        **UPDATED (Phase 1.2):** Uses UnifiedMRF for prompt generation.
+
         Creates a critique of the previous result and uses it to improve.
         """
-        # Create critique query
-        critique_text = (
-            f"{query.text}\n\n"
-            f"Previous attempt had confidence {previous_spacetime.trace.tool_confidence:.2f}. "
-            f"Improve by addressing: completeness, accuracy, and clarity."
+        # Use UnifiedMRF to generate critique
+        refined_result = await self.mrf.refine_response(
+            query=query.text,
+            response=previous_spacetime.response,
+            strategy=RefinementStrategyType.CRITIQUE,
+            max_iterations=1,
+            model=self.model_provider
         )
 
+        # Build critique query using refined response
+        critique_text = refined_result.refined_response
         critique_query = Query(text=critique_text, metadata=query.metadata)
 
         # Re-weave with critique
@@ -365,27 +459,26 @@ class AdvancedRefiner:
         """
         VERIFY strategy: Multi-pass cross-check against multiple sources.
 
+        **UPDATED (Phase 1.2):** Uses UnifiedMRF with iteration-aware prompts.
+
         Each iteration focuses on a different verification dimension:
         - Pass 1: Accuracy verification
         - Pass 2: Completeness check
         - Pass 3: Consistency validation
         """
-        # Multi-pass verification focuses
-        verification_focuses = [
-            "Verify the accuracy of all factual claims",
-            "Check for completeness - are there gaps or missing information?",
-            "Validate internal consistency - do all parts align?"
-        ]
-
-        focus = verification_focuses[iteration % len(verification_focuses)]
-
-        # Create verification query with iteration-specific focus
-        verify_text = (
-            f"{query.text}\n\n"
-            f"Verification Pass {iteration + 1}: {focus}\n"
-            f"Cross-check this information across multiple sources."
+        # Use UnifiedMRF to generate verification prompt
+        # UnifiedMRF's VERIFY strategy automatically cycles through accuracy→completeness→consistency
+        # Note: Multi-pass focus is handled internally by RefinementEngine
+        refined_result = await self.mrf.refine_response(
+            query=query.text,
+            response=previous_spacetime.response,
+            strategy=RefinementStrategyType.VERIFY,
+            max_iterations=1,
+            model=self.model_provider
         )
 
+        # Build verification query using refined response
+        verify_text = refined_result.refined_response
         verify_query = Query(text=verify_text, metadata=query.metadata)
 
         # Re-weave with verification request
@@ -400,6 +493,8 @@ class AdvancedRefiner:
         """
         ELEGANCE strategy: Multi-pass polish for clarity, simplicity, and beauty.
 
+        **UPDATED (Phase 1.2):** Uses UnifiedMRF with iteration-aware prompts.
+
         Each iteration focuses on a different elegance dimension:
         - Pass 1: Clarity (make it understandable)
         - Pass 2: Simplicity (make it concise)
@@ -410,36 +505,19 @@ class AdvancedRefiner:
         - Simple: No unnecessary complexity
         - Beautiful: Well-organized and aesthetically pleasing
         """
-        # Multi-pass elegance focuses
-        elegance_focuses = [
-            {
-                "dimension": "Clarity",
-                "instruction": "Improve clarity - make the explanation crystal clear and unambiguous. "
-                              "Remove jargon, add concrete examples, clarify any confusing parts."
-            },
-            {
-                "dimension": "Simplicity",
-                "instruction": "Improve simplicity - make it more concise without losing meaning. "
-                              "Remove redundancy, streamline structure, use simpler language where possible."
-            },
-            {
-                "dimension": "Beauty",
-                "instruction": "Improve elegance - organize for maximum aesthetic and conceptual beauty. "
-                              "Create logical flow, use parallel structure, achieve balance and harmony."
-            }
-        ]
-
-        focus = elegance_focuses[iteration % len(elegance_focuses)]
-
-        # Create elegance refinement query
-        elegance_text = (
-            f"{query.text}\n\n"
-            f"Elegance Pass {iteration + 1} - {focus['dimension']}:\n"
-            f"{focus['instruction']}\n\n"
-            f"Previous response:\n{previous_spacetime.response[:300]}...\n\n"
-            f"Refine this to be more {focus['dimension'].lower()}."
+        # Use UnifiedMRF to generate elegance refinement
+        # UnifiedMRF's ELEGANCE strategy automatically cycles through clarity→simplicity→beauty
+        # Note: Multi-pass focus is handled internally by RefinementEngine
+        refined_result = await self.mrf.refine_response(
+            query=query.text,
+            response=previous_spacetime.response,
+            strategy=RefinementStrategyType.ELEGANCE,
+            max_iterations=1,
+            model=self.model_provider
         )
 
+        # Build elegance query using refined response
+        elegance_text = refined_result.refined_response
         elegance_query = Query(text=elegance_text, metadata=query.metadata)
 
         # Re-weave with elegance refinement
@@ -454,17 +532,22 @@ class AdvancedRefiner:
         """
         HOFSTADTER strategy: Strange loop self-reference.
 
+        **UPDATED (Phase 1.2):** Uses UnifiedMRF for meta-level prompts.
+
         Uses recursive self-reference to deepen understanding.
         Uses the previous result to inform the next query.
         """
-        # Create self-referential query
-        hofstadter_text = (
-            f"{query.text}\n\n"
-            f"Building on the previous understanding: {previous_spacetime.response[:200]}...\n"
-            f"Now deepen this by exploring the meta-level: What patterns or principles "
-            f"underlie this? How does this connect to broader concepts?"
+        # Use UnifiedMRF to generate self-referential prompt
+        refined_result = await self.mrf.refine_response(
+            query=query.text,
+            response=previous_spacetime.response,
+            strategy=RefinementStrategyType.HOFSTADTER,
+            max_iterations=1,
+            model=self.model_provider
         )
 
+        # Build self-referential query using refined response
+        hofstadter_text = refined_result.refined_response
         hofstadter_query = Query(text=hofstadter_text, metadata=query.metadata)
 
         # Re-weave with self-reference
@@ -566,30 +649,67 @@ async def refine_with_strategy(
     query: Query,
     initial_spacetime: Spacetime,
     orchestrator: WeavingOrchestrator,
-    strategy: Optional[RefinementStrategy] = None,
+    strategy: Optional[Union[RefinementStrategy, RefinementStrategyType]] = None,
     max_iterations: int = 3,
     quality_threshold: float = 0.9,
-    scratchpad: Optional[Scratchpad] = None
+    scratchpad: Optional[Scratchpad] = None,
+    model_provider: Optional[ModelProvider] = None
 ) -> RefinementResult:
     """
     Convenience function for one-off advanced refinement.
+
+    **UPDATED (Phase 1.2):** Added model_provider parameter for UnifiedMRF integration.
+    **UPDATED (Phase 1.4):** Accepts Union[RefinementStrategy, RefinementStrategyType].
+
+    .. note::
+        Prefer using `RefinementStrategyType` from `HoloLoom.prompting.unified_mrf`.
+        `RefinementStrategy` is deprecated and will be removed in v2.0.0.
 
     Args:
         query: Query to refine
         initial_spacetime: Initial result
         orchestrator: HoloLoom orchestrator
-        strategy: Refinement strategy (auto-selected if None)
+        strategy: Refinement strategy (auto-selected if None).
+                 Accepts RefinementStrategy (deprecated) or RefinementStrategyType.
         max_iterations: Maximum iterations
         quality_threshold: Target quality
         scratchpad: Optional scratchpad
+        model_provider: Optional model provider (Claude/Gemini/GPT/Ollama)
 
     Returns:
         RefinementResult
+
+    Example:
+        # Recommended: Use RefinementStrategyType
+        from HoloLoom.prompting.unified_mrf import RefinementStrategyType
+
+        result = await refine_with_strategy(
+            query=query,
+            initial_spacetime=initial,
+            orchestrator=orchestrator,
+            strategy=RefinementStrategyType.ELEGANCE,
+            model_provider=ModelProvider.CLAUDE
+        )
+
+        # Deprecated: RefinementStrategy (emits warning)
+        from HoloLoom.recursive.advanced_refinement import RefinementStrategy
+
+        result = await refine_with_strategy(
+            query=query,
+            initial_spacetime=initial,
+            orchestrator=orchestrator,
+            strategy=RefinementStrategy.ELEGANCE  # DeprecationWarning
+        )
     """
+    # Convert deprecated RefinementStrategy to RefinementStrategyType
+    if isinstance(strategy, RefinementStrategy):
+        strategy = RefinementStrategy.to_unified_type(strategy)
+
     refiner = AdvancedRefiner(
         orchestrator=orchestrator,
         scratchpad=scratchpad,
-        enable_learning=True
+        enable_learning=True,
+        model_provider=model_provider
     )
 
     return await refiner.refine(

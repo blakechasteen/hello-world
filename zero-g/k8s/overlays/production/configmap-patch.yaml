@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zerog-config
+data:
+  cors-origins: "https://zerog.production.com"
+  enable-authentication: "true"

@@ -1,0 +1,202 @@
+{
+  "farms": [
+    {
+      "farm_id": "farm_001",
+      "name": "Green Valley Urban Farm",
+      "farm_type": "urban_farm",
+      "location": {
+        "address": "123 City Garden Way",
+        "city": "Portland",
+        "state": "OR",
+        "zipcode": "97201",
+        "coordinates": {
+          "lat": 45.5152,
+          "lon": -122.6784
+        }
+      },
+      "total_acres": 0.5,
+      "organic_certified": true,
+      "certifications": ["usda_organic"],
+      "practices": [
+        "no_pesticides",
+        "composting",
+        "rainwater_harvesting",
+        "vertical_growing"
+      ],
+      "primary_crops": [
+        "leafy_greens",
+        "herbs",
+        "tomatoes",
+        "peppers"
+      ],
+      "growing_zones": ["8b"],
+      "year_established": 2019,
+      "active": true,
+      "contact": {
+        "email": "info@greenvalleyurban.farm",
+        "phone": "503-555-0101",
+        "website": "https://greenvalleyurban.farm"
+      },
+      "description": "Rooftop urban farm in downtown Portland producing fresh greens and herbs for local restaurants and CSA members."
+    },
+    {
+      "farm_id": "farm_002",
+      "name": "Riverside Market Garden",
+      "farm_type": "market_garden",
+      "location": {
+        "address": "456 River Bend Road",
+        "city": "Eugene",
+        "state": "OR",
+        "zipcode": "97401",
+        "coordinates": {
+          "lat": 44.0521,
+          "lon": -123.0868
+        }
+      },
+      "total_acres": 5.0,
+      "organic_certified": true,
+      "certifications": ["usda_organic", "naturally_grown"],
+      "practices": [
+        "crop_rotation",
+        "cover_cropping",
+        "drip_irrigation",
+        "integrated_pest_management"
+      ],
+      "primary_crops": [
+        "vegetables",
+        "berries",
+        "flowers",
+        "herbs"
+      ],
+      "growing_zones": ["8b"],
+      "year_established": 2015,
+      "active": true,
+      "contact": {
+        "email": "harvest@riversidemarket.farm",
+        "phone": "541-555-0202",
+        "website": "https://riversidemarket.farm"
+      },
+      "description": "Family-run market garden specializing in heirloom vegetables and cut flowers for farmers markets and CSA."
+    },
+    {
+      "farm_id": "farm_003",
+      "name": "Willamette Valley Regenerative Farm",
+      "farm_type": "regenerative",
+      "location": {
+        "address": "789 Prairie View Lane",
+        "city": "Corvallis",
+        "state": "OR",
+        "zipcode": "97330",
+        "coordinates": {
+          "lat": 44.5646,
+          "lon": -123.2620
+        }
+      },
+      "total_acres": 50.0,
+      "organic_certified": true,
+      "certifications": ["usda_organic", "regenerative_certified", "biodynamic"],
+      "practices": [
+        "no_till",
+        "cover_cropping",
+        "rotational_grazing",
+        "composting",
+        "hedgerow_planting",
+        "integrated_livestock",
+        "soil_building"
+      ],
+      "primary_crops": [
+        "grains",
+        "vegetables",
+        "fruits",
+        "pasture"
+      ],
+      "growing_zones": ["8b"],
+      "year_established": 2010,
+      "active": true,
+      "contact": {
+        "email": "farmers@willamettevalley.regen",
+        "phone": "541-555-0303",
+        "website": "https://willamettevalley.regen"
+      },
+      "description": "Large-scale regenerative farm focused on soil health, biodiversity, and carbon sequestration through holistic management."
+    },
+    {
+      "farm_id": "farm_004",
+      "name": "Sunrise Community Garden",
+      "farm_type": "urban_farm",
+      "location": {
+        "address": "321 Community Circle",
+        "city": "Seattle",
+        "state": "WA",
+        "zipcode": "98101",
+        "coordinates": {
+          "lat": 47.6062,
+          "lon": -122.3321
+        }
+      },
+      "total_acres": 0.75,
+      "organic_certified": false,
+      "certifications": [],
+      "practices": [
+        "organic_methods",
+        "composting",
+        "community_education",
+        "raised_beds"
+      ],
+      "primary_crops": [
+        "vegetables",
+        "herbs",
+        "flowers"
+      ],
+      "growing_zones": ["8b"],
+      "year_established": 2020,
+      "active": true,
+      "contact": {
+        "email": "garden@sunrisecommunity.org",
+        "phone": "206-555-0404",
+        "website": "https://sunrisecommunity.org/garden"
+      },
+      "description": "Community-managed urban garden providing fresh produce and education to neighborhood residents."
+    },
+    {
+      "farm_id": "farm_005",
+      "name": "Cascade Foothills Farm",
+      "farm_type": "market_garden",
+      "location": {
+        "address": "567 Mountain View Drive",
+        "city": "Bend",
+        "state": "OR",
+        "zipcode": "97701",
+        "coordinates": {
+          "lat": 44.0582,
+          "lon": -121.3153
+        }
+      },
+      "total_acres": 8.0,
+      "organic_certified": true,
+      "certifications": ["usda_organic"],
+      "practices": [
+        "high_tunnel_growing",
+        "season_extension",
+        "drip_irrigation",
+        "crop_diversity"
+      ],
+      "primary_crops": [
+        "tomatoes",
+        "peppers",
+        "cucumbers",
+        "lettuce",
+        "carrots"
+      ],
+      "growing_zones": ["5b"],
+      "year_established": 2017,
+      "active": true,
+      "contact": {
+        "email": "info@cascadefoothills.farm",
+        "phone": "541-555-0505",
+        "website": "https://cascadefoothills.farm"
+      },
+      "description": "High-altitude market garden using season extension techniques to grow fresh produce year-round."
+    }
+  ]
+}

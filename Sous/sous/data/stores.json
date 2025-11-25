@@ -1,0 +1,68 @@
+[
+  {
+    "id": "store_amish",
+    "name": "Amish Market",
+    "roles": ["anchor"],
+    "priority": 1
+  },
+  {
+    "id": "store_vuck",
+    "name": "Vuck Farms",
+    "roles": ["produce"],
+    "priority": 2
+  },
+  {
+    "id": "store_earthfare",
+    "name": "Earth Fare",
+    "roles": ["specialty", "plant_dairy"],
+    "priority": 3
+  },
+  {
+    "id": "store_kroger",
+    "name": "Kroger",
+    "roles": ["fill"],
+    "priority": 4
+  },
+  {
+    "id": "store_asian",
+    "name": "Asian Market",
+    "roles": ["specialty_asian"],
+    "priority": 5
+  },
+  {
+    "id": "store_costco",
+    "name": "Costco",
+    "roles": ["bulk", "drinks"],
+    "priority": 6
+  },
+  {
+    "id": "farm_smiths",
+    "name": "Smith Family Farm",
+    "roles": ["local_farm", "produce"],
+    "priority": 2,
+    "is_local_farm": true,
+    "seasonal_availability": [5, 6, 7, 8, 9, 10],
+    "specialties": ["tomatoes", "peppers", "zucchini", "eggs"],
+    "notes": "Open Saturdays 8am-2pm May-October. Cash or Venmo."
+  },
+  {
+    "id": "market_downtown",
+    "name": "Downtown Farmers Market",
+    "roles": ["farmers_market", "produce"],
+    "priority": 3,
+    "is_local_farm": true,
+    "seasonal_availability": [4, 5, 6, 7, 8, 9, 10, 11],
+    "specialties": ["seasonal produce", "honey", "baked goods", "flowers"],
+    "notes": "Every Saturday 9am-1pm April-November. Multiple vendors."
+  },
+  {
+    "id": "farm_green_valley",
+    "name": "Green Valley CSA",
+    "roles": ["local_farm", "csa"],
+    "priority": 1,
+    "is_local_farm": true,
+    "seasonal_availability": [5, 6, 7, 8, 9, 10],
+    "specialties": ["mixed vegetables", "herbs", "salad greens"],
+    "notes": "Weekly box pickup Wednesdays 4-6pm. Pre-paid season membership."
+  }
+]

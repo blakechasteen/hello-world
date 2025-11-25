@@ -1,5 +1,5 @@
 # COZ Daily Intelligence Brief
-**Generated**: 2025-11-22 21:35
+**Generated**: 2025-11-22 22:31
 
 ## Financial Overview
 - **Net Profit**: $-450.00

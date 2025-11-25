@@ -9,7 +9,7 @@ Implements TOP 5 detection categories for MVP:
 5. Passive Voice Detection
 
 Created: 2025-11-22
-Status: Production Ready (Week 1-3)
+Status: Production Ready (Week 11 Beta)
 """
 
 from pathlib import Path
@@ -30,6 +30,24 @@ from .jargon_dict import load_jargon_dictionary, JARGON_REPLACEMENTS
 from .specificity import SpecificityDetector
 from .brand_guidelines import BrandGuidelinesDetector
 from .governance import GovernanceDetector
+
+# Import production infrastructure (Week 11)
+from ..exceptions import (
+    BossPigFileError,
+    BossPigValidationError,
+    BossPigAnalysisError,
+    file_not_found,
+    invalid_file_encoding,
+    empty_text_input,
+    analysis_failed
+)
+from ..logging_config import (
+    get_logger,
+    log_analysis_start,
+    log_analysis_complete,
+    log_detector_run,
+    PerformanceLogger
+)
 
 
 class BossPigDetector:
@@ -72,6 +90,10 @@ class BossPigDetector:
             governance_config_path: Optional path to custom governance_config.json
             document_type: Type of document for governance validation (technical_documentation, healthcare, data_policies, etc.)
         """
+        # Initialize logger
+        self.logger = get_logger(__name__)
+        self.logger.info("Initializing BossPig detector", extra={"document_type": document_type})
+
         self.jargon_dict = load_jargon_dictionary(jargon_dict_path)
         self.matcher = PatternMatcher(case_sensitive=False)
         self.enable_nlp = enable_nlp
@@ -94,9 +116,12 @@ class BossPigDetector:
             try:
                 import spacy
                 self.nlp = spacy.load("en_core_web_sm")
+                self.logger.info("spaCy loaded successfully for NLP analysis")
             except (ImportError, OSError):
-                print("Warning: spaCy not available. Passive voice detection will use regex fallback.")
+                self.logger.warning("spaCy not available. Passive voice detection will use regex fallback.")
                 self.nlp = None
+
+        self.logger.info("BossPig detector initialized successfully")
 
     def analyze(self, text_or_file: Union[str, Path]) -> BossPigFindings:
         """
@@ -107,48 +132,139 @@ class BossPigDetector:
 
         Returns:
             BossPigFindings with all detected issues and quality score
+
+        Raises:
+            BossPigFileError: If file cannot be read
+            BossPigValidationError: If input text is empty
+            BossPigAnalysisError: If analysis fails
         """
-        # Load text
+        # Load text with error handling
+        with PerformanceLogger(self.logger, "file_loading"):
+            text = self._load_text(text_or_file)
+
+        # Note: We allow empty text analysis (will flag governance violations)
+        # but log it as INFO for monitoring
+        if not text or not text.strip():
+            self.logger.info("Analyzing empty/whitespace-only document")
+
+        # Log analysis start
+        word_count = len(text.split()) if text else 0
+        log_analysis_start(self.logger, text_or_file, word_count)
+
+        # Run analysis with performance logging
+        try:
+            with PerformanceLogger(self.logger, "full_analysis"):
+                # Calculate document stats
+                doc_stats = DocumentStats.calculate_stats(text)
+
+                # Run all detectors
+                findings: List[Finding] = []
+
+                with PerformanceLogger(self.logger, "jargon_detection"):
+                    findings.extend(self.detect_jargon(text))
+
+                with PerformanceLogger(self.logger, "vague_commitments_detection"):
+                    findings.extend(self.detect_vague_commitments(text))
+
+                with PerformanceLogger(self.logger, "missing_dates_detection"):
+                    findings.extend(self.detect_missing_dates(text))
+
+                with PerformanceLogger(self.logger, "ai_hallucination_detection"):
+                    findings.extend(self.detect_ai_hallucinations(text))
+
+                with PerformanceLogger(self.logger, "passive_voice_detection"):
+                    findings.extend(self.detect_passive_voice(text))
+
+                # Category 16: Specificity Enforcement
+                with PerformanceLogger(self.logger, "specificity_detection"):
+                    findings.extend(self.specificity_detector.analyze(text))
+
+                # Category 17: Brand Guidelines Compliance
+                with PerformanceLogger(self.logger, "brand_guidelines_detection"):
+                    findings.extend(self.brand_detector.analyze(text))
+
+                # Category 18: Governance & Policy Tools
+                with PerformanceLogger(self.logger, "governance_detection"):
+                    findings.extend(self.governance_detector.analyze(text))
+
+                # Calculate quality metrics
+                metrics = self.calculate_quality_metrics(text, findings, doc_stats)
+
+                # Create findings object
+                result = BossPigFindings(
+                    findings=findings,
+                    quality_metrics=metrics,
+                    document_stats=doc_stats
+                )
+
+                # Log analysis complete with category breakdown
+                categories = list(set([f.category.value for f in findings]))
+
+                self.logger.info(
+                    f"Analysis complete: {len(findings)} findings",
+                    extra={
+                        "findings_count": len(findings),
+                        "quality_score": metrics.overall_score,
+                        "categories": categories
+                    }
+                )
+
+                return result
+
+        except Exception as e:
+            self.logger.error(f"Analysis failed: {str(e)}", exc_info=True)
+            raise analysis_failed(str(e))
+
+    def _load_text(self, text_or_file: Union[str, Path]) -> str:
+        """
+        Load text from file or string.
+
+        Args:
+            text_or_file: Text string or path to file
+
+        Returns:
+            Text content
+
+        Raises:
+            BossPigFileError: If file cannot be read
+        """
+        # If it's a Path object, read the file
         if isinstance(text_or_file, Path):
-            with open(text_or_file, 'r', encoding='utf-8') as f:
-                text = f.read()
-        elif isinstance(text_or_file, str) and text_or_file and Path(text_or_file).is_file():
-            with open(text_or_file, 'r', encoding='utf-8') as f:
-                text = f.read()
+            if not text_or_file.exists():
+                raise file_not_found(str(text_or_file))
+            try:
+                with open(text_or_file, 'r', encoding='utf-8') as f:
+                    return f.read()
+            except UnicodeDecodeError:
+                raise invalid_file_encoding(str(text_or_file))
+            except Exception as e:
+                raise BossPigFileError(
+                    f"Failed to read file: {text_or_file}",
+                    f"Check file permissions and try again. Error: {str(e)}"
+                )
+
+        # If it's a string that looks like a file path, try to read it
+        elif isinstance(text_or_file, str) and text_or_file:
+            file_path = Path(text_or_file)
+            if file_path.is_file():
+                if not file_path.exists():
+                    raise file_not_found(str(file_path))
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        return f.read()
+                except UnicodeDecodeError:
+                    raise invalid_file_encoding(str(file_path))
+                except Exception as e:
+                    raise BossPigFileError(
+                        f"Failed to read file: {file_path}",
+                        f"Check file permissions and try again. Error: {str(e)}"
+                    )
+            else:
+                # It's a text string, return as-is
+                return text_or_file
         else:
-            text = text_or_file
-
-        # Calculate document stats
-        doc_stats = DocumentStats.calculate_stats(text)
-
-        # Run all detectors
-        findings: List[Finding] = []
-        findings.extend(self.detect_jargon(text))
-        findings.extend(self.detect_vague_commitments(text))
-        findings.extend(self.detect_missing_dates(text))
-        findings.extend(self.detect_ai_hallucinations(text))
-        findings.extend(self.detect_passive_voice(text))
-
-        # Category 16: Specificity Enforcement (new)
-        findings.extend(self.specificity_detector.analyze(text))
-
-        # Category 17: Brand Guidelines Compliance (new)
-        findings.extend(self.brand_detector.analyze(text))
-
-        # Category 18: Governance & Policy Tools (new)
-        findings.extend(self.governance_detector.analyze(text))
-
-        # Calculate quality metrics
-        metrics = self.calculate_quality_metrics(text, findings, doc_stats)
-
-        # Create findings object
-        result = BossPigFindings(
-            findings=findings,
-            quality_metrics=metrics,
-            document_stats=doc_stats
-        )
-
-        return result
+            # Empty or None input
+            return ""
 
     # ==================== DETECTOR 1: Corporate Jargon ====================
 

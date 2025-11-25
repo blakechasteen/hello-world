@@ -1,0 +1,153 @@
+# GitHub Actions Workflow for BossPig Quality Checks
+#
+# This workflow runs BossPig on all markdown files in pull requests
+# and fails if critical issues or errors are detected.
+#
+# Created: 2025-11-22
+# Status: Week 11 Beta Launch - Priority 4
+
+name: BossPig Quality Check
+
+on:
+  # Run on pull requests
+  pull_request:
+    paths:
+      - '**.md'
+      - '**.txt'
+      - 'docs/**'
+
+  # Run on pushes to main (optional)
+  push:
+    branches:
+      - main
+    paths:
+      - '**.md'
+      - '**.txt'
+      - 'docs/**'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  quality-check:
+    name: Check Document Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Setup Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      # Install BossPig
+      - name: Install BossPig
+        run: |
+          pip install --upgrade pip
+          pip install bosspig
+
+      # Optional: Install spaCy for NLP features
+      - name: Install spaCy (optional)
+        run: |
+          pip install spacy
+          python -m spacy download en_core_web_sm
+        continue-on-error: true
+
+      # Find markdown files
+      - name: Find files to analyze
+        id: find-files
+        run: |
+          echo "Finding markdown and text files..."
+          find . -type f \( -name "*.md" -o -name "*.txt" \) > files_to_check.txt
+          echo "Found $(wc -l < files_to_check.txt) files"
+          cat files_to_check.txt
+
+      # Run BossPig analysis
+      - name: Run BossPig analysis
+        id: bosspig
+        run: |
+          echo "Running BossPig analysis..."
+
+          # Create output directory
+          mkdir -p bosspig-reports
+
+          # Track overall status
+          overall_exit_code=0
+
+          # Analyze each file
+          while IFS= read -r file; do
+            echo "Analyzing: $file"
+
+            # Run analysis and capture exit code
+            if python -m bosspig.cli analyze "$file" \
+                --format json \
+                --output "bosspig-reports/$(basename "$file").json"; then
+              echo "  ✓ Passed"
+            else
+              exit_code=$?
+              echo "  ✗ Failed (exit code: $exit_code)"
+              if [ $exit_code -gt $overall_exit_code ]; then
+                overall_exit_code=$exit_code
+              fi
+            fi
+          done < files_to_check.txt
+
+          # Generate summary report
+          echo "Generating summary report..."
+          python -m bosspig.cli analyze README.md --format html --output bosspig-reports/summary.html || true
+
+          # Set outputs
+          echo "exit_code=$overall_exit_code" >> $GITHUB_OUTPUT
+
+          # Exit with overall status
+          exit $overall_exit_code
+
+      # Upload reports as artifacts
+      - name: Upload BossPig reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: bosspig-reports
+          path: bosspig-reports/
+          retention-days: 30
+
+      # Comment on PR with results (optional)
+      - name: Comment on PR
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request' && always()
+        with:
+          script: |
+            const fs = require('fs');
+            const exitCode = '${{ steps.bosspig.outputs.exit_code }}';
+
+            let comment = '## BossPig Quality Check Results\n\n';
+
+            if (exitCode === '0') {
+              comment += '✅ **All documents passed quality checks!**\n\n';
+            } else if (exitCode === '1') {
+              comment += '⚠️ **Some documents have errors that should be fixed.**\n\n';
+            } else if (exitCode === '2') {
+              comment += '❌ **Critical issues detected. These must be fixed before merging.**\n\n';
+            }
+
+            comment += 'View detailed reports in the workflow artifacts.\n\n';
+            comment += `Exit code: ${exitCode}`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      # Fail workflow if critical issues detected
+      - name: Check for critical issues
+        if: steps.bosspig.outputs.exit_code == '2'
+        run: |
+          echo "Critical issues detected. Failing workflow."
+          exit 1

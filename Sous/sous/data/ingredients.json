@@ -1,0 +1,201 @@
+{
+  "cranberries": {
+    "name": "Fresh Cranberries",
+    "category": "produce",
+    "possible_stores": ["store_kroger", "store_amish"],
+    "preferred_store": "store_kroger"
+  },
+  "white_sugar": {
+    "name": "White Sugar",
+    "category": "dry",
+    "possible_stores": ["store_kroger", "store_amish"]
+  },
+  "orange": {
+    "name": "Orange",
+    "category": "produce",
+    "possible_stores": ["store_amish", "store_vuck", "store_kroger"]
+  },
+  "cointreau": {
+    "name": "Cointreau (Orange Liqueur)",
+    "category": "alcohol",
+    "possible_stores": ["store_kroger", "store_earthfare"]
+  },
+  "cornbread": {
+    "name": "Cornbread or Cornmeal",
+    "category": "dry",
+    "possible_stores": ["store_amish", "store_kroger"],
+    "preferred_store": "store_amish"
+  },
+  "onions": {
+    "name": "Onions",
+    "category": "produce",
+    "possible_stores": ["store_amish", "store_vuck", "store_kroger"]
+  },
+  "celery": {
+    "name": "Celery",
+    "category": "produce",
+    "possible_stores": ["store_amish", "store_vuck", "store_kroger"]
+  },
+  "parsley": {
+    "name": "Fresh Parsley",
+    "category": "produce",
+    "possible_stores": ["store_vuck", "store_amish"],
+    "preferred_store": "store_vuck"
+  },
+  "sage": {
+    "name": "Fresh Sage",
+    "category": "produce",
+    "possible_stores": ["store_vuck", "store_earthfare"],
+    "preferred_store": "store_vuck"
+  },
+  "rosemary": {
+    "name": "Fresh Rosemary",
+    "category": "produce",
+    "possible_stores": ["store_vuck", "store_earthfare"],
+    "preferred_store": "store_vuck"
+  },
+  "thyme": {
+    "name": "Fresh Thyme",
+    "category": "produce",
+    "possible_stores": ["store_vuck", "store_earthfare"],
+    "preferred_store": "store_vuck"
+  },
+  "vegan_butter": {
+    "name": "Vegan Butter",
+    "category": "plant_dairy",
+    "possible_stores": ["store_earthfare", "store_kroger"],
+    "preferred_store": "store_earthfare"
+  },
+  "bouillon": {
+    "name": "Vegetable Bouillon",
+    "category": "dry",
+    "possible_stores": ["store_kroger", "store_earthfare"]
+  },
+  "white_truffle_oil": {
+    "name": "White Truffle Oil",
+    "category": "specialty",
+    "possible_stores": ["store_earthfare"],
+    "preferred_store": "store_earthfare"
+  },
+  "potatoes": {
+    "name": "Russet Potatoes (large bag)",
+    "category": "produce",
+    "possible_stores": ["store_amish", "store_kroger"]
+  },
+  "vegan_sour_cream": {
+    "name": "Vegan Sour Cream",
+    "category": "plant_dairy",
+    "possible_stores": ["store_earthfare", "store_kroger"],
+    "preferred_store": "store_earthfare"
+  },
+  "oat_milk": {
+    "name": "Oat Milk",
+    "category": "plant_dairy",
+    "possible_stores": ["store_earthfare", "store_kroger"]
+  },
+  "shio_koji": {
+    "name": "Shio Koji",
+    "category": "specialty",
+    "possible_stores": ["store_asian"],
+    "preferred_store": "store_asian"
+  },
+  "salt": {
+    "name": "Salt",
+    "category": "dry",
+    "possible_stores": ["store_kroger", "store_amish"]
+  },
+  "sweet_potatoes": {
+    "name": "Sweet Potatoes",
+    "category": "produce",
+    "possible_stores": ["store_amish", "store_kroger"]
+  },
+  "brown_sugar": {
+    "name": "Brown Sugar",
+    "category": "dry",
+    "possible_stores": ["store_kroger", "store_amish"]
+  },
+  "pecans": {
+    "name": "Pecans",
+    "category": "nuts",
+    "possible_stores": ["store_earthfare", "store_kroger", "store_costco"]
+  },
+  "green_beans": {
+    "name": "Haricots Verts (Green Beans)",
+    "category": "produce",
+    "possible_stores": ["store_vuck", "store_amish", "store_kroger"]
+  },
+  "collards": {
+    "name": "Collard Greens (substitute for green beans)",
+    "category": "produce",
+    "possible_stores": ["store_vuck", "store_amish"]
+  },
+  "frozen_corn": {
+    "name": "Frozen Corn",
+    "category": "frozen",
+    "possible_stores": ["store_kroger"],
+    "preferred_store": "store_kroger"
+  },
+  "eggplant": {
+    "name": "Eggplant",
+    "category": "produce",
+    "possible_stores": ["store_amish", "store_vuck", "store_kroger"]
+  },
+  "rotel": {
+    "name": "Rotel (canned tomatoes with chilies)",
+    "category": "dry",
+    "possible_stores": ["store_kroger"]
+  },
+  "rolls": {
+    "name": "Dinner Rolls (or Amish bread)",
+    "category": "dry",
+    "possible_stores": ["store_amish", "store_kroger"],
+    "preferred_store": "store_amish"
+  },
+  "pie_crust": {
+    "name": "Pie Crust (frozen or fresh)",
+    "category": "frozen",
+    "possible_stores": ["store_kroger", "store_earthfare"]
+  },
+  "pumpkin_puree": {
+    "name": "Pumpkin Puree (canned)",
+    "category": "dry",
+    "possible_stores": ["store_kroger", "store_earthfare"]
+  },
+  "cherry_soda": {
+    "name": "Cherry Soda",
+    "category": "drinks",
+    "possible_stores": ["store_costco", "store_kroger"],
+    "preferred_store": "store_costco"
+  },
+  "apple_cider": {
+    "name": "Apple Cider",
+    "category": "drinks",
+    "possible_stores": ["store_costco", "store_kroger", "store_amish"],
+    "preferred_store": "store_costco"
+  },
+  "cinnamon_sticks": {
+    "name": "Cinnamon Sticks",
+    "category": "specialty",
+    "possible_stores": ["store_earthfare", "store_kroger"]
+  },
+  "cranberries_dried": {
+    "name": "Dried Cranberries (for muffins)",
+    "category": "dry",
+    "possible_stores": ["store_kroger", "store_earthfare"]
+  },
+  "flour": {
+    "name": "All-Purpose Flour",
+    "category": "dry",
+    "possible_stores": ["store_kroger", "store_amish"]
+  },
+  "baking_powder": {
+    "name": "Baking Powder",
+    "category": "dry",
+    "possible_stores": ["store_kroger"]
+  },
+  "cinnamon": {
+    "name": "Ground Cinnamon",
+    "category": "dry",
+    "possible_stores": ["store_kroger", "store_earthfare"]
+  }
+}

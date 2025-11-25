@@ -372,6 +372,71 @@ class DataPigDetector:
                 stardate=stardate
             ))
 
+    def _detect_entropy_pii(self, rows: List[Dict], stardate: float):
+        """
+        "Encrypted Romulan transmission detected!" - Communications Officer
+
+        Detects potential PII fields using entropy analysis.
+        Identifies high-entropy patterns (SSNs, API keys, UUIDs, hashes) and
+        low-entropy weak passwords.
+        """
+        from HoloLoom.datapig.entropy_detection import detect_pii_by_entropy
+
+        # Run entropy detection
+        results = detect_pii_by_entropy(
+            rows,
+            high_entropy_threshold=self.high_entropy_threshold,
+            low_entropy_threshold=self.low_entropy_threshold,
+            min_samples=self.entropy_min_samples
+        )
+
+        # Create issues for high-entropy PII fields
+        for analysis in results:
+            if analysis.high_entropy_count > 0 or analysis.suspicious_patterns:
+                # High entropy = potential PII (SSN, API keys, etc.)
+                self.issues.append(DataQualityIssue(
+                    issue_type=IssueType.HIGH_ENTROPY_PII,
+                    severity=Severity.COMMANDER,  # High severity - potential PII exposure
+                    message=(
+                        f"Encrypted transmission detected in field '{analysis.field_name}'! "
+                        f"{analysis.high_entropy_count} values with high entropy "
+                        f"(avg: {analysis.avg_entropy:.2f}). "
+                        f"Patterns: {', '.join(analysis.suspicious_patterns) if analysis.suspicious_patterns else 'Unknown'}"
+                    ),
+                    location=f"field_{analysis.field_name}",
+                    details={
+                        "field": analysis.field_name,
+                        "avg_entropy": analysis.avg_entropy,
+                        "min_entropy": analysis.min_entropy,
+                        "max_entropy": analysis.max_entropy,
+                        "high_count": analysis.high_entropy_count,
+                        "patterns": analysis.suspicious_patterns,
+                        "total_values": analysis.high_entropy_count + analysis.low_entropy_count
+                    },
+                    stardate=stardate
+                ))
+
+            # Low entropy = weak passwords
+            if analysis.low_entropy_count > len(rows) * 0.7:  # >70% low entropy
+                self.issues.append(DataQualityIssue(
+                    issue_type=IssueType.WEAK_PASSWORD,
+                    severity=Severity.LIEUTENANT,  # Medium severity
+                    message=(
+                        f"Security protocols insufficient in '{analysis.field_name}'! "
+                        f"{analysis.low_entropy_count} values with weak entropy "
+                        f"(avg: {analysis.avg_entropy:.2f}). Recommend stronger randomness."
+                    ),
+                    location=f"field_{analysis.field_name}",
+                    details={
+                        "field": analysis.field_name,
+                        "avg_entropy": analysis.avg_entropy,
+                        "low_count": analysis.low_entropy_count,
+                        "total_values": analysis.high_entropy_count + analysis.low_entropy_count,
+                        "recommendation": "Use stronger password requirements or encryption"
+                    },
+                    stardate=stardate
+                ))
+
     def _detect_outliers(self, rows: List[Dict], stardate: float):
         """
         "Captain, these readings are... impossible!" - Spock

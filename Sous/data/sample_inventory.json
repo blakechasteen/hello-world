@@ -1,0 +1,302 @@
+{
+  "inventory": {
+    "rest_bella_cucina": [
+      {
+        "item_id": "meal_lasagna_20231122",
+        "name": "Lasagna (family size)",
+        "category": "prepared_meal",
+        "description": "Homemade meat lasagna with ricotta and mozzarella",
+        "quantity": 8.0,
+        "unit": "servings",
+        "servings": 8,
+        "storage_requirement": "refrigerated",
+        "prepared_date": "2023-11-22T18:00:00",
+        "use_by_date": "2023-11-23T00:00:00",
+        "estimated_value": 45.00,
+        "is_vegetarian": false,
+        "is_gluten_free": false,
+        "allergens": ["dairy", "gluten", "eggs"]
+      },
+      {
+        "item_id": "bakery_bread_20231122",
+        "name": "Fresh Italian Bread",
+        "category": "bakery",
+        "description": "House-made Italian bread loaves",
+        "quantity": 12.0,
+        "unit": "count",
+        "storage_requirement": "room_temp",
+        "prepared_date": "2023-11-22T14:00:00",
+        "expiration_date": "2023-11-24T00:00:00",
+        "estimated_value": 36.00,
+        "is_vegetarian": true,
+        "allergens": ["gluten"]
+      },
+      {
+        "item_id": "meal_chicken_marsala_20231122",
+        "name": "Chicken Marsala",
+        "category": "prepared_meal",
+        "description": "Chicken breast in marsala wine sauce",
+        "quantity": 6.0,
+        "unit": "servings",
+        "servings": 6,
+        "storage_requirement": "refrigerated",
+        "prepared_date": "2023-11-22T19:00:00",
+        "use_by_date": "2023-11-23T02:00:00",
+        "estimated_value": 42.00,
+        "is_vegetarian": false,
+        "allergens": ["dairy"]
+      }
+    ],
+    "rest_sunrise_diner": [
+      {
+        "item_id": "meal_pancakes_20231122",
+        "name": "Buttermilk Pancakes",
+        "category": "prepared_meal",
+        "description": "Stack of buttermilk pancakes",
+        "quantity": 15.0,
+        "unit": "servings",
+        "servings": 15,
+        "storage_requirement": "refrigerated",
+        "prepared_date": "2023-11-22T13:00:00",
+        "use_by_date": "2023-11-22T18:00:00",
+        "estimated_value": 30.00,
+        "is_vegetarian": true,
+        "allergens": ["dairy", "gluten", "eggs"]
+      },
+      {
+        "item_id": "bakery_muffins_20231122",
+        "name": "Blueberry Muffins",
+        "category": "bakery",
+        "description": "Fresh-baked blueberry muffins",
+        "quantity": 24.0,
+        "unit": "count",
+        "storage_requirement": "room_temp",
+        "prepared_date": "2023-11-22T06:00:00",
+        "expiration_date": "2023-11-23T00:00:00",
+        "estimated_value": 36.00,
+        "is_vegetarian": true,
+        "allergens": ["gluten", "dairy", "eggs"]
+      },
+      {
+        "item_id": "meal_soup_20231122",
+        "name": "Homemade Vegetable Soup",
+        "category": "prepared_meal",
+        "description": "Hearty vegetable soup",
+        "quantity": 5.0,
+        "unit": "lbs",
+        "servings": 20,
+        "storage_requirement": "refrigerated",
+        "prepared_date": "2023-11-22T11:00:00",
+        "use_by_date": "2023-11-23T12:00:00",
+        "estimated_value": 25.00,
+        "is_vegetarian": true,
+        "is_vegan": true
+      }
+    ],
+    "store_fresh_market": [
+      {
+        "item_id": "produce_apples_20231122",
+        "name": "Red Delicious Apples",
+        "category": "produce",
+        "description": "Slightly bruised but edible apples",
+        "quantity": 15.0,
+        "unit": "lbs",
+        "storage_requirement": "refrigerated",
+        "expiration_date": "2023-11-25T00:00:00",
+        "estimated_value": 22.50,
+        "is_vegetarian": true,
+        "is_vegan": true
+      },
+      {
+        "item_id": "produce_lettuce_20231122",
+        "name": "Romaine Lettuce",
+        "category": "produce",
+        "description": "Fresh romaine lettuce heads",
+        "quantity": 8.0,
+        "unit": "lbs",
+        "storage_requirement": "refrigerated",
+        "expiration_date": "2023-11-24T00:00:00",
+        "estimated_value": 16.00,
+        "is_vegetarian": true,
+        "is_vegan": true
+      },
+      {
+        "item_id": "bakery_bagels_20231122",
+        "name": "Assorted Bagels",
+        "category": "bakery",
+        "description": "Day-old bagels, various flavors",
+        "quantity": 36.0,
+        "unit": "count",
+        "storage_requirement": "room_temp",
+        "expiration_date": "2023-11-24T00:00:00",
+        "estimated_value": 18.00,
+        "is_vegetarian": true,
+        "allergens": ["gluten"]
+      },
+      {
+        "item_id": "dairy_milk_20231122",
+        "name": "Whole Milk (gallon)",
+        "category": "dairy",
+        "description": "Near-expiration whole milk",
+        "quantity": 10.0,
+        "unit": "count",
+        "storage_requirement": "refrigerated",
+        "expiration_date": "2023-11-24T00:00:00",
+        "estimated_value": 40.00,
+        "is_vegetarian": true,
+        "allergens": ["dairy"]
+      },
+      {
+        "item_id": "dairy_yogurt_20231122",
+        "name": "Greek Yogurt (assorted)",
+        "category": "dairy",
+        "description": "Variety pack of Greek yogurt",
+        "quantity": 24.0,
+        "unit": "count",
+        "storage_requirement": "refrigerated",
+        "expiration_date": "2023-11-26T00:00:00",
+        "estimated_value": 36.00,
+        "is_vegetarian": true,
+        "allergens": ["dairy"]
+      },
+      {
+        "item_id": "produce_bananas_20231122",
+        "name": "Bananas (overripe)",
+        "category": "produce",
+        "description": "Overripe bananas, perfect for baking",
+        "quantity": 12.0,
+        "unit": "lbs",
+        "storage_requirement": "room_temp",
+        "expiration_date": "2023-11-23T00:00:00",
+        "estimated_value": 6.00,
+        "is_vegetarian": true,
+        "is_vegan": true
+      }
+    ],
+    "store_corner_market": [
+      {
+        "item_id": "produce_tomatoes_20231122",
+        "name": "Roma Tomatoes",
+        "category": "produce",
+        "description": "Slightly soft tomatoes",
+        "quantity": 8.0,
+        "unit": "lbs",
+        "storage_requirement": "room_temp",
+        "expiration_date": "2023-11-24T00:00:00",
+        "estimated_value": 12.00,
+        "is_vegetarian": true,
+        "is_vegan": true
+      },
+      {
+        "item_id": "bakery_donuts_20231122",
+        "name": "Assorted Donuts",
+        "category": "bakery",
+        "description": "Day-old donuts",
+        "quantity": 18.0,
+        "unit": "count",
+        "storage_requirement": "room_temp",
+        "expiration_date": "2023-11-23T00:00:00",
+        "estimated_value": 18.00,
+        "is_vegetarian": true,
+        "allergens": ["gluten", "dairy", "eggs"]
+      },
+      {
+        "item_id": "produce_carrots_20231122",
+        "name": "Baby Carrots",
+        "category": "produce",
+        "description": "Baby carrots, bags",
+        "quantity": 6.0,
+        "unit": "lbs",
+        "storage_requirement": "refrigerated",
+        "expiration_date": "2023-11-27T00:00:00",
+        "estimated_value": 9.00,
+        "is_vegetarian": true,
+        "is_vegan": true
+      }
+    ],
+    "fb_community_food_bank": [
+      {
+        "item_id": "canned_soup_20231122",
+        "name": "Canned Soup (Chicken Noodle)",
+        "category": "canned",
+        "description": "Cases of canned chicken noodle soup",
+        "quantity": 72.0,
+        "unit": "count",
+        "storage_requirement": "room_temp",
+        "expiration_date": "2024-06-01T00:00:00",
+        "estimated_value": 108.00,
+        "allergens": ["gluten"]
+      },
+      {
+        "item_id": "canned_beans_20231122",
+        "name": "Canned Black Beans",
+        "category": "canned",
+        "description": "Cases of black beans",
+        "quantity": 48.0,
+        "unit": "count",
+        "storage_requirement": "room_temp",
+        "expiration_date": "2024-08-15T00:00:00",
+        "estimated_value": 60.00,
+        "is_vegetarian": true,
+        "is_vegan": true
+      },
+      {
+        "item_id": "pantry_pasta_20231122",
+        "name": "Pasta (assorted shapes)",
+        "category": "pantry_staple",
+        "description": "Boxes of various pasta shapes",
+        "quantity": 36.0,
+        "unit": "count",
+        "storage_requirement": "room_temp",
+        "expiration_date": "2024-05-01T00:00:00",
+        "estimated_value": 36.00,
+        "is_vegetarian": true,
+        "is_vegan": true,
+        "allergens": ["gluten"]
+      },
+      {
+        "item_id": "pantry_rice_20231122",
+        "name": "White Rice (bags)",
+        "category": "pantry_staple",
+        "description": "5lb bags of white rice",
+        "quantity": 24.0,
+        "unit": "count",
+        "storage_requirement": "room_temp",
+        "expiration_date": "2024-12-01T00:00:00",
+        "estimated_value": 72.00,
+        "is_vegetarian": true,
+        "is_vegan": true
+      }
+    ],
+    "church_st_paul": [
+      {
+        "item_id": "meal_casserole_20231122",
+        "name": "Tuna Casserole",
+        "category": "prepared_meal",
+        "description": "Tuna noodle casserole for community meal",
+        "quantity": 30.0,
+        "unit": "servings",
+        "servings": 30,
+        "storage_requirement": "refrigerated",
+        "prepared_date": "2023-11-22T16:00:00",
+        "use_by_date": "2023-11-23T18:00:00",
+        "estimated_value": 45.00,
+        "allergens": ["gluten", "dairy", "fish"]
+      },
+      {
+        "item_id": "bakery_rolls_20231122",
+        "name": "Dinner Rolls",
+        "category": "bakery",
+        "description": "Fresh dinner rolls",
+        "quantity": 48.0,
+        "unit": "count",
+        "storage_requirement": "room_temp",
+        "prepared_date": "2023-11-22T15:00:00",
+        "expiration_date": "2023-11-24T00:00:00",
+        "estimated_value": 24.00,
+        "is_vegetarian": true,
+        "allergens": ["gluten", "dairy"]
+      }
+    ]
+  }
+}

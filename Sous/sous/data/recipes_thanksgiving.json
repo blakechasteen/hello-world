@@ -1,0 +1,309 @@
+[
+  {
+    "id": "recipe_cranberry_sauce",
+    "name": "Cranberry Sauce",
+    "category": "side",
+    "ingredients": [
+      {"ingredient_id": "cranberries"},
+      {"ingredient_id": "white_sugar"},
+      {"ingredient_id": "orange"},
+      {"ingredient_id": "cointreau", "optional": true}
+    ],
+    "steps": [
+      {
+        "id": "step_cs_simmer",
+        "description": "Simmer cranberries, sugar, and orange juice/zest until thickened (20 min).",
+        "appliance_type": "burner",
+        "duration_minutes": 20,
+        "can_be_any_prep_day": true
+      },
+      {
+        "id": "step_cs_cool",
+        "description": "Cool and stir in Cointreau.",
+        "appliance_type": null,
+        "duration_minutes": 5,
+        "can_be_any_prep_day": true
+      }
+    ],
+    "make_ahead_min_days": 1,
+    "make_ahead_max_days": 5,
+    "required_appliances": ["burner"],
+    "estimated_prep_minutes": 10,
+    "estimated_cook_minutes": 20,
+    "is_optional": false
+  },
+  {
+    "id": "recipe_stuffing",
+    "name": "Herb Stuffing x2",
+    "category": "side",
+    "ingredients": [
+      {"ingredient_id": "cornbread"},
+      {"ingredient_id": "onions"},
+      {"ingredient_id": "celery"},
+      {"ingredient_id": "parsley"},
+      {"ingredient_id": "sage"},
+      {"ingredient_id": "rosemary"},
+      {"ingredient_id": "thyme"},
+      {"ingredient_id": "vegan_butter"},
+      {"ingredient_id": "bouillon"},
+      {"ingredient_id": "white_truffle_oil"}
+    ],
+    "steps": [
+      {
+        "id": "step_stuff_bread",
+        "description": "Bake or obtain cornbread, cube, and dry overnight.",
+        "appliance_type": "oven",
+        "duration_minutes": 90,
+        "can_be_any_prep_day": true
+      },
+      {
+        "id": "step_stuff_assemble",
+        "description": "Sauté aromatics (onions, celery, herbs), combine with dried bread cubes, add bouillon, fold in truffle oil, transfer to baking dish.",
+        "appliance_type": "burner",
+        "duration_minutes": 60,
+        "must_be_day_before": true
+      },
+      {
+        "id": "step_stuff_bake",
+        "description": "Bake stuffing until golden (60 min).",
+        "appliance_type": "oven",
+        "duration_minutes": 60,
+        "must_be_same_day_as_event": true
+      }
+    ],
+    "make_ahead_min_days": 1,
+    "make_ahead_max_days": 2,
+    "required_appliances": ["oven", "burner"],
+    "estimated_prep_minutes": 90,
+    "estimated_cook_minutes": 60,
+    "is_optional": false
+  },
+  {
+    "id": "recipe_mashed_potatoes",
+    "name": "Mashed Potatoes x2",
+    "category": "side",
+    "ingredients": [
+      {"ingredient_id": "potatoes"},
+      {"ingredient_id": "vegan_butter"},
+      {"ingredient_id": "vegan_sour_cream"},
+      {"ingredient_id": "oat_milk"},
+      {"ingredient_id": "white_truffle_oil"},
+      {"ingredient_id": "shio_koji"},
+      {"ingredient_id": "salt"}
+    ],
+    "steps": [
+      {
+        "id": "step_mp_boil_mash",
+        "description": "Boil, drain, and mash potatoes with vegan butter, sour cream, oat milk, truffle oil, koji, and salt. Transfer to casserole dish and cover.",
+        "appliance_type": "burner",
+        "duration_minutes": 60,
+        "must_be_day_before": true
+      },
+      {
+        "id": "step_mp_reheat",
+        "description": "Reheat mashed potatoes in oven, covered, on low heat (60 min).",
+        "appliance_type": "oven",
+        "duration_minutes": 60,
+        "must_be_same_day_as_event": true
+      }
+    ],
+    "make_ahead_min_days": 1,
+    "make_ahead_max_days": 1,
+    "required_appliances": ["burner", "oven"],
+    "estimated_prep_minutes": 60,
+    "estimated_cook_minutes": 60,
+    "is_optional": false
+  },
+  {
+    "id": "recipe_sweet_potato_casserole",
+    "name": "Sweet Potato Casserole",
+    "category": "side",
+    "ingredients": [
+      {"ingredient_id": "sweet_potatoes"},
+      {"ingredient_id": "brown_sugar"},
+      {"ingredient_id": "vegan_butter"},
+      {"ingredient_id": "oat_milk"},
+      {"ingredient_id": "pecans"},
+      {"ingredient_id": "cinnamon"}
+    ],
+    "steps": [
+      {
+        "id": "step_spc_cook",
+        "description": "Boil sweet potatoes, mash with butter, brown sugar, oat milk, and cinnamon. Add pecan topping.",
+        "appliance_type": "burner",
+        "duration_minutes": 90,
+        "must_be_day_before": true
+      },
+      {
+        "id": "step_spc_bake",
+        "description": "Bake casserole until topping is golden (60 min).",
+        "appliance_type": "oven",
+        "duration_minutes": 60,
+        "must_be_same_day_as_event": true
+      }
+    ],
+    "make_ahead_min_days": 1,
+    "make_ahead_max_days": 1,
+    "required_appliances": ["burner", "oven"],
+    "estimated_prep_minutes": 90,
+    "estimated_cook_minutes": 60,
+    "is_optional": false
+  },
+  {
+    "id": "recipe_green_beans",
+    "name": "Sautéed Green Beans (Haricots Verts)",
+    "category": "side",
+    "ingredients": [
+      {"ingredient_id": "green_beans"},
+      {"ingredient_id": "vegan_butter"},
+      {"ingredient_id": "salt"}
+    ],
+    "steps": [
+      {
+        "id": "step_gb_saute",
+        "description": "Sauté green beans with vegan butter and salt until tender-crisp (15 min).",
+        "appliance_type": "burner",
+        "duration_minutes": 15,
+        "must_be_same_day_as_event": true
+      }
+    ],
+    "make_ahead_min_days": 0,
+    "make_ahead_max_days": 0,
+    "required_appliances": ["burner"],
+    "estimated_prep_minutes": 5,
+    "estimated_cook_minutes": 15,
+    "is_optional": false,
+    "substitution_rules": [
+      {
+        "condition": "Haricots verts not available",
+        "alternative_ingredient_id": "collards",
+        "notes": "Use collard greens instead"
+      }
+    ]
+  },
+  {
+    "id": "recipe_corn",
+    "name": "Warm Corn",
+    "category": "side",
+    "ingredients": [
+      {"ingredient_id": "frozen_corn"},
+      {"ingredient_id": "vegan_butter"},
+      {"ingredient_id": "salt"}
+    ],
+    "steps": [
+      {
+        "id": "step_corn_warm",
+        "description": "Microwave or warm corn in saucepan with butter and salt (10 min).",
+        "appliance_type": "microwave",
+        "duration_minutes": 10,
+        "must_be_same_day_as_event": true
+      }
+    ],
+    "make_ahead_min_days": 0,
+    "make_ahead_max_days": 0,
+    "required_appliances": ["microwave"],
+    "estimated_prep_minutes": 5,
+    "estimated_cook_minutes": 10,
+    "is_optional": false
+  },
+  {
+    "id": "recipe_eggplant_rotel",
+    "name": "Eggplant Rotel Dip",
+    "category": "appetizer",
+    "ingredients": [
+      {"ingredient_id": "eggplant"},
+      {"ingredient_id": "rotel"},
+      {"ingredient_id": "vegan_butter"}
+    ],
+    "steps": [
+      {
+        "id": "step_egg_roast",
+        "description": "Roast eggplant until soft and cooled (60 min).",
+        "appliance_type": "oven",
+        "duration_minutes": 60,
+        "must_be_day_before": true
+      },
+      {
+        "id": "step_egg_mix",
+        "description": "Combine roasted eggplant with Rotel, season, and refrigerate.",
+        "appliance_type": null,
+        "duration_minutes": 30,
+        "must_be_day_before": true
+      },
+      {
+        "id": "step_egg_warm",
+        "description": "Warm dip in microwave or small oven before serving (15 min).",
+        "appliance_type": "microwave",
+        "duration_minutes": 15,
+        "must_be_same_day_as_event": true
+      }
+    ],
+    "make_ahead_min_days": 1,
+    "make_ahead_max_days": 2,
+    "required_appliances": ["oven", "microwave"],
+    "estimated_prep_minutes": 30,
+    "estimated_cook_minutes": 60,
+    "is_optional": false
+  },
+  {
+    "id": "recipe_mulled_cider",
+    "name": "Mulled Apple Cider",
+    "category": "drink",
+    "ingredients": [
+      {"ingredient_id": "apple_cider"},
+      {"ingredient_id": "cinnamon_sticks"},
+      {"ingredient_id": "orange"}
+    ],
+    "steps": [
+      {
+        "id": "step_cider_warm",
+        "description": "Warm apple cider with cinnamon sticks and orange slices (20 min).",
+        "appliance_type": "burner",
+        "duration_minutes": 20,
+        "must_be_same_day_as_event": true
+      }
+    ],
+    "make_ahead_min_days": 0,
+    "make_ahead_max_days": 0,
+    "required_appliances": ["burner"],
+    "estimated_prep_minutes": 5,
+    "estimated_cook_minutes": 20,
+    "is_optional": false
+  },
+  {
+    "id": "recipe_muffins",
+    "name": "Cranberry Pumpkin Muffins",
+    "category": "optional",
+    "ingredients": [
+      {"ingredient_id": "pumpkin_puree"},
+      {"ingredient_id": "cranberries_dried"},
+      {"ingredient_id": "flour"},
+      {"ingredient_id": "brown_sugar"},
+      {"ingredient_id": "baking_powder"},
+      {"ingredient_id": "cinnamon"},
+      {"ingredient_id": "oat_milk"}
+    ],
+    "steps": [
+      {
+        "id": "step_muffin_mix",
+        "description": "Mix muffin batter and pour into muffin tins.",
+        "appliance_type": null,
+        "duration_minutes": 20,
+        "can_be_any_prep_day": true
+      },
+      {
+        "id": "step_muffin_bake",
+        "description": "Bake muffins until golden (25 min).",
+        "appliance_type": "oven",
+        "duration_minutes": 25,
+        "can_be_any_prep_day": true
+      }
+    ],
+    "make_ahead_min_days": 1,
+    "make_ahead_max_days": 3,
+    "required_appliances": ["oven"],
+    "estimated_prep_minutes": 20,
+    "estimated_cook_minutes": 25,
+    "is_optional": true
+  }
+]

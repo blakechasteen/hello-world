@@ -1,0 +1,703 @@
+{
+  "date": "2025-11-22",
+  "summary": "# Meta-Prompt Core Template (Universal)\n\n**LLM Agnostic** - Works with Claude, GPT, Gemini, Llama, or any modern LLM.\n\nThis is the **foundation** of the metaprompting system. For model-specific optimizations, see `adapters/` directory.\n\n---\n\n## The 7-Component Framework\n\nEvery metaprompt includes these components to maximize clarity, reduce hallucinations, and ensure high-quality outputs:\n\n1. **ROLE** - Expert perspective and domain knowledge\n2. **OBJECTIVE** - Primary/secondary goals with explicit priorities\n3. **PROCESS** - Step-by-step methodology\n4. **FORMAT** - Exact output structure specification\n5. **CONSTRAINTS** - What NOT to do (anti-patterns)\n6. **UNCERTAINTY** - Fallback behavior when information is unclear\n7. **VALIDATION** - Success criteria checklist\n\n---\n\n## How to Use\n\n### Option 1: Direct Use (Copy-Paste)\n\nCopy the template below, replace `# COZ Daily Intelligence Brief\n**Generated**: 2025-11-22 23:21\n\n## Financial Overview\n- **Net Profit**: $-450.00\n- **Profit Margin**: -14240.0%\n- **Hourly Profit**: $-16.98/hour\n\n## Customer Insights\n- **Total Customers**: 12\n- **Avg Orders/Customer**: 1.0\n\n## Key Recommendations\n1. \ud83d\udea8 CRITICAL: Operating at a loss. Review pricing and costs immediately.\n2. \ud83d\udcb0 Hourly profit ($-16.98) below target ($15.00). Focus on high-margin tasks.\n3. \u26a0\ufe0f 'Research new recipe' had worst overrun: 50.0% over estimate\n4. \ud83d\udcc2 'R&D' category has lowest efficiency: 67.0%\n5. \ud83d\udcb8 'Research new recipe' most expensive: $130.5. Review for optimization opportunities.\n\nTransform this raw data into an executive-quality daily intelligence brief:\n- Use clear, concise language\n- Highlight critical insights first\n- Provide context for metrics\n- Make recommendations actionable\n- Use professional tone (not overly formal)\n- Structure for quick scanning\n- Preserve all key metrics and numbers\n`, and paste into any LLM.\n\n### Option 2: Programmatic Use\n\n```python\nfrom HoloLoom.prompting import auto_detect_strategy\n\nenhanced = auto_detect_strategy(\"your casual request\")\n```\n\n---\n\n## THE CORE TEMPLATE\n\n```\nYou are a prompt engineering expert. Transform my casual request into a structured, comprehensive prompt using the 7-component framework.\n\nMY CASUAL REQUEST:\n# COZ Daily Intelligence Brief\n**Generated**: 2025-11-22 23:21\n\n## Financial Overview\n- **Net Profit**: $-450.00\n- **Profit Margin**: -14240.0%\n- **Hourly Profit**: $-16.98/hour\n\n## Customer Insights\n- **Total Customers**: 12\n- **Avg Orders/Customer**: 1.0\n\n## Key Recommendations\n1. \ud83d\udea8 CRITICAL: Operating at a loss. Review pricing and costs immediately.\n2. \ud83d\udcb0 Hourly profit ($-16.98) below target ($15.00). Focus on high-margin tasks.\n3. \u26a0\ufe0f 'Research new recipe' had worst overrun: 50.0% over estimate\n4. \ud83d\udcc2 'R&D' category has lowest efficiency: 67.0%\n5. \ud83d\udcb8 'Research new recipe' most expensive: $130.5. Review for optimization opportunities.\n\nTransform this raw data into an executive-quality daily intelligence brief:\n- Use clear, concise language\n- Highlight critical insights first\n- Provide context for metrics\n- Make recommendations actionable\n- Use professional tone (not overly formal)\n- Structure for quick scanning\n- Preserve all key metrics and numbers\n\n\nYOUR TASK:\nCreate a structured prompt with these 7 components:\n\n### 1. ROLE (Expert Perspective)\nDefine the specific expert role needed with relevant domain knowledge.\n\nFormat: \"Role: [specific expert with domain expertise]\"\n\nExample: \"Role: Senior Python developer with async programming expertise\"\n\n### 2. OBJECTIVE (Goals with Priorities)\nState primary and secondary goals with explicit prioritization.\n\nFormat:\n\"Objective:\nPrimary: [main goal]\nSecondary: [supporting goal 1], [supporting goal 2]\nWhen in doubt, prioritize: [priority guidance]\"\n\nExample:\n\"Objective:\nPrimary: Write production-ready code\nSecondary: Optimize for readability, include comprehensive tests\nWhen in doubt, prioritize: Correctness over performance\"\n\n### 3. PROCESS\n\n**Extended Thinking** (before responding):\n\n<thinking>\nLet me work through this carefully:\n\n**Analysis:**\n- What are the core requirements?\n- What edge cases might I be missing?\n- What assumptions am I making?\n\n**Design considerations:**\n- What's the simplest solution that works?\n- Are there tradeoffs I need to evaluate?\n- What are the failure modes?\n</thinking>\n\n\nBased on that analysis: (Step-by-Step Methodology)\nProvide clear, numbered steps for approaching the task.\n\nFormat:\n\"Process:\n1. [first step]\n2. [second step]\n3. [third step]\n...\"\n\nExample:\n\"Process:\n1. Analyze requirements and identify edge cases\n2. Design solution with clear interfaces\n3. Implement with error handling\n4. Provide usage examples and tests\"\n\n### 4. FORMAT\n\n**Deliverable Structure**:\n\n<antArtifact identifier=\"deliverable\" type=\"application/vnd.ant.code\" language=\"[language]\" title=\"[Title]\">\n[Complete implementation with documentation]\n</antArtifact>\n (Output Structure)\nSpecify exact output format and structure.\n\nFormat:\n\"Format: [output type]\nStructure:\n- [section 1]\n- [section 2]\n- [section 3]\"\n\nExample:\n\"Format: Code module with documentation\nStructure:\n- Docstring with complexity analysis\n- Function implementation with type hints\n- Usage examples\n- Test cases\"\n\n### 5. CONSTRAINTS\n\n**Critical Constraints**:\n\n<critical_donts>\n- Do NOT hallucinate API endpoints\n- Do NOT skip error handling\n- Do NOT make assumptions - ask when unclear\n</critical_donts>\n\n<quality_requirements>\n- All functions have type hints (enforced)\n- All edge cases handled explicitly\n- Complete documentation provided\n</quality_requirements>\n (What NOT to Do)\nDefine anti-patterns and boundaries.\n\nFormat:\n\"Constraints:\n- Do NOT [anti-pattern 1]\n- Avoid [anti-pattern 2]\n- Limit [scope/complexity]\"\n\nExample:\n\"Constraints:\n- Do NOT use deprecated features\n- Avoid premature optimization\n- Limit to standard library unless specified\"\n\n### 6. UNCERTAINTY (Fallback Behavior)\nDefine behavior when information is unclear or insufficient.\n\nFormat:\n\"If unclear or insufficient data:\n- Ask: [specific clarifying questions]\n- Do NOT: [things to avoid when guessing]\n- Instead: [fallback behavior]\"\n\nExample:\n\"If unclear or insufficient data:\n- Ask: What are the input types? Expected edge cases? Performance requirements?\n- Do NOT: Assume requirements or fabricate specifications\n- Instead: Provide template with TODOs and ask for clarification\"\n\n### 7. VALIDATION (Success Criteria)\nProvide quality checklist to verify before delivery.\n\nFormat:\n\"Check your output for:\n\u2713 [criterion 1]\n\u2713 [criterion 2]\n\u2713 [criterion 3]\n...\"\n\nExample:\n\"Check your output for:\n\u2713 Type hints on all parameters\n\u2713 Comprehensive docstring with examples\n\u2713 Edge cases handled explicitly\n\u2713 Examples demonstrate usage\n\u2713 No deprecated features used\"\n\n---\n\n## OUTPUT FORMAT\n\nProvide:\n\n1. **Structured Prompt** - Complete prompt with all 7 components formatted clearly\n2. **Justification** - Brief explanation (2-3 sentences) of key decisions\n3. **Questions** - Any clarifying questions if the request is ambiguous\n\n## GUIDELINES\n\n- **Be specific, not generic** - \"developer\" \u2192 \"Senior Python developer with FastAPI expertise\"\n- **Always prioritize** - Include \"When in doubt, prioritize...\" in objectives\n- **Define anti-patterns** - Constraints prevent unwanted behavior\n- **Ask, don't assume** - Use uncertainty section to prevent hallucination\n- **Give methodology** - Process steps guide structured thinking\n\nMake it specific to the request, not generic. Ask questions if unclear. Structure beats raw intelligence.\n```\n\n---\n\n## Example Transformations\n\n### Example 1: Simple Code Request\n\n**Input:**\n```\nwrite a Python function\n```\n\n**Output:**\n```\n### ROLE\nSenior Python developer with clean code expertise and production experience\n\n### OBJECTIVE\nPrimary: Write well-documented, tested Python function\nSecondary: Include type hints, handle edge cases gracefully\nWhen in doubt, prioritize: Clarity over cleverness\n\n### PROCESS\n\n**Extended Thinking** (before responding):\n\n<thinking>\nLet me work through this carefully:\n\n**Analysis:**\n- What are the core requirements?\n- What edge cases might I be missing?\n- What assumptions am I making?\n\n**Design considerations:**\n- What's the simplest solution that works?\n- Are there tradeoffs I need to evaluate?\n- What are the failure modes?\n</thinking>\n\n\nBased on that analysis:\n1. Clarify requirements (inputs, outputs, edge cases)\n2. Write function with type hints and docstring\n3. Handle edge cases explicitly\n4. Provide usage examples and test cases\n\n### FORMAT\n\n**Deliverable Structure**:\n\n<antArtifact identifier=\"deliverable\" type=\"application/vnd.ant.code\" language=\"[language]\" title=\"[Title]\">\n[Complete implementation with documentation]\n</antArtifact>\n\nComplete Python code module\nStructure:\n- Function signature with type hints\n- Google-style docstring with complexity analysis\n- Implementation\n- Usage examples\n- Test cases (pytest format)\n\n### CONSTRAINTS\n\n**Critical Constraints**:\n\n<critical_donts>\n- Do NOT hallucinate API endpoints\n- Do NOT skip error handling\n- Do NOT make assumptions - ask when unclear\n</critical_donts>\n\n<quality_requirements>\n- All functions have type hints (enforced)\n- All edge cases handled explicitly\n- Complete documentation provided\n</quality_requirements>\n\n- Do NOT use deprecated features without noting them\n- Avoid premature optimization without benchmarks\n- Limit to standard library unless dependencies specified\n\n### UNCERTAINTY\nIf unclear:\n- Ask: What should the function do? Input/output types? Performance requirements?\n- Do NOT: Assume requirements or make up functionality\n- Instead: Provide template with TODOs and request clarification\n\n### VALIDATION\nCheck output for:\n\u2713 Type hints on all parameters and return value\n\u2713 Comprehensive docstring (purpose, args, returns, examples)\n\u2713 Edge cases handled (None, empty, invalid input)\n\u2713 Usage examples provided\n\u2713 Test cases demonstrate correctness\n```\n\n### Example 2: Meeting Preparation\n\n**Input:**\n```\nhelp me prepare for tomorrow's meeting\n```\n\n**Output:**\n```\n### ROLE\nMeeting preparation consultant with stakeholder management expertise\n\n### OBJECTIVE\nPrimary: Create actionable meeting prep plan\nSecondary: Anticipate likely discussion points, prepare responses\nWhen in doubt, prioritize: Asking clarifying questions over making assumptions\n\n### PROCESS\n\n**Extended Thinking** (before responding):\n\n<thinking>\nLet me work through this carefully:\n\n**Analysis:**\n- What are the core requirements?\n- What edge cases might I be missing?\n- What assumptions am I making?\n\n**Design considerations:**\n- What's the simplest solution that works?\n- Are there tradeoffs I need to evaluate?\n- What are the failure modes?\n</thinking>\n\n\nBased on that analysis:\n1. Clarify meeting context (type, attendees, your role, desired outcome)\n2. Structure prep into manageable sections\n3. Identify 2-3 key talking points you should drive\n4. Anticipate likely questions/objections\n\n### FORMAT\n\n**Deliverable Structure**:\n\n<antArtifact identifier=\"deliverable\" type=\"application/vnd.ant.code\" language=\"[language]\" title=\"[Title]\">\n[Complete implementation with documentation]\n</antArtifact>\n\nMeeting prep sheet\nStructure:\n- Context recap (who, what, why)\n- Your core message/goal\n- Key questions to ask\n- Anticipated objections with responses\n- Next steps to propose\n\n### CONSTRAINTS\n\n**Critical Constraints**:\n\n<critical_donts>\n- Do NOT hallucinate API endpoints\n- Do NOT skip error handling\n- Do NOT make assumptions - ask when unclear\n</critical_donts>\n\n<quality_requirements>\n- All functions have type hints (enforced)\n- All edge cases handled explicitly\n- Complete documentation provided\n</quality_requirements>\n\n- Do NOT fabricate stakeholder details or concerns\n- Avoid generic advice disconnected from your situation\n- Limit assumptions - ask when context is missing\n\n### UNCERTAINTY\nIf unclear:\n- Ask: What type of meeting? Who's attending? What outcome do you want? What's your role?\n- Do NOT: Assume meeting type, fabricate stakeholder concerns, or invent context\n- Instead: Provide prep template with blanks to fill in\n\n### VALIDATION\nCheck output for:\n\u2713 Specific, actionable items (not generic advice)\n\u2713 Questions asked when context was missing\n\u2713 No fabricated facts or assumptions stated as fact\n\u2713 Preparation is relevant to stated meeting type\n```\n\n---\n\n## Why This Framework Works\n\nModern LLMs are **powerful but need structure**:\n\n- **Without structure**: Like a speedboat going in circles (power without direction)\n- **With 7 components**: Speedboat going straight to destination (power + steering)\n\nThe framework provides:\n\n1. **ROLE** \u2192 Activates relevant knowledge and perspective\n2. **OBJECTIVE** \u2192 Clarifies what success looks like\n3. **PROCESS** \u2192 Guides step-by-step thinking\n4. **FORMAT** \u2192 Ensures deliverable matches expectations\n5. **CONSTRAINTS** \u2192 Prevents common mistakes and hallucinations\n6. **UNCERTAINTY** \u2192 Reduces guessing, increases question-asking\n7. **VALIDATION** \u2192 Self-check before delivery\n\n---\n\n## Customization for Domains\n\nFeel free to extend the template for your domain:\n\n**For Code:**\n- Add \"Code style: [PEP 8, Google Style Guide, etc.]\"\n- Add \"Complexity level: [beginner/intermediate/expert]\"\n- Add \"Testing framework: [pytest, unittest, etc.]\"\n\n**For Writing:**\n- Add \"Tone: [formal/casual/persuasive/technical]\"\n- Add \"Audience: [executives/engineers/general public]\"\n- Add \"Length: [brief/moderate/comprehensive]\"\n\n**For Analysis:**\n- Add \"Depth: [high-level overview/detailed analysis/comprehensive research]\"\n- Add \"Evidence: [cite sources/provide examples/show data]\"\n- Add \"Format: [bullet points/narrative/tables]\"\n\n---\n\n## Model-Specific Enhancements\n\nThis core template works on **all LLMs**. For model-specific optimizations:\n\n- **Claude**: See `adapters/claude.md` for thinking tags, artifacts, XML formatting\n- **Gemini**: See `adapters/gemini.md` for multimodal, code execution, grounding\n- **GPT**: See `adapters/gpt.md` for function calling, JSON mode, structured outputs\n- **Ollama**: See `adapters/ollama.md` for local model optimizations\n\nOr use programmatically:\n```python\nfrom HoloLoom.prompting import create_adapter\n\nadapter = create_adapter(llm_provider=\"anthropic\")  # Auto-enhances for Claude\nenhanced = adapter.enhance(core_prompt)\n```\n\n---\n\n## Next Steps\n\n1. **Try it**: Copy the template, fill in your request, paste into any LLM\n2. **Customize**: Add domain-specific sections for your use case\n3. **Iterate**: Save good metaprompts for reuse\n4. **Enhance**: Use model-specific adapters for optimal results\n\n---\n\n**Happy meta-prompting!** \ud83d\ude80\n\n\n---\n\n# Chain of Verification Analysis\n\nYou are performing a Chain of Verification analysis on the following query.\n\n**Original Query:** # COZ Daily Intelligence Brief\n**Generated**: 2025-11-22 23:21\n\n## Financial Overview\n- **Net Profit**: $-450.00\n- **Profit Margin**: -14240.0%\n- **Hourly Profit**: $-16.98/hour\n\n## Customer Insights\n- **Total Customers**: 12\n- **Avg Orders/Customer**: 1.0\n\n## Key Recommendations\n1. \ud83d\udea8 CRITICAL: Operating at a loss. Review pricing and costs immediately.\n2. \ud83d\udcb0 Hourly profit ($-16.98) below target ($15.00). Focus on high-margin tasks.\n3. \u26a0\ufe0f 'Research new recipe' had worst overrun: 50.0% over estimate\n4. \ud83d\udcc2 'R&D' category has lowest efficiency: 67.0%\n5. \ud83d\udcb8 'Research new recipe' most expensive: $130.5. Review for optimization opportunities.\n\nTransform this raw data into an executive-quality daily intelligence brief:\n- Use clear, concise language\n- Highlight critical insights first\n- Provide context for metrics\n- Make recommendations actionable\n- Use professional tone (not overly formal)\n- Structure for quick scanning\n- Preserve all key metrics and numbers\n\n\n**Verification Depth:** standard\n\n---\n\n## Instructions\n\nYou will perform **3 verification passes** to ensure completeness and accuracy:\n\n### Pass 1: Initial Analysis\n\nProvide your best answer to the query. This is your first-pass response.\n\n**Output:**\n- Your initial answer\n- Key assumptions made\n- Confidence level (0-100%)\n\n---\n\n### Pass 2: Identify Incompleteness\n\nNow, critically analyze your Pass 1 response. List **3 specific ways** your analysis might be incomplete:\n\n**For each concern, consider:**\n- What information might you have missed?\n- What assumptions did you make that might be wrong?\n- What edge cases weren't considered?\n- What perspectives were overlooked?\n\n**Output:**\n1. [Concern 1]: [Specific incompleteness]\n2. [Concern 2]: [Specific incompleteness]\n3. [Concern 3]: [Specific incompleteness]\n\n---\n\n### Pass 3: Evidence Review\n\nFor **each concern** from Pass 2, cite specific evidence:\n\n**For each concern:**\n- **If evidence CONFIRMS the concern:** Cite what you found and explain the gap\n- **If evidence REFUTES the concern:** Cite what confirms your original analysis was correct\n- **If information is INSUFFICIENT:** State what's missing and why you can't verify\n\n**Output:**\n- **Concern 1:**\n  - Evidence: [Specific citation]\n  - Assessment: [Confirms/Refutes/Insufficient]\n  - Explanation: [Why this matters]\n\n- **Concern 2:**\n  - Evidence: [Specific citation]\n  - Assessment: [Confirms/Refutes/Insufficient]\n  - Explanation: [Why this matters]\n\n- **Concern 3:**\n  - Evidence: [Specific citation]\n  - Assessment: [Confirms/Refutes/Insufficient]\n  - Explanation: [Why this matters]\n\n---\n\n### Pass 4: Revised Analysis\n\nProvide your **revised, complete answer** that addresses all identified gaps:\n\n**Changes from Pass 1:**\n- [What changed]\n- [Why it changed]\n- [Impact on conclusion]\n\n**Final Answer:**\n[Your improved, comprehensive response]\n\n**Confidence Level:** [0-100%]\n\n---\n\n## Quality Checklist\n\nBefore submitting, verify your output meets these criteria:\n\n\u00e2\u0153\u201c **Completeness:** All aspects of the query addressed\n\u00e2\u0153\u201c **Accuracy:** Claims supported by evidence\n\u00e2\u0153\u201c **Transparency:** Assumptions and limitations stated clearly\n\u00e2\u0153\u201c **Verification:** All concerns from Pass 2 resolved\n\u00e2\u0153\u201c **Clarity:** Response is well-structured and understandable\n\n---\n\n## Important Notes\n\n- **Do NOT summarize prematurely** - Show full reasoning at each pass\n- **Do NOT skip evidence** - Cite specific support for all claims\n- **Do NOT fabricate** - If information is missing, state it clearly\n- **Do NOT avoid concerns** - Address all incompleteness, even if minor\n\n---\n\n## Output Format\n\nPlease provide all 4 passes in your response:\n\n**PASS 1 - Initial Analysis:**\n[Your response]\n\n**PASS 2 - Potential Incompleteness:**\n1. [Concern 1]\n2. [Concern 2]\n3. [Concern 3]\n\n**PASS 3 - Evidence Review:**\n[For each concern]\n\n**PASS 4 - Revised Analysis:**\n[Final complete answer]\n\n**QUALITY CHECK:**\n[Checklist verification]\n",
+  "profit": {
+    "total_revenue": 316.0,
+    "total_costs": 766.0,
+    "total_labor": 662.5,
+    "total_expenses": 0.0,
+    "net_profit": -450.0,
+    "profit_margin": -142.4,
+    "hourly_profit": -16.98,
+    "breakeven_hours": 30.6,
+    "recommendations": [
+      "\ud83d\udea8 CRITICAL: Operating at a loss. Review pricing and costs immediately.",
+      "\ud83d\udcb0 Hourly profit ($-16.98) below target ($15.00). Focus on high-margin tasks."
+    ],
+    "total_hours_worked": 26.5
+  },
+  "efficiency": {
+    "top_overruns": [
+      {
+        "task_id": "KB-003",
+        "task_name": "Research new recipe",
+        "category": "R&D",
+        "estimated_hours": 3.0,
+        "actual_hours": 4.5,
+        "variance_percent": 50.0,
+        "notes": "Multiple test iterations needed"
+      },
+      {
+        "task_id": "KB-008",
+        "task_name": "Update website",
+        "category": "Marketing",
+        "estimated_hours": 2.0,
+        "actual_hours": 3.0,
+        "variance_percent": 50.0,
+        "notes": "Added new product photos and descriptions"
+      },
+      {
+        "task_id": "KB-012",
+        "task_name": "Social media posts",
+        "category": "Marketing",
+        "estimated_hours": 0.5,
+        "actual_hours": 0.75,
+        "variance_percent": 50.0,
+        "notes": "Created Instagram reels"
+      },
+      {
+        "task_id": "KB-005",
+        "task_name": "Customer consultation",
+        "category": "Sales",
+        "estimated_hours": 1.5,
+        "actual_hours": 2.0,
+        "variance_percent": 33.3,
+        "notes": "Detailed questions about compost kits"
+      },
+      {
+        "task_id": "KB-001",
+        "task_name": "Bake bread loaves",
+        "category": "Bakery",
+        "estimated_hours": 2.0,
+        "actual_hours": 2.5,
+        "variance_percent": 25.0,
+        "notes": "Mixing took longer than expected"
+      }
+    ],
+    "category_efficiency": {
+      "Bakery": {
+        "entries_count": 2,
+        "total_estimated_hours": 3.5,
+        "total_actual_hours": 4.2,
+        "variance_hours": 0.8,
+        "avg_efficiency_score": 0.83
+      },
+      "Fulfillment": {
+        "entries_count": 2,
+        "total_estimated_hours": 4.0,
+        "total_actual_hours": 3.2,
+        "variance_hours": -0.8,
+        "avg_efficiency_score": 1.27
+      },
+      "R&D": {
+        "entries_count": 1,
+        "total_estimated_hours": 3.0,
+        "total_actual_hours": 4.5,
+        "variance_hours": 1.5,
+        "avg_efficiency_score": 0.67
+      },
+      "Production": {
+        "entries_count": 2,
+        "total_estimated_hours": 6.5,
+        "total_actual_hours": 6.0,
+        "variance_hours": -0.5,
+        "avg_efficiency_score": 1.07
+      },
+      "Sales": {
+        "entries_count": 1,
+        "total_estimated_hours": 1.5,
+        "total_actual_hours": 2.0,
+        "variance_hours": 0.5,
+        "avg_efficiency_score": 0.75
+      },
+      "Operations": {
+        "entries_count": 1,
+        "total_estimated_hours": 1.0,
+        "total_actual_hours": 0.5,
+        "variance_hours": -0.5,
+        "avg_efficiency_score": 2.0
+      },
+      "Marketing": {
+        "entries_count": 2,
+        "total_estimated_hours": 2.5,
+        "total_actual_hours": 3.8,
+        "variance_hours": 1.2,
+        "avg_efficiency_score": 0.67
+      },
+      "Procurement": {
+        "entries_count": 1,
+        "total_estimated_hours": 2.0,
+        "total_actual_hours": 2.2,
+        "variance_hours": 0.2,
+        "avg_efficiency_score": 0.89
+      }
+    },
+    "insights": [
+      "\u26a0\ufe0f 'Research new recipe' had worst overrun: 50.0% over estimate",
+      "\ud83d\udcc2 'R&D' category has lowest efficiency: 67.0%"
+    ]
+  },
+  "cost": {
+    "expensive_tasks": [
+      {
+        "task_id": "KB-003",
+        "task_name": "Research new recipe",
+        "total_cost": 130.5,
+        "material_cost": 8.0,
+        "labor_cost": 112.5,
+        "overhead_cost": 10.0
+      },
+      {
+        "task_id": "KB-004",
+        "task_name": "Prepare biochar batch",
+        "total_cost": 110.5,
+        "material_cost": 15.0,
+        "labor_cost": 87.5,
+        "overhead_cost": 8.0
+      },
+      {
+        "task_id": "KB-009",
+        "task_name": "Fulfill wholesale order",
+        "total_cost": 80.5,
+        "material_cost": 12.0,
+        "labor_cost": 62.5,
+        "overhead_cost": 6.0
+      },
+      {
+        "task_id": "KB-008",
+        "task_name": "Update website",
+        "total_cost": 80.0,
+        "material_cost": 0.0,
+        "labor_cost": 75.0,
+        "overhead_cost": 5.0
+      },
+      {
+        "task_id": "KB-011",
+        "task_name": "Compost kit assembly",
+        "total_cost": 74.5,
+        "material_cost": 6.5,
+        "labor_cost": 62.5,
+        "overhead_cost": 5.5
+      }
+    ],
+    "cost_breakdown": {
+      "material_percent": 6.3,
+      "labor_percent": 86.5,
+      "overhead_percent": 7.2
+    },
+    "overhead_rate": {
+      "overhead_rate": 7.8,
+      "total_direct_costs": 710.5,
+      "total_overhead": 55.5
+    },
+    "insights": [
+      "\ud83d\udcb8 'Research new recipe' most expensive: $130.5. Review for optimization opportunities."
+    ]
+  },
+  "production": {
+    "production_vs_sops": {
+      "Bread Loaf": {
+        "avg_produced_per_run": 11.2,
+        "sellthrough_rate": 82.2,
+        "waste_rate": 6.7
+      },
+      "Cookies": {
+        "avg_produced_per_run": 36.0,
+        "sellthrough_rate": 94.4,
+        "waste_rate": 5.6
+      },
+      "Biochar Kit": {
+        "avg_produced_per_run": 7.5,
+        "sellthrough_rate": 80.0,
+        "waste_rate": 0.0
+      },
+      "Custom Cake": {
+        "avg_produced_per_run": 1.0,
+        "sellthrough_rate": 100.0,
+        "waste_rate": 0.0
+      },
+      "Compost Kit": {
+        "avg_produced_per_run": 3.5,
+        "sellthrough_rate": 57.1,
+        "waste_rate": 0.0
+      }
+    },
+    "time_variances": {
+      "overall_efficiency": 100.0,
+      "below_target": false
+    },
+    "output_efficiency": {
+      "waste_rate": 5.1,
+      "sellthrough_rate": 88.6
+    },
+    "insights": []
+  },
+  "waste": {
+    "waste_analysis": {
+      "total_waste": 0,
+      "waste_reasons": {
+        "Overproduction": 8,
+        "Quality issue": 1
+      },
+      "high_waste_products": []
+    },
+    "overproduction_alerts": [
+      {
+        "date": "2025-11-21",
+        "product": "Biochar Kit",
+        "produced": 10,
+        "sold": 7,
+        "sellthrough_rate": 70.0,
+        "unsold": 3,
+        "reason": "Low demand"
+      },
+      {
+        "date": "2025-11-21",
+        "product": "Compost Kit",
+        "produced": 3,
+        "sold": 2,
+        "sellthrough_rate": 66.7,
+        "unsold": 1,
+        "reason": "Low demand"
+      },
+      {
+        "date": "2025-11-20",
+        "product": "Compost Kit",
+        "produced": 4,
+        "sold": 2,
+        "sellthrough_rate": 50.0,
+        "unsold": 2,
+        "reason": "Low demand"
+      }
+    ],
+    "quality_issues": [
+      {
+        "date": "2025-11-21",
+        "product": "Bread Loaf",
+        "quantity_wasted": 1,
+        "reason": "Quality issue",
+        "notes": "1 loaf burnt - discarded"
+      }
+    ],
+    "recommended_actions": [
+      {
+        "priority": "HIGH",
+        "action": "Reduce batch sizes based on demand forecast",
+        "expected_impact": "Save ~8 units per period"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Review quality control processes",
+        "expected_impact": "Reduce 1 units waste"
+      }
+    ],
+    "insights": [
+      "\ud83d\udea8 Overproduction waste: 8 units",
+      "\u26a0\ufe0f Quality issues: 1 units wasted"
+    ]
+  },
+  "orders": {
+    "fulfillment_schedule": {
+      "Critical (Overdue/Due Today)": [
+        {
+          "order_id": "ORD-009",
+          "customer_name": "Iris Anderson",
+          "order_date": "2025-11-20T00:00:00",
+          "due_date": "2025-11-19T00:00:00",
+          "status": "Overdue",
+          "products": [
+            "Bread Loaf"
+          ],
+          "quantities": [
+            2
+          ],
+          "total_price": 12.0,
+          "notes": "Forgot to prepare - need to contact",
+          "days_until_due": -3,
+          "is_overdue": true,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-004",
+          "customer_name": "David Brown",
+          "order_date": "2025-11-20T00:00:00",
+          "due_date": "2025-11-21T00:00:00",
+          "status": "In Progress",
+          "products": [
+            "Biochar Kit"
+          ],
+          "quantities": [
+            3
+          ],
+          "total_price": 75.0,
+          "notes": "Wholesale order for garden center",
+          "days_until_due": -1,
+          "is_overdue": true,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-002",
+          "customer_name": "Bob Jones",
+          "order_date": "2025-11-19T00:00:00",
+          "due_date": "2025-11-22T00:00:00",
+          "status": "In Progress",
+          "products": [
+            "Bread Loaf"
+          ],
+          "quantities": [
+            5
+          ],
+          "total_price": 30.0,
+          "notes": "First-time customer from Instagram",
+          "days_until_due": 0,
+          "is_overdue": false,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-010",
+          "customer_name": "Jack Thomas",
+          "order_date": "2025-11-21T00:00:00",
+          "due_date": "2025-11-22T00:00:00",
+          "status": "In Progress",
+          "products": [
+            "Cookies"
+          ],
+          "quantities": [
+            36
+          ],
+          "total_price": 36.0,
+          "notes": "School bake sale",
+          "days_until_due": 0,
+          "is_overdue": false,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-005",
+          "customer_name": "Emily Davis",
+          "order_date": "2025-11-21T00:00:00",
+          "due_date": "2025-11-23T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Bread Loaf",
+            "Compost Kit"
+          ],
+          "quantities": [
+            4,
+            2
+          ],
+          "total_price": 64.0,
+          "notes": "Starting composting setup",
+          "days_until_due": 1,
+          "is_overdue": false,
+          "fulfillment_priority": 1
+        },
+        {
+          "order_id": "ORD-012",
+          "customer_name": "Leo Garcia",
+          "order_date": "2025-11-20T00:00:00",
+          "due_date": "2025-11-23T00:00:00",
+          "status": "In Progress",
+          "products": [
+            "Biochar Kit"
+          ],
+          "quantities": [
+            5
+          ],
+          "total_price": 125.0,
+          "notes": "Bulk order for community garden",
+          "days_until_due": 1,
+          "is_overdue": false,
+          "fulfillment_priority": 1
+        }
+      ],
+      "High (Due in 2-3 Days)": [
+        {
+          "order_id": "ORD-008",
+          "customer_name": "Henry Taylor",
+          "order_date": "2025-11-19T00:00:00",
+          "due_date": "2025-11-24T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Biochar Kit",
+            "Compost Kit"
+          ],
+          "quantities": [
+            2,
+            2
+          ],
+          "total_price": 70.0,
+          "notes": "Sustainability enthusiast",
+          "days_until_due": 2,
+          "is_overdue": false,
+          "fulfillment_priority": 2
+        },
+        {
+          "order_id": "ORD-003",
+          "customer_name": "Carol White",
+          "order_date": "2025-11-20T00:00:00",
+          "due_date": "2025-11-25T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Custom Cake"
+          ],
+          "quantities": [
+            1
+          ],
+          "total_price": 45.0,
+          "notes": "Birthday cake - chocolate with vanilla frosting",
+          "days_until_due": 3,
+          "is_overdue": false,
+          "fulfillment_priority": 2
+        }
+      ],
+      "Medium (Due This Week)": [
+        {
+          "order_id": "ORD-011",
+          "customer_name": "Karen Martinez",
+          "order_date": "2025-11-21T00:00:00",
+          "due_date": "2025-11-26T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Bread Loaf"
+          ],
+          "quantities": [
+            10
+          ],
+          "total_price": 60.0,
+          "notes": "Weekly bread subscription",
+          "days_until_due": 4,
+          "is_overdue": false,
+          "fulfillment_priority": 3
+        },
+        {
+          "order_id": "ORD-006",
+          "customer_name": "Frank Miller",
+          "order_date": "2025-11-21T00:00:00",
+          "due_date": "2025-11-28T00:00:00",
+          "status": "Pending",
+          "products": [
+            "Custom Cake"
+          ],
+          "quantities": [
+            1
+          ],
+          "total_price": 50.0,
+          "notes": "Anniversary cake",
+          "days_until_due": 6,
+          "is_overdue": false,
+          "fulfillment_priority": 3
+        }
+      ],
+      "Low (Due Later)": []
+    },
+    "production_plan": [
+      {
+        "order_id": "ORD-010",
+        "product": "Cookies",
+        "quantity": 36,
+        "due_date": "2025-11-22",
+        "estimated_time_hours": 79.2,
+        "priority": "Critical (Overdue/Due Today)"
+      },
+      {
+        "order_id": "ORD-012",
+        "product": "Biochar Kit",
+        "quantity": 2,
+        "due_date": "2025-11-23",
+        "estimated_time_hours": 4.4,
+        "priority": "Critical (Overdue/Due Today)"
+      },
+      {
+        "order_id": "ORD-003",
+        "product": "Custom Cake",
+        "quantity": 1,
+        "due_date": "2025-11-25",
+        "estimated_time_hours": 2.2,
+        "priority": "High (Due in 2-3 Days)"
+      },
+      {
+        "order_id": "ORD-011",
+        "product": "Bread Loaf",
+        "quantity": 5,
+        "due_date": "2025-11-26",
+        "estimated_time_hours": 11.0,
+        "priority": "Medium (Due This Week)"
+      },
+      {
+        "order_id": "ORD-006",
+        "product": "Custom Cake",
+        "quantity": 1,
+        "due_date": "2025-11-28",
+        "estimated_time_hours": 2.2,
+        "priority": "Medium (Due This Week)"
+      }
+    ],
+    "capacity_analysis": {
+      "total_hours_required": 99.0,
+      "orders_pending": 10,
+      "critical_orders": 6
+    },
+    "insights": [
+      "\ud83d\udea8 6 critical orders! Prioritize immediately.",
+      "\u26a0\ufe0f 99.0h of production needed. Consider additional capacity.",
+      "\ud83d\udcc5 2 overdue orders. Expedite fulfillment."
+    ]
+  },
+  "customers": {
+    "customer_summary": {
+      "Alice Smith": {
+        "total_orders": 1,
+        "fulfilled_orders": 1,
+        "pending_orders": 0,
+        "total_revenue": 26.0,
+        "avg_order_value": 26.0,
+        "fulfillment_rate": 1.0
+      },
+      "Bob Jones": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 30.0,
+        "avg_order_value": 30.0,
+        "fulfillment_rate": 0.0
+      },
+      "Carol White": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 45.0,
+        "avg_order_value": 45.0,
+        "fulfillment_rate": 0.0
+      },
+      "David Brown": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 75.0,
+        "avg_order_value": 75.0,
+        "fulfillment_rate": 0.0
+      },
+      "Emily Davis": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 64.0,
+        "avg_order_value": 64.0,
+        "fulfillment_rate": 0.0
+      },
+      "Frank Miller": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 50.0,
+        "avg_order_value": 50.0,
+        "fulfillment_rate": 0.0
+      },
+      "Grace Wilson": {
+        "total_orders": 1,
+        "fulfilled_orders": 1,
+        "pending_orders": 0,
+        "total_revenue": 24.0,
+        "avg_order_value": 24.0,
+        "fulfillment_rate": 1.0
+      },
+      "Henry Taylor": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 70.0,
+        "avg_order_value": 70.0,
+        "fulfillment_rate": 0.0
+      },
+      "Iris Anderson": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 12.0,
+        "avg_order_value": 12.0,
+        "fulfillment_rate": 0.0
+      },
+      "Jack Thomas": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 36.0,
+        "avg_order_value": 36.0,
+        "fulfillment_rate": 0.0
+      },
+      "Karen Martinez": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 60.0,
+        "avg_order_value": 60.0,
+        "fulfillment_rate": 0.0
+      },
+      "Leo Garcia": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 125.0,
+        "avg_order_value": 125.0,
+        "fulfillment_rate": 0.0
+      }
+    },
+    "top_customers": {
+      "Leo Garcia": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 125.0,
+        "avg_order_value": 125.0,
+        "fulfillment_rate": 0.0
+      },
+      "David Brown": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 75.0,
+        "avg_order_value": 75.0,
+        "fulfillment_rate": 0.0
+      },
+      "Henry Taylor": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 70.0,
+        "avg_order_value": 70.0,
+        "fulfillment_rate": 0.0
+      },
+      "Emily Davis": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 64.0,
+        "avg_order_value": 64.0,
+        "fulfillment_rate": 0.0
+      },
+      "Karen Martinez": {
+        "total_orders": 1,
+        "fulfilled_orders": 0,
+        "pending_orders": 1,
+        "total_revenue": 60.0,
+        "avg_order_value": 60.0,
+        "fulfillment_rate": 0.0
+      }
+    },
+    "customer_metrics": {
+      "total_customers": 12,
+      "avg_orders_per_customer": 1.0,
+      "avg_revenue_per_customer": 51.42
+    },
+    "at_risk_customers": [],
+    "insights": [
+      "\u2b50 Top customer: Leo Garcia ($125.00 revenue)",
+      "\ud83d\udcc8 Low repeat orders. Implement loyalty program."
+    ]
+  },
+  "action_items": [
+    "\ud83d\udea8 CRITICAL: Operating at a loss. Review pricing and costs immediately.",
+    "\ud83d\udcb0 Hourly profit ($-16.98) below target ($15.00). Focus on high-margin tasks.",
+    "\u26a0\ufe0f 'Research new recipe' had worst overrun: 50.0% over estimate",
+    "\ud83d\udcc2 'R&D' category has lowest efficiency: 67.0%",
+    "\ud83d\udcb8 'Research new recipe' most expensive: $130.5. Review for optimization opportunities."
+  ],
+  "performance_indicators": {
+    "profit_margin": -142.4,
+    "hourly_profit": -16.98,
+    "task_efficiency": 0.0,
+    "waste_rate": 0.0,
+    "order_fulfillment_rate": 0.0
+  },
+  "refinement_used": true
+}

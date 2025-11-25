@@ -14,9 +14,14 @@ from elle.voice.whisper_stt import WhisperSTT
 from elle.voice.llm_parser import LLMParser, ParsedCommand
 from elle.voice.command_parser import CommandGrammarParser, StructuredCommand, CommandType
 from elle.voice.tts import TextToSpeech, VoiceGender
+from elle.voice.neural_tts import NeuralTTS, VoicePersonality, VoiceModel
 from elle.voice.wake_word import WakeWordDetector
 from elle.voice.threads import ThreadManager
 from elle.voice_interface import VoiceSOPEditor
+from elle.voice.task_system import TaskSystem  # Milestone 2 Phase 3
+
+# Import tasks to trigger registration (Milestone 2 Phase 3)
+import elle.tasks
 
 
 class VoiceAssistant:
@@ -37,6 +42,8 @@ class VoiceAssistant:
         whisper_model: str = "tiny",
         tts_rate: int = 150,
         use_llm_parser: bool = True,
+        use_neural_tts: bool = True,
+        voice_personality: VoicePersonality = VoicePersonality.FRIENDLY,
         verbose: bool = True
     ):
         """
@@ -47,19 +54,39 @@ class VoiceAssistant:
             whisper_model: Whisper model size (tiny, base, small)
             tts_rate: TTS speech rate (words per minute)
             use_llm_parser: Use LLM for enhanced parsing
+            use_neural_tts: Use neural TTS (Coqui) for natural voice
+            voice_personality: Voice personality preset (PROFESSIONAL, FRIENDLY, FAST)
             verbose: Print debug information
         """
         self.sop_dir = sop_dir
         self.verbose = verbose
+        self.use_neural_tts = use_neural_tts
 
         # Initialize components
         self.stt = WhisperSTT(model=whisper_model)
         self.parser = LLMParser(use_llm=use_llm_parser)  # Milestone 1: Conversational
         self.command_parser = CommandGrammarParser()  # Milestone 2: Command Mode
+
+        # TTS initialization (Milestone 2 Phase 2)
+        # Primary: Neural TTS (Coqui)
+        if use_neural_tts:
+            self.neural_tts = NeuralTTS(
+                personality=voice_personality,
+                enable_cache=True,
+                verbose=verbose
+            )
+        else:
+            self.neural_tts = None
+
+        # Fallback: Traditional TTS (pyttsx3)
         self.tts = TextToSpeech(rate=tts_rate, voice_gender=VoiceGender.FEMALE)
+
         self.wake_detector = WakeWordDetector()
         self.editor = VoiceSOPEditor(sop_dir=sop_dir)
         self.thread_manager = ThreadManager()  # Thread management for conversations
+
+        # Task delegation system (Milestone 2 Phase 3)
+        self.task_system = TaskSystem()
 
         # Session state
         self.is_listening = False
@@ -76,6 +103,43 @@ class VoiceAssistant:
             print("Initializing Elle Voice Assistant...")
 
         await self.editor.initialize_hololoom()
+
+    async def speak(self, text: str) -> bool:
+        """
+        Speak text using neural TTS or fallback
+
+        Tries neural TTS first (Coqui), falls back to pyttsx3 if unavailable
+
+        Args:
+            text: Text to speak
+
+        Returns:
+            True if spoken successfully, False otherwise
+        """
+        # Try neural TTS first (Milestone 2 Phase 2)
+        if self.use_neural_tts and self.neural_tts:
+            try:
+                success = await self.neural_tts.speak(text, wait=True)
+                if success:
+                    return True
+                # If neural TTS failed, fall through to fallback
+                if self.verbose:
+                    print("[Fallback] Neural TTS failed, using pyttsx3")
+            except Exception as e:
+                if self.verbose:
+                    print(f"[Fallback] Neural TTS error: {e}, using pyttsx3")
+                # Fall through to fallback
+
+        # Fallback: pyttsx3
+        try:
+            await self.tts.speak(text)
+            return True
+        except Exception as e:
+            if self.verbose:
+                print(f"[ERROR] All TTS failed: {e}")
+            # Last resort: just print
+            print(f"Elle> {text}")
+            return False
 
     async def process_voice_input(self, text: str) -> str:
         """
@@ -189,17 +253,17 @@ class VoiceAssistant:
         elif cmd.command_type == CommandType.THREAD_DELETE:
             return self._handle_thread_delete(cmd)
 
-        # Task operations
+        # Task operations (Milestone 2 Phase 3)
         elif cmd.command_type == CommandType.TASK_RUN:
             return await self._handle_task_run(cmd)
         elif cmd.command_type == CommandType.TASK_STOP:
-            return self._handle_task_stop()
+            return await self._handle_task_stop()
         elif cmd.command_type == CommandType.TASK_PAUSE:
-            return self._handle_task_pause()
+            return await self._handle_task_pause()
         elif cmd.command_type == CommandType.TASK_RESUME:
-            return self._handle_task_resume()
+            return await self._handle_task_resume()
         elif cmd.command_type == CommandType.TASK_STATUS:
-            return self._handle_task_status()
+            return await self._handle_task_status()
 
         # Query operations
         elif cmd.command_type == CommandType.ENTITY_LOOKUP:
@@ -430,35 +494,85 @@ class VoiceAssistant:
 
     # Task Handlers
     async def _handle_task_run(self, cmd: StructuredCommand) -> str:
-        """Execute task"""
+        """
+        Execute task (Milestone 2 Phase 3)
+
+        Args:
+            cmd: Structured command with task_name parameter
+
+        Returns:
+            Brief acknowledgment (e.g., "Running analyze")
+        """
         task_name = cmd.parameters.get("task_name", "")
 
         if not task_name:
             return "Need task name"
 
-        # Placeholder: Task execution system to be implemented in Phase 3
-        # For now, acknowledge the command
-        return f"Running {task_name}"
+        # Build execution context
+        context = {
+            "thread_id": self.thread_manager.active_thread_id,
+            "sop_dir": self.sop_dir,
+            "editor": self.editor
+        }
 
-    def _handle_task_stop(self) -> str:
-        """Stop current task"""
-        # Placeholder: Task control to be implemented in Phase 3
-        return "Stopped"
+        try:
+            # Run task via TaskSystem
+            response = await self.task_system.run(
+                task_name,
+                context=context,
+                **cmd.parameters  # Pass any additional parameters
+            )
+            return response
+        except ValueError as e:
+            # Unknown task
+            available = self.task_system.list_available_tasks()
+            if available:
+                tasks_str = ", ".join(available[:3])
+                return f"Unknown task. Try: {tasks_str}"
+            else:
+                return f"Unknown task: {task_name}"
+        except Exception as e:
+            return f"Task error: {str(e)}"
 
-    def _handle_task_pause(self) -> str:
-        """Pause current task"""
-        # Placeholder: Task control to be implemented in Phase 3
-        return "Paused"
+    async def _handle_task_stop(self) -> str:
+        """
+        Stop current task (Milestone 2 Phase 3)
 
-    def _handle_task_resume(self) -> str:
-        """Resume paused task"""
-        # Placeholder: Task control to be implemented in Phase 3
-        return "Resumed"
+        Returns:
+            Brief status message
+        """
+        response = await self.task_system.stop()
+        return response
 
-    def _handle_task_status(self) -> str:
-        """Show task status"""
-        # Placeholder: Task status to be implemented in Phase 3
-        return "No tasks running"
+    async def _handle_task_pause(self) -> str:
+        """
+        Pause current task (Milestone 2 Phase 3)
+
+        Returns:
+            Brief status message
+        """
+        response = await self.task_system.pause()
+        return response
+
+    async def _handle_task_resume(self) -> str:
+        """
+        Resume paused task (Milestone 2 Phase 3)
+
+        Returns:
+            Brief status message
+        """
+        response = await self.task_system.resume()
+        return response
+
+    async def _handle_task_status(self) -> str:
+        """
+        Show task status (Milestone 2 Phase 3)
+
+        Returns:
+            Brief status update
+        """
+        response = await self.task_system.status()
+        return response
 
     # Query Handlers
     async def _handle_entity_lookup(self, cmd: StructuredCommand) -> str:
@@ -522,13 +636,13 @@ class VoiceAssistant:
             # Record audio
             audio_path = await self.stt.record_audio(duration=5.0)
             if not audio_path:
-                await self.tts.speak("I couldn't hear you. Please try again.")
+                await self.speak("I couldn't hear you. Please try again.")
                 return False
 
             # Transcribe
             text, metadata = await self.stt.transcribe_with_fallback(audio_path)
             if not text:
-                await self.tts.speak("Transcription failed. Please try again.")
+                await self.speak("Transcription failed. Please try again.")
                 return False
 
             if self.verbose:
@@ -538,13 +652,13 @@ class VoiceAssistant:
             response = await self.process_voice_input(text)
 
             # Speak response
-            await self.tts.speak(response)
+            await self.speak(response)
 
             return True
 
         except Exception as e:
             print(f"✗ Error: {e}")
-            await self.tts.speak("An error occurred. Please try again.")
+            await self.speak("An error occurred. Please try again.")
             return False
 
     async def wake_word_loop(self):
@@ -557,7 +671,7 @@ class VoiceAssistant:
         print("ELLE VOICE ASSISTANT")
         print("="*60)
         print("\n👂 Listening for wake word...")
-        await self.tts.speak("Elle is ready. Say hey Elle to begin.")
+        await self.speak("Elle is ready. Say hey Elle to begin.")
 
         while True:
             try:
@@ -577,7 +691,7 @@ class VoiceAssistant:
 
                 if detected:
                     # Listen for command
-                    await self.tts.speak("I'm listening.")
+                    await self.speak("I'm listening.")
                     success = await self.listen_and_respond()
 
                     if success:
@@ -586,7 +700,7 @@ class VoiceAssistant:
 
             except KeyboardInterrupt:
                 print("\n\nGoodbye!")
-                await self.tts.speak("Goodbye.")
+                await self.speak("Goodbye.")
                 break
             except Exception as e:
                 print(f"✗ Error: {e}")
@@ -601,7 +715,7 @@ class VoiceAssistant:
             if self.verbose:
                 print(f"Full command heard: {command}")
             response = await self.process_voice_input(command)
-            await self.tts.speak(response)
+            await self.speak(response)
 
     async def interactive_mode(self):
         """
@@ -619,7 +733,7 @@ class VoiceAssistant:
         print("  - 'start baking bread'")
         print("  - 'Type 'quit' to exit'\n")
 
-        await self.tts.speak("Elle is ready in interactive mode.")
+        await self.speak("Elle is ready in interactive mode.")
 
         while True:
             try:
@@ -630,16 +744,16 @@ class VoiceAssistant:
 
                 if text.lower() in ["quit", "exit", "bye"]:
                     print("Goodbye!")
-                    await self.tts.speak("Goodbye.")
+                    await self.speak("Goodbye.")
                     break
 
                 response = await self.process_voice_input(text)
                 print(f"Elle> {response}")
-                await self.tts.speak(response)
+                await self.speak(response)
 
             except KeyboardInterrupt:
                 print("\n\nGoodbye!")
-                await self.tts.speak("Goodbye.")
+                await self.speak("Goodbye.")
                 break
             except Exception as e:
                 print(f"✗ Error: {e}")

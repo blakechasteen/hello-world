@@ -26,7 +26,9 @@
     "@mediapipe/pose": "^0.5.1675469404",
     "@mediapipe/camera_utils": "^0.3.1675465747",
     "onnxruntime-web": "^1.16.3",
-    "jsqr": "^1.4.0"
+    "jsqr": "^1.4.0",
+    "@pixiv/three-vrm": "^2.0.0",
+    "cannon-es": "^0.20.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",

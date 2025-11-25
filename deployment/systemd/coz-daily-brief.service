@@ -1,0 +1,19 @@
+[Unit]
+Description=COZ Daily Brief Automation
+After=network.target
+
+[Service]
+Type=simple
+User=blake
+WorkingDirectory=c:/Users/blake/OneDrive/Documents/mythRL
+Environment="PYTHONPATH=c:/Users/blake/OneDrive/Documents/mythRL"
+Environment="ELLE_ENABLE_REFINEMENT=false"
+Environment="ELLE_LOG_LEVEL=INFO"
+ExecStart=c:/Users/blake/OneDrive/Documents/mythRL/.venv/Scripts/python.exe elle/coz/daily_brief_automation.py --schedule "09:00"
+Restart=on-failure
+RestartSec=60
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

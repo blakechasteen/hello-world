@@ -1,0 +1,143 @@
+# Prometheus Alert Rules for Zero-G
+
+groups:
+  - name: zerog_health
+    interval: 30s
+    rules:
+      # Critical: Zero-G Backend is down
+      - alert: ZeroGBackendDown
+        expr: up{job="zerog-backend"} < 1
+        for: 1m
+        labels:
+          severity: critical
+          component: backend
+        annotations:
+          summary: "Zero-G Backend is down"
+          description: "Zero-G Backend has been down for more than 1 minute."
+
+      # Critical: Neo4j is down
+      - alert: Neo4jDown
+        expr: up{job="neo4j"} < 1
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Neo4j database is down"
+          description: "Neo4j has been down for more than 2 minutes."
+
+      # Critical: Qdrant is down
+      - alert: QdrantDown
+        expr: up{job="qdrant"} < 1
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Qdrant vector store is down"
+          description: "Qdrant has been down for more than 2 minutes."
+
+  - name: zerog_performance
+    interval: 30s
+    rules:
+      # Warning: High error rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(zerog_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(zerog_requests_total[5m]))
+          ) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          component: backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 1% ({{ $value | humanizePercentage }}) for the last 5 minutes."
+
+      # Warning: High latency
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(zerog_request_duration_seconds_bucket[5m])) by (le)
+          ) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: backend
+        annotations:
+          summary: "High request latency detected"
+          description: "95th percentile latency is above 100ms ({{ $value | humanizeDuration }}) for the last 5 minutes."
+
+      # Warning: High memory usage
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            process_resident_memory_bytes{job="zerog-backend"}
+            /
+            (1024 * 1024 * 1024)
+          ) > 1.5
+        for: 10m
+        labels:
+          severity: warning
+          component: backend
+        annotations:
+          summary: "High memory usage"
+          description: "Backend memory usage is above 1.5GB ({{ $value | humanize }}GB) for the last 10 minutes."
+
+  - name: zerog_resources
+    interval: 30s
+    rules:
+      # Warning: Neo4j disk space low
+      - alert: Neo4jDiskSpaceLow
+        expr: |
+          (
+            neo4j_disk_free_bytes{job="neo4j"}
+            /
+            neo4j_disk_total_bytes{job="neo4j"}
+          ) < 0.2
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Neo4j disk space running low"
+          description: "Neo4j has less than 20% disk space remaining ({{ $value | humanizePercentage }})."
+
+      # Warning: Qdrant collection size growing rapidly
+      - alert: QdrantRapidGrowth
+        expr: |
+          rate(qdrant_collection_vectors_count[30m]) > 1000
+        for: 30m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Qdrant collection growing rapidly"
+          description: "Qdrant collection is growing at {{ $value | humanize }} vectors/second."
+
+  - name: zerog_business
+    interval: 60s
+    rules:
+      # Info: Low astronaut activity
+      - alert: LowAstronautActivity
+        expr: zerog_active_astronauts < 1
+        for: 30m
+        labels:
+          severity: info
+          component: business
+        annotations:
+          summary: "Low astronaut activity"
+          description: "Less than 1 active astronaut in the last 30 minutes."
+
+      # Warning: No data sources connected
+      - alert: NoDataSourcesConnected
+        expr: zerog_connected_data_sources == 0
+        for: 10m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "No data sources connected"
+          description: "Zero data sources have been connected for the last 10 minutes."

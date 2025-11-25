@@ -127,17 +127,20 @@ if MCP_AVAILABLE and DATAPIG_AVAILABLE:
         """
         Validate data quality with DATAPIG
 
-        Detects 10 categories of data quality issues:
+        Detects 13 categories of data quality issues:
         1. Schema Drift - Type mismatches, missing fields
         2. Data Leaks - PII/secrets (emails, SSNs, API keys)
         3. Stale Data - Outdated timestamps
         4. Duplicates - Exact duplicate detection
-        5. Outliers - Statistical anomalies
-        6. Inconsistent Format - Mixed date formats, casing
-        7. Missing Relations - Broken foreign keys
-        8. Distribution Shift - Dataset drift
-        9. Sampling Bias - Class imbalance
-        10. Label Noise - Contradictory labels
+        5. Fuzzy Duplicates - Near-duplicates (Levenshtein distance) **NEW**
+        6. High-Entropy PII - Entropy-based PII detection (SSNs, UUIDs, hashes) **NEW**
+        7. Weak Passwords - Low-entropy weak passwords **NEW**
+        8. Outliers - Statistical anomalies
+        9. Inconsistent Format - Mixed date formats, casing
+        10. Missing Relations - Broken foreign keys
+        11. Distribution Shift - Dataset drift
+        12. Sampling Bias - Class imbalance
+        13. Label Noise - Contradictory labels
 
         Args:
             dataset: List of dictionaries to validate

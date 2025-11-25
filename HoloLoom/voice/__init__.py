@@ -12,10 +12,12 @@ Components:
 - ConversationMemory: Short and long-term conversation storage
 - PersonalityManager: Multi-persona system with voice customization (Phase 3)
 - LanguageManager: Multi-language support with auto-detection (Phase 4)
+- EmotionBridge: Python ↔ Node.js bridge for 110/100 emotional intelligence (Phase 5)
 
 Date: November 15, 2025
 Updated: November 16, 2025 (Phase 3 - Personality Framework)
 Updated: November 16, 2025 (Phase 4 - Multi-Language Support)
+Updated: November 22, 2025 (Phase 5 - Emotion Bridge Integration)
 """
 
 # Personality module (always available)
@@ -37,6 +39,22 @@ from .language import (
     create_language_manager,
     detect_language
 )
+
+# Emotion bridge module (Phase 5 - optional Node.js dependency)
+try:
+    from .emotion_bridge import (
+        EmotionBridge,
+        EmotionBridgeConfig,
+        EmotionResult,
+        EmotionalInput,
+        FusionStrategy,
+        MetaMode,
+        PlanningStrategy,
+        enhance_voice_agent_with_emotions
+    )
+    EMOTION_BRIDGE_AVAILABLE = True
+except ImportError:
+    EMOTION_BRIDGE_AVAILABLE = False
 
 # Voice agent module (optional dependencies)
 try:
@@ -72,6 +90,19 @@ __all__ = [
     'create_language_manager',
     'detect_language',
 ]
+
+if EMOTION_BRIDGE_AVAILABLE:
+    __all__.extend([
+        # Emotion Bridge (Phase 5)
+        'EmotionBridge',
+        'EmotionBridgeConfig',
+        'EmotionResult',
+        'EmotionalInput',
+        'FusionStrategy',
+        'MetaMode',
+        'PlanningStrategy',
+        'enhance_voice_agent_with_emotions'
+    ])
 
 if VOICE_AGENT_AVAILABLE:
     __all__.extend([

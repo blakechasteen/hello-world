@@ -471,20 +471,20 @@ async def test_benchmark_end_to_end_latency(broker):
     }
 
     print(f"\n{'='*60}")
-    print(f"BENCHMARK: End-to-End Latency (Emit → Handler)")
+    print(f"BENCHMARK: End-to-End Latency (Emit -> Handler)")
     print(f"{'='*60}")
     print(f"  Mean:   {stats['mean']:.3f} ms")
     print(f"  Median: {stats['median']:.3f} ms")
-    print(f"  P95:    {stats['p95']:.3f} ms ⭐ TARGET")
+    print(f"  P95:    {stats['p95']:.3f} ms [TARGET]")
     print(f"  P99:    {stats['p99']:.3f} ms")
     print(f"  Min:    {stats['min']:.3f} ms")
     print(f"  Max:    {stats['max']:.3f} ms")
     print(f"{'='*60}")
 
     # CRITICAL VALIDATION: <10ms P95 latency
-    assert stats['p95'] < 10.0, f"❌ P95 latency {stats['p95']:.3f}ms EXCEEDS 10ms target"
+    assert stats['p95'] < 10.0, f"[FAIL] P95 latency {stats['p95']:.3f}ms EXCEEDS 10ms target"
 
-    print(f"\n✅ SUCCESS: P95 latency {stats['p95']:.3f}ms is under 10ms target!")
+    print(f"\n[SUCCESS] P95 latency {stats['p95']:.3f}ms is under 10ms target!")
 
 
 # ============================================================================
@@ -509,7 +509,7 @@ def test_benchmark_summary():
     print(f"  - Topic routing performance (exact vs wildcard)")
     print(f"  - Handler execution overhead")
     print(f"  - Concurrent throughput (>10,000 events/sec target)")
-    print(f"  - End-to-end latency (emit → handler)")
+    print(f"  - End-to-end latency (emit -> handler)")
     print(f"")
     print(f"Optimizations:")
     print(f"  - Exact match fast path (O(1) dict lookup)")

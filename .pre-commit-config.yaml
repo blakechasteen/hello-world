@@ -173,6 +173,37 @@ repos:
         stages: [commit]
 
   # ============================================================================
+  # BOSSPIG: Business Writing Quality Checks (Beta - Nov 2025)
+  # Analyzes markdown/text files for quality issues
+  # ============================================================================
+  - repo: local
+    hooks:
+      - id: bosspig-check
+        name: BossPig Quality Check
+        entry: python -m bosspig.cli analyze
+        language: system
+        files: \.(md|txt)$
+        pass_filenames: true
+        args:
+          - --severity=error
+          - --no-color
+        verbose: true
+        stages: [commit]
+
+      - id: bosspig-critical-check
+        name: BossPig Critical Issues Check
+        entry: python -m bosspig.cli analyze
+        language: system
+        files: \.(md|txt)$
+        pass_filenames: true
+        args:
+          - --severity=critical
+          - --no-color
+        verbose: true
+        stages: [commit]
+        # Fail commit if critical issues found (compliance violations)
+
+  # ============================================================================
   # DEPENDENCIES: Check for vulnerable packages (optional)
   # Uncomment if safety is installed: pip install safety
   # ============================================================================

@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Visualizer Demo - NeuroHood</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #info-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            max-width: 300px;
+        }
+
+        #info-overlay h2 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #4CAF50;
+        }
+
+        #info-overlay p {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.danger {
+            background: #f44336;
+        }
+
+        button.danger:hover {
+            background: #d32f2f;
+        }
+
+        #stats {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .slider-container label {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        input[type="range"] {
+            width: 150px;
+            accent-color: #4CAF50;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        #loading.hidden {
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-right: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>Loading Dream Scene...</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="info-overlay">
+        <h2 id="dream-title">Prison Dreams: Yearning for Freedom</h2>
+        <p><strong>Consciousness:</strong> <span id="consciousness-level">60%</span></p>
+        <p><strong>Participants:</strong> <span id="participant-count">1</span></p>
+        <p><strong>Symbols:</strong> <span id="symbol-count">2</span></p>
+        <p><strong>Cinematic Ref:</strong> <span id="cinematic-ref">The Shawshank Redemption</span></p>
+    </div>
+
+    <div id="stats">
+        <div><strong>FPS:</strong> <span id="fps">60</span></div>
+        <div><strong>Draw Calls:</strong> <span id="draw-calls">0</span></div>
+        <div><strong>Triangles:</strong> <span id="triangles">0</span></div>
+    </div>
+
+    <div id="controls">
+        <button id="pause-btn">⏸ Pause</button>
+
+        <button id="speed-05">0.5×</button>
+        <button id="speed-10" class="active">1.0×</button>
+        <button id="speed-20">2.0×</button>
+
+        <div class="slider-container">
+            <label for="consciousness-slider">Consciousness: <span id="consciousness-value">60%</span></label>
+            <input type="range" id="consciousness-slider" min="0" max="100" value="60">
+        </div>
+
+        <button id="exit-btn" class="danger">Exit Dream</button>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+    <script>
+        // ============================================================================
+        // DREAM VISUALIZER DEMO
+        // ============================================================================
+
+        let scene, camera, renderer, controls;
+        let composer;
+        let isPaused = false;
+        let playbackSpeed = 1.0;
+        let consciousnessLevel = 0.6;
+        let clock = new THREE.Clock();
+
+        // Symbols
+        let cagedBird, stormCloud, bridge;
+        let rainParticles;
+
+        // Stats
+        let frameCount = 0;
+        let lastTime = performance.now();
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x555555);
+            scene.fog = new THREE.FogExp2(0x555555, 0.003);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 5);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enablePan = false;
+            controls.minDistance = 2;
+            controls.maxDistance = 20;
+
+            // Lighting
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.camera.left = -20;
+            directionalLight.shadow.camera.right = 20;
+            directionalLight.shadow.camera.top = 20;
+            directionalLight.shadow.camera.bottom = -20;
+            scene.add(directionalLight);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+            scene.add(ambientLight);
+
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.5;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Create symbols
+            createSymbols();
+
+            // Create rain
+            createRain();
+
+            // Event listeners
+            setupEventListeners();
+
+            // Hide loading
+            document.getElementById('loading').classList.add('hidden');
+
+            // Start animation
+            animate();
+        }
+
+        // ============================================================================
+        // SYMBOL CREATION
+        // ============================================================================
+
+        function createSymbols() {
+            // Caged Bird (simple procedural)
+            const birdGroup = new THREE.Group();
+
+            // Bird body
+            const birdGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const birdMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4A90E2,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            const birdMesh = new THREE.Mesh(birdGeometry, birdMaterial);
+            birdMesh.castShadow = true;
+            birdGroup.add(birdMesh);
+
+            // Cage bars (simple)
+            const cageGroup = new THREE.Group();
+            const barMaterial = new THREE.MeshStandardMaterial({
+                color: 0x888888,
+                metalness: 0.8,
+                roughness: 0.4
+            });
+
+            // Vertical bars
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2;
+                const x = Math.cos(angle) * 0.8;
+                const z = Math.sin(angle) * 0.8;
+
+                const barGeometry = new THREE.CylinderGeometry(0.02, 0.02, 2, 8);
+                const bar = new THREE.Mesh(barGeometry, barMaterial);
+                bar.position.set(x, 0, z);
+                bar.castShadow = true;
+                cageGroup.add(bar);
+            }
+
+            birdGroup.add(cageGroup);
+            birdGroup.position.set(-3, 1, 0);
+            scene.add(birdGroup);
+            cagedBird = birdGroup;
+
+            // Storm Cloud (volumetric sphere)
+            const cloudGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+            const cloudMaterial = new THREE.MeshStandardMaterial({
+                color: 0x333333,
+                transparent: true,
+                opacity: 0.7,
+                roughness: 1.0,
+                emissive: 0x444466,
+                emissiveIntensity: 0.2
+            });
+            stormCloud = new THREE.Mesh(cloudGeometry, cloudMaterial);
+            stormCloud.position.set(3, 3, 0);
+            stormCloud.castShadow = true;
+            scene.add(stormCloud);
+
+            // Bridge (simple)
+            const bridgeGeometry = new THREE.BoxGeometry(5, 0.2, 1.5);
+            const bridgeMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8B7355,
+                roughness: 0.8,
+                transparent: true,
+                opacity: 0.8
+            });
+            bridge = new THREE.Mesh(bridgeGeometry, bridgeMaterial);
+            bridge.position.set(0, 0, -3);
+            bridge.castShadow = true;
+            bridge.receiveShadow = true;
+            scene.add(bridge);
+        }
+
+        // ============================================================================
+        // PARTICLE SYSTEMS
+        // ============================================================================
+
+        function createRain() {
+            const particleCount = 3000;
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = [];
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 50;
+                positions[i * 3 + 1] = Math.random() * 50;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+                velocities.push(Math.random() * 10 + 10);
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const material = new THREE.PointsMaterial({
+                color: 0xaaaaff,
+                size: 0.05,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            rainParticles = new THREE.Points(geometry, material);
+            rainParticles.userData.velocities = velocities;
+            scene.add(rainParticles);
+        }
+
+        // ============================================================================
+        // ANIMATION LOOP
+        // ============================================================================
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!isPaused) {
+                const delta = clock.getDelta() * playbackSpeed;
+                const elapsedTime = clock.getElapsedTime();
+
+                // Update symbols (metaphorical physics)
+                updateSymbols(delta, elapsedTime);
+
+                // Update particles
+                updateParticles(delta);
+
+                // Update camera (consciousness effects)
+                updateCamera(delta, elapsedTime);
+
+                // Update stats
+                updateStats();
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function updateSymbols(delta, time) {
+            // Bridge solidification (trust-based)
+            const trustLevel = 0.5 + Math.sin(time * 0.5) * 0.3; // Oscillate for demo
+            if (bridge) {
+                bridge.material.opacity = THREE.MathUtils.lerp(0.3, 1.0, trustLevel);
+                bridge.scale.y = THREE.MathUtils.lerp(0.5, 1.0, trustLevel);
+            }
+
+            // Bird animation (simple)
+            if (cagedBird) {
+                cagedBird.rotation.y += delta * 0.2;
+                cagedBird.children[0].position.y = Math.sin(time * 3) * 0.1; // Bob
+            }
+
+            // Storm cloud animation
+            if (stormCloud) {
+                stormCloud.rotation.y += delta * 0.1;
+                stormCloud.position.y = 3 + Math.sin(time * 0.5) * 0.5;
+            }
+        }
+
+        function updateParticles(delta) {
+            if (!rainParticles) return;
+
+            const positions = rainParticles.geometry.attributes.position.array;
+            const velocities = rainParticles.userData.velocities;
+
+            for (let i = 0; i < velocities.length; i++) {
+                positions[i * 3 + 1] -= velocities[i] * delta;
+
+                // Reset at bottom
+                if (positions[i * 3 + 1] < 0) {
+                    positions[i * 3 + 1] = 50;
+                }
+            }
+
+            rainParticles.geometry.attributes.position.needsUpdate = true;
+        }
+
+        function updateCamera(delta, time) {
+            // Dutch tilt based on consciousness
+            const tilt = consciousnessLevel * 0.3;
+            camera.rotation.z = THREE.MathUtils.lerp(camera.rotation.z, tilt, delta);
+
+            // Camera shake at high consciousness
+            if (consciousnessLevel > 0.7) {
+                const shake = (consciousnessLevel - 0.7) * 0.1;
+                camera.position.x += (Math.random() - 0.5) * shake;
+                camera.position.y += (Math.random() - 0.5) * shake;
+            }
+
+            // Fog density based on consciousness
+            scene.fog.density = 0.002 * (1 + consciousnessLevel * 0.5);
+        }
+
+        function updateStats() {
+            frameCount++;
+            const currentTime = performance.now();
+
+            if (currentTime >= lastTime + 1000) {
+                document.getElementById('fps').textContent = frameCount;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+
+            // Update other stats
+            const info = renderer.info;
+            document.getElementById('draw-calls').textContent = info.render.calls;
+            document.getElementById('triangles').textContent = info.render.triangles.toLocaleString();
+        }
+
+        // ============================================================================
+        // EVENT LISTENERS
+        // ============================================================================
+
+        function setupEventListeners() {
+            // Pause
+            document.getElementById('pause-btn').addEventListener('click', () => {
+                isPaused = !isPaused;
+                document.getElementById('pause-btn').textContent = isPaused ? '▶ Play' : '⏸ Pause';
+            });
+
+            // Speed controls
+            document.getElementById('speed-05').addEventListener('click', () => setSpeed(0.5));
+            document.getElementById('speed-10').addEventListener('click', () => setSpeed(1.0));
+            document.getElementById('speed-20').addEventListener('click', () => setSpeed(2.0));
+
+            // Consciousness slider
+            document.getElementById('consciousness-slider').addEventListener('input', (e) => {
+                consciousnessLevel = parseInt(e.target.value) / 100;
+                document.getElementById('consciousness-value').textContent = e.target.value + '%';
+                document.getElementById('consciousness-level').textContent = e.target.value + '%';
+            });
+
+            // Exit
+            document.getElementById('exit-btn').addEventListener('click', () => {
+                if (confirm('Exit dream visualization?')) {
+                    window.location.href = 'about:blank';
+                }
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                switch (e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        document.getElementById('pause-btn').click();
+                        break;
+                    case '1':
+                        setSpeed(0.5);
+                        break;
+                    case '2':
+                        setSpeed(1.0);
+                        break;
+                    case '3':
+                        setSpeed(2.0);
+                        break;
+                    case 'Escape':
+                        document.getElementById('exit-btn').click();
+                        break;
+                }
+            });
+
+            // Window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        function setSpeed(speed) {
+            playbackSpeed = speed;
+            document.querySelectorAll('#controls button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if (speed === 0.5) document.getElementById('speed-05').classList.add('active');
+            if (speed === 1.0) document.getElementById('speed-10').classList.add('active');
+            if (speed === 2.0) document.getElementById('speed-20').classList.add('active');
+        }
+
+        // ============================================================================
+        // START
+        // ============================================================================
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

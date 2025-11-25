@@ -1,0 +1,62 @@
+[
+  {
+    "ingredient_id": "oat_milk",
+    "description": "Oatly oat milk - went sour",
+    "quantity_wasted": 0.25,
+    "unit": "package",
+    "purchased_date": "2025-11-01",
+    "wasted_date": "2025-11-15",
+    "expected_expiration": "2025-11-20",
+    "reason": "spoiled",
+    "cost": 4.99,
+    "notes": "Opened 11/5, went bad faster than expected. Actual shelf life: 14 days (expected 19 days)"
+  },
+  {
+    "ingredient_id": "spinach",
+    "description": "Fresh spinach",
+    "quantity_wasted": 1.0,
+    "unit": "bunch",
+    "purchased_date": "2025-11-10",
+    "wasted_date": "2025-11-18",
+    "expected_expiration": "2025-11-17",
+    "reason": "expired",
+    "cost": 3.49,
+    "notes": "Forgot about it in crisper. Lasted 8 days, close to expected 7 days"
+  },
+  {
+    "ingredient_id": "bread",
+    "description": "Whole wheat bread",
+    "quantity_wasted": 0.5,
+    "unit": "package",
+    "purchased_date": "2025-10-28",
+    "wasted_date": "2025-11-12",
+    "expected_expiration": "2025-11-05",
+    "reason": "unused",
+    "cost": 5.99,
+    "notes": "Made too much other food, never got to the bread. Lasted 15 days (7 days past expected expiration!)"
+  },
+  {
+    "ingredient_id": "vegan_butter",
+    "description": "Earth Balance butter stick",
+    "quantity_wasted": 0.25,
+    "unit": "package",
+    "purchased_date": "2025-09-15",
+    "wasted_date": "2025-10-20",
+    "expected_expiration": "2025-10-15",
+    "reason": "freezer_burn",
+    "cost": 6.99,
+    "notes": "Forgot it was in freezer, got freezer burn. Lasted 35 days"
+  },
+  {
+    "ingredient_id": "bell_peppers",
+    "description": "Red bell peppers",
+    "quantity_wasted": 2.0,
+    "unit": "item",
+    "purchased_date": "2025-11-08",
+    "wasted_date": "2025-11-19",
+    "expected_expiration": "2025-11-22",
+    "reason": "spoiled",
+    "cost": 2.99,
+    "notes": "Started getting soft spots. Lasted 11 days (3 days before expected expiration)"
+  }
+]

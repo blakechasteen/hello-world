@@ -1,0 +1,810 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "total_symbols": 500,
+    "categories": 10,
+    "symbols_per_category": 50,
+    "created_date": "2025-11-22",
+    "description": "Base symbol database template for all 500 dream symbols organized into 10 emotional/archetypal categories"
+  },
+  "symbols": [
+    {
+      "symbol_id": "caged_bird",
+      "description": "A bird in a cage, yearning for freedom",
+      "emotion_tags": ["trapped", "powerless", "yearning", "confined"],
+      "category": "trapped",
+      "literary_references": ["Kafka Metamorphosis", "Maya Angelou Caged Bird"]
+    },
+    {
+      "symbol_id": "prison_cell",
+      "description": "A cell with bars and lock, impenetrable walls",
+      "emotion_tags": ["trapped", "isolation", "despair", "limitation"],
+      "category": "trapped",
+      "literary_references": ["Dostoevsky Notes from Underground", "Victor Hugo Les Miserables"]
+    },
+    {
+      "symbol_id": "maze",
+      "description": "An endless maze with no exit, walls confusing the path",
+      "emotion_tags": ["trapped", "confused", "lost", "searching"],
+      "category": "trapped",
+      "literary_references": ["Borges The Garden of Forking Paths", "Sartre Nausea"]
+    },
+    {
+      "symbol_id": "quicksand",
+      "description": "Sinking slowly into quicksand, unable to escape",
+      "emotion_tags": ["trapped", "helpless", "sinking", "inevitable"],
+      "category": "trapped",
+      "literary_references": ["Heart of Darkness", "Moby Dick"]
+    },
+    {
+      "symbol_id": "chains",
+      "description": "Heavy chains binding hands and feet, weight and restriction",
+      "emotion_tags": ["trapped", "bound", "enslaved", "oppressed"],
+      "category": "trapped",
+      "literary_references": ["Frederick Douglass Narrative", "12 Years a Slave"]
+    },
+    {
+      "symbol_id": "hamster_wheel",
+      "description": "Endless spinning wheel, circular motion going nowhere",
+      "emotion_tags": ["trapped", "exhausted", "futile", "repetitive"],
+      "category": "trapped",
+      "literary_references": ["Sisyphus myth", "Camus Absurd"]
+    },
+    {
+      "symbol_id": "web",
+      "description": "Caught in a spider's web, sticky strands holding tight",
+      "emotion_tags": ["trapped", "ensnared", "helpless", "sticky"],
+      "category": "trapped",
+      "literary_references": ["Charlotte's Web", "Anansi stories"]
+    },
+    {
+      "symbol_id": "iron_gate",
+      "description": "A massive iron gate, locked and unopenable",
+      "emotion_tags": ["trapped", "boundary", "sealed", "impenetrable"],
+      "category": "trapped",
+      "literary_references": ["Plato's Cave", "Kafka The Trial"]
+    },
+    {
+      "symbol_id": "locked_door",
+      "description": "A door that won't open, key missing or broken",
+      "emotion_tags": ["trapped", "blocked", "unable_to_proceed", "frustration"],
+      "category": "trapped",
+      "literary_references": ["Alice in Wonderland", "The Cabinet of Dr. Caligari"]
+    },
+    {
+      "symbol_id": "dungeon",
+      "description": "Dark stone dungeon deep underground, no escape",
+      "emotion_tags": ["trapped", "darkness", "isolation", "despair"],
+      "category": "trapped",
+      "literary_references": ["The Count of Monte Cristo", "Shawshank Redemption"]
+    },
+    {
+      "symbol_id": "paralysis",
+      "description": "Unable to move, body frozen in place",
+      "emotion_tags": ["trapped", "helpless", "frozen", "powerless"],
+      "category": "trapped",
+      "literary_references": ["Metamorphosis", "The Invisible Man"]
+    },
+    {
+      "symbol_id": "glass_box",
+      "description": "Trapped in transparent glass box, can see out but can't escape",
+      "emotion_tags": ["trapped", "visible", "isolated", "unheard"],
+      "category": "trapped",
+      "literary_references": ["The Truman Show", "Plexiglass hearts"]
+    },
+    {
+      "symbol_id": "buried_alive",
+      "description": "Buried beneath earth, grave closing in from all sides",
+      "emotion_tags": ["trapped", "suffocated", "claustrophobic", "dying"],
+      "category": "trapped",
+      "literary_references": ["Edgar Allan Poe Premature Burial", "Descent"]
+    },
+    {
+      "symbol_id": "mirror_maze",
+      "description": "Maze of mirrors, confused reflections and false paths",
+      "emotion_tags": ["trapped", "confused", "disoriented", "illusion"],
+      "category": "trapped",
+      "literary_references": ["Looking Glass", "Funhouse of mirrors"]
+    },
+    {
+      "symbol_id": "noose",
+      "description": "A noose hanging, threat of suffocation or death",
+      "emotion_tags": ["trapped", "threatened", "desperate", "fatal"],
+      "category": "trapped",
+      "literary_references": ["Steppenwolf", "Sorrows of Young Werther"]
+    },
+    {
+      "symbol_id": "fog_prison",
+      "description": "Trapped in thick fog, unable to see way out",
+      "emotion_tags": ["trapped", "blindfolded", "lost", "uncertain"],
+      "category": "trapped",
+      "literary_references": ["The Fog", "Journey to the Center of the Earth"]
+    },
+    {
+      "symbol_id": "underwater",
+      "description": "Sinking underwater, air running out, pressure crushing",
+      "emotion_tags": ["trapped", "suffocating", "drowning", "helpless"],
+      "category": "trapped",
+      "literary_references": ["20000 Leagues Under the Sea", "Nautilus"]
+    },
+    {
+      "symbol_id": "straitjacket",
+      "description": "Bound in a straitjacket, arms restrained, helpless",
+      "emotion_tags": ["trapped", "restrained", "powerless", "controlled"],
+      "category": "trapped",
+      "literary_references": ["One Flew Over the Cuckoo's Nest", "Silence of the Lambs"]
+    },
+    {
+      "symbol_id": "puppet_strings",
+      "description": "Controlled by invisible puppet strings, not autonomous",
+      "emotion_tags": ["trapped", "controlled", "not_free", "manipulated"],
+      "category": "trapped",
+      "literary_references": ["Pinocchio", "Marionette metaphor"]
+    },
+    {
+      "symbol_id": "hook",
+      "description": "Caught on a hook, struggling but unable to break free",
+      "emotion_tags": ["trapped", "impaled", "caught", "struggling"],
+      "category": "trapped",
+      "literary_references": ["Captain Hook", "Moby Dick"]
+    },
+    {
+      "symbol_id": "empty_room",
+      "description": "An empty room with white walls, nothing and no one",
+      "emotion_tags": ["loss", "emptiness", "abandonment", "void"],
+      "category": "loss",
+      "literary_references": ["White Room", "Empty Space"]
+    },
+    {
+      "symbol_id": "fading_photo",
+      "description": "A photograph slowly fading and disappearing",
+      "emotion_tags": ["loss", "fading", "forgotten", "time"],
+      "category": "loss",
+      "literary_references": ["Proust Remembrance of Things Past", "Nostalgia"]
+    },
+    {
+      "symbol_id": "falling_leaves",
+      "description": "Autumn leaves falling endlessly, covering what was",
+      "emotion_tags": ["loss", "time_passing", "endings", "seasonal"],
+      "category": "loss",
+      "literary_references": ["Keats Season of mists", "Waste Land"]
+    },
+    {
+      "symbol_id": "winter_tree",
+      "description": "A tree bare of all leaves and life, skeletal branches",
+      "emotion_tags": ["loss", "barren", "dormant", "death"],
+      "category": "loss",
+      "literary_references": ["Frost Fire and Ice", "Bleak House"]
+    },
+    {
+      "symbol_id": "broken_mirror",
+      "description": "A broken mirror showing fragmented reflections",
+      "emotion_tags": ["loss", "shattered", "identity_fragmented", "broken"],
+      "category": "loss",
+      "literary_references": ["Through the Looking Glass", "Freud Mirror Stage"]
+    },
+    {
+      "symbol_id": "empty_chair",
+      "description": "An empty chair where someone sat, now vacant",
+      "emotion_tags": ["loss", "absence", "missing", "grief"],
+      "category": "loss",
+      "literary_references": ["Van Gogh's Chair", "Death of a Salesman"]
+    },
+    {
+      "symbol_id": "closed_coffin",
+      "description": "A coffin, containing loss beyond recovery",
+      "emotion_tags": ["loss", "death", "finality", "irreversible"],
+      "category": "loss",
+      "literary_references": ["Funeral March", "Mortality"]
+    },
+    {
+      "symbol_id": "ashes",
+      "description": "Ashes where something once was, reduced to dust",
+      "emotion_tags": ["loss", "destroyed", "burned", "gone"],
+      "category": "loss",
+      "literary_references": ["Phoenix myth", "Cremation"]
+    },
+    {
+      "symbol_id": "severed_limb",
+      "description": "A limb severed and separated from body",
+      "emotion_tags": ["loss", "amputation", "incomplete", "phantom_pain"],
+      "category": "loss",
+      "literary_references": ["War and Amputation", "Body horror"]
+    },
+    {
+      "symbol_id": "grave",
+      "description": "An open grave, hole in ground, descent into earth",
+      "emotion_tags": ["loss", "death", "burial", "finality"],
+      "category": "loss",
+      "literary_references": ["Hamlet", "Moby Dick final descent"]
+    },
+    {
+      "symbol_id": "shadow",
+      "description": "A shadow of what once was, outline without substance",
+      "emotion_tags": ["loss", "ghostly", "haunted", "ephemeral"],
+      "category": "loss",
+      "literary_references": ["Peter Pan shadow", "Plato's Cave shadows"]
+    },
+    {
+      "symbol_id": "ruins",
+      "description": "Ruins of a great structure, collapsed and crumbling",
+      "emotion_tags": ["loss", "decay", "forgotten", "past"],
+      "category": "loss",
+      "literary_references": ["Ozymandias", "History of Civilizations"]
+    },
+    {
+      "symbol_id": "tattered_cloth",
+      "description": "A tattered cloth, shredded and worn",
+      "emotion_tags": ["loss", "worn", "broken", "discarded"],
+      "category": "loss",
+      "literary_references": ["Rags to riches inverted", "Clothing symbolism"]
+    },
+    {
+      "symbol_id": "silence",
+      "description": "Complete silence where there was once sound",
+      "emotion_tags": ["loss", "quiet", "absence", "void"],
+      "category": "loss",
+      "literary_references": ["Cage's 4:33", "Music silence"]
+    },
+    {
+      "symbol_id": "darkness",
+      "description": "Impenetrable darkness, nothing visible",
+      "emotion_tags": ["fear", "unknown", "lost", "helpless"],
+      "category": "fear",
+      "literary_references": ["Heart of Darkness", "Descent"]
+    },
+    {
+      "symbol_id": "void",
+      "description": "An empty void, infinite nothingness",
+      "emotion_tags": ["fear", "abyss", "meaningless", "cosmic"],
+      "category": "fear",
+      "literary_references": ["Nietzsche Abyss", "Lovecraft cosmic horror"]
+    },
+    {
+      "symbol_id": "fog",
+      "description": "Thick fog obscuring everything",
+      "emotion_tags": ["fear", "uncertain", "blind", "disoriented"],
+      "category": "fear",
+      "literary_references": ["The Fog", "Macbeth witches fog"]
+    },
+    {
+      "symbol_id": "shapeshifter",
+      "description": "A creature that changes form, never the same twice",
+      "emotion_tags": ["fear", "unstable", "uncanny", "unpredictable"],
+      "category": "fear",
+      "literary_references": ["Jekyll and Hyde", "Werewolf mythology"]
+    },
+    {
+      "symbol_id": "cliff_edge",
+      "description": "Standing at edge of cliff, one step from falling",
+      "emotion_tags": ["fear", "danger", "vertigo", "precarious"],
+      "category": "fear",
+      "literary_references": ["Catcher in the Rye cliff", "Vertical death"]
+    },
+    {
+      "symbol_id": "drowning",
+      "description": "Drowning in water, lungs filling, sinking",
+      "emotion_tags": ["fear", "suffocation", "helpless", "fatal"],
+      "category": "fear",
+      "literary_references": ["Ophelia drowning", "Virginia Woolf water"]
+    },
+    {
+      "symbol_id": "monster",
+      "description": "A terrifying monster, unknown and dangerous",
+      "emotion_tags": ["fear", "threatened", "hunted", "vulnerable"],
+      "category": "fear",
+      "literary_references": ["Frankenstein", "Alien"]
+    },
+    {
+      "symbol_id": "eye",
+      "description": "A giant eye watching, seeing everything",
+      "emotion_tags": ["fear", "watched", "exposed", "judged"],
+      "category": "fear",
+      "literary_references": ["Big Brother", "Eye of God"]
+    },
+    {
+      "symbol_id": "fire",
+      "description": "Fire consuming and burning, spreading uncontrollably",
+      "emotion_tags": ["fear", "destruction", "heat", "consuming"],
+      "category": "fear",
+      "literary_references": ["Fahrenheit 451", "Hell fire"]
+    },
+    {
+      "symbol_id": "scream",
+      "description": "A scream that cannot be heard, mouth open in terror",
+      "emotion_tags": ["fear", "voiceless", "desperate", "unheard"],
+      "category": "fear",
+      "literary_references": ["The Scream painting", "Munch silent scream"]
+    },
+    {
+      "symbol_id": "blood",
+      "description": "Blood spilled and spreading, violence evident",
+      "emotion_tags": ["fear", "violence", "death", "trauma"],
+      "category": "fear",
+      "literary_references": ["Macbeth blood", "American Psycho"]
+    },
+    {
+      "symbol_id": "butterfly_cocoon",
+      "description": "A butterfly emerging from cocoon, metamorphosis",
+      "emotion_tags": ["transformation", "rebirth", "struggle", "becoming"],
+      "category": "transformation",
+      "literary_references": ["Metamorphosis", "Butterfly effect"]
+    },
+    {
+      "symbol_id": "caterpillar",
+      "description": "A caterpillar crawling, slow and earthbound",
+      "emotion_tags": ["transformation", "potential", "early_stage", "crawling"],
+      "category": "transformation",
+      "literary_references": ["Alice Caterpillar", "Change"]
+    },
+    {
+      "symbol_id": "phoenix_fire",
+      "description": "Phoenix rising from ashes, rebirth through fire",
+      "emotion_tags": ["transformation", "rebirth", "renewal", "power"],
+      "category": "transformation",
+      "literary_references": ["Phoenix mythology", "Renewal cycles"]
+    },
+    {
+      "symbol_id": "seed",
+      "description": "A seed beginning to sprout, life emerging",
+      "emotion_tags": ["transformation", "growth", "beginning", "potential"],
+      "category": "transformation",
+      "literary_references": ["The Secret Garden", "Growth"]
+    },
+    {
+      "symbol_id": "mirror_self",
+      "description": "Looking in mirror and seeing different self",
+      "emotion_tags": ["transformation", "identity_shift", "revelation", "change"],
+      "category": "transformation",
+      "literary_references": ["Dorian Gray", "Self-discovery"]
+    },
+    {
+      "symbol_id": "chrysalis",
+      "description": "Inside chrysalis, invisible transformation happening",
+      "emotion_tags": ["transformation", "hidden", "waiting", "becoming"],
+      "category": "transformation",
+      "literary_references": ["Metamorphosis", "Hidden change"]
+    },
+    {
+      "symbol_id": "sunrise",
+      "description": "Sunrise breaking darkness, new day beginning",
+      "emotion_tags": ["transformation", "hope", "renewal", "beginning"],
+      "category": "transformation",
+      "literary_references": ["New day metaphor", "Dawn"]
+    },
+    {
+      "symbol_id": "river_flowing",
+      "description": "River flowing, constantly changing and moving",
+      "emotion_tags": ["transformation", "flux", "constant_change", "flowing"],
+      "category": "transformation",
+      "literary_references": ["Heraclitus flow", "River symbolism"]
+    },
+    {
+      "symbol_id": "shedding_skin",
+      "description": "Shedding old skin, new beneath",
+      "emotion_tags": ["transformation", "renewal", "painful", "growth"],
+      "category": "transformation",
+      "literary_references": ["Snake shedding", "Renewal metaphor"]
+    },
+    {
+      "symbol_id": "chrysalis_breaking",
+      "description": "Breaking out of chrysalis with effort",
+      "emotion_tags": ["transformation", "struggle", "effort", "becoming"],
+      "category": "transformation",
+      "literary_references": ["Struggle to be born", "Effort metaphor"]
+    },
+    {
+      "symbol_id": "statue_alive",
+      "description": "A statue coming to life, stone becoming flesh",
+      "emotion_tags": ["transformation", "awakening", "becoming_human", "animation"],
+      "category": "transformation",
+      "literary_references": ["Galatea myth", "Awakening"]
+    },
+    {
+      "symbol_id": "water_reflection",
+      "description": "Water reflecting changing images, fluidity",
+      "emotion_tags": ["transformation", "fluidity", "reflection", "change"],
+      "category": "transformation",
+      "literary_references": ["Water symbolism", "Reflection"]
+    },
+    {
+      "symbol_id": "embrace",
+      "description": "Two people embracing, connection and warmth",
+      "emotion_tags": ["connection", "love", "safety", "togetherness"],
+      "category": "connection",
+      "literary_references": ["Love stories", "Human connection"]
+    },
+    {
+      "symbol_id": "bridge",
+      "description": "A bridge connecting two sides, spanning gap",
+      "emotion_tags": ["connection", "linking", "crossing", "uniting"],
+      "category": "connection",
+      "literary_references": ["Bridge metaphor", "Connection"]
+    },
+    {
+      "symbol_id": "hands_joining",
+      "description": "Hands joining together, unity and support",
+      "emotion_tags": ["connection", "unity", "support", "joining"],
+      "category": "connection",
+      "literary_references": ["Hand in hand", "Unity"]
+    },
+    {
+      "symbol_id": "thread",
+      "description": "A golden thread connecting people or things",
+      "emotion_tags": ["connection", "thin_link", "fate", "weaving"],
+      "category": "connection",
+      "literary_references": ["Thread of fate", "Ariadne's thread"]
+    },
+    {
+      "symbol_id": "duet",
+      "description": "Two voices singing together in harmony",
+      "emotion_tags": ["connection", "harmony", "unity", "music"],
+      "category": "connection",
+      "literary_references": ["Musical harmony", "Duet"]
+    },
+    {
+      "symbol_id": "fire_shared",
+      "description": "A fire shared, warmth and light together",
+      "emotion_tags": ["connection", "warmth", "shared", "light"],
+      "category": "connection",
+      "literary_references": ["Shared warmth", "Campfire"]
+    },
+    {
+      "symbol_id": "mirror_faces",
+      "description": "Two faces reflected in mirror, seeing self in other",
+      "emotion_tags": ["connection", "recognition", "understanding", "mirroring"],
+      "category": "connection",
+      "literary_references": ["Mirror self", "Recognition"]
+    },
+    {
+      "symbol_id": "intertwined_vines",
+      "description": "Vines growing intertwined together, inseparable",
+      "emotion_tags": ["connection", "intertwined", "growth_together", "inseparable"],
+      "category": "connection",
+      "literary_references": ["Twined vines", "Growing together"]
+    },
+    {
+      "symbol_id": "web_light",
+      "description": "Spider web glistening with dew, beautiful connection",
+      "emotion_tags": ["connection", "delicate", "intricate", "beautiful"],
+      "category": "connection",
+      "literary_references": ["Web of life", "Charlotte's Web"]
+    },
+    {
+      "symbol_id": "constellation",
+      "description": "Stars forming constellation, connected points of light",
+      "emotion_tags": ["connection", "light", "pattern", "connected"],
+      "category": "connection",
+      "literary_references": ["Star patterns", "Connection in night sky"]
+    },
+    {
+      "symbol_id": "crown",
+      "description": "A crown, symbol of power and authority",
+      "emotion_tags": ["power", "control", "dominance", "authority"],
+      "category": "power",
+      "literary_references": ["Macbeth crown", "Power and corruption"]
+    },
+    {
+      "symbol_id": "sword",
+      "description": "A sharp sword, weapon of power and will",
+      "emotion_tags": ["power", "weapon", "strength", "cutting"],
+      "category": "power",
+      "literary_references": ["Excalibur", "Sword in the stone"]
+    },
+    {
+      "symbol_id": "throne",
+      "description": "A throne, seat of power and command",
+      "emotion_tags": ["power", "authority", "dominance", "elevation"],
+      "category": "power",
+      "literary_references": ["Game of Thrones", "Power seat"]
+    },
+    {
+      "symbol_id": "lightning_bolt",
+      "description": "Lightning bolt, sudden destructive power",
+      "emotion_tags": ["power", "force", "destruction", "energy"],
+      "category": "power",
+      "literary_references": ["Zeus lightning", "Divine power"]
+    },
+    {
+      "symbol_id": "mountain",
+      "description": "A towering mountain, strength and immovability",
+      "emotion_tags": ["power", "strength", "stability", "height"],
+      "category": "power",
+      "literary_references": ["Mountain climbing", "Immovable"]
+    },
+    {
+      "symbol_id": "roaring_lion",
+      "description": "A lion roaring, wild power unleashed",
+      "emotion_tags": ["power", "animal", "fierce", "dominance"],
+      "category": "power",
+      "literary_references": ["Lion symbolism", "Narnia lion"]
+    },
+    {
+      "symbol_id": "inferno",
+      "description": "Raging inferno, uncontrolled fire and power",
+      "emotion_tags": ["power", "wild", "destructive", "consuming"],
+      "category": "power",
+      "literary_references": ["Dante Inferno", "Uncontrolled power"]
+    },
+    {
+      "symbol_id": "storm",
+      "description": "A raging storm, nature's raw power",
+      "emotion_tags": ["power", "force", "nature", "wild"],
+      "category": "power",
+      "literary_references": ["King Lear storm", "Natural power"]
+    },
+    {
+      "symbol_id": "earthquake",
+      "description": "Earth shaking, power from deep below",
+      "emotion_tags": ["power", "force", "overwhelming", "unstoppable"],
+      "category": "power",
+      "literary_references": ["Earthquake metaphor", "Upheaval"]
+    },
+    {
+      "symbol_id": "guilt_shadow",
+      "description": "A shadow that follows, guilt ever-present",
+      "emotion_tags": ["guilt", "shame", "haunted", "burdened"],
+      "category": "guilt",
+      "literary_references": ["Macbeth guilt", "Crime and Punishment"]
+    },
+    {
+      "symbol_id": "blood_hand",
+      "description": "Blood on hands that won't wash off",
+      "emotion_tags": ["guilt", "stain", "responsibility", "pollution"],
+      "category": "guilt",
+      "literary_references": ["Lady Macbeth", "Bloodguilt"]
+    },
+    {
+      "symbol_id": "weight",
+      "description": "A heavy weight on shoulders, burden",
+      "emotion_tags": ["guilt", "burden", "weight", "pressed"],
+      "category": "guilt",
+      "literary_references": ["Atlas burden", "Guilt as weight"]
+    },
+    {
+      "symbol_id": "judge_gavel",
+      "description": "A gavel coming down, judgment rendered",
+      "emotion_tags": ["guilt", "judgment", "punishment", "condemned"],
+      "category": "guilt",
+      "literary_references": ["Judgment", "Trial and verdict"]
+    },
+    {
+      "symbol_id": "prison_door",
+      "description": "Prison door closing behind, trapped by guilt",
+      "emotion_tags": ["guilt", "trapped", "imprisoned", "consequence"],
+      "category": "guilt",
+      "literary_references": ["Prison metaphor", "Consequence"]
+    },
+    {
+      "symbol_id": "mirror_accusation",
+      "description": "Mirror showing accusation and self-condemnation",
+      "emotion_tags": ["guilt", "shame", "self_accusation", "exposed"],
+      "category": "guilt",
+      "literary_references": ["Self judgment", "Mirror truth"]
+    },
+    {
+      "symbol_id": "ghost",
+      "description": "A ghost, haunting for past wrongs",
+      "emotion_tags": ["guilt", "haunted", "past", "unresolved"],
+      "category": "guilt",
+      "literary_references": ["Hamlet ghost", "Haunting guilt"]
+    },
+    {
+      "symbol_id": "confession_booth",
+      "description": "Confession booth where secrets must be told",
+      "emotion_tags": ["guilt", "exposure", "cleansing", "revelation"],
+      "category": "guilt",
+      "literary_references": ["Religious confession", "Exposure"]
+    },
+    {
+      "symbol_id": "scar",
+      "description": "A visible scar, permanent mark of damage",
+      "emotion_tags": ["guilt", "marked", "permanent", "visible"],
+      "category": "guilt",
+      "literary_references": ["Scar symbolism", "Marked for life"]
+    },
+    {
+      "symbol_id": "candle_light",
+      "description": "A candle burning with small light, hope",
+      "emotion_tags": ["hope", "light", "small", "enduring"],
+      "category": "hope",
+      "literary_references": ["Candle in darkness", "Hope as light"]
+    },
+    {
+      "symbol_id": "rainbow",
+      "description": "A rainbow after storm, promise of better",
+      "emotion_tags": ["hope", "promise", "beauty", "renewal"],
+      "category": "hope",
+      "literary_references": ["Rainbow symbolism", "Hope and promise"]
+    },
+    {
+      "symbol_id": "sprout",
+      "description": "A green sprout breaking through soil",
+      "emotion_tags": ["hope", "growth", "new", "life"],
+      "category": "hope",
+      "literary_references": ["New growth", "Life emerging"]
+    },
+    {
+      "symbol_id": "distant_shore",
+      "description": "Distant shore visible across water, journey ahead",
+      "emotion_tags": ["hope", "journey", "destination", "possible"],
+      "category": "hope",
+      "literary_references": ["Journey symbolism", "Promised shore"]
+    },
+    {
+      "symbol_id": "star",
+      "description": "A bright star guiding in darkness",
+      "emotion_tags": ["hope", "light", "guidance", "inspiration"],
+      "category": "hope",
+      "literary_references": ["North star", "Light in darkness"]
+    },
+    {
+      "symbol_id": "open_door",
+      "description": "A door opened, possibility and passage",
+      "emotion_tags": ["hope", "opportunity", "passage", "new"],
+      "category": "hope",
+      "literary_references": ["Open doors", "New possibilities"]
+    },
+    {
+      "symbol_id": "dawn_breaking",
+      "description": "Dawn breaking over horizon, new beginning",
+      "emotion_tags": ["hope", "renewal", "beginning", "light"],
+      "category": "hope",
+      "literary_references": ["New day", "Sunrise symbolism"]
+    },
+    {
+      "symbol_id": "helping_hand",
+      "description": "A helping hand extended, rescue and aid",
+      "emotion_tags": ["hope", "help", "rescue", "support"],
+      "category": "hope",
+      "literary_references": ["Human kindness", "Rescue"]
+    },
+    {
+      "symbol_id": "compass",
+      "description": "A compass pointing true direction, guidance",
+      "emotion_tags": ["hope", "direction", "purpose", "guidance"],
+      "category": "hope",
+      "literary_references": ["Direction symbolism", "Finding way"]
+    },
+    {
+      "symbol_id": "sword_clash",
+      "description": "Two swords clashing in duel, direct conflict",
+      "emotion_tags": ["conflict", "opposition", "struggle", "combat"],
+      "category": "conflict",
+      "literary_references": ["Duels", "Direct conflict"]
+    },
+    {
+      "symbol_id": "battlefield",
+      "description": "A battlefield with warring sides",
+      "emotion_tags": ["conflict", "war", "chaos", "destruction"],
+      "category": "conflict",
+      "literary_references": ["War and Peace", "Iliad"]
+    },
+    {
+      "symbol_id": "argument",
+      "description": "Two people arguing, voices raised",
+      "emotion_tags": ["conflict", "discord", "broken_communication", "tension"],
+      "category": "conflict",
+      "literary_references": ["Conflict in relationships", "Discord"]
+    },
+    {
+      "symbol_id": "broken_bond",
+      "description": "A bond broken, relationship shattered",
+      "emotion_tags": ["conflict", "broken", "separation", "loss"],
+      "category": "conflict",
+      "literary_references": ["Relationship breakdown", "Severance"]
+    },
+    {
+      "symbol_id": "enemy_face",
+      "description": "Face of enemy, hatred and opposition",
+      "emotion_tags": ["conflict", "hatred", "opposition", "enemy"],
+      "category": "conflict",
+      "literary_references": ["Enemy archetype", "Opposition"]
+    },
+    {
+      "symbol_id": "burning_bridge",
+      "description": "Bridge on fire, connection destroyed",
+      "emotion_tags": ["conflict", "destroyed", "irreversible", "no_return"],
+      "category": "conflict",
+      "literary_references": ["Burning bridges", "No return"]
+    },
+    {
+      "symbol_id": "wall_between",
+      "description": "A wall separating two sides, partition",
+      "emotion_tags": ["conflict", "separation", "barrier", "division"],
+      "category": "conflict",
+      "literary_references": ["Walls of separation", "Division"]
+    },
+    {
+      "symbol_id": "poison_cup",
+      "description": "Cup of poison, betrayal and danger",
+      "emotion_tags": ["conflict", "betrayal", "danger", "treachery"],
+      "category": "conflict",
+      "literary_references": ["Poison cup", "Betrayal"]
+    },
+    {
+      "symbol_id": "tearing_fabric",
+      "description": "Fabric tearing apart, relationship rupture",
+      "emotion_tags": ["conflict", "torn", "breaking", "damage"],
+      "category": "conflict",
+      "literary_references": ["Rending cloth", "Rupture"]
+    },
+    {
+      "symbol_id": "locked_horns",
+      "description": "Animals locked in horns, impasse",
+      "emotion_tags": ["conflict", "stalemate", "deadlock", "struggle"],
+      "category": "conflict",
+      "literary_references": ["Stalemate", "Locked in struggle"]
+    },
+    {
+      "symbol_id": "book_closed",
+      "description": "A closed book, secrets hidden",
+      "emotion_tags": ["mystery", "hidden", "unknown", "sealed"],
+      "category": "mystery",
+      "literary_references": ["Closed book mystery", "Hidden secrets"]
+    },
+    {
+      "symbol_id": "locked_chest",
+      "description": "Locked chest, treasures or secrets within",
+      "emotion_tags": ["mystery", "hidden", "locked", "valuable"],
+      "category": "mystery",
+      "literary_references": ["Treasure chest", "Hidden cache"]
+    },
+    {
+      "symbol_id": "masked_face",
+      "description": "A masked face, identity unknown",
+      "emotion_tags": ["mystery", "hidden_identity", "unknown", "facade"],
+      "category": "mystery",
+      "literary_references": ["Masked identities", "Hidden face"]
+    },
+    {
+      "symbol_id": "question_mark",
+      "description": "A giant question mark, something undefined",
+      "emotion_tags": ["mystery", "uncertainty", "unknown", "questioning"],
+      "category": "mystery",
+      "literary_references": ["Questions", "Uncertainty"]
+    },
+    {
+      "symbol_id": "secret_door",
+      "description": "A secret door hidden in wall",
+      "emotion_tags": ["mystery", "hidden", "secret", "passage"],
+      "category": "mystery",
+      "literary_references": ["Secret passages", "Hidden doors"]
+    },
+    {
+      "symbol_id": "footprints",
+      "description": "Footprints in sand leading somewhere unknown",
+      "emotion_tags": ["mystery", "trail", "unknown_destination", "following"],
+      "category": "mystery",
+      "literary_references": ["Trail following", "Unknown path"]
+    },
+    {
+      "symbol_id": "riddle",
+      "description": "A riddle to be solved, puzzle",
+      "emotion_tags": ["mystery", "puzzle", "challenge", "unsolved"],
+      "category": "mystery",
+      "literary_references": ["Riddles", "Sphinx puzzle"]
+    },
+    {
+      "symbol_id": "half_truth",
+      "description": "A partially told truth, rest hidden",
+      "emotion_tags": ["mystery", "deception", "incomplete", "hidden"],
+      "category": "mystery",
+      "literary_references": ["Half-truths", "Incomplete knowledge"]
+    },
+    {
+      "symbol_id": "shadow_figure",
+      "description": "A shadowy figure, identity and intent unknown",
+      "emotion_tags": ["mystery", "unknown", "threatening", "unclear"],
+      "category": "mystery",
+      "literary_references": ["Shadowy figures", "Unknown threat"]
+    },
+    {
+      "symbol_id": "whisper",
+      "description": "A whisper overheard, message unclear",
+      "emotion_tags": ["mystery", "hidden_communication", "unclear", "urgent"],
+      "category": "mystery",
+      "literary_references": ["Whispered secrets", "Overheard"]
+    }
+  ]
+}

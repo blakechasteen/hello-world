@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zerog-backend
+  labels:
+    app: zerog-backend
+    tier: application
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zerog-backend
+  template:
+    metadata:
+      labels:
+        app: zerog-backend
+        tier: application
+    spec:
+      containers:
+      - name: zerog-backend
+        image: zerog-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: NEO4J_URI
+          value: "bolt://neo4j:7687"
+        - name: NEO4J_USER
+          value: "neo4j"
+        - name: NEO4J_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: zerog-secrets
+              key: neo4j-password
+        - name: QDRANT_HOST
+          value: "qdrant"
+        - name: QDRANT_PORT
+          value: "6333"
+        - name: QDRANT_GRPC_PORT
+          value: "6334"
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: zerog-config
+              key: environment
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: zerog-config
+              key: log-level
+        - name: WORKERS
+          valueFrom:
+            configMapKeyRef:
+              name: zerog-config
+              key: workers
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: zerog-secrets
+              key: secret-key
+        - name: CORS_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: zerog-config
+              key: cors-origins
+        - name: PROMETHEUS_ENABLED
+          value: "true"
+        - name: PROMETHEUS_PORT
+          value: "8000"
+        - name: ENABLE_AUTHENTICATION
+          valueFrom:
+            configMapKeyRef:
+              name: zerog-config
+              key: enable-authentication
+        - name: ENABLE_RATE_LIMITING
+          value: "true"
+        - name: MAX_REQUESTS_PER_MINUTE
+          value: "100"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zerog-backend
+  labels:
+    app: zerog-backend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: zerog-backend

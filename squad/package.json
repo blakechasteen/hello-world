@@ -16,6 +16,16 @@
   "activationEvents": ["onStartupFinished"],
   "main": "./out/extension.js",
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "hololoomAgents",
+          "name": "HoloLoom Agents",
+          "icon": "$(pulse)",
+          "contextualTitle": "Agent Monitoring"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "squad.ask",
@@ -46,8 +56,26 @@
         "command": "squad.openPanel",
         "title": "Squad: Open Agent Panel",
         "icon": "$(output)"
+      },
+      {
+        "command": "hololoom.refreshAgentMonitor",
+        "title": "HoloLoom: Refresh Agent Monitor",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "hololoom.showAgentDetails",
+        "title": "HoloLoom: Show Agent Details"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "hololoom.refreshAgentMonitor",
+          "when": "view == hololoomAgents",
+          "group": "navigation"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "squad.ask",
@@ -101,6 +129,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
+    "ws": "^8.14.2",
+    "@types/ws": "^8.5.10"
   }
 }

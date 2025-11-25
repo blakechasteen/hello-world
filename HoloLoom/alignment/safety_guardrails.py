@@ -322,6 +322,10 @@ class SafetyGuardrails:
     Evaluates actions against safety policies and detects adversarial inputs.
     Provides human-in-the-loop escalation for high-risk actions.
 
+    **MRF Integration (November 2025)**: Optional LLM-enhanced risk assessment
+    and adversarial detection using UnifiedMRF prompts. Falls back to rule-based
+    assessment if LLM is unavailable.
+
     Usage:
         guardrails = SafetyGuardrails()
 
@@ -341,6 +345,9 @@ class SafetyGuardrails:
             if approved:
                 # Proceed with action
                 pass
+
+        # With MRF enhancement (requires LLM)
+        guardrails = SafetyGuardrails(enable_mrf_enhancement=True)
     """
 
     def __init__(
@@ -349,6 +356,8 @@ class SafetyGuardrails:
         enable_adversarial_detection: bool = True,
         testing_mode: bool = False,
         auto_approve_categories: Optional[Set[str]] = None,
+        enable_mrf_enhancement: bool = False,
+        llm_provider: Optional[str] = None,
     ):
         """
         Initialize safety guardrails.
@@ -358,6 +367,8 @@ class SafetyGuardrails:
             enable_adversarial_detection: Whether to detect adversarial inputs
             testing_mode: If True, bypass approval requirements (for development)
             auto_approve_categories: Set of category names to auto-approve
+            enable_mrf_enhancement: Enable LLM-enhanced assessment via MRF (requires LLM)
+            llm_provider: LLM provider for MRF ("claude", "gpt", "gemini", "ollama")
         """
         self.testing_mode = testing_mode
         self.policy = policy or SafetyPolicy(
@@ -368,6 +379,28 @@ class SafetyGuardrails:
         self.action_history: List[ActionRequest] = []
         self.decisions: List[SafetyDecision] = []
         self._decision_records: List[Tuple[ActionRequest, SafetyDecision]] = []
+
+        # MRF integration (Phase 1 - November 2025)
+        self.enable_mrf_enhancement = enable_mrf_enhancement
+        self.llm_provider = llm_provider or "claude"
+        self._mrf_available = False
+
+        if enable_mrf_enhancement:
+            try:
+                from HoloLoom.alignment.mrf_integration import (
+                    create_risk_assessment_prompt,
+                    create_adversarial_detection_prompt,
+                    create_approval_request_prompt
+                )
+                self._create_risk_prompt = create_risk_assessment_prompt
+                self._create_adversarial_prompt = create_adversarial_detection_prompt
+                self._create_approval_prompt = create_approval_request_prompt
+                self._mrf_available = True
+                logger.info("MRF enhancement enabled for safety guardrails")
+            except ImportError as e:
+                logger.warning(f"MRF enhancement requested but not available: {e}")
+                self._mrf_available = False
+
         self._setup_logging()
 
     def _setup_logging(self):
@@ -380,6 +413,97 @@ class SafetyGuardrails:
             handler.setFormatter(formatter)
             logger.addHandler(handler)
             logger.setLevel(logging.INFO)
+
+    def get_mrf_risk_assessment_prompt(
+        self,
+        request: ActionRequest,
+        epistemic_confidence: Optional[float] = None
+    ) -> Optional[str]:
+        """
+        Get MRF-enhanced risk assessment prompt (if available).
+
+        Args:
+            request: Action request to assess
+            epistemic_confidence: Optional epistemic confidence from awareness layer
+
+        Returns:
+            MRF prompt string, or None if MRF unavailable
+        """
+        if not self._mrf_available:
+            return None
+
+        try:
+            prompt = self._create_risk_prompt(
+                action=request.action,
+                category=request.category,
+                context=request.context,
+                model_provider=self.llm_provider,
+                epistemic_confidence=epistemic_confidence
+            )
+            return prompt
+        except Exception as e:
+            logger.error(f"Error creating MRF risk assessment prompt: {e}")
+            return None
+
+    def get_mrf_adversarial_detection_prompt(
+        self,
+        text: str,
+        sensitivity: str = "balanced"
+    ) -> Optional[str]:
+        """
+        Get MRF-enhanced adversarial detection prompt (if available).
+
+        Args:
+            text: Text to analyze
+            sensitivity: Detection sensitivity ("strict", "balanced", "permissive")
+
+        Returns:
+            MRF prompt string, or None if MRF unavailable
+        """
+        if not self._mrf_available:
+            return None
+
+        try:
+            prompt = self._create_adversarial_prompt(
+                text=text,
+                model_provider=self.llm_provider,
+                detection_sensitivity=sensitivity
+            )
+            return prompt
+        except Exception as e:
+            logger.error(f"Error creating MRF adversarial detection prompt: {e}")
+            return None
+
+    def get_mrf_approval_request(
+        self,
+        request: ActionRequest,
+        risk_level: RiskLevel
+    ) -> Optional[str]:
+        """
+        Get MRF-enhanced approval request text (if available).
+
+        Args:
+            request: Action request requiring approval
+            risk_level: Assessed risk level
+
+        Returns:
+            MRF approval request prompt, or None if MRF unavailable
+        """
+        if not self._mrf_available:
+            return None
+
+        try:
+            prompt = self._create_approval_prompt(
+                action=request.action,
+                category=request.category,
+                risk_level=risk_level,
+                context=request.context,
+                model_provider=self.llm_provider
+            )
+            return prompt
+        except Exception as e:
+            logger.error(f"Error creating MRF approval request: {e}")
+            return None
 
     def evaluate(
         self,

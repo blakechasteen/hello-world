@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Agent Monitor - Real-Time Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --success: #238636;
+            --warning: #f0883e;
+            --error: #da3633;
+            --info: #58a6ff;
+            --purple: #8957e5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pulse {
+            width: 12px;
+            height: 12px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .metric-change {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .metric-change.positive { color: var(--success); }
+        .metric-change.negative { color: var(--error); }
+
+        .projects-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+        }
+
+        .project-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .project-header {
+            padding: 16px 20px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-name {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .agent-count {
+            font-size: 12px;
+            background: var(--bg-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        .agent-list {
+            padding: 12px;
+        }
+
+        .agent-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .agent-item:hover {
+            border-color: var(--info);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .agent-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .agent-query {
+            font-size: 14px;
+            font-weight: 500;
+            max-width: 70%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .status-running {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--info);
+        }
+
+        .status-completed {
+            background: rgba(35, 134, 54, 0.15);
+            color: var(--success);
+        }
+
+        .status-failed {
+            background: rgba(218, 54, 51, 0.15);
+            color: var(--error);
+        }
+
+        .status-waiting {
+            background: rgba(240, 136, 62, 0.15);
+            color: var(--warning);
+        }
+
+        .status-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-icon.running {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .agent-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .agent-feed {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            line-height: 1.5;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .feed-line {
+            margin-bottom: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .connection-dot.connected {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .connection-dot.disconnected {
+            background: var(--error);
+        }
+
+        .refresh-btn {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            opacity: 0.8;
+            transform: translateY(-1px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            max-width: 900px;
+            width: 100%;
+            margin: auto;
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .close-btn:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .tree-node {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--info);
+            padding: 16px;
+            margin: 12px 0 12px 20px;
+            border-radius: 6px;
+        }
+
+        .node-type {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--info);
+        }
+
+        .node-query {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .node-finding {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--info);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span class="pulse"></span>
+                HoloLoom Agent Monitor
+            </h1>
+            <p class="subtitle">Real-time agent reasoning visualization</p>
+        </header>
+
+        <!-- Metrics Overview -->
+        <div class="metrics-grid" id="metrics">
+            <div class="metric-card">
+                <div class="metric-label">Total Agents</div>
+                <div class="metric-value" id="total-agents">0</div>
+                <div class="metric-change">
+                    <span>Across all projects</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Active Projects</div>
+                <div class="metric-value" id="active-projects">0</div>
+                <div class="metric-change">
+                    <span>Currently running</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Avg Latency</div>
+                <div class="metric-value" id="avg-latency">0ms</div>
+                <div class="metric-change">
+                    <span>Response time</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Success Rate</div>
+                <div class="metric-value" id="success-rate">0%</div>
+                <div class="metric-change">
+                    <span>Completion rate</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div class="projects-container" id="projects">
+            <div class="empty-state">
+                <div class="empty-icon">🤖</div>
+                <p>Connecting to HoloLoom server...</p>
+                <p style="margin-top: 8px;">
+                    <button class="refresh-btn" onclick="loadSessions()">Retry Connection</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Status -->
+    <div class="connection-status">
+        <div class="connection-dot disconnected" id="connection-dot"></div>
+        <span id="connection-text">Disconnected</span>
+    </div>
+
+    <!-- Agent Details Modal -->
+    <div class="modal" id="agent-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Agent Details</div>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_URL = 'http://localhost:8000';
+        const WS_URL = 'ws://localhost:8000/ws/monitor';
+        let ws = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+        let sessions = new Map();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSessions();
+            connectWebSocket();
+        });
+
+        // Load initial sessions from REST API
+        async function loadSessions() {
+            try {
+                const response = await fetch(`${SERVER_URL}/api/monitor/sessions`);
+                if (!response.ok) throw new Error('Failed to fetch sessions');
+
+                const data = await response.json();
+                sessions.clear();
+
+                data.sessions.forEach(session => {
+                    sessions.set(session.agent_id, session);
+                });
+
+                renderDashboard();
+                updateMetrics(data);
+            } catch (error) {
+                console.error('Failed to load sessions:', error);
+                showEmptyState('Failed to connect to HoloLoom server. Is it running?');
+            }
+        }
+
+        // WebSocket connection
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket(WS_URL);
+
+                ws.onopen = () => {
+                    console.log('WebSocket connected');
+                    reconnectAttempts = 0;
+                    updateConnectionStatus(true);
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const message = JSON.parse(event.data);
+                        handleWebSocketMessage(message);
+                    } catch (error) {
+                        console.error('Failed to parse WebSocket message:', error);
+                    }
+                };
+
+                ws.onclose = () => {
+                    console.log('WebSocket disconnected');
+                    updateConnectionStatus(false);
+                    scheduleReconnect();
+                };
+
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+            } catch (error) {
+                console.error('Failed to create WebSocket:', error);
+                scheduleReconnect();
+            }
+        }
+
+        function scheduleReconnect() {
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                console.log('Max reconnection attempts reached');
+                return;
+            }
+
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+            reconnectAttempts++;
+
+            setTimeout(() => {
+                console.log(`Reconnecting (attempt ${reconnectAttempts})...`);
+                connectWebSocket();
+            }, delay);
+        }
+
+        function handleWebSocketMessage(message) {
+            switch (message.type) {
+                case 'agent_started':
+                    handleAgentStarted(message);
+                    break;
+                case 'agent_step':
+                    handleAgentStep(message);
+                    break;
+                case 'agent_status':
+                    handleAgentStatus(message);
+                    break;
+                case 'agent_feed':
+                    handleAgentFeed(message);
+                    break;
+                case 'agent_completed':
+                    handleAgentCompleted(message);
+                    break;
+                case 'agent_failed':
+                    handleAgentFailed(message);
+                    break;
+            }
+        }
+
+        function handleAgentStarted(message) {
+            const session = {
+                agent_id: message.agent_id,
+                project: message.project,
+                query: message.query,
+                mode: message.mode,
+                status: 'running',
+                feed_line1: '',
+                feed_line2: '',
+                current_step: 0,
+                total_steps: 0,
+                files: message.files || [],
+                start_time: message.timestamp || new Date().toISOString()
+            };
+
+            sessions.set(session.agent_id, session);
+            renderDashboard();
+        }
+
+        function handleAgentStep(message) {
+            const session = sessions.get(message.agent_id);
+            if (session) {
+                session.current_step = message.step;
+                session.total_steps = message.total_steps;
+                renderDashboard();
+            }
+        }
+
+        function handleAgentStatus(message) {
+            const session = sessions.get(message.agent_id);
+            if (session) {
+                session.status = message.status;
+                if (message.files) {
+                    session.files = message.files;
+                }
+                renderDashboard();
+            }
+        }
+
+        function handleAgentFeed(message) {
+            const session = sessions.get(message.agent_id);
+            if (session) {
+                session.feed_line1 = message.line1;
+                session.feed_line2 = message.line2;
+                renderDashboard();
+            }
+        }
+
+        function handleAgentCompleted(message) {
+            const session = sessions.get(message.agent_id);
+            if (session) {
+                session.status = 'completed';
+                session.total_duration_ms = message.total_duration_ms;
+                renderDashboard();
+            }
+        }
+
+        function handleAgentFailed(message) {
+            const session = sessions.get(message.agent_id);
+            if (session) {
+                session.status = 'failed';
+                renderDashboard();
+            }
+        }
+
+        function renderDashboard() {
+            // Group sessions by project
+            const projects = new Map();
+
+            for (const session of sessions.values()) {
+                if (!projects.has(session.project)) {
+                    projects.set(session.project, []);
+                }
+                projects.get(session.project).push(session);
+            }
+
+            const projectsContainer = document.getElementById('projects');
+
+            if (projects.size === 0) {
+                showEmptyState('No active agents. Start a query to see agent reasoning here.');
+                return;
+            }
+
+            let html = '';
+
+            for (const [project, agents] of projects.entries()) {
+                html += `
+                    <div class="project-card">
+                        <div class="project-header">
+                            <div class="project-name">
+                                📁 ${project}
+                            </div>
+                            <div class="agent-count">${agents.length} agent${agents.length === 1 ? '' : 's'}</div>
+                        </div>
+                        <div class="agent-list">
+                            ${agents.map(agent => renderAgent(agent)).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            projectsContainer.innerHTML = html;
+            updateGlobalMetrics();
+        }
+
+        function renderAgent(agent) {
+            const statusClass = `status-${agent.status}`;
+            const queryPreview = agent.query.length > 60
+                ? agent.query.substring(0, 60) + '...'
+                : agent.query;
+
+            return `
+                <div class="agent-item" onclick="showAgentDetails('${agent.agent_id}')">
+                    <div class="agent-header">
+                        <div class="agent-query">${queryPreview}</div>
+                        <div class="agent-status ${statusClass}">
+                            <div class="status-icon ${agent.status}"></div>
+                            ${agent.status}
+                        </div>
+                    </div>
+                    <div class="agent-meta">
+                        <div class="meta-item">
+                            🔧 ${agent.mode}
+                        </div>
+                        <div class="meta-item">
+                            📊 ${agent.current_step}/${agent.total_steps} steps
+                        </div>
+                        ${agent.total_duration_ms ? `
+                            <div class="meta-item">
+                                ⏱️ ${agent.total_duration_ms.toFixed(0)}ms
+                            </div>
+                        ` : ''}
+                    </div>
+                    ${agent.feed_line1 || agent.feed_line2 ? `
+                        <div class="agent-feed">
+                            ${agent.feed_line1 ? `<div class="feed-line">${agent.feed_line1}</div>` : ''}
+                            ${agent.feed_line2 ? `<div class="feed-line">${agent.feed_line2}</div>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function updateGlobalMetrics() {
+            const totalAgents = sessions.size;
+            const projects = new Set();
+            let totalDuration = 0;
+            let completedCount = 0;
+            let successCount = 0;
+
+            for (const session of sessions.values()) {
+                projects.add(session.project);
+
+                if (session.status === 'completed') {
+                    completedCount++;
+                    successCount++;
+                    if (session.total_duration_ms) {
+                        totalDuration += session.total_duration_ms;
+                    }
+                } else if (session.status === 'failed') {
+                    completedCount++;
+                }
+            }
+
+            const avgLatency = completedCount > 0 ? totalDuration / completedCount : 0;
+            const successRate = completedCount > 0 ? (successCount / completedCount) * 100 : 0;
+
+            document.getElementById('total-agents').textContent = totalAgents;
+            document.getElementById('active-projects').textContent = projects.size;
+            document.getElementById('avg-latency').textContent = `${avgLatency.toFixed(0)}ms`;
+            document.getElementById('success-rate').textContent = `${successRate.toFixed(0)}%`;
+        }
+
+        function updateMetrics(data) {
+            if (data.count !== undefined) {
+                document.getElementById('total-agents').textContent = data.count;
+            }
+        }
+
+        function showEmptyState(message) {
+            const projectsContainer = document.getElementById('projects');
+            projectsContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🤖</div>
+                    <p>${message}</p>
+                    <p style="margin-top: 8px;">
+                        <button class="refresh-btn" onclick="loadSessions()">Retry Connection</button>
+                    </p>
+                </div>
+            `;
+        }
+
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('connection-dot');
+            const text = document.getElementById('connection-text');
+
+            if (connected) {
+                dot.className = 'connection-dot connected';
+                text.textContent = 'Connected';
+            } else {
+                dot.className = 'connection-dot disconnected';
+                text.textContent = 'Disconnected';
+            }
+        }
+
+        async function showAgentDetails(agentId) {
+            try {
+                const response = await fetch(`${SERVER_URL}/api/monitor/sessions/${agentId}`);
+                if (!response.ok) throw new Error('Failed to fetch agent details');
+
+                const session = await response.json();
+
+                document.getElementById('modal-title').textContent = `Agent: ${session.agent_id}`;
+
+                const modalBody = document.getElementById('modal-body');
+                modalBody.innerHTML = `
+                    <div style="margin-bottom: 24px;">
+                        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 12px; font-size: 14px;">
+                            <div style="color: var(--text-secondary);">Project:</div>
+                            <div>${session.project}</div>
+
+                            <div style="color: var(--text-secondary);">Query:</div>
+                            <div>${session.query}</div>
+
+                            <div style="color: var(--text-secondary);">Mode:</div>
+                            <div>${session.mode}</div>
+
+                            <div style="color: var(--text-secondary);">Status:</div>
+                            <div><span class="agent-status status-${session.status}">${session.status.toUpperCase()}</span></div>
+
+                            ${session.total_duration_ms ? `
+                                <div style="color: var(--text-secondary);">Duration:</div>
+                                <div>${session.total_duration_ms.toFixed(0)}ms</div>
+                            ` : ''}
+
+                            <div style="color: var(--text-secondary);">Steps:</div>
+                            <div>${session.current_step} / ${session.total_steps}</div>
+                        </div>
+                    </div>
+
+                    ${session.tree && session.tree.node_id ? `
+                        <h3 style="margin-bottom: 16px; font-size: 18px;">Reasoning Tree</h3>
+                        ${renderTreeNode(session.tree)}
+                    ` : '<p style="color: var(--text-secondary);">Reasoning tree not yet available</p>'}
+                `;
+
+                document.getElementById('agent-modal').classList.add('active');
+            } catch (error) {
+                console.error('Failed to show agent details:', error);
+                alert('Failed to load agent details');
+            }
+        }
+
+        function renderTreeNode(node, depth = 0) {
+            if (!node || !node.node_id) return '';
+
+            const confidence = node.confidence
+                ? `<span class="confidence-badge">${(node.confidence * 100).toFixed(0)}% conf</span>`
+                : '';
+
+            let html = `
+                <div class="tree-node">
+                    <div class="node-type">
+                        ${node.step_type}
+                        ${confidence}
+                    </div>
+                    ${node.query ? `<div class="node-query">${node.query}</div>` : ''}
+                    ${node.finding ? `<div class="node-finding">${node.finding.substring(0, 300)}${node.finding.length > 300 ? '...' : ''}</div>` : ''}
+                </div>
+            `;
+
+            if (node.children && node.children.length > 0) {
+                for (const child of node.children) {
+                    html += renderTreeNode(child, depth + 1);
+                }
+            }
+
+            return html;
+        }
+
+        function closeModal() {
+            document.getElementById('agent-modal').classList.remove('active');
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('agent-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'agent-modal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

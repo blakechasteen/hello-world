@@ -1,0 +1,125 @@
+{
+  "scene_id": "test_scene_001",
+  "title": "Prison Dreams: Yearning for Freedom",
+  "symbols": [
+    {
+      "id": "caged_bird_001",
+      "name": "caged_bird",
+      "category": "restriction",
+      "model": "/dream_models/caged_bird.glb",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "visual_properties": {
+        "base_form": "organic",
+        "primary_color": "#4A90E2",
+        "secondary_color": "#F5A623",
+        "material_type": "solid",
+        "scale": 1.0
+      },
+      "metaphorical_physics": {
+        "type": "reactive",
+        "triggers": {
+          "proximity": "freedom"
+        },
+        "parameters": {
+          "base_rate": 0.5,
+          "max_rate": 2.0
+        }
+      },
+      "cinematic_references": [
+        {
+          "film": "The Shawshank Redemption",
+          "scene": "rain_emergence",
+          "visual_elements": [
+            "prison",
+            "rain",
+            "freedom"
+          ],
+          "lighting": {
+            "type": "overcast",
+            "color_temp": 6500,
+            "intensity": 0.8
+          },
+          "camera": {
+            "angle": "low",
+            "movement": "crane",
+            "focal_length": 35
+          },
+          "atmosphere": {
+            "fog_density": 0.003,
+            "particles": "rain",
+            "time_of_day": "overcast"
+          }
+        }
+      ]
+    },
+    {
+      "id": "storm_cloud_001",
+      "name": "storm_cloud",
+      "category": "conflict",
+      "model": "/dream_models/storm_cloud.glb",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "visual_properties": {
+        "base_form": "organic",
+        "primary_color": "#333333",
+        "secondary_color": "#555555",
+        "material_type": "ethereal",
+        "scale": 2.0
+      },
+      "metaphorical_physics": {
+        "type": "gravitational",
+        "triggers": {
+          "emotion": "anxiety"
+        },
+        "parameters": {
+          "base_rate": 1.0,
+          "threshold": 0.5
+        }
+      },
+      "cinematic_references": []
+    }
+  ],
+  "setting": {
+    "environment": "prison",
+    "lighting": "stormy",
+    "weather": "rain",
+    "atmosphere": "oppressive"
+  },
+  "cinematic": [],
+  "atmosphere": {
+    "fog_density": 0.008,
+    "fog_color": "#555555",
+    "particles": "rain",
+    "time_of_day": "overcast"
+  },
+  "participants": [
+    {
+      "resident_id": "user_001",
+      "name": "Andy",
+      "perspective": "first_person",
+      "emotional_state": {
+        "primary": "hope",
+        "intensity": 0.8
+      }
+    }
+  ],
+  "duration_seconds": 120.0,
+  "consciousness_level": 0.6
+}

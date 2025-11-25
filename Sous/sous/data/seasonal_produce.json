@@ -1,0 +1,102 @@
+[
+  {
+    "ingredient_id": "tomatoes",
+    "name": "Tomatoes",
+    "peak_seasons": ["summer", "fall"],
+    "available_months": [6, 7, 8, 9],
+    "grows_locally": true,
+    "typical_price_low_season": 3.99,
+    "typical_price_high_season": 1.99,
+    "notes": "Best flavor when locally grown in summer"
+  },
+  {
+    "ingredient_id": "zucchini",
+    "name": "Zucchini",
+    "peak_seasons": ["summer"],
+    "available_months": [7, 8, 9],
+    "grows_locally": true,
+    "typical_price_low_season": 2.99,
+    "typical_price_high_season": 1.49,
+    "notes": "Abundant in summer gardens"
+  },
+  {
+    "ingredient_id": "kale",
+    "name": "Kale",
+    "peak_seasons": ["fall", "winter"],
+    "available_months": [10, 11, 12, 1, 2, 3],
+    "grows_locally": true,
+    "typical_price_low_season": 3.49,
+    "typical_price_high_season": 2.49,
+    "notes": "Sweetens after first frost"
+  },
+  {
+    "ingredient_id": "strawberries",
+    "name": "Strawberries",
+    "peak_seasons": ["spring", "summer"],
+    "available_months": [5, 6, 7],
+    "grows_locally": true,
+    "typical_price_low_season": 5.99,
+    "typical_price_high_season": 3.49,
+    "notes": "Peak flavor in June"
+  },
+  {
+    "ingredient_id": "apples",
+    "name": "Apples",
+    "peak_seasons": ["fall"],
+    "available_months": [9, 10, 11],
+    "grows_locally": true,
+    "typical_price_low_season": 2.99,
+    "typical_price_high_season": 1.99,
+    "notes": "Store well through winter"
+  },
+  {
+    "ingredient_id": "bell_peppers",
+    "name": "Bell Peppers",
+    "peak_seasons": ["summer", "fall"],
+    "available_months": [7, 8, 9, 10],
+    "grows_locally": true,
+    "typical_price_low_season": 2.99,
+    "typical_price_high_season": 1.49,
+    "notes": "Green peppers available earlier than colored varieties"
+  },
+  {
+    "ingredient_id": "spinach",
+    "name": "Spinach",
+    "peak_seasons": ["spring", "fall"],
+    "available_months": [4, 5, 9, 10],
+    "grows_locally": true,
+    "typical_price_low_season": 3.99,
+    "typical_price_high_season": 2.99,
+    "notes": "Bolts in hot weather"
+  },
+  {
+    "ingredient_id": "sweet_potatoes",
+    "name": "Sweet Potatoes",
+    "peak_seasons": ["fall", "winter"],
+    "available_months": [10, 11, 12, 1, 2],
+    "grows_locally": true,
+    "typical_price_low_season": 1.99,
+    "typical_price_high_season": 0.99,
+    "notes": "Store for months in cool, dark place"
+  },
+  {
+    "ingredient_id": "green_beans",
+    "name": "Green Beans",
+    "peak_seasons": ["summer"],
+    "available_months": [6, 7, 8, 9],
+    "grows_locally": true,
+    "typical_price_low_season": 3.49,
+    "typical_price_high_season": 2.49,
+    "notes": "Pick frequently for continued production"
+  },
+  {
+    "ingredient_id": "carrots",
+    "name": "Carrots",
+    "peak_seasons": ["fall", "winter"],
+    "available_months": [9, 10, 11, 12, 1, 2],
+    "grows_locally": true,
+    "typical_price_low_season": 1.99,
+    "typical_price_high_season": 1.49,
+    "notes": "Can overwinter in ground with mulch"
+  }
+]

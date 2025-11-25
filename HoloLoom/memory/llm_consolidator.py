@@ -32,6 +32,9 @@ import json
 
 from HoloLoom.protocols.types import MemoryShard
 
+# UnifiedMRF for enhanced prompting (Phase 2.2 - Nov 2025)
+from HoloLoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+
 logger = logging.getLogger(__name__)
 
 # ============================================================================
@@ -390,7 +393,8 @@ class ProductionLLMConsolidator:
     def __init__(
         self,
         config: Optional[LLMConfig] = None,
-        enable_fallback: bool = True
+        enable_fallback: bool = True,
+        model_provider: Optional[str] = None  # NEW (Phase 2.2)
     ):
         """
         Initialize production LLM consolidator.
@@ -398,10 +402,16 @@ class ProductionLLMConsolidator:
         Args:
             config: LLM configuration (None = rule-based only)
             enable_fallback: Enable rule-based fallback on LLM failure
+            model_provider: LLM provider for UnifiedMRF optimization
+                ("claude", "gemini", "gpt", "ollama"). NEW (Phase 2.2)
         """
         self.config = config
         self.enable_fallback = enable_fallback
         self.prompts = ConsolidationPrompt()
+        self.model_provider = model_provider  # NEW (Phase 2.2)
+
+        # UnifiedMRF for enhanced consolidation prompts (Phase 2.2)
+        self.mrf = UnifiedMRF()
 
         # Initialize LLM client
         if config and config.provider != "none":
@@ -412,7 +422,8 @@ class ProductionLLMConsolidator:
         logger.info(
             f"Initialized ProductionLLMConsolidator: "
             f"provider={config.provider if config else 'none'}, "
-            f"fallback={enable_fallback}"
+            f"fallback={enable_fallback}, "
+            f"mrf_model={model_provider}"
         )
 
     async def extract_facts(self, episodes: List[MemoryShard]) -> List[str]:
@@ -446,17 +457,122 @@ class ProductionLLMConsolidator:
         return []
 
     async def _extract_facts_llm(self, episodes: List[MemoryShard]) -> List[str]:
-        """LLM-based fact extraction."""
-        # Format episodes for prompt
+        """
+        LLM-based fact extraction.
+
+        **UPDATED (Phase 2.2 - Nov 2025):** Uses UnifiedMRF 7-component framework
+        for enhanced fact extraction quality.
+        """
+        # Format episodes for metaprompt context
         episode_texts = "\n".join([
             f"{i+1}. {ep.text}"
             for i, ep in enumerate(episodes[:20])  # Limit to 20 to avoid token overflow
         ])
 
-        prompt = self.prompts.fact_extraction.format(episodes=episode_texts)
+        # Build metaprompt for fact extraction (Phase 2.2)
+        metaprompt = MetapromptConfig(
+            role=(
+                "You are an expert knowledge curator specializing in:\n"
+                "- Semantic fact extraction from episodic memories\n"
+                "- Information distillation and deduplication\n"
+                "- Atomic fact representation (one claim per fact)\n"
+                "- Identifying ground truth vs. opinion/speculation\n"
+                "- Concise, precise language for knowledge storage"
+            ),
+            objective={
+                "primary": "Extract atomic semantic facts from episodic memories, removing redundancy while preserving ground truth",
+                "secondary": [
+                    "Ensure each fact is self-contained and verifiable",
+                    "Filter out opinions, speculation, and low-confidence claims",
+                    "Maintain factual accuracy and contextual coherence"
+                ]
+            },
+            process=[
+                {
+                    "step": "1. Memory Review",
+                    "actions": [
+                        f"Read all episodic memories:\n{episode_texts}",
+                        "Identify recurring themes and concepts",
+                        "Note any contradictions or inconsistencies"
+                    ]
+                },
+                {
+                    "step": "2. Fact Extraction",
+                    "actions": [
+                        "Extract only factual information (not opinions/speculation)",
+                        "Make each fact atomic (one claim per fact)",
+                        "Ensure facts are self-contained (understandable without context)",
+                        "Remove temporal references unless critical (use timeless form)",
+                        "Consolidate duplicate or overlapping information"
+                    ]
+                },
+                {
+                    "step": "3. Quality Filtering",
+                    "actions": [
+                        "Remove facts with low confidence or unclear meaning",
+                        "Filter out facts that are too specific or trivial",
+                        "Keep only facts with high information value",
+                        "Limit to 10 most important facts"
+                    ]
+                }
+            ],
+            format_spec=(
+                "Return facts as a bullet point list (one fact per line).\n"
+                "Format: Clean bullet points with '•' or '-' or numbers.\n"
+                "Each fact should be 1-2 sentences max.\n"
+                "Example:\n"
+                "• Thompson Sampling uses Bayesian probability for exploration\n"
+                "• The algorithm balances exploration and exploitation trade-offs"
+            ),
+            constraints=[
+                "MUST extract only factual information (no opinions or speculation)",
+                "MUST make facts atomic (one independent claim per fact)",
+                "MUST remove redundancy (consolidate overlapping facts)",
+                "MUST keep facts concise (1-2 sentences maximum)",
+                "MUST return 10 facts or fewer (quality over quantity)",
+                "SHOULD use present tense (timeless facts)",
+                "SHOULD filter out low-value or trivial information"
+            ],
+            uncertainty=(
+                "If information is ambiguous or contradictory:\n"
+                "- Prefer facts with higher confidence/evidence\n"
+                "- Note contradictions if they represent different valid perspectives\n"
+                "- Omit facts that cannot be verified from the episodes\n"
+                "\n"
+                "If episodes contain opinions vs. facts:\n"
+                "- Extract only verifiable facts, not subjective opinions\n"
+                "- Example: 'X is useful' (opinion) vs. 'X is used for Y' (fact)"
+            ),
+            validation=[
+                "Each fact is self-contained (understandable without reading episodes)",
+                "Each fact is atomic (single independent claim)",
+                "No duplicate or overlapping facts",
+                "Facts are concise (1-2 sentences max)",
+                "Total facts ≤ 10",
+                "No opinions, speculation, or unverifiable claims"
+            ]
+        )
+
+        # Map model provider string to ModelProvider enum
+        provider = None
+        if self.model_provider:
+            provider_map = {
+                "claude": ModelProvider.CLAUDE,
+                "gemini": ModelProvider.GEMINI,
+                "gpt": ModelProvider.GPT,
+                "ollama": ModelProvider.OLLAMA
+            }
+            provider = provider_map.get(self.model_provider.lower())
+
+        # Generate enhanced prompt using UnifiedMRF
+        enhanced_prompt = self.mrf.enhance_prompt(
+            metaprompt=metaprompt,
+            query="",  # No additional query needed
+            model=provider
+        )
 
         # Get LLM completion
-        completion = await self.llm_client.complete(prompt)
+        completion = await self.llm_client.complete(enhanced_prompt)
         if not completion:
             return []
 
@@ -522,17 +638,122 @@ class ProductionLLMConsolidator:
         self,
         episodes: List[MemoryShard]
     ) -> List[tuple[str, str, str]]:
-        """LLM-based entity extraction."""
-        # Format episodes for prompt
+        """
+        LLM-based entity extraction.
+
+        **UPDATED (Phase 2.2 - Nov 2025):** Uses UnifiedMRF 7-component framework
+        for enhanced entity relationship extraction.
+        """
+        # Format episodes for metaprompt context
         episode_texts = "\n".join([
             f"{i+1}. {ep.text}"
             for i, ep in enumerate(episodes[:20])
         ])
 
-        prompt = self.prompts.entity_extraction.format(episodes=episode_texts)
+        # Build metaprompt for entity extraction (Phase 2.2)
+        metaprompt = MetapromptConfig(
+            role=(
+                "You are an expert knowledge graph curator specializing in:\n"
+                "- Entity recognition and disambiguation\n"
+                "- Relationship extraction from unstructured text\n"
+                "- Semantic relationship typing (IS_A, USES, PART_OF, etc.)\n"
+                "- Knowledge graph construction best practices\n"
+                "- Entity normalization and canonicalization"
+            ),
+            objective={
+                "primary": "Extract meaningful entity relationships from episodic memories for knowledge graph construction",
+                "secondary": [
+                    "Identify key entities (people, concepts, technologies, organizations)",
+                    "Extract semantic relationships between entities",
+                    "Use standard relationship types for consistency"
+                ]
+            },
+            process=[
+                {
+                    "step": "1. Entity Identification",
+                    "actions": [
+                        f"Review all memories:\n{episode_texts}",
+                        "Identify key entities (nouns: people, concepts, technologies, organizations)",
+                        "Normalize entity names (use canonical form, e.g., 'Thompson Sampling' not 'TS')",
+                        "Focus on important entities (not trivial mentions)"
+                    ]
+                },
+                {
+                    "step": "2. Relationship Extraction",
+                    "actions": [
+                        "Identify relationships between entities",
+                        "Use standard relationship types: IS_A, USES, PART_OF, CREATED_BY, SIMILAR_TO, LEADS_TO",
+                        "Ensure relationships are meaningful and non-trivial",
+                        "Avoid over-connecting entities (only strong relationships)"
+                    ]
+                },
+                {
+                    "step": "3. Quality Filtering",
+                    "actions": [
+                        "Remove trivial or weak relationships",
+                        "Consolidate duplicate relationships",
+                        "Limit to 20 most important relationships"
+                    ]
+                }
+            ],
+            format_spec=(
+                "Return relationships in arrow format: Entity1 → Relationship → Entity2\n"
+                "Format: One relationship per line with bullet points.\n"
+                "Use standard relationship types (IS_A, USES, PART_OF, etc.).\n"
+                "Example:\n"
+                "• Thompson Sampling → IS_A → Bayesian Algorithm\n"
+                "• Thompson Sampling → USES → Beta Distribution\n"
+                "• Exploration-Exploitation → PART_OF → Reinforcement Learning"
+            ),
+            constraints=[
+                "MUST use canonical entity names (full names, not abbreviations)",
+                "MUST use standard relationship types (IS_A, USES, PART_OF, CREATED_BY, SIMILAR_TO, LEADS_TO)",
+                "MUST ensure relationships are meaningful (not trivial)",
+                "MUST format as: Entity1 → Relationship → Entity2",
+                "MUST return 20 relationships or fewer",
+                "SHOULD focus on important entities (not every mention)",
+                "SHOULD avoid over-connecting (only strong relationships)"
+            ],
+            uncertainty=(
+                "If entity type is unclear:\n"
+                "- Use the most common/canonical form\n"
+                "- Prefer full names over abbreviations\n"
+                "\n"
+                "If relationship type is ambiguous:\n"
+                "- Choose the most specific relationship that fits\n"
+                "- Example: Prefer 'USES' over generic 'RELATED_TO'\n"
+                "- Use IS_A for taxonomy, PART_OF for composition, USES for functional"
+            ),
+            validation=[
+                "Each relationship has 3 parts: Entity1 → Relationship → Entity2",
+                "All entities use canonical/normalized names",
+                "All relationships use standard types (uppercase)",
+                "No duplicate relationships",
+                "Total relationships ≤ 20",
+                "Relationships are meaningful (not trivial)"
+            ]
+        )
+
+        # Map model provider string to ModelProvider enum
+        provider = None
+        if self.model_provider:
+            provider_map = {
+                "claude": ModelProvider.CLAUDE,
+                "gemini": ModelProvider.GEMINI,
+                "gpt": ModelProvider.GPT,
+                "ollama": ModelProvider.OLLAMA
+            }
+            provider = provider_map.get(self.model_provider.lower())
+
+        # Generate enhanced prompt using UnifiedMRF
+        enhanced_prompt = self.mrf.enhance_prompt(
+            metaprompt=metaprompt,
+            query="",  # No additional query needed
+            model=provider
+        )
 
         # Get LLM completion
-        completion = await self.llm_client.complete(prompt)
+        completion = await self.llm_client.complete(enhanced_prompt)
         if not completion:
             return []
 
@@ -701,7 +922,8 @@ def create_production_consolidator(
     provider: LLMProvider = "openai",
     model: Optional[str] = None,
     api_key: Optional[str] = None,
-    enable_fallback: bool = True
+    enable_fallback: bool = True,
+    model_provider: Optional[str] = None  # NEW (Phase 2.2)
 ) -> ProductionLLMConsolidator:
     """
     Create production LLM consolidator with sensible defaults.
@@ -711,12 +933,22 @@ def create_production_consolidator(
         model: Model name (None = use default)
         api_key: API key (None = read from environment)
         enable_fallback: Enable rule-based fallback
+        model_provider: LLM provider for UnifiedMRF optimization
+            ("claude", "gemini", "gpt", "ollama"). NEW (Phase 2.2)
 
     Returns:
         ProductionLLMConsolidator
     """
     if provider == "none":
-        return ProductionLLMConsolidator(config=None, enable_fallback=True)
+        return ProductionLLMConsolidator(
+            config=None,
+            enable_fallback=True,
+            model_provider=model_provider  # NEW (Phase 2.2)
+        )
 
     config = create_llm_config(provider, model, api_key)
-    return ProductionLLMConsolidator(config=config, enable_fallback=enable_fallback)
+    return ProductionLLMConsolidator(
+        config=config,
+        enable_fallback=enable_fallback,
+        model_provider=model_provider  # NEW (Phase 2.2)
+    )
