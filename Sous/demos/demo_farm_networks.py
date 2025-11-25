@@ -176,7 +176,7 @@ async def demo_marketplace(marketplace, farms_data, products_data):
     order = marketplace.create_order_from_cart(
         customer_id=customer_id,
         farm_id=farm_id,
-        fulfillment_method=FulfillmentMethod.PICKUP
+        fulfillment_method=FulfillmentMethod.FARM_PICKUP
     )
 
     print(f"   OK Order {order.order_id} created")
