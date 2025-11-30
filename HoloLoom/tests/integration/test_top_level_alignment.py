@@ -61,7 +61,7 @@ import asyncio
 
 # Import mythRL core components
 from HoloLoom.protocols import (
-    ComplexityLevel, ProvenceTrace, MythRLResult,
+    ComplexityLevel, ProvenanceTrace, MythRLResult,
     PatternSelectionProtocol, DecisionEngineProtocol,
     FeatureExtractionProtocol, WarpSpaceProtocol,
     MemoryStore as MemoryBackendProtocol,  # Alias for compatibility

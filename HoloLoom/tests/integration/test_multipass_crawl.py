@@ -238,8 +238,8 @@ async def test_provenance_tracking():
     complexity = ComplexityLevel.FAST
     
     # Create a trace object
-    from HoloLoom.protocols import ProvenceTrace
-    trace = ProvenceTrace(
+    from HoloLoom.protocols import ProvenanceTrace
+    trace = ProvenanceTrace(
         operation_id="test_crawl",
         complexity_level=complexity,
         start_time=time.perf_counter()

@@ -7,7 +7,7 @@ Demonstrates progressive complexity assessment and protocol integration.
 
 import asyncio
 from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.protocols import ComplexityLevel, ProvenceTrace
+from HoloLoom.protocols import ComplexityLevel, ProvenanceTrace
 from HoloLoom.config import Config
 from HoloLoom.protocols.types import Query, MemoryShard
 
@@ -145,7 +145,7 @@ async def _run_enhanced_shuttle() -> None:
     print()
     print("Enhanced WeavingShuttle features:")
     print("  ✅ 3-5-7-9 Progressive complexity assessment")
-    print("  ✅ ProvenceTrace for full computational provenance")
+    print("  ✅ ProvenanceTrace for full computational provenance")
     print("  ✅ Protocol registration system for swappable implementations")
     print("  ✅ Complexity auto-detection based on query characteristics")
     print("  ✅ Backward compatible with existing HoloLoom architecture")

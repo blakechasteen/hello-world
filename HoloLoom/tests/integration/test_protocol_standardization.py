@@ -14,14 +14,14 @@ print("=" * 80)
 print("TEST 1: Core Types Import")
 print("=" * 80)
 
-from HoloLoom.protocols.types import ComplexityLevel, ProvenceTrace, MythRLResult
+from HoloLoom.protocols.types import ComplexityLevel, ProvenanceTrace, MythRLResult
 
 print("✅ ComplexityLevel imported")
 print(f"   Available levels: {[level.name for level in ComplexityLevel]}")
 print(f"   Values: {[level.value for level in ComplexityLevel]}")
 
-print("\n✅ ProvenceTrace imported")
-trace = ProvenceTrace(
+print("\n✅ ProvenanceTrace imported")
+trace = ProvenanceTrace(
     operation_id="test_123",
     complexity_level=ComplexityLevel.FULL,
     start_time=time.perf_counter()
@@ -101,12 +101,12 @@ print("=" * 80)
 from dev.protocol_modules_mythrl import (
     MythRLShuttle,
     ComplexityLevel as DevComplexityLevel,
-    ProvenceTrace as DevProvenceTrace,
+    ProvenanceTrace as DevProvenanceTrace,
 )
 
 print("✅ MythRLShuttle imported from dev/")
 print("✅ ComplexityLevel imported from dev/ (actually from HoloLoom)")
-print("✅ ProvenceTrace imported from dev/ (actually from HoloLoom)")
+print("✅ ProvenanceTrace imported from dev/ (actually from HoloLoom)")
 
 # Verify they're the same objects
 assert ComplexityLevel is DevComplexityLevel, "ComplexityLevel should be the same object!"
@@ -191,7 +191,7 @@ print("\n" + "=" * 80)
 print("TEST 9: Provenance Tracing")
 print("=" * 80)
 
-trace = ProvenceTrace(
+trace = ProvenanceTrace(
     operation_id="demo_weave_001",
     complexity_level=ComplexityLevel.FULL,
     start_time=time.perf_counter()
@@ -221,7 +221,7 @@ print("=" * 80)
 from HoloLoom.protocols import __all__
 
 print(f"✅ Total Exports: {len(__all__)}")
-print(f"✅ Core Types: 3 (ComplexityLevel, ProvenceTrace, MythRLResult)")
+print(f"✅ Core Types: 3 (ComplexityLevel, ProvenanceTrace, MythRLResult)")
 print(f"✅ Existing Protocols: 10")
 print(f"✅ New mythRL Protocols: 4")
 print(f"✅ Single Source of Truth: HoloLoom/protocols/__init__.py")

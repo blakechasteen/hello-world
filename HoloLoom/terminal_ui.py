@@ -40,7 +40,7 @@ from rich.text import Text
 
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator, Query
 from HoloLoom.loom.command import PatternCard
-from HoloLoom.protocols import ComplexityLevel, ProvenceTrace
+from HoloLoom.protocols import ComplexityLevel, ProvenanceTrace
 
 # Awareness layer imports (graceful degradation if not available)
 try:
@@ -75,7 +75,7 @@ class ConversationEntry:
     response: str
     confidence: float
     duration_ms: float
-    trace: Optional[ProvenceTrace] = None
+    trace: Optional[ProvenanceTrace] = None
 
     # Awareness context (optional)
     awareness_context: Optional[Any] = None
@@ -303,12 +303,12 @@ class TerminalUI:
         )
         self.console.print("\n", panel)
     
-    def show_trace(self, trace: ProvenceTrace):
+    def show_trace(self, trace: ProvenanceTrace):
         """
         Display detailed provenance trace.
 
         Args:
-            trace: ProvenceTrace object with shuttle events
+            trace: ProvenanceTrace object with shuttle events
         """
         self.console.print("\n[bold cyan]Provenance Trace:[/]\n")
 
