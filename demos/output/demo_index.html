@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Demo Suite</title>
+    <style>
+        :root {
+            --color-success: #10b981;
+            --color-info: #3b82f6;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+            --color-bg-dark: #0a0a0a;
+            --color-bg-card: #141414;
+            --color-accent: #00d4ff;
+            --color-text: #e5e5e5;
+            --color-text-muted: #737373;
+            --space-2: 0.5rem;
+            --space-4: 1rem;
+            --space-8: 2rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-bg-dark);
+            color: var(--color-text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: var(--space-8);
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-2);
+            background: linear-gradient(90deg, var(--color-accent), var(--color-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--color-text-muted);
+            font-size: 1.1rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-8);
+            padding: var(--space-4);
+            background: var(--color-bg-card);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-accent);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .service-status {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-4);
+            padding: var(--space-4);
+            background: rgba(0,0,0,0.3);
+            flex-wrap: wrap;
+        }
+
+        .service {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: 0.5rem 1rem;
+            background: var(--color-bg-card);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .service-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-text-muted);
+        }
+
+        .service-dot.online {
+            background: var(--color-success);
+            box-shadow: 0 0 8px var(--color-success);
+        }
+
+        .demo-flows {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-4);
+            padding: var(--space-8);
+            flex-wrap: wrap;
+        }
+
+        .flow-card {
+            background: var(--color-bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: var(--space-4);
+            width: 280px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .flow-card:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-4px);
+        }
+
+        .flow-card h3 {
+            color: var(--color-accent);
+            margin-bottom: var(--space-2);
+        }
+
+        .flow-card p {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+        }
+
+        .flow-time {
+            display: inline-block;
+            background: rgba(0,212,255,0.1);
+            color: var(--color-accent);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: var(--space-2);
+        }
+
+        .main {
+            padding: var(--space-8);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .category {
+            margin-bottom: var(--space-8);
+        }
+
+        .category h2 {
+            font-size: 1.25rem;
+            color: var(--color-text);
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-2);
+            border-bottom: 2px solid var(--color-accent);
+            display: inline-block;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-4);
+        }
+
+        .demo-card {
+            background: var(--color-bg-card);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: var(--space-4);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+            display: block;
+        }
+
+        .demo-card:hover {
+            border-color: var(--color-accent);
+            background: rgba(0,212,255,0.05);
+        }
+
+        .demo-card h3 {
+            font-size: 1rem;
+            margin-bottom: var(--space-2);
+            color: var(--color-text);
+        }
+
+        .demo-card p {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            line-height: 1.5;
+        }
+
+        .demo-tag {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--color-info);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-top: var(--space-2);
+            text-transform: uppercase;
+        }
+
+        .demo-tag.tufte {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--color-success);
+        }
+
+        .demo-tag.interactive {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--color-warning);
+        }
+
+        .footer {
+            text-align: center;
+            padding: var(--space-8);
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>HoloLoom Demo Suite</h1>
+        <p>120,000+ lines of UI/UX across 250+ files</p>
+    </header>
+
+    <div class="stats-bar">
+        <div class="stat">
+            <div class="stat-value">36</div>
+            <div class="stat-label">HTML Demos</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">7</div>
+            <div class="stat-label">Tufte Visualizations</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Backend Services</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">18</div>
+            <div class="stat-label">Workflow Agents</div>
+        </div>
+    </div>
+
+    <div class="service-status">
+        <div class="service">
+            <span class="service-dot" id="gradio-status"></span>
+            <span>Gradio (7860)</span>
+        </div>
+        <div class="service">
+            <span class="service-dot" id="chat-status"></span>
+            <span>Chat WS (8000)</span>
+        </div>
+        <div class="service">
+            <span class="service-dot" id="workflow-status"></span>
+            <span>Workflow (8001)</span>
+        </div>
+        <div class="service">
+            <span class="service-dot" id="agentic-status"></span>
+            <span>Agentic (8002)</span>
+        </div>
+    </div>
+
+    <div class="demo-flows">
+        <a href="../../ui/consciousness_shell.html" class="flow-card" style="border-color: var(--color-accent); background: rgba(0,212,255,0.08);">
+            <h3>Unified Shell</h3>
+            <p>Phase 1+2: Three-panel interface with live pipeline visualization, source attribution, and bottleneck detection.</p>
+            <span class="flow-time">LIVE</span>
+        </a>
+        <div class="flow-card" onclick="startQuickFlow()">
+            <h3>Quick Demo</h3>
+            <p>Essential highlights: Tufte visualizations, workflow builder, and knowledge graph.</p>
+            <span class="flow-time">10 minutes</span>
+        </div>
+        <div class="flow-card" onclick="startStandardFlow()">
+            <h3>Standard Demo</h3>
+            <p>Full feature tour including consciousness UI, chat interface, and all dashboards.</p>
+            <span class="flow-time">20 minutes</span>
+        </div>
+        <div class="flow-card" onclick="startDeepFlow()">
+            <h3>Deep Dive</h3>
+            <p>Complete walkthrough with technical details, API exploration, and AR client.</p>
+            <span class="flow-time">30 minutes</span>
+        </div>
+    </div>
+
+    <main class="main">
+        <!-- Tufte Visualizations -->
+        <section class="category">
+            <h2>Tufte Visualizations</h2>
+            <div class="demo-grid">
+                <a href="confidence_trajectory_demo.html" class="demo-card">
+                    <h3>Confidence Trajectory</h3>
+                    <p>Time series confidence tracking with anomaly detection. 4 anomaly types, cache effectiveness.</p>
+                    <span class="demo-tag tufte">Tufte</span>
+                </a>
+                <a href="cache_gauge_demo.html" class="demo-card">
+                    <h3>Cache Effectiveness Gauge</h3>
+                    <p>Radial gauge showing cache performance. 5 effectiveness ratings, recommendations.</p>
+                    <span class="demo-tag tufte">Tufte</span>
+                </a>
+                <a href="stage_waterfall_demo.html" class="demo-card">
+                    <h3>Stage Waterfall</h3>
+                    <p>Pipeline timing visualization with bottleneck detection. Sequential stage breakdown.</p>
+                    <span class="demo-tag tufte">Tufte</span>
+                </a>
+                <a href="knowledge_graph_demo.html" class="demo-card">
+                    <h3>Knowledge Graph Network</h3>
+                    <p>Force-directed graph layout with 7 edge types. Interactive tooltips, path highlighting.</p>
+                    <span class="demo-tag tufte">Tufte</span>
+                </a>
+                <a href="tufte_advanced_demo.html" class="demo-card">
+                    <h3>Advanced Tufte Demo</h3>
+                    <p>Small multiples, data density tables, inline sparklines. Maximum data-ink ratio.</p>
+                    <span class="demo-tag tufte">Tufte</span>
+                </a>
+                <a href="tufte_sparklines_demo.html" class="demo-card">
+                    <h3>Sparkline Intelligence</h3>
+                    <p>Word-sized graphics, trend analysis, endpoint indicators. Phase 2.1 complete.</p>
+                    <span class="demo-tag tufte">Tufte</span>
+                </a>
+                <a href="semantic_heatmap_demo.html" class="demo-card">
+                    <h3>Semantic Heatmap</h3>
+                    <p>228D semantic space projection. 16 interpretable axes visualization.</p>
+                    <span class="demo-tag tufte">Tufte</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Interactive Dashboards -->
+        <section class="category">
+            <h2>Interactive Dashboards</h2>
+            <div class="demo-grid">
+                <a href="../../ui/consciousness_shell.html" class="demo-card" style="border: 2px solid var(--color-accent);">
+                    <h3>Unified Shell (Phase 1+2)</h3>
+                    <p>Three-panel interface with live pipeline visualization, source attribution, bottleneck detection. See the tool work in real-time.</p>
+                    <span class="demo-tag interactive">UPDATED</span>
+                </a>
+                <a href="tufte_dashboard.html" class="demo-card">
+                    <h3>Tufte Dashboard</h3>
+                    <p>Main dashboard following Tufte principles. High data-ink ratio, minimal decoration.</p>
+                    <span class="demo-tag interactive">Interactive</span>
+                </a>
+                <a href="interactive_dashboard.html" class="demo-card">
+                    <h3>Interactive Dashboard</h3>
+                    <p>Full-featured dashboard with real-time updates and interactive controls.</p>
+                    <span class="demo-tag interactive">Interactive</span>
+                </a>
+                <a href="exploratory_dashboard.html" class="demo-card">
+                    <h3>Exploratory Dashboard</h3>
+                    <p>Data exploration interface with filtering and drill-down capabilities.</p>
+                    <span class="demo-tag interactive">Interactive</span>
+                </a>
+                <a href="optimization_dashboard.html" class="demo-card">
+                    <h3>Optimization Dashboard</h3>
+                    <p>Performance optimization tracking and analysis tools.</p>
+                    <span class="demo-tag interactive">Interactive</span>
+                </a>
+                <a href="factual_dashboard.html" class="demo-card">
+                    <h3>Factual Dashboard</h3>
+                    <p>Knowledge retrieval and fact-checking interface.</p>
+                    <span class="demo-tag interactive">Interactive</span>
+                </a>
+                <a href="skills_dashboard.html" class="demo-card">
+                    <h3>Skills Dashboard</h3>
+                    <p>Skill registration, visualization, and execution monitoring.</p>
+                    <span class="demo-tag interactive">Interactive</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- RAG & Analysis -->
+        <section class="category">
+            <h2>RAG & Analysis</h2>
+            <div class="demo-grid">
+                <a href="rag_dashboard.html" class="demo-card">
+                    <h3>RAG Dashboard</h3>
+                    <p>Retrieval-Augmented Generation performance dashboard. Level 4 agentic RAG.</p>
+                    <span class="demo-tag">RAG</span>
+                </a>
+                <a href="bottleneck_detection_demo.html" class="demo-card">
+                    <h3>Bottleneck Detection</h3>
+                    <p>Automatic pipeline bottleneck identification and analysis.</p>
+                    <span class="demo-tag">Analysis</span>
+                </a>
+                <a href="trough_report.html" class="demo-card">
+                    <h3>Trough QA Report</h3>
+                    <p>Code quality analysis report from Trough detector (24 categories).</p>
+                    <span class="demo-tag">QA</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Semantic Learning -->
+        <section class="category">
+            <h2>Semantic Learning</h2>
+            <div class="demo-grid">
+                <a href="semantic_trajectory_3d_20251027_191952.html" class="demo-card">
+                    <h3>Semantic Trajectory 3D</h3>
+                    <p>3D visualization of semantic space navigation over time.</p>
+                    <span class="demo-tag">Learning</span>
+                </a>
+                <a href="dimension_heatmap_20251027_191952.html" class="demo-card">
+                    <h3>Dimension Heatmap</h3>
+                    <p>228D semantic dimension analysis heatmap.</p>
+                    <span class="demo-tag">Learning</span>
+                </a>
+                <a href="semantic_learning_report_20251027_173444.html" class="demo-card">
+                    <h3>Semantic Learning Report</h3>
+                    <p>Multi-task learning performance across 6 signals.</p>
+                    <span class="demo-tag">Learning</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Design Showcases -->
+        <section class="category">
+            <h2>Design Showcases</h2>
+            <div class="demo-grid">
+                <a href="modern_theme_demo_standalone.html" class="demo-card">
+                    <h3>Modern Theme</h3>
+                    <p>Standalone modern theme demonstration with dark mode support.</p>
+                    <span class="demo-tag">Theme</span>
+                </a>
+                <a href="modern_css_showcase.html" class="demo-card">
+                    <h3>CSS Showcase</h3>
+                    <p>Modern CSS techniques and component library.</p>
+                    <span class="demo-tag">Theme</span>
+                </a>
+                <a href="dashboard_elegant.html" class="demo-card">
+                    <h3>Elegant Dashboard</h3>
+                    <p>Clean, elegant dashboard design with refined typography.</p>
+                    <span class="demo-tag">Theme</span>
+                </a>
+                <a href="ultra_dense.html" class="demo-card">
+                    <h3>Ultra Dense Layout</h3>
+                    <p>Maximum information density with minimal whitespace.</p>
+                    <span class="demo-tag">Theme</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Multimodal & Math -->
+        <section class="category">
+            <h2>Multimodal & Math</h2>
+            <div class="demo-grid">
+                <a href="multimodal_showcase.html" class="demo-card">
+                    <h3>Multimodal Showcase</h3>
+                    <p>Text + image processing with CLIP embeddings.</p>
+                    <span class="demo-tag">Multimodal</span>
+                </a>
+                <a href="multimodal_interactive.html" class="demo-card">
+                    <h3>Multimodal Interactive</h3>
+                    <p>Interactive multimodal query interface.</p>
+                    <span class="demo-tag">Multimodal</span>
+                </a>
+                <a href="math_pipeline_interactive.html" class="demo-card">
+                    <h3>Math Pipeline</h3>
+                    <p>Mathematical operation pipeline visualization.</p>
+                    <span class="demo-tag">Math</span>
+                </a>
+                <a href="math_pipeline_ultra.html" class="demo-card">
+                    <h3>Math Pipeline Ultra</h3>
+                    <p>Advanced math pipeline with full feature set.</p>
+                    <span class="demo-tag">Math</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Utilities -->
+        <section class="category">
+            <h2>Utilities & Other</h2>
+            <div class="demo-grid">
+                <a href="yearly_calendar.html" class="demo-card">
+                    <h3>Yearly Calendar</h3>
+                    <p>Calendar visualization for temporal data.</p>
+                    <span class="demo-tag">Utility</span>
+                </a>
+                <a href="writing_demo.html" class="demo-card">
+                    <h3>Writing Demo</h3>
+                    <p>AI-assisted writing interface demonstration.</p>
+                    <span class="demo-tag">Demo</span>
+                </a>
+                <a href="sparkline_intelligence.html" class="demo-card">
+                    <h3>Sparkline Intelligence</h3>
+                    <p>Advanced sparkline rendering and analysis.</p>
+                    <span class="demo-tag">Utility</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>HoloLoom UI/UX Demo Suite | 2025-11-29 | <a href="https://github.com/anthropics/claude-code" target="_blank">Built with Claude Code</a></p>
+    </footer>
+
+    <script>
+        // Check service status
+        async function checkService(port, elementId) {
+            const dot = document.getElementById(elementId);
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                const response = await fetch(`http://localhost:${port}/health`, {
+                    signal: controller.signal,
+                    mode: 'no-cors'
+                });
+                clearTimeout(timeoutId);
+                dot.classList.add('online');
+            } catch (e) {
+                dot.classList.remove('online');
+            }
+        }
+
+        // Check all services on load
+        window.addEventListener('load', () => {
+            checkService(7860, 'gradio-status');
+            checkService(8000, 'chat-status');
+            checkService(8001, 'workflow-status');
+            checkService(8002, 'agentic-status');
+        });
+
+        // Demo flows
+        function startQuickFlow() {
+            const demos = [
+                'confidence_trajectory_demo.html',
+                'knowledge_graph_demo.html',
+                'cache_gauge_demo.html'
+            ];
+            alert('Quick Demo Flow (10 min):\n\n1. Confidence Trajectory\n2. Knowledge Graph\n3. Cache Gauge\n\nOpening first demo...');
+            window.open(demos[0], '_blank');
+        }
+
+        function startStandardFlow() {
+            alert('Standard Demo Flow (20 min):\n\n1. All Tufte visualizations\n2. Interactive dashboards\n3. RAG dashboard\n4. Semantic learning\n\nStart with confidence_trajectory_demo.html');
+            window.open('confidence_trajectory_demo.html', '_blank');
+        }
+
+        function startDeepFlow() {
+            alert('Deep Dive Flow (30 min):\n\nIncludes all demos plus:\n- Workflow Builder (localhost:8001)\n- Consciousness UI (localhost:7860)\n- Chat Interface (localhost:8000)\n- Agentic API (localhost:8002)\n\nEnsure backend services are running first.');
+        }
+
+        // Refresh status every 10 seconds
+        setInterval(() => {
+            checkService(7860, 'gradio-status');
+            checkService(8000, 'chat-status');
+            checkService(8001, 'workflow-status');
+            checkService(8002, 'agentic-status');
+        }, 10000);
+    </script>
+</body>
+</html>
