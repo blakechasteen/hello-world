@@ -20,7 +20,7 @@ from typing import List
 from HoloLoom.agentic.core import (
     AgenticOrchestrator,
     ReasoningMode,
-    ReasoningResult,
+    AgenticResult,
     VerificationResult,
 )
 from HoloLoom.config import Config

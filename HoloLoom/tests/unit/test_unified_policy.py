@@ -5,6 +5,7 @@ Run this script to validate all components of the unified policy.
 Tests each feature independently and in combination.
 """
 
+import pytest
 import torch
 import torch.nn as nn
 import numpy as np
@@ -35,9 +36,9 @@ except ImportError as e:
     sys.exit(1)
 
 
-class TestRunner:
-    """Manages test execution and reporting."""
-    
+class _TestRunner:
+    """Manages test execution and reporting. Named with underscore to avoid pytest collection."""
+
     def __init__(self):
         self.passed = 0
         self.failed = 0
@@ -87,11 +88,22 @@ class TestRunner:
         return self.failed == 0
 
 
+# Pytest fixture for test runner
+@pytest.fixture
+def runner():
+    """Pytest fixture to provide a _TestRunner instance."""
+    return _TestRunner()
+
+
+# Alias for backward compatibility with type hints
+TestRunner = _TestRunner
+
+
 # ============================================================================
 # TEST FUNCTIONS
 # ============================================================================
 
-def test_mlp_block(runner: TestRunner):
+def test_mlp_block(runner: _TestRunner):
     """Test basic MLP building block."""
     def test():
         mlp = MLPBlock(128, [256, 256], activation='relu', residual=False)
@@ -110,7 +122,7 @@ def test_mlp_block(runner: TestRunner):
     runner.run_test("MLPBlock", test)
 
 
-def test_attention_block(runner: TestRunner):
+def test_attention_block(runner: _TestRunner):
     """Test attention mechanism."""
     def test():
         attn = AttentionBlock(128, num_heads=4)
@@ -122,7 +134,7 @@ def test_attention_block(runner: TestRunner):
     runner.run_test("AttentionBlock", test)
 
 
-def test_icm(runner: TestRunner):
+def test_icm(runner: _TestRunner):
     """Test Intrinsic Curiosity Module."""
     def test():
         state_dim, action_dim = 128, 6
@@ -146,7 +158,7 @@ def test_icm(runner: TestRunner):
     runner.run_test("Intrinsic Curiosity Module (ICM)", test)
 
 
-def test_rnd(runner: TestRunner):
+def test_rnd(runner: _TestRunner):
     """Test Random Network Distillation."""
     def test():
         state_dim = 128
@@ -168,7 +180,7 @@ def test_rnd(runner: TestRunner):
     runner.run_test("Random Network Distillation (RND)", test)
 
 
-def test_hierarchical_policy(runner: TestRunner):
+def test_hierarchical_policy(runner: _TestRunner):
     """Test hierarchical policy with skills."""
     def test():
         state_dim, action_dim = 128, 6
@@ -200,7 +212,7 @@ def test_hierarchical_policy(runner: TestRunner):
     runner.run_test("Hierarchical Policy", test)
 
 
-def test_unified_policy_deterministic(runner: TestRunner):
+def test_unified_policy_deterministic(runner: _TestRunner):
     """Test deterministic policy."""
     def test():
         policy = UnifiedPolicy(
@@ -228,7 +240,7 @@ def test_unified_policy_deterministic(runner: TestRunner):
     runner.run_test("Unified Policy - Deterministic", test)
 
 
-def test_unified_policy_categorical(runner: TestRunner):
+def test_unified_policy_categorical(runner: _TestRunner):
     """Test categorical policy."""
     def test():
         policy = UnifiedPolicy(
@@ -263,7 +275,7 @@ def test_unified_policy_categorical(runner: TestRunner):
     runner.run_test("Unified Policy - Categorical", test)
 
 
-def test_unified_policy_gaussian(runner: TestRunner):
+def test_unified_policy_gaussian(runner: _TestRunner):
     """Test Gaussian policy."""
     def test():
         policy = UnifiedPolicy(
@@ -294,7 +306,7 @@ def test_unified_policy_gaussian(runner: TestRunner):
     runner.run_test("Unified Policy - Gaussian", test)
 
 
-def test_unified_policy_with_attention(runner: TestRunner):
+def test_unified_policy_with_attention(runner: _TestRunner):
     """Test policy with attention mechanism."""
     def test():
         policy = UnifiedPolicy(
@@ -319,7 +331,7 @@ def test_unified_policy_with_attention(runner: TestRunner):
     runner.run_test("Unified Policy - With Attention", test)
 
 
-def test_unified_policy_with_icm(runner: TestRunner):
+def test_unified_policy_with_icm(runner: _TestRunner):
     """Test policy with ICM curiosity."""
     def test():
         policy = UnifiedPolicy(
@@ -342,7 +354,7 @@ def test_unified_policy_with_icm(runner: TestRunner):
     runner.run_test("Unified Policy - With ICM", test)
 
 
-def test_unified_policy_with_rnd(runner: TestRunner):
+def test_unified_policy_with_rnd(runner: _TestRunner):
     """Test policy with RND curiosity."""
     def test():
         policy = UnifiedPolicy(
@@ -364,7 +376,7 @@ def test_unified_policy_with_rnd(runner: TestRunner):
     runner.run_test("Unified Policy - With RND", test)
 
 
-def test_unified_policy_hierarchical(runner: TestRunner):
+def test_unified_policy_hierarchical(runner: _TestRunner):
     """Test unified policy in hierarchical mode."""
     def test():
         policy = UnifiedPolicy(
@@ -391,7 +403,7 @@ def test_unified_policy_hierarchical(runner: TestRunner):
     runner.run_test("Unified Policy - Hierarchical Mode", test)
 
 
-def test_ppo_agent_creation(runner: TestRunner):
+def test_ppo_agent_creation(runner: _TestRunner):
     """Test PPO agent creation."""
     def test():
         policy = UnifiedPolicy(
@@ -414,7 +426,7 @@ def test_ppo_agent_creation(runner: TestRunner):
     runner.run_test("PPO Agent - Creation", test)
 
 
-def test_ppo_gae(runner: TestRunner):
+def test_ppo_gae(runner: _TestRunner):
     """Test GAE computation."""
     def test():
         policy = UnifiedPolicy(input_dim=128, action_dim=6, policy_type='gaussian')
@@ -437,7 +449,7 @@ def test_ppo_gae(runner: TestRunner):
     runner.run_test("PPO Agent - GAE Computation", test)
 
 
-def test_ppo_update(runner: TestRunner):
+def test_ppo_update(runner: _TestRunner):
     """Test PPO update step."""
     def test():
         policy = UnifiedPolicy(
@@ -477,7 +489,7 @@ def test_ppo_update(runner: TestRunner):
     runner.run_test("PPO Agent - Update Step", test)
 
 
-def test_ppo_update_with_curiosity(runner: TestRunner):
+def test_ppo_update_with_curiosity(runner: _TestRunner):
     """Test PPO update with curiosity modules."""
     def test():
         policy = UnifiedPolicy(
@@ -513,7 +525,7 @@ def test_ppo_update_with_curiosity(runner: TestRunner):
     runner.run_test("PPO Agent - Update with Curiosity", test)
 
 
-def test_save_load(runner: TestRunner):
+def test_save_load(runner: _TestRunner):
     """Test saving and loading agent."""
     def test():
         import tempfile
@@ -546,7 +558,7 @@ def test_save_load(runner: TestRunner):
     runner.run_test("PPO Agent - Save/Load", test)
 
 
-def test_full_pipeline(runner: TestRunner):
+def test_full_pipeline(runner: _TestRunner):
     """Test complete training pipeline."""
     def test():
         # Create full-featured policy
@@ -616,8 +628,8 @@ def main():
     print("\nThis will test all components of the unified policy system.")
     print("Each test is independent and will report its own status.\n")
     
-    runner = TestRunner()
-    
+    runner = _TestRunner()
+
     # Run all tests
     test_mlp_block(runner)
     test_attention_block(runner)
