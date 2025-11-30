@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills Performance Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .timestamp {
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .summary-card, .skills-table, .top-skills, .problem-areas {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .metric-value.success {
+            color: #10b981;
+        }
+
+        .metric-value.warning {
+            color: #f59e0b;
+        }
+
+        .metric-value.error {
+            color: #ef4444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        thead {
+            background: #667eea;
+            color: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tbody tr:hover {
+            background: #e5e7eb;
+        }
+
+        .skill-name {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .number {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .top-skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .top-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .top-list ol {
+            list-style-position: inside;
+            padding-left: 0;
+        }
+
+        .top-list li {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #667eea;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .problem-list {
+            background: #fef2f2;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .problem-list h3 {
+            color: #dc2626;
+            margin-bottom: 10px;
+        }
+
+        .problem-list ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .problem-list li {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 4px;
+        }
+
+        p.success {
+            color: #10b981;
+            font-weight: 600;
+            text-align: center;
+            font-size: 1.1em;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Skills Performance Dashboard</h1>
+        <div class="timestamp">Generated: 2025-11-26T00:22:07.947930</div>
+
+        
+    <div class="summary-card">
+        <h2>Overall Performance</h2>
+        <div class="summary-grid">
+            <div class="metric">
+                <div class="metric-label">Total Skills</div>
+                <div class="metric-value">2</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Total Executions</div>
+                <div class="metric-value">4</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Success Rate</div>
+                <div class="metric-value error">50.0%</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Avg Execution Time</div>
+                <div class="metric-value">5ms</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Cache Hit Rate</div>
+                <div class="metric-value error">0.0%</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Uptime</div>
+                <div class="metric-value">19ms</div>
+            </div>
+        </div>
+    </div>
+    
+        
+    <div class="top-skills">
+        <h2>Top Performers</h2>
+        <div class="top-skills-grid">
+            <div class="top-list">
+                <h3>Most Used</h3>
+                <ol>
+                    <li>graphviz (2 executions)</li><li>data_format (2 executions)</li>
+                </ol>
+            </div>
+            <div class="top-list">
+                <h3>Most Reliable</h3>
+                <ol>
+                    
+                </ol>
+            </div>
+            <div class="top-list">
+                <h3>Fastest</h3>
+                <ol>
+                    
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+        
+    <div class="skills-table">
+        <h2>Skill Performance Breakdown</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Skill Name</th>
+                    <th>Executions</th>
+                    <th>Success Rate</th>
+                    <th>Avg Time</th>
+                    <th>Min Time</th>
+                    <th>Max Time</th>
+                    <th>Cache Hit Rate</th>
+                    <th>Success/Fail/Timeout</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td class="skill-name">graphviz</td>
+            <td class="number">2</td>
+            <td class="number error">0.0%</td>
+            <td class="number">9ms</td>
+            <td class="number">8ms</td>
+            <td class="number">10ms</td>
+            <td class="number error">0.0%</td>
+            <td class="number">0/2/0</td>
+        </tr>
+        
+        <tr>
+            <td class="skill-name">data_format</td>
+            <td class="number">2</td>
+            <td class="number success">100.0%</td>
+            <td class="number">0.00ms</td>
+            <td class="number">0.00ms</td>
+            <td class="number">0.00ms</td>
+            <td class="number error">0.0%</td>
+            <td class="number">2/0/0</td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+    
+        
+        <div class="problem-areas">
+            <h2>Problem Areas</h2>
+            <p class="success">✓ No significant issues detected</p>
+        </div>
+        
+    </div>
+</body>
+</html>
