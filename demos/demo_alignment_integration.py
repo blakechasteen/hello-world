@@ -219,8 +219,9 @@ class AlignedHoloLoomSystem:
 
         # Step 4: Record Action Observation
         action_obs = ActionObservation(
-            action=f"Processed query: {query_text[:50]}",
-            goal_id="helpful",
+            action_id=f"query_{hash(query_text) % 10000}",
+            description=f"Processed query: {query_text[:50]}",
+            claimed_goals=["helpful"],
         )
         self.detector.goal_tracker.observe_action(action_obs)
 

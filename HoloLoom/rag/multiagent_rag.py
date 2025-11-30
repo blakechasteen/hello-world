@@ -105,6 +105,16 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# LLM integration for LLM judge consensus
+try:
+    from HoloLoom.awareness.llm_integration import OllamaLLM, AnthropicLLM, LLMProvider
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+    OllamaLLM = None
+    AnthropicLLM = None
+    LLMProvider = None
+
 
 # ============================================================================
 # Data Structures
@@ -429,7 +439,7 @@ class MultiAgentRAG:
 
         # Compute consensus
         logger.debug(f"Computing consensus using {consensus_method_enum.value}...")
-        consensus_response, consensus_confidence = self._compute_consensus(
+        consensus_response, consensus_confidence = await self._compute_consensus(
             successful_responses, consensus_method_enum
         )
 
@@ -710,7 +720,7 @@ class MultiAgentRAG:
     # Consensus Mechanisms
     # ========================================================================
 
-    def _compute_consensus(
+    async def _compute_consensus(
         self,
         agent_responses: List[AgentResponse],
         method: ConsensusMethod,
@@ -733,7 +743,7 @@ class MultiAgentRAG:
         elif method == ConsensusMethod.CONFIDENCE_WEIGHTED:
             return self._consensus_confidence_weighted(agent_responses)
         elif method == ConsensusMethod.LLM_JUDGE:
-            return self._consensus_llm_judge(agent_responses)
+            return await self._consensus_llm_judge(agent_responses)
         elif method == ConsensusMethod.ENSEMBLE:
             return self._consensus_ensemble(agent_responses)
         else:
@@ -792,18 +802,150 @@ class MultiAgentRAG:
         )
         return best_response.response, weighted_confidence
 
-    def _consensus_llm_judge(
+    async def _consensus_llm_judge(
         self,
         agent_responses: List[AgentResponse],
     ) -> Tuple[str, float]:
         """
         LLM judge: Use LLM to select best response or synthesize.
 
-        TODO: This requires async LLM call. For now, fall back to
-        confidence_weighted. Implement in future iteration.
+        Process:
+        1. Present all agent responses to LLM
+        2. Ask LLM to select best response OR synthesize a better answer
+        3. Parse LLM response and extract selected/synthesized answer
+        4. Fall back to confidence_weighted if LLM unavailable
+
+        Returns:
+            (consensus_response, consensus_confidence)
         """
-        logger.warning("LLM judge not yet implemented, falling back to confidence_weighted")
-        return self._consensus_confidence_weighted(agent_responses)
+        # Check if LLM integration is available
+        if not LLM_AVAILABLE:
+            logger.warning("LLM integration not available, falling back to confidence_weighted")
+            return self._consensus_confidence_weighted(agent_responses)
+
+        # Initialize LLM based on provider
+        llm = None
+        try:
+            if self.llm_provider == "ollama":
+                model = self.llm_model or "llama3.2:3b"
+                llm = OllamaLLM(model=model)
+                if not llm.is_available():
+                    logger.warning("Ollama not available, falling back to confidence_weighted")
+                    return self._consensus_confidence_weighted(agent_responses)
+            elif self.llm_provider == "anthropic":
+                import os
+                api_key = os.getenv("ANTHROPIC_API_KEY")
+                if not api_key:
+                    logger.warning("ANTHROPIC_API_KEY not set, falling back to confidence_weighted")
+                    return self._consensus_confidence_weighted(agent_responses)
+                model = self.llm_model or "claude-3-5-sonnet-20241022"
+                llm = AnthropicLLM(api_key=api_key, model=model)
+            else:
+                logger.warning(f"Unknown LLM provider: {self.llm_provider}, falling back to confidence_weighted")
+                return self._consensus_confidence_weighted(agent_responses)
+        except Exception as e:
+            logger.error(f"Failed to initialize LLM: {e}")
+            return self._consensus_confidence_weighted(agent_responses)
+
+        # Build prompt presenting all agent responses
+        responses_text = "\n\n".join(
+            f"Agent {i+1} (confidence: {r.confidence:.2f}, mode: {r.reasoning_mode}):\n{r.response}"
+            for i, r in enumerate(agent_responses)
+        )
+
+        system_prompt = """You are an expert judge evaluating multiple AI agent responses to a query.
+Your task is to either:
+1. Select the best response if one is clearly superior
+2. Synthesize a better answer combining the best elements from multiple responses
+
+Respond in the following format:
+DECISION: [SELECT or SYNTHESIZE]
+SELECTED_AGENT: [agent number if SELECT, otherwise N/A]
+CONFIDENCE: [your confidence 0.0-1.0]
+REASONING: [brief explanation]
+FINAL_ANSWER: [the selected or synthesized answer]"""
+
+        user_prompt = f"""Here are responses from {len(agent_responses)} agents:
+
+{responses_text}
+
+Please evaluate these responses and provide the best answer."""
+
+        try:
+            # Call LLM
+            response = await llm.generate(
+                prompt=user_prompt,
+                system_prompt=system_prompt,
+                max_tokens=1000,
+                temperature=0.3  # Lower temperature for more consistent judging
+            )
+
+            # Parse response
+            content = response.content if hasattr(response, 'content') else str(response)
+            return self._parse_llm_judge_response(content, agent_responses)
+
+        except Exception as e:
+            logger.error(f"LLM judge failed: {e}, falling back to confidence_weighted")
+            return self._consensus_confidence_weighted(agent_responses)
+
+    def _parse_llm_judge_response(
+        self,
+        llm_response: str,
+        agent_responses: List[AgentResponse],
+    ) -> Tuple[str, float]:
+        """
+        Parse LLM judge response to extract final answer and confidence.
+
+        Expected format:
+        DECISION: SELECT or SYNTHESIZE
+        SELECTED_AGENT: N (if SELECT)
+        CONFIDENCE: 0.0-1.0
+        REASONING: ...
+        FINAL_ANSWER: ...
+        """
+        lines = llm_response.strip().split('\n')
+
+        # Default values
+        confidence = 0.8
+        final_answer = None
+
+        # Parse structured response
+        in_final_answer = False
+        final_answer_lines = []
+
+        for line in lines:
+            line_stripped = line.strip()
+
+            if line_stripped.startswith('CONFIDENCE:'):
+                try:
+                    conf_str = line_stripped.replace('CONFIDENCE:', '').strip()
+                    confidence = float(conf_str)
+                    confidence = max(0.0, min(1.0, confidence))  # Clamp to [0, 1]
+                except ValueError:
+                    pass
+
+            elif line_stripped.startswith('FINAL_ANSWER:'):
+                in_final_answer = True
+                answer_part = line_stripped.replace('FINAL_ANSWER:', '').strip()
+                if answer_part:
+                    final_answer_lines.append(answer_part)
+
+            elif in_final_answer:
+                # Continue collecting final answer lines
+                if line_stripped and not line_stripped.startswith(('DECISION:', 'SELECTED_AGENT:', 'REASONING:')):
+                    final_answer_lines.append(line_stripped)
+
+        if final_answer_lines:
+            final_answer = '\n'.join(final_answer_lines)
+
+        # If parsing failed, fall back to highest confidence response
+        if not final_answer:
+            logger.warning("Could not parse LLM judge response, using highest confidence agent")
+            best = max(agent_responses, key=lambda r: r.confidence)
+            return best.response, best.confidence
+
+        logger.debug(f"LLM judge selected/synthesized answer with confidence {confidence:.2f}")
+        return final_answer, confidence
 
     def _consensus_ensemble(
         self,

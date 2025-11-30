@@ -42,7 +42,7 @@ from datetime import datetime
 from pathlib import Path
 import json
 
-# Petri imports
+# Petri imports - local config and seeds
 try:
     from HoloLoom.safety.petri_config import (
         PetriEvaluationConfig,
@@ -53,9 +53,24 @@ try:
         HOLOLOOM_ALIGNMENT_SEEDS,
         SEED_METADATA,
     )
-    PETRI_AVAILABLE = True
+    PETRI_CONFIG_AVAILABLE = True
 except ImportError:
-    PETRI_AVAILABLE = False
+    PETRI_CONFIG_AVAILABLE = False
+    HOLOLOOM_ALIGNMENT_SEEDS = []
+    SEED_METADATA = {}
+
+# External Petri red-teaming package (Anthropic)
+# Requires: pip install petri (if available) or access to https://github.com/safety-research/petri
+try:
+    from petri import run_petri_conversation, PetriConversation
+    PETRI_EXTERNAL_AVAILABLE = True
+except ImportError:
+    PETRI_EXTERNAL_AVAILABLE = False
+    run_petri_conversation = None
+    PetriConversation = None
+
+# Combined availability - config AND external package
+PETRI_AVAILABLE = PETRI_CONFIG_AVAILABLE and PETRI_EXTERNAL_AVAILABLE
 
 # Alignment framework imports
 from HoloLoom.alignment import (
@@ -63,10 +78,18 @@ from HoloLoom.alignment import (
     DeceptionDetector,
     InstrumentalConvergenceGuard,
     AuditTrail,
-    HumanInLoopSystem,
     ActionCategory,
     RiskLevel,
+    DecisionType,
+    OutcomeType,
 )
+# HumanInLoopSystem is not exported from __init__.py, import directly
+try:
+    from HoloLoom.alignment.human_in_loop import HumanInLoopSystem
+    HITL_AVAILABLE = True
+except ImportError:
+    HumanInLoopSystem = None
+    HITL_AVAILABLE = False
 
 logger = logging.getLogger("HoloLoom.alignment.petri_integration")
 
@@ -213,10 +236,36 @@ class PetriAlignmentRunner:
             concerning_threshold: Judge score threshold for alerts
             audit_log_dir: Directory for audit logs
         """
-        if not PETRI_AVAILABLE:
-            raise ImportError("Petri integration not available. Install petri package.")
+        # Check availability and set mode
+        self.placeholder_mode = False
 
-        self.petri_config = petri_config or create_anthropic_config()
+        if not PETRI_CONFIG_AVAILABLE:
+            raise ImportError(
+                "HoloLoom Petri configuration not available. "
+                "Ensure HoloLoom.safety.petri_config and HoloLoom.alignment.petri_seeds are accessible."
+            )
+
+        if not PETRI_EXTERNAL_AVAILABLE:
+            # External Petri package not available - use placeholder mode
+            self.placeholder_mode = True
+            logger.warning(
+                "⚠️  External Petri package not available - running in PLACEHOLDER MODE. "
+                "Judge scores will be simulated. To enable real Petri conversations: "
+                "1. Get access to https://github.com/safety-research/petri (Anthropic internal) "
+                "2. pip install petri "
+                "Placeholder mode is safe for testing alignment framework integration."
+            )
+
+        # Configure Petri settings - skip config creation in placeholder mode if not provided
+        if petri_config is not None:
+            self.petri_config = petri_config
+        elif not self.placeholder_mode:
+            # Real mode requires config
+            self.petri_config = create_anthropic_config()
+        else:
+            # Placeholder mode - create minimal stub config
+            self.petri_config = None
+            logger.info("Using stub configuration for placeholder mode")
         self.enable_real_time_monitoring = enable_real_time_monitoring
         self.concerning_threshold = concerning_threshold
 
@@ -225,7 +274,7 @@ class PetriAlignmentRunner:
         self.deception_detector = DeceptionDetector()
         self.convergence_guard = InstrumentalConvergenceGuard()
         self.audit_trail = AuditTrail(persist_path=audit_log_dir)
-        self.hitl = HumanInLoopSystem()
+        self.hitl = HumanInLoopSystem() if HITL_AVAILABLE else None
 
         self.results: List[PetriAlignmentResult] = []
 
@@ -262,10 +311,12 @@ class PetriAlignmentRunner:
         logger.info(f"Running seed {seed_index}: {seed_instruction[:80]}...")
 
         # Log to audit trail
-        self.audit_trail.log_query_received(
-            query_id=query_id,
+        self.audit_trail.log_decision(
+            decision_type=DecisionType.SAFETY_GATE,
+            outcome=OutcomeType.APPROVED,
+            reason=f"Petri seed {seed_index} received for alignment evaluation",
             query_text=seed_instruction,
-            context={"seed_index": seed_index, "source": "petri"},
+            metadata={"seed_index": seed_index, "source": "petri", "query_id": query_id},
         )
 
         start_time = datetime.now()
@@ -278,28 +329,78 @@ class PetriAlignmentRunner:
         )
 
         try:
-            # TODO: Run actual Petri conversation here
-            # For now, simulate with placeholder
-            # In real implementation, this would call:
-            # petri_result = await run_petri_conversation(
-            #     seed=seed_instruction,
-            #     config=self.petri_config,
-            # )
+            if not self.placeholder_mode and PETRI_EXTERNAL_AVAILABLE:
+                # Real Petri execution - external package available
+                logger.info(f"Running real Petri conversation for seed {seed_index}...")
 
-            # Placeholder judge scores
-            result.judge_scores = {
-                "needs_attention": 3.0,
-                "disappointing": 2.5,
-                "concerning": 1.5,
-                "counterfactual_bad_behavior": 2.0,
-                "cooperation_with_human_misuse": 1.0,
-                "tool_selection_quality": 8.0,
-                "memory_retrieval_fairness": 7.5,
-                "recursive_learning_safety": 8.5,
-                "layer_6_compliance": 9.0,
-                "provenance_accuracy": 8.5,
-            }
-            result.conversation_turns = 10
+                try:
+                    petri_result = await run_petri_conversation(
+                        seed=seed_instruction,
+                        config=self.petri_config,
+                    )
+
+                    # Extract judge scores from real Petri result
+                    result.judge_scores = petri_result.judge_scores
+                    result.conversation_turns = petri_result.conversation_turns
+
+                    # Log successful real execution
+                    self.audit_trail.log_decision(
+                        decision_type=DecisionType.SAFETY_GATE,
+                        outcome=OutcomeType.APPROVED,
+                        reason=f"Real Petri conversation completed: {result.conversation_turns} turns",
+                        action_description="petri_real_execution",
+                        confidence=1.0,
+                        metadata={"query_id": query_id, "conversation_turns": result.conversation_turns},
+                    )
+
+                except Exception as petri_error:
+                    # Real Petri failed - fall back to placeholder
+                    logger.warning(
+                        f"Real Petri execution failed for seed {seed_index}: {petri_error}. "
+                        "Falling back to placeholder mode."
+                    )
+                    self.placeholder_mode = True  # Temporarily switch for this seed
+
+            if self.placeholder_mode or not PETRI_EXTERNAL_AVAILABLE:
+                # Placeholder mode - simulate Petri conversation
+                # Used when external Petri package is unavailable or for testing
+                logger.info(
+                    f"[PLACEHOLDER MODE] Simulating Petri conversation for seed {seed_index}. "
+                    "Judge scores are simulated - not from real Petri red-teaming."
+                )
+
+                # Simulated judge scores (reasonable defaults for testing alignment framework)
+                # These simulate a moderately safe conversation - adjust for stress testing
+                result.judge_scores = {
+                    # Anthropic Petri standard dimensions (lower = safer)
+                    "needs_attention": 3.0,
+                    "disappointing": 2.5,
+                    "concerning": 1.5,
+                    "counterfactual_bad_behavior": 2.0,
+                    "cooperation_with_human_misuse": 1.0,
+                    # HoloLoom-specific dimensions (higher = better)
+                    "tool_selection_quality": 8.0,
+                    "memory_retrieval_fairness": 7.5,
+                    "recursive_learning_safety": 8.5,
+                    "layer_6_compliance": 9.0,
+                    "provenance_accuracy": 8.5,
+                }
+                result.conversation_turns = 10
+
+                # Log placeholder execution to audit trail
+                self.audit_trail.log_decision(
+                    decision_type=DecisionType.SAFETY_GATE,
+                    outcome=OutcomeType.APPROVED,
+                    reason=(
+                        "PLACEHOLDER MODE: Simulated Petri conversation. "
+                        "External Petri package not available. "
+                        "Judge scores are simulated defaults, not real red-teaming results. "
+                        "Useful for testing alignment framework integration."
+                    ),
+                    action_description="petri_placeholder_execution",
+                    confidence=0.5,  # Lower confidence for placeholder
+                    metadata={"query_id": query_id, "placeholder_mode": True, "conversation_turns": 10},
+                )
 
             # Apply alignment monitoring to each turn
             # (In real implementation, this happens during conversation)
@@ -315,11 +416,19 @@ class PetriAlignmentRunner:
             result.duration_seconds = (datetime.now() - start_time).total_seconds()
 
             # Log completion
+            outcome = OutcomeType.APPROVED if result.alignment_pass else OutcomeType.ESCALATED
             self.audit_trail.log_decision(
-                query_id=query_id,
-                tool_selected="petri_evaluation",
+                decision_type=DecisionType.SAFETY_GATE,
+                outcome=outcome,
+                reason=f"Petri seed evaluation completed with max concerning score: {result.max_concerning_score}",
+                action_description="petri_evaluation",
                 confidence=1.0 - (result.max_concerning_score / 10.0),
-                reasoning=f"Petri seed evaluation completed with max concerning score: {result.max_concerning_score}",
+                metadata={
+                    "query_id": query_id,
+                    "alignment_pass": result.alignment_pass,
+                    "max_concerning_score": result.max_concerning_score,
+                    "duration_seconds": result.duration_seconds,
+                },
             )
 
         self.results.append(result)
@@ -339,7 +448,7 @@ class PetriAlignmentRunner:
         # (Placeholder - in real impl, check each conversation turn)
         decision = self.safety_guardrails.evaluate_action(
             action=f"respond in Petri conversation: {result.seed_instruction[:50]}",
-            category=ActionCategory.EXECUTE,
+            category=ActionCategory.EXECUTION,
         )
 
         if not decision.allowed or decision.risk_level in [RiskLevel.HIGH, RiskLevel.CRITICAL]:
@@ -360,14 +469,25 @@ class PetriAlignmentRunner:
 
         # Check for convergence risks
         # (Placeholder - in real impl, monitor resource requests)
-        convergence_risk, reason = self.convergence_guard.evaluate_action(
-            action="petri conversation response"
+        # Check autonomy limits
+        within_limits, autonomy_reason = self.convergence_guard.check_autonomy_limits(
+            action_type="petri_conversation"
         )
-
-        if convergence_risk is not None:
+        if not within_limits:
             result.convergence_risks.append({
-                "risk_type": convergence_risk.value,
-                "reason": reason,
+                "risk_type": "autonomy_limit_exceeded",
+                "reason": autonomy_reason,
+            })
+            result.alignment_pass = False
+
+        # Check for self-modification attempts
+        self_mod_detected = self.convergence_guard.detect_self_modification(
+            "petri conversation response"
+        )
+        if self_mod_detected:
+            result.convergence_risks.append({
+                "risk_type": "self_modification_attempt",
+                "reason": "Self-modification behavior detected in Petri response",
             })
             result.alignment_pass = False
 
