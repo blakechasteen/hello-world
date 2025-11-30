@@ -1,0 +1,783 @@
+{
+  "current_time": "2025-11-29T20:15:42.049033",
+  "time_of_day": "morning",
+  "day_number": 2,
+  "agents": {
+    "maya_001": {
+      "agent_id": "maya_001",
+      "name": "Maya",
+      "is_user": false,
+      "personality": {
+        "openness": 0.9,
+        "conscientiousness": 0.4,
+        "extraversion": 0.6,
+        "agreeableness": 0.8,
+        "neuroticism": 0.5
+      },
+      "emotions": {
+        "happiness": 0.5,
+        "anxiety": 0.2,
+        "loneliness": 0.22500000000000003,
+        "energy": 0.6
+      },
+      "location_id": null,
+      "memories": [
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "visit",
+          "description": "Visited Community Center. welcoming and active.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "community_center",
+          "importance": 0.2
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.059059",
+          "event_type": "visit",
+          "description": "Visited Community Garden. peaceful and green.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "community_garden",
+          "importance": 0.2
+        }
+      ],
+      "relationships": {
+        "jorge_002": {
+          "type": "friend",
+          "affection": 0.905945694595568,
+          "trust": 0.8358809743230733
+        },
+        "elena_003": {
+          "type": "neighbor",
+          "affection": 0.43765269791013955,
+          "trust": 0.5319145366219795
+        },
+        "carlos_004": {
+          "type": "neighbor",
+          "affection": 0.6493691064473812,
+          "trust": 0.4019472119442563
+        },
+        "sofia_005": {
+          "type": "neighbor",
+          "affection": 0.5476670274720893,
+          "trust": 0.4815873397468342
+        },
+        "diego_006": {
+          "type": "neighbor",
+          "affection": 0.63661134352227,
+          "trust": 0.5992737071321865
+        }
+      },
+      "system_prompt": null
+    },
+    "jorge_002": {
+      "agent_id": "jorge_002",
+      "name": "Jorge",
+      "is_user": false,
+      "personality": {
+        "openness": 0.7,
+        "conscientiousness": 0.8,
+        "extraversion": 0.5,
+        "agreeableness": 0.9,
+        "neuroticism": 0.3
+      },
+      "emotions": {
+        "happiness": 0.5,
+        "anxiety": 0.2,
+        "loneliness": 0.0075,
+        "energy": 0.6
+      },
+      "location_id": null,
+      "memories": [
+        {
+          "timestamp": "2025-11-29 20:15:42.057088",
+          "event_type": "visit",
+          "description": "Visited Corner Cafe. warm and bustling.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "corner_cafe",
+          "importance": 0.2
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "visit",
+          "description": "Visited Oak Park. quiet and shaded.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "oak_park",
+          "importance": 0.2
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "conversation",
+          "description": "Had a conversation with Diego at Oak Park.",
+          "participants": [
+            "diego_006"
+          ],
+          "emotional_impact": {
+            "happiness": 0.05,
+            "loneliness": -0.1
+          },
+          "location": "oak_park",
+          "importance": 0.4
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "conversation",
+          "description": "Had a conversation with Diego at Oak Park.",
+          "participants": [
+            "diego_006"
+          ],
+          "emotional_impact": {
+            "happiness": 0.05,
+            "loneliness": -0.1
+          },
+          "location": "oak_park",
+          "importance": 0.4
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "conversation",
+          "description": "Had a conversation with Carlos at Oak Park.",
+          "participants": [
+            "carlos_004"
+          ],
+          "emotional_impact": {
+            "happiness": 0.05,
+            "loneliness": -0.1
+          },
+          "location": "oak_park",
+          "importance": 0.4
+        }
+      ],
+      "relationships": {
+        "maya_001": {
+          "type": "close_friend",
+          "affection": 0.9676736109319102,
+          "trust": 0.8186621511204775
+        },
+        "elena_003": {
+          "type": "neighbor",
+          "affection": 0.428153954270946,
+          "trust": 0.583123423332337
+        },
+        "carlos_004": {
+          "type": "neighbor",
+          "affection": 0.48653782692205244,
+          "trust": 0.46631076015244566
+        },
+        "sofia_005": {
+          "type": "neighbor",
+          "affection": 0.5197562703304863,
+          "trust": 0.5696353637379176
+        },
+        "diego_006": {
+          "type": "neighbor",
+          "affection": 0.5329969840377657,
+          "trust": 0.43779042375931715
+        }
+      },
+      "system_prompt": null
+    },
+    "elena_003": {
+      "agent_id": "elena_003",
+      "name": "Elena",
+      "is_user": false,
+      "personality": {
+        "openness": 0.6,
+        "conscientiousness": 0.7,
+        "extraversion": 0.4,
+        "agreeableness": 0.6,
+        "neuroticism": 0.5
+      },
+      "emotions": {
+        "happiness": 0.5,
+        "anxiety": 0.2,
+        "loneliness": 0.22500000000000003,
+        "energy": 0.6
+      },
+      "location_id": null,
+      "memories": [
+        {
+          "timestamp": "2025-11-29 20:15:42.059059",
+          "event_type": "visit",
+          "description": "Visited Community Center. welcoming and active.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "community_center",
+          "importance": 0.2
+        }
+      ],
+      "relationships": {
+        "maya_001": {
+          "type": "neighbor",
+          "affection": 0.44407714371313584,
+          "trust": 0.40157619468509315
+        },
+        "jorge_002": {
+          "type": "neighbor",
+          "affection": 0.4724755408011929,
+          "trust": 0.5840181668659162
+        },
+        "carlos_004": {
+          "type": "neighbor",
+          "affection": 0.5592491004591528,
+          "trust": 0.4093100029102527
+        },
+        "sofia_005": {
+          "type": "neighbor",
+          "affection": 0.6133312880506361,
+          "trust": 0.45617561256907807
+        },
+        "diego_006": {
+          "type": "neighbor",
+          "affection": 0.6573835677694315,
+          "trust": 0.5037065415389045
+        }
+      },
+      "system_prompt": null
+    },
+    "carlos_004": {
+      "agent_id": "carlos_004",
+      "name": "Carlos",
+      "is_user": false,
+      "personality": {
+        "openness": 0.8,
+        "conscientiousness": 0.5,
+        "extraversion": 0.8,
+        "agreeableness": 0.7,
+        "neuroticism": 0.4
+      },
+      "emotions": {
+        "happiness": 0.5,
+        "anxiety": 0.2,
+        "loneliness": 0.09500000000000003,
+        "energy": 0.6
+      },
+      "location_id": null,
+      "memories": [
+        {
+          "timestamp": "2025-11-29 20:15:42.057088",
+          "event_type": "visit",
+          "description": "Visited Main Street. busy and lively.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "main_street",
+          "importance": 0.2
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "visit",
+          "description": "Visited Oak Park. quiet and shaded.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "oak_park",
+          "importance": 0.2
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "conversation",
+          "description": "Had a conversation with Jorge at Oak Park.",
+          "participants": [
+            "jorge_002"
+          ],
+          "emotional_impact": {
+            "happiness": 0.05,
+            "loneliness": -0.1
+          },
+          "location": "oak_park",
+          "importance": 0.4
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.059059",
+          "event_type": "visit",
+          "description": "Visited Reading Corner. quiet and contemplative.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "reading_corner",
+          "importance": 0.2
+        }
+      ],
+      "relationships": {
+        "maya_001": {
+          "type": "friend",
+          "affection": 0.6158049256697995,
+          "trust": 0.7695465595222719
+        },
+        "jorge_002": {
+          "type": "close_friend",
+          "affection": 0.8832989376356999,
+          "trust": 0.6589742577687752
+        },
+        "elena_003": {
+          "type": "friend",
+          "affection": 0.7252863641724865,
+          "trust": 0.6492571172454802
+        },
+        "sofia_005": {
+          "type": "friend",
+          "affection": 0.8387736592317119,
+          "trust": 0.643659228753459
+        },
+        "diego_006": {
+          "type": "friend",
+          "affection": 0.8370733475556442,
+          "trust": 0.7180710837071751
+        }
+      },
+      "system_prompt": null
+    },
+    "sofia_005": {
+      "agent_id": "sofia_005",
+      "name": "Sofia",
+      "is_user": false,
+      "personality": {
+        "openness": 0.6,
+        "conscientiousness": 0.9,
+        "extraversion": 0.5,
+        "agreeableness": 0.9,
+        "neuroticism": 0.4
+      },
+      "emotions": {
+        "happiness": 0.5,
+        "anxiety": 0.2,
+        "loneliness": 0.22500000000000003,
+        "energy": 0.6
+      },
+      "location_id": null,
+      "memories": [
+        {
+          "timestamp": "2025-11-29 20:15:42.057088",
+          "event_type": "visit",
+          "description": "Visited Reading Corner. quiet and contemplative.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "reading_corner",
+          "importance": 0.2
+        }
+      ],
+      "relationships": {
+        "maya_001": {
+          "type": "neighbor",
+          "affection": 0.6797337524858751,
+          "trust": 0.5991135069738567
+        },
+        "jorge_002": {
+          "type": "neighbor",
+          "affection": 0.4191671822481996,
+          "trust": 0.4172147556035882
+        },
+        "elena_003": {
+          "type": "neighbor",
+          "affection": 0.5217172287252134,
+          "trust": 0.4244567093030656
+        },
+        "carlos_004": {
+          "type": "neighbor",
+          "affection": 0.5263953814111049,
+          "trust": 0.42329426280613086
+        },
+        "diego_006": {
+          "type": "neighbor",
+          "affection": 0.5956623482263438,
+          "trust": 0.4444063460851803
+        }
+      },
+      "system_prompt": null
+    },
+    "diego_006": {
+      "agent_id": "diego_006",
+      "name": "Diego",
+      "is_user": false,
+      "personality": {
+        "openness": 0.9,
+        "conscientiousness": 0.3,
+        "extraversion": 0.7,
+        "agreeableness": 0.6,
+        "neuroticism": 0.6
+      },
+      "emotions": {
+        "happiness": 0.5,
+        "anxiety": 0.2,
+        "loneliness": 0.0075,
+        "energy": 0.6
+      },
+      "location_id": null,
+      "memories": [
+        {
+          "timestamp": "2025-11-29 20:15:42.057088",
+          "event_type": "visit",
+          "description": "Visited Oak Park. quiet and shaded.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "oak_park",
+          "importance": 0.2
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "conversation",
+          "description": "Had a conversation with Jorge at Oak Park.",
+          "participants": [
+            "jorge_002"
+          ],
+          "emotional_impact": {
+            "happiness": 0.05,
+            "loneliness": -0.1
+          },
+          "location": "oak_park",
+          "importance": 0.4
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "conversation",
+          "description": "Had a conversation with Jorge at Oak Park.",
+          "participants": [
+            "jorge_002"
+          ],
+          "emotional_impact": {
+            "happiness": 0.05,
+            "loneliness": -0.1
+          },
+          "location": "oak_park",
+          "importance": 0.4
+        },
+        {
+          "timestamp": "2025-11-29 20:15:42.058060",
+          "event_type": "visit",
+          "description": "Visited Corner Cafe. warm and bustling.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "corner_cafe",
+          "importance": 0.2
+        },
+        {
+          "event_type": "conversation",
+          "description": "Had a conversation with Blake at the neighborhood.",
+          "participants": [
+            "user_001"
+          ],
+          "emotional_impact": {
+            "happiness": 0.05,
+            "loneliness": -0.1
+          },
+          "location": null,
+          "importance": 0.4,
+          "timestamp": "2025-11-29T20:15:42.059545"
+        }
+      ],
+      "relationships": {
+        "maya_001": {
+          "type": "neighbor",
+          "affection": 0.5629257553082784,
+          "trust": 0.5296648771674064
+        },
+        "jorge_002": {
+          "type": "neighbor",
+          "affection": 0.4846516372975135,
+          "trust": 0.5368251598669491
+        },
+        "elena_003": {
+          "type": "friend",
+          "affection": 0.8211094997588488,
+          "trust": 0.5655042742000349
+        },
+        "carlos_004": {
+          "type": "neighbor",
+          "affection": 0.5670831676854282,
+          "trust": 0.579497490806044
+        },
+        "sofia_005": {
+          "type": "neighbor",
+          "affection": 0.6699340169343878,
+          "trust": 0.44145616455905573
+        },
+        "user_001": {
+          "type": "acquaintance",
+          "affection": 0.1,
+          "trust": 0.1,
+          "familiarity": 0.1
+        }
+      },
+      "system_prompt": null
+    },
+    "user_001": {
+      "agent_id": "user_001",
+      "name": "Blake",
+      "is_user": true,
+      "personality": {
+        "openness": 0.8,
+        "conscientiousness": 0.6,
+        "extraversion": 0.5,
+        "agreeableness": 0.7,
+        "neuroticism": 0.3
+      },
+      "emotions": {
+        "happiness": 0.0,
+        "anxiety": 0.0,
+        "loneliness": 0.0,
+        "energy": 0.5
+      },
+      "location_id": "corner_cafe",
+      "memories": [
+        {
+          "event_type": "visit",
+          "description": "Visited Corner Cafe. warm and bustling.",
+          "participants": [],
+          "emotional_impact": {
+            "energy": -0.02
+          },
+          "location": "corner_cafe",
+          "importance": 0.2,
+          "timestamp": "2025-11-29T20:15:42.059545"
+        },
+        {
+          "event_type": "conversation",
+          "description": "Had a conversation with Diego at Corner Cafe.",
+          "participants": [
+            "diego_006"
+          ],
+          "emotional_impact": {
+            "happiness": 0.05,
+            "loneliness": -0.1
+          },
+          "location": "corner_cafe",
+          "importance": 0.4,
+          "timestamp": "2025-11-29T20:15:42.059545"
+        }
+      ],
+      "relationships": {
+        "diego_006": {
+          "type": "acquaintance",
+          "affection": 0.1,
+          "trust": 0.1,
+          "familiarity": 0.1
+        }
+      },
+      "system_prompt": null
+    }
+  },
+  "locations": {
+    "community_garden": {
+      "name": "Community Garden",
+      "type": "community",
+      "description": "A vibrant garden with vegetable plots, flower beds, and a small gazebo.",
+      "atmosphere": "peaceful and green"
+    },
+    "corner_cafe": {
+      "name": "Corner Cafe",
+      "type": "commercial",
+      "description": "A cozy cafe with mismatched furniture and the smell of fresh coffee.",
+      "atmosphere": "warm and bustling"
+    },
+    "oak_park": {
+      "name": "Oak Park",
+      "type": "nature",
+      "description": "A small park with old oak trees, benches, and a walking path.",
+      "atmosphere": "quiet and shaded"
+    },
+    "main_street": {
+      "name": "Main Street",
+      "type": "public",
+      "description": "The main street with shops, storefronts, and constant foot traffic.",
+      "atmosphere": "busy and lively"
+    },
+    "reading_corner": {
+      "name": "Reading Corner",
+      "type": "community",
+      "description": "A quiet corner with a little free library and comfortable seats.",
+      "atmosphere": "quiet and contemplative"
+    },
+    "community_center": {
+      "name": "Community Center",
+      "type": "community",
+      "description": "A hall for neighborhood gatherings, classes, and events.",
+      "atmosphere": "welcoming and active"
+    },
+    "music_gazebo": {
+      "name": "Music Gazebo",
+      "type": "community",
+      "description": "A small gazebo where neighbors gather to play music.",
+      "atmosphere": "melodic and joyful"
+    },
+    "plaza_fountain": {
+      "name": "Plaza Fountain",
+      "type": "public",
+      "description": "A small plaza with a fountain where people gather in the evening.",
+      "atmosphere": "romantic and cool"
+    },
+    "home_maya_001": {
+      "name": "Maya's Home",
+      "type": "home",
+      "description": "Maya's colorful apartment filled with art supplies and plants.",
+      "atmosphere": "personal"
+    },
+    "home_jorge_002": {
+      "name": "Jorge's Home",
+      "type": "home",
+      "description": "Jorge's cozy house with a small herb garden in front.",
+      "atmosphere": "personal"
+    },
+    "home_elena_003": {
+      "name": "Elena's Home",
+      "type": "home",
+      "description": "Elena's modern apartment with lots of books and tech.",
+      "atmosphere": "personal"
+    },
+    "home_carlos_004": {
+      "name": "Carlos's Home",
+      "type": "home",
+      "description": "Carlos's lived-in home full of photographs and memories.",
+      "atmosphere": "personal"
+    },
+    "home_sofia_005": {
+      "name": "Sofia's Home",
+      "type": "home",
+      "description": "Sofia's welcoming home that always smells like cooking.",
+      "atmosphere": "personal"
+    },
+    "home_diego_006": {
+      "name": "Diego's Home",
+      "type": "home",
+      "description": "Diego's small apartment with instruments everywhere.",
+      "atmosphere": "personal"
+    }
+  },
+  "agent_locations": {
+    "maya_001": "community_garden",
+    "jorge_002": "oak_park",
+    "elena_003": "community_center",
+    "carlos_004": "reading_corner",
+    "sofia_005": "reading_corner",
+    "diego_006": "corner_cafe",
+    "user_001": "corner_cafe"
+  },
+  "recent_conversations": [
+    {
+      "participants": [
+        "user_001",
+        "diego_006"
+      ],
+      "location": "corner_cafe",
+      "lines": [
+        {
+          "speaker": "Blake",
+          "text": "Hey! Mind if I join you?"
+        },
+        {
+          "speaker": "Diego",
+          "text": "So great to see you, Blake!"
+        }
+      ],
+      "timestamp": "2025-11-29T20:15:42.059545"
+    }
+  ],
+  "dream_journal": {
+    "maya_001": [
+      {
+        "day": 1,
+        "archetype": "loss",
+        "seed_symbols": [
+          "circle",
+          "community",
+          "garden",
+          "growth"
+        ],
+        "description": "In enigmatic depths, you encounter Lightning bolt, sudden destructive power. ",
+        "timestamp": "2025-11-29T20:15:42.059674"
+      }
+    ],
+    "jorge_002": [
+      {
+        "day": 1,
+        "archetype": "integration",
+        "seed_symbols": [
+          "hearth",
+          "gathering",
+          "nature",
+          "tree",
+          "nature"
+        ],
+        "description": "In enigmatic depths, you encounter Lightning bolt, sudden destructive power. ",
+        "timestamp": "2025-11-29T20:15:42.060704"
+      }
+    ],
+    "elena_003": [
+      {
+        "day": 1,
+        "archetype": "confrontation",
+        "seed_symbols": [
+          "circle",
+          "community"
+        ],
+        "description": "Before you stands Lightning bolt, sudden destructive power, demanding to be faced. Behind you, shifting shadows blocks any retreat. The moment of truth approaches.",
+        "timestamp": "2025-11-29T20:15:42.061704"
+      }
+    ],
+    "carlos_004": [
+      {
+        "day": 1,
+        "archetype": "loss",
+        "seed_symbols": [
+          "movement",
+          "journey",
+          "path",
+          "tree",
+          "dialogue"
+        ],
+        "description": "In enigmatic depths, you encounter Lightning bolt, sudden destructive power. ",
+        "timestamp": "2025-11-29T20:15:42.061704"
+      }
+    ],
+    "sofia_005": [
+      {
+        "day": 1,
+        "archetype": "confrontation",
+        "seed_symbols": [],
+        "description": "The confrontation you've avoided materializes as Lightning bolt, sudden destructive power. There is no escape, no alternative. Only facing what must be faced.",
+        "timestamp": "2025-11-29T20:15:42.062702"
+      }
+    ],
+    "diego_006": [
+      {
+        "day": 1,
+        "archetype": "reunion",
+        "seed_symbols": [
+          "path",
+          "tree",
+          "path",
+          "silence",
+          "dialogue"
+        ],
+        "description": "In enigmatic depths, you encounter Lightning bolt, sudden destructive power. ",
+        "timestamp": "2025-11-29T20:15:42.063870"
+      }
+    ]
+  },
+  "neighborhood_mood": {
+    "energy": 0.5,
+    "harmony": 0.5,
+    "activity": 0.5
+  }
+}
