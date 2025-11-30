@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom - Unified Intelligence Shell</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-panel: #1a1a1a;
+            --border: #2a2a2a;
+            --text: #e0e0e0;
+            --text-dim: rgba(255, 255, 255, 0.6);
+            --accent: #3b82f6;
+            --accent-dim: rgba(59, 130, 246, 0.2);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-left: 12px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+        }
+
+        /* Main Layout - CSS Grid 3 panels */
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Panel Base Styles */
+        .panel {
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel:last-child {
+            border-right: none;
+            border-left: 1px solid var(--border);
+        }
+
+        .panel-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            background: var(--bg-secondary);
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow: auto;
+            padding: 16px;
+        }
+
+        /* LEFT PANEL: Graph View */
+        .graph-panel .panel-content {
+            padding: 0;
+        }
+
+        #graph-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #graph-svg {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+        }
+
+        .graph-node {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .graph-node:hover {
+            stroke-width: 2.5px;
+        }
+
+        .node-label {
+            font-size: 9px;
+            fill: var(--text-dim);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .graph-edge {
+            pointer-events: none;
+        }
+
+        .graph-stats {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .graph-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .graph-stat-label {
+            font-size: 9px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .graph-stat-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        /* CENTER PANEL: Query + Response */
+        .interaction-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .interaction-panel .panel-content {
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        .response-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--bg-primary);
+        }
+
+        .message {
+            margin-bottom: 16px;
+            max-width: 90%;
+        }
+
+        .message.user {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-meta {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        /* Streaming indicator */
+        .streaming-indicator {
+            display: inline-flex;
+            gap: 4px;
+            margin-left: 8px;
+        }
+
+        .streaming-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 1s infinite;
+        }
+
+        .streaming-dot:nth-child(2) { animation-delay: 0.2s; }
+        .streaming-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Query Input */
+        .query-input-container {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-panel);
+        }
+
+        .query-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        #query-input {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-size: 14px;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+        }
+
+        #query-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        #send-btn {
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #send-btn:hover {
+            background: #2563eb;
+        }
+
+        #send-btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+        }
+
+        /* Sample queries */
+        .sample-queries {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .sample-query {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sample-query:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        /* RIGHT PANEL: Metrics Dashboard */
+        .metrics-panel .panel-content {
+            padding: 12px;
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .metric-card-header {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .metric-unit {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-left: 4px;
+        }
+
+        /* Confidence bar */
+        .confidence-bar {
+            display: flex;
+            gap: 2px;
+            height: 24px;
+            margin-top: 8px;
+        }
+
+        .confidence-segment {
+            flex: 1;
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+
+        .confidence-segment.filled {
+            background: var(--accent);
+        }
+
+        .confidence-segment.empty {
+            background: var(--border);
+        }
+
+        /* Thompson Sampling visualization */
+        .thompson-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .thompson-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            min-width: 50px;
+        }
+
+        .thompson-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .thompson-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .thompson-marker {
+            position: absolute;
+            top: -4px;
+            width: 2px;
+            height: 16px;
+            background: white;
+            transform: translateX(-50%);
+        }
+
+        /* Pipeline visualization */
+        .pipeline-stage {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pipeline-stage:last-child {
+            border-bottom: none;
+        }
+
+        .stage-name {
+            font-size: 11px;
+            color: var(--text-dim);
+            min-width: 80px;
+        }
+
+        .stage-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .stage-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        .stage-time {
+            font-size: 10px;
+            color: var(--text-dim);
+            min-width: 40px;
+            text-align: right;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        /* Phase 2: Live Pipeline Waterfall */
+        .live-pipeline {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .live-pipeline.active {
+            display: block;
+        }
+
+        .live-pipeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .live-pipeline-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .live-pipeline-total {
+            font-size: 12px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            color: var(--accent);
+        }
+
+        .live-stages {
+            padding: 12px;
+        }
+
+        .live-stage {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            position: relative;
+        }
+
+        .live-stage-status {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .live-stage-status.pending {
+            border-color: var(--border);
+        }
+
+        .live-stage-status.running {
+            border-color: var(--accent);
+            animation: statusPulse 1s infinite;
+        }
+
+        .live-stage-status.complete {
+            border-color: var(--success);
+            background: var(--success);
+        }
+
+        .live-stage-status.bottleneck {
+            border-color: var(--warning);
+            background: var(--warning);
+        }
+
+        .live-stage-status::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .live-stage-status.complete::after,
+        .live-stage-status.bottleneck::after {
+            background: white;
+        }
+
+        .live-stage-status.running::after {
+            background: var(--accent);
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .live-stage-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .live-stage-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .live-stage-detail {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .live-stage-bar-container {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            min-width: 60px;
+        }
+
+        .live-stage-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.2s ease-out;
+        }
+
+        .live-stage-time {
+            font-size: 11px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* Phase 2: Source Attribution */
+        .source-attribution {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .source-header:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .source-header::after {
+            content: '▼';
+            font-size: 10px;
+            color: var(--text-dim);
+            transition: transform 0.2s;
+        }
+
+        .source-list.expanded + .source-header::after,
+        .source-header.expanded::after {
+            transform: rotate(180deg);
+        }
+
+        .source-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .source-count {
+            font-size: 11px;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .source-list {
+            padding: 8px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .source-list.expanded {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            background: var(--bg-primary);
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .source-item:hover {
+            border-color: var(--accent);
+        }
+
+        .source-relevance {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .source-relevance.high {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .source-relevance.medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .source-relevance.low {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .source-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .source-text {
+            font-size: 12px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .source-meta {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        /* Phase 2: Bottleneck Warning */
+        .bottleneck-warning {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--warning);
+        }
+
+        .bottleneck-warning-icon {
+            font-size: 14px;
+        }
+
+        /* Enhanced streaming indicator */
+        .stage-streaming-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--accent);
+            margin-left: 8px;
+        }
+
+        .stage-streaming-indicator::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 1s infinite;
+        }
+
+        /* Cache gauge */
+        .cache-gauge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .gauge-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 8px solid var(--border);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .gauge-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        /* Footer status bar */
+        .status-bar {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .status-bar-left, .status-bar-right {
+            display: flex;
+            gap: 16px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .empty-state-text {
+            font-size: 13px;
+            max-width: 280px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <h1>HoloLoom</h1>
+            <span class="header-subtitle">Unified Intelligence Shell</span>
+        </div>
+        <div class="connection-status">
+            <div class="status-dot" id="connection-dot"></div>
+            <span id="connection-text">Connecting...</span>
+        </div>
+    </div>
+
+    <!-- Main 3-Panel Layout -->
+    <div class="main-container">
+        <!-- LEFT: Graph View -->
+        <div class="panel graph-panel">
+            <div class="panel-header">Knowledge Graph</div>
+            <div class="panel-content">
+                <div id="graph-container">
+                    <svg id="graph-svg" viewBox="0 0 280 600"></svg>
+                    <div class="graph-stats">
+                        <div class="graph-stat">
+                            <span class="graph-stat-label">Nodes</span>
+                            <span class="graph-stat-value" id="graph-nodes">0</span>
+                        </div>
+                        <div class="graph-stat">
+                            <span class="graph-stat-label">Edges</span>
+                            <span class="graph-stat-value" id="graph-edges">0</span>
+                        </div>
+                        <div class="graph-stat">
+                            <span class="graph-stat-label">Active</span>
+                            <span class="graph-stat-value" id="graph-active">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER: Query + Response -->
+        <div class="panel interaction-panel">
+            <div class="panel-header">Interaction</div>
+            <div class="panel-content">
+                <div class="response-area" id="response-area">
+                    <!-- Phase 2: Live Pipeline Waterfall -->
+                    <div class="live-pipeline" id="live-pipeline">
+                        <div class="live-pipeline-header">
+                            <span class="live-pipeline-title">Pipeline Progress</span>
+                            <span class="live-pipeline-total" id="pipeline-total">0ms</span>
+                        </div>
+                        <div class="live-stages" id="live-stages">
+                            <div class="live-stage" data-stage="parse">
+                                <div class="live-stage-status pending"></div>
+                                <div class="live-stage-info">
+                                    <div class="live-stage-name">Parse Query</div>
+                                    <div class="live-stage-detail">Classifying: factual│technical│conceptual</div>
+                                </div>
+                                <div class="live-stage-bar-container">
+                                    <div class="live-stage-bar" style="width: 0%; background: var(--accent);"></div>
+                                </div>
+                                <div class="live-stage-time">--</div>
+                            </div>
+                            <div class="live-stage" data-stage="retrieve">
+                                <div class="live-stage-status pending"></div>
+                                <div class="live-stage-info">
+                                    <div class="live-stage-name">Memory Retrieval</div>
+                                    <div class="live-stage-detail">Searching knowledge graph...</div>
+                                </div>
+                                <div class="live-stage-bar-container">
+                                    <div class="live-stage-bar" style="width: 0%; background: var(--success);"></div>
+                                </div>
+                                <div class="live-stage-time">--</div>
+                            </div>
+                            <div class="live-stage" data-stage="decide">
+                                <div class="live-stage-status pending"></div>
+                                <div class="live-stage-info">
+                                    <div class="live-stage-name">Thompson Decision</div>
+                                    <div class="live-stage-detail">Sampling tool selection...</div>
+                                </div>
+                                <div class="live-stage-bar-container">
+                                    <div class="live-stage-bar" style="width: 0%; background: #8b5cf6;"></div>
+                                </div>
+                                <div class="live-stage-time">--</div>
+                            </div>
+                            <div class="live-stage" data-stage="generate">
+                                <div class="live-stage-status pending"></div>
+                                <div class="live-stage-info">
+                                    <div class="live-stage-name">Generation</div>
+                                    <div class="live-stage-detail">Streaming response...</div>
+                                </div>
+                                <div class="live-stage-bar-container">
+                                    <div class="live-stage-bar" style="width: 0%; background: var(--warning);"></div>
+                                </div>
+                                <div class="live-stage-time">--</div>
+                            </div>
+                        </div>
+                        <div id="bottleneck-container"></div>
+                    </div>
+
+                    <div class="empty-state" id="empty-state">
+                        <div class="empty-state-icon">?</div>
+                        <div class="empty-state-title">Ask anything</div>
+                        <div class="empty-state-text">
+                            HoloLoom searches your knowledge base, shows confidence scores, and explains its reasoning.
+                        </div>
+                    </div>
+                </div>
+                <div class="query-input-container">
+                    <div class="query-input-wrapper">
+                        <textarea id="query-input" placeholder="Ask a question..." rows="1"></textarea>
+                        <button id="send-btn">Send</button>
+                    </div>
+                    <div class="sample-queries">
+                        <span class="sample-query" data-query="What is Thompson Sampling?">Thompson Sampling</span>
+                        <span class="sample-query" data-query="How does memory retrieval work?">Memory retrieval</span>
+                        <span class="sample-query" data-query="Explain the weaving cycle">Weaving cycle</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Metrics Dashboard -->
+        <div class="panel metrics-panel">
+            <div class="panel-header">Metrics</div>
+            <div class="panel-content">
+                <!-- Confidence -->
+                <div class="metric-card">
+                    <div class="metric-card-header">Confidence</div>
+                    <div class="metric-value" id="confidence-value">--<span class="metric-unit">%</span></div>
+                    <div class="confidence-bar" id="confidence-bar">
+                        <div class="confidence-segment empty"></div>
+                        <div class="confidence-segment empty"></div>
+                        <div class="confidence-segment empty"></div>
+                        <div class="confidence-segment empty"></div>
+                        <div class="confidence-segment empty"></div>
+                    </div>
+                </div>
+
+                <!-- Thompson Sampling -->
+                <div class="metric-card">
+                    <div class="metric-card-header">Thompson Sampling</div>
+                    <div class="thompson-container">
+                        <span class="thompson-label">exploit</span>
+                        <div class="thompson-bar">
+                            <div class="thompson-fill" id="thompson-fill" style="width: 50%;"></div>
+                            <div class="thompson-marker" id="thompson-marker" style="left: 50%;"></div>
+                        </div>
+                        <span class="thompson-label">explore</span>
+                    </div>
+                </div>
+
+                <!-- Cache -->
+                <div class="metric-card">
+                    <div class="metric-card-header">Cache Hit Rate</div>
+                    <div class="cache-gauge">
+                        <div class="gauge-circle" id="cache-gauge">
+                            <span class="gauge-value" id="cache-value">--</span>
+                        </div>
+                        <span class="gauge-label">Last 100 queries</span>
+                    </div>
+                </div>
+
+                <!-- Pipeline -->
+                <div class="metric-card">
+                    <div class="metric-card-header">Pipeline (Last Query)</div>
+                    <div id="pipeline-stages">
+                        <div class="pipeline-stage">
+                            <span class="stage-name">Retrieval</span>
+                            <div class="stage-bar"><div class="stage-fill" style="width: 0%; background: var(--accent);"></div></div>
+                            <span class="stage-time">--ms</span>
+                        </div>
+                        <div class="pipeline-stage">
+                            <span class="stage-name">Decision</span>
+                            <div class="stage-bar"><div class="stage-fill" style="width: 0%; background: var(--success);"></div></div>
+                            <span class="stage-time">--ms</span>
+                        </div>
+                        <div class="pipeline-stage">
+                            <span class="stage-name">Generation</span>
+                            <div class="stage-bar"><div class="stage-fill" style="width: 0%; background: var(--warning);"></div></div>
+                            <span class="stage-time">--ms</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Stats -->
+                <div class="metric-card">
+                    <div class="metric-card-header">Session</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                        <span style="color: var(--text-dim);">Queries</span>
+                        <span id="session-queries">0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 4px;">
+                        <span style="color: var(--text-dim);">Avg Latency</span>
+                        <span id="session-latency">--ms</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-bar-left">
+            <span>Mode: <strong>FAST</strong></span>
+            <span>Backend: <strong id="backend-status">--</strong></span>
+        </div>
+        <div class="status-bar-right">
+            <span id="last-query-time">Ready</span>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // HoloLoom Unified Shell - JavaScript Controller
+        // ============================================================
+
+        class HoloLoomShell {
+            constructor() {
+                this.ws = null;
+                this.queryCount = 0;
+                this.totalLatency = 0;
+                this.cacheHits = 0;
+                this.cacheMisses = 0;
+                this.isStreaming = false;
+
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.connect();
+                this.initSampleGraph();
+                this.initializePipeline();  // Phase 2: Initialize pipeline tracking
+            }
+
+            bindEvents() {
+                // Query input
+                const input = document.getElementById('query-input');
+                const sendBtn = document.getElementById('send-btn');
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendQuery();
+                    }
+                });
+
+                input.addEventListener('input', () => {
+                    input.style.height = 'auto';
+                    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+                });
+
+                sendBtn.addEventListener('click', () => this.sendQuery());
+
+                // Sample queries
+                document.querySelectorAll('.sample-query').forEach(el => {
+                    el.addEventListener('click', () => {
+                        input.value = el.dataset.query;
+                        this.sendQuery();
+                    });
+                });
+            }
+
+            connect() {
+                const wsUrl = 'ws://localhost:8000/ws';
+                this.ws = new WebSocket(wsUrl);
+
+                this.ws.onopen = () => {
+                    document.getElementById('connection-dot').classList.add('connected');
+                    document.getElementById('connection-text').textContent = 'Connected';
+                    document.getElementById('backend-status').textContent = 'HYBRID';
+                };
+
+                this.ws.onclose = () => {
+                    document.getElementById('connection-dot').classList.remove('connected');
+                    document.getElementById('connection-text').textContent = 'Disconnected';
+                    // Retry connection
+                    setTimeout(() => this.connect(), 3000);
+                };
+
+                this.ws.onerror = () => {
+                    document.getElementById('connection-text').textContent = 'Error';
+                };
+
+                this.ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    this.handleMessage(data);
+                };
+            }
+
+            handleMessage(data) {
+                if (data.type === 'stream') {
+                    this.appendStreamToken(data.token);
+                } else if (data.type === 'complete') {
+                    this.completeResponse(data);
+                    if (data.sources) {
+                        this.showSourceAttribution(data.sources);
+                    }
+                    this.hideLivePipeline();
+                } else if (data.type === 'metrics') {
+                    this.updateMetrics(data);
+                } else if (data.type === 'graph') {
+                    this.updateGraph(data);
+                } else if (data.type === 'pipeline_start') {
+                    // Phase 2: Pipeline started
+                    this.showLivePipeline();
+                } else if (data.type === 'pipeline_stage') {
+                    // Phase 2: Stage update from server
+                    this.updatePipelineStage(data.stage, data.status, data.detail);
+                }
+            }
+
+            sendQuery() {
+                const input = document.getElementById('query-input');
+                const query = input.value.trim();
+                if (!query || this.isStreaming) return;
+
+                // Hide empty state
+                document.getElementById('empty-state').style.display = 'none';
+
+                // Add user message
+                this.addMessage(query, 'user');
+
+                // Start streaming response
+                this.startStreamingResponse();
+
+                // Send to server
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({ type: 'query', text: query }));
+                } else {
+                    // Fallback: simulate response
+                    this.simulateResponse(query);
+                }
+
+                input.value = '';
+                input.style.height = 'auto';
+                this.queryCount++;
+                document.getElementById('session-queries').textContent = this.queryCount;
+            }
+
+            addMessage(content, role) {
+                const area = document.getElementById('response-area');
+                const msg = document.createElement('div');
+                msg.className = `message ${role}`;
+
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                msg.innerHTML = `
+                    <div class="message-content">${this.escapeHtml(content)}</div>
+                    <div class="message-meta">${time}</div>
+                `;
+
+                area.appendChild(msg);
+                area.scrollTop = area.scrollHeight;
+
+                return msg;
+            }
+
+            startStreamingResponse() {
+                this.isStreaming = true;
+                this.currentResponse = this.addMessage('', 'assistant');
+                this.currentResponse.querySelector('.message-content').innerHTML = `
+                    <span class="streaming-indicator">
+                        <span class="streaming-dot"></span>
+                        <span class="streaming-dot"></span>
+                        <span class="streaming-dot"></span>
+                    </span>
+                `;
+                document.getElementById('send-btn').disabled = true;
+            }
+
+            appendStreamToken(token) {
+                if (!this.currentResponse) return;
+                const content = this.currentResponse.querySelector('.message-content');
+                const indicator = content.querySelector('.streaming-indicator');
+                if (indicator) indicator.remove();
+                content.textContent += token;
+                document.getElementById('response-area').scrollTop = document.getElementById('response-area').scrollHeight;
+            }
+
+            completeResponse(data) {
+                this.isStreaming = false;
+                document.getElementById('send-btn').disabled = false;
+
+                if (data.latency) {
+                    this.totalLatency += data.latency;
+                    const avgLatency = Math.round(this.totalLatency / this.queryCount);
+                    document.getElementById('session-latency').textContent = avgLatency + 'ms';
+                    document.getElementById('last-query-time').textContent = `Last: ${data.latency}ms`;
+                }
+
+                if (data.confidence !== undefined) {
+                    this.updateConfidence(data.confidence);
+                }
+
+                if (data.cached) {
+                    this.cacheHits++;
+                } else {
+                    this.cacheMisses++;
+                }
+                this.updateCacheGauge();
+
+                if (data.stages) {
+                    this.updatePipeline(data.stages);
+                }
+            }
+
+            updateConfidence(value) {
+                const percent = Math.round(value * 100);
+                document.getElementById('confidence-value').innerHTML = `${percent}<span class="metric-unit">%</span>`;
+
+                const segments = document.querySelectorAll('.confidence-segment');
+                const filledCount = Math.ceil(value * 5);
+                segments.forEach((seg, i) => {
+                    seg.classList.toggle('filled', i < filledCount);
+                    seg.classList.toggle('empty', i >= filledCount);
+                });
+            }
+
+            updateCacheGauge() {
+                const total = this.cacheHits + this.cacheMisses;
+                if (total === 0) return;
+
+                const rate = Math.round((this.cacheHits / total) * 100);
+                document.getElementById('cache-value').textContent = rate + '%';
+
+                // Update gauge color based on rate
+                const gauge = document.getElementById('cache-gauge');
+                if (rate >= 80) {
+                    gauge.style.borderColor = 'var(--success)';
+                } else if (rate >= 50) {
+                    gauge.style.borderColor = 'var(--warning)';
+                } else {
+                    gauge.style.borderColor = 'var(--danger)';
+                }
+            }
+
+            updatePipeline(stages) {
+                const container = document.getElementById('pipeline-stages');
+                const totalTime = stages.reduce((sum, s) => sum + s.duration, 0);
+
+                const stageEls = container.querySelectorAll('.pipeline-stage');
+                stages.forEach((stage, i) => {
+                    if (stageEls[i]) {
+                        const fill = stageEls[i].querySelector('.stage-fill');
+                        const time = stageEls[i].querySelector('.stage-time');
+                        const percent = (stage.duration / totalTime) * 100;
+                        fill.style.width = percent + '%';
+                        time.textContent = Math.round(stage.duration) + 'ms';
+                    }
+                });
+            }
+
+            updateMetrics(data) {
+                if (data.thompson !== undefined) {
+                    const percent = Math.round(data.thompson * 100);
+                    document.getElementById('thompson-fill').style.width = percent + '%';
+                    document.getElementById('thompson-marker').style.left = percent + '%';
+                }
+            }
+
+            updateGraph(data) {
+                document.getElementById('graph-nodes').textContent = data.nodes || 0;
+                document.getElementById('graph-edges').textContent = data.edges || 0;
+                document.getElementById('graph-active').textContent = data.active || 0;
+
+                if (data.graphData) {
+                    this.renderGraph(data.graphData);
+                }
+            }
+
+            initSampleGraph() {
+                // Create a sample graph for visualization
+                const nodes = [
+                    { id: 'thompson', x: 140, y: 80 },
+                    { id: 'bayesian', x: 80, y: 160 },
+                    { id: 'explore', x: 200, y: 160 },
+                    { id: 'exploit', x: 140, y: 240 },
+                    { id: 'memory', x: 60, y: 320 },
+                    { id: 'retrieval', x: 140, y: 380 },
+                    { id: 'policy', x: 220, y: 320 },
+                ];
+
+                const edges = [
+                    { src: 'thompson', dst: 'bayesian' },
+                    { src: 'thompson', dst: 'explore' },
+                    { src: 'bayesian', dst: 'exploit' },
+                    { src: 'explore', dst: 'exploit' },
+                    { src: 'exploit', dst: 'memory' },
+                    { src: 'exploit', dst: 'policy' },
+                    { src: 'memory', dst: 'retrieval' },
+                    { src: 'policy', dst: 'retrieval' },
+                ];
+
+                this.renderGraph({ nodes, edges });
+                document.getElementById('graph-nodes').textContent = nodes.length;
+                document.getElementById('graph-edges').textContent = edges.length;
+                document.getElementById('graph-active').textContent = 3;
+            }
+
+            renderGraph(data) {
+                const svg = document.getElementById('graph-svg');
+                svg.innerHTML = '';
+
+                // Draw edges
+                data.edges.forEach(edge => {
+                    const src = data.nodes.find(n => n.id === edge.src);
+                    const dst = data.nodes.find(n => n.id === edge.dst);
+                    if (src && dst) {
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', src.x);
+                        line.setAttribute('y1', src.y);
+                        line.setAttribute('x2', dst.x);
+                        line.setAttribute('y2', dst.y);
+                        line.setAttribute('stroke', '#3b82f6');
+                        line.setAttribute('stroke-width', '1.5');
+                        line.setAttribute('stroke-opacity', '0.4');
+                        line.classList.add('graph-edge');
+                        svg.appendChild(line);
+                    }
+                });
+
+                // Draw nodes
+                data.nodes.forEach(node => {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', node.x);
+                    circle.setAttribute('cy', node.y);
+                    circle.setAttribute('r', '12');
+                    circle.setAttribute('fill', '#6366f1');
+                    circle.setAttribute('stroke', '#4f46e5');
+                    circle.setAttribute('stroke-width', '1.5');
+                    circle.classList.add('graph-node');
+                    svg.appendChild(circle);
+
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', node.x);
+                    text.setAttribute('y', node.y + 26);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.classList.add('node-label');
+                    text.textContent = node.id;
+                    svg.appendChild(text);
+                });
+            }
+
+            // ============================================================
+            // Phase 2: Live Pipeline Visualization
+            // ============================================================
+
+            initializePipeline() {
+                this.pipelineStages = ['parse', 'retrieve', 'decide', 'generate'];
+                this.stageTimings = {};
+                this.pipelineStartTime = null;
+                this.currentStageIndex = -1;
+            }
+
+            showLivePipeline() {
+                const pipeline = document.getElementById('live-pipeline');
+                pipeline.classList.add('active');
+
+                // Reset all stages
+                this.pipelineStages.forEach(stage => {
+                    const el = document.querySelector(`[data-stage="${stage}"]`);
+                    if (el) {
+                        el.querySelector('.live-stage-status').className = 'live-stage-status pending';
+                        el.querySelector('.live-stage-bar').style.width = '0%';
+                        el.querySelector('.live-stage-time').textContent = '--';
+                    }
+                });
+
+                document.getElementById('pipeline-total').textContent = '0ms';
+                document.getElementById('bottleneck-container').innerHTML = '';
+
+                this.pipelineStartTime = performance.now();
+                this.stageTimings = {};
+                this.currentStageIndex = -1;
+            }
+
+            hideLivePipeline() {
+                const pipeline = document.getElementById('live-pipeline');
+                // Keep visible for a moment after completion
+                setTimeout(() => {
+                    pipeline.classList.remove('active');
+                }, 3000);
+            }
+
+            updatePipelineStage(stageName, status, detail = null) {
+                const el = document.querySelector(`[data-stage="${stageName}"]`);
+                if (!el) return;
+
+                const statusEl = el.querySelector('.live-stage-status');
+                const detailEl = el.querySelector('.live-stage-detail');
+                const barEl = el.querySelector('.live-stage-bar');
+                const timeEl = el.querySelector('.live-stage-time');
+
+                // Update status
+                statusEl.className = `live-stage-status ${status}`;
+
+                // Update detail if provided
+                if (detail) {
+                    detailEl.textContent = detail;
+                }
+
+                // Track timing
+                const now = performance.now();
+                if (status === 'running') {
+                    this.stageTimings[stageName] = { start: now };
+                    this.currentStageIndex = this.pipelineStages.indexOf(stageName);
+
+                    // Animate progress bar
+                    this.animateStageProgress(stageName, barEl);
+                } else if (status === 'complete' || status === 'bottleneck') {
+                    if (this.stageTimings[stageName]) {
+                        const duration = now - this.stageTimings[stageName].start;
+                        this.stageTimings[stageName].duration = duration;
+                        timeEl.textContent = Math.round(duration) + 'ms';
+                        barEl.style.width = '100%';
+
+                        // Check for bottleneck (>50ms or >40% of total time)
+                        if (duration > 50) {
+                            statusEl.className = 'live-stage-status bottleneck';
+                            this.showBottleneckWarning(stageName, duration);
+                        }
+                    }
+                }
+
+                // Update total time
+                const totalTime = now - this.pipelineStartTime;
+                document.getElementById('pipeline-total').textContent = Math.round(totalTime) + 'ms';
+            }
+
+            animateStageProgress(stageName, barEl) {
+                let progress = 0;
+                const animate = () => {
+                    if (this.stageTimings[stageName] && !this.stageTimings[stageName].duration) {
+                        // Still running - animate progress
+                        progress = Math.min(progress + (100 - progress) * 0.1, 90);
+                        barEl.style.width = progress + '%';
+                        requestAnimationFrame(animate);
+                    }
+                };
+                requestAnimationFrame(animate);
+            }
+
+            showBottleneckWarning(stageName, duration) {
+                const container = document.getElementById('bottleneck-container');
+                const stageNames = {
+                    'parse': 'Query Parsing',
+                    'retrieve': 'Memory Retrieval',
+                    'decide': 'Thompson Decision',
+                    'generate': 'Response Generation'
+                };
+
+                const warning = document.createElement('div');
+                warning.className = 'bottleneck-warning';
+                warning.innerHTML = `
+                    <span class="bottleneck-warning-icon">⚠</span>
+                    <span>${stageNames[stageName]} took ${Math.round(duration)}ms - consider optimizing</span>
+                `;
+                container.appendChild(warning);
+            }
+
+            // ============================================================
+            // Phase 2: Source Attribution
+            // ============================================================
+
+            showSourceAttribution(sources) {
+                if (!sources || sources.length === 0) return;
+
+                const attributionHtml = `
+                    <div class="source-attribution" id="source-attribution">
+                        <div class="source-header" onclick="window.shell.toggleSourceList()">
+                            <span class="source-title">Sources</span>
+                            <span class="source-count">${sources.length} memories</span>
+                        </div>
+                        <div class="source-list" id="source-list">
+                            ${sources.map(src => this.renderSourceItem(src)).join('')}
+                        </div>
+                    </div>
+                `;
+
+                // Add after the current response
+                if (this.currentResponse) {
+                    const existing = this.currentResponse.querySelector('.source-attribution');
+                    if (existing) existing.remove();
+                    this.currentResponse.insertAdjacentHTML('beforeend', attributionHtml);
+                }
+            }
+
+            renderSourceItem(source) {
+                const relevanceClass = source.relevance >= 0.8 ? 'high' :
+                                       source.relevance >= 0.5 ? 'medium' : 'low';
+                const relevancePercent = Math.round(source.relevance * 100);
+
+                return `
+                    <div class="source-item">
+                        <div class="source-relevance ${relevanceClass}">${relevancePercent}%</div>
+                        <div class="source-content">
+                            <div class="source-text">${this.escapeHtml(source.text || source.content || 'Memory node')}</div>
+                            <div class="source-meta">${source.type || 'knowledge'} • ${source.id || 'node'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            toggleSourceList() {
+                const list = document.getElementById('source-list');
+                const header = document.querySelector('.source-header');
+                if (list) {
+                    list.classList.toggle('expanded');
+                    if (header) {
+                        header.classList.toggle('expanded');
+                    }
+                }
+            }
+
+            // ============================================================
+            // Enhanced Simulation with Live Pipeline
+            // ============================================================
+
+            simulateResponse(query) {
+                // Show live pipeline
+                this.showLivePipeline();
+
+                // Simulate each stage with realistic timing
+                const stages = [
+                    { name: 'parse', delay: 0, duration: 15 + Math.random() * 10,
+                      detail: `Classified: ${this.classifyQuery(query)}` },
+                    { name: 'retrieve', delay: 20, duration: 45 + Math.random() * 30,
+                      detail: `Found ${Math.floor(5 + Math.random() * 10)} shards` },
+                    { name: 'decide', delay: 70, duration: 25 + Math.random() * 20,
+                      detail: `Thompson draw: ${(0.7 + Math.random() * 0.25).toFixed(2)}` },
+                    { name: 'generate', delay: 100, duration: 80 + Math.random() * 50,
+                      detail: 'Streaming response...' }
+                ];
+
+                // Start each stage with delay
+                stages.forEach(stage => {
+                    setTimeout(() => {
+                        this.updatePipelineStage(stage.name, 'running', stage.detail);
+                    }, stage.delay);
+
+                    setTimeout(() => {
+                        this.updatePipelineStage(stage.name, 'complete');
+                    }, stage.delay + stage.duration);
+                });
+
+                // Generate response after pipeline completes
+                const totalPipelineTime = 100 + stages[3].duration;
+                const response = `I understand you're asking about "${query}". This is a simulated response demonstrating HoloLoom's pipeline visualization. The system searched the knowledge graph, applied Thompson Sampling for tool selection, and is now streaming the response with confidence metrics.`;
+
+                // Wait for pipeline then stream response
+                setTimeout(() => {
+                    let i = 0;
+                    const interval = setInterval(() => {
+                        if (i < response.length) {
+                            this.appendStreamToken(response[i]);
+                            i++;
+                        } else {
+                            clearInterval(interval);
+
+                            // Complete with sources
+                            const sources = this.generateSimulatedSources(query);
+                            this.showSourceAttribution(sources);
+
+                            this.completeResponse({
+                                latency: performance.now() - this.pipelineStartTime,
+                                confidence: 0.7 + Math.random() * 0.25,
+                                cached: Math.random() > 0.7,
+                                stages: stages.map(s => ({ name: s.name, duration: s.duration }))
+                            });
+
+                            this.hideLivePipeline();
+                        }
+                    }, 12);
+                }, totalPipelineTime);
+            }
+
+            classifyQuery(query) {
+                const lower = query.toLowerCase();
+                if (lower.includes('what') || lower.includes('define')) return 'factual';
+                if (lower.includes('how') || lower.includes('explain')) return 'procedural';
+                if (lower.includes('why') || lower.includes('compare')) return 'analytical';
+                return 'conceptual';
+            }
+
+            generateSimulatedSources(query) {
+                const concepts = query.toLowerCase().split(' ')
+                    .filter(w => w.length > 3)
+                    .slice(0, 3);
+
+                return concepts.map((concept, i) => ({
+                    id: `mem_${Date.now()}_${i}`,
+                    text: `Knowledge about ${concept} and related concepts in the domain.`,
+                    relevance: 0.95 - (i * 0.15),
+                    type: i === 0 ? 'primary' : 'supporting'
+                }));
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            window.shell = new HoloLoomShell();
+        });
+    </script>
+</body>
+</html>

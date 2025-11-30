@@ -340,7 +340,7 @@ class TransparencyDashboard:
         """Generate comprehensive dashboard for a farm"""
 
         dashboard = OrganizationDashboard(
-            organization_id=farm.farm_id,
+            organization_id=farm.org_id,
             organization_name=farm.name,
             organization_type=farm.farm_type.value
         )
@@ -352,11 +352,16 @@ class TransparencyDashboard:
         dashboard.biodiversity = self._calculate_biodiversity_metrics(farm)
 
         # Get circularity metrics from loop tracker
-        dashboard.circularity = self.loop_tracker.calculate_circularity_metrics(
-            farm.farm_id,
-            start_date,
-            end_date
-        )
+        # Only if farm is registered with loop tracker
+        try:
+            dashboard.circularity = self.loop_tracker.calculate_circularity_metrics(
+                farm.org_id,
+                start_date,
+                end_date
+            )
+        except ValueError:
+            # Farm not registered with loop tracker - skip circularity metrics
+            pass
 
         # Calculate social and economic metrics
         dashboard.social = self._calculate_social_metrics(farm, start_date, end_date)
@@ -369,11 +374,11 @@ class TransparencyDashboard:
         dashboard.active_alerts = self._check_thresholds(dashboard)
 
         # Add trend data
-        dashboard.score_trend_30d = self.historical_scores.get(farm.farm_id, [])[-30:]
+        dashboard.score_trend_30d = self.historical_scores.get(farm.org_id, [])[-30:]
 
         # Store dashboard
-        self.org_dashboards[farm.farm_id] = dashboard
-        self.last_update_time[farm.farm_id] = datetime.now()
+        self.org_dashboards[farm.org_id] = dashboard
+        self.last_update_time[farm.org_id] = datetime.now()
 
         return dashboard
 
@@ -388,14 +393,18 @@ class TransparencyDashboard:
         metrics = CarbonMetrics()
 
         # Get circularity data for carbon sequestration
-        circularity = self.loop_tracker.calculate_circularity_metrics(
-            farm.farm_id,
-            start_date,
-            end_date
-        )
-
-        metrics.carbon_sequestered_lbs = circularity.carbon_sequestered_lbs
-        metrics.compost_carbon_lbs = circularity.carbon_sequestered_lbs
+        # Only if farm is registered with loop tracker
+        try:
+            circularity = self.loop_tracker.calculate_circularity_metrics(
+                farm.org_id,
+                start_date,
+                end_date
+            )
+            metrics.carbon_sequestered_lbs = circularity.carbon_sequestered_lbs
+            metrics.compost_carbon_lbs = circularity.carbon_sequestered_lbs
+        except ValueError:
+            # Farm not registered with loop tracker
+            pass
 
         # Estimate emissions based on farm size and operations
         # Transport emissions: ~0.5 lbs CO2e per mile driven
@@ -412,7 +421,7 @@ class TransparencyDashboard:
         )
 
         # Cover crop sequestration (if regenerative farm)
-        if farm.farm_type == FarmType.REGENERATIVE:
+        if farm.farm_type == FarmType.REGENERATIVE_FARM:
             # Cover crops sequester ~0.5 tons CO2e per acre per year
             days_in_period = (end_date - start_date).days
             years = Decimal(str(days_in_period / 365.25))
@@ -497,7 +506,7 @@ class TransparencyDashboard:
             metrics.water_per_lb_food = metrics.total_water_gallons / total_production
 
         # Irrigation efficiency (regenerative farms = 85%, others = 70%)
-        if farm.farm_type == FarmType.REGENERATIVE:
+        if farm.farm_type == FarmType.REGENERATIVE_FARM:
             metrics.irrigation_efficiency = 85.0
             metrics.drip_irrigation_coverage = 80.0
         else:
@@ -516,7 +525,7 @@ class TransparencyDashboard:
         metrics = SoilMetrics()
 
         # Baseline metrics vary by farm type
-        if farm.farm_type == FarmType.REGENERATIVE:
+        if farm.farm_type == FarmType.REGENERATIVE_FARM:
             metrics.organic_matter_percent = 5.5
             metrics.microbial_biomass_index = 85.0
             metrics.soil_structure_score = 8.5
@@ -555,7 +564,7 @@ class TransparencyDashboard:
         metrics = BiodiversityMetrics()
 
         # Metrics scale with farm size and type
-        if farm.farm_type == FarmType.REGENERATIVE:
+        if farm.farm_type == FarmType.REGENERATIVE_FARM:
             metrics.crop_varieties_count = 45
             metrics.pollinator_species_count = 25
             metrics.beneficial_insect_species = 15
@@ -582,7 +591,7 @@ class TransparencyDashboard:
         metrics.pollination_dependency = 60.0  # 60% of crops need pollinators
 
         # Conservation
-        if farm.farm_type == FarmType.REGENERATIVE:
+        if farm.farm_type == FarmType.REGENERATIVE_FARM:
             metrics.endangered_species_supported = 2
             metrics.riparian_buffer_acres = farm.total_acres * Decimal("0.05")
 
@@ -601,7 +610,7 @@ class TransparencyDashboard:
         # CSA members (from coordinator)
         subscriptions = [
             sub for sub in self.csa_coordinator.subscriptions.values()
-            if sub.farm_id == farm.farm_id and sub.status == "active"
+            if sub.farm_id == farm.org_id and sub.status == "active"
         ]
         metrics.csa_members_served = len(subscriptions)
 
@@ -618,7 +627,7 @@ class TransparencyDashboard:
         metrics.volunteer_hours = int(acres * 100)  # 100 hours per acre
 
         # Employment
-        if farm.farm_type == FarmType.REGENERATIVE:
+        if farm.farm_type == FarmType.REGENERATIVE_FARM:
             metrics.full_time_jobs = max(2, int(acres / 10))
             metrics.seasonal_jobs = max(5, int(acres / 5))
         else:
@@ -647,13 +656,19 @@ class TransparencyDashboard:
         metrics = EconomicMetrics()
 
         # CSA revenue
-        csa_analytics = self.csa_coordinator.get_csa_analytics(farm.farm_id, "")
-        if csa_analytics:
-            metrics.csa_revenue = csa_analytics.total_revenue
+        # Get an actual season for this farm
+        csa_analytics = None  # Initialize to None
+        farm_seasons = self.csa_coordinator.get_farm_seasons(farm.org_id)
+        if farm_seasons:
+            # Use the first available season
+            season_id = farm_seasons[0].season_id
+            csa_analytics = self.csa_coordinator.get_csa_analytics(farm.org_id, season_id)
+            if csa_analytics:
+                metrics.csa_revenue = csa_analytics.total_revenue
 
         # Market revenue
         sales_analytics = self.marketplace.get_sales_analytics(
-            farm.farm_id,
+            farm.org_id,
             start_date,
             end_date
         )
@@ -674,7 +689,7 @@ class TransparencyDashboard:
         metrics.local_purchases_percent = 75.0  # Assume 75% local sourcing
 
         # Value-added products (jams, pickles, etc.)
-        products = self.marketplace.products_by_farm.get(farm.farm_id, [])
+        products = self.marketplace.products_by_farm.get(farm.org_id, [])
         value_added = [
             p for p in products
             if self.marketplace.products[p].category.value in ["preserves", "baked_goods"]

@@ -60,7 +60,7 @@
     {
       "season_id": "season_2025_year_round_003",
       "farm_id": "farm_003",
-      "season_type": "year_round",
+      "season_type": "full_year",
       "start_date": "2025-01-01",
       "end_date": "2025-12-31",
       "enrollment_deadline": "2024-12-15",

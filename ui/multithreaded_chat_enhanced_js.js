@@ -158,11 +158,11 @@ async function searchThreads() {
 
 function hasActiveFilters() {
     return document.getElementById('filterAgent').value ||
-           document.getElementById('filterFromDate').value ||
-           document.getElementById('filterToDate').value ||
-           document.getElementById('filterBookmarked').checked ||
-           document.getElementById('filterBreakthroughs').checked ||
-           document.getElementById('filterConfidence').value > 0;
+        document.getElementById('filterFromDate').value ||
+        document.getElementById('filterToDate').value ||
+        document.getElementById('filterBookmarked').checked ||
+        document.getElementById('filterBreakthroughs').checked ||
+        document.getElementById('filterConfidence').value > 0;
 }
 
 async function applyFilters() {
@@ -336,80 +336,84 @@ async function exportThread(format) {
 
 async function loadAnalytics() {
     try {
-        const response = await fetch(`${API_BASE}/stats/agents`);
-        const data = await response.json();
-
         const container = document.getElementById('sidebarContent');
         container.innerHTML = '';
 
-        // Agent comparison chart
-        const chartDiv = document.createElement('div');
-        chartDiv.className = 'chart-container';
-        chartDiv.innerHTML = '<h3>Agent Performance</h3><canvas id="agentChart"></canvas>';
-        container.appendChild(chartDiv);
+        // --- Eggroll Control Panel ---
+        const controlDiv = document.createElement('div');
+        controlDiv.className = 'chart-container';
+        controlDiv.innerHTML = `
+            <h3>🥚 Eggroll Control</h3>
+            <div style="margin-bottom: 10px;">
+                <label style="font-size: 12px; color: var(--text-dim);">Forced Strategy</label>
+                <select id="eggrollPattern" onchange="setForcedPattern(this.value)" style="width: 100%; padding: 6px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 4px; margin-top: 4px;">
+                    <option value="">Auto (MCTS)</option>
+                    <option value="quality_first">Quality First</option>
+                    <option value="quick_answer">Quick Answer</option>
+                    <option value="research_pipeline">Research Pipeline</option>
+                    <option value="creative_writing">Creative Writing</option>
+                </select>
+            </div>
+            <div id="controlStatus" style="font-size: 11px; color: var(--success);"></div>
+        `;
+        container.appendChild(controlDiv);
 
-        const ctx = document.getElementById('agentChart').getContext('2d');
-        if (state.charts.agentChart) {
-            state.charts.agentChart.destroy();
+        // --- Lineage Graph ---
+        const lineageDiv = document.createElement('div');
+        lineageDiv.className = 'chart-container';
+        lineageDiv.innerHTML = '<h3>🧬 Evolution Lineage</h3><div id="lineageGraph" style="height: 300px; border: 1px solid var(--border); border-radius: 4px;"></div>';
+        container.appendChild(lineageDiv);
+
+        // Fetch and render lineage
+        try {
+            const response = await fetch(`${API_BASE}/api/eggroll/lineage`);
+            if (response.ok) {
+                const data = await response.json();
+                renderLineageGraph(data, document.getElementById('lineageGraph'));
+            } else {
+                document.getElementById('lineageGraph').innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-dim);">Lineage data unavailable</div>';
+            }
+        } catch (e) {
+            console.error("Failed to load lineage:", e);
+            document.getElementById('lineageGraph').innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-dim);">Failed to load lineage</div>';
         }
 
-        state.charts.agentChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.agents.map(a => a.agent_name),
-                datasets: [{
-                    label: 'Success Rate',
-                    data: data.agents.map(a => a.success_rate * 100),
-                    backgroundColor: '#00d4ff'
-                }, {
-                    label: 'Breakthroughs',
-                    data: data.agents.map(a => a.breakthroughs),
-                    backgroundColor: '#2a5298'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                scales: {
-                    y: { beginAtZero: true }
-                },
-                plugins: {
-                    legend: {
-                        labels: { color: '#e0e0e0' }
-                    }
-                }
-            }
-        });
+        // --- Standard Analytics ---
+        const response = await fetch(`${API_BASE}/stats/agents`);
+        if (response.ok) {
+            const data = await response.json();
 
-        // Negotiation breakdown
-        if (data.agents.length > 0 && data.agents[0].negotiation) {
-            const negotiationDiv = document.createElement('div');
-            negotiationDiv.className = 'chart-container';
-            negotiationDiv.innerHTML = '<h3>Negotiation Breakdown</h3><canvas id="negotiationChart"></canvas>';
-            container.appendChild(negotiationDiv);
+            // Agent comparison chart
+            const chartDiv = document.createElement('div');
+            chartDiv.className = 'chart-container';
+            chartDiv.innerHTML = '<h3>Agent Performance</h3><canvas id="agentChart"></canvas>';
+            container.appendChild(chartDiv);
 
-            const negCtx = document.getElementById('negotiationChart').getContext('2d');
-            if (state.charts.negotiationChart) {
-                state.charts.negotiationChart.destroy();
+            const ctx = document.getElementById('agentChart').getContext('2d');
+            if (state.charts.agentChart) {
+                state.charts.agentChart.destroy();
             }
 
-            const agent = data.agents[0];
-            state.charts.negotiationChart = new Chart(negCtx, {
-                type: 'pie',
+            state.charts.agentChart = new Chart(ctx, {
+                type: 'bar',
                 data: {
-                    labels: ['Creative Wins', 'QC Wins', 'Compromises'],
+                    labels: data.agents.map(a => a.agent_name),
                     datasets: [{
-                        data: [
-                            agent.negotiation.creative_win_rate * 100,
-                            agent.negotiation.qc_win_rate * 100,
-                            agent.negotiation.compromise_rate * 100
-                        ],
-                        backgroundColor: ['#00d4ff', '#ff3366', '#00ff88']
+                        label: 'Success Rate',
+                        data: data.agents.map(a => a.success_rate * 100),
+                        backgroundColor: '#00d4ff'
+                    }, {
+                        label: 'Breakthroughs',
+                        data: data.agents.map(a => a.breakthroughs),
+                        backgroundColor: '#2a5298'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    },
                     plugins: {
                         legend: {
                             labels: { color: '#e0e0e0' }
@@ -421,6 +425,70 @@ async function loadAnalytics() {
 
     } catch (error) {
         console.error('Failed to load analytics:', error);
+    }
+}
+
+function renderLineageGraph(data, container) {
+    if (!data || !data.nodes || data.nodes.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-dim);">No lineage history yet</div>';
+        return;
+    }
+
+    const nodes = new vis.DataSet(data.nodes.map(n => ({
+        id: n.id,
+        label: n.id.split('_').pop(), // Short label
+        title: `Reward: ${n.reward?.toFixed(4) || 'N/A'}`,
+        color: n.reward > 0.5 ? '#00ff88' : '#00d4ff'
+    })));
+
+    const edges = new vis.DataSet(data.links.map(l => ({
+        from: l.source,
+        to: l.target,
+        arrows: 'to',
+        color: { color: '#444' }
+    })));
+
+    const options = {
+        layout: {
+            hierarchical: {
+                direction: "UD",
+                sortMethod: "directed"
+            }
+        },
+        physics: false,
+        nodes: {
+            shape: 'dot',
+            size: 10,
+            font: {
+                color: '#e0e0e0',
+                size: 12
+            }
+        }
+    };
+
+    new vis.Network(container, { nodes, edges }, options);
+}
+
+async function setForcedPattern(pattern) {
+    try {
+        const response = await fetch(`${API_BASE}/api/eggroll/control`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pattern: pattern || null })
+        });
+
+        const result = await response.json();
+        const statusEl = document.getElementById('controlStatus');
+        if (statusEl) {
+            statusEl.textContent = pattern ? `Strategy locked to: ${pattern}` : 'Strategy set to Auto (MCTS)';
+            setTimeout(() => statusEl.textContent = '', 3000);
+        }
+
+        showToast('Control Updated', pattern ? `Strategy forced: ${pattern}` : 'Strategy set to Auto');
+
+    } catch (error) {
+        console.error('Failed to set pattern:', error);
+        showToast('Error', 'Failed to update strategy', true);
     }
 }
 
@@ -595,7 +663,7 @@ async function executeTemplate() {
 
         const response = await fetch(`${API_BASE}/promptly/execute`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 thread_id: state.activeThreadId,
                 template_name: state.selectedTemplate.name,

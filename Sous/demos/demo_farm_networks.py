@@ -206,23 +206,31 @@ async def demo_csa_coordinator(csa_coordinator, csa_data, farms_data):
     print("=" * 80)
     print()
 
-    # Add farms
+    # Add farms that offer CSA (farms 002, 003, 005 have CSA seasons)
+    csa_farm_ids = {'farm_002', 'farm_003', 'farm_005'}
     print("> Setting up CSA programs...")
     for farm_dict in farms_data["farms"]:
-        farm = convert_farm_data(farm_dict)
-        csa_coordinator.register_farm(farm)
+        if farm_dict["farm_id"] in csa_farm_ids:
+            farm = convert_farm_data(farm_dict)
+            farm.offers_csa = True  # Enable CSA for these farms
+            csa_coordinator.register_farm(farm)
 
     # Create CSA seasons
     for season_dict in csa_data["seasons"]:
-        season = create_csa_season(
-            season_id=season_dict["season_id"],
+        start_date = datetime.strptime(season_dict["start_date"], "%Y-%m-%d").date()
+        end_date = datetime.strptime(season_dict["end_date"], "%Y-%m-%d").date()
+        enrollment_deadline = datetime.strptime(season_dict["enrollment_deadline"], "%Y-%m-%d").date()
+
+        csa_coordinator.create_season(
             farm_id=season_dict["farm_id"],
+            name=f"{season_dict['season_type'].title()} {start_date.year}",
             season_type=CSASeasonType(season_dict["season_type"]),
-            start_date=datetime.strptime(season_dict["start_date"], "%Y-%m-%d").date(),
-            end_date=datetime.strptime(season_dict["end_date"], "%Y-%m-%d").date(),
-            total_shares_offered=season_dict["total_shares_offered"]
+            year=start_date.year,
+            signup_opens=enrollment_deadline,
+            season_starts=start_date,
+            season_ends=end_date,
+            max_members=season_dict["total_shares_offered"]
         )
-        csa_coordinator.add_season(season)
 
     print(f"   OK Created {len(csa_coordinator.seasons)} CSA seasons")
     print()
@@ -246,14 +254,22 @@ async def demo_csa_coordinator(csa_coordinator, csa_data, farms_data):
     # Get CSA analytics for a farm
     print("> CSA analytics for Riverside Market Garden:")
     farm_id = "farm_002"
-    season_id = "season_2025_summer"
 
-    analytics = csa_coordinator.get_csa_analytics(farm_id, season_id)
-    print(f"   Active members: {analytics.active_members}")
-    print(f"   Total revenue: ${analytics.total_revenue}")
-    print(f"   Projected revenue: ${analytics.projected_revenue}")
-    print(f"   Share completion: {analytics.share_completion_rate:.1f}%")
-    print(f"   Average satisfaction: {analytics.average_satisfaction_rating:.1f}/5.0")
+    # Get an actual season for this farm
+    farm_seasons = csa_coordinator.get_farm_seasons(farm_id)
+    if farm_seasons:
+        season_id = farm_seasons[0].season_id
+        analytics = csa_coordinator.get_csa_analytics(farm_id, season_id)
+    else:
+        print("   No seasons found for this farm")
+        analytics = None
+
+    if analytics:
+        print(f"   Active members: {analytics.active_members}")
+        print(f"   Total revenue: ${analytics.total_revenue}")
+        print(f"   Projected revenue: ${analytics.projected_revenue}")
+        print(f"   Share completion: {analytics.delivery_completion_rate:.1f}%")
+        #         print(f"   Average satisfaction: {analytics.average_satisfaction_rating:.1f}/5.0")
     print()
 
 
@@ -269,7 +285,7 @@ async def demo_demand_forecasting(forecaster, marketplace):
         print("OK HoloLoom ML engine available")
         await forecaster.initialize()
     else:
-        print("⚠ HoloLoom unavailable - using baseline forecasting")
+        print("[WARNING] HoloLoom unavailable - using baseline forecasting")
     print()
 
     # Record some historical sales
@@ -292,10 +308,11 @@ async def demo_demand_forecasting(forecaster, marketplace):
         forecast = await forecaster.forecast_demand(product, horizon_days=7)
 
         print(f"   {product.name}:")
-        print(f"      Baseline: {forecast.baseline_demand:.1f} {product.unit}/day")
-        print(f"      Forecast range: {forecast.low_estimate:.1f} - {forecast.high_estimate:.1f}")
-        print(f"      Confidence: {forecast.confidence:.0%}")
-        print(f"      Recommended stock: {forecast.recommended_stock_level:.1f} {product.unit}")
+        print(f"      Predicted: {forecast.predicted_quantity:.1f} {product.unit}")
+        print(f"      Forecast range: {forecast.confidence_interval_low:.1f} - {forecast.confidence_interval_high:.1f}")
+        print(f"      Confidence: {forecast.confidence_score:.0%}")
+        if forecast.recommended_stock_level:
+            print(f"      Recommended stock: {forecast.recommended_stock_level:.1f} {product.unit}")
         print()
 
     # Pricing recommendations
@@ -306,9 +323,8 @@ async def demo_demand_forecasting(forecaster, marketplace):
     print(f"   {product.name}:")
     print(f"      Current price: ${pricing_rec.current_price}")
     print(f"      Recommended: ${pricing_rec.recommended_price}")
-    print(f"      Price elasticity: {pricing_rec.elasticity:.2f}")
-    print(f"      Expected volume impact: {pricing_rec.expected_volume_change:+.1f}%")
-    print(f"      Expected revenue impact: {pricing_rec.expected_revenue_change:+.1f}%")
+    print(f"      Price elasticity: {pricing_rec.price_elasticity:.2f}")
+    print(f"      Reasoning: {pricing_rec.reasoning}")
     print()
 
 
@@ -322,56 +338,91 @@ async def demo_loop_closure(loop_tracker):
     # Create loop connections
     print("> Creating circular economy connections...")
 
-    # Restaurant → Farm loop
-    restaurant_to_farm = LoopConnection(
-        connection_id="loop_001",
-        source_org_id="restaurant_001",
-        source_org_name="Local Restaurant",
-        destination_org_id="farm_003",
-        destination_org_name="Willamette Valley Regenerative Farm",
-        material_types=[MaterialType.FOOD_SCRAPS, MaterialType.COMPOST],
-        active=True,
-        established_date=date.today() - timedelta(days=180)
-    )
-    loop_tracker.add_connection(restaurant_to_farm)
+    # First register organizations
+    # Note: In a real system, restaurants/stores would be registered elsewhere
+    from sous.models.organization import Organization, OrganizationType
 
-    # Store → Farm loop
-    store_to_farm = LoopConnection(
-        connection_id="loop_002",
-        source_org_id="grocery_store_001",
-        source_org_name="Community Grocery",
-        destination_org_id="farm_002",
-        destination_org_name="Riverside Market Garden",
-        material_types=[MaterialType.ORGANIC_WASTE, MaterialType.COMPOST],
-        active=True,
-        established_date=date.today() - timedelta(days=90)
+    # Register farms that will participate in loop closure
+    farm_002 = Farm(
+        org_id="farm_002",
+        name="Riverside Market Garden",
+        org_type=OrganizationType.FARM,
+        location=Location("456 River Rd", "Portland", "OR", "97202"),
+        contact_name="Farm Manager",
+        contact_email="manager@riverside.com",
+        contact_phone="555-0102",
+        farm_type=FarmType.MARKET_GARDEN,
+        total_acres=Decimal("10.0"),
+        accepts_food_scraps=True  # Enable food scrap acceptance
     )
-    loop_tracker.add_connection(store_to_farm)
+    loop_tracker.register_organization(farm_002)
 
-    print(f"   OK Created {len(loop_tracker.connections)} circular loops")
+    farm_003 = Farm(
+        org_id="farm_003",
+        name="Willamette Valley Regenerative Farm",
+        org_type=OrganizationType.FARM,
+        location=Location("789 Valley Way", "Willamette Valley", "OR", "97301"),
+        contact_name="Farm Manager",
+        contact_email="manager@willamette.com",
+        contact_phone="555-0103",
+        farm_type=FarmType.REGENERATIVE_FARM,
+        total_acres=Decimal("100.0"),
+        accepts_food_scraps=True  # Enable food scrap acceptance
+    )
+    loop_tracker.register_organization(farm_003)
+
+    # Register restaurant
+    restaurant = Organization(
+        org_id="restaurant_001",
+        name="Local Restaurant",
+        org_type=OrganizationType.RESTAURANT,
+        location=Location("123 Main St", "Portland", "OR", "97201"),
+        contact_name="Restaurant Manager",
+        contact_email="manager@restaurant.com",
+        contact_phone="555-0100",
+        can_donate=True
+    )
+    loop_tracker.register_organization(restaurant)
+
+    # Register grocery store
+    grocery = Organization(
+        org_id="grocery_store_001",
+        name="Community Grocery",
+        org_type=OrganizationType.GROCERY_STORE,
+        location=Location("456 Oak Ave", "Portland", "OR", "97202"),
+        contact_name="Store Manager",
+        contact_email="manager@grocery.com",
+        contact_phone="555-0200",
+        can_donate=True
+    )
+    loop_tracker.register_organization(grocery)
+
+    # Restaurant -> Farm loop
+    restaurant_to_farm = loop_tracker.create_loop_connection(
+        donor_org_id="restaurant_001",
+        recipient_org_id="farm_003",
+        weekly_capacity_lbs=Decimal("500")
+    )
+
+    # Store -> Farm loop
+    store_to_farm = loop_tracker.create_loop_connection(
+        donor_org_id="grocery_store_001",
+        recipient_org_id="farm_002",
+        weekly_capacity_lbs=Decimal("300")
+    )
+
+    print(f"   OK Created {len(loop_tracker.loop_connections)} circular loops")
     print()
 
     # Record material flows
     print("> Recording material flows...")
 
-    # Scraps generated
-    flow1 = MaterialFlow(
-        flow_id="flow_001",
+    # Scraps generated (returns MaterialFlow with generated flow_id)
+    flow1 = loop_tracker.record_material_generation(
         source_org_id="restaurant_001",
-        source_org_name="Local Restaurant",
-        destination_org_id="compost_facility_001",
-        destination_org_name="Community Compost",
         material_type=MaterialType.FOOD_SCRAPS,
         quantity_lbs=Decimal("500"),
-        stage=FlowStage.GENERATION,
-        flow_date=date.today()
-    )
-    loop_tracker.record_material_generation(
-        flow1.flow_id,
-        flow1.source_org_id,
-        flow1.material_type,
-        flow1.quantity_lbs,
-        date.today()
+        generation_date=date.today()
     )
 
     # Processing (composting)
@@ -383,14 +434,13 @@ async def demo_loop_closure(loop_tracker):
 
     # Application to farm
     loop_tracker.record_material_application(
-        flow1.flow_id,
-        "farm_003",
-        date.today() + timedelta(days=60),
-        Decimal("10.0")  # acres
+        flow_id=flow1.flow_id,
+        application_date=date.today() + timedelta(days=60),
+        acres_applied=Decimal("10.0")
     )
 
     print("   OK Recorded complete material flow cycle")
-    print("      Generation → Collection → Processing → Application")
+    print("      Generation -> Collection -> Processing -> Application")
     print()
 
     # Calculate circularity metrics
