@@ -26,8 +26,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
-from HoloLoom.spinning_wheel.recursive_crawler import (
+from HoloLoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
+from HoloLoom.spinningWheel.modalities.recursive_crawler import (
     RecursiveCrawler,
     CrawlConfig,
     LinkInfo

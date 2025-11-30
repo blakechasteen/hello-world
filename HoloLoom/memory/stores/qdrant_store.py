@@ -1,16 +1,22 @@
 """
-Qdrant Memory Store - Multi-Scale Vector Search
-===============================================
-Production-grade vector database with multi-scale embeddings.
+Qdrant Memory Store - Production-Grade Vector Search with Connection Pooling
+============================================================================
+Production-grade vector database with multi-scale embeddings and connection pooling.
 
 Features:
+- Connection pooling with singleton pattern for efficient resource usage
 - Multi-scale search (96d, 192d, 384d embeddings)
 - Payload filtering (user_id, time, place, etc.)
-- Efficient similarity search
+- Efficient similarity search with gRPC preference
+- Automatic retry logic with exponential backoff
+- Health checks and connection monitoring
 - Horizontal scaling
 """
 
 import logging
+import os
+import time
+from threading import Lock
 from typing import Dict, List, Optional, TYPE_CHECKING, Any
 from datetime import datetime
 import hashlib
@@ -24,10 +30,13 @@ if TYPE_CHECKING:
 try:
     from qdrant_client import QdrantClient
     from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
+    from qdrant_client.http.exceptions import ResponseHandlingException, UnexpectedResponse
     _HAVE_QDRANT = True
 except ImportError:
     QdrantClient = None
     Filter = Any  # Fallback for type hints
+    ResponseHandlingException = Exception  # Fallback
+    UnexpectedResponse = Exception  # Fallback
     _HAVE_QDRANT = False
 
 # Optional sentence-transformers for embeddings
@@ -38,72 +47,198 @@ except ImportError:
     SentenceTransformer = None
     _HAVE_EMBEDDINGS = False
 
+logger = logging.getLogger(__name__)
+
 
 class QdrantMemoryStore:
     """
-    Qdrant-backed vector store with multi-scale embeddings.
-    
+    Qdrant-backed vector store with connection pooling and multi-scale embeddings.
+
+    Connection Pooling:
+    - Singleton client pattern for connection reuse
+    - Configurable timeout and retry settings
+    - Health checks and monitoring
+    - Graceful degradation on connection issues
+
     Collections:
     - memories_96: Fast, low-precision (96 dimensions)
     - memories_192: Balanced (192 dimensions)
     - memories_384: High-precision (384 dimensions)
-    
+
     Retrieval:
     - Search at multiple scales
     - Fuse results with weighted scores
     - Filter by user_id, time_range, context
-    
+
+    Environment Variables:
+    - QDRANT_HOST: Host URL (default: localhost)
+    - QDRANT_PORT: Port number (default: 6333)
+    - QDRANT_TIMEOUT: Request timeout in seconds (default: 60)
+    - QDRANT_PREFER_GRPC: Use gRPC if available (default: true)
+    - QDRANT_API_KEY: API key for authentication (optional)
+
     Requires:
     - pip install qdrant-client
     - pip install sentence-transformers
     """
-    
+
+    # Class-level client singleton with thread-safe lock
+    _client_instance: Optional[QdrantClient] = None
+    _embedder_instance: Optional[SentenceTransformer] = None
+    _client_lock = Lock()
+    _connection_metrics = {
+        'total_requests': 0,
+        'failed_requests': 0,
+        'retry_count': 0,
+        'last_health_check': None,
+        'health_status': 'unknown'
+    }
+
     def __init__(
         self,
-        url: str = "http://localhost:6333",
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        url: Optional[str] = None,
         api_key: Optional[str] = None,
         collection_prefix: str = "memories",
         embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
-        scales: List[int] = [96, 192, 384]
+        scales: List[int] = [96, 192, 384],
+        timeout: Optional[float] = None,
+        prefer_grpc: Optional[bool] = None,
+        enable_metrics: bool = True
     ):
         if not _HAVE_QDRANT:
             raise RuntimeError(
                 "qdrant-client not installed. Install with: pip install qdrant-client"
             )
-        
+
         if not _HAVE_EMBEDDINGS:
             raise RuntimeError(
                 "sentence-transformers not installed. Install with: pip install sentence-transformers"
             )
-        
-        # Initialize client
-        if api_key:
-            self.client = QdrantClient(url=url, api_key=api_key)
+
+        # Configuration from environment or parameters
+        self.host = host or os.getenv("QDRANT_HOST", "localhost")
+        self.port = port or int(os.getenv("QDRANT_PORT", "6333"))
+        self.timeout = timeout or float(os.getenv("QDRANT_TIMEOUT", "60"))
+        self.prefer_grpc = prefer_grpc if prefer_grpc is not None else (
+            os.getenv("QDRANT_PREFER_GRPC", "true").lower() == "true"
+        )
+        self.api_key = api_key or os.getenv("QDRANT_API_KEY")
+        self.enable_metrics = enable_metrics
+
+        # Build URL if not provided
+        if url:
+            self.url = url
         else:
-            self.client = QdrantClient(url=url)
-        
+            protocol = "http" if not self.prefer_grpc else "grpc"
+            self.url = f"{protocol}://{self.host}:{self.port}"
+
         self.collection_prefix = collection_prefix
         self.scales = scales
-        self.logger = logging.getLogger(__name__)
-        
-        # Initialize embedder
-        self.embedder = SentenceTransformer(embedding_model)
-        self.embedding_dim = self.embedder.get_sentence_embedding_dimension()
-        
+
+        # Initialize or reuse client singleton
+        self._initialize_client()
+
+        # Initialize or reuse embedder singleton
+        self._initialize_embedder(embedding_model)
+
         # Create collections for each scale
         self._setup_collections()
-        
-        self.logger.info(f"Qdrant store initialized: {url} with scales {scales}")
+
+        logger.info(f"Qdrant store initialized: {self.url} with scales {scales}")
+
+    def _initialize_client(self) -> None:
+        """Initialize client singleton with connection pooling."""
+        with QdrantMemoryStore._client_lock:
+            # Reuse existing healthy client
+            if QdrantMemoryStore._client_instance:
+                try:
+                    # Simple health check
+                    QdrantMemoryStore._client_instance.get_collections()
+                    self.client = QdrantMemoryStore._client_instance
+                    logger.info("Reusing existing Qdrant client connection")
+                    return
+                except Exception as e:
+                    logger.warning(f"Existing Qdrant client unhealthy, recreating: {e}")
+                    QdrantMemoryStore._client_instance = None
+
+            # Create new client with retries
+            max_retries = 3
+            retry_delay = 1.0
+
+            for attempt in range(max_retries):
+                try:
+                    logger.info(
+                        f"Connecting to Qdrant at {self.url} "
+                        f"(attempt {attempt + 1}/{max_retries})"
+                    )
+
+                    # Create client with optimal settings
+                    client_params = {
+                        'timeout': self.timeout,
+                        'prefer_grpc': self.prefer_grpc,
+                    }
+
+                    if self.api_key:
+                        client_params['api_key'] = self.api_key
+
+                    if self.url:
+                        client_params['url'] = self.url
+                    else:
+                        client_params['host'] = self.host
+                        client_params['port'] = self.port
+
+                    self.client = QdrantClient(**client_params)
+
+                    # Verify connectivity
+                    self.client.get_collections()
+
+                    QdrantMemoryStore._client_instance = self.client
+
+                    if self.enable_metrics:
+                        QdrantMemoryStore._connection_metrics['health_status'] = 'healthy'
+                        QdrantMemoryStore._connection_metrics['last_health_check'] = time.time()
+
+                    logger.info(f"Successfully connected to Qdrant at {self.url}")
+                    return
+
+                except Exception as e:
+                    if self.enable_metrics:
+                        QdrantMemoryStore._connection_metrics['failed_requests'] += 1
+
+                    if attempt < max_retries - 1:
+                        logger.warning(
+                            f"Connection attempt {attempt + 1} failed: {e}. "
+                            f"Retrying in {retry_delay}s..."
+                        )
+                        time.sleep(retry_delay)
+                        retry_delay *= 2  # Exponential backoff
+                    else:
+                        QdrantMemoryStore._connection_metrics['health_status'] = 'unhealthy'
+                        raise ConnectionError(
+                            f"Failed to connect to Qdrant after {max_retries} attempts: {e}"
+                        )
+
+    def _initialize_embedder(self, model_name: str) -> None:
+        """Initialize embedder singleton for memory efficiency."""
+        with QdrantMemoryStore._client_lock:
+            if QdrantMemoryStore._embedder_instance is None:
+                logger.info(f"Loading embedding model: {model_name}")
+                QdrantMemoryStore._embedder_instance = SentenceTransformer(model_name)
+
+            self.embedder = QdrantMemoryStore._embedder_instance
+            self.embedding_dim = self.embedder.get_sentence_embedding_dimension()
     
     def _setup_collections(self):
         """Create collections for multi-scale vectors."""
         for scale in self.scales:
             collection_name = f"{self.collection_prefix}_{scale}"
-            
+
             # Check if collection exists
             try:
                 self.client.get_collection(collection_name)
-                self.logger.info(f"Collection {collection_name} already exists")
+                logger.info(f"Collection {collection_name} already exists")
             except Exception:
                 # Create collection
                 self.client.create_collection(
@@ -113,7 +248,135 @@ class QdrantMemoryStore:
                         distance=Distance.COSINE
                     )
                 )
-                self.logger.info(f"Created collection {collection_name}")
+                logger.info(f"Created collection {collection_name}")
+
+    def _execute_with_retry(self, func, *args, **kwargs):
+        """
+        Execute Qdrant operation with retry logic.
+
+        Args:
+            func: Function to execute
+            *args: Positional arguments
+            **kwargs: Keyword arguments
+
+        Returns:
+            Result of function execution
+
+        Raises:
+            Exception: If all retries fail
+        """
+        max_retries = 3
+        retry_delay = 0.5
+
+        for attempt in range(max_retries):
+            try:
+                if self.enable_metrics:
+                    QdrantMemoryStore._connection_metrics['total_requests'] += 1
+
+                result = func(*args, **kwargs)
+                return result
+
+            except (ResponseHandlingException, UnexpectedResponse, ConnectionError) as e:
+                if self.enable_metrics:
+                    QdrantMemoryStore._connection_metrics['failed_requests'] += 1
+                    QdrantMemoryStore._connection_metrics['retry_count'] += 1
+
+                if attempt < max_retries - 1:
+                    logger.warning(
+                        f"Qdrant operation failed (attempt {attempt + 1}/{max_retries}): {e}. "
+                        f"Retrying in {retry_delay}s..."
+                    )
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                else:
+                    raise
+
+            except Exception as e:
+                # Non-retryable error
+                if self.enable_metrics:
+                    QdrantMemoryStore._connection_metrics['failed_requests'] += 1
+                raise
+
+    def health_check(self) -> Dict[str, Any]:
+        """
+        Perform health check on Qdrant connection.
+
+        Returns:
+            Dict containing health status and metrics
+        """
+        health = {
+            'status': 'unknown',
+            'connected': False,
+            'collections': [],
+            'metrics': {},
+            'last_check': None,
+            'error': None
+        }
+
+        try:
+            # Check client connectivity
+            collections = self._execute_with_retry(self.client.get_collections)
+            health['status'] = 'healthy'
+            health['connected'] = True
+            health['collections'] = [c.name for c in collections.collections]
+
+            # Get metrics if enabled
+            if self.enable_metrics:
+                health['metrics'] = {
+                    'total_requests': QdrantMemoryStore._connection_metrics['total_requests'],
+                    'failed_requests': QdrantMemoryStore._connection_metrics['failed_requests'],
+                    'retry_count': QdrantMemoryStore._connection_metrics['retry_count'],
+                    'failure_rate': (
+                        QdrantMemoryStore._connection_metrics['failed_requests'] /
+                        max(1, QdrantMemoryStore._connection_metrics['total_requests'])
+                    )
+                }
+
+            health['last_check'] = time.time()
+
+            if self.enable_metrics:
+                QdrantMemoryStore._connection_metrics['last_health_check'] = health['last_check']
+                QdrantMemoryStore._connection_metrics['health_status'] = 'healthy'
+
+        except Exception as e:
+            health['status'] = 'unhealthy'
+            health['error'] = str(e)
+            logger.error(f"Qdrant health check failed: {e}")
+
+            if self.enable_metrics:
+                QdrantMemoryStore._connection_metrics['health_status'] = 'unhealthy'
+
+        return health
+
+    def get_connection_metrics(self) -> Dict[str, Any]:
+        """
+        Get connection metrics for monitoring.
+
+        Returns:
+            Dict with connection statistics and performance metrics
+        """
+        metrics = {
+            'url': self.url,
+            'timeout': self.timeout,
+            'prefer_grpc': self.prefer_grpc,
+            'health_status': QdrantMemoryStore._connection_metrics.get('health_status', 'unknown'),
+            'total_requests': QdrantMemoryStore._connection_metrics.get('total_requests', 0),
+            'failed_requests': QdrantMemoryStore._connection_metrics.get('failed_requests', 0),
+            'retry_count': QdrantMemoryStore._connection_metrics.get('retry_count', 0),
+            'last_health_check': QdrantMemoryStore._connection_metrics.get('last_health_check'),
+        }
+
+        # Calculate failure rate
+        if metrics['total_requests'] > 0:
+            metrics['failure_rate'] = metrics['failed_requests'] / metrics['total_requests']
+        else:
+            metrics['failure_rate'] = 0.0
+
+        # Add warnings if needed
+        if metrics['retry_count'] > metrics['total_requests'] * 0.1:
+            metrics['warning'] = f"High retry rate detected ({metrics['retry_count']} retries). Check network stability."
+
+        return metrics
     
     async def store(self, memory: Memory, user_id: str = "default") -> str:
         """
@@ -157,7 +420,7 @@ class QdrantMemoryStore:
         try:
             full_embedding = self._get_or_generate_embedding(memory)
         except Exception as e:
-            self.logger.error(f"✗ Embedding extraction failed: {e}")
+            logger.error(f"✗ Embedding extraction failed: {e}")
             raise
 
         # ============================================================
@@ -170,14 +433,15 @@ class QdrantMemoryStore:
                 vector = full_embedding[:scale]
                 payload = self._build_point_payload(mem_id, memory, user_id)
 
-                self.client.upsert(
+                self._execute_with_retry(
+                    self.client.upsert,
                     collection_name=collection_name,
                     points=[PointStruct(id=qdrant_id, vector=vector, payload=payload)]
                 )
                 scales_stored += 1
 
             except Exception as e:
-                self.logger.warning(
+                logger.warning(
                     f"⚠ Failed to store at scale {scale}d: {e}"
                 )
                 # Continue with other scales (partial success is okay)
@@ -188,7 +452,7 @@ class QdrantMemoryStore:
         if scales_stored == 0:
             raise RuntimeError(f"Failed to store memory at any scale")
 
-        self.logger.info(
+        logger.info(
             f"✓ Stored {mem_id[:8]}... at {scales_stored}/{len(self.scales)} scales"
         )
         return mem_id

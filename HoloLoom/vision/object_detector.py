@@ -9,7 +9,7 @@ Supports multiple backends:
 Created: 2025-11-22
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 import logging
 import numpy as np

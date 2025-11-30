@@ -788,7 +788,7 @@ Importance: {importance:.2f}"""
                     return [TextContent(
                         type="text",
                         text=f"Error: Text spinner not available. {e}\n"
-                             f"Make sure HoloLoom.spinning_wheel.text is installed."
+                             f"Make sure HoloLoom.spinningWheel.text is installed."
                     )]
                 except Exception as e:
                     logger.error(f"Error processing text: {e}")

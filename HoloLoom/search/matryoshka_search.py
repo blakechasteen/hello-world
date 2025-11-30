@@ -32,7 +32,7 @@ from urllib.parse import urlparse
 import numpy as np
 
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+from HoloLoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
 from HoloLoom.protocols.types import MemoryShard
 
 from .protocol import (

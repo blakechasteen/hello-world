@@ -1,6 +1,6 @@
 """
-Interleaved Expansion + Generation (Phase 3)
-=============================================
+Interleaved Expansion + Generation (Phase 3 + Phase 4)
+=======================================================
 
 Combines streaming context expansion (Phase 2) with LLM generation.
 Instead of retrieving all context THEN generating, this interleaves both:
@@ -10,20 +10,27 @@ Instead of retrieving all context THEN generating, this interleaves both:
 3. Feed new chunks to LLM as discovered
 4. Stream BOTH expansion chunks AND generation tokens
 
+Phase 3 MVP: Background generation with batched token yielding
+Phase 4: True concurrent token yielding (<100ms to first token)
+
 Expected Benefits:
 - 40-60% lower end-to-end latency
 - Progressive results (show answers immediately)
 - More efficient token usage (can stop early if answer found)
 - Better user experience (no waiting for full retrieval)
+- <100ms latency to first token (Phase 4)
 
 Author: Claude Code
 Date: 2025-11-25
 """
 
 import asyncio
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, AsyncIterator, Dict, List, Optional, Union
+
+logger = logging.getLogger(__name__)
 
 from HoloLoom.memory.streaming_expansion import (
     ContextChunk,
@@ -41,6 +48,12 @@ class StreamItemType(str, Enum):
     CONTEXT_CHUNK = "context_chunk"
     GENERATION_TOKEN = "generation_token"
     METADATA = "metadata"
+
+
+class StreamMode(str, Enum):
+    """Streaming mode for token yielding."""
+    BATCHED = "batched"      # Phase 3 MVP: Collect all tokens, yield at end
+    CONCURRENT = "concurrent"  # Phase 4: Yield tokens as generated (true interleaving)
 
 
 @dataclass
@@ -230,18 +243,24 @@ class InterleavedStreamManager:
         max_hops: int = 5,
         importance_scores: Optional[Dict[str, float]] = None,
         node_contents: Optional[Dict[str, str]] = None,
-        emit_metadata: bool = False
+        emit_metadata: bool = False,
+        stream_mode: StreamMode = StreamMode.BATCHED
     ) -> AsyncIterator[StreamItem]:
         """
         Interleave context expansion with LLM generation.
 
-        Simplified approach for Phase 3 MVP:
+        Phase 3 MVP (BATCHED):
         1. Yield first chunk immediately
         2. Start generation in background
         3. Continue expansion, yielding chunks
         4. Drain generation tokens after expansion completes
 
-        This achieves the key benefit (generation starts early) with simpler logic.
+        Phase 4 (CONCURRENT):
+        1. Yield first chunk immediately
+        2. Start generation in background with shared queue
+        3. Yield tokens as generated (true interleaving)
+        4. Continue expansion simultaneously
+        5. Both streams complete independently
 
         Args:
             query: User query
@@ -255,6 +274,7 @@ class InterleavedStreamManager:
             importance_scores: Node importance scores
             node_contents: Node text contents
             emit_metadata: Whether to emit metadata events
+            stream_mode: BATCHED (Phase 3) or CONCURRENT (Phase 4)
 
         Yields:
             ContextChunk, GenerationToken, or StreamMetadata objects
@@ -265,6 +285,27 @@ class InterleavedStreamManager:
         if emit_metadata:
             yield StreamMetadata("expansion_start", {"query": query, "seed_nodes": seed_nodes})
 
+        # Route to appropriate implementation based on stream_mode
+        if stream_mode == StreamMode.CONCURRENT:
+            # Phase 4: True concurrent token yielding
+            async for item in self._stream_concurrent(
+                query=query,
+                seed_nodes=seed_nodes,
+                graph=graph,
+                token_budget=token_budget,
+                max_generation_tokens=max_generation_tokens,
+                chunk_size=chunk_size,
+                min_relevance=min_relevance,
+                max_hops=max_hops,
+                importance_scores=importance_scores,
+                node_contents=node_contents,
+                emit_metadata=emit_metadata,
+                start_time=start_time
+            ):
+                yield item
+            return
+
+        # Phase 3 MVP: Batched token yielding (original implementation)
         # Start expansion stream
         expansion_stream = self.expansion_builder.stream_expansion(
             query=query,
@@ -389,6 +430,174 @@ class InterleavedStreamManager:
                 "generation_tokens": len(generation_tokens)
             })
 
+    async def _stream_concurrent(
+        self,
+        query: str,
+        seed_nodes: List[str],
+        graph: Any,
+        token_budget: int,
+        max_generation_tokens: int,
+        chunk_size: int,
+        min_relevance: float,
+        max_hops: int,
+        importance_scores: Optional[Dict[str, float]],
+        node_contents: Optional[Dict[str, str]],
+        emit_metadata: bool,
+        start_time: float
+    ) -> AsyncIterator[StreamItem]:
+        """
+        Phase 4: True concurrent token yielding implementation.
+
+        Uses async queues to interleave expansion chunks and generation tokens
+        as they become available, achieving <100ms latency to first token.
+        """
+        # Create shared queue for both streams
+        output_queue: asyncio.Queue = asyncio.Queue()
+
+        # Track state
+        context_chunks = []
+        cumulative_context = ""
+        generation_tokens = []
+        generation_started = False
+
+        # Start expansion stream
+        expansion_stream = self.expansion_builder.stream_expansion(
+            query=query,
+            seed_nodes=seed_nodes,
+            graph=graph,
+            token_budget=token_budget,
+            chunk_size=chunk_size,
+            min_relevance=min_relevance,
+            max_hops=max_hops,
+            importance_scores=importance_scores,
+            node_contents=node_contents
+        )
+
+        # Track generation task for proper cleanup
+        generation_task = None
+
+        async def pump_expansion():
+            """Pump expansion chunks into output queue."""
+            nonlocal generation_started, cumulative_context, generation_task
+            first_chunk = None
+
+            try:
+                async for chunk in expansion_stream:
+                    # Add to output queue
+                    await output_queue.put(("chunk", chunk))
+                    context_chunks.append(chunk)
+
+                    # Update context
+                    for node_id, content in chunk.contents.items():
+                        if content and content not in cumulative_context:
+                            cumulative_context += f"\n{content}"
+
+                    # Start generation after first chunk
+                    if first_chunk is None and not chunk.is_final and not generation_started:
+                        first_chunk = chunk
+                        generation_started = True
+
+                        if emit_metadata:
+                            await output_queue.put(("metadata", StreamMetadata("generation_start", {
+                                "context_tokens": first_chunk.cumulative_tokens,
+                                "first_chunk_size": first_chunk.token_count
+                            })))
+
+                        # Start generation task (track for cleanup)
+                        generation_task = asyncio.create_task(pump_generation(cumulative_context))
+
+                if emit_metadata:
+                    await output_queue.put(("metadata", StreamMetadata("expansion_complete", {
+                        "total_chunks": len(context_chunks),
+                        "total_tokens": sum(c.token_count for c in context_chunks)
+                    })))
+
+            finally:
+                await output_queue.put(("expansion_done", None))
+
+        async def pump_generation(context: str):
+            """Pump generation tokens into output queue."""
+            try:
+                gen_stream = self.llm.generate_stream(
+                    prompt=query,
+                    context=context,
+                    max_tokens=max_generation_tokens
+                )
+
+                cumulative_text = ""
+                token_index = 0
+
+                async for token in gen_stream:
+                    cumulative_text += token
+                    gen_token = GenerationToken(
+                        token=token,
+                        cumulative_text=cumulative_text,
+                        token_index=token_index,
+                        is_final=False,
+                        metadata={"context_chunks": len(context_chunks)}
+                    )
+                    await output_queue.put(("token", gen_token))
+                    generation_tokens.append(token)
+                    token_index += 1
+
+                # Yield final token
+                if len(generation_tokens) > 0:
+                    final_token = GenerationToken(
+                        token="",
+                        cumulative_text=cumulative_text,
+                        token_index=len(generation_tokens),
+                        is_final=True,
+                        metadata={
+                            "context_chunks": len(context_chunks),
+                            "total_context_tokens": sum(c.token_count for c in context_chunks)
+                        }
+                    )
+                    await output_queue.put(("token", final_token))
+
+                    if emit_metadata:
+                        await output_queue.put(("metadata", StreamMetadata("generation_complete", {
+                            "total_tokens": len(generation_tokens),
+                            "response_length": len(cumulative_text)
+                        })))
+
+            finally:
+                await output_queue.put(("generation_done", None))
+
+        # Start expansion task
+        expansion_task = asyncio.create_task(pump_expansion())
+
+        # Consume from output queue
+        expansion_done = False
+        generation_done = False
+
+        while not (expansion_done and generation_done):
+            item_type, item = await output_queue.get()
+
+            if item_type == "expansion_done":
+                expansion_done = True
+            elif item_type == "generation_done":
+                generation_done = True
+            elif item_type == "chunk":
+                yield item
+            elif item_type == "token":
+                yield item
+            elif item_type == "metadata":
+                yield item
+
+        # Wait for both tasks to complete
+        await expansion_task
+        if generation_task is not None:
+            await generation_task
+
+        if emit_metadata:
+            import time
+            total_time = (time.time() - start_time) * 1000
+            yield StreamMetadata("stream_complete", {
+                "total_time_ms": total_time,
+                "context_chunks": len(context_chunks),
+                "generation_tokens": len(generation_tokens)
+            })
+
     async def _interleave_streams(
         self,
         expansion_stream: AsyncIterator[ContextChunk],
@@ -417,59 +626,104 @@ class InterleavedStreamManager:
             finally:
                 await generation_queue.put(None)  # Sentinel
 
-        # Start both tasks
-        expansion_task = asyncio.create_task(pump_expansion())
-        generation_task = asyncio.create_task(pump_generation())
+        # Start both tasks with proper exception handling
+        expansion_task = None
+        generation_task = None
 
-        # Consume from both queues
-        expansion_done = False
-        generation_done = False
+        try:
+            expansion_task = asyncio.create_task(pump_expansion())
+            generation_task = asyncio.create_task(pump_generation())
 
-        while not (expansion_done and generation_done):
-            # Try to get from both queues with timeout
-            tasks = []
+            # Consume from both queues
+            expansion_done = False
+            generation_done = False
 
-            if not expansion_done:
-                tasks.append(asyncio.create_task(expansion_queue.get()))
-            if not generation_done:
-                tasks.append(asyncio.create_task(generation_queue.get()))
+            while not (expansion_done and generation_done):
+                # Try to get from both queues with timeout
+                tasks = []
 
-            if not tasks:
-                break
+                if not expansion_done:
+                    tasks.append(asyncio.create_task(expansion_queue.get()))
+                if not generation_done:
+                    tasks.append(asyncio.create_task(generation_queue.get()))
 
-            # Wait for first item available
-            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+                if not tasks:
+                    break
 
-            # Cancel pending
-            for task in pending:
-                task.cancel()
+                # Wait for first item available with timeout
+                try:
+                    done, pending = await asyncio.wait(
+                        tasks,
+                        return_when=asyncio.FIRST_COMPLETED,
+                        timeout=30.0  # 30s timeout to prevent hanging
+                    )
+                except asyncio.TimeoutError:
+                    # Timeout - cancel tasks and raise
+                    for task in tasks:
+                        task.cancel()
+                    raise
 
-            # Process done tasks
-            for task in done:
-                item = task.result()
+                # Cancel pending
+                for task in pending:
+                    task.cancel()
 
-                if item is None:
-                    # Sentinel - stream done
-                    if isinstance(item, type(None)):
-                        # Check which stream ended
-                        try:
-                            # Try non-blocking get to see if it's from expansion or generation
-                            if not expansion_queue.empty():
-                                expansion_done = True
-                            if not generation_queue.empty():
-                                generation_done = True
-                        except:
-                            pass
-                elif isinstance(item, ContextChunk):
-                    expansion_done = item.is_final
-                    yield item
-                else:
-                    # String token
-                    yield item
+                # Process done tasks
+                for task in done:
+                    try:
+                        item = task.result()
 
-        # Wait for tasks to complete
-        await expansion_task
-        await generation_task
+                        if item is None:
+                            # Sentinel - stream done
+                            if isinstance(item, type(None)):
+                                # Check which stream ended
+                                try:
+                                    # Try non-blocking get to see if it's from expansion or generation
+                                    if not expansion_queue.empty():
+                                        expansion_done = True
+                                    if not generation_queue.empty():
+                                        generation_done = True
+                                except:
+                                    pass
+                        elif isinstance(item, ContextChunk):
+                            expansion_done = item.is_final
+                            yield item
+                        else:
+                            # String token
+                            yield item
+                    except Exception as e:
+                        # Handle task exceptions
+                        logger.error(f"Task error in concurrent streaming: {e}", exc_info=True)
+                        raise
+
+            # Wait for tasks to complete with proper exception handling
+            if expansion_task and generation_task:
+                # Use asyncio.gather for proper exception propagation
+                try:
+                    await asyncio.gather(expansion_task, generation_task, return_exceptions=False)
+                except Exception as e:
+                    logger.error(f"Error waiting for concurrent tasks: {e}", exc_info=True)
+                    raise
+
+        except Exception as e:
+            # Cleanup on error: cancel all tasks
+            if expansion_task and not expansion_task.done():
+                expansion_task.cancel()
+            if generation_task and not generation_task.done():
+                generation_task.cancel()
+
+            # Wait for cancellation
+            if expansion_task:
+                try:
+                    await expansion_task
+                except asyncio.CancelledError:
+                    pass
+            if generation_task:
+                try:
+                    await generation_task
+                except asyncio.CancelledError:
+                    pass
+
+            raise
 
     async def _collect_generation_tokens(self, gen_stream: AsyncIterator[str]) -> List[str]:
         """
@@ -504,6 +758,7 @@ async def stream_interleaved_expansion_generation(
     llm: Optional[LLMProtocol] = None,
     token_budget: int = 2000,
     max_generation_tokens: int = 500,
+    stream_mode: StreamMode = StreamMode.BATCHED,
     **kwargs
 ) -> AsyncIterator[StreamItem]:
     """
@@ -516,6 +771,7 @@ async def stream_interleaved_expansion_generation(
         llm: LLM provider (default: MockLLM)
         token_budget: Token budget for expansion
         max_generation_tokens: Max tokens to generate
+        stream_mode: BATCHED (Phase 3) or CONCURRENT (Phase 4)
         **kwargs: Additional arguments for stream_interleaved
 
     Yields:
@@ -530,6 +786,7 @@ async def stream_interleaved_expansion_generation(
         graph=graph,
         token_budget=token_budget,
         max_generation_tokens=max_generation_tokens,
+        stream_mode=stream_mode,
         **kwargs
     ):
         yield item

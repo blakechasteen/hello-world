@@ -1,15 +1,30 @@
 """
-Memory Backend Factory - Extensible & Minimal
-==============================================
-Protocol-based factory for creating memory backends with safety guardrails.
+Memory Backend Factory - Production-Grade with Connection Pooling
+=================================================================
+Protocol-based factory for creating memory backends with connection pooling,
+safety guardrails, and health monitoring.
 
 3 backends: INMEMORY (dev), HYBRID (prod), HYPERSPACE (research).
-All implement MemoryStore protocol for easy extension.
+All implement MemoryStore protocol with production pooling support.
+
+Connection Pooling:
+- Neo4j: Built-in driver pooling with configurable size and timeouts
+- Qdrant: Singleton client pattern for connection reuse
+- Health checks and automatic connection recovery
+- Graceful degradation on pool exhaustion
+- Connection metrics and monitoring
+
+Environment Variables:
+- NEO4J_POOL_SIZE: Max Neo4j pool size (default: 50)
+- NEO4J_TIMEOUT: Neo4j connection timeout (default: 30s)
+- QDRANT_TIMEOUT: Qdrant request timeout (default: 60s)
+- QDRANT_PREFER_GRPC: Use gRPC if available (default: true)
 """
 
 from typing import Optional, Any, Dict, List
 import warnings
 import logging
+import os
 
 from HoloLoom.config import Config, MemoryBackend
 from .protocol import MemoryStore, Memory, MemoryQuery, RetrievalResult
@@ -503,13 +518,28 @@ def _try_init_neo4j(config: Config) -> tuple[Any, Optional[str]]:
         return None, "Neo4j URI not configured"
 
     try:
-        neo4j = Neo4jKG(Neo4jConfig(
+        # Create Neo4j with production pooling configuration
+        neo4j_config = Neo4jConfig(
             uri=config.neo4j_uri,
             username=config.neo4j_username,
             password=config.neo4j_password,
-            database=config.neo4j_database
-        ))
-        print(f"[OK] [Neo4j] Connected: {config.neo4j_uri}")
+            database=config.neo4j_database,
+            max_connection_pool_size=int(os.getenv("NEO4J_POOL_SIZE", "50")),
+            connection_timeout=float(os.getenv("NEO4J_TIMEOUT", "30")),
+            connection_acquisition_timeout=float(os.getenv("NEO4J_ACQUISITION_TIMEOUT", "30")),
+            max_transaction_retry_time=float(os.getenv("NEO4J_RETRY_TIME", "15")),
+            enable_metrics=True
+        )
+        neo4j = Neo4jKG(neo4j_config)
+
+        # Verify connection with health check
+        health = neo4j.health_check()
+        if health['status'] == 'healthy':
+            print(f"[OK] [Neo4j] Connected: {config.neo4j_uri}")
+            logger.info(f"Neo4j connection pool established with {neo4j_config.max_connection_pool_size} connections")
+        else:
+            logger.warning(f"Neo4j unhealthy: {health}")
+
         return neo4j, None
     except Exception as e:
         error_msg = str(e)
@@ -539,11 +569,24 @@ def _try_init_qdrant(config: Config) -> tuple[Any, Optional[str]]:
         return None, "Qdrant host/port not configured"
 
     try:
+        # Create Qdrant with connection pooling configuration
         qdrant = QdrantMemoryStore(
-            url=f"http://{config.qdrant_host}:{config.qdrant_port}",
-            collection_prefix=config.qdrant_collection
+            host=config.qdrant_host,
+            port=config.qdrant_port,
+            collection_prefix=config.qdrant_collection,
+            timeout=float(os.getenv("QDRANT_TIMEOUT", "60")),
+            prefer_grpc=os.getenv("QDRANT_PREFER_GRPC", "true").lower() == "true",
+            enable_metrics=True
         )
-        print(f"[OK] [Qdrant] Connected: {config.qdrant_host}:{config.qdrant_port}")
+
+        # Verify connection with health check
+        health = qdrant.health_check()
+        if health['status'] == 'healthy':
+            print(f"[OK] [Qdrant] Connected: {config.qdrant_host}:{config.qdrant_port}")
+            logger.info(f"Qdrant connection pool established: {health}")
+        else:
+            logger.warning(f"Qdrant unhealthy: {health}")
+
         return qdrant, None
     except Exception as e:
         error_msg = str(e)

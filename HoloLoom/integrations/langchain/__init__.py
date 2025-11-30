@@ -61,26 +61,30 @@ def __getattr__(name):
             UniversalDocumentLoader, load_documents, supported_document_types,
             load_github_repo, load_slack_workspace, load_notion_database
         )
-        globals()[name] = eval(name)
+        # Use locals() instead of eval() to avoid RCE vulnerability
+        globals()[name] = locals()[name]
         return globals()[name]
 
     elif name in ['MultiProviderLLM', 'create_llm', 'list_llm_providers', 'create_best_available_llm']:
         from .llm_providers import (
             MultiProviderLLM, create_llm, list_llm_providers, create_best_available_llm
         )
-        globals()[name] = eval(name)
+        # Use locals() instead of eval() to avoid RCE vulnerability
+        globals()[name] = locals()[name]
         return globals()[name]
 
     elif name in ['VectorStoreFactory', 'create_vector_store', 'list_vector_stores', 'get_recommended_store']:
         from .vector_stores import (
             VectorStoreFactory, create_vector_store, list_vector_stores, get_recommended_store
         )
-        globals()[name] = eval(name)
+        # Use locals() instead of eval() to avoid RCE vulnerability
+        globals()[name] = locals()[name]
         return globals()[name]
 
     elif name in ['HoloLoomCLI', 'QuickPrototype', 'quick_start']:
         from .prototyping import HoloLoomCLI, QuickPrototype, quick_start
-        globals()[name] = eval(name)
+        # Use locals() instead of eval() to avoid RCE vulnerability
+        globals()[name] = locals()[name]
         return globals()[name]
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

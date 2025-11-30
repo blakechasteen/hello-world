@@ -533,6 +533,10 @@ class Department(Protocol):
         ...
 
 
+# Alias for backward compatibility
+DepartmentProtocol = Department
+
+
 # ============================================================================
 # Helper Functions
 # ============================================================================
@@ -767,6 +771,7 @@ __all__ = [
 
     # Protocols
     'Department',
+    'DepartmentProtocol',  # Alias for backward compatibility
 
     # Helpers
     'create_simple_request',

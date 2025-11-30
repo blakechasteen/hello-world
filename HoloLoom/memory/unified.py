@@ -181,9 +181,11 @@ class UnifiedMemory:
     
     def store(
         self,
-        text: str,
+        text: str = None, # Allow content to be passed as text or content
         context: Optional[Dict[str, str]] = None,
-        importance: float = 0.5
+        importance: float = 0.5,
+        metadata: Optional[Dict[str, Any]] = None, # Add metadata argument
+        content: str = None # Add content alias for text
     ) -> str:
         """
         Store a memory.
@@ -195,25 +197,20 @@ class UnifiedMemory:
         - Computes resonance indices (Hofstadter)
         
         Args:
-            text: What to remember
+            text: What to remember (alias: content)
             context: Optional context (time, place, people, topics)
             importance: How important is this? [0, 1]
+            metadata: Additional metadata (merged with context/importance)
+            content: Alias for text (for compatibility)
         
         Returns:
             memory_id: Unique identifier for this memory
-        
-        Example:
-            memory_id = memory.store(
-                "Inspected Hive Jodi - 8 frames of brood, very active",
-                context={
-                    'time': 'evening',
-                    'place': 'apiary',
-                    'people': ['Blake'],
-                    'topics': ['beekeeping', 'inspection']
-                },
-                importance=0.8
-            )
         """
+        # Handle content/text alias
+        text_content = text if text is not None else content
+        if text_content is None:
+            raise ValueError("Must provide either 'text' or 'content'")
+
         # Behind the scenes:
         # 1. Mem0 extracts entities and preferences
         # 2. Neo4j creates KNOT crossing THREADS
@@ -226,20 +223,24 @@ class UnifiedMemory:
         import asyncio
 
         # Generate a simple memory ID
-        memory_id = f"mem_{hashlib.sha256(text.encode()).hexdigest()[:8]}"
+        memory_id = f"mem_{hashlib.sha256(text_content.encode()).hexdigest()[:8]}"
 
         # Actually store in backend if available
         if self._backend_available and self._backend:
             # Split user metadata from context
             user_context = context or {}
+            
+            # Merge explicit metadata
             user_metadata = {
                 'user_id': self.user_id,
                 'importance': importance
             }
+            if metadata:
+                user_metadata.update(metadata)
 
             protocol_mem = self._protocol_memory(
                 id=memory_id,
-                text=text,
+                text=text_content,
                 timestamp=datetime.now(),
                 context=user_context,
                 metadata=user_metadata

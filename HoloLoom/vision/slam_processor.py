@@ -14,7 +14,8 @@ Features:
 Created: 2025-11-22 (Phase 5)
 """
 
-from typing import Optional, List, Dict, Any, Tuple
+from __future__ import annotations
+from typing import Optional, List, Dict, Any, Tuple, TYPE_CHECKING
 import numpy as np
 from datetime import datetime
 from dataclasses import dataclass, field

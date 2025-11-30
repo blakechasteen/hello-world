@@ -26,7 +26,8 @@ Updated: 2025-11-22 (Phase 2 - Vision Endpoints)
 Updated: 2025-11-22 (Phase 5 - Advanced Vision)
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, Dict, Any, List
 from datetime import datetime
@@ -37,11 +38,13 @@ import asyncio
 import numpy as np
 from io import BytesIO
 from PIL import Image
+import time
+from collections import defaultdict, deque
 
 # HoloLoom imports
 from HoloLoom.config import Config
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.Documentation.types import Query, MemoryShard
+from HoloLoom.protocols.types import Query, MemoryShard
 
 # Vision tools imports (Phase 2)
 from HoloLoom.vision import (
@@ -56,7 +59,6 @@ from HoloLoom.vision import (
 # Elle imports
 from elle.core.policy import EllePolicy
 from elle.core.llm_client import create_llm_client
-from elle.domain.scene import Intent
 
 # AR Adapter imports
 from elle.adapters.ar_adapter import ARAdapter
@@ -71,8 +73,166 @@ from elle.adapters.ar_adapter.ar_events import (
 )
 from elle.adapters.ar_adapter.platform_bridge import WebXRBridge
 
+# Import the new Redis-based rate limiter
+try:
+    from HoloLoom.server.redis_rate_limiter import (
+        EndpointRateLimiter,
+        init_rate_limiter,
+        cleanup_rate_limiter,
+        get_rate_limiter
+    )
+    REDIS_RATE_LIMITER_AVAILABLE = True
+except ImportError:
+    logger.warning("Redis rate limiter not available, falling back to in-memory rate limiting")
+    REDIS_RATE_LIMITER_AVAILABLE = False
+
 
 logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# Security Configuration
+# ============================================================================
+
+# File upload limits (prevent DoS attacks)
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB max file size
+ALLOWED_IMAGE_FORMATS = {'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'}
+
+async def validate_image_upload(file: UploadFile) -> None:
+    """
+    Validate uploaded image file for security.
+
+    Prevents DoS attacks via:
+    - File size limits (10MB max)
+    - Format validation (only images)
+    - Content-type verification
+
+    Args:
+        file: Uploaded file to validate
+
+    Raises:
+        HTTPException: If validation fails
+    """
+    # Check content type
+    if file.content_type not in ALLOWED_IMAGE_FORMATS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file format. Allowed: {', '.join(ALLOWED_IMAGE_FORMATS)}"
+        )
+
+    # Check file size (read in chunks to avoid loading entire file)
+    file.file.seek(0, 2)  # Seek to end
+    file_size = file.file.tell()
+    file.file.seek(0)  # Reset to beginning
+
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Max size: {MAX_FILE_SIZE / (1024*1024):.0f}MB"
+        )
+
+    # Validate it's actually an image by trying to open it
+    try:
+        contents = await file.read()
+        image = Image.open(BytesIO(contents))
+        image.verify()  # Verify it's a valid image
+        # Reset file pointer for actual use
+        await file.seek(0)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid image file: {str(e)}"
+        )
+
+
+class RateLimiter:
+    """
+    Sliding window rate limiter for vision endpoints.
+
+    Prevents DoS attacks on computationally expensive vision operations.
+    Uses per-IP tracking with configurable rate limits.
+    """
+
+    def __init__(self, max_requests: int = 10, window_seconds: int = 60):
+        """
+        Initialize rate limiter.
+
+        Args:
+            max_requests: Maximum requests per window
+            window_seconds: Time window in seconds
+        """
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests: Dict[str, deque] = defaultdict(deque)
+
+    async def check_rate_limit(self, request: Request) -> Dict[str, Any]:
+        """
+        Check if request exceeds rate limit and return rate limit info.
+
+        Args:
+            request: FastAPI request object
+
+        Returns:
+            Dict containing rate limit headers:
+                - limit: Maximum requests per window
+                - remaining: Remaining requests in current window
+                - reset: Timestamp when window resets
+
+        Raises:
+            HTTPException: If rate limit exceeded (status 429)
+        """
+        # Get client IP
+        client_ip = request.client.host if request.client else "unknown"
+
+        # Get current timestamp
+        now = time.time()
+
+        # Get request queue for this IP
+        queue = self.requests[client_ip]
+
+        # Remove old requests outside the window
+        while queue and queue[0] < now - self.window_seconds:
+            queue.popleft()
+
+        # Check if limit exceeded
+        if len(queue) >= self.max_requests:
+            # Calculate when the oldest request will expire
+            reset_time = int(queue[0] + self.window_seconds) if queue else int(now + self.window_seconds)
+            raise HTTPException(
+                status_code=429,
+                detail=f"Rate limit exceeded. Max {self.max_requests} requests per {self.window_seconds}s",
+                headers={
+                    "X-RateLimit-Limit": str(self.max_requests),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(reset_time),
+                    "Retry-After": str(reset_time - int(now))  # Seconds to wait
+                }
+            )
+
+        # Add current request
+        queue.append(now)
+
+        # Calculate reset time (when the current window ends)
+        reset_time = int(now + self.window_seconds)
+
+        # Return rate limit info for headers
+        return {
+            "limit": self.max_requests,
+            "remaining": self.max_requests - len(queue),
+            "reset": reset_time
+        }
+
+
+# Create global rate limiter for vision endpoints
+# Vision processing is computationally expensive, so use conservative limits:
+# - 10 requests per 60 seconds (1 request every 6 seconds on average)
+# Use Redis-based rate limiter if available for distributed deployment support
+if REDIS_RATE_LIMITER_AVAILABLE:
+    # Redis rate limiter will be initialized in FastAPI lifespan
+    vision_rate_limiter = None  # Will be set during startup
+else:
+    # Fallback to in-memory rate limiter for single-instance deployments
+    vision_rate_limiter = RateLimiter(max_requests=10, window_seconds=60)
 
 
 # ============================================================================
@@ -388,15 +548,87 @@ class ARAPI:
 
         logger.info("AR API initialized")
 
+    async def _check_rate_limit(self, request: Request, endpoint: str) -> Dict[str, Any]:
+        """
+        Check rate limit using either Redis or in-memory limiter.
+
+        Args:
+            request: FastAPI request
+            endpoint: Endpoint name for rate limiting
+
+        Returns:
+            Rate limit info dict with limit, remaining, reset
+
+        Raises:
+            HTTPException: If rate limit exceeded
+        """
+        import time
+
+        if REDIS_RATE_LIMITER_AVAILABLE and isinstance(vision_rate_limiter, EndpointRateLimiter):
+            # Use Redis-based rate limiter for distributed deployments
+            await vision_rate_limiter.check_endpoint_limit(request, endpoint)
+            # Set rate limit info for headers (Redis limiter handles headers internally)
+            return {
+                "limit": 10,
+                "remaining": "N/A",  # Redis limiter handles this
+                "reset": int(time.time() + 60)
+            }
+        else:
+            # Use in-memory rate limiter for single-instance deployments
+            return await vision_rate_limiter.check_rate_limit(request)
+
+    def _create_rate_limited_response(self, response_data, rate_limit_info: Dict[str, Any]):
+        """
+        Helper to create a JSON response with rate limit headers.
+
+        Args:
+            response_data: The Pydantic model response data
+            rate_limit_info: Rate limit info from check_rate_limit()
+
+        Returns:
+            JSONResponse with rate limit headers
+        """
+        return JSONResponse(
+            content=response_data.dict(),
+            headers={
+                "X-RateLimit-Limit": str(rate_limit_info["limit"]),
+                "X-RateLimit-Remaining": str(rate_limit_info["remaining"]),
+                "X-RateLimit-Reset": str(rate_limit_info["reset"])
+            }
+        )
+
     def _register_routes(self):
         """Register API routes"""
 
         @self.app.on_event("startup")
         async def startup():
+            global vision_rate_limiter
+
+            # Initialize Redis rate limiter if available
+            if REDIS_RATE_LIMITER_AVAILABLE:
+                try:
+                    await init_rate_limiter()
+                    # Use the global rate limiter which supports distributed rate limiting
+                    vision_rate_limiter = get_rate_limiter()
+                    logger.info("Redis-based distributed rate limiter initialized")
+                except Exception as e:
+                    logger.warning(f"Failed to initialize Redis rate limiter: {e}")
+                    # Fall back to in-memory rate limiter
+                    vision_rate_limiter = RateLimiter(max_requests=10, window_seconds=60)
+                    logger.info("Falling back to in-memory rate limiter")
+
             await self.initialize()
 
         @self.app.on_event("shutdown")
         async def shutdown():
+            # Clean up Redis rate limiter if used
+            if REDIS_RATE_LIMITER_AVAILABLE:
+                try:
+                    await cleanup_rate_limiter()
+                    logger.info("Redis rate limiter cleaned up")
+                except Exception as e:
+                    logger.warning(f"Error cleaning up Redis rate limiter: {e}")
+
             # Clean up all sessions
             for session in self.sessions.values():
                 session.cleanup()
@@ -448,6 +680,9 @@ class ARAPI:
 
                 return ARQueryResponse(**result)
 
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"AR query error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
@@ -531,6 +766,9 @@ class ARAPI:
 
             except WebSocketDisconnect:
                 logger.info("WebSocket disconnected")
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"WebSocket error: {e}", exc_info=True)
                 await websocket.send_json({
@@ -546,12 +784,25 @@ class ARAPI:
         # ====================================================================
 
         @self.app.post("/ar/vision/detect_objects", response_model=VisionDetectionResponse)
-        async def detect_objects_endpoint(file: UploadFile = File(...)):
+        async def detect_objects_endpoint(request: Request, file: UploadFile = File(...)):
             """
             Object detection endpoint.
 
             Detects objects in uploaded image using YOLO/COCO-SSD.
             Returns list of detected objects with bboxes and confidence scores.
+
+            Rate Limits:
+                - 10 requests per 60 seconds per IP address
+                - Returns X-RateLimit-* headers with request limits
+
+            Security:
+                - Max file size: 10MB
+                - Allowed formats: JPEG, PNG, WebP, GIF
+                - File content validation
+
+            Returns:
+                VisionDetectionResponse with rate limit headers
+                429 status if rate limit exceeded
             """
             if not self.object_detector:
                 raise HTTPException(status_code=503, detail="Vision not initialized")
@@ -559,6 +810,12 @@ class ARAPI:
             try:
                 import time
                 start_time = time.time()
+
+                # Rate limiting (prevent DoS) - returns rate limit info
+                rate_limit_info = await self._check_rate_limit(request, "vision/detect_objects")
+
+                # Validate file upload (security)
+                await validate_image_upload(file)
 
                 # Read image file
                 contents = await file.read()
@@ -573,7 +830,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                return VisionDetectionResponse(
+                response_data = VisionDetectionResponse(
                     objects=[
                         {
                             "id": obj.id,
@@ -593,17 +850,39 @@ class ARAPI:
                     processing_time_ms=processing_time,
                 )
 
+                # Return with rate limit headers
+                return self._create_rate_limited_response(response_data, rate_limit_info)
+
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"Object detection error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
 
         @self.app.post("/ar/vision/analyze_scene", response_model=VisionSceneResponse)
-        async def analyze_scene_endpoint(file: UploadFile = File(...)):
+        async def analyze_scene_endpoint(request: Request, file: UploadFile = File(...)):
             """
             Scene analysis endpoint.
 
             Analyzes image to determine scene type, objects, spatial relationships,
             lighting conditions, and dominant colors.
+
+            Rate Limits:
+                - 10 requests per 60 seconds per IP address
+                - Returns X-RateLimit-* headers with request limits
+
+            Security:
+                - Max file size: 10MB
+                - Allowed formats: JPEG, PNG, WebP, GIF
+                - File content validation
+
+            Returns:
+                VisionSceneResponse with rate limit headers
+                429 status if rate limit exceeded
             """
             if not self.scene_analyzer or not self.object_detector:
                 raise HTTPException(status_code=503, detail="Vision not initialized")
@@ -611,6 +890,12 @@ class ARAPI:
             try:
                 import time
                 start_time = time.time()
+
+                # Rate limiting (prevent DoS) - returns rate limit info
+                rate_limit_info = await self._check_rate_limit(request, "vision/analyze_scene")
+
+                # Validate file upload (security)
+                await validate_image_upload(file)
 
                 # Read image file
                 contents = await file.read()
@@ -628,7 +913,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                return VisionSceneResponse(
+                response_data = VisionSceneResponse(
                     scene_type=scene_understanding.scene_type,
                     objects=[
                         {
@@ -652,12 +937,21 @@ class ARAPI:
                     processing_time_ms=processing_time,
                 )
 
+                # Return with rate limit headers
+                return self._create_rate_limited_response(response_data, rate_limit_info)
+
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"Scene analysis error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
 
         @self.app.post("/ar/vision/track_hands", response_model=VisionHandsResponse)
-        async def track_hands_endpoint(file: UploadFile = File(...)):
+        async def track_hands_endpoint(request: Request, file: UploadFile = File(...)):
             """
             Hand tracking endpoint.
 
@@ -671,6 +965,12 @@ class ARAPI:
                 import time
                 start_time = time.time()
 
+                # Rate limiting (prevent DoS) - returns rate limit info
+                rate_limit_info = await self._check_rate_limit(request, "vision/track_hands")
+
+                # Validate file upload (security)
+                await validate_image_upload(file)
+
                 # Read image file
                 contents = await file.read()
                 image = Image.open(BytesIO(contents))
@@ -681,7 +981,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                return VisionHandsResponse(
+                response_data = return VisionHandsResponse(
                     hands=[
                         {
                             "handId": hand.hand_id,
@@ -698,12 +998,18 @@ class ARAPI:
                     processing_time_ms=processing_time,
                 )
 
+                # Return with rate limit headers
+                return self._create_rate_limited_response(response_data, rate_limit_info)
+
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"Hand tracking error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
 
         @self.app.post("/ar/vision/estimate_depth", response_model=VisionDepthResponse)
-        async def estimate_depth_endpoint(file: UploadFile = File(...)):
+        async def estimate_depth_endpoint(request: Request, file: UploadFile = File(...)):
             """
             Depth estimation endpoint (Phase 4).
 
@@ -717,6 +1023,12 @@ class ARAPI:
                 import time
                 start_time = time.time()
 
+                # Rate limiting (prevent DoS) - returns rate limit info
+                rate_limit_info = await self._check_rate_limit(request, "vision/estimate_depth")
+
+                # Validate file upload (security)
+                await validate_image_upload(file)
+
                 # Read image file
                 contents = await file.read()
                 image = Image.open(BytesIO(contents))
@@ -727,7 +1039,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                return VisionDepthResponse(
+                response_data = return VisionDepthResponse(
                     depth_available=True,
                     width=depth_map.width,
                     height=depth_map.height,
@@ -737,12 +1049,18 @@ class ARAPI:
                     processing_time_ms=processing_time,
                 )
 
+                # Return with rate limit headers
+                return self._create_rate_limited_response(response_data, rate_limit_info)
+
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"Depth estimation error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
 
         @self.app.post("/ar/vision/detect_markers", response_model=VisionMarkersResponse)
-        async def detect_markers_endpoint(file: UploadFile = File(...)):
+        async def detect_markers_endpoint(request: Request, file: UploadFile = File(...)):
             """
             Marker detection endpoint (Phase 4).
 
@@ -756,6 +1074,12 @@ class ARAPI:
                 import time
                 start_time = time.time()
 
+                # Rate limiting (prevent DoS) - returns rate limit info
+                rate_limit_info = await self._check_rate_limit(request, "vision/detect_markers")
+
+                # Validate file upload (security)
+                await validate_image_upload(file)
+
                 # Read image file
                 contents = await file.read()
                 image = Image.open(BytesIO(contents))
@@ -766,7 +1090,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                return VisionMarkersResponse(
+                response_data = return VisionMarkersResponse(
                     markers=[
                         {
                             "id": marker.id,
@@ -784,6 +1108,12 @@ class ARAPI:
                     processing_time_ms=processing_time,
                 )
 
+                # Return with rate limit headers
+                return self._create_rate_limited_response(response_data, rate_limit_info)
+
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"Marker detection error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
@@ -793,7 +1123,7 @@ class ARAPI:
         # ====================================================================
 
         @self.app.post("/ar/vision/segment_image", response_model=VisionSegmentationResponse)
-        async def segment_image_endpoint(file: UploadFile = File(...)):
+        async def segment_image_endpoint(request: Request, file: UploadFile = File(...)):
             """
             Semantic segmentation endpoint (Phase 5).
 
@@ -806,6 +1136,12 @@ class ARAPI:
             try:
                 import time
                 start_time = time.time()
+
+                # Rate limiting (prevent DoS) - returns rate limit info
+                rate_limit_info = await self._check_rate_limit(request, "vision/segment_image")
+
+                # Validate file upload (security)
+                await validate_image_upload(file)
 
                 # Read image file
                 contents = await file.read()
@@ -821,7 +1157,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                return VisionSegmentationResponse(
+                response_data = return VisionSegmentationResponse(
                     width=segmentation.width,
                     height=segmentation.height,
                     num_classes=segmentation.num_classes,
@@ -830,12 +1166,18 @@ class ARAPI:
                     processing_time_ms=processing_time,
                 )
 
+                # Return with rate limit headers
+                return self._create_rate_limited_response(response_data, rate_limit_info)
+
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"Semantic segmentation error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
 
         @self.app.post("/ar/vision/estimate_pose", response_model=VisionPoseResponse)
-        async def estimate_pose_endpoint(file: UploadFile = File(...)):
+        async def estimate_pose_endpoint(request: Request, file: UploadFile = File(...)):
             """
             Pose estimation endpoint (Phase 5).
 
@@ -848,6 +1190,12 @@ class ARAPI:
             try:
                 import time
                 start_time = time.time()
+
+                # Rate limiting (prevent DoS) - returns rate limit info
+                rate_limit_info = await self._check_rate_limit(request, "vision/estimate_pose")
+
+                # Validate file upload (security)
+                await validate_image_upload(file)
 
                 # Read image file
                 contents = await file.read()
@@ -884,18 +1232,24 @@ class ARAPI:
                 else:
                     poses_data = []
 
-                return VisionPoseResponse(
+                response_data = return VisionPoseResponse(
                     poses=poses_data,
                     count=len(poses_data),
                     processing_time_ms=processing_time,
                 )
 
+                # Return with rate limit headers
+                return self._create_rate_limited_response(response_data, rate_limit_info)
+
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"Pose estimation error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))
 
         @self.app.post("/ar/vision/track_camera", response_model=VisionSLAMResponse)
-        async def track_camera_endpoint(file: UploadFile = File(...)):
+        async def track_camera_endpoint(request: Request, file: UploadFile = File(...)):
             """
             SLAM camera tracking endpoint (Phase 5).
 
@@ -913,6 +1267,12 @@ class ARAPI:
                 import time
                 start_time = time.time()
 
+                # Rate limiting (prevent DoS) - returns rate limit info
+                rate_limit_info = await self._check_rate_limit(request, "vision/track_camera")
+
+                # Validate file upload (security)
+                await validate_image_upload(file)
+
                 # Read image file
                 contents = await file.read()
                 image = Image.open(BytesIO(contents))
@@ -926,7 +1286,7 @@ class ARAPI:
                 # Get map points
                 map_points = self.slam_processor.get_map_points()
 
-                return VisionSLAMResponse(
+                response_data = return VisionSLAMResponse(
                     position=list(slam_pose.position),
                     orientation=list(slam_pose.orientation),
                     tracking_quality=slam_pose.tracking_quality,
@@ -935,6 +1295,12 @@ class ARAPI:
                     processing_time_ms=processing_time,
                 )
 
+                # Return with rate limit headers
+                return self._create_rate_limited_response(response_data, rate_limit_info)
+
+            except HTTPException:
+                # Re-raise HTTP exceptions (including rate limit)
+                raise
             except Exception as e:
                 logger.error(f"SLAM tracking error: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=str(e))

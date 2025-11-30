@@ -799,6 +799,39 @@ class WeavingOrchestrator:
                 self.logger.warning(f"[AWARENESS] Perception failed, continuing without awareness: {e}")
                 awareness_context = None
 
+    # ========================================================================
+    # EGGROLL Integration (Evolutionary Training)
+    # ========================================================================
+
+    async def dream(self, num_epochs: int = 1, num_workers: int = 5):
+        """
+        Trigger a 'Dream' cycle: Run EGGROLL evolutionary training on recent experiences.
+        
+        This method:
+        1. Initializes the EGGROLL integration.
+        2. Pulls tasks from ReflectionBuffer (via Weave).
+        3. Runs the distributed evolutionary loop.
+        4. Updates the internal model (conceptually).
+        
+        Args:
+            num_epochs: Number of evolutionary epochs to run.
+            num_workers: Number of simulated workers.
+        """
+        self.logger.info(f"[DREAM] Starting EGGROLL dream cycle (epochs={num_epochs}, workers={num_workers})")
+        
+        try:
+            from HoloLoom.eggroll.integration import EggrollIntegration
+            
+            integration = EggrollIntegration(num_workers=num_workers)
+            await integration.run_evolution_loop(num_epochs=num_epochs)
+            
+            self.logger.info("[DREAM] Dream cycle complete.")
+            
+        except ImportError:
+            self.logger.error("[DREAM] EGGROLL module not found. Cannot dream.")
+        except Exception as e:
+            self.logger.error(f"[DREAM] Dream cycle failed: {e}")
+
         # ====================================================================
         # SMART QUERY ROUTING (November 2025 - Performance Optimization)
         # ====================================================================

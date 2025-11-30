@@ -33,6 +33,13 @@ from HoloLoom.protocols.types import Query, Context
 if TYPE_CHECKING:
     from HoloLoom.awareness.llm_integration import OllamaLLM
 
+# Skills integration (November 2025)
+try:
+    from HoloLoom.tools.skills_bridge import get_skills_bridge
+    SKILLS_AVAILABLE = True
+except ImportError:
+    SKILLS_AVAILABLE = False
+
 
 class ToolExecutor:
     """
@@ -59,20 +66,42 @@ class ToolExecutor:
         logger (logging.Logger): Logger instance
     """
 
-    def __init__(self, llm: Optional['OllamaLLM'] = None):
+    def __init__(self, llm: Optional['OllamaLLM'] = None, enable_skills: bool = True):
         """
         Initialize the tool executor.
 
         Args:
             llm: Optional pre-initialized LLM instance.
                 If None, will attempt to lazy-load Ollama LLM.
+            enable_skills: Enable skills system integration (default: True)
 
         Note:
             LLM initialization gracefully fails if dependencies unavailable.
             Executor falls back to mock responses.
+            Skills integration gracefully degrades if unavailable.
         """
-        self.tools = ["answer", "search", "notion_write", "calc"]
         self.logger = logging.getLogger(__name__)
+
+        # Core tools
+        self.core_tools = ["answer", "search", "notion_write", "calc"]
+
+        # Initialize skills bridge
+        self.skills_bridge = None
+        if enable_skills and SKILLS_AVAILABLE:
+            try:
+                self.skills_bridge = get_skills_bridge()
+                skill_tools = self.skills_bridge.get_skill_tools()
+                self.logger.info(
+                    f"Skills integration enabled: {len(skill_tools)} skills available"
+                )
+            except Exception as e:
+                self.logger.warning(f"Skills integration failed: {e}")
+                self.skills_bridge = None
+
+        # Combined tools list (core + skills)
+        self.tools = self.core_tools.copy()
+        if self.skills_bridge:
+            self.tools.extend(self.skills_bridge.get_skill_tools())
 
         # Initialize LLM (lazy loading)
         self.llm = llm
@@ -110,7 +139,12 @@ class ToolExecutor:
         """
         self.logger.info(f"Executing tool: {tool}")
 
-        # Tool implementations (stubs - replace with real implementations)
+        # Check if this is a skill tool
+        if self.skills_bridge and tool not in self.core_tools:
+            # Route to skills system
+            return await self._handle_skill(tool, query, context)
+
+        # Core tool implementations
         tool_handlers = {
             "answer": self._handle_answer,
             "search": self._handle_search,
@@ -309,3 +343,73 @@ Answer:"""
             "error": "Tool not implemented",
             "status": "error"
         }
+
+    async def _handle_skill(self, skill_name: str, query: Query, context: Context) -> Dict:
+        """
+        Handle skill execution.
+
+        Routes skill calls to the skills bridge for execution.
+        Automatically determines operation and parameters from query/context.
+
+        Args:
+            skill_name: Name of the skill to execute
+            query: User query (may contain operation/parameters)
+            context: Retrieved context
+
+        Returns:
+            Dict with skill execution results
+
+        Note:
+            This is a simplified handler. For more control, skills can be
+            called directly via the skills bridge with explicit operation
+            and parameters.
+        """
+        # Extract operation and parameters from query
+        # For now, use default operation and minimal parameters
+        # In production, this could be enhanced with NLU to extract structured params
+
+        # Default operation (most skills have a primary operation)
+        operation = "execute"  # Generic operation name
+
+        # Build parameters from query text
+        parameters = {
+            "input": query.text,
+            "query": query.text
+        }
+
+        # Add context if available
+        if context and hasattr(context, 'shard_texts'):
+            parameters["context"] = context.shard_texts[:3]  # First 3 shards
+
+        try:
+            result = await self.skills_bridge.execute_skill(
+                skill_name=skill_name,
+                operation=operation,
+                parameters=parameters,
+                query=query,
+                context=context,
+                use_cache=True
+            )
+            return result
+
+        except ValueError as e:
+            # Skill not found or invalid operation
+            self.logger.error(f"Skill execution failed: {e}")
+            return {
+                "tool": skill_name,
+                "result": None,
+                "status": "error",
+                "error": str(e),
+                "confidence": 0.0
+            }
+
+        except Exception as e:
+            # Other execution errors
+            self.logger.error(f"Skill execution error: {e}", exc_info=True)
+            return {
+                "tool": skill_name,
+                "result": None,
+                "status": "error",
+                "error": f"Execution failed: {e}",
+                "confidence": 0.0
+            }
