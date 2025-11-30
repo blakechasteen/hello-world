@@ -16,7 +16,8 @@ from datetime import datetime
 import logging
 
 # Elle core imports
-from elle.domain.scene import SceneSnapshot, ObjectInScene, Intent
+from elle.domain.scene import SceneSnapshot, ObjectInScene
+from elle.domain.intent import InteractionMode
 from elle.domain.action import ElleAction, Symbol
 
 # AR adapter imports
@@ -72,7 +73,7 @@ class ARAdapter:
         Returns dict matching ElleRequest structure:
             {
                 "scene": SceneSnapshot,
-                "intent": Intent,
+                "intent": InteractionMode,
                 "user_context": {...},
                 "metadata": {...}
             }
@@ -141,30 +142,30 @@ class ARAdapter:
             },
         )
 
-    def _infer_intent(self, event: AREvent) -> Intent:
+    def _infer_intent(self, event: AREvent) -> InteractionMode:
         """Infer user intent from AR event type"""
         if isinstance(event, GazeEvent):
-            return Intent.SEEKING_GUIDANCE
+            return InteractionMode.SEEKING_GUIDANCE
 
         elif isinstance(event, ScanEvent):
             if event.scan_type == "slow_scan":
-                return Intent.SEEKING_GUIDANCE
-            return Intent.EXPLORING
+                return InteractionMode.SEEKING_GUIDANCE
+            return InteractionMode.PASSIVE
 
         elif isinstance(event, SelectionEvent):
-            return Intent.REQUESTING_ACTION
+            return InteractionMode.TASK_EXECUTION
 
         elif isinstance(event, GestureEvent):
             if event.gesture_type in ["point", "grab"]:
-                return Intent.REQUESTING_ACTION
-            return Intent.EXPLORING
+                return InteractionMode.TASK_EXECUTION
+            return InteractionMode.PASSIVE
 
         elif isinstance(event, VoiceEvent):
             # Could classify intent from voice transcript
             # For now, default to seeking guidance
-            return Intent.SEEKING_GUIDANCE
+            return InteractionMode.SEEKING_GUIDANCE
 
-        return Intent.EXPLORING
+        return InteractionMode.PASSIVE
 
     def _build_user_context(self, event: AREvent) -> Dict[str, Any]:
         """Build user context from AR event"""

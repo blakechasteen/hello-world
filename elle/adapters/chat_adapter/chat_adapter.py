@@ -80,12 +80,17 @@ class ChatAdapter:
         """Get current conversation, creating if needed."""
         return self.conversation_manager.get_or_create()
 
-    def text_to_request(self, text: str) -> 'ElleRequest':
+    def text_to_request(
+        self,
+        text: str,
+        rag_context: Optional[str] = None,
+    ) -> 'ElleRequest':
         """
         Convert user text to ElleRequest.
 
         Args:
             text: User's message
+            rag_context: Optional RAG context to include in request metadata
 
         Returns:
             ElleRequest ready for ElleEngine.handle()
@@ -109,13 +114,18 @@ class ChatAdapter:
             current_projects=[],
         )
 
-        # Build request
+        # Get conversation history for context (last 20 turns for better memory)
+        conversation_history = conv.get_context_for_prompt(last_n=20)
+
+        # Build request (include RAG context and conversation history in metadata)
         return create_request(
             scene=self.current_scene,
             intent=intent,
             user=user_state,
             source_adapter="chat",
             request_id=f"chat_{uuid.uuid4().hex[:8]}",
+            rag_context=rag_context,
+            conversation_history=conversation_history,
         )
 
     def _infer_intent(self, text: str) -> UserIntent:
@@ -198,10 +208,12 @@ class ChatAdapter:
         # Mode-based fallbacks
         if action.mode == ElleMode.SILENT:
             return "(Elle remains quiet, observing)"
-        elif action.mode == ElleMode.IDLE:
+        elif action.mode == ElleMode.AMBIENT:
             return "(Elle is present but chooses not to intervene)"
-        elif action.mode == ElleMode.DEFERRED:
-            return "(Elle notes this for later)"
+        elif action.mode == ElleMode.CONSULTING:
+            return "(Elle is thinking...)"
+        elif action.mode == ElleMode.DIRECTIVE:
+            return "(Elle has guidance)"
 
         # If there's a suggested task
         if action.suggested_task_summary:

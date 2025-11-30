@@ -30,6 +30,13 @@ class Priority(Enum):
     CRITICAL = "critical"
 
 
+class Symbol(Enum):
+    """Mythic symbols that guide Elle's behavior and visual style."""
+    CHIMBORAZO = "chimborazo"  # Focus and priority
+    PLATO = "plato"            # Clarity and understanding
+    PENELOPE = "penelope"      # Patience and weaving
+
+
 @dataclass(frozen=True)
 class Visual:
     """Visual elements to render in AR."""

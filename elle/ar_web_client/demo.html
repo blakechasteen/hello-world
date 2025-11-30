@@ -244,6 +244,82 @@
         .debug-line.warn {
             color: #ffaa00;
         }
+
+        /* Loading Progress */
+        #loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        #loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+            max-width: 400px;
+            padding: 2rem;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 255, 136, 0.2);
+            border-top: 4px solid #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-step {
+            font-size: 1.125rem;
+            color: #00ff88;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #00ddff 100%);
+            width: 0%;
+            transition: width 0.5s ease-out;
+            border-radius: 4px;
+        }
+
+        .progress-percentage {
+            font-size: 2rem;
+            color: #fff;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .progress-substep {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -253,6 +329,19 @@
 
         <!-- AR Overlays -->
         <div id="overlays"></div>
+
+        <!-- Loading Progress -->
+        <div id="loading-overlay">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <div class="loading-step" id="loading-step">Initializing...</div>
+                <div class="progress-percentage" id="loading-percentage">0%</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="progress-substep" id="loading-substep"></div>
+            </div>
+        </div>
 
         <!-- Status Bar -->
         <div id="status-bar">
@@ -314,6 +403,11 @@
         const startButton = document.getElementById('start-button');
         const errorDetail = document.getElementById('error-detail');
         const debugEl = document.getElementById('debug');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingStep = document.getElementById('loading-step');
+        const loadingPercentage = document.getElementById('loading-percentage');
+        const loadingSubstep = document.getElementById('loading-substep');
+        const progressBar = document.getElementById('progress-bar');
 
         // Debug logging
         function debug(message, level = 'info') {
@@ -327,21 +421,45 @@
             console.log(message);
         }
 
+        // Loading Progress
+        function showLoading() {
+            loadingOverlay.classList.add('show');
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.remove('show');
+        }
+
+        function updateProgress(percentage, step, substep = '') {
+            progressBar.style.width = `${percentage}%`;
+            loadingPercentage.textContent = `${Math.round(percentage)}%`;
+            loadingStep.textContent = step;
+            loadingSubstep.textContent = substep;
+            debug(`Progress: ${percentage}% - ${step}`, 'info');
+        }
+
         // Initialize
         async function init() {
             debug('Initializing Elle AR...', 'info');
             startButton.disabled = true;
             startButton.textContent = 'Starting...';
 
+            // Show loading overlay
+            showLoading();
+            updateProgress(0, 'Initializing...', 'Checking system capabilities');
+
             try {
-                // Check camera support
+                // Step 1: Check camera support (0-20%)
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     throw new Error('Camera API not supported');
                 }
+                updateProgress(10, 'Camera API', 'Supported ✓');
+                await new Promise(resolve => setTimeout(resolve, 300));
 
+                // Step 2: Request camera access (20-50%)
+                updateProgress(20, 'Requesting Camera', 'Waiting for permission...');
                 debug('Requesting camera access...', 'info');
 
-                // Request camera access
                 camera = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
@@ -351,23 +469,40 @@
                     audio: false
                 });
 
+                updateProgress(50, 'Camera Access', 'Granted ✓');
                 debug('✅ Camera access granted', 'info');
                 cameraEl.srcObject = camera;
                 messageEl.classList.remove('show');
+                await new Promise(resolve => setTimeout(resolve, 300));
 
                 if (ENABLE_DEBUG) {
                     debugEl.classList.add('show');
                 }
 
-                // Connect to HoloLoom backend
+                // Step 3: Connect to backend (50-75%)
+                updateProgress(60, 'Connecting to HoloLoom', 'Establishing WebSocket...');
                 connectToBackend();
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-                // Initialize voice recognition
+                // Step 4: Initialize voice (75-90%)
+                updateProgress(75, 'Initializing Voice', 'Setting up speech recognition...');
                 initVoiceRecognition();
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // Step 5: Final setup (90-100%)
+                updateProgress(90, 'Initializing Spatial Awareness', 'Loading AR systems...');
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                updateProgress(100, 'Ready!', 'All systems operational');
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // Hide loading overlay
+                hideLoading();
 
                 transcriptEl.textContent = 'Say "Hey Elle" to start';
 
             } catch (error) {
+                hideLoading(); // Hide loading on error
                 debug(`❌ Error: ${error.message}`, 'error');
                 console.error('Initialization error:', error);
 

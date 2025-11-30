@@ -109,6 +109,19 @@ class PromptBuilder:
             self._format_memory(memory_snapshot),
         ]
 
+        # Add conversation history if available in request metadata
+        conversation_history = request.metadata.get('conversation_history') if hasattr(request, 'metadata') else None
+        if conversation_history and conversation_history != "(No conversation history yet)":
+            parts.extend([
+                "",
+                "---",
+                "",
+                "## Recent Conversation",
+                "",
+                conversation_history,
+                "",
+            ])
+
         # Add symbols if requested
         if symbol_names:
             parts.extend([
@@ -123,6 +136,19 @@ class PromptBuilder:
                 if symbol_text:
                     parts.append(symbol_text)
                     parts.append("")
+
+        # Add RAG context if available in request metadata
+        rag_context = request.metadata.get('rag_context') if hasattr(request, 'metadata') else None
+        if rag_context:
+            parts.extend([
+                "",
+                "---",
+                "",
+                "## Relevant Knowledge",
+                "",
+                rag_context,
+                "",
+            ])
 
         parts.extend([
             "",

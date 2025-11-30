@@ -196,7 +196,7 @@ class GazeEvent(AREvent):
 
     Triggered when user's gaze dwells on an object for >500ms.
     """
-    target_object_id: str
+    target_object_id: str = ""
     dwell_duration_ms: float = 0.0
 
     def __post_init__(self):
@@ -222,7 +222,7 @@ class SelectionEvent(AREvent):
     """
     User selected an object (tap, voice, gesture).
     """
-    target_object_id: str
+    target_object_id: str = ""
     selection_method: str = "tap"  # tap, voice, gesture, gaze+dwell
 
     def __post_init__(self):
@@ -234,7 +234,7 @@ class GestureEvent(AREvent):
     """
     Hand or body gesture.
     """
-    gesture_type: str  # point, grab, swipe, wave, pinch, etc.
+    gesture_type: str = ""  # point, grab, swipe, wave, pinch, etc.
     hand: str = "right"  # left, right, both
     target_object_id: Optional[str] = None
     gesture_params: Dict[str, Any] = field(default_factory=dict)
@@ -250,7 +250,7 @@ class VoiceEvent(AREvent):
 
     Integrates with HoloLoom/voice/voice_agent.py patterns.
     """
-    transcript: str
+    transcript: str = ""
     intent: Optional[str] = None  # Classified intent (query, navigate, select, command)
     entities: Dict[str, Any] = field(default_factory=dict)  # Extracted entities
     confidence: float = 1.0

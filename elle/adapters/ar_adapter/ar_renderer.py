@@ -75,8 +75,8 @@ class AROverlay(ARVisualization):
 
     Example: Label showing "Stanley Toolbox | Last used: Nov 21"
     """
-    target_object_id: str
-    content: str  # Text or icon name
+    target_object_id: str = ""
+    content: str = ""  # Text or icon name
     position_offset: Vector3 = field(default_factory=lambda: Vector3(0, 0.2, 0))  # Offset from object
     face_user: bool = True  # Billboard effect (always face camera)
 
@@ -91,7 +91,7 @@ class ARHighlight(ARVisualization):
 
     Example: Pulsing box around drill when user asks "where's my drill?"
     """
-    target_object_id: str
+    target_object_id: str = ""
     highlight_type: str = "bounding_box"  # bounding_box, glow, outline, pulse
     intensity: float = 1.0  # 0.0 - 1.0
 
@@ -106,7 +106,7 @@ class ARPath(ARVisualization):
 
     Example: Arrow pointing to shelf where drill is located
     """
-    waypoints: List[Vector3]  # Path vertices
+    waypoints: List[Vector3] = field(default_factory=list)  # Path vertices
     path_type: str = "arrow"  # arrow, line, particles, dotted_line
     width: float = 0.05  # meters
     end_marker: bool = True  # Show marker at destination
@@ -122,7 +122,7 @@ class ARPanel(ARVisualization):
 
     Can be world-locked (fixed in space) or head-locked (HUD style).
     """
-    content: Dict[str, Any]  # Structured content (title, body, buttons, etc.)
+    content: Dict[str, Any] = field(default_factory=dict)  # Structured content (title, body, buttons, etc.)
     position: Vector3 = field(default_factory=lambda: Vector3(0, 1.5, -1.0))
     lock_mode: str = "world"  # world, head, object
     target_object_id: Optional[str] = None  # For object-locked panels
@@ -139,8 +139,8 @@ class ARAnnotation(ARVisualization):
 
     Example: User-created labels like "Tool storage" on a cabinet
     """
-    text: str
-    position: Vector3
+    text: str = ""  # Added default
+    position: Vector3 = field(default_factory=lambda: Vector3(0, 0, 0))  # Added default
     anchor_id: Optional[str] = None  # World anchor for persistence
     target_object_id: Optional[str] = None
 
@@ -156,9 +156,9 @@ class ARAnimation(ARVisualization):
 
     Example: Animated arrows showing "pull back chuck sleeve, insert bit"
     """
-    target_object_id: str
-    animation_type: str  # "arrows", "highlight_sequence", "ghost_hands"
-    steps: List[Dict[str, Any]]  # Animation steps with timing
+    target_object_id: str = ""  # Added default
+    animation_type: str = "arrows"  # Added default
+    steps: List[Dict[str, Any]] = field(default_factory=list)  # Added default
     loop: bool = False
 
     def __post_init__(self):

@@ -8,7 +8,8 @@ class LLMProvider(Enum):
     """Supported LLM providers."""
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
-    LOCAL = "local"
+    OLLAMA = "ollama"
+    LOCAL = "local"  # Alias for ollama
 
 
 class LLMClient(Protocol):
@@ -141,19 +142,41 @@ class AnthropicClient:
             raise RuntimeError(f"Anthropic API error: {e}")
 
 
-class LocalClient:
-    """Local LLM implementation (e.g., via Ollama)."""
-    
+class OllamaClient:
+    """
+    Ollama LLM client for local model inference.
+
+    Connects to Ollama server (default: http://localhost:11434).
+    Supports any model available in Ollama (llama3.2, mistral, etc).
+    """
+
     def __init__(
         self,
         base_url: str = "http://localhost:11434",
-        model: str = "llama2",
-        timeout: int = 60,
+        model: str = "llama3.2:3b",
+        timeout: int = 120,
     ):
-        self.base_url = base_url
+        self.base_url = base_url.rstrip('/')
         self.model = model
         self.timeout = timeout
-    
+
+        # Verify ollama is available
+        try:
+            import requests
+            response = requests.get(f"{self.base_url}/api/tags", timeout=5)
+            if response.status_code != 200:
+                raise ConnectionError(f"Ollama not responding at {self.base_url}")
+        except ImportError:
+            raise ImportError(
+                "requests package not installed. "
+                "Install with: pip install requests"
+            )
+        except Exception as e:
+            raise ConnectionError(
+                f"Cannot connect to Ollama at {self.base_url}. "
+                f"Make sure Ollama is running: ollama serve. Error: {e}"
+            )
+
     def complete(
         self,
         prompt: str,
@@ -161,9 +184,107 @@ class LocalClient:
         max_tokens: Optional[int] = None,
         **kwargs
     ) -> str:
-        """Call local LLM."""
-        # TODO: Implement actual local call
-        raise NotImplementedError("Local client not yet implemented")
+        """
+        Call Ollama API for completion.
+
+        Args:
+            prompt: The prompt to send
+            temperature: Sampling temperature (0-1)
+            max_tokens: Optional token limit (uses num_predict in Ollama)
+            **kwargs: Additional Ollama options
+
+        Returns:
+            Generated text response
+        """
+        import requests
+
+        # Build request payload
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "temperature": temperature,
+            }
+        }
+
+        # Add max tokens if specified
+        if max_tokens:
+            payload["options"]["num_predict"] = max_tokens
+
+        # Add any additional options
+        for key, value in kwargs.items():
+            if key not in ("model", "prompt", "stream"):
+                payload["options"][key] = value
+
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/generate",
+                json=payload,
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+
+            result = response.json()
+            return result.get("response", "")
+
+        except requests.exceptions.Timeout:
+            raise RuntimeError(
+                f"Ollama request timed out after {self.timeout}s. "
+                "Try increasing timeout or using a smaller model."
+            )
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Ollama API error: {e}")
+
+    def chat(
+        self,
+        messages: list,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+        **kwargs
+    ) -> str:
+        """
+        Chat completion with message history.
+
+        Args:
+            messages: List of {"role": "user/assistant/system", "content": "..."}
+            temperature: Sampling temperature
+            max_tokens: Optional token limit
+
+        Returns:
+            Assistant's response text
+        """
+        import requests
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "stream": False,
+            "options": {
+                "temperature": temperature,
+            }
+        }
+
+        if max_tokens:
+            payload["options"]["num_predict"] = max_tokens
+
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/chat",
+                json=payload,
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+
+            result = response.json()
+            return result.get("message", {}).get("content", "")
+
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Ollama chat API error: {e}")
+
+
+# Alias for backward compatibility
+LocalClient = OllamaClient
 
 
 def create_llm_client(
@@ -172,20 +293,30 @@ def create_llm_client(
 ) -> LLMClient:
     """
     Factory for creating LLM clients.
-    
+
     Args:
         provider: Which LLM provider to use
         config: Provider-specific configuration
-    
+
     Returns:
         Configured LLM client
+
+    Example:
+        # Ollama (local)
+        client = create_llm_client(LLMProvider.OLLAMA, {"model": "llama3.2:3b"})
+
+        # Anthropic
+        client = create_llm_client(LLMProvider.ANTHROPIC, {"api_key": "..."})
+
+        # OpenAI
+        client = create_llm_client(LLMProvider.OPENAI, {"api_key": "..."})
     """
-    
+
     if provider == LLMProvider.OPENAI:
         return OpenAIClient(**config)
     elif provider == LLMProvider.ANTHROPIC:
         return AnthropicClient(**config)
-    elif provider == LLMProvider.LOCAL:
-        return LocalClient(**config)
+    elif provider in (LLMProvider.OLLAMA, LLMProvider.LOCAL):
+        return OllamaClient(**config)
     else:
         raise ValueError(f"Unknown provider: {provider}")

@@ -36,7 +36,7 @@ class Conversation:
     """
     session_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     turns: List[ConversationTurn] = field(default_factory=list)
-    max_turns: int = 20  # Keep last N turns for context
+    max_turns: int = 30  # Keep last N turns for context (buffer beyond what we send to LLM)
     created_at: datetime = field(default_factory=datetime.now)
     metadata: dict = field(default_factory=dict)
 

@@ -71,15 +71,35 @@ class EllePolicy:
                 memory_snapshot=memory_snapshot,
                 symbol_names=self._select_symbols(request)
             )
-            
+
             self.logger.debug(f"Prompt length: {len(prompt)} chars")
-            
-            # 2. Call LLM
-            response_text = self.llm_client.complete(
-                prompt=prompt,
-                temperature=0.7,
-                max_tokens=1000,
-            )
+
+            # 2. Call LLM - prefer chat API if available (better for conversation)
+            response_text = None
+
+            if hasattr(self.llm_client, 'chat'):
+                try:
+                    # Use chat API with proper message structure
+                    messages = self._build_chat_messages(prompt, request)
+                    response_text = self.llm_client.chat(
+                        messages=messages,
+                        temperature=0.7,
+                        max_tokens=1000,
+                    )
+                except Exception as chat_error:
+                    # Chat API failed (404, unsupported model, etc.) - fall back to complete
+                    self.logger.warning(
+                        f"Chat API failed ({chat_error}), falling back to completion API"
+                    )
+                    response_text = None
+
+            # Fallback to completion API if chat not available or failed
+            if response_text is None:
+                response_text = self.llm_client.complete(
+                    prompt=prompt,
+                    temperature=0.7,
+                    max_tokens=1000,
+                )
             
             self.logger.debug(f"LLM response length: {len(response_text)} chars")
             
@@ -103,6 +123,68 @@ class EllePolicy:
                 reasoning=f"Policy error: {str(e)}"
             )
     
+    def _build_chat_messages(self, prompt: str, request: ElleRequest) -> List[dict]:
+        """
+        Build chat messages from prompt and request.
+
+        Splits the prompt into system message and conversation turns
+        for better handling by chat-style models.
+        """
+        messages = []
+
+        # System message with Elle's persona and instructions
+        # Extract the base prompt part (before "## Current Context")
+        if "## Current Context" in prompt:
+            system_part = prompt.split("## Current Context")[0].strip()
+            context_part = "## Current Context" + prompt.split("## Current Context")[1]
+        else:
+            system_part = prompt
+            context_part = ""
+
+        messages.append({
+            "role": "system",
+            "content": system_part
+        })
+
+        # Extract conversation history if present and add as separate messages
+        conversation_history = request.metadata.get('conversation_history', '') if hasattr(request, 'metadata') else ''
+
+        if conversation_history and conversation_history != "(No conversation history yet)":
+            # Parse conversation history into individual messages
+            for line in conversation_history.split('\n'):
+                line = line.strip()
+                if line.startswith('User: '):
+                    messages.append({
+                        "role": "user",
+                        "content": line[6:]  # Remove "User: " prefix
+                    })
+                elif line.startswith('Elle: '):
+                    messages.append({
+                        "role": "assistant",
+                        "content": line[6:]  # Remove "Elle: " prefix
+                    })
+
+        # Add current context as the final user message
+        # Remove conversation history section since we added it as messages
+        if "## Recent Conversation" in context_part:
+            context_part = context_part.split("## Recent Conversation")[0]
+            # Also get anything after the conversation section
+            full_prompt_after_conv = prompt.split("## Recent Conversation")
+            if len(full_prompt_after_conv) > 1:
+                remaining = full_prompt_after_conv[1]
+                if "---" in remaining:
+                    # Get sections after conversation
+                    remaining_sections = remaining.split("---")[1:]
+                    if remaining_sections:
+                        context_part += "\n---" + "---".join(remaining_sections)
+
+        messages.append({
+            "role": "user",
+            "content": context_part.strip()
+        })
+
+        return messages
+
     def _select_symbols(self, request: ElleRequest) -> List[str]:
         """
         Choose which symbols to include in prompt.

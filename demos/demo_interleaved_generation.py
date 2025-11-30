@@ -106,7 +106,7 @@ def create_node_contents() -> Dict[str, str]:
         "multi_armed_bandits": "Multi-armed bandit problem models sequential decision making with multiple action choices.",
         "prior_distributions": "Prior distributions represent initial beliefs about parameters before observing data.",
         "ucb_algorithm": "Upper Confidence Bound algorithm selects actions based on optimistic estimates.",
-        "epsilon_greedy": "Epsilon-greedy strategy explores randomly with probability ε and exploits otherwise.",
+        "epsilon_greedy": "Epsilon-greedy strategy explores randomly with probability  and exploits otherwise.",
         "confidence_bounds": "Confidence bounds provide probabilistic guarantees about parameter estimates.",
         "recommendation_systems": "Recommendation systems suggest items to users based on preferences and behavior.",
         "ab_testing": "A/B testing compares two versions to determine which performs better.",
@@ -135,7 +135,7 @@ async def demo_interleaved_vs_sequential():
     llm = MockLLM(tokens_per_second=50)  # Realistic speed
 
     # Sequential: Expand ALL context THEN generate
-    print("\n📊 Sequential Execution (Traditional):")
+    print("\n Sequential Execution (Traditional):")
     print("  Step 1: Retrieve ALL context (wait...)")
     print("  Step 2: THEN start generation")
 
@@ -159,7 +159,7 @@ async def demo_interleaved_vs_sequential():
                 context += f"\n{content}"
 
     expansion_time = (time.time() - sequential_start) * 1000
-    print(f"  ✓ Context retrieved: {chunk_count} chunks ({expansion_time:.2f}ms)")
+    print(f"   Context retrieved: {chunk_count} chunks ({expansion_time:.2f}ms)")
 
     # NOW start generation
     gen_start = time.time()
@@ -170,11 +170,11 @@ async def demo_interleaved_vs_sequential():
     generation_time = (time.time() - gen_start) * 1000
     sequential_total = (time.time() - sequential_start) * 1000
 
-    print(f"  ✓ Response generated: {token_count} tokens ({generation_time:.2f}ms)")
-    print(f"  📈 Total time: {sequential_total:.2f}ms")
+    print(f"   Response generated: {token_count} tokens ({generation_time:.2f}ms)")
+    print(f"   Total time: {sequential_total:.2f}ms")
 
     # Interleaved: Expand AND generate SIMULTANEOUSLY
-    print("\n⚡ Interleaved Execution (Phase 3):")
+    print("\n Interleaved Execution (Phase 3):")
     print("  Expand context AND generate response simultaneously!")
 
     interleaved_start = time.time()
@@ -201,9 +201,9 @@ async def demo_interleaved_vs_sequential():
 
     interleaved_total = (time.time() - interleaved_start) * 1000
 
-    print(f"  ✓ First token: {first_token_time:.2f}ms (started EARLY!)")
-    print(f"  ✓ Context + Response: {chunk_count} chunks, {token_count} tokens")
-    print(f"  📈 Total time: {interleaved_total:.2f}ms")
+    print(f"   First token: {first_token_time:.2f}ms (started EARLY!)")
+    print(f"   Context + Response: {chunk_count} chunks, {token_count} tokens")
+    print(f"   Total time: {interleaved_total:.2f}ms")
 
     # Comparison
     print("\n" + "-"*70)
@@ -215,15 +215,15 @@ async def demo_interleaved_vs_sequential():
 
     print(f"  Sequential:  {sequential_total:.2f}ms")
     print(f"  Interleaved: {interleaved_total:.2f}ms")
-    print(f"  ✅ Latency reduction: {latency_reduction:.1f}%")
-    print(f"  ✅ Speedup: {speedup:.2f}x faster")
+    print(f"   Latency reduction: {latency_reduction:.1f}%")
+    print(f"   Speedup: {speedup:.2f}x faster")
 
     # Time to first token comparison
     first_token_improvement = (1 - first_token_time / sequential_total) * 100 if sequential_total > 0 else 0
     print(f"\n  Time to First Token:")
     print(f"    Sequential:  {sequential_total:.2f}ms (wait for ALL retrieval)")
     print(f"    Interleaved: {first_token_time:.2f}ms (start immediately!)")
-    print(f"    ✅ Improvement: {first_token_improvement:.1f}% faster")
+    print(f"     Improvement: {first_token_improvement:.1f}% faster")
 
 
 # ============================================================================
@@ -267,16 +267,16 @@ async def demo_progressive_response():
     ):
         if isinstance(item, ContextChunk):
             context_chunks_seen += 1
-            print(f"📦 Context chunk {context_chunks_seen}: {len(item.nodes)} nodes (hop {item.hop_distance})")
+            print(f" Context chunk {context_chunks_seen}: {len(item.nodes)} nodes (hop {item.hop_distance})")
 
         elif isinstance(item, GenerationToken):
             current_response = item.cumulative_text
             # Show response progress
             if item.token_index % 3 == 0 or item.is_final:  # Every 3 tokens or final
-                print(f"💬 Response: {current_response}")
+                print(f" Response: {current_response}")
 
     print("-"*70)
-    print(f"\n✅ Complete response ({len(current_response)} chars):")
+    print(f"\n Complete response ({len(current_response)} chars):")
     print(f"   {current_response}")
 
 
@@ -294,9 +294,9 @@ async def demo_stream_visualization():
     print("Demo 3: Real-time Stream Visualization")
     print("="*70)
     print("\nVisualization Legend:")
-    print("  📦 = Context Chunk")
-    print("  💬 = Generation Token")
-    print("  ⏱  = Metadata Event")
+    print("   = Context Chunk")
+    print("   = Generation Token")
+    print("    = Metadata Event")
     print("\n" + "-"*70)
 
     kg = create_demo_graph()
@@ -322,20 +322,20 @@ async def demo_stream_visualization():
         elapsed = (time.time() - start_time) * 1000
 
         if isinstance(item, ContextChunk):
-            symbol = "📦"
+            symbol = ""
             detail = f"Chunk {item.chunk_index} (hop {item.hop_distance}, {item.token_count} tokens)"
         elif isinstance(item, GenerationToken):
-            symbol = "💬"
+            symbol = ""
             detail = f"Token {item.token_index}: '{item.token.strip()}'"
         elif isinstance(item, StreamMetadata):
-            symbol = "⏱ "
+            symbol = " "
             detail = f"{item.event_type}"
 
         timeline.append((elapsed, symbol, detail))
         print(f"[{elapsed:6.1f}ms] {symbol} {detail}")
 
     print("-"*70)
-    print(f"\n✅ Stream complete: {len(timeline)} events in {elapsed:.1f}ms")
+    print(f"\n Stream complete: {len(timeline)} events in {elapsed:.1f}ms")
 
 
 # ============================================================================
@@ -373,7 +373,7 @@ async def demo_metadata_events():
         if isinstance(item, StreamMetadata):
             metadata_events.append(item)
 
-    print(f"\n✅ Captured {len(metadata_events)} metadata events:")
+    print(f"\n Captured {len(metadata_events)} metadata events:")
     for i, event in enumerate(metadata_events, 1):
         print(f"\n{i}. Event: {event.event_type}")
         for key, value in event.data.items():
@@ -435,17 +435,17 @@ async def demo_performance_metrics():
 
     total_time = (time.time() - start_time) * 1000
 
-    print("\n📊 Performance Metrics:")
+    print("\n Performance Metrics:")
     print("-"*70)
 
-    print("\n🔹 Latency:")
+    print("\n Latency:")
     print(f"  First context chunk:  {first_chunk_time:.2f}ms")
     print(f"  First generation token: {first_token_time:.2f}ms")
     print(f"  Last context chunk:   {last_chunk_time:.2f}ms")
     print(f"  Last generation token: {last_token_time:.2f}ms")
     print(f"  Total time:          {total_time:.2f}ms")
 
-    print("\n🔹 Throughput:")
+    print("\n Throughput:")
     print(f"  Context chunks:      {context_chunks} chunks")
     print(f"  Generation tokens:   {generation_tokens} tokens")
 
@@ -455,14 +455,14 @@ async def demo_performance_metrics():
         print(f"  Chunks/second:       {chunks_per_sec:.1f}")
         print(f"  Tokens/second:       {tokens_per_sec:.1f}")
 
-    print("\n🔹 Interleaving Efficiency:")
+    print("\n Interleaving Efficiency:")
     overlap_time = min(last_chunk_time, last_token_time) - max(first_chunk_time, first_token_time)
     overlap_pct = (overlap_time / total_time) * 100 if total_time > 0 else 0
     print(f"  Overlap time:        {overlap_time:.2f}ms")
     print(f"  Overlap percentage:  {overlap_pct:.1f}%")
     print(f"  (Higher = more parallelization)")
 
-    print("\n🔹 Key Benefit:")
+    print("\n Key Benefit:")
     if first_token_time and last_chunk_time:
         benefit = (1 - first_token_time / last_chunk_time) * 100
         print(f"  Started generating {benefit:.1f}% before expansion complete!")
