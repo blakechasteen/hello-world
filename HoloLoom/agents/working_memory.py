@@ -114,6 +114,15 @@ class AgentWorkingMemory:
                     self.state.activation_map.get(node_id, 0.0) * 0.5
                 )
 
+        # Fallback: if nothing is inside the attention radius (e.g., when
+        # running without the full embedding model and using random vectors),
+        # still activate the closest nodes so downstream logic has context.
+        if not any(a > 0 for a in self.state.activation_map.values()):
+            closest = sorted(semantic_distances.items(), key=lambda x: x[1])[:3]
+            for node_id, distance in closest:
+                activation = max(0.2, 1.0 - distance)
+                self.state.activation_map[node_id] = activation
+
         # Propagate activation through graph edges
         self._propagate_activation()
 
