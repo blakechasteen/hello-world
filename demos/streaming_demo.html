@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Streaming Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .cursor { animation: blink 1s step-end infinite; }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+        .pulse-ring { animation: pulse-ring 2s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-2">HoloLoom Streaming Demo</h1>
+        <p class="text-gray-400 mb-8">Test the WebSocket streaming API with real-time visualization</p>
+
+        <!-- Connection Status -->
+        <div class="mb-6 flex items-center gap-4">
+            <div id="connection-status" class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span>Disconnected</span>
+            </div>
+            <button id="connect-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                Connect
+            </button>
+        </div>
+
+        <!-- Query Input -->
+        <div class="mb-8">
+            <div class="flex gap-4">
+                <input
+                    type="text"
+                    id="query-input"
+                    placeholder="Enter your query..."
+                    class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
+                    value="What is Thompson Sampling and how does it balance exploration vs exploitation?"
+                />
+                <select id="mode-select" class="px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg">
+                    <option value="direct">Direct</option>
+                    <option value="verify">Verify</option>
+                    <option value="research">Research</option>
+                    <option value="plan_execute">Plan & Execute</option>
+                </select>
+                <button id="send-btn" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition disabled:opacity-50" disabled>
+                    Send
+                </button>
+                <button id="cancel-btn" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition hidden">
+                    Cancel
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-3 gap-6">
+            <!-- Left Column: Confidence & Stages -->
+            <div class="space-y-6">
+                <!-- Confidence Gauge -->
+                <div class="bg-gray-800 rounded-xl p-6">
+                    <h3 class="text-sm font-medium text-gray-400 mb-4">Confidence</h3>
+                    <div class="flex flex-col items-center">
+                        <svg id="confidence-gauge" width="120" height="80" viewBox="0 0 120 80" class="overflow-visible">
+                            <!-- Background arc -->
+                            <path id="gauge-bg" fill="none" stroke="#374151" stroke-width="8" stroke-linecap="round"/>
+                            <!-- Value arc -->
+                            <path id="gauge-value" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" class="transition-all duration-300"/>
+                            <!-- Epistemic arc (inner) -->
+                            <path id="gauge-epistemic" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round" opacity="0.4" class="transition-all duration-300"/>
+                            <!-- Value text -->
+                            <text x="60" y="55" text-anchor="middle" fill="white" font-size="20" font-weight="600" id="gauge-text">0%</text>
+                            <text x="60" y="75" text-anchor="middle" fill="#9ca3af" font-size="10" id="gauge-label">Waiting</text>
+                        </svg>
+                        <!-- Sparkline -->
+                        <svg id="sparkline" width="100" height="20" class="mt-2">
+                            <polyline id="sparkline-line" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <!-- Epistemic indicator -->
+                        <div id="epistemic-value" class="text-xs text-gray-500 mt-1">ε: 0%</div>
+                    </div>
+                </div>
+
+                <!-- Stages Timeline -->
+                <div class="bg-gray-800 rounded-xl p-6">
+                    <h3 class="text-sm font-medium text-gray-400 mb-4">Weaving Stages</h3>
+                    <div id="stages-list" class="space-y-2 text-sm">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Metrics -->
+                <div class="bg-gray-800 rounded-xl p-6">
+                    <h3 class="text-sm font-medium text-gray-400 mb-4">Metrics</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <div class="text-gray-500">Duration</div>
+                            <div id="metric-duration" class="font-mono">-</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500">Tokens</div>
+                            <div id="metric-tokens" class="font-mono">0</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500">Context</div>
+                            <div id="metric-context" class="font-mono">0</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500">Cache</div>
+                            <div id="metric-cache" class="font-mono">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Response -->
+            <div class="col-span-2">
+                <div class="bg-gray-800 rounded-xl p-6 h-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-medium text-gray-400">Response</h3>
+                        <div id="stream-status" class="text-xs text-gray-500">Idle</div>
+                    </div>
+                    <div id="response-container" class="prose prose-invert max-w-none overflow-auto" style="max-height: 500px;">
+                        <p class="text-gray-500 italic">Waiting for query...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Context Chunks (collapsible) -->
+        <details class="mt-6 bg-gray-800 rounded-xl">
+            <summary class="p-4 cursor-pointer text-sm font-medium text-gray-400 hover:text-gray-300">
+                Context Chunks (<span id="context-count">0</span>)
+            </summary>
+            <div id="context-list" class="p-4 pt-0 space-y-2 max-h-64 overflow-auto">
+                <!-- Populated by JS -->
+            </div>
+        </details>
+
+        <!-- Event Log (collapsible) -->
+        <details class="mt-4 bg-gray-800 rounded-xl">
+            <summary class="p-4 cursor-pointer text-sm font-medium text-gray-400 hover:text-gray-300">
+                Event Log (<span id="event-count">0</span>)
+            </summary>
+            <div id="event-log" class="p-4 pt-0 space-y-1 max-h-64 overflow-auto font-mono text-xs">
+                <!-- Populated by JS -->
+            </div>
+        </details>
+    </div>
+
+    <script>
+        // ========================================================================
+        // State
+        // ========================================================================
+        const state = {
+            ws: null,
+            connected: false,
+            streaming: false,
+            sessionId: null,
+            tokens: [],
+            accumulatedText: '',
+            confidenceHistory: [],
+            contextChunks: [],
+            stages: [
+                { name: 'loom_command', label: 'Pattern Selection', status: 'pending' },
+                { name: 'chrono_trigger', label: 'Temporal Window', status: 'pending' },
+                { name: 'yarn_graph', label: 'Memory Retrieval', status: 'pending' },
+                { name: 'resonance_shed', label: 'Feature Extraction', status: 'pending' },
+                { name: 'dot_plasma', label: 'Feature Fusion', status: 'pending' },
+                { name: 'warp_space', label: 'Tensor Operations', status: 'pending' },
+                { name: 'convergence', label: 'Decision Making', status: 'pending' },
+                { name: 'spacetime', label: 'Response Weaving', status: 'pending' },
+                { name: 'reflection', label: 'Learning', status: 'pending' },
+            ],
+            events: [],
+            metrics: {
+                duration: null,
+                tokens: 0,
+                context: 0,
+                cacheHit: null,
+            },
+            confidence: 0,
+            epistemicConfidence: 0,
+        };
+
+        // ========================================================================
+        // DOM Elements
+        // ========================================================================
+        const elements = {
+            connectionStatus: document.getElementById('connection-status'),
+            connectBtn: document.getElementById('connect-btn'),
+            queryInput: document.getElementById('query-input'),
+            modeSelect: document.getElementById('mode-select'),
+            sendBtn: document.getElementById('send-btn'),
+            cancelBtn: document.getElementById('cancel-btn'),
+            responseContainer: document.getElementById('response-container'),
+            streamStatus: document.getElementById('stream-status'),
+            stagesList: document.getElementById('stages-list'),
+            contextList: document.getElementById('context-list'),
+            contextCount: document.getElementById('context-count'),
+            eventLog: document.getElementById('event-log'),
+            eventCount: document.getElementById('event-count'),
+            gaugeBg: document.getElementById('gauge-bg'),
+            gaugeValue: document.getElementById('gauge-value'),
+            gaugeEpistemic: document.getElementById('gauge-epistemic'),
+            gaugeText: document.getElementById('gauge-text'),
+            gaugeLabel: document.getElementById('gauge-label'),
+            sparklineLine: document.getElementById('sparkline-line'),
+            epistemicValue: document.getElementById('epistemic-value'),
+            metricDuration: document.getElementById('metric-duration'),
+            metricTokens: document.getElementById('metric-tokens'),
+            metricContext: document.getElementById('metric-context'),
+            metricCache: document.getElementById('metric-cache'),
+        };
+
+        // ========================================================================
+        // Gauge Drawing
+        // ========================================================================
+        function polarToCartesian(cx, cy, r, angle) {
+            const rad = (angle - 90) * Math.PI / 180;
+            return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+        }
+
+        function describeArc(x, y, r, startAngle, endAngle) {
+            const start = polarToCartesian(x, y, r, endAngle);
+            const end = polarToCartesian(x, y, r, startAngle);
+            const largeArc = endAngle - startAngle <= 180 ? '0' : '1';
+            return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y}`;
+        }
+
+        function updateGauge() {
+            const cx = 60, cy = 72, r = 48;
+            // Background (full arc)
+            elements.gaugeBg.setAttribute('d', describeArc(cx, cy, r, -90, 90));
+            // Value arc
+            const valueAngle = -90 + (state.confidence * 180);
+            elements.gaugeValue.setAttribute('d', describeArc(cx, cy, r, -90, valueAngle));
+            // Epistemic arc (inner)
+            const epistemicAngle = -90 + (state.epistemicConfidence * 180);
+            elements.gaugeEpistemic.setAttribute('d', describeArc(cx, cy, r - 10, -90, epistemicAngle));
+
+            // Color based on confidence
+            let color = '#ef4444'; // red
+            if (state.confidence >= 0.3) color = '#f59e0b'; // amber
+            if (state.confidence >= 0.6) color = '#22c55e'; // green
+            if (state.confidence >= 0.85) color = '#10b981'; // emerald
+            elements.gaugeValue.setAttribute('stroke', color);
+            elements.gaugeEpistemic.setAttribute('stroke', color);
+
+            // Text
+            elements.gaugeText.textContent = Math.round(state.confidence * 100) + '%';
+            elements.gaugeLabel.textContent = state.streaming ? 'Streaming' : (state.confidence > 0 ? 'Complete' : 'Waiting');
+            elements.epistemicValue.textContent = `ε: ${Math.round(state.epistemicConfidence * 100)}%`;
+
+            // Sparkline
+            if (state.confidenceHistory.length > 1) {
+                const w = 100, h = 20;
+                const min = Math.min(...state.confidenceHistory);
+                const max = Math.max(...state.confidenceHistory);
+                const range = max - min || 1;
+                const points = state.confidenceHistory.map((v, i) => {
+                    const x = (i / (state.confidenceHistory.length - 1)) * w;
+                    const y = h - ((v - min) / range) * h;
+                    return `${x},${y}`;
+                }).join(' ');
+                elements.sparklineLine.setAttribute('points', points);
+                elements.sparklineLine.setAttribute('stroke', color);
+            }
+        }
+
+        // ========================================================================
+        // Stages Rendering
+        // ========================================================================
+        function renderStages() {
+            elements.stagesList.innerHTML = state.stages.map(s => {
+                let icon = '○';
+                let color = 'text-gray-500';
+                if (s.status === 'active') { icon = '◉'; color = 'text-blue-400'; }
+                if (s.status === 'complete') { icon = '●'; color = 'text-green-400'; }
+                if (s.status === 'error') { icon = '✕'; color = 'text-red-400'; }
+                const duration = s.duration_ms ? `${s.duration_ms.toFixed(0)}ms` : '';
+                return `
+                    <div class="flex items-center justify-between ${color}">
+                        <span>${icon} ${s.label}</span>
+                        <span class="text-xs font-mono">${duration}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ========================================================================
+        // Event Logging
+        // ========================================================================
+        function logEvent(type, data) {
+            state.events.push({ type, data, time: new Date().toISOString() });
+            elements.eventCount.textContent = state.events.length;
+            const div = document.createElement('div');
+            div.className = 'text-gray-400';
+            div.innerHTML = `<span class="text-gray-600">${new Date().toLocaleTimeString()}</span> <span class="text-blue-400">${type}</span>`;
+            elements.eventLog.appendChild(div);
+            elements.eventLog.scrollTop = elements.eventLog.scrollHeight;
+        }
+
+        // ========================================================================
+        // Connection Management
+        // ========================================================================
+        function connect() {
+            state.ws = new WebSocket('ws://localhost:8001/ws/stream');
+
+            state.ws.onopen = () => {
+                state.connected = true;
+                updateConnectionUI();
+                logEvent('connected', {});
+            };
+
+            state.ws.onclose = () => {
+                state.connected = false;
+                state.streaming = false;
+                updateConnectionUI();
+                logEvent('disconnected', {});
+            };
+
+            state.ws.onerror = (e) => {
+                logEvent('error', { message: 'WebSocket error' });
+            };
+
+            state.ws.onmessage = (e) => {
+                const msg = JSON.parse(e.data);
+                handleMessage(msg);
+            };
+        }
+
+        function disconnect() {
+            if (state.ws) {
+                state.ws.close();
+                state.ws = null;
+            }
+        }
+
+        function updateConnectionUI() {
+            const dot = elements.connectionStatus.querySelector('span:first-child');
+            const text = elements.connectionStatus.querySelector('span:last-child');
+
+            if (state.connected) {
+                dot.className = 'w-3 h-3 rounded-full bg-green-500';
+                text.textContent = 'Connected';
+                elements.connectBtn.textContent = 'Disconnect';
+                elements.sendBtn.disabled = false;
+            } else {
+                dot.className = 'w-3 h-3 rounded-full bg-red-500';
+                text.textContent = 'Disconnected';
+                elements.connectBtn.textContent = 'Connect';
+                elements.sendBtn.disabled = true;
+            }
+        }
+
+        // ========================================================================
+        // Message Handling
+        // ========================================================================
+        function handleMessage(msg) {
+            logEvent(msg.type, msg);
+
+            switch (msg.type) {
+                case 'stream_start':
+                    state.streaming = true;
+                    state.sessionId = msg.session_id;
+                    state.tokens = [];
+                    state.accumulatedText = '';
+                    state.confidenceHistory = [];
+                    state.contextChunks = [];
+                    state.stages.forEach(s => s.status = 'pending');
+                    elements.responseContainer.innerHTML = '';
+                    elements.streamStatus.textContent = 'Streaming...';
+                    elements.cancelBtn.classList.remove('hidden');
+                    elements.sendBtn.classList.add('hidden');
+                    renderStages();
+                    break;
+
+                case 'context_chunk':
+                    state.contextChunks.push(msg);
+                    state.metrics.context = msg.cumulative_tokens;
+                    elements.contextCount.textContent = state.contextChunks.length;
+                    elements.metricContext.textContent = msg.cumulative_tokens;
+                    // Add to context list
+                    const chunkDiv = document.createElement('div');
+                    chunkDiv.className = 'bg-gray-700 p-2 rounded text-xs';
+                    chunkDiv.innerHTML = `<div class="text-gray-400">Chunk ${msg.chunk_index} (hop ${msg.hop_distance})</div>`;
+                    msg.nodes.forEach(n => {
+                        chunkDiv.innerHTML += `<div class="truncate">${n.content.substring(0, 100)}...</div>`;
+                    });
+                    elements.contextList.appendChild(chunkDiv);
+                    break;
+
+                case 'token':
+                    state.tokens.push(msg.token);
+                    state.accumulatedText = msg.cumulative_text;
+                    state.metrics.tokens = msg.token_index + 1;
+                    elements.metricTokens.textContent = state.metrics.tokens;
+                    // Update response with cursor
+                    elements.responseContainer.innerHTML = `<div class="whitespace-pre-wrap">${state.accumulatedText}<span class="cursor">▋</span></div>`;
+                    elements.responseContainer.scrollTop = elements.responseContainer.scrollHeight;
+                    break;
+
+                case 'confidence_update':
+                    state.confidence = msg.confidence;
+                    state.epistemicConfidence = msg.epistemic_confidence;
+                    state.confidenceHistory.push(msg.confidence);
+                    if (state.confidenceHistory.length > 50) state.confidenceHistory.shift();
+                    updateGauge();
+                    break;
+
+                case 'stage_complete':
+                    const stage = state.stages.find(s => s.name === msg.stage);
+                    if (stage) {
+                        stage.status = 'complete';
+                        stage.duration_ms = msg.duration_ms;
+                    }
+                    // Mark next stage as active
+                    const idx = state.stages.findIndex(s => s.name === msg.stage);
+                    if (idx < state.stages.length - 1) {
+                        state.stages[idx + 1].status = 'active';
+                    }
+                    renderStages();
+                    break;
+
+                case 'stream_end':
+                    state.streaming = false;
+                    state.metrics.duration = msg.total_duration_ms;
+                    state.metrics.cacheHit = msg.cache_hit;
+                    elements.streamStatus.textContent = 'Complete';
+                    elements.metricDuration.textContent = `${msg.total_duration_ms.toFixed(0)}ms`;
+                    elements.metricCache.textContent = msg.cache_hit ? 'Hit' : 'Miss';
+                    elements.cancelBtn.classList.add('hidden');
+                    elements.sendBtn.classList.remove('hidden');
+                    // Remove cursor
+                    elements.responseContainer.innerHTML = `<div class="whitespace-pre-wrap">${state.accumulatedText}</div>`;
+                    break;
+
+                case 'error':
+                    state.streaming = false;
+                    elements.streamStatus.textContent = `Error: ${msg.message}`;
+                    elements.cancelBtn.classList.add('hidden');
+                    elements.sendBtn.classList.remove('hidden');
+                    break;
+
+                case 'heartbeat':
+                    // Just log it
+                    break;
+            }
+        }
+
+        // ========================================================================
+        // Event Handlers
+        // ========================================================================
+        elements.connectBtn.addEventListener('click', () => {
+            if (state.connected) {
+                disconnect();
+            } else {
+                connect();
+            }
+        });
+
+        elements.sendBtn.addEventListener('click', () => {
+            const query = elements.queryInput.value.trim();
+            const mode = elements.modeSelect.value;
+            if (query && state.connected) {
+                state.ws.send(JSON.stringify({ type: 'query', query, mode }));
+            }
+        });
+
+        elements.cancelBtn.addEventListener('click', () => {
+            if (state.connected && state.streaming) {
+                state.ws.send(JSON.stringify({ type: 'cancel' }));
+            }
+        });
+
+        elements.queryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                elements.sendBtn.click();
+            }
+        });
+
+        // ========================================================================
+        // Initialize
+        // ========================================================================
+        renderStages();
+        updateGauge();
+        updateConnectionUI();
+
+        // Auto-connect on load (optional)
+        // connect();
+    </script>
+</body>
+</html>

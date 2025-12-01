@@ -40,6 +40,13 @@ class MoodletType(Enum):
     ACHIEVEMENT = "achievement"
     RELATIONSHIP = "relationship"
     RANDOM = "random"
+    # v8.0: Economic categories (November 2025)
+    LIFESTYLE = "lifestyle"
+    CAREER = "career"
+    # v8.1: Social network categories (November 2025)
+    NETWORK = "network"
+    GOSSIP = "gossip"
+    INFLUENCE = "influence"
 
 
 @dataclass
@@ -312,6 +319,465 @@ class MoodletManager:
             description="Everything feels like it's falling apart",
             emotion="anxious", intensity=-3, duration_hours=24,  # v6.3: intensity -3 (was -2)
             category=MoodletType.PHYSICAL, source=""
+        ),
+
+        # =================================================================
+        # v7: SEASONAL MOODLETS (November 2025)
+        # =================================================================
+
+        # Winter (Days 335-59 / Dec-Feb) - Cozy indoors but cabin fever
+        "winter_cozy": Moodlet(
+            moodlet_id="", name="Winter Coziness",
+            description="Hot cocoa, warm blankets, perfect weather to stay in",
+            emotion="happy", intensity=1, duration_hours=8,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "winter_blues": Moodlet(
+            moodlet_id="", name="Winter Blues",
+            description="The cold dark days are getting to me...",
+            emotion="sad", intensity=-2, duration_hours=12,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "cabin_fever": Moodlet(
+            moodlet_id="", name="Cabin Fever",
+            description="I NEED to get out of this house!",
+            emotion="tense", intensity=-2, duration_hours=8,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "holiday_cheer": Moodlet(
+            moodlet_id="", name="Holiday Spirit",
+            description="The festive season brings joy!",
+            emotion="happy", intensity=2, duration_hours=12,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+
+        # Spring (Days 60-151 / Mar-May) - Renewal and allergies
+        "spring_renewal": Moodlet(
+            moodlet_id="", name="Spring Awakening",
+            description="New beginnings are in the air!",
+            emotion="inspired", intensity=2, duration_hours=10,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "spring_allergies": Moodlet(
+            moodlet_id="", name="Allergy Season",
+            description="*achoo* The pollen is brutal...",
+            emotion="uncomfortable", intensity=-1, duration_hours=8,
+            category=MoodletType.PHYSICAL, source=""
+        ),
+        "spring_cleaning": Moodlet(
+            moodlet_id="", name="Spring Cleaning Energy",
+            description="Time to refresh everything!",
+            emotion="energized", intensity=1, duration_hours=6,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+
+        # Summer (Days 152-243 / Jun-Aug) - Energy and heat
+        "summer_vibes": Moodlet(
+            moodlet_id="", name="Summer Vibes",
+            description="Long days, warm nights, life is good!",
+            emotion="happy", intensity=2, duration_hours=10,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "heat_exhaustion": Moodlet(
+            moodlet_id="", name="Too Hot",
+            description="This heat is unbearable...",
+            emotion="uncomfortable", intensity=-2, duration_hours=6,
+            category=MoodletType.PHYSICAL, source=""
+        ),
+        "vacation_mode": Moodlet(
+            moodlet_id="", name="Vacation Mode",
+            description="Summer vacation state of mind!",
+            emotion="happy", intensity=2, duration_hours=12,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+
+        # Autumn (Days 244-334 / Sep-Nov) - Melancholy and harvest
+        "autumn_melancholy": Moodlet(
+            moodlet_id="", name="Autumn Melancholy",
+            description="Something wistful about falling leaves...",
+            emotion="sad", intensity=-1, duration_hours=8,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "harvest_gratitude": Moodlet(
+            moodlet_id="", name="Harvest Gratitude",
+            description="Thankful for the abundance of life",
+            emotion="happy", intensity=2, duration_hours=10,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "cozy_sweater": Moodlet(
+            moodlet_id="", name="Cozy Sweater Weather",
+            description="Perfect temperature for layers!",
+            emotion="happy", intensity=1, duration_hours=8,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+
+        # =================================================================
+        # v7: MAJOR LIFE EVENT MOODLETS (November 2025)
+        # =================================================================
+
+        # Positive life events
+        "just_married": Moodlet(
+            moodlet_id="", name="Just Married!",
+            description="Starting a new chapter together",
+            emotion="happy", intensity=4, duration_hours=72,
+            category=MoodletType.RELATIONSHIP, source=""
+        ),
+        "new_parent": Moodlet(
+            moodlet_id="", name="New Parent Joy",
+            description="A new life has entered the world!",
+            emotion="happy", intensity=4, duration_hours=96,
+            category=MoodletType.RELATIONSHIP, source=""
+        ),
+        "got_promoted": Moodlet(
+            moodlet_id="", name="Promotion!",
+            description="Hard work paid off - moving up!",
+            emotion="confident", intensity=3, duration_hours=48,
+            category=MoodletType.ACHIEVEMENT, source=""
+        ),
+        "new_home": Moodlet(
+            moodlet_id="", name="New Home Excitement",
+            description="Fresh start in a new place!",
+            emotion="happy", intensity=2, duration_hours=36,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "retirement_bliss": Moodlet(
+            moodlet_id="", name="Retired Life",
+            description="Finally free to do whatever I want!",
+            emotion="happy", intensity=2, duration_hours=48,
+            category=MoodletType.ACHIEVEMENT, source=""
+        ),
+
+        # Negative life events
+        "death_in_family": Moodlet(
+            moodlet_id="", name="Mourning Loss",
+            description="A loved one has passed...",
+            emotion="sad", intensity=-5, duration_hours=168,  # 1 week
+            category=MoodletType.RELATIONSHIP, source=""
+        ),
+        "job_terminated": Moodlet(
+            moodlet_id="", name="Lost My Job",
+            description="Unemployed and uncertain about the future",
+            emotion="anxious", intensity=-3, duration_hours=72,
+            category=MoodletType.ACHIEVEMENT, source=""
+        ),
+        "serious_illness": Moodlet(
+            moodlet_id="", name="Health Crisis",
+            description="Dealing with a serious health issue",
+            emotion="anxious", intensity=-3, duration_hours=96,
+            category=MoodletType.PHYSICAL, source=""
+        ),
+        "divorce_pain": Moodlet(
+            moodlet_id="", name="Divorce",
+            description="The end of a marriage...",
+            emotion="sad", intensity=-4, duration_hours=120,
+            category=MoodletType.RELATIONSHIP, source=""
+        ),
+        "empty_nest": Moodlet(
+            moodlet_id="", name="Empty Nest",
+            description="The kids have all moved out...",
+            emotion="sad", intensity=-2, duration_hours=48,
+            category=MoodletType.RELATIONSHIP, source=""
+        ),
+
+        # =================================================================
+        # v7: NEIGHBORHOOD EVENT MOODLETS (November 2025)
+        # =================================================================
+
+        "block_party_fun": Moodlet(
+            moodlet_id="", name="Block Party!",
+            description="The whole neighborhood is celebrating!",
+            emotion="happy", intensity=3, duration_hours=12,
+            category=MoodletType.SOCIAL, source=""
+        ),
+        "festival_excitement": Moodlet(
+            moodlet_id="", name="Festival Day",
+            description="Music, food, and community spirit!",
+            emotion="happy", intensity=3, duration_hours=10,
+            category=MoodletType.SOCIAL, source=""
+        ),
+        "neighborhood_crisis": Moodlet(
+            moodlet_id="", name="Community Crisis",
+            description="Something terrible happened nearby...",
+            emotion="anxious", intensity=-2, duration_hours=24,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "power_outage": Moodlet(
+            moodlet_id="", name="Power Outage",
+            description="No electricity - this is frustrating!",
+            emotion="uncomfortable", intensity=-1, duration_hours=6,
+            category=MoodletType.ENVIRONMENTAL, source=""
+        ),
+        "community_achievement": Moodlet(
+            moodlet_id="", name="Neighborhood Pride",
+            description="We accomplished something together!",
+            emotion="happy", intensity=2, duration_hours=24,
+            category=MoodletType.SOCIAL, source=""
+        ),
+
+        # =================================================================
+        # v8.0: ECONOMIC MOODLETS (November 2025)
+        # =================================================================
+
+        # Positive economic moodlets
+        "financial_security": Moodlet(
+            moodlet_id="", name="Financial Security",
+            description="Bills are paid and there's money in the bank",
+            emotion="confident", intensity=2, duration_hours=48,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "bonus_received": Moodlet(
+            moodlet_id="", name="Bonus!",
+            description="Got some extra money at work!",
+            emotion="happy", intensity=3, duration_hours=24,
+            category=MoodletType.CAREER, source=""
+        ),
+        "pay_raise": Moodlet(
+            moodlet_id="", name="Got a Raise!",
+            description="Hard work is paying off - literally!",
+            emotion="happy", intensity=4, duration_hours=72,
+            category=MoodletType.CAREER, source=""
+        ),
+        "debt_paid_off": Moodlet(
+            moodlet_id="", name="Debt Free!",
+            description="Finally paid off that debt!",
+            emotion="happy", intensity=4, duration_hours=96,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "inheritance_received": Moodlet(
+            moodlet_id="", name="Windfall",
+            description="Received an unexpected inheritance",
+            emotion="bittersweet", intensity=2, duration_hours=48,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "good_investment": Moodlet(
+            moodlet_id="", name="Smart Money",
+            description="That investment really paid off!",
+            emotion="confident", intensity=2, duration_hours=24,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "found_new_job": Moodlet(
+            moodlet_id="", name="New Job!",
+            description="Back in the workforce with a fresh start!",
+            emotion="happy", intensity=4, duration_hours=72,
+            category=MoodletType.CAREER, source=""
+        ),
+
+        # Negative economic moodlets
+        "money_worries": Moodlet(
+            moodlet_id="", name="Money Troubles",
+            description="Can't stop thinking about finances...",
+            emotion="anxious", intensity=-2, duration_hours=24,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "financial_stress": Moodlet(
+            moodlet_id="", name="Financial Stress",
+            description="The numbers just don't add up",
+            emotion="stressed", intensity=-3, duration_hours=48,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "unexpected_bill": Moodlet(
+            moodlet_id="", name="Unexpected Bill",
+            description="Where did this expense come from?!",
+            emotion="frustrated", intensity=-2, duration_hours=12,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "job_insecurity": Moodlet(
+            moodlet_id="", name="Job Insecurity",
+            description="Worried about keeping this job...",
+            emotion="anxious", intensity=-2, duration_hours=36,
+            category=MoodletType.CAREER, source=""
+        ),
+        "unemployed": Moodlet(
+            moodlet_id="", name="Unemployed",
+            description="Need to find work soon",
+            emotion="stressed", intensity=-4, duration_hours=72,
+            category=MoodletType.CAREER, source=""
+        ),
+        "medical_debt": Moodlet(
+            moodlet_id="", name="Medical Bills",
+            description="Healthcare costs are crushing...",
+            emotion="stressed", intensity=-3, duration_hours=48,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "car_troubles": Moodlet(
+            moodlet_id="", name="Car Troubles",
+            description="The car needs expensive repairs",
+            emotion="frustrated", intensity=-2, duration_hours=18,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "broke": Moodlet(
+            moodlet_id="", name="Broke",
+            description="Living paycheck to paycheck...",
+            emotion="stressed", intensity=-3, duration_hours=72,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+
+        # Personality-based economic moodlets
+        "frugal_satisfaction": Moodlet(
+            moodlet_id="", name="Frugal Win",
+            description="Found a great deal and saved money!",
+            emotion="happy", intensity=1, duration_hours=12,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "splurge_guilt": Moodlet(
+            moodlet_id="", name="Splurge Guilt",
+            description="Probably shouldn't have bought that...",
+            emotion="guilty", intensity=-1, duration_hours=8,
+            category=MoodletType.LIFESTYLE, source=""
+        ),
+        "generous_glow": Moodlet(
+            moodlet_id="", name="Generous Glow",
+            description="Feels good to help others financially",
+            emotion="happy", intensity=2, duration_hours=18,
+            category=MoodletType.SOCIAL, source=""
+        ),
+
+        # =================================================================
+        # v8.1: SOCIAL NETWORK MOODLETS (November 2025)
+        # =================================================================
+
+        # Group membership moodlets
+        "joined_group": Moodlet(
+            moodlet_id="", name="New Group Member",
+            description="Excited to join a new social group!",
+            emotion="happy", intensity=2, duration_hours=24,
+            category=MoodletType.NETWORK, source=""
+        ),
+        "group_leader": Moodlet(
+            moodlet_id="", name="Group Leader",
+            description="Proud to lead the group!",
+            emotion="confident", intensity=3, duration_hours=48,
+            category=MoodletType.INFLUENCE, source=""
+        ),
+        "group_activity": Moodlet(
+            moodlet_id="", name="Group Bonding",
+            description="Had a great time with the group",
+            emotion="happy", intensity=2, duration_hours=12,
+            category=MoodletType.NETWORK, source=""
+        ),
+        "excluded_from_group": Moodlet(
+            moodlet_id="", name="Left Out",
+            description="Wasn't invited to the group gathering...",
+            emotion="sad", intensity=-2, duration_hours=18,
+            category=MoodletType.NETWORK, source=""
+        ),
+        "group_drama": Moodlet(
+            moodlet_id="", name="Group Drama",
+            description="There's tension in the group",
+            emotion="stressed", intensity=-1, duration_hours=24,
+            category=MoodletType.NETWORK, source=""
+        ),
+        "group_dissolved": Moodlet(
+            moodlet_id="", name="Group Disbanded",
+            description="The group fell apart...",
+            emotion="sad", intensity=-2, duration_hours=36,
+            category=MoodletType.NETWORK, source=""
+        ),
+
+        # Gossip moodlets
+        "juicy_gossip": Moodlet(
+            moodlet_id="", name="Juicy Gossip",
+            description="Heard some interesting news!",
+            emotion="intrigued", intensity=1, duration_hours=8,
+            category=MoodletType.GOSSIP, source=""
+        ),
+        "gossip_subject": Moodlet(
+            moodlet_id="", name="Being Talked About",
+            description="Found out people are talking...",
+            emotion="anxious", intensity=-1, duration_hours=12,
+            category=MoodletType.GOSSIP, source=""
+        ),
+        "good_gossip_about_me": Moodlet(
+            moodlet_id="", name="Good Reputation",
+            description="People are saying nice things!",
+            emotion="happy", intensity=2, duration_hours=24,
+            category=MoodletType.GOSSIP, source=""
+        ),
+        "bad_gossip_about_me": Moodlet(
+            moodlet_id="", name="Bad Reputation",
+            description="Rumors are spreading about me...",
+            emotion="embarrassed", intensity=-3, duration_hours=36,
+            category=MoodletType.GOSSIP, source=""
+        ),
+        "spread_gossip": Moodlet(
+            moodlet_id="", name="Shared News",
+            description="Passed along some interesting info",
+            emotion="satisfied", intensity=1, duration_hours=6,
+            category=MoodletType.GOSSIP, source=""
+        ),
+        "gossip_guilt": Moodlet(
+            moodlet_id="", name="Gossip Guilt",
+            description="Maybe I shouldn't have said that...",
+            emotion="guilty", intensity=-1, duration_hours=12,
+            category=MoodletType.GOSSIP, source=""
+        ),
+        "rumor_proven_false": Moodlet(
+            moodlet_id="", name="Rumor Debunked",
+            description="Glad that rumor wasn't true!",
+            emotion="relieved", intensity=1, duration_hours=8,
+            category=MoodletType.GOSSIP, source=""
+        ),
+
+        # Influence moodlets
+        "rising_star": Moodlet(
+            moodlet_id="", name="Rising Star",
+            description="People are noticing me more!",
+            emotion="confident", intensity=2, duration_hours=24,
+            category=MoodletType.INFLUENCE, source=""
+        ),
+        "social_influence": Moodlet(
+            moodlet_id="", name="Influential",
+            description="My opinions carry weight here",
+            emotion="empowered", intensity=2, duration_hours=36,
+            category=MoodletType.INFLUENCE, source=""
+        ),
+        "lost_influence": Moodlet(
+            moodlet_id="", name="Fading Presence",
+            description="People seem to be overlooking me...",
+            emotion="insecure", intensity=-2, duration_hours=24,
+            category=MoodletType.INFLUENCE, source=""
+        ),
+        "opinion_leader": Moodlet(
+            moodlet_id="", name="Opinion Leader",
+            description="Others look to me for guidance",
+            emotion="proud", intensity=3, duration_hours=48,
+            category=MoodletType.INFLUENCE, source=""
+        ),
+        "social_butterfly_high": Moodlet(
+            moodlet_id="", name="Social Butterfly",
+            description="Loving all these connections!",
+            emotion="happy", intensity=2, duration_hours=18,
+            category=MoodletType.NETWORK, source=""
+        ),
+        "social_exhaustion": Moodlet(
+            moodlet_id="", name="Social Exhaustion",
+            description="Too many social obligations...",
+            emotion="tired", intensity=-1, duration_hours=12,
+            category=MoodletType.NETWORK, source=""
+        ),
+        "made_connection": Moodlet(
+            moodlet_id="", name="New Connection",
+            description="Made a valuable new contact",
+            emotion="satisfied", intensity=1, duration_hours=12,
+            category=MoodletType.NETWORK, source=""
+        ),
+        "bridge_builder": Moodlet(
+            moodlet_id="", name="Bridge Builder",
+            description="Connected two people who hit it off!",
+            emotion="proud", intensity=2, duration_hours=18,
+            category=MoodletType.NETWORK, source=""
+        ),
+        "out_of_loop": Moodlet(
+            moodlet_id="", name="Out of the Loop",
+            description="Everyone knew except me...",
+            emotion="left_out", intensity=-2, duration_hours=16,
+            category=MoodletType.GOSSIP, source=""
+        ),
+        "inner_circle": Moodlet(
+            moodlet_id="", name="Inner Circle",
+            description="Part of the core group now!",
+            emotion="belonging", intensity=3, duration_hours=48,
+            category=MoodletType.NETWORK, source=""
         ),
     }
 

@@ -22,7 +22,7 @@ from dataclasses import dataclass
 import logging
 import asyncio
 
-from .protocol import Department, DepartmentManifest, DepartmentRequest, DepartmentResponse
+from .protocol import Department, DepartmentManifest, DepartmentRequest, DepartmentResponse, DepartmentConfig
 from .base import BaseDepartment
 
 
@@ -135,13 +135,14 @@ class DepartmentRegistry:
                 manifest = department.get_manifest()
             else:
                 # Create minimal manifest for non-BaseDepartment
-                manifest = DepartmentManifest(
+                config = DepartmentConfig(
                     name=department.name,
                     domain=department.domain,
                     version=department.version,
                     supported_tasks=department.supported_tasks,
                     confidence_range=department.confidence_range
                 )
+                manifest = DepartmentManifest(config=config)
 
         # Check if already registered
         if department.name in self._versions:
@@ -168,23 +169,23 @@ class DepartmentRegistry:
         self._versions[department.name][department.version] = instance
 
         # Index by domain
-        if manifest.domain not in self._by_domain:
-            self._by_domain[manifest.domain] = set()
-        self._by_domain[manifest.domain].add(department.name)
+        if manifest.config.domain not in self._by_domain:
+            self._by_domain[manifest.config.domain] = set()
+        self._by_domain[manifest.config.domain].add(department.name)
 
         # Index by task types
-        for task_type in manifest.supported_tasks:
+        for task_type in manifest.config.supported_tasks:
             if task_type not in self._by_task:
                 self._by_task[task_type] = set()
             self._by_task[task_type].add(department.name)
 
         # Register dependencies
-        if manifest.requires:
-            self._dependencies[department.name] = set(manifest.requires)
+        if manifest.dependencies:
+            self._dependencies[department.name] = set(manifest.dependencies)
 
         logger.info(
             f"Registered department: {department.name} v{department.version} "
-            f"(domain: {manifest.domain})"
+            f"(domain: {manifest.config.domain})"
         )
 
         # Start health monitoring if this is first department

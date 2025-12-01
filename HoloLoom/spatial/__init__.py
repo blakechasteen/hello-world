@@ -15,6 +15,17 @@
 # - Spatial Notifications (3D alerts and messages)
 # - Environment Mapping (scene persistence)
 # - Avatar System (customizable user avatars)
+# - Math Types (shared Vector3, Quaternion, Color, Transform)
+#
+# Phase 4 Enhancement (November 2025):
+# - Collaborative Spatial Session (bridge spatial + collaboration)
+# - AR Knowledge Overlay (knowledge graph visualization)
+# - Mobile-Responsive Spatial UI (touch gestures, adaptive layouts)
+
+# Shared math types (used across all spatial modules)
+from HoloLoom.spatial.math_types import (
+    Vector3, Quaternion, Color, Transform, BoundingBox
+)
 
 from HoloLoom.spatial.webxr_graph import WebXRKnowledgeGraph, XRNode, XRAnchor
 from HoloLoom.spatial.spatial_anchors import SpatialAnchorManager, SpatialAnchor
@@ -53,7 +64,37 @@ from HoloLoom.spatial.avatar_system import (
     AnimationState, StatusType, IKTarget, AnimationClip
 )
 
+# Phase 4 Enhancement: Collaborative Spatial Session (November 2025)
+from HoloLoom.spatial.collaborative_session import (
+    CollaborativeSpatialSession, ARContextProvider, GestureCollaborationBridge,
+    SharedSpatialObject, SpatialZone, SpatialContext, SpatialActivityType,
+    SpatialZoneType, GestureAction, GestureMapping, create_collaborative_spatial_session
+)
+
+# Phase 4 Enhancement: AR Knowledge Overlay (November 2025)
+from HoloLoom.spatial.knowledge_overlay import (
+    KnowledgeOverlayManager, KnowledgeNodeOverlay, KnowledgeEdgeOverlay,
+    OverlayCluster, MemoryPalaceRoom, LayoutEngine,
+    OverlayStyle, VisibilityMode, LayoutAlgorithm, EdgeStyle,
+    create_knowledge_overlay_manager
+)
+
+# Phase 4 Enhancement: Mobile-Responsive Spatial UI (November 2025)
+from HoloLoom.spatial.mobile_spatial_ui import (
+    MobileSpatialUIManager, TouchGestureRecognizer, SpatialHUD,
+    UIComponent, FloatingActionButton, BottomSheet, RadialMenu as MobileRadialMenu,
+    DeviceCapabilities, TouchGesture, TouchGestureType,
+    DeviceType, ScreenOrientation, InputMode, UIScale, UIAnchor,
+    create_mobile_ui_manager, create_default_spatial_ui
+)
+
 __all__ = [
+    # Shared Math Types
+    'Vector3',
+    'Quaternion',
+    'Color',
+    'Transform',
+    'BoundingBox',
     # WebXR Graph Visualization
     'WebXRKnowledgeGraph',
     'XRNode',
@@ -166,4 +207,46 @@ __all__ = [
     'StatusType',
     'IKTarget',
     'AnimationClip',
+    # Phase 4 Enhancement: Collaborative Spatial Session
+    'CollaborativeSpatialSession',
+    'ARContextProvider',
+    'GestureCollaborationBridge',
+    'SharedSpatialObject',
+    'SpatialZone',
+    'SpatialContext',
+    'SpatialActivityType',
+    'SpatialZoneType',
+    'GestureAction',
+    'GestureMapping',
+    'create_collaborative_spatial_session',
+    # Phase 4 Enhancement: AR Knowledge Overlay
+    'KnowledgeOverlayManager',
+    'KnowledgeNodeOverlay',
+    'KnowledgeEdgeOverlay',
+    'OverlayCluster',
+    'MemoryPalaceRoom',
+    'LayoutEngine',
+    'OverlayStyle',
+    'VisibilityMode',
+    'LayoutAlgorithm',
+    'EdgeStyle',
+    'create_knowledge_overlay_manager',
+    # Phase 4 Enhancement: Mobile-Responsive Spatial UI
+    'MobileSpatialUIManager',
+    'TouchGestureRecognizer',
+    'SpatialHUD',
+    'UIComponent',
+    'FloatingActionButton',
+    'BottomSheet',
+    'MobileRadialMenu',
+    'DeviceCapabilities',
+    'TouchGesture',
+    'TouchGestureType',
+    'DeviceType',
+    'ScreenOrientation',
+    'InputMode',
+    'UIScale',
+    'UIAnchor',
+    'create_mobile_ui_manager',
+    'create_default_spatial_ui',
 ]

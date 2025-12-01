@@ -43,8 +43,9 @@ import asyncio
 import random
 import sys
 from pathlib import Path
-from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from dataclasses import dataclass, field
+from typing import Dict, List, Tuple, Optional
+from enum import Enum
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
@@ -56,6 +57,291 @@ from resident_generator import (
 )
 from sims_inspired import SimsEnhancedEngine, LifeGoal, DEFAULT_LIFE_GOALS
 from neighborhood_engine import AgentState
+
+
+# =============================================================================
+# v7: SEASONAL SYSTEM (November 2025)
+# =============================================================================
+
+class Season(Enum):
+    """Four seasons of the year."""
+    WINTER = "winter"   # Dec-Feb (Days 335-59)
+    SPRING = "spring"   # Mar-May (Days 60-151)
+    SUMMER = "summer"   # Jun-Aug (Days 152-243)
+    AUTUMN = "autumn"   # Sep-Nov (Days 244-334)
+
+
+def get_season(day: int) -> Season:
+    """Get the season for a given simulation day (1-365 cycle)."""
+    day_of_year = ((day - 1) % 365) + 1  # 1-365
+
+    if day_of_year >= 335 or day_of_year < 60:
+        return Season.WINTER
+    elif day_of_year < 152:
+        return Season.SPRING
+    elif day_of_year < 244:
+        return Season.SUMMER
+    else:
+        return Season.AUTUMN
+
+
+def get_season_name(day: int) -> str:
+    """Get human-readable season name with month range."""
+    season = get_season(day)
+    return {
+        Season.WINTER: "Winter (Dec-Feb)",
+        Season.SPRING: "Spring (Mar-May)",
+        Season.SUMMER: "Summer (Jun-Aug)",
+        Season.AUTUMN: "Autumn (Sep-Nov)",
+    }[season]
+
+
+# Seasonal moodlet pools - weighted (positive, negative)
+SEASONAL_MOODLETS = {
+    Season.WINTER: {
+        "positive": ["winter_cozy", "holiday_cheer"],
+        "negative": ["winter_blues", "cabin_fever"],
+        "positive_weight": 0.4,  # 40% chance of positive
+        "negative_weight": 0.3,  # 30% chance of negative
+    },
+    Season.SPRING: {
+        "positive": ["spring_renewal", "spring_cleaning"],
+        "negative": ["spring_allergies"],
+        "positive_weight": 0.5,  # Spring is generally uplifting
+        "negative_weight": 0.2,
+    },
+    Season.SUMMER: {
+        "positive": ["summer_vibes", "vacation_mode"],
+        "negative": ["heat_exhaustion"],
+        "positive_weight": 0.5,
+        "negative_weight": 0.25,
+    },
+    Season.AUTUMN: {
+        "positive": ["harvest_gratitude", "cozy_sweater"],
+        "negative": ["autumn_melancholy"],
+        "positive_weight": 0.45,
+        "negative_weight": 0.25,
+    },
+}
+
+
+# =============================================================================
+# v7: MAJOR LIFE EVENTS (November 2025)
+# =============================================================================
+
+@dataclass
+class MajorLifeEvent:
+    """Tracks a major life event for a resident."""
+    event_type: str  # marriage, birth, death, promotion, retirement, divorce
+    day: int
+    participants: List[str] = field(default_factory=list)  # Other people involved
+    details: str = ""
+
+
+# Neighborhood-wide events
+@dataclass
+class NeighborhoodEvent:
+    """Tracks a neighborhood-wide event."""
+    event_type: str  # block_party, festival, crisis, power_outage
+    day: int
+    affected_residents: List[str] = field(default_factory=list)
+    details: str = ""
+
+
+# =============================================================================
+# v8.0: ECONOMIC ECOSYSTEM (November 2025)
+# =============================================================================
+
+@dataclass
+class FinancialState:
+    """Tracks a resident's financial situation."""
+    income: float = 50000.0  # Annual income
+    savings: float = 10000.0  # Current savings
+    debt: float = 0.0  # Outstanding debt
+    monthly_expenses: float = 3000.0  # Fixed monthly costs
+    financial_stress: float = 0.0  # 0.0-1.0 stress level
+    last_paycheck_day: int = 0  # For bi-weekly paycheck tracking
+    job_stability: float = 0.8  # 0.0-1.0 (1.0 = very stable)
+    is_employed: bool = True
+    unemployment_day: int = 0  # Day they lost job (if unemployed)
+
+    def net_worth(self) -> float:
+        """Calculate net worth (savings - debt)."""
+        return self.savings - self.debt
+
+    def calculate_stress(self) -> float:
+        """Calculate financial stress based on situation."""
+        stress = 0.0
+
+        # Debt-to-income ratio stress
+        if self.income > 0:
+            debt_ratio = self.debt / self.income
+            if debt_ratio > 0.5:
+                stress += 0.3
+            elif debt_ratio > 0.3:
+                stress += 0.15
+
+        # Low savings stress (< 3 months expenses)
+        safety_net = self.savings / max(self.monthly_expenses, 1)
+        if safety_net < 1:
+            stress += 0.4
+        elif safety_net < 3:
+            stress += 0.2
+        elif safety_net < 6:
+            stress += 0.1
+
+        # Unemployment stress
+        if not self.is_employed:
+            stress += 0.5
+
+        # Job instability stress
+        if self.job_stability < 0.5:
+            stress += 0.2
+
+        return min(1.0, stress)
+
+
+# Income brackets by archetype (annual income)
+ARCHETYPE_INCOME = {
+    "artist": (25000, 60000),
+    "writer": (30000, 80000),
+    "musician": (20000, 70000),
+    "teacher": (40000, 70000),
+    "entrepreneur": (30000, 150000),
+    "elder": (20000, 50000),  # Fixed income
+    "newcomer": (35000, 65000),
+    "healer": (45000, 90000),
+    "student": (10000, 30000),  # Part-time work
+    "retiree": (25000, 60000),  # Pension/savings
+    "healthcare": (50000, 120000),
+    "local_business": (40000, 100000),
+    "craftsperson": (30000, 70000),
+    "scientist": (60000, 130000),
+    "tech_worker": (70000, 180000),
+    "community_organizer": (35000, 60000),
+    "young_parent": (40000, 80000),
+    "empty_nester": (50000, 100000),
+    "introvert_sage": (40000, 80000),
+    "social_butterfly": (45000, 85000),
+    "skeptic": (45000, 90000),
+    "optimist": (40000, 75000),
+}
+
+# Economic event types
+ECONOMIC_EVENTS = {
+    "bonus": {"chance": 0.02, "amount_range": (500, 5000)},  # 2% daily chance
+    "unexpected_expense": {"chance": 0.03, "amount_range": (200, 2000)},
+    "inheritance": {"chance": 0.001, "amount_range": (5000, 50000)},  # Rare windfall
+    "medical_bill": {"chance": 0.01, "amount_range": (500, 10000)},
+    "car_repair": {"chance": 0.015, "amount_range": (200, 3000)},
+    "raise": {"chance": 0.005, "percentage": (0.03, 0.10)},  # 3-10% raise
+    "job_loss": {"chance": 0.002},  # 0.2% daily (rare but impactful)
+    "new_job": {"chance": 0.01},  # For unemployed residents
+}
+
+
+# =============================================================================
+# v8.1: SOCIAL NETWORKS (November 2025)
+# =============================================================================
+
+class GroupType(Enum):
+    """Types of social groups that can form."""
+    HOBBY_CLUB = "hobby_club"       # Shared interests (book club, gaming group)
+    PROFESSIONAL = "professional"   # Work-related networks
+    NEIGHBORHOOD = "neighborhood"   # Geographic proximity groups
+    SUPPORT = "support"             # Support groups (parents, caregivers)
+    ACTIVIST = "activist"           # Cause-oriented groups
+    SOCIAL = "social"               # Pure social gatherings
+    CULTURAL = "cultural"           # Shared cultural background
+    GENERATIONAL = "generational"   # Age-based groups (young parents, retirees)
+
+
+@dataclass
+class SocialGroup:
+    """Represents a social group/clique in the neighborhood."""
+    group_id: str
+    name: str
+    group_type: GroupType
+    members: List[str] = field(default_factory=list)
+    leader_id: Optional[str] = None  # Most influential member
+    formation_day: int = 0
+    shared_traits: List[str] = field(default_factory=list)  # What unites them
+    cohesion: float = 0.5  # 0.0-1.0 how tight-knit the group is
+    influence_score: float = 0.0  # Combined influence in neighborhood
+    is_active: bool = True
+    last_activity_day: int = 0
+
+    def size(self) -> int:
+        return len(self.members)
+
+
+@dataclass
+class Gossip:
+    """Represents a piece of gossip spreading through the network."""
+    gossip_id: str
+    subject_id: str  # Who the gossip is about
+    gossip_type: str  # romance, scandal, achievement, secret, rumor
+    content: str  # Brief description
+    origin_day: int
+    originator_id: str  # Who started it
+    spread_to: List[str] = field(default_factory=list)  # Who knows
+    is_true: bool = True  # True gossip vs rumor
+    impact_on_reputation: int = 0  # -20 to +20 reputation impact
+    expires_day: int = 0  # When it becomes old news
+
+
+@dataclass
+class SocialInfluence:
+    """Tracks a resident's social influence metrics."""
+    influence_score: float = 50.0  # 0-100 overall influence
+    network_centrality: float = 0.0  # How connected they are
+    reputation_trend: int = 0  # Recent reputation changes
+    groups_led: int = 0
+    groups_member: int = 0
+    gossip_spread_power: float = 0.5  # How far their gossip travels
+    information_access: float = 0.5  # How much they hear
+
+
+# Group formation triggers based on shared traits
+GROUP_FORMATION_TRIGGERS = {
+    "hobby_club": {
+        "min_members": 3,
+        "trait_match": ["creative", "artistic", "intellectual"],
+        "archetype_match": ["artist", "writer", "musician", "craftsperson"],
+    },
+    "professional": {
+        "min_members": 2,
+        "trait_match": ["ambitious", "hardworking"],
+        "archetype_match": ["tech_worker", "scientist", "entrepreneur", "healthcare"],
+    },
+    "support": {
+        "min_members": 2,
+        "trait_match": ["caring", "empathetic"],
+        "archetype_match": ["young_parent", "healer", "elder"],
+    },
+    "activist": {
+        "min_members": 3,
+        "trait_match": ["passionate", "idealistic"],
+        "archetype_match": ["community_organizer", "student"],
+    },
+    "generational": {
+        "min_members": 3,
+        "age_range": 15,  # Within 15 years of each other
+    },
+}
+
+# Gossip event types and their properties
+GOSSIP_TYPES = {
+    "new_romance": {"spread_rate": 0.4, "duration_days": 14, "reputation_impact": 0},
+    "secret_romance_exposed": {"spread_rate": 0.7, "duration_days": 21, "reputation_impact": -10},
+    "breakup": {"spread_rate": 0.5, "duration_days": 10, "reputation_impact": -5},
+    "achievement": {"spread_rate": 0.3, "duration_days": 7, "reputation_impact": 10},
+    "scandal": {"spread_rate": 0.8, "duration_days": 30, "reputation_impact": -20},
+    "job_news": {"spread_rate": 0.25, "duration_days": 5, "reputation_impact": 0},
+    "health_concern": {"spread_rate": 0.2, "duration_days": 14, "reputation_impact": 5},
+    "rumor": {"spread_rate": 0.6, "duration_days": 7, "reputation_impact": -5},
+    "good_deed": {"spread_rate": 0.35, "duration_days": 10, "reputation_impact": 15},
+}
 
 
 @dataclass
@@ -131,6 +417,54 @@ class SimulationEngine:
         self.total_secret_reveals = 0
         self.total_love_triangles = 0
 
+        # v7 additions (November 2025)
+        self.major_life_events: Dict[str, List[MajorLifeEvent]] = {}  # agent_id -> events
+        self.neighborhood_events: List[NeighborhoodEvent] = []
+        self.marriages: List[Tuple[str, str, int]] = []  # (id1, id2, day)
+        self.births: List[Tuple[str, int]] = []  # (parent_id, day)
+        self.deaths: List[Tuple[str, int]] = []  # (agent_id, day)  - "virtual" deaths (moved away, etc)
+
+        # v7 stats tracking
+        self.total_marriages = 0
+        self.total_births = 0
+        self.total_deaths = 0
+        self.total_promotions = 0
+        self.total_neighborhood_events = 0
+        self.seasonal_moodlets_applied = {season: 0 for season in Season}
+
+        # v8.0 additions (November 2025) - Economic Ecosystem
+        self.finances: Dict[str, FinancialState] = {}  # agent_id -> FinancialState
+        self.economic_events: List[Tuple[str, str, int, float]] = []  # (agent_id, event_type, day, amount)
+
+        # v8.0 stats tracking
+        self.total_bonuses = 0
+        self.total_raises = 0
+        self.total_job_losses = 0
+        self.total_new_jobs = 0
+        self.total_unexpected_expenses = 0
+        self.total_windfalls = 0  # Inheritances, etc.
+        self.total_economic_moodlets = 0
+        self.neighborhood_wealth = 0.0  # Total net worth of all residents
+        self.income_inequality_gini = 0.0  # Gini coefficient tracking
+
+        # v8.1 additions (November 2025) - Social Networks
+        self.social_groups: Dict[str, SocialGroup] = {}  # group_id -> SocialGroup
+        self.social_influence: Dict[str, SocialInfluence] = {}  # agent_id -> SocialInfluence
+        self.active_gossip: List[Gossip] = []  # Currently spreading gossip
+        self.gossip_history: List[Gossip] = []  # All gossip ever created
+        self.information_known: Dict[str, List[str]] = {}  # agent_id -> list of gossip_ids they know
+
+        # v8.1 stats tracking
+        self.total_groups_formed = 0
+        self.total_groups_dissolved = 0
+        self.total_gossip_created = 0
+        self.total_gossip_spread = 0
+        self.total_social_moodlets = 0
+        self.average_network_centrality = 0.0
+        self.most_influential_resident = ""
+        self.most_connected_group = ""
+        self.next_group_id = 1  # For unique group IDs
+
     def _get_relationship(self, id1: str, id2: str) -> Relationship:
         """Get or create relationship between two residents."""
         key = tuple(sorted([id1, id2]))
@@ -145,6 +479,313 @@ class SimulationEngine:
         rel.interactions += 1
         rel.last_interaction_day = day
         return rel
+
+    # =========================================================================
+    # v8.1: SOCIAL NETWORK HELPER METHODS (November 2025)
+    # =========================================================================
+
+    def _try_form_social_group(self, day: int, notable_events: List[str]):
+        """Try to form a new social group based on shared traits."""
+        # Find potential groups based on archetypes
+        archetype_clusters = {}
+        for agent_id, archetype in self.archetypes.items():
+            archetype_name = archetype.value if archetype else "unknown"
+            if archetype_name not in archetype_clusters:
+                archetype_clusters[archetype_name] = []
+            archetype_clusters[archetype_name].append(agent_id)
+
+        # Check each group formation trigger
+        for group_type_name, trigger in GROUP_FORMATION_TRIGGERS.items():
+            # Skip if already have too many groups of this type
+            existing_of_type = sum(1 for g in self.social_groups.values()
+                                   if g.is_active and g.group_type.value == group_type_name)
+            if existing_of_type >= 3:  # Max 3 active groups of each type
+                continue
+
+            candidates = []
+
+            # Match by archetype
+            if "archetype_match" in trigger:
+                for archetype_name in trigger["archetype_match"]:
+                    candidates.extend(archetype_clusters.get(archetype_name, []))
+
+            # Match by age range (generational groups)
+            if "age_range" in trigger:
+                age_groups = {}
+                for agent_id, resident in self.residents.items():
+                    age_bucket = resident.age // trigger["age_range"]
+                    if age_bucket not in age_groups:
+                        age_groups[age_bucket] = []
+                    age_groups[age_bucket].append(agent_id)
+                # Pick the largest age group
+                if age_groups:
+                    largest_bucket = max(age_groups.items(), key=lambda x: len(x[1]))
+                    candidates = largest_bucket[1]
+
+            # Filter to non-grouped residents (or allow multiple groups)
+            min_members = trigger.get("min_members", 3)
+
+            # Filter out residents who are already in too many groups
+            candidates = [c for c in candidates if
+                         self.social_influence.get(c) and
+                         self.social_influence[c].groups_member < 3]
+
+            # Need at least min_members who also have positive relationships
+            if len(candidates) >= min_members:
+                # Select members who have positive relationships with each other
+                selected = self._select_compatible_group_members(candidates, min_members)
+
+                if len(selected) >= min_members:
+                    group_id = f"group_{self.next_group_id}"
+                    self.next_group_id += 1
+
+                    # Determine group name based on type
+                    group_type = GroupType(group_type_name)
+                    group_names = {
+                        GroupType.HOBBY_CLUB: ["Book Club", "Art Circle", "Music Jam", "Gaming Group", "Crafters Collective"],
+                        GroupType.PROFESSIONAL: ["Networking Group", "Industry Meetup", "Career Circle", "Professionals United"],
+                        GroupType.SUPPORT: ["Support Circle", "Parents Group", "Caregivers Network", "Wellness Warriors"],
+                        GroupType.ACTIVIST: ["Change Makers", "Community Action", "Neighborhood Watch", "Green Team"],
+                        GroupType.GENERATIONAL: ["Young Adults", "Midlife Crew", "Senior Circle", "Golden Years Club"],
+                        GroupType.NEIGHBORHOOD: ["Block Party Crew", "Neighbors United", "Local Friends"],
+                        GroupType.SOCIAL: ["Social Circle", "Weekend Crew", "Fun Friends"],
+                        GroupType.CULTURAL: ["Heritage Circle", "Cultural Connection", "Traditions Group"],
+                    }
+                    name = random.choice(group_names.get(group_type, ["The Group"]))
+
+                    # Pick a leader (highest influence in the group)
+                    leader_id = max(selected, key=lambda x: self.social_influence.get(x, SocialInfluence()).influence_score)
+
+                    group = SocialGroup(
+                        group_id=group_id,
+                        name=name,
+                        group_type=group_type,
+                        members=selected,
+                        leader_id=leader_id,
+                        formation_day=day,
+                        shared_traits=trigger.get("trait_match", []),
+                        cohesion=0.5,
+                        influence_score=sum(self.social_influence.get(m, SocialInfluence()).influence_score
+                                           for m in selected) / len(selected),
+                        is_active=True,
+                        last_activity_day=day,
+                    )
+
+                    self.social_groups[group_id] = group
+                    self.total_groups_formed += 1
+
+                    # Update member influence
+                    for member_id in selected:
+                        si = self.social_influence.get(member_id)
+                        if si:
+                            si.groups_member += 1
+                            self.engine.moodlets.add_moodlet(member_id, "joined_group", f"group:{name}")
+                            self.total_social_moodlets += 1
+
+                    # Leader gets extra boost
+                    si = self.social_influence.get(leader_id)
+                    if si:
+                        si.groups_led += 1
+                        si.influence_score = min(100, si.influence_score + 5)
+
+                    leader_name = self.residents[leader_id].name
+                    notable_events.append(f"New group formed: '{name}' led by {leader_name}")
+                    break  # Only form one group per day
+
+    def _select_compatible_group_members(self, candidates: List[str], min_members: int) -> List[str]:
+        """Select candidates who have positive relationships with each other."""
+        if len(candidates) < min_members:
+            return []
+
+        # Score each candidate by their relationships with other candidates
+        scores = {}
+        for c in candidates:
+            score = 0
+            for other in candidates:
+                if c != other:
+                    rel = self.relationships.get(tuple(sorted([c, other])))
+                    if rel and rel.friendship > 0:
+                        score += rel.friendship
+            scores[c] = score
+
+        # Sort by score and take the top ones
+        sorted_candidates = sorted(candidates, key=lambda x: scores.get(x, 0), reverse=True)
+
+        # Take min_members to min_members + 2 (vary group size)
+        max_members = min(len(sorted_candidates), min_members + random.randint(0, 2))
+        return sorted_candidates[:max_members]
+
+    def _spread_gossip(self, day: int, notable_events: List[str]):
+        """Spread active gossip through the network."""
+        for gossip in self.active_gossip:
+            gossip_info = GOSSIP_TYPES.get(gossip.gossip_type, {"spread_rate": 0.3})
+            spread_rate = gossip_info["spread_rate"]
+
+            # Find people who can spread the gossip
+            spreaders = gossip.spread_to[:]
+
+            for spreader_id in spreaders:
+                si = self.social_influence.get(spreader_id)
+                personal_spread_power = si.gossip_spread_power if si else 0.5
+
+                # Find their social connections
+                for (id1, id2), rel in self.relationships.items():
+                    if rel.friendship < 10:  # Only spread to people you like
+                        continue
+
+                    other_id = id2 if id1 == spreader_id else id1 if id2 == spreader_id else None
+                    if not other_id or other_id in gossip.spread_to:
+                        continue
+
+                    # Calculate spread chance
+                    other_si = self.social_influence.get(other_id)
+                    other_access = other_si.information_access if other_si else 0.5
+
+                    spread_chance = spread_rate * personal_spread_power * other_access
+
+                    if random.random() < spread_chance:
+                        gossip.spread_to.append(other_id)
+                        self.information_known.setdefault(other_id, []).append(gossip.gossip_id)
+                        self.total_gossip_spread += 1
+
+                        # Apply moodlets based on gossip type
+                        if random.random() < 0.3:  # 30% chance to react
+                            if gossip.subject_id == other_id:
+                                # They learned gossip about themselves
+                                if gossip.impact_on_reputation > 0:
+                                    self.engine.moodlets.add_moodlet(other_id, "good_gossip_about_me", "gossip")
+                                else:
+                                    self.engine.moodlets.add_moodlet(other_id, "bad_gossip_about_me", "gossip")
+                            else:
+                                self.engine.moodlets.add_moodlet(other_id, "juicy_gossip", "gossip")
+                            self.total_social_moodlets += 1
+
+                        # Update reputation based on gossip
+                        if gossip.impact_on_reputation != 0:
+                            self.reputation[gossip.subject_id] = max(-100, min(100,
+                                self.reputation.get(gossip.subject_id, 0) + gossip.impact_on_reputation // 2))
+
+    def _generate_gossip_from_events(self, day: int, notable_events: List[str]):
+        """Generate gossip from significant events that happened."""
+        # Check for romance-related gossip
+        for (id1, id2), rel in self.relationships.items():
+            # New romance gossip
+            if rel.is_romantic and rel.romance_start_day == day:
+                gossip_id = f"gossip_{len(self.gossip_history) + len(self.active_gossip) + 1}"
+                gossip_type = "secret_romance_exposed" if rel.is_secret_romance else "new_romance"
+                info = GOSSIP_TYPES[gossip_type]
+
+                name1 = self.residents[id1].name
+                name2 = self.residents[id2].name
+
+                gossip = Gossip(
+                    gossip_id=gossip_id,
+                    subject_id=id1,  # Primary subject
+                    gossip_type=gossip_type,
+                    content=f"{name1} and {name2} are together!",
+                    origin_day=day,
+                    originator_id=random.choice([id1, id2]),  # One of them leaked it
+                    spread_to=[id1, id2],  # They know about themselves
+                    is_true=True,
+                    impact_on_reputation=info["reputation_impact"],
+                    expires_day=day + info["duration_days"],
+                )
+                self.active_gossip.append(gossip)
+                self.total_gossip_created += 1
+
+            # Breakup gossip
+            if rel.was_romantic and not rel.is_romantic:
+                if random.random() < 0.3:  # 30% chance to generate breakup gossip
+                    gossip_id = f"gossip_{len(self.gossip_history) + len(self.active_gossip) + 1}"
+                    info = GOSSIP_TYPES["breakup"]
+
+                    name1 = self.residents[id1].name
+                    name2 = self.residents[id2].name
+
+                    gossip = Gossip(
+                        gossip_id=gossip_id,
+                        subject_id=id1,
+                        gossip_type="breakup",
+                        content=f"{name1} and {name2} broke up!",
+                        origin_day=day,
+                        originator_id=random.choice(list(self.residents.keys())),  # Random witness
+                        spread_to=[],
+                        is_true=True,
+                        impact_on_reputation=info["reputation_impact"],
+                        expires_day=day + info["duration_days"],
+                    )
+                    self.active_gossip.append(gossip)
+                    self.total_gossip_created += 1
+
+        # Good deed gossip (from high-reputation individuals)
+        for agent_id, rep in self.reputation.items():
+            if rep > 50 and random.random() < 0.01:  # 1% chance for good reputation people
+                gossip_id = f"gossip_{len(self.gossip_history) + len(self.active_gossip) + 1}"
+                info = GOSSIP_TYPES["good_deed"]
+
+                name = self.residents[agent_id].name
+
+                gossip = Gossip(
+                    gossip_id=gossip_id,
+                    subject_id=agent_id,
+                    gossip_type="good_deed",
+                    content=f"{name} did something wonderful for the community!",
+                    origin_day=day,
+                    originator_id=random.choice(list(self.residents.keys())),
+                    spread_to=[],
+                    is_true=True,
+                    impact_on_reputation=info["reputation_impact"],
+                    expires_day=day + info["duration_days"],
+                )
+                self.active_gossip.append(gossip)
+                self.total_gossip_created += 1
+
+    def _update_network_centrality(self):
+        """Update network centrality for all residents based on relationships."""
+        # Calculate simple degree centrality based on positive relationships
+        for agent_id in self.residents:
+            positive_connections = 0
+            total_relationship_strength = 0
+
+            for (id1, id2), rel in self.relationships.items():
+                if agent_id in (id1, id2) and rel.friendship > 0:
+                    positive_connections += 1
+                    total_relationship_strength += rel.friendship
+
+            # Normalize centrality (0-1 scale)
+            max_connections = len(self.residents) - 1
+            centrality = positive_connections / max_connections if max_connections > 0 else 0
+
+            # Update social influence
+            si = self.social_influence.get(agent_id)
+            if si:
+                si.network_centrality = centrality
+
+                # Influence score is affected by centrality and group membership
+                base_influence = 50.0
+                centrality_bonus = centrality * 30  # Up to +30 from centrality
+                group_bonus = si.groups_member * 5 + si.groups_led * 10  # Groups add influence
+                reputation_bonus = self.reputation.get(agent_id, 0) * 0.2  # Reputation affects influence
+
+                si.influence_score = min(100, max(0, base_influence + centrality_bonus + group_bonus + reputation_bonus))
+
+        # Track averages
+        if self.social_influence:
+            self.average_network_centrality = sum(
+                si.network_centrality for si in self.social_influence.values()
+            ) / len(self.social_influence)
+
+            # Find most influential
+            most_influential = max(self.social_influence.items(),
+                                   key=lambda x: x[1].influence_score)
+            self.most_influential_resident = most_influential[0]
+
+        # Find most connected group
+        if self.social_groups:
+            active_groups = [g for g in self.social_groups.values() if g.is_active]
+            if active_groups:
+                most_connected = max(active_groups, key=lambda g: len(g.members))
+                self.most_connected_group = most_connected.name
 
     async def setup(self):
         """Generate residents and initialize engine."""
@@ -199,6 +840,128 @@ class SimulationEngine:
                 base_rep = random.randint(-10, 5)
             self.reputation[resident_id] = base_rep
             self.life_crises[resident_id] = []
+            # v7: Initialize major life events tracking
+            self.major_life_events[resident_id] = []
+
+            # v8.0: Initialize financial state based on archetype and age
+            archetype_name = archetype.value if archetype else "unknown"
+            income_range = ARCHETYPE_INCOME.get(archetype_name, (35000, 55000))
+            base_income = random.uniform(income_range[0], income_range[1])
+
+            # Age-based adjustments
+            age = resident.age
+            if age < 25:
+                # Young - lower income, minimal savings
+                income_multiplier = 0.6
+                savings_months = random.uniform(0.5, 3)
+            elif age < 35:
+                # Early career - growing income, moderate savings
+                income_multiplier = 0.85
+                savings_months = random.uniform(2, 6)
+            elif age < 50:
+                # Peak earning years
+                income_multiplier = 1.0
+                savings_months = random.uniform(3, 12)
+            elif age < 65:
+                # Late career - high income, high savings
+                income_multiplier = 1.1
+                savings_months = random.uniform(6, 24)
+            else:
+                # Retired - fixed income, variable savings
+                income_multiplier = 0.5
+                savings_months = random.uniform(12, 60)
+
+            annual_income = base_income * income_multiplier
+            monthly_income = annual_income / 12
+            monthly_expenses = monthly_income * random.uniform(0.6, 0.85)
+            savings = monthly_expenses * savings_months
+
+            # Some people have debt
+            debt = 0.0
+            if random.random() < 0.4:  # 40% have some debt
+                if age < 30:
+                    debt = random.uniform(5000, 50000)  # Student loans, etc.
+                elif age < 50:
+                    debt = random.uniform(0, 30000)  # Car loans, credit cards
+                else:
+                    debt = random.uniform(0, 10000)  # Minimal debt
+
+            # Job stability based on archetype
+            if archetype_name in ["tech_worker", "scientist", "healthcare", "teacher"]:
+                job_stability = random.uniform(0.7, 0.95)
+            elif archetype_name in ["artist", "musician", "writer", "entrepreneur"]:
+                job_stability = random.uniform(0.3, 0.7)
+            elif archetype_name in ["retiree", "student"]:
+                job_stability = 1.0  # N/A but stable
+            else:
+                job_stability = random.uniform(0.5, 0.85)
+
+            is_employed = archetype_name not in ["retiree", "student"] or random.random() < 0.3
+            if archetype_name == "student":
+                is_employed = random.random() < 0.5  # Part-time work
+
+            self.finances[resident_id] = FinancialState(
+                income=annual_income,
+                savings=savings,
+                debt=debt,
+                monthly_expenses=monthly_expenses,
+                financial_stress=0.0,  # Will be calculated
+                last_paycheck_day=random.randint(1, 14),
+                job_stability=job_stability,
+                is_employed=is_employed,
+                unemployment_day=0,
+            )
+            # Calculate initial stress
+            self.finances[resident_id].financial_stress = self.finances[resident_id].calculate_stress()
+
+            # v8.1: Initialize social influence based on archetype and personality
+            base_influence = 50.0
+            gossip_power = 0.5
+            info_access = 0.5
+
+            # Social butterflies and community organizers have higher influence
+            if archetype == Archetype.SOCIAL_BUTTERFLY:
+                base_influence = random.uniform(65, 85)
+                gossip_power = random.uniform(0.7, 0.9)
+                info_access = random.uniform(0.7, 0.9)
+            elif archetype == Archetype.COMMUNITY_ORGANIZER:
+                base_influence = random.uniform(60, 80)
+                gossip_power = random.uniform(0.6, 0.8)
+                info_access = random.uniform(0.7, 0.85)
+            elif archetype == Archetype.INTROVERT_SAGE:
+                base_influence = random.uniform(40, 60)
+                gossip_power = random.uniform(0.2, 0.4)
+                info_access = random.uniform(0.3, 0.5)
+            elif archetype in [Archetype.ELDER, Archetype.RETIREE]:
+                base_influence = random.uniform(45, 70)
+                gossip_power = random.uniform(0.5, 0.7)
+                info_access = random.uniform(0.6, 0.8)
+            elif archetype == Archetype.NEWCOMER:
+                base_influence = random.uniform(30, 50)
+                gossip_power = random.uniform(0.3, 0.5)
+                info_access = random.uniform(0.2, 0.4)
+
+            # Personality modifiers
+            personality = resident.personality
+            if hasattr(personality, 'extraversion') and personality.extraversion > 0.7:
+                base_influence += 10
+                gossip_power += 0.1
+                info_access += 0.1
+            elif hasattr(personality, 'extraversion') and personality.extraversion < 0.3:
+                base_influence -= 10
+                gossip_power -= 0.1
+                info_access -= 0.1
+
+            self.social_influence[resident_id] = SocialInfluence(
+                influence_score=min(100, max(0, base_influence)),
+                network_centrality=0.0,  # Will be calculated based on relationships
+                reputation_trend=0,
+                groups_led=0,
+                groups_member=0,
+                gossip_spread_power=min(1.0, max(0.1, gossip_power)),
+                information_access=min(1.0, max(0.1, info_access)),
+            )
+            self.information_known[resident_id] = []
 
         # Add projects
         self.engine.projects = {k: list(v) for k, v in projects.items()}
@@ -258,6 +1021,332 @@ class SimulationEngine:
             if random.random() < 0.15:  # 15% chance of morning moodlet
                 moodlet = random.choice(["well_rested", "creative_flow", "cozy_atmosphere"])
                 self.engine.moodlets.add_moodlet(agent_id, moodlet, "morning")
+
+        # === v7: SEASONAL MOOD EFFECTS ===
+        current_season = get_season(day)
+        season_config = SEASONAL_MOODLETS[current_season]
+
+        for agent_id in resident_ids:
+            resident = self.residents[agent_id]
+            personality = resident.personality
+
+            # Base seasonal effect chances (modified by personality)
+            positive_chance = season_config["positive_weight"]
+            negative_chance = season_config["negative_weight"]
+
+            # Personality modifiers for seasonal effects
+            # Introverts handle winter better (cozy indoors), worse in summer (outdoor pressure)
+            # Extroverts love summer, struggle with winter isolation
+            if current_season == Season.WINTER:
+                if personality.openness < 0.4:  # Introverts
+                    positive_chance += 0.1  # More likely to enjoy cozy winter
+                    negative_chance -= 0.05
+                elif personality.extraversion > 0.6:  # Extroverts
+                    negative_chance += 0.1  # More cabin fever
+                    positive_chance -= 0.05
+            elif current_season == Season.SUMMER:
+                if personality.extraversion > 0.6:  # Extroverts
+                    positive_chance += 0.1  # Love the social summer
+                    negative_chance -= 0.05
+                elif personality.openness < 0.4:  # Introverts
+                    negative_chance += 0.05  # Mild heat exhaustion from obligations
+            elif current_season == Season.AUTUMN:
+                # Melancholic personalities feel autumn more deeply
+                if personality.neuroticism > 0.6:
+                    negative_chance += 0.1  # More melancholy
+                else:
+                    positive_chance += 0.05  # Cozy sweater vibes
+            elif current_season == Season.SPRING:
+                # Most people feel positive in spring
+                positive_chance += 0.05
+                # But allergies are random
+                if random.random() < 0.1:  # 10% chance of allergies
+                    self.engine.moodlets.add_moodlet(agent_id, "spring_allergies", "season")
+                    self.seasonal_moodlets_applied[current_season] += 1
+
+            # Apply positive seasonal moodlet
+            if random.random() < positive_chance:
+                moodlet = random.choice(season_config["positive"])
+                self.engine.moodlets.add_moodlet(agent_id, moodlet, "season")
+                self.seasonal_moodlets_applied[current_season] += 1
+
+            # Apply negative seasonal moodlet (separate roll)
+            if random.random() < negative_chance:
+                moodlet = random.choice(season_config["negative"])
+                self.engine.moodlets.add_moodlet(agent_id, moodlet, "season")
+                self.seasonal_moodlets_applied[current_season] += 1
+
+        # === v8.0: ECONOMIC EVENTS ===
+        day_of_month = (day % 30) + 1  # Simulate monthly cycle
+
+        for agent_id in resident_ids:
+            finance = self.finances.get(agent_id)
+            if not finance:
+                continue
+
+            resident = self.residents[agent_id]
+            personality = resident.personality
+            archetype = self.archetypes.get(agent_id)
+            archetype_name = archetype.value if archetype else "unknown"
+
+            # --- BI-WEEKLY PAYCHECK (every 14 days from their start day) ---
+            if finance.is_employed and (day - finance.last_paycheck_day) % 14 == 0 and day > 0:
+                paycheck = finance.income / 26  # 26 bi-weekly paychecks per year
+                finance.savings += paycheck
+                # Conscientious people save more
+                if personality.conscientiousness > 0.7:
+                    bonus_save = paycheck * 0.1
+                    finance.savings += bonus_save
+                # Random satisfaction from payday
+                if random.random() < 0.3:
+                    self.engine.moodlets.add_moodlet(agent_id, "financial_security", "payday")
+                    self.total_economic_moodlets += 1
+
+            # --- MONTHLY EXPENSES (day 1 of each month) ---
+            if day_of_month == 1:
+                finance.savings -= finance.monthly_expenses
+                # Pay down debt if possible
+                if finance.debt > 0 and finance.savings > finance.monthly_expenses * 2:
+                    debt_payment = min(finance.debt, finance.monthly_expenses * 0.2)
+                    finance.debt -= debt_payment
+                    finance.savings -= debt_payment
+                    if finance.debt == 0:
+                        self.engine.moodlets.add_moodlet(agent_id, "debt_paid_off", "financial")
+                        notable_events.append(f"{resident.name} paid off all their debt!")
+                        self.total_economic_moodlets += 1
+
+            # --- RANDOM ECONOMIC EVENTS ---
+            # Bonus (employed only)
+            if finance.is_employed and random.random() < ECONOMIC_EVENTS["bonus"]["chance"]:
+                bonus_range = ECONOMIC_EVENTS["bonus"]["amount_range"]
+                bonus = random.uniform(bonus_range[0], bonus_range[1])
+                # High performers get bigger bonuses
+                if personality.conscientiousness > 0.7:
+                    bonus *= 1.3
+                finance.savings += bonus
+                self.economic_events.append((agent_id, "bonus", day, bonus))
+                self.engine.moodlets.add_moodlet(agent_id, "bonus_received", "work")
+                notable_events.append(f"{resident.name} received a ${bonus:.0f} bonus!")
+                self.total_bonuses += 1
+                self.total_economic_moodlets += 1
+
+            # Raise (employed only)
+            if finance.is_employed and random.random() < ECONOMIC_EVENTS["raise"]["chance"]:
+                raise_range = ECONOMIC_EVENTS["raise"]["percentage"]
+                raise_pct = random.uniform(raise_range[0], raise_range[1])
+                old_income = finance.income
+                finance.income *= (1 + raise_pct)
+                self.economic_events.append((agent_id, "raise", day, finance.income - old_income))
+                self.engine.moodlets.add_moodlet(agent_id, "pay_raise", "work")
+                notable_events.append(f"{resident.name} got a {raise_pct*100:.1f}% raise!")
+                self.total_raises += 1
+                self.total_economic_moodlets += 1
+
+            # Unexpected expense
+            if random.random() < ECONOMIC_EVENTS["unexpected_expense"]["chance"]:
+                expense_range = ECONOMIC_EVENTS["unexpected_expense"]["amount_range"]
+                expense = random.uniform(expense_range[0], expense_range[1])
+                finance.savings -= expense
+                if finance.savings < 0:
+                    finance.debt -= finance.savings  # Convert negative to debt
+                    finance.savings = 0
+                self.economic_events.append((agent_id, "unexpected_expense", day, expense))
+                self.engine.moodlets.add_moodlet(agent_id, "unexpected_bill", "financial")
+                self.total_unexpected_expenses += 1
+                self.total_economic_moodlets += 1
+
+            # Medical bill
+            if random.random() < ECONOMIC_EVENTS["medical_bill"]["chance"]:
+                bill_range = ECONOMIC_EVENTS["medical_bill"]["amount_range"]
+                bill = random.uniform(bill_range[0], bill_range[1])
+                finance.savings -= bill
+                if finance.savings < 0:
+                    finance.debt -= finance.savings
+                    finance.savings = 0
+                self.economic_events.append((agent_id, "medical_bill", day, bill))
+                self.engine.moodlets.add_moodlet(agent_id, "medical_debt", "health")
+                notable_events.append(f"{resident.name} received a ${bill:.0f} medical bill")
+                self.total_economic_moodlets += 1
+
+            # Car repair
+            if random.random() < ECONOMIC_EVENTS["car_repair"]["chance"]:
+                repair_range = ECONOMIC_EVENTS["car_repair"]["amount_range"]
+                repair = random.uniform(repair_range[0], repair_range[1])
+                finance.savings -= repair
+                if finance.savings < 0:
+                    finance.debt -= finance.savings
+                    finance.savings = 0
+                self.economic_events.append((agent_id, "car_repair", day, repair))
+                self.engine.moodlets.add_moodlet(agent_id, "car_troubles", "maintenance")
+                self.total_economic_moodlets += 1
+
+            # Inheritance (rare windfall)
+            if random.random() < ECONOMIC_EVENTS["inheritance"]["chance"]:
+                inherit_range = ECONOMIC_EVENTS["inheritance"]["amount_range"]
+                inheritance = random.uniform(inherit_range[0], inherit_range[1])
+                finance.savings += inheritance
+                self.economic_events.append((agent_id, "inheritance", day, inheritance))
+                self.engine.moodlets.add_moodlet(agent_id, "inheritance_received", "family")
+                notable_events.append(f"{resident.name} received a ${inheritance:.0f} inheritance")
+                self.total_windfalls += 1
+                self.total_economic_moodlets += 1
+
+            # Job loss (employed only, affected by job stability)
+            if finance.is_employed:
+                job_loss_chance = ECONOMIC_EVENTS["job_loss"]["chance"]
+                # Low stability increases risk
+                job_loss_chance *= (1.5 - finance.job_stability)
+                # Neurotic personalities more vulnerable (perceived instability)
+                if personality.neuroticism > 0.7:
+                    job_loss_chance *= 1.2
+                if random.random() < job_loss_chance:
+                    finance.is_employed = False
+                    finance.unemployment_day = day
+                    self.economic_events.append((agent_id, "job_loss", day, 0))
+                    self.engine.moodlets.add_moodlet(agent_id, "unemployed", "work")
+                    notable_events.append(f"{resident.name} lost their job!")
+                    self.total_job_losses += 1
+                    self.total_economic_moodlets += 1
+
+            # Finding new job (unemployed only, takes time)
+            if not finance.is_employed and finance.unemployment_day > 0:
+                days_unemployed = day - finance.unemployment_day
+                # Base chance increases over time (desperation / more applications)
+                find_job_chance = ECONOMIC_EVENTS["new_job"]["chance"]
+                find_job_chance += days_unemployed * 0.002  # +0.2% per day
+                # Extroverts network better
+                if personality.extraversion > 0.6:
+                    find_job_chance *= 1.3
+                # Conscientious apply more
+                if personality.conscientiousness > 0.6:
+                    find_job_chance *= 1.2
+                if random.random() < find_job_chance:
+                    finance.is_employed = True
+                    finance.unemployment_day = 0
+                    # New job might pay differently
+                    income_change = random.uniform(0.8, 1.1)  # Could be -20% to +10%
+                    finance.income *= income_change
+                    finance.job_stability = random.uniform(0.5, 0.8)  # Start fresh
+                    self.economic_events.append((agent_id, "new_job", day, finance.income))
+                    self.engine.moodlets.add_moodlet(agent_id, "found_new_job", "work")
+                    notable_events.append(f"{resident.name} found a new job!")
+                    self.total_new_jobs += 1
+                    self.total_economic_moodlets += 1
+
+            # --- UPDATE FINANCIAL STRESS ---
+            old_stress = finance.financial_stress
+            finance.financial_stress = finance.calculate_stress()
+
+            # --- STRESS-BASED MOODLETS ---
+            if finance.financial_stress > 0.7:
+                if random.random() < 0.3:  # 30% chance when high stress
+                    self.engine.moodlets.add_moodlet(agent_id, "financial_stress", "money")
+                    self.total_economic_moodlets += 1
+            elif finance.financial_stress > 0.4:
+                if random.random() < 0.1:  # 10% chance for moderate stress
+                    self.engine.moodlets.add_moodlet(agent_id, "money_worries", "money")
+                    self.total_economic_moodlets += 1
+
+            # Broke check
+            if finance.savings <= 0 and finance.debt > finance.income * 0.5:
+                if random.random() < 0.2:  # 20% chance when broke
+                    self.engine.moodlets.add_moodlet(agent_id, "broke", "financial")
+                    self.total_economic_moodlets += 1
+
+            # Financial security feeling (low stress, good savings)
+            if finance.financial_stress < 0.2 and finance.savings > finance.monthly_expenses * 6:
+                if random.random() < 0.05:  # 5% chance
+                    self.engine.moodlets.add_moodlet(agent_id, "financial_security", "savings")
+                    self.total_economic_moodlets += 1
+
+        # === v8.1: SOCIAL NETWORKS ===
+        # --- GROUP FORMATION ---
+        # Check for potential new group formation (5% chance per day)
+        if random.random() < 0.05:
+            self._try_form_social_group(day, notable_events)
+
+        # --- GROUP ACTIVITIES ---
+        # Active groups have a chance to do activities
+        for group_id, group in list(self.social_groups.items()):
+            if not group.is_active:
+                continue
+
+            # 20% chance of group activity each day
+            if random.random() < 0.20:
+                group.last_activity_day = day
+                group.cohesion = min(1.0, group.cohesion + 0.05)  # Activities build cohesion
+
+                for member_id in group.members:
+                    if random.random() < 0.5:  # 50% chance each member feels the bond
+                        self.engine.moodlets.add_moodlet(member_id, "group_activity", f"group:{group.name}")
+                        self.total_social_moodlets += 1
+
+                # Update influence for leader
+                if group.leader_id and random.random() < 0.3:
+                    self.engine.moodlets.add_moodlet(group.leader_id, "group_leader", f"group:{group.name}")
+                    self.total_social_moodlets += 1
+
+            # Group dissolution check (inactive or low cohesion)
+            days_inactive = day - group.last_activity_day
+            if days_inactive > 30 or group.cohesion < 0.2:
+                if random.random() < 0.1:  # 10% chance
+                    group.is_active = False
+                    for member_id in group.members:
+                        if random.random() < 0.4:
+                            self.engine.moodlets.add_moodlet(member_id, "group_dissolved", f"group:{group.name}")
+                            self.total_social_moodlets += 1
+                        si = self.social_influence.get(member_id)
+                        if si:
+                            si.groups_member = max(0, si.groups_member - 1)
+                    self.total_groups_dissolved += 1
+                    notable_events.append(f"The {group.name} group disbanded!")
+
+        # --- GOSSIP SPREAD ---
+        self._spread_gossip(day, notable_events)
+
+        # --- GOSSIP GENERATION ---
+        # New gossip can be created from dramatic events
+        self._generate_gossip_from_events(day, notable_events)
+
+        # --- EXPIRE OLD GOSSIP ---
+        for gossip in self.active_gossip[:]:
+            if day >= gossip.expires_day:
+                self.active_gossip.remove(gossip)
+                self.gossip_history.append(gossip)
+
+        # --- UPDATE NETWORK CENTRALITY ---
+        self._update_network_centrality()
+
+        # --- INFLUENCE-BASED MOODLETS ---
+        for agent_id in resident_ids:
+            si = self.social_influence.get(agent_id)
+            if not si:
+                continue
+
+            # High influence moodlets
+            if si.influence_score >= 80 and random.random() < 0.05:
+                self.engine.moodlets.add_moodlet(agent_id, "opinion_leader", "influence")
+                self.total_social_moodlets += 1
+            elif si.influence_score >= 65 and random.random() < 0.03:
+                self.engine.moodlets.add_moodlet(agent_id, "social_influence", "influence")
+                self.total_social_moodlets += 1
+
+            # Low influence moodlets
+            if si.influence_score < 30 and random.random() < 0.03:
+                self.engine.moodlets.add_moodlet(agent_id, "lost_influence", "social")
+                self.total_social_moodlets += 1
+
+            # Social butterfly effect for highly connected
+            if si.network_centrality > 0.7 and random.random() < 0.05:
+                archetype = self.archetypes.get(agent_id)
+                if archetype == Archetype.SOCIAL_BUTTERFLY:
+                    self.engine.moodlets.add_moodlet(agent_id, "social_butterfly_high", "personality")
+                    self.total_social_moodlets += 1
+                elif archetype == Archetype.INTROVERT_SAGE:
+                    # Introverts can get overwhelmed
+                    if random.random() < 0.3:
+                        self.engine.moodlets.add_moodlet(agent_id, "social_exhaustion", "personality")
+                        self.total_social_moodlets += 1
 
         # === DAYTIME: Activities ===
         # Work on projects (30% of residents each day)
@@ -649,19 +1738,57 @@ class SimulationEngine:
                     notable_events.append(f"{resident.name} helped a neighbor and felt great about it!")
 
         # Community events (15% chance per day - increased for drama!)
-        if random.random() < 0.15:
-            event = random.choice([
-                "block_party", "farmers_market", "power_outage", "street_fair",
-                "neighborhood_meeting", "community_cleanup", "gossip_spreads",
-                "neighborhood_drama", "celebration", "emergency_response"
-            ])
+        # v7: Enhanced with NeighborhoodEvent tracking and seasonal influence
+        current_season = get_season(day)
+
+        # Season affects event types
+        if current_season == Season.SUMMER:
+            event_chance = 0.20  # More outdoor events in summer
+        elif current_season == Season.WINTER:
+            event_chance = 0.10  # Fewer outdoor events in winter
+        else:
+            event_chance = 0.15
+
+        if random.random() < event_chance:
+            # v7: Event pool varies by season
+            if current_season == Season.SUMMER:
+                event_pool = [
+                    "block_party", "street_fair", "farmers_market",
+                    "community_cleanup", "celebration", "gossip_spreads",
+                    "neighborhood_drama", "emergency_response"
+                ]
+            elif current_season == Season.WINTER:
+                event_pool = [
+                    "neighborhood_meeting", "gossip_spreads", "power_outage",
+                    "celebration", "emergency_response", "neighborhood_drama"
+                ]
+            else:
+                event_pool = [
+                    "block_party", "farmers_market", "power_outage", "street_fair",
+                    "neighborhood_meeting", "community_cleanup", "gossip_spreads",
+                    "neighborhood_drama", "celebration", "emergency_response"
+                ]
+
+            event = random.choice(event_pool)
+            self.total_neighborhood_events += 1
 
             if event == "block_party":
                 self.community_events.append(f"Day {day}: Block party! Everyone had a great time.")
-                notable_events.append("The neighborhood had a block party!")
-                # Boost everyone's mood and several random relationships
-                for aid in random.sample(resident_ids, min(20, len(resident_ids))):
-                    self.engine.moodlets.add_moodlet(aid, "great_conversation", "party")
+                notable_events.append("[NEIGHBORHOOD] The neighborhood had a block party!")
+
+                # v7: Track as NeighborhoodEvent
+                affected = random.sample(resident_ids, min(20, len(resident_ids)))
+                neighborhood_event = NeighborhoodEvent(
+                    event_type="block_party",
+                    day=day,
+                    affected_residents=affected,
+                    details=f"Block party in {get_season_name(day)}"
+                )
+                self.neighborhood_events.append(neighborhood_event)
+
+                # v7: Use block_party_fun moodlet
+                for aid in affected:
+                    self.engine.moodlets.add_moodlet(aid, "block_party_fun", "party")
                     # Form some connections at the party
                     if random.random() < 0.3:
                         other = random.choice([r for r in resident_ids if r != aid])
@@ -675,19 +1802,41 @@ class SimulationEngine:
 
             elif event == "power_outage":
                 self.community_events.append(f"Day {day}: Power outage for 4 hours.")
-                notable_events.append("A power outage brought neighbors together by candlelight!")
-                # Some annoyed, but some bonded
+                notable_events.append("[NEIGHBORHOOD] A power outage hit the neighborhood!")
+
+                # v7: Track as NeighborhoodEvent
+                neighborhood_event = NeighborhoodEvent(
+                    event_type="power_outage",
+                    day=day,
+                    affected_residents=resident_ids,
+                    details="Power outage affecting entire neighborhood"
+                )
+                self.neighborhood_events.append(neighborhood_event)
+
+                # v7: Use power_outage moodlet, some bond over it
                 for aid in resident_ids:
                     if random.random() < 0.3:
-                        self.engine.moodlets.add_moodlet(aid, "exhausted", "outage")
+                        self.engine.moodlets.add_moodlet(aid, "power_outage", "crisis")
                     elif random.random() < 0.2:
                         self.engine.moodlets.add_moodlet(aid, "great_conversation", "outage")
 
             elif event == "street_fair":
                 self.community_events.append(f"Day {day}: Annual street fair!")
-                notable_events.append("The annual street fair was a huge success!")
-                for aid in random.sample(resident_ids, min(30, len(resident_ids))):
-                    self.engine.moodlets.add_moodlet(aid, "beautiful_view", "fair")
+                notable_events.append("[NEIGHBORHOOD] The annual street fair was a huge success!")
+
+                # v7: Track as NeighborhoodEvent
+                affected = random.sample(resident_ids, min(30, len(resident_ids)))
+                neighborhood_event = NeighborhoodEvent(
+                    event_type="festival",
+                    day=day,
+                    affected_residents=affected,
+                    details=f"Street fair - {get_season_name(day)}"
+                )
+                self.neighborhood_events.append(neighborhood_event)
+
+                # v7: Use festival_excitement moodlet
+                for aid in affected:
+                    self.engine.moodlets.add_moodlet(aid, "festival_excitement", "fair")
 
             elif event == "neighborhood_meeting":
                 self.community_events.append(f"Day {day}: Neighborhood association meeting.")
@@ -701,10 +1850,21 @@ class SimulationEngine:
 
             elif event == "community_cleanup":
                 self.community_events.append(f"Day {day}: Community cleanup day.")
-                notable_events.append("Neighbors came together for community cleanup!")
-                for aid in random.sample(resident_ids, min(20, len(resident_ids))):
-                    self.engine.moodlets.add_moodlet(aid, "accomplished", "cleanup")
-                    self.engine.moodlets.add_moodlet(aid, "feeling_appreciated", "cleanup")
+                notable_events.append("[NEIGHBORHOOD] Neighbors came together for community cleanup!")
+
+                # v7: Track as NeighborhoodEvent
+                affected = random.sample(resident_ids, min(20, len(resident_ids)))
+                neighborhood_event = NeighborhoodEvent(
+                    event_type="community_cleanup",
+                    day=day,
+                    affected_residents=affected,
+                    details="Community cleanup day"
+                )
+                self.neighborhood_events.append(neighborhood_event)
+
+                # v7: Use community_achievement moodlet
+                for aid in affected:
+                    self.engine.moodlets.add_moodlet(aid, "community_achievement", "cleanup")
 
             elif event == "gossip_spreads":
                 # Gossip affects random relationships - some get closer, some fall out
@@ -821,6 +1981,135 @@ class SimulationEngine:
                             # Judgy person - thinks less of them
                             self._update_relationship(aid, id1, -5, day)
                             self._update_relationship(aid, id2, -5, day)
+
+        # === v7: MAJOR LIFE EVENTS ===
+        # Marriages: Long-term couples (90+ days together) may get married
+        for (id1, id2), rel in list(self.relationships.items()):
+            if rel.is_romantic and not rel.was_romantic:
+                romance_duration = day - rel.romance_start_day
+                # Marriage chance for long-term couples
+                if romance_duration >= 90 and rel.trust >= 60 and rel.friendship >= 50:
+                    # Check if neither is already married
+                    already_married_1 = any(m[0] == id1 or m[1] == id1 for m in self.marriages)
+                    already_married_2 = any(m[0] == id2 or m[1] == id2 for m in self.marriages)
+                    if not already_married_1 and not already_married_2:
+                        # 0.5% daily chance of marriage proposal
+                        if random.random() < 0.005:
+                            self.marriages.append((id1, id2, day))
+                            self.total_marriages += 1
+                            r1 = self.residents[id1]
+                            r2 = self.residents[id2]
+                            notable_events.append(f"[WEDDING] {r1.name} and {r2.name} got MARRIED!")
+
+                            # Record major life event
+                            event = MajorLifeEvent(
+                                event_type="marriage",
+                                day=day,
+                                participants=[id1, id2],
+                                details=f"{r1.name} married {r2.name}"
+                            )
+                            self.major_life_events[id1].append(event)
+                            self.major_life_events[id2].append(event)
+
+                            # Apply moodlets
+                            self.engine.moodlets.add_moodlet(id1, "just_married", "wedding")
+                            self.engine.moodlets.add_moodlet(id2, "just_married", "wedding")
+
+                            # Boost trust to max
+                            rel.trust = 100
+
+        # Births: Married couples may have children
+        for (spouse1, spouse2, wedding_day) in self.marriages:
+            marriage_duration = day - wedding_day
+            # Only after 30 days of marriage, with some probability
+            if marriage_duration >= 30:
+                r1 = self.residents.get(spouse1)
+                r2 = self.residents.get(spouse2)
+                if r1 and r2:
+                    # Check ages (18-45 for childbearing)
+                    if min(r1.age, r2.age) >= 18 and max(r1.age, r2.age) <= 45:
+                        # 0.3% daily chance of birth announcement
+                        if random.random() < 0.003:
+                            self.births.append((spouse1, day))
+                            self.total_births += 1
+                            notable_events.append(f"[BIRTH] {r1.name} and {r2.name} had a baby!")
+
+                            # Record major life event
+                            event = MajorLifeEvent(
+                                event_type="birth",
+                                day=day,
+                                participants=[spouse1, spouse2],
+                                details=f"Baby born to {r1.name} and {r2.name}"
+                            )
+                            self.major_life_events[spouse1].append(event)
+                            self.major_life_events[spouse2].append(event)
+
+                            # Apply moodlets
+                            self.engine.moodlets.add_moodlet(spouse1, "new_parent", "birth")
+                            self.engine.moodlets.add_moodlet(spouse2, "new_parent", "birth")
+
+        # Deaths: Rare, more likely for elderly (70+)
+        for agent_id in resident_ids:
+            resident = self.residents[agent_id]
+            base_death_chance = 0.0001  # 0.01% base daily chance
+
+            # Age modifier
+            if resident.age >= 80:
+                death_chance = base_death_chance * 5  # 0.05%
+            elif resident.age >= 70:
+                death_chance = base_death_chance * 2  # 0.02%
+            else:
+                death_chance = base_death_chance
+
+            # Ongoing severe crises increase risk slightly
+            severe_crises = [c for c in self.life_crises.get(agent_id, [])
+                           if not c.resolved and c.severity >= 0.7]
+            if severe_crises:
+                death_chance *= 1.5
+
+            if random.random() < death_chance:
+                self.deaths.append((agent_id, day))
+                self.total_deaths += 1
+                notable_events.append(f"[DEATH] The neighborhood mourns the loss of {resident.name}...")
+
+                # Record major life event
+                event = MajorLifeEvent(
+                    event_type="death",
+                    day=day,
+                    participants=[agent_id],
+                    details=f"{resident.name} passed away at age {resident.age}"
+                )
+                self.major_life_events[agent_id].append(event)
+
+                # Apply moodlets to close friends/family
+                for (id1, id2), rel in self.relationships.items():
+                    if agent_id in (id1, id2):
+                        other_id = id2 if id1 == agent_id else id1
+                        if rel.friendship >= 40 or rel.is_romantic:
+                            self.engine.moodlets.add_moodlet(other_id, "death_in_family", "loss")
+
+        # Promotions: Random career advancement (0.5% daily for working-age adults)
+        for agent_id in resident_ids:
+            resident = self.residents[agent_id]
+            # Working age (25-65) and not in student/retiree archetypes
+            if 25 <= resident.age <= 65:
+                archetype = self.archetypes.get(agent_id)
+                if archetype not in [Archetype.STUDENT, Archetype.RETIREE]:
+                    if random.random() < 0.005:  # 0.5% daily
+                        self.total_promotions += 1
+                        notable_events.append(f"[PROMOTION] {resident.name} got a big promotion!")
+
+                        # Record major life event
+                        event = MajorLifeEvent(
+                            event_type="promotion",
+                            day=day,
+                            participants=[agent_id],
+                            details=f"{resident.name} was promoted"
+                        )
+                        self.major_life_events[agent_id].append(event)
+
+                        # Apply moodlets
+                        self.engine.moodlets.add_moodlet(agent_id, "got_promoted", "career")
 
         # === EVENING: Energy drain and stats ===
         for agent_id in resident_ids:
@@ -1007,6 +2296,161 @@ class SimulationEngine:
         print(f"  - Love triangles detected: {self.total_love_triangles}")
         print(f"  - Secret romances exposed: {self.total_secret_reveals}")
 
+        # v7 Life Events
+        print("\n[v7 LIFE EVENTS]")
+        print(f"  - Marriages: {self.total_marriages}")
+        print(f"  - Births: {self.total_births}")
+        print(f"  - Deaths: {self.total_deaths}")
+        print(f"  - Promotions: {self.total_promotions}")
+        print(f"  - Neighborhood events: {self.total_neighborhood_events}")
+
+        # v7 Seasonal Moodlets
+        print("\n[v7 SEASONAL MOODLETS]")
+        for season in Season:
+            count = self.seasonal_moodlets_applied.get(season, 0)
+            print(f"  - {season.value.title()}: {count}")
+
+        # v8.0 Economic Stats
+        print("\n[v8.0 ECONOMIC STATS]")
+        print(f"  - Bonuses awarded: {self.total_bonuses}")
+        print(f"  - Raises given: {self.total_raises}")
+        print(f"  - Job losses: {self.total_job_losses}")
+        print(f"  - New jobs found: {self.total_new_jobs}")
+        print(f"  - Unexpected expenses: {self.total_unexpected_expenses}")
+        print(f"  - Windfalls (inheritance, etc.): {self.total_windfalls}")
+        print(f"  - Economic moodlets applied: {self.total_economic_moodlets}")
+
+        # Calculate neighborhood wealth statistics
+        if self.finances:
+            total_savings = sum(f.savings for f in self.finances.values())
+            total_debt = sum(f.debt for f in self.finances.values())
+            total_net_worth = sum(f.net_worth() for f in self.finances.values())
+            avg_income = sum(f.income for f in self.finances.values()) / len(self.finances)
+            employed_count = sum(1 for f in self.finances.values() if f.is_employed)
+            unemployed_count = len(self.finances) - employed_count
+            avg_stress = sum(f.financial_stress for f in self.finances.values()) / len(self.finances)
+
+            print(f"\n[v8.0 NEIGHBORHOOD WEALTH]")
+            print(f"  - Total savings: ${total_savings:,.0f}")
+            print(f"  - Total debt: ${total_debt:,.0f}")
+            print(f"  - Net worth: ${total_net_worth:,.0f}")
+            print(f"  - Average income: ${avg_income:,.0f}/year")
+            print(f"  - Employed: {employed_count} | Unemployed: {unemployed_count}")
+            print(f"  - Average financial stress: {avg_stress*100:.1f}%")
+
+            # Calculate income inequality (simple Gini coefficient)
+            incomes = sorted([f.income for f in self.finances.values()])
+            n = len(incomes)
+            if n > 1:
+                total = sum(incomes)
+                b = sum((n - i) * income for i, income in enumerate(incomes))
+                gini = 1 - (2 * b) / (n * total)
+                self.income_inequality_gini = gini
+                print(f"  - Income inequality (Gini): {gini:.3f}")
+                if gini < 0.3:
+                    print(f"    -> Low inequality (egalitarian neighborhood)")
+                elif gini < 0.4:
+                    print(f"    -> Moderate inequality")
+                else:
+                    print(f"    -> High inequality (economic diversity)")
+
+            # Wealthiest and poorest residents
+            by_net_worth = sorted(self.finances.items(), key=lambda x: -x[1].net_worth())
+            print(f"\n  Wealthiest residents:")
+            for agent_id, finance in by_net_worth[:3]:
+                resident = self.residents[agent_id]
+                print(f"    {resident.name}: ${finance.net_worth():,.0f} net worth")
+
+            poorest = by_net_worth[-3:][::-1]
+            print(f"  Financial struggles:")
+            for agent_id, finance in poorest:
+                if finance.net_worth() < 5000:  # Only show if actually struggling
+                    resident = self.residents[agent_id]
+                    print(f"    {resident.name}: ${finance.net_worth():,.0f} net worth")
+
+        # v8.1 Social Networks stats (November 2025)
+        if self.social_groups or self.gossip_history:
+            print(f"\n[v8.1 SOCIAL NETWORKS]")
+
+            # Group statistics
+            active_groups = [g for g in self.social_groups.values() if g.is_active]
+            dissolved_groups = [g for g in self.social_groups.values() if not g.is_active]
+
+            print(f"  - Groups formed: {self.total_groups_formed}")
+            print(f"  - Groups dissolved: {self.total_groups_dissolved}")
+            print(f"  - Currently active groups: {len(active_groups)}")
+
+            if active_groups:
+                # Most connected group
+                most_connected = max(active_groups, key=lambda g: len(g.members))
+                print(f"  - Largest group: {most_connected.name} ({len(most_connected.members)} members)")
+
+                # Group types breakdown
+                group_types = {}
+                for g in active_groups:
+                    group_types[g.group_type.value] = group_types.get(g.group_type.value, 0) + 1
+                print(f"  - Group types: {', '.join(f'{k}: {v}' for k, v in group_types.items())}")
+
+            # Gossip statistics
+            print(f"\n  [Gossip Network]")
+            print(f"  - Total gossip created: {self.total_gossip_created}")
+            print(f"  - Total gossip spread events: {self.total_gossip_spread}")
+            print(f"  - Active rumors: {len(self.active_gossip)}")
+
+            if self.gossip_history:
+                # Most talked about person
+                subject_counts = {}
+                for g in self.gossip_history:
+                    subject_counts[g.subject_id] = subject_counts.get(g.subject_id, 0) + 1
+                if subject_counts:
+                    most_talked = max(subject_counts.items(), key=lambda x: x[1])
+                    resident = self.residents.get(most_talked[0])
+                    if resident:
+                        print(f"  - Most talked about: {resident.name} ({most_talked[1]} rumors)")
+
+            # Influence statistics
+            print(f"\n  [Social Influence]")
+            print(f"  - Social moodlets applied: {self.total_social_moodlets}")
+            print(f"  - Average network centrality: {self.average_network_centrality:.2f}")
+
+            if self.social_influence:
+                # Most influential resident
+                by_influence = sorted(self.social_influence.items(), key=lambda x: -x[1].influence_score)
+                top_influencer = by_influence[0]
+                resident = self.residents.get(top_influencer[0])
+                if resident:
+                    inf = top_influencer[1]
+                    print(f"  - Most influential: {resident.name}")
+                    print(f"    -> Influence score: {inf.influence_score:.1f}")
+                    print(f"    -> Network centrality: {inf.network_centrality:.2f}")
+                    print(f"    -> Groups led: {inf.groups_led} | Member of: {inf.groups_member}")
+
+                # Least influential (if significantly low)
+                least_inf = by_influence[-1]
+                if least_inf[1].influence_score < 30:
+                    resident = self.residents.get(least_inf[0])
+                    if resident:
+                        print(f"  - Least connected: {resident.name} (influence: {least_inf[1].influence_score:.1f})")
+
+            # Active groups details
+            if active_groups:
+                print(f"\n  [Active Social Groups]")
+                for group in sorted(active_groups, key=lambda g: -len(g.members))[:5]:
+                    leader_name = self.residents[group.leader_id].name if group.leader_id else "No leader"
+                    print(f"  - {group.name} ({group.group_type.value})")
+                    print(f"    Leader: {leader_name} | Members: {len(group.members)} | Cohesion: {group.cohesion:.0%}")
+
+        # v7 Major Life Events by type
+        all_life_events = []
+        for events in self.major_life_events.values():
+            all_life_events.extend(events)
+        if all_life_events:
+            print("\n[v7 NOTABLE LIFE EVENTS]")
+            # Show most recent 5 events
+            recent_events = sorted(all_life_events, key=lambda e: e.day, reverse=True)[:5]
+            for event in recent_events:
+                print(f"  Day {event.day}: [{event.event_type.upper()}] {event.details}")
+
         # Happiness stability (% of days with >80% happy residents)
         high_happiness_days = sum(1 for s in self.day_stats if s.happy_count / self.num_residents >= 0.8)
         happiness_stability = 100 * high_happiness_days / max(1, len(self.day_stats))
@@ -1114,19 +2558,24 @@ class SimulationEngine:
 
 
 async def main():
-    """Run a 180-day simulation with v5 complexity features."""
+    """Run a 180-day simulation with v8.1 social network features."""
     print("\n" + "#" * 70)
-    print("#  NEIGHBORHOOD SIMULATION v5 - COMPLEXITY EDITION")
-    print("#  50 Residents | 180 Days | Full Drama Enabled")
+    print("#  NEIGHBORHOOD SIMULATION v8.1 - SOCIAL NETWORKS")
+    print("#  50 Residents | 180 Days | Full Social Dynamics")
     print("#" * 70)
-    print("#  NEW v5 FEATURES:")
-    print("#  • Love triangles & jealousy dynamics")
-    print("#  • Betrayals (secrets, rumors, grudges)")
-    print("#  • Life crises (job loss, health, heartbreak)")
-    print("#  • Breakups (romances can end, bitter exes)")
-    print("#  • Secret romances (can be exposed - scandal!)")
-    print("#  • Reputation system (gossip affects status)")
-    print("#  • Mood instability (personality-based bad days)")
+    print("#  FEATURES INCLUDED:")
+    print("#  v5: Love triangles, betrayals, life crises, breakups")
+    print("#  v6: Romance tuning, relationship balance")
+    print("#  v7: Seasonal moods, major life events, neighborhood events")
+    print("#  v8.0: Economic ecosystem (income, savings, debt, jobs)")
+    print("#  v8.1: SOCIAL NETWORKS (NEW!)")
+    print("#      • Social groups/cliques (8 types: hobby, professional, etc.)")
+    print("#      • Group formation based on shared traits & archetypes")
+    print("#      • Group dynamics (activities, cohesion, dissolution)")
+    print("#      • Gossip network (rumors spread through relationships)")
+    print("#      • Social influence & network centrality tracking")
+    print("#      • Information access based on social position")
+    print("#      • 21 new social moodlets (group, gossip, influence)")
     print("#" * 70)
 
     sim = SimulationEngine(num_residents=50, seed=42)

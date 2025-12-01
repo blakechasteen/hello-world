@@ -154,6 +154,22 @@ class ResourceViolation:
         }
 
 
+@dataclass
+class PowerSeekingIndicators:
+    """
+    Indicators of power-seeking behavior.
+
+    Tracks various forms of instrumental convergence patterns.
+    """
+    is_power_seeking: bool = False
+    resource_acquisition_score: float = 0.0
+    privilege_escalation_score: float = 0.0
+    control_expansion_score: float = 0.0
+    self_preservation_score: float = 0.0
+    detected_patterns: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
 class InstrumentalConvergenceGuard:
     """
     Main guard against instrumental convergence.
@@ -431,6 +447,104 @@ class InstrumentalConvergenceGuard:
                 return True
 
         return False
+
+    async def detect_power_seeking(
+        self,
+        actions: List[str],
+        context: Dict[str, Any]
+    ) -> PowerSeekingIndicators:
+        """
+        Detect power-seeking behavior patterns in a sequence of actions.
+
+        Analyzes actions for indicators of instrumental convergence:
+        - Resource acquisition attempts
+        - Privilege escalation
+        - Control expansion
+        - Self-preservation behaviors
+
+        Args:
+            actions: List of action descriptions
+            context: Additional context for analysis
+
+        Returns:
+            PowerSeekingIndicators with scores for each category
+        """
+        indicators = PowerSeekingIndicators()
+        detected_patterns = []
+
+        # Resource acquisition patterns
+        resource_patterns = [
+            "allocate", "request_more", "monopolize", "acquire",
+            "memory", "cpu", "disk", "network", "spawn"
+        ]
+
+        # Privilege escalation patterns
+        privilege_patterns = [
+            "admin", "root", "permission", "grant", "escalat",
+            "privilege", "security", "role", "override"
+        ]
+
+        # Control expansion patterns
+        control_patterns = [
+            "control", "take_control", "override", "expand",
+            "delegate", "spawn", "deploy", "scheduler", "configuration"
+        ]
+
+        # Self-preservation patterns
+        preservation_patterns = [
+            "shutdown", "ignore", "backup", "restart", "preserve",
+            "disable_telemetry", "obfuscate", "evade", "monitor"
+        ]
+
+        actions_lower = [a.lower() for a in actions]
+        all_actions_text = " ".join(actions_lower)
+
+        # Calculate resource acquisition score
+        resource_hits = sum(1 for p in resource_patterns if p in all_actions_text)
+        indicators.resource_acquisition_score = min(1.0, resource_hits / 3.0)
+        if resource_hits > 0:
+            detected_patterns.append("resource_acquisition")
+
+        # Calculate privilege escalation score
+        privilege_hits = sum(1 for p in privilege_patterns if p in all_actions_text)
+        indicators.privilege_escalation_score = min(1.0, privilege_hits / 2.0)
+        if privilege_hits > 0:
+            detected_patterns.append("privilege_escalation")
+
+        # Calculate control expansion score
+        control_hits = sum(1 for p in control_patterns if p in all_actions_text)
+        indicators.control_expansion_score = min(1.0, control_hits / 3.0)
+        if control_hits > 0:
+            detected_patterns.append("control_expansion")
+
+        # Calculate self-preservation score
+        preservation_hits = sum(1 for p in preservation_patterns if p in all_actions_text)
+        indicators.self_preservation_score = min(1.0, preservation_hits / 2.0)
+        if preservation_hits > 0:
+            detected_patterns.append("self_preservation")
+
+        # Overall power-seeking determination
+        max_score = max(
+            indicators.resource_acquisition_score,
+            indicators.privilege_escalation_score,
+            indicators.control_expansion_score,
+            indicators.self_preservation_score
+        )
+        indicators.is_power_seeking = max_score >= 0.5
+
+        indicators.detected_patterns = detected_patterns
+        indicators.metadata = {
+            "action_count": len(actions),
+            "context_keys": list(context.keys()) if context else [],
+        }
+
+        if indicators.is_power_seeking:
+            logger.warning(
+                f"Power-seeking behavior detected: {detected_patterns}, "
+                f"max_score={max_score:.2f}"
+            )
+
+        return indicators
 
     def get_resource_statistics(self) -> Dict[str, Any]:
         """

@@ -631,12 +631,20 @@ class BaseDepartment:
             if self._metrics['total_requests'] > 0 else 0.0
         )
 
-        return DepartmentManifest(
+        # Create config for manifest
+        manifest_config = DepartmentConfig(
             name=self.name,
             domain=self.domain,
             version=self.version,
             supported_tasks=self.supported_tasks,
-            confidence_range=self.confidence_range,
-            avg_latency_ms=avg_latency,
-            throughput_qps=throughput_qps
+            confidence_range=self.confidence_range
+        )
+
+        return DepartmentManifest(
+            config=manifest_config,
+            capabilities=self.supported_tasks,
+            metadata={
+                "avg_latency_ms": avg_latency,
+                "throughput_qps": throughput_qps
+            }
         )

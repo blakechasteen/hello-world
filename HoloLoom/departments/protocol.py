@@ -647,6 +647,7 @@ class DepartmentConfig:
     confidence_range: tuple = (0.0, 1.0)             # (min, max) expected confidence
     enable_learning: bool = True                     # Can improve?
     enable_verification: bool = True                 # Verify responses?
+    enable_session_memory: bool = True               # Track session state?
     max_latency_ms: float = 5000.0                   # Max execution time
     retry_on_failure: bool = True                    # Retry failed tasks?
 

@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVE - Cognitive Visualization Engine</title>
+    <style>
+        /*
+         * Cognitive Visualization Engine - consciousness_shell.html
+         * Purpose-built for visualizing AI cognition, not game rendering.
+         * Created: 2025-11-30
+         *
+         * Design Principles (Tufte):
+         * - Maximize data-ink ratio (65-75%)
+         * - Show cognitive meaning first
+         * - Direct labeling, minimal chrome
+         * - Progressive disclosure of complexity
+         */
+
+        :root {
+            /* Cognitive semantic colors */
+            --cog-activation: #3b82f6;      /* Blue - spreading activation */
+            --cog-probability: #8b5cf6;     /* Purple - probability manifolds */
+            --cog-semantic: #06b6d4;        /* Cyan - semantic position */
+            --cog-knowledge: #10b981;       /* Green - knowledge graph */
+            --cog-token: #f59e0b;           /* Amber - token stream */
+            --cog-decision: #ef4444;        /* Red - decision collapse */
+            --cog-attention: #ec4899;       /* Pink - attention flow */
+            --cog-reasoning: #14b8a6;       /* Teal - reasoning chain */
+            --cog-memory: #6366f1;          /* Indigo - memory retrieval */
+            --cog-confidence: #22c55e;      /* Emerald - confidence flow */
+            --cog-tool: #a855f7;            /* Violet - tool selection */
+            --cog-context: #0ea5e9;         /* Sky - context expansion */
+            --cog-weaving: #f97316;         /* Orange - weaving cycle */
+            --cog-reflection: #84cc16;      /* Lime - reflection loop */
+
+            /* UI colors */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-panel: #1a1a1a;
+            --border: #2a2a2a;
+            --text: #e0e0e0;
+            --text-dim: rgba(255, 255, 255, 0.5);
+            --text-muted: rgba(255, 255, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header - minimal chrome */
+        .cve-header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 40px;
+        }
+
+        .cve-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cog-activation);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cve-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--cog-activation);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .cve-status {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 11px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-dim);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .status-dot.connected {
+            background: var(--cog-confidence);
+        }
+
+        .status-dot.streaming {
+            background: var(--cog-token);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        /* Main Layout - 3 columns for cognitive visualization */
+        .cve-main {
+            display: grid;
+            grid-template-columns: 240px 1fr 280px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Panel base */
+        .cve-panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-right: 1px solid var(--border);
+        }
+
+        .cve-panel:last-child {
+            border-right: none;
+        }
+
+        .panel-header {
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow: auto;
+            background: var(--bg-primary);
+        }
+
+        /* LEFT PANEL: Cognitive Event Types */
+        .event-type-list {
+            padding: 8px;
+        }
+
+        .event-type-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 2px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .event-type-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .event-type-item.active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .event-type-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .event-type-name {
+            font-size: 12px;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .event-type-count {
+            font-size: 10px;
+            color: var(--text-dim);
+            min-width: 24px;
+            text-align: right;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        /* CENTER PANEL: Cognitive Frame Viewer */
+        .frame-viewer {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .frame-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .frame-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .frame-meta {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        /* Cognitive event cards (from TufteRenderer) */
+        .cognitive-event-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .event-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .event-card-type {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .event-card-type-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        .event-card-timestamp {
+            font-size: 10px;
+            color: var(--text-dim);
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .event-card-content {
+            padding: 12px;
+        }
+
+        /* Rendered Tufte content container */
+        .tufte-render-container {
+            min-height: 100px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .empty-state-text {
+            font-size: 13px;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        /* RIGHT PANEL: Frame Stream + Metrics */
+        .stream-panel .panel-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Cognitive metrics */
+        .metrics-section {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .metric-value {
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .metric-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 0 12px;
+            overflow: hidden;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease-out;
+        }
+
+        /* Frame stream list */
+        .frame-stream {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .stream-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .stream-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .stream-item.current {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--cog-activation);
+        }
+
+        .stream-item-type {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .stream-item-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+        }
+
+        .stream-item-time {
+            font-size: 10px;
+            color: var(--text-dim);
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        /* Control bar */
+        .control-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        .control-btn {
+            flex: 1;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+            color: var(--text);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: var(--border);
+        }
+
+        .control-btn.active {
+            background: var(--cog-activation);
+            border-color: var(--cog-activation);
+            color: white;
+        }
+
+        /* Footer status */
+        .cve-footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        .footer-left, .footer-right {
+            display: flex;
+            gap: 16px;
+        }
+
+        /* Cognitive viz type colors (referenced in JS) */
+        [data-viz-type="ACTIVATION_SPREAD"] { --viz-color: var(--cog-activation); }
+        [data-viz-type="PROBABILITY_MANIFOLD"] { --viz-color: var(--cog-probability); }
+        [data-viz-type="SEMANTIC_POSITION"] { --viz-color: var(--cog-semantic); }
+        [data-viz-type="SEMANTIC_TRAJECTORY"] { --viz-color: var(--cog-semantic); }
+        [data-viz-type="KNOWLEDGE_GRAPH"] { --viz-color: var(--cog-knowledge); }
+        [data-viz-type="TOKEN_STREAM"] { --viz-color: var(--cog-token); }
+        [data-viz-type="DECISION_COLLAPSE"] { --viz-color: var(--cog-decision); }
+        [data-viz-type="ATTENTION_FLOW"] { --viz-color: var(--cog-attention); }
+        [data-viz-type="REASONING_CHAIN"] { --viz-color: var(--cog-reasoning); }
+        [data-viz-type="MEMORY_RETRIEVAL"] { --viz-color: var(--cog-memory); }
+        [data-viz-type="CONFIDENCE_FLOW"] { --viz-color: var(--cog-confidence); }
+        [data-viz-type="TOOL_SELECTION"] { --viz-color: var(--cog-tool); }
+        [data-viz-type="CONTEXT_EXPANSION"] { --viz-color: var(--cog-context); }
+        [data-viz-type="WEAVING_CYCLE"] { --viz-color: var(--cog-weaving); }
+        [data-viz-type="REFLECTION_LOOP"] { --viz-color: var(--cog-reflection); }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="cve-header">
+        <div class="cve-title">
+            Cognitive Visualization Engine
+        </div>
+        <div class="cve-status">
+            <div class="status-item">
+                <div class="status-dot" id="ws-status"></div>
+                <span id="ws-text">Disconnected</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot" id="stream-status"></div>
+                <span id="frame-count">0 frames</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main 3-Panel Layout -->
+    <main class="cve-main">
+        <!-- LEFT: Cognitive Event Types -->
+        <section class="cve-panel">
+            <div class="panel-header">
+                <span>Viz Types</span>
+                <span id="active-types">0 active</span>
+            </div>
+            <div class="panel-content">
+                <div class="event-type-list" id="event-type-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- CENTER: Frame Viewer -->
+        <section class="cve-panel">
+            <div class="panel-header">
+                <span>Cognitive Frame</span>
+                <span id="current-stage">--</span>
+            </div>
+            <div class="panel-content">
+                <div class="frame-viewer" id="frame-viewer">
+                    <div class="empty-state" id="empty-state">
+                        <div class="empty-state-icon">&#x1F9E0;</div>
+                        <div class="empty-state-title">Waiting for cognition</div>
+                        <div class="empty-state-text">
+                            Connect to HoloLoom WebSocket to visualize
+                            real-time cognitive events from the weaving cycle.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT: Stream + Metrics -->
+        <section class="cve-panel stream-panel">
+            <div class="panel-header">
+                <span>Stream</span>
+                <span id="stream-rate">-- events/s</span>
+            </div>
+            <div class="panel-content">
+                <!-- Cognitive metrics -->
+                <div class="metrics-section">
+                    <div class="metric-row">
+                        <span class="metric-label">Confidence</span>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" id="confidence-bar"
+                                 style="width: 0%; background: var(--cog-confidence);"></div>
+                        </div>
+                        <span class="metric-value" id="confidence-value">--</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Activation</span>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" id="activation-bar"
+                                 style="width: 0%; background: var(--cog-activation);"></div>
+                        </div>
+                        <span class="metric-value" id="activation-value">--</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Coherence</span>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" id="coherence-bar"
+                                 style="width: 0%; background: var(--cog-semantic);"></div>
+                        </div>
+                        <span class="metric-value" id="coherence-value">--</span>
+                    </div>
+                </div>
+
+                <!-- Frame stream -->
+                <div class="frame-stream" id="frame-stream">
+                    <!-- Stream items populated by JavaScript -->
+                </div>
+
+                <!-- Controls -->
+                <div class="control-bar">
+                    <button class="control-btn active" id="btn-play">
+                        &#x25B6; Live
+                    </button>
+                    <button class="control-btn" id="btn-pause">
+                        &#x23F8; Pause
+                    </button>
+                    <button class="control-btn" id="btn-clear">
+                        &#x1F5D1; Clear
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="cve-footer">
+        <div class="footer-left">
+            <span>CVE v1.0 | CRP Protocol</span>
+            <span id="ws-url">ws://localhost:8000/cve</span>
+        </div>
+        <div class="footer-right">
+            <span id="last-frame-time">--</span>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * Cognitive Visualization Engine - Client Controller
+         *
+         * Connects to HoloLoom WebSocket and renders CognitiveFrames
+         * using the TufteRenderer (server-side) or client-side fallback.
+         *
+         * CRP (Cognitive Rendering Protocol):
+         * - Server sends CognitiveFrame objects via WebSocket
+         * - Each frame contains CognitiveEvents with viz_type
+         * - TufteRenderer on server returns HTML for each event
+         */
+
+        class CVEClient {
+            constructor() {
+                // 15 CognitiveVizTypes with semantic colors
+                this.VIZ_TYPES = {
+                    ACTIVATION_SPREAD: { color: '#3b82f6', name: 'Activation Spread' },
+                    PROBABILITY_MANIFOLD: { color: '#8b5cf6', name: 'Probability Manifold' },
+                    SEMANTIC_POSITION: { color: '#06b6d4', name: 'Semantic Position' },
+                    SEMANTIC_TRAJECTORY: { color: '#06b6d4', name: 'Semantic Trajectory' },
+                    KNOWLEDGE_GRAPH: { color: '#10b981', name: 'Knowledge Graph' },
+                    TOKEN_STREAM: { color: '#f59e0b', name: 'Token Stream' },
+                    DECISION_COLLAPSE: { color: '#ef4444', name: 'Decision Collapse' },
+                    ATTENTION_FLOW: { color: '#ec4899', name: 'Attention Flow' },
+                    REASONING_CHAIN: { color: '#14b8a6', name: 'Reasoning Chain' },
+                    MEMORY_RETRIEVAL: { color: '#6366f1', name: 'Memory Retrieval' },
+                    CONFIDENCE_FLOW: { color: '#22c55e', name: 'Confidence Flow' },
+                    TOOL_SELECTION: { color: '#a855f7', name: 'Tool Selection' },
+                    CONTEXT_EXPANSION: { color: '#0ea5e9', name: 'Context Expansion' },
+                    WEAVING_CYCLE: { color: '#f97316', name: 'Weaving Cycle' },
+                    REFLECTION_LOOP: { color: '#84cc16', name: 'Reflection Loop' }
+                };
+
+                this.ws = null;
+                this.frames = [];
+                this.eventCounts = {};
+                this.isLive = true;
+                this.frameCount = 0;
+                this.eventRate = 0;
+                this.lastEventTime = Date.now();
+                this.recentEvents = [];
+
+                this.init();
+            }
+
+            init() {
+                this.initEventTypeList();
+                this.bindControls();
+                this.connect();
+                this.startRateCalculation();
+            }
+
+            // Initialize the viz type filter list
+            initEventTypeList() {
+                const container = document.getElementById('event-type-list');
+                container.innerHTML = '';
+
+                for (const [type, config] of Object.entries(this.VIZ_TYPES)) {
+                    this.eventCounts[type] = 0;
+
+                    const item = document.createElement('div');
+                    item.className = 'event-type-item';
+                    item.dataset.type = type;
+                    item.innerHTML = `
+                        <div class="event-type-indicator" style="background: ${config.color}"></div>
+                        <span class="event-type-name">${config.name}</span>
+                        <span class="event-type-count" id="count-${type}">0</span>
+                    `;
+                    item.addEventListener('click', () => this.toggleTypeFilter(type, item));
+                    container.appendChild(item);
+                }
+            }
+
+            toggleTypeFilter(type, item) {
+                item.classList.toggle('active');
+                this.reRenderCurrentFrame();
+            }
+
+            // Bind control buttons
+            bindControls() {
+                document.getElementById('btn-play').addEventListener('click', () => {
+                    this.isLive = true;
+                    document.getElementById('btn-play').classList.add('active');
+                    document.getElementById('btn-pause').classList.remove('active');
+                });
+
+                document.getElementById('btn-pause').addEventListener('click', () => {
+                    this.isLive = false;
+                    document.getElementById('btn-pause').classList.add('active');
+                    document.getElementById('btn-play').classList.remove('active');
+                });
+
+                document.getElementById('btn-clear').addEventListener('click', () => {
+                    this.clearFrames();
+                });
+            }
+
+            // WebSocket connection
+            connect() {
+                const wsUrl = 'ws://localhost:8000/cve';
+                this.ws = new WebSocket(wsUrl);
+
+                this.ws.onopen = () => {
+                    document.getElementById('ws-status').classList.add('connected');
+                    document.getElementById('ws-text').textContent = 'Connected';
+                    console.log('[CVE] Connected to HoloLoom');
+                };
+
+                this.ws.onclose = () => {
+                    document.getElementById('ws-status').classList.remove('connected');
+                    document.getElementById('ws-text').textContent = 'Disconnected';
+                    // Reconnect after 3 seconds
+                    setTimeout(() => this.connect(), 3000);
+                };
+
+                this.ws.onerror = () => {
+                    document.getElementById('ws-text').textContent = 'Error';
+                    // Use demo mode if connection fails
+                    this.startDemoMode();
+                };
+
+                this.ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    this.handleMessage(data);
+                };
+            }
+
+            handleMessage(data) {
+                if (data.type === 'cognitive_frame') {
+                    this.handleFrame(data.frame);
+                } else if (data.type === 'cognitive_event') {
+                    this.handleEvent(data.event);
+                } else if (data.type === 'metrics') {
+                    this.updateMetrics(data);
+                } else if (data.type === 'rendered_html') {
+                    // Server-side TufteRenderer output
+                    this.appendRenderedHTML(data.html, data.event_type);
+                }
+            }
+
+            handleFrame(frame) {
+                this.frameCount++;
+                this.frames.push(frame);
+                if (this.frames.length > 100) {
+                    this.frames.shift(); // Keep last 100 frames
+                }
+
+                // Update frame stream
+                this.addStreamItem(frame);
+
+                // Update metrics
+                if (frame.confidence !== undefined) {
+                    this.setMetric('confidence', frame.confidence);
+                }
+                if (frame.activation !== undefined) {
+                    this.setMetric('activation', frame.activation);
+                }
+                if (frame.coherence !== undefined) {
+                    this.setMetric('coherence', frame.coherence);
+                }
+
+                // Update stage
+                if (frame.stage) {
+                    document.getElementById('current-stage').textContent = frame.stage;
+                }
+
+                // Render if live
+                if (this.isLive) {
+                    this.renderFrame(frame);
+                }
+
+                // Update counters
+                document.getElementById('frame-count').textContent = `${this.frameCount} frames`;
+
+                // Track events for rate calculation
+                this.recentEvents.push(Date.now());
+                this.lastEventTime = Date.now();
+            }
+
+            handleEvent(event) {
+                // Single event (not full frame)
+                if (event.viz_type && this.eventCounts[event.viz_type] !== undefined) {
+                    this.eventCounts[event.viz_type]++;
+                    document.getElementById(`count-${event.viz_type}`).textContent =
+                        this.eventCounts[event.viz_type];
+                }
+
+                // Update active types count
+                const activeCount = Object.values(this.eventCounts).filter(c => c > 0).length;
+                document.getElementById('active-types').textContent = `${activeCount} active`;
+            }
+
+            renderFrame(frame) {
+                const viewer = document.getElementById('frame-viewer');
+                document.getElementById('empty-state').style.display = 'none';
+
+                // Clear and re-render
+                viewer.innerHTML = '';
+
+                // Frame header
+                const header = document.createElement('div');
+                header.className = 'frame-header';
+                header.innerHTML = `
+                    <span class="frame-title">${frame.title || 'Cognitive Frame'}</span>
+                    <span class="frame-meta">${this.formatTimestamp(frame.timestamp)}</span>
+                `;
+                viewer.appendChild(header);
+
+                // Render events
+                if (frame.events && frame.events.length > 0) {
+                    for (const event of frame.events) {
+                        this.renderEvent(event, viewer);
+                    }
+                }
+
+                // Scroll to latest
+                viewer.scrollTop = viewer.scrollHeight;
+            }
+
+            renderEvent(event, container) {
+                const vizType = event.viz_type || 'UNKNOWN';
+                const config = this.VIZ_TYPES[vizType] || { color: '#666', name: vizType };
+
+                const card = document.createElement('div');
+                card.className = 'cognitive-event-card';
+                card.dataset.vizType = vizType;
+
+                card.innerHTML = `
+                    <div class="event-card-header">
+                        <div class="event-card-type">
+                            <div class="event-card-type-dot" style="background: ${config.color}"></div>
+                            ${config.name}
+                        </div>
+                        <span class="event-card-timestamp">${this.formatTime(event.timestamp)}</span>
+                    </div>
+                    <div class="event-card-content">
+                        <div class="tufte-render-container" id="render-${event.event_id || Date.now()}">
+                            ${event.rendered_html || this.fallbackRender(event)}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+
+                // Update type count
+                if (this.eventCounts[vizType] !== undefined) {
+                    this.eventCounts[vizType]++;
+                    document.getElementById(`count-${vizType}`).textContent = this.eventCounts[vizType];
+                }
+            }
+
+            // Fallback client-side rendering when server HTML not available
+            fallbackRender(event) {
+                const vizType = event.viz_type || 'UNKNOWN';
+                const data = event.data || event;
+
+                switch (vizType) {
+                    case 'ACTIVATION_SPREAD':
+                        return this.renderActivationSpread(data);
+                    case 'PROBABILITY_MANIFOLD':
+                        return this.renderProbabilityManifold(data);
+                    case 'CONFIDENCE_FLOW':
+                        return this.renderConfidenceFlow(data);
+                    case 'DECISION_COLLAPSE':
+                        return this.renderDecisionCollapse(data);
+                    case 'MEMORY_RETRIEVAL':
+                        return this.renderMemoryRetrieval(data);
+                    case 'TOOL_SELECTION':
+                        return this.renderToolSelection(data);
+                    default:
+                        return this.renderGeneric(vizType, data);
+                }
+            }
+
+            renderActivationSpread(data) {
+                const nodes = data.active_nodes || [];
+                const activation = data.activation || 0;
+                return `
+                    <div style="font-size: 12px;">
+                        <div style="color: var(--text-dim); margin-bottom: 8px;">
+                            Activation: ${(activation * 100).toFixed(1)}% |
+                            Active nodes: ${nodes.length}
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            ${nodes.slice(0, 10).map(n => `
+                                <span style="background: rgba(59, 130, 246, 0.2);
+                                             padding: 2px 8px; border-radius: 4px;
+                                             font-size: 11px;">${n}</span>
+                            `).join('')}
+                            ${nodes.length > 10 ? `<span style="color: var(--text-dim);">+${nodes.length - 10} more</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderProbabilityManifold(data) {
+                const probs = data.probabilities || {};
+                const entries = Object.entries(probs).sort((a, b) => b[1] - a[1]);
+                return `
+                    <div style="font-size: 12px;">
+                        ${entries.slice(0, 5).map(([tool, prob]) => `
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <span style="min-width: 80px; color: var(--text-dim);">${tool}</span>
+                                <div style="flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                                    <div style="width: ${prob * 100}%; height: 100%; background: var(--cog-probability); border-radius: 4px;"></div>
+                                </div>
+                                <span style="min-width: 40px; text-align: right; font-family: monospace;">${(prob * 100).toFixed(1)}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            renderConfidenceFlow(data) {
+                const confidences = data.confidences || [data.confidence || 0];
+                return `
+                    <div style="font-size: 12px;">
+                        <div style="display: flex; align-items: flex-end; gap: 2px; height: 40px;">
+                            ${confidences.map(c => `
+                                <div style="flex: 1; background: var(--cog-confidence);
+                                            height: ${c * 100}%; min-height: 2px;
+                                            border-radius: 2px;"></div>
+                            `).join('')}
+                        </div>
+                        <div style="color: var(--text-dim); margin-top: 8px;">
+                            Current: ${(confidences[confidences.length - 1] * 100).toFixed(1)}%
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderDecisionCollapse(data) {
+                const from = data.from_probabilities || {};
+                const to = data.selected_tool || 'answer';
+                const confidence = data.collapse_confidence || data.confidence || 0;
+                return `
+                    <div style="font-size: 12px;">
+                        <div style="text-align: center; margin-bottom: 8px;">
+                            <span style="color: var(--cog-probability);">Distribution</span>
+                            <span style="margin: 0 12px;">→</span>
+                            <span style="color: var(--cog-decision); font-weight: 600;">${to}</span>
+                        </div>
+                        <div style="color: var(--text-dim); text-align: center;">
+                            Confidence: ${(confidence * 100).toFixed(1)}%
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderMemoryRetrieval(data) {
+                const memories = data.retrieved_memories || [];
+                return `
+                    <div style="font-size: 12px;">
+                        <div style="color: var(--text-dim); margin-bottom: 8px;">
+                            Retrieved ${memories.length} memories
+                        </div>
+                        ${memories.slice(0, 3).map(m => `
+                            <div style="background: var(--bg-secondary); padding: 8px;
+                                        border-radius: 4px; margin-bottom: 4px;
+                                        border-left: 3px solid var(--cog-memory);">
+                                <div style="font-size: 11px; white-space: nowrap;
+                                            overflow: hidden; text-overflow: ellipsis;">
+                                    ${m.content || m.text || m.id || 'Memory'}
+                                </div>
+                                <div style="font-size: 10px; color: var(--text-dim); margin-top: 4px;">
+                                    Relevance: ${((m.relevance || m.score || 0) * 100).toFixed(0)}%
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            renderToolSelection(data) {
+                const tool = data.selected_tool || 'unknown';
+                const stats = data.bandit_stats || {};
+                return `
+                    <div style="font-size: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                            <span style="background: var(--cog-tool); color: white;
+                                        padding: 4px 12px; border-radius: 4px; font-weight: 600;">
+                                ${tool}
+                            </span>
+                            ${stats.strategy ? `
+                                <span style="font-size: 11px; color: var(--text-dim);">
+                                    via ${stats.strategy}
+                                </span>
+                            ` : ''}
+                        </div>
+                        ${stats.confidence ? `
+                            <div style="color: var(--text-dim);">
+                                Thompson confidence: ${(stats.confidence * 100).toFixed(1)}%
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            renderGeneric(vizType, data) {
+                return `
+                    <div style="font-size: 11px; color: var(--text-dim);">
+                        <code style="background: var(--bg-secondary); padding: 8px;
+                                     border-radius: 4px; display: block;
+                                     max-height: 100px; overflow: auto;">
+                            ${JSON.stringify(data, null, 2)}
+                        </code>
+                    </div>
+                `;
+            }
+
+            // Stream list management
+            addStreamItem(frame) {
+                const stream = document.getElementById('frame-stream');
+                const vizTypes = (frame.events || []).map(e => e.viz_type).filter(Boolean);
+                const primaryType = vizTypes[0] || 'WEAVING_CYCLE';
+                const config = this.VIZ_TYPES[primaryType] || { color: '#666' };
+
+                const item = document.createElement('div');
+                item.className = 'stream-item';
+                item.innerHTML = `
+                    <div class="stream-item-type" style="background: ${config.color}"></div>
+                    <span class="stream-item-text">${frame.stage || frame.title || 'Frame'}</span>
+                    <span class="stream-item-time">${this.formatTime(frame.timestamp)}</span>
+                `;
+                item.addEventListener('click', () => {
+                    // Mark current
+                    stream.querySelectorAll('.stream-item').forEach(i => i.classList.remove('current'));
+                    item.classList.add('current');
+                    // Render this frame
+                    this.renderFrame(frame);
+                });
+
+                stream.insertBefore(item, stream.firstChild);
+
+                // Keep last 50 items
+                while (stream.children.length > 50) {
+                    stream.removeChild(stream.lastChild);
+                }
+            }
+
+            // Metrics updates
+            setMetric(name, value) {
+                const bar = document.getElementById(`${name}-bar`);
+                const valueEl = document.getElementById(`${name}-value`);
+                if (bar && valueEl) {
+                    bar.style.width = `${value * 100}%`;
+                    valueEl.textContent = (value * 100).toFixed(1) + '%';
+                }
+            }
+
+            updateMetrics(data) {
+                if (data.confidence !== undefined) this.setMetric('confidence', data.confidence);
+                if (data.activation !== undefined) this.setMetric('activation', data.activation);
+                if (data.coherence !== undefined) this.setMetric('coherence', data.coherence);
+            }
+
+            // Clear all frames
+            clearFrames() {
+                this.frames = [];
+                this.frameCount = 0;
+                for (const type of Object.keys(this.eventCounts)) {
+                    this.eventCounts[type] = 0;
+                    document.getElementById(`count-${type}`).textContent = '0';
+                }
+                document.getElementById('frame-count').textContent = '0 frames';
+                document.getElementById('active-types').textContent = '0 active';
+                document.getElementById('frame-stream').innerHTML = '';
+                document.getElementById('frame-viewer').innerHTML = `
+                    <div class="empty-state" id="empty-state">
+                        <div class="empty-state-icon">&#x1F9E0;</div>
+                        <div class="empty-state-title">Waiting for cognition</div>
+                        <div class="empty-state-text">
+                            Connect to HoloLoom WebSocket to visualize
+                            real-time cognitive events from the weaving cycle.
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Event rate calculation
+            startRateCalculation() {
+                setInterval(() => {
+                    const now = Date.now();
+                    // Count events in last 5 seconds
+                    this.recentEvents = this.recentEvents.filter(t => now - t < 5000);
+                    const rate = this.recentEvents.length / 5;
+                    document.getElementById('stream-rate').textContent =
+                        rate.toFixed(1) + ' events/s';
+                    document.getElementById('last-frame-time').textContent =
+                        this.recentEvents.length > 0
+                            ? `Last: ${this.formatTime(this.lastEventTime)}`
+                            : '--';
+
+                    // Update streaming indicator
+                    const streamDot = document.getElementById('stream-status');
+                    if (rate > 0) {
+                        streamDot.classList.add('streaming');
+                    } else {
+                        streamDot.classList.remove('streaming');
+                    }
+                }, 1000);
+            }
+
+            // Demo mode for testing without server
+            startDemoMode() {
+                console.log('[CVE] Starting demo mode');
+                document.getElementById('ws-text').textContent = 'Demo Mode';
+
+                // Simulate cognitive frames
+                const demoFrames = [
+                    {
+                        stage: 'retrieval',
+                        timestamp: Date.now(),
+                        confidence: 0.85,
+                        activation: 0.72,
+                        coherence: 0.68,
+                        events: [
+                            {
+                                viz_type: 'MEMORY_RETRIEVAL',
+                                timestamp: Date.now(),
+                                data: {
+                                    retrieved_memories: [
+                                        { content: 'Thompson Sampling balances exploration...', relevance: 0.92 },
+                                        { content: 'Bayesian approach to multi-armed bandits', relevance: 0.85 },
+                                        { content: 'Beta distribution for binary outcomes', relevance: 0.78 }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        stage: 'decision',
+                        timestamp: Date.now() + 100,
+                        confidence: 0.88,
+                        activation: 0.65,
+                        coherence: 0.71,
+                        events: [
+                            {
+                                viz_type: 'PROBABILITY_MANIFOLD',
+                                timestamp: Date.now() + 100,
+                                data: {
+                                    probabilities: { answer: 0.72, research: 0.18, explore: 0.07, reflect: 0.03 }
+                                }
+                            },
+                            {
+                                viz_type: 'DECISION_COLLAPSE',
+                                timestamp: Date.now() + 120,
+                                data: {
+                                    from_probabilities: { answer: 0.72, research: 0.18 },
+                                    selected_tool: 'answer',
+                                    collapse_confidence: 0.88
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        stage: 'generation',
+                        timestamp: Date.now() + 200,
+                        confidence: 0.91,
+                        activation: 0.58,
+                        coherence: 0.75,
+                        events: [
+                            {
+                                viz_type: 'CONFIDENCE_FLOW',
+                                timestamp: Date.now() + 200,
+                                data: {
+                                    confidences: [0.72, 0.78, 0.82, 0.85, 0.88, 0.91]
+                                }
+                            },
+                            {
+                                viz_type: 'TOOL_SELECTION',
+                                timestamp: Date.now() + 220,
+                                data: {
+                                    selected_tool: 'answer',
+                                    bandit_stats: { strategy: 'bayesian_blend', confidence: 0.88 }
+                                }
+                            }
+                        ]
+                    }
+                ];
+
+                // Play demo frames with delay
+                let index = 0;
+                const playNextFrame = () => {
+                    if (index < demoFrames.length) {
+                        this.handleFrame(demoFrames[index]);
+                        index++;
+                        setTimeout(playNextFrame, 1500);
+                    } else {
+                        // Loop demo
+                        setTimeout(() => {
+                            index = 0;
+                            playNextFrame();
+                        }, 3000);
+                    }
+                };
+
+                setTimeout(playNextFrame, 1000);
+            }
+
+            // Utility functions
+            formatTimestamp(ts) {
+                if (!ts) return '--';
+                const date = new Date(ts);
+                return date.toLocaleString();
+            }
+
+            formatTime(ts) {
+                if (!ts) return '--';
+                const date = new Date(ts);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+
+            reRenderCurrentFrame() {
+                if (this.frames.length > 0) {
+                    this.renderFrame(this.frames[this.frames.length - 1]);
+                }
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            window.cve = new CVEClient();
+        });
+    </script>
+</body>
+</html>
