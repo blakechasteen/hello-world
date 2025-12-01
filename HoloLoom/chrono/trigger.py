@@ -384,6 +384,7 @@ class ChronoTrigger:
         cycle_duration = time.time() - cycle_start
 
         metrics = {
+            "breathing_enabled": True,
             "breath_number": self.breath_count,
             "cycle_duration": cycle_duration,
             "inhale": inhale_metrics,

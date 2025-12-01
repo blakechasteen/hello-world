@@ -424,6 +424,19 @@ class PrometheusMetrics:
 
         reflection_updates_total.labels(signal_type=signal_type).inc()
 
+    def track_breathing(self, phase: str):
+        """
+        Track ChronoTrigger breathing phases.
+
+        Args:
+            phase: Breathing phase (inhale, exhale, rest)
+        """
+        if not self.enabled:
+            return
+
+        # Track breathing phase as a reflection update with phase-specific type
+        reflection_updates_total.labels(signal_type=f'breathing_{phase}').inc()
+
     # ========================================================================
     # Error Tracking
     # ========================================================================

@@ -10,6 +10,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <!-- Vis.js for Graph Visualization -->
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- Three.js for ThirdEye 3D Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- GSAP for smooth animations -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
 
     <style>
         * {
@@ -947,6 +952,201 @@
             display: none !important;
         }
 
+        /* ========== ThirdEye Thoughtspace Panel ========== */
+        .thirdeye-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border-top: 2px solid #e2e8f0;
+            z-index: 200;
+            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .thirdeye-panel.collapsed {
+            height: 0;
+            border-top: none;
+        }
+
+        .thirdeye-panel.expanded {
+            height: 50vh;
+        }
+
+        .thirdeye-panel.fullscreen {
+            height: 100vh;
+            top: 0;
+        }
+
+        .thirdeye-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .thirdeye-header h3 {
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .thirdeye-status {
+            font-size: 11px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .thirdeye-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+
+        .thirdeye-status .dot.connected {
+            background: #10b981;
+        }
+
+        .thirdeye-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .thirdeye-controls button {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .thirdeye-controls button:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+
+        .thirdeye-controls button.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .thirdeye-canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .thirdeye-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Concept labels overlay */
+        .concept-label {
+            position: absolute;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-size: 12px;
+            color: #1e293b;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 8px;
+            border-radius: 4px;
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .concept-label.primary {
+            background: #3b82f6;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Current concept display */
+        .thirdeye-current-concept {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+        }
+
+        .thirdeye-current-concept .concept-name {
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .thirdeye-current-concept .concept-type {
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Transition indicator */
+        .transition-indicator {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #64748b;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .transition-indicator.active {
+            opacity: 1;
+        }
+
+        /* Adjust main content when ThirdEye is open */
+        body.thirdeye-open .main-content {
+            margin-bottom: 200px;
+        }
+
+        body.thirdeye-expanded .main-content {
+            margin-bottom: 50vh;
+        }
+
+        body.thirdeye-fullscreen .main-content {
+            display: none;
+        }
+
+        body.thirdeye-open .status-bar {
+            bottom: 200px;
+        }
+
+        body.thirdeye-expanded .status-bar {
+            bottom: 50vh;
+        }
+
+        body.thirdeye-fullscreen .status-bar {
+            display: none;
+        }
+
         /* ========== Mobile Responsive ========== */
         @media (max-width: 768px) {
             .main-content {
@@ -1013,6 +1213,7 @@
         <div class="header-right">
             <button onclick="toggleLeftSidebar()">📊 Analytics</button>
             <button onclick="toggleRightSidebar()">📢 Notifications</button>
+            <button id="thirdeyeToggleBtn" onclick="toggleThirdEye()">👁️ ThirdEye</button>
             <button class="primary" onclick="showNewThreadModal()">+ New Thread</button>
         </div>
     </div>
@@ -1144,6 +1345,39 @@
     <!-- Status Bar -->
     <div class="status-bar" id="statusBar">
         Disconnected
+    </div>
+
+    <!-- ThirdEye Thoughtspace Panel -->
+    <div class="thirdeye-panel collapsed" id="thirdeyePanel">
+        <div class="thirdeye-header">
+            <h3>
+                <span>👁️ Thoughtspace</span>
+                <div class="thirdeye-status">
+                    <span class="dot" id="thirdeyeStatusDot"></span>
+                    <span id="thirdeyeStatusText">Disconnected</span>
+                </div>
+            </h3>
+            <div class="thirdeye-controls">
+                <button onclick="setThirdEyeMode('compact')" class="active" id="thirdeyeModeCompact">Compact</button>
+                <button onclick="setThirdEyeMode('expanded')" id="thirdeyeModeExpanded">Expanded</button>
+                <button onclick="setThirdEyeMode('fullscreen')" id="thirdeyeModeFullscreen">Fullscreen</button>
+                <button onclick="toggleThirdEye()">✕ Close</button>
+            </div>
+        </div>
+        <div class="thirdeye-canvas-container">
+            <canvas id="thirdeyeCanvas" class="thirdeye-canvas"></canvas>
+
+            <!-- Current concept display -->
+            <div class="thirdeye-current-concept" id="thirdeyeCurrentConcept" style="display: none;">
+                <div class="concept-name" id="currentConceptName"></div>
+                <div class="concept-type" id="currentConceptType"></div>
+            </div>
+
+            <!-- Transition indicator -->
+            <div class="transition-indicator" id="transitionIndicator">
+                <span id="transitionType">morphing</span>
+            </div>
+        </div>
     </div>
 
     <!-- Toast Container -->
@@ -1459,6 +1693,1331 @@
         // This file is getting very long. Let me create it as a complete working version.
         // The remaining functions are implemented below...
 
+    </script>
+
+    <!-- ThirdEye Thoughtspace Integration -->
+    <script>
+        // ========== ThirdEye Thoughtspace ==========
+        const THIRDEYE_WS = 'ws://localhost:8003/ws/thirdeye';
+
+        const thirdeyeState = {
+            ws: null,
+            scene: null,
+            camera: null,
+            renderer: null,
+            controls: null,
+            nodes: new Map(),
+            currentConcept: null,
+            mode: 'collapsed',
+            animationFrameId: null,
+            isRunning: false
+        };
+
+        // Concept type colors (soft palette)
+        const CONCEPT_COLORS = {
+            entity: 0x3b82f6,        // Blue
+            relationship: 0x10b981,   // Green
+            process: 0x8b5cf6,        // Purple
+            comparison: 0xf59e0b,     // Amber
+            hierarchy: 0x6366f1,      // Indigo
+            temporal: 0x06b6d4,       // Cyan
+            probability: 0xec4899,    // Pink
+            decision: 0xf97316,       // Orange
+            default: 0x64748b         // Slate
+        };
+
+        // Initialize Three.js scene
+        function initThirdEyeScene() {
+            const canvas = document.getElementById('thirdeyeCanvas');
+            const container = canvas.parentElement;
+
+            // Scene
+            thirdeyeState.scene = new THREE.Scene();
+            thirdeyeState.scene.background = new THREE.Color(0xf8fafc);
+            thirdeyeState.scene.fog = new THREE.Fog(0xf8fafc, 30, 80);
+
+            // Camera
+            thirdeyeState.camera = new THREE.PerspectiveCamera(
+                60,
+                container.clientWidth / container.clientHeight,
+                0.1,
+                1000
+            );
+            thirdeyeState.camera.position.set(0, 3, 12);
+            thirdeyeState.camera.lookAt(0, 0, 0);
+
+            // Renderer
+            thirdeyeState.renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                antialias: true,
+                alpha: true
+            });
+            thirdeyeState.renderer.setSize(container.clientWidth, container.clientHeight);
+            thirdeyeState.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            thirdeyeState.renderer.shadowMap.enabled = true;
+            thirdeyeState.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Controls
+            thirdeyeState.controls = new THREE.OrbitControls(
+                thirdeyeState.camera,
+                thirdeyeState.renderer.domElement
+            );
+            thirdeyeState.controls.enableDamping = true;
+            thirdeyeState.controls.dampingFactor = 0.05;
+            thirdeyeState.controls.maxDistance = 50;
+            thirdeyeState.controls.minDistance = 3;
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            thirdeyeState.scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 15, 10);
+            directionalLight.castShadow = true;
+            thirdeyeState.scene.add(directionalLight);
+
+            // Floor grid
+            const gridHelper = new THREE.GridHelper(60, 30, 0xe2e8f0, 0xe2e8f0);
+            gridHelper.position.y = -3;
+            gridHelper.material.opacity = 0.3;
+            gridHelper.material.transparent = true;
+            thirdeyeState.scene.add(gridHelper);
+
+            // Resize handler
+            const resizeObserver = new ResizeObserver(() => {
+                resizeThirdEyeRenderer();
+            });
+            resizeObserver.observe(container);
+
+            console.log('[ThirdEye] Scene initialized');
+        }
+
+        function resizeThirdEyeRenderer() {
+            const container = document.getElementById('thirdeyeCanvas').parentElement;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            if (width > 0 && height > 0) {
+                thirdeyeState.camera.aspect = width / height;
+                thirdeyeState.camera.updateProjectionMatrix();
+                thirdeyeState.renderer.setSize(width, height);
+            }
+        }
+
+        // Connect to ThirdEye WebSocket server
+        function connectThirdEye() {
+            if (thirdeyeState.ws && thirdeyeState.ws.readyState === WebSocket.OPEN) {
+                return;
+            }
+
+            thirdeyeState.ws = new WebSocket(THIRDEYE_WS);
+
+            thirdeyeState.ws.onopen = () => {
+                console.log('[ThirdEye] Connected');
+                updateThirdEyeStatus(true);
+            };
+
+            thirdeyeState.ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleThirdEyeMessage(data);
+                } catch (e) {
+                    console.error('[ThirdEye] Parse error:', e);
+                }
+            };
+
+            thirdeyeState.ws.onerror = (error) => {
+                console.error('[ThirdEye] WebSocket error:', error);
+            };
+
+            thirdeyeState.ws.onclose = () => {
+                console.log('[ThirdEye] Disconnected');
+                updateThirdEyeStatus(false);
+                // Reconnect after 5 seconds if still open
+                if (thirdeyeState.mode !== 'collapsed') {
+                    setTimeout(connectThirdEye, 5000);
+                }
+            };
+        }
+
+        function updateThirdEyeStatus(connected) {
+            const dot = document.getElementById('thirdeyeStatusDot');
+            const text = document.getElementById('thirdeyeStatusText');
+
+            if (connected) {
+                dot.classList.add('connected');
+                text.textContent = 'Connected';
+            } else {
+                dot.classList.remove('connected');
+                text.textContent = 'Disconnected';
+            }
+        }
+
+        // Handle incoming messages from ThirdEye server
+        function handleThirdEyeMessage(data) {
+            switch (data.type) {
+                case 'scene_update':
+                    // Rich scene visualization
+                    handleSceneUpdate(data.data);
+                    break;
+                case 'concept_extraction':
+                    handleConceptExtraction(data.data);
+                    break;
+                case 'render_command':
+                    handleRenderCommand(data.data);
+                    break;
+                case 'state_update':
+                    // Handle state updates if needed
+                    break;
+                default:
+                    console.log('[ThirdEye] Unknown message type:', data.type);
+            }
+        }
+
+        // ========== Rich Scene Rendering ==========
+
+        function handleSceneUpdate(scene) {
+            console.log('[ThirdEye] Scene update:', scene.mode, scene.title);
+
+            // Clear existing scene objects
+            clearSceneObjects();
+
+            // Apply scene background
+            if (scene.background) {
+                applySceneBackground(scene.background);
+            }
+
+            // Apply camera settings
+            if (scene.camera) {
+                applySceneCamera(scene.camera);
+            }
+
+            // Render based on mode
+            switch (scene.mode) {
+                case 'ui_design':
+                    renderUIScene(scene);
+                    break;
+                case 'narrative':
+                    renderNarrativeScene(scene);
+                    break;
+                case 'architecture':
+                    renderArchitectureScene(scene);
+                    break;
+                case 'data':
+                    renderDataScene(scene);
+                    break;
+                case 'object':
+                    renderObjectScene(scene);
+                    break;
+                case 'world':
+                    renderWorldScene(scene);
+                    break;
+                default:
+                    renderAbstractScene(scene);
+            }
+
+            // Handle transitions
+            if (scene.transition) {
+                showTransitionIndicator(scene.transition);
+            }
+
+            // Update current concept display with scene title
+            updateSceneTitle(scene.title || 'Scene', scene.mode);
+        }
+
+        function clearSceneObjects() {
+            // Remove all concept nodes but keep lights, camera, grid
+            thirdeyeState.nodes.forEach((node, id) => {
+                thirdeyeState.scene.remove(node.group);
+            });
+            thirdeyeState.nodes.clear();
+
+            // Also remove any extra scene objects
+            const toRemove = [];
+            thirdeyeState.scene.children.forEach(child => {
+                if (child.userData && child.userData.sceneObject) {
+                    toRemove.push(child);
+                }
+            });
+            toRemove.forEach(obj => thirdeyeState.scene.remove(obj));
+        }
+
+        function applySceneBackground(background) {
+            if (background.type === 'gradient' && background.colors) {
+                // Use first gradient color
+                const color = new THREE.Color(background.colors[0]);
+                thirdeyeState.scene.background = color;
+                if (thirdeyeState.scene.fog) {
+                    thirdeyeState.scene.fog.color = color;
+                }
+            } else if (background.color) {
+                const color = new THREE.Color(background.color);
+                thirdeyeState.scene.background = color;
+            }
+        }
+
+        function applySceneCamera(camera) {
+            if (camera.position) {
+                gsap.to(thirdeyeState.camera.position, {
+                    x: camera.position.x,
+                    y: camera.position.y,
+                    z: camera.position.z,
+                    duration: 0.8,
+                    ease: 'power2.inOut'
+                });
+            }
+            if (camera.target) {
+                gsap.to(thirdeyeState.controls.target, {
+                    x: camera.target.x,
+                    y: camera.target.y,
+                    z: camera.target.z,
+                    duration: 0.8,
+                    ease: 'power2.inOut'
+                });
+            }
+        }
+
+        function updateSceneTitle(title, mode) {
+            const container = document.getElementById('thirdeyeCurrentConcept');
+            const nameEl = document.getElementById('currentConceptName');
+            const typeEl = document.getElementById('currentConceptType');
+
+            nameEl.textContent = title;
+            typeEl.textContent = mode.replace('_', ' ').toUpperCase();
+            container.style.display = 'block';
+        }
+
+        // ========== UI Design Scene ==========
+        function renderUIScene(scene) {
+            const elements = scene.elements || [];
+
+            elements.forEach((element, index) => {
+                const group = new THREE.Group();
+                group.userData.sceneObject = true;
+
+                // Create floating panel
+                const width = element.size?.w || 3;
+                const height = element.size?.h || 2;
+
+                // Panel background
+                const panelGeom = new THREE.PlaneGeometry(width, height);
+                const panelMat = new THREE.MeshBasicMaterial({
+                    color: element.style?.background || 0xffffff,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.95
+                });
+                const panel = new THREE.Mesh(panelGeom, panelMat);
+                group.add(panel);
+
+                // Panel border
+                const borderGeom = new THREE.EdgesGeometry(panelGeom);
+                const borderMat = new THREE.LineBasicMaterial({
+                    color: element.style?.border_color || 0x3b82f6,
+                    linewidth: 2
+                });
+                const border = new THREE.LineSegments(borderGeom, borderMat);
+                group.add(border);
+
+                // Position
+                const pos = element.position || { x: index * 4 - 4, y: 0, z: 0 };
+                group.position.set(pos.x, pos.y, pos.z);
+
+                // Add label using sprite
+                if (element.component_type || element.name) {
+                    const labelSprite = createTextSprite(
+                        element.name || element.component_type,
+                        { fontsize: 24, backgroundColor: { r: 59, g: 130, b: 246, a: 0.9 } }
+                    );
+                    labelSprite.position.set(0, height/2 + 0.3, 0.1);
+                    labelSprite.scale.set(2, 0.5, 1);
+                    group.add(labelSprite);
+                }
+
+                thirdeyeState.scene.add(group);
+
+                // Animate in
+                group.scale.setScalar(0);
+                gsap.to(group.scale, {
+                    x: 1, y: 1, z: 1,
+                    duration: 0.5,
+                    delay: index * 0.1,
+                    ease: 'back.out(1.7)'
+                });
+
+                thirdeyeState.nodes.set(element.id || `ui_${index}`, { group, concept: element });
+            });
+        }
+
+        // ========== Narrative Scene ==========
+        function renderNarrativeScene(scene) {
+            const elements = scene.elements || [];
+
+            // First render environment backdrop if present
+            const backdrop = elements.find(e => e.type === 'backdrop');
+            if (backdrop) {
+                renderBackdrop(backdrop);
+            }
+
+            // Render characters
+            const characters = elements.filter(e => e.type === 'character');
+            characters.forEach((char, index) => {
+                renderCharacter(char, index);
+            });
+
+            // Render dialogue bubbles
+            const dialogues = elements.filter(e => e.type === 'dialogue_bubble');
+            dialogues.forEach((dialogue, index) => {
+                renderDialogueBubble(dialogue, index);
+            });
+        }
+
+        function renderBackdrop(backdrop) {
+            const group = new THREE.Group();
+            group.userData.sceneObject = true;
+
+            // Large background plane
+            const geom = new THREE.PlaneGeometry(50, 30);
+            const color = backdrop.style?.primary_color || '#4299e1';
+            const mat = new THREE.MeshBasicMaterial({
+                color: new THREE.Color(color),
+                side: THREE.DoubleSide
+            });
+            const mesh = new THREE.Mesh(geom, mat);
+            mesh.position.set(0, 5, -15);
+            group.add(mesh);
+
+            thirdeyeState.scene.add(group);
+        }
+
+        function renderCharacter(char, index) {
+            const group = new THREE.Group();
+            group.userData.sceneObject = true;
+
+            // Simple character representation (capsule shape)
+            const bodyGeom = new THREE.CapsuleGeometry(0.5, 1.5, 8, 16);
+            const color = char.style?.color || (index % 2 === 0 ? '#3b82f6' : '#10b981');
+            const bodyMat = new THREE.MeshPhongMaterial({
+                color: new THREE.Color(color),
+                emissive: new THREE.Color(color),
+                emissiveIntensity: 0.1
+            });
+            const body = new THREE.Mesh(bodyGeom, bodyMat);
+            body.position.y = 1;
+            group.add(body);
+
+            // Head
+            const headGeom = new THREE.SphereGeometry(0.4, 16, 16);
+            const headMat = new THREE.MeshPhongMaterial({
+                color: 0xffd5b4 // Skin tone
+            });
+            const head = new THREE.Mesh(headGeom, headMat);
+            head.position.y = 2.2;
+            group.add(head);
+
+            // Position
+            const pos = char.position || { x: (index - 1) * 3, y: 0, z: 0 };
+            group.position.set(pos.x, pos.y, pos.z);
+
+            // Name label
+            if (char.name) {
+                const nameSprite = createTextSprite(char.name, {
+                    fontsize: 20,
+                    backgroundColor: { r: 30, g: 41, b: 59, a: 0.8 }
+                });
+                nameSprite.position.set(0, 3, 0);
+                nameSprite.scale.set(1.5, 0.4, 1);
+                group.add(nameSprite);
+            }
+
+            thirdeyeState.scene.add(group);
+
+            // Animate in
+            group.scale.setScalar(0);
+            gsap.to(group.scale, {
+                x: 1, y: 1, z: 1,
+                duration: 0.6,
+                delay: index * 0.15,
+                ease: 'elastic.out(1, 0.5)'
+            });
+
+            thirdeyeState.nodes.set(char.id || `char_${index}`, { group, concept: char });
+        }
+
+        function renderDialogueBubble(dialogue, index) {
+            const group = new THREE.Group();
+            group.userData.sceneObject = true;
+
+            // Speech bubble shape
+            const width = Math.min(dialogue.text?.length * 0.08 + 1, 5) || 3;
+            const height = 1;
+
+            const bubbleGeom = new THREE.PlaneGeometry(width, height);
+            const bubbleMat = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.95
+            });
+            const bubble = new THREE.Mesh(bubbleGeom, bubbleMat);
+            group.add(bubble);
+
+            // Border
+            const borderGeom = new THREE.EdgesGeometry(bubbleGeom);
+            const borderMat = new THREE.LineBasicMaterial({ color: 0x64748b });
+            group.add(new THREE.LineSegments(borderGeom, borderMat));
+
+            // Position above speaker
+            const pos = dialogue.position || { x: index * 3, y: 4, z: 1 };
+            group.position.set(pos.x, pos.y, pos.z);
+
+            thirdeyeState.scene.add(group);
+
+            // Float animation
+            gsap.to(group.position, {
+                y: pos.y + 0.2,
+                duration: 2,
+                yoyo: true,
+                repeat: -1,
+                ease: 'sine.inOut'
+            });
+
+            thirdeyeState.nodes.set(dialogue.id || `dialogue_${index}`, { group, concept: dialogue });
+        }
+
+        // ========== Architecture Scene ==========
+        function renderArchitectureScene(scene) {
+            const elements = scene.elements || [];
+
+            // Render components
+            const components = elements.filter(e => e.type === 'arch_component');
+            components.forEach((comp, index) => {
+                renderArchComponent(comp, index);
+            });
+
+            // Render connections
+            const connections = elements.filter(e => e.type === 'arch_connection');
+            connections.forEach((conn, index) => {
+                renderArchConnection(conn, index);
+            });
+
+            // Render layer labels
+            const labels = elements.filter(e => e.type === 'text_label');
+            labels.forEach((label, index) => {
+                renderTextLabel(label, index);
+            });
+        }
+
+        function renderArchComponent(comp, index) {
+            const group = new THREE.Group();
+            group.userData.sceneObject = true;
+
+            const size = comp.size || { w: 3, h: 1, d: 2 };
+            const style = comp.style || {};
+
+            // Component box
+            let geometry;
+            if (style.shape === 'cylinder') {
+                geometry = new THREE.CylinderGeometry(size.w/2, size.w/2, size.h, 16);
+            } else if (style.shape === 'hexagon') {
+                geometry = new THREE.CylinderGeometry(size.w/2, size.w/2, size.h, 6);
+            } else {
+                geometry = new THREE.BoxGeometry(size.w, size.h, size.d);
+            }
+
+            const color = new THREE.Color(style.color || '#3b82f6');
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.85,
+                emissive: color,
+                emissiveIntensity: 0.1
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            group.add(mesh);
+
+            // Icon/label
+            if (comp.name) {
+                const labelSprite = createTextSprite(comp.name, {
+                    fontsize: 18,
+                    backgroundColor: { r: 255, g: 255, b: 255, a: 0.9 }
+                });
+                labelSprite.position.set(0, size.h/2 + 0.4, 0);
+                labelSprite.scale.set(2, 0.5, 1);
+                group.add(labelSprite);
+            }
+
+            // Position
+            const pos = comp.position || { x: 0, y: 0, z: 0 };
+            group.position.set(pos.x, pos.y, pos.z);
+
+            thirdeyeState.scene.add(group);
+
+            // Animate in
+            group.scale.setScalar(0);
+            gsap.to(group.scale, {
+                x: 1, y: 1, z: 1,
+                duration: 0.4,
+                delay: index * 0.08,
+                ease: 'back.out(1.5)'
+            });
+
+            thirdeyeState.nodes.set(comp.id || `comp_${index}`, { group, concept: comp });
+        }
+
+        function renderArchConnection(conn, index) {
+            const style = conn.style || {};
+            const sourcePos = conn.source_pos || { x: 0, y: 0, z: 0 };
+            const targetPos = conn.target_pos || { x: 1, y: 0, z: 0 };
+
+            // Create line
+            const points = [
+                new THREE.Vector3(sourcePos.x, sourcePos.y, sourcePos.z),
+                new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z)
+            ];
+            const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
+            const lineMat = new THREE.LineBasicMaterial({
+                color: new THREE.Color(style.color || '#64748b'),
+                linewidth: style.width || 2
+            });
+
+            const line = new THREE.Line(lineGeom, lineMat);
+            line.userData.sceneObject = true;
+            thirdeyeState.scene.add(line);
+
+            // Add arrowhead
+            const direction = new THREE.Vector3().subVectors(
+                new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z),
+                new THREE.Vector3(sourcePos.x, sourcePos.y, sourcePos.z)
+            ).normalize();
+
+            const arrowGeom = new THREE.ConeGeometry(0.15, 0.4, 8);
+            const arrowMat = new THREE.MeshBasicMaterial({
+                color: new THREE.Color(style.color || '#64748b')
+            });
+            const arrow = new THREE.Mesh(arrowGeom, arrowMat);
+            arrow.position.set(targetPos.x, targetPos.y, targetPos.z);
+            arrow.lookAt(
+                targetPos.x + direction.x,
+                targetPos.y + direction.y,
+                targetPos.z + direction.z
+            );
+            arrow.rotateX(Math.PI / 2);
+            arrow.userData.sceneObject = true;
+            thirdeyeState.scene.add(arrow);
+        }
+
+        function renderTextLabel(label, index) {
+            const sprite = createTextSprite(label.text, {
+                fontsize: label.style?.font_size || 14,
+                backgroundColor: { r: 100, g: 116, b: 139, a: 0.7 }
+            });
+
+            const pos = label.position || { x: 0, y: 0, z: 0 };
+            sprite.position.set(pos.x, pos.y, pos.z);
+            sprite.scale.set(2, 0.5, 1);
+            sprite.userData.sceneObject = true;
+
+            thirdeyeState.scene.add(sprite);
+        }
+
+        // ========== Data Scene ==========
+        function renderDataScene(scene) {
+            const elements = scene.elements || [];
+
+            elements.forEach((element, index) => {
+                if (element.type === 'chart' && element.chart_type === 'bar_3d') {
+                    renderBarChart3D(element, index);
+                }
+            });
+        }
+
+        function renderBarChart3D(chart, index) {
+            const group = new THREE.Group();
+            group.userData.sceneObject = true;
+
+            const data = chart.data || [];
+            const maxValue = Math.max(...data.map(d => d.value), 1);
+
+            data.forEach((item, i) => {
+                const height = (item.value / maxValue) * 4;
+                const barGeom = new THREE.BoxGeometry(0.8, height, 0.8);
+
+                const hue = (i / data.length) * 0.6;
+                const color = new THREE.Color().setHSL(hue, 0.7, 0.5);
+
+                const barMat = new THREE.MeshPhongMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 0.9
+                });
+
+                const bar = new THREE.Mesh(barGeom, barMat);
+                bar.position.set(i * 1.5 - (data.length * 0.75), height / 2, 0);
+                group.add(bar);
+
+                // Label
+                if (item.label) {
+                    const labelSprite = createTextSprite(item.label, {
+                        fontsize: 14,
+                        backgroundColor: { r: 30, g: 41, b: 59, a: 0.7 }
+                    });
+                    labelSprite.position.set(i * 1.5 - (data.length * 0.75), -0.5, 0);
+                    labelSprite.scale.set(1, 0.3, 1);
+                    group.add(labelSprite);
+                }
+            });
+
+            const pos = chart.position || { x: 0, y: 0, z: 0 };
+            group.position.set(pos.x, pos.y, pos.z);
+
+            thirdeyeState.scene.add(group);
+
+            // Animate bars growing
+            group.scale.y = 0;
+            gsap.to(group.scale, {
+                y: 1,
+                duration: 0.8,
+                ease: 'elastic.out(1, 0.5)'
+            });
+
+            thirdeyeState.nodes.set(chart.id || `chart_${index}`, { group, concept: chart });
+        }
+
+        // ========== Object Scene ==========
+        function renderObjectScene(scene) {
+            const elements = scene.elements || [];
+
+            elements.forEach((element, index) => {
+                if (element.type === 'physical_object') {
+                    renderPhysicalObject(element, index);
+                }
+            });
+        }
+
+        function renderPhysicalObject(obj, index) {
+            const group = new THREE.Group();
+            group.userData.sceneObject = true;
+
+            const size = obj.size || { w: 1, h: 1, d: 1 };
+            const color = new THREE.Color(obj.color || '#64748b');
+
+            let geometry;
+            switch (obj.shape) {
+                case 'cylinder':
+                    geometry = new THREE.CylinderGeometry(size.w/2, size.w/2, size.h, 16);
+                    break;
+                case 'sphere':
+                    geometry = new THREE.SphereGeometry(size.w/2, 16, 16);
+                    break;
+                case 'rounded_box':
+                default:
+                    geometry = new THREE.BoxGeometry(size.w, size.h, size.d);
+            }
+
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                specular: 0x444444,
+                shininess: 30
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            group.add(mesh);
+
+            // Label
+            if (obj.label) {
+                const labelSprite = createTextSprite(obj.label, {
+                    fontsize: 16,
+                    backgroundColor: { r: 30, g: 41, b: 59, a: 0.8 }
+                });
+                labelSprite.position.set(0, Math.max(size.h, size.w)/2 + 0.5, 0);
+                labelSprite.scale.set(1.5, 0.4, 1);
+                group.add(labelSprite);
+            }
+
+            const pos = obj.position || { x: index * 2, y: 0, z: 0 };
+            group.position.set(pos.x, pos.y + size.h/2, pos.z);
+
+            thirdeyeState.scene.add(group);
+
+            // Animate
+            group.scale.setScalar(0);
+            gsap.to(group.scale, {
+                x: 1, y: 1, z: 1,
+                duration: 0.5,
+                delay: index * 0.1,
+                ease: 'back.out(1.7)'
+            });
+
+            thirdeyeState.nodes.set(obj.id || `obj_${index}`, { group, concept: obj });
+        }
+
+        // ========== World Scene ==========
+        function renderWorldScene(scene) {
+            const elements = scene.elements || [];
+
+            // Render terrain
+            const terrain = elements.find(e => e.type === 'terrain');
+            if (terrain) {
+                renderTerrain(terrain);
+            }
+
+            // Render props
+            elements.filter(e => e.type === 'environment_prop').forEach((prop, i) => {
+                renderEnvironmentProp(prop, i);
+            });
+        }
+
+        function renderTerrain(terrain) {
+            const group = new THREE.Group();
+            group.userData.sceneObject = true;
+
+            const size = terrain.size || { w: 50, h: 1, d: 50 };
+            const geometry = new THREE.PlaneGeometry(size.w, size.d, 32, 32);
+
+            // Add some height variation
+            const posAttr = geometry.attributes.position;
+            for (let i = 0; i < posAttr.count; i++) {
+                const z = Math.sin(posAttr.getX(i) * 0.3) * 0.5 + Math.cos(posAttr.getY(i) * 0.3) * 0.5;
+                posAttr.setZ(i, z);
+            }
+            geometry.computeVertexNormals();
+
+            const material = new THREE.MeshPhongMaterial({
+                color: new THREE.Color(terrain.color || '#228b22'),
+                side: THREE.DoubleSide,
+                flatShading: true
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.position.y = terrain.position?.y || -0.5;
+            mesh.receiveShadow = true;
+            group.add(mesh);
+
+            thirdeyeState.scene.add(group);
+            thirdeyeState.nodes.set(terrain.id || 'terrain', { group, concept: terrain });
+        }
+
+        function renderEnvironmentProp(prop, index) {
+            const group = new THREE.Group();
+            group.userData.sceneObject = true;
+
+            // Simple tree/prop representation
+            if (prop.prop_type === 'trees') {
+                // Trunk
+                const trunkGeom = new THREE.CylinderGeometry(0.2, 0.3, 2, 8);
+                const trunkMat = new THREE.MeshPhongMaterial({ color: 0x4a3728 });
+                const trunk = new THREE.Mesh(trunkGeom, trunkMat);
+                trunk.position.y = 1;
+                group.add(trunk);
+
+                // Foliage
+                const foliageGeom = new THREE.ConeGeometry(1.5, 3, 8);
+                const foliageMat = new THREE.MeshPhongMaterial({ color: 0x228b22 });
+                const foliage = new THREE.Mesh(foliageGeom, foliageMat);
+                foliage.position.y = 3.5;
+                group.add(foliage);
+            } else {
+                // Generic prop
+                const propGeom = new THREE.BoxGeometry(1, 1, 1);
+                const propMat = new THREE.MeshPhongMaterial({ color: 0x64748b });
+                group.add(new THREE.Mesh(propGeom, propMat));
+            }
+
+            const pos = prop.position || { x: index * 5, y: 0, z: -5 };
+            group.position.set(pos.x, pos.y, pos.z);
+
+            thirdeyeState.scene.add(group);
+
+            // Animate
+            group.scale.setScalar(0);
+            gsap.to(group.scale, {
+                x: 1, y: 1, z: 1,
+                duration: 0.6,
+                delay: index * 0.2,
+                ease: 'elastic.out(1, 0.7)'
+            });
+
+            thirdeyeState.nodes.set(prop.id || `prop_${index}`, { group, concept: prop });
+        }
+
+        // ========== Abstract Scene (fallback) ==========
+        function renderAbstractScene(scene) {
+            const elements = scene.elements || [];
+
+            elements.forEach((element, index) => {
+                if (element.type === 'concept_sphere') {
+                    const concept = {
+                        id: element.id,
+                        label: element.label,
+                        type: 'entity',
+                        position: element.position,
+                        importance: element.importance,
+                        confidence: 1
+                    };
+
+                    const node = createConceptNode(concept);
+
+                    // Override color if specified
+                    if (element.color) {
+                        node.mesh.material.color.set(element.color);
+                        node.mesh.material.emissive.set(element.color);
+                    }
+                }
+            });
+        }
+
+        // ========== Text Sprite Helper ==========
+        function createTextSprite(text, options = {}) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            const fontsize = options.fontsize || 24;
+            const font = `${fontsize}px Arial`;
+            context.font = font;
+
+            const textWidth = context.measureText(text).width;
+            canvas.width = textWidth + 20;
+            canvas.height = fontsize + 10;
+
+            // Background
+            const bg = options.backgroundColor || { r: 255, g: 255, b: 255, a: 0.9 };
+            context.fillStyle = `rgba(${bg.r},${bg.g},${bg.b},${bg.a})`;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Text
+            context.font = font;
+            context.fillStyle = options.textColor || '#1e293b';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, canvas.width/2, canvas.height/2);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+
+            const material = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true
+            });
+
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(canvas.width/100, canvas.height/100, 1);
+
+            return sprite;
+        }
+
+        function showTransitionIndicator(transition) {
+            const indicator = document.getElementById('transitionIndicator');
+            document.getElementById('transitionType').textContent = transition.type || 'transition';
+            indicator.classList.add('active');
+
+            setTimeout(() => {
+                indicator.classList.remove('active');
+            }, transition.duration_ms || 800);
+        }
+
+        // Create a concept node in the scene
+        function createConceptNode(concept) {
+            const group = new THREE.Group();
+            group.position.set(
+                concept.position?.x || 0,
+                concept.position?.y || 0,
+                concept.position?.z || 0
+            );
+
+            // Sphere for the concept
+            const geometry = new THREE.SphereGeometry(
+                0.4 + (concept.importance || 0.5) * 1.2,
+                32, 32
+            );
+
+            const colorKey = (concept.type || 'default').toLowerCase();
+            const color = CONCEPT_COLORS[colorKey] || CONCEPT_COLORS.default;
+
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                opacity: 0.7 + (concept.confidence || 1) * 0.3,
+                transparent: true,
+                emissive: color,
+                emissiveIntensity: 0.1
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            group.add(mesh);
+
+            thirdeyeState.scene.add(group);
+
+            const node = {
+                group: group,
+                mesh: mesh,
+                concept: concept
+            };
+
+            thirdeyeState.nodes.set(concept.id, node);
+
+            return node;
+        }
+
+        // Handle concept extraction from chat
+        function handleConceptExtraction(extraction) {
+            const { concepts, transition, primary_concept } = extraction;
+
+            if (primary_concept) {
+                // Create or update primary concept
+                let node = thirdeyeState.nodes.get(primary_concept.id);
+                if (!node) {
+                    node = createConceptNode(primary_concept);
+                }
+
+                // Animate transition if specified
+                if (transition && thirdeyeState.currentConcept) {
+                    animateTransition(
+                        thirdeyeState.nodes.get(thirdeyeState.currentConcept.id),
+                        node,
+                        transition
+                    );
+                } else if (!thirdeyeState.currentConcept) {
+                    // First concept - fade in
+                    gsap.from(node.group.scale, {
+                        x: 0, y: 0, z: 0,
+                        duration: 0.5,
+                        ease: 'back.out(1.7)'
+                    });
+                }
+
+                thirdeyeState.currentConcept = primary_concept;
+                updateCurrentConceptDisplay(primary_concept);
+
+                // Focus camera on primary concept
+                focusOnConcept(primary_concept);
+            }
+
+            // Add additional concepts
+            if (concepts) {
+                concepts.forEach(concept => {
+                    if (concept.id !== primary_concept?.id && !thirdeyeState.nodes.has(concept.id)) {
+                        const node = createConceptNode(concept);
+                        // Subtle fade in for secondary concepts
+                        gsap.from(node.mesh.material, {
+                            opacity: 0,
+                            duration: 0.4
+                        });
+                    }
+                });
+            }
+        }
+
+        // Animate transition between concepts
+        function animateTransition(fromNode, toNode, transition) {
+            const duration = (transition.duration_ms || 500) / 1000;
+            const transitionType = transition.type || 'blend';
+
+            // Show transition indicator
+            const indicator = document.getElementById('transitionIndicator');
+            document.getElementById('transitionType').textContent = transitionType;
+            indicator.classList.add('active');
+
+            setTimeout(() => {
+                indicator.classList.remove('active');
+            }, duration * 1000);
+
+            switch (transitionType) {
+                case 'morph':
+                    if (fromNode) {
+                        gsap.to(fromNode.group.position, {
+                            x: toNode.concept.position?.x || 0,
+                            y: toNode.concept.position?.y || 0,
+                            z: toNode.concept.position?.z || 0,
+                            duration: duration,
+                            ease: 'power2.inOut'
+                        });
+                        gsap.to(fromNode.group.scale, {
+                            x: transition.visual?.scale_factor || 1.2,
+                            y: transition.visual?.scale_factor || 1.2,
+                            z: transition.visual?.scale_factor || 1.2,
+                            duration: duration * 0.5,
+                            yoyo: true,
+                            repeat: 1
+                        });
+                    }
+                    break;
+
+                case 'dissolve_emerge':
+                    if (fromNode) {
+                        gsap.to(fromNode.mesh.material, {
+                            opacity: 0,
+                            duration: duration * 0.4,
+                            ease: 'power2.in'
+                        });
+                        gsap.to(fromNode.group.scale, {
+                            x: 0.5, y: 0.5, z: 0.5,
+                            duration: duration * 0.4,
+                            ease: 'power2.in'
+                        });
+                    }
+                    gsap.fromTo(toNode.mesh.material,
+                        { opacity: 0 },
+                        {
+                            opacity: 0.7 + (toNode.concept.confidence || 1) * 0.3,
+                            duration: duration * 0.4,
+                            delay: duration * 0.5,
+                            ease: 'power2.out'
+                        }
+                    );
+                    gsap.fromTo(toNode.group.scale,
+                        { x: 0.5, y: 0.5, z: 0.5 },
+                        {
+                            x: 1, y: 1, z: 1,
+                            duration: duration * 0.4,
+                            delay: duration * 0.5,
+                            ease: 'power2.out'
+                        }
+                    );
+                    break;
+
+                case 'pulse':
+                    gsap.to(toNode.group.scale, {
+                        x: transition.visual?.scale_factor || 1.3,
+                        y: transition.visual?.scale_factor || 1.3,
+                        z: transition.visual?.scale_factor || 1.3,
+                        duration: duration * 0.5,
+                        yoyo: true,
+                        repeat: 1,
+                        ease: 'power2.inOut'
+                    });
+                    gsap.to(toNode.mesh.material, {
+                        emissiveIntensity: 0.5,
+                        duration: duration * 0.5,
+                        yoyo: true,
+                        repeat: 1
+                    });
+                    break;
+
+                default:
+                    // Blend/fade transition
+                    if (fromNode) {
+                        gsap.to(fromNode.mesh.material, {
+                            opacity: 0.3,
+                            duration: duration * 0.6
+                        });
+                    }
+                    gsap.fromTo(toNode.mesh.material,
+                        { opacity: 0 },
+                        { opacity: 0.7 + (toNode.concept.confidence || 1) * 0.3, duration: duration * 0.6 }
+                    );
+                    gsap.fromTo(toNode.group.scale,
+                        { x: 0, y: 0, z: 0 },
+                        { x: 1, y: 1, z: 1, duration: duration * 0.6, ease: 'back.out(1.7)' }
+                    );
+            }
+        }
+
+        // Focus camera on a concept
+        function focusOnConcept(concept) {
+            const pos = concept.position || { x: 0, y: 0, z: 0 };
+
+            gsap.to(thirdeyeState.camera.position, {
+                x: pos.x,
+                y: pos.y + 3,
+                z: pos.z + 10,
+                duration: 0.5,
+                ease: 'power2.inOut'
+            });
+
+            gsap.to(thirdeyeState.controls.target, {
+                x: pos.x,
+                y: pos.y,
+                z: pos.z,
+                duration: 0.5,
+                ease: 'power2.inOut'
+            });
+        }
+
+        // Update current concept display
+        function updateCurrentConceptDisplay(concept) {
+            const container = document.getElementById('thirdeyeCurrentConcept');
+            const nameEl = document.getElementById('currentConceptName');
+            const typeEl = document.getElementById('currentConceptType');
+
+            nameEl.textContent = concept.label || concept.id;
+            typeEl.textContent = concept.type || 'concept';
+            container.style.display = 'block';
+        }
+
+        // Handle render commands
+        function handleRenderCommand(command) {
+            switch (command.type) {
+                case 'set_camera':
+                    if (command.data?.position) {
+                        gsap.to(thirdeyeState.camera.position, {
+                            x: command.data.position.x,
+                            y: command.data.position.y,
+                            z: command.data.position.z,
+                            duration: 0.5
+                        });
+                    }
+                    break;
+                case 'remove_concept':
+                    if (command.target) {
+                        const node = thirdeyeState.nodes.get(command.target);
+                        if (node) {
+                            gsap.to(node.group.scale, {
+                                x: 0, y: 0, z: 0,
+                                duration: 0.3,
+                                onComplete: () => {
+                                    thirdeyeState.scene.remove(node.group);
+                                    thirdeyeState.nodes.delete(command.target);
+                                }
+                            });
+                        }
+                    }
+                    break;
+            }
+        }
+
+        // Animation loop
+        function animateThirdEye() {
+            if (!thirdeyeState.isRunning) return;
+            thirdeyeState.animationFrameId = requestAnimationFrame(animateThirdEye);
+
+            thirdeyeState.controls.update();
+            thirdeyeState.renderer.render(thirdeyeState.scene, thirdeyeState.camera);
+        }
+
+        // Start ThirdEye
+        function startThirdEye() {
+            if (thirdeyeState.isRunning) return;
+            thirdeyeState.isRunning = true;
+
+            if (!thirdeyeState.scene) {
+                initThirdEyeScene();
+            }
+
+            connectThirdEye();
+            animateThirdEye();
+
+            // Resize after panel is visible
+            setTimeout(resizeThirdEyeRenderer, 100);
+        }
+
+        // Stop ThirdEye
+        function stopThirdEye() {
+            thirdeyeState.isRunning = false;
+
+            if (thirdeyeState.animationFrameId) {
+                cancelAnimationFrame(thirdeyeState.animationFrameId);
+            }
+
+            if (thirdeyeState.ws) {
+                thirdeyeState.ws.close();
+                thirdeyeState.ws = null;
+            }
+        }
+
+        // Toggle ThirdEye panel
+        function toggleThirdEye() {
+            const panel = document.getElementById('thirdeyePanel');
+            const btn = document.getElementById('thirdeyeToggleBtn');
+
+            if (thirdeyeState.mode === 'collapsed') {
+                setThirdEyeMode('compact');
+                btn.classList.add('active');
+                btn.style.background = 'var(--primary)';
+                btn.style.color = 'var(--background)';
+            } else {
+                setThirdEyeMode('collapsed');
+                btn.classList.remove('active');
+                btn.style.background = '';
+                btn.style.color = '';
+            }
+        }
+
+        // Set ThirdEye display mode
+        function setThirdEyeMode(mode) {
+            const panel = document.getElementById('thirdeyePanel');
+            const body = document.body;
+
+            // Remove all mode classes
+            panel.classList.remove('collapsed', 'expanded', 'fullscreen');
+            body.classList.remove('thirdeye-open', 'thirdeye-expanded', 'thirdeye-fullscreen');
+
+            // Update button states
+            document.getElementById('thirdeyeModeCompact').classList.remove('active');
+            document.getElementById('thirdeyeModeExpanded').classList.remove('active');
+            document.getElementById('thirdeyeModeFullscreen').classList.remove('active');
+
+            thirdeyeState.mode = mode;
+
+            switch (mode) {
+                case 'collapsed':
+                    panel.classList.add('collapsed');
+                    stopThirdEye();
+                    break;
+                case 'compact':
+                    body.classList.add('thirdeye-open');
+                    document.getElementById('thirdeyeModeCompact').classList.add('active');
+                    startThirdEye();
+                    break;
+                case 'expanded':
+                    panel.classList.add('expanded');
+                    body.classList.add('thirdeye-expanded');
+                    document.getElementById('thirdeyeModeExpanded').classList.add('active');
+                    startThirdEye();
+                    break;
+                case 'fullscreen':
+                    panel.classList.add('fullscreen');
+                    body.classList.add('thirdeye-fullscreen');
+                    document.getElementById('thirdeyeModeFullscreen').classList.add('active');
+                    startThirdEye();
+                    break;
+            }
+
+            // Update camera position based on mode
+            if (mode !== 'collapsed' && thirdeyeState.camera) {
+                const distance = mode === 'fullscreen' ? 20 : mode === 'expanded' ? 15 : 12;
+                gsap.to(thirdeyeState.camera.position, {
+                    z: distance,
+                    duration: 0.4
+                });
+            }
+
+            setTimeout(resizeThirdEyeRenderer, 100);
+        }
+
+        // Also send chat messages to ThirdEye for concept extraction
+        const originalSendMessage = window.sendMessage;
+        window.sendMessage = function() {
+            // Call original
+            if (originalSendMessage) {
+                originalSendMessage.apply(this, arguments);
+            }
+
+            // Send to ThirdEye if connected
+            if (thirdeyeState.ws && thirdeyeState.ws.readyState === WebSocket.OPEN) {
+                const messageText = document.getElementById('messageInput').value.trim();
+                if (messageText) {
+                    thirdeyeState.ws.send(JSON.stringify({
+                        type: 'chat_message',
+                        text: messageText
+                    }));
+                }
+            }
+        };
+
+        // Keyboard shortcut for ThirdEye (Ctrl+E)
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                toggleThirdEye();
+            }
+        });
+
+        console.log('[ThirdEye] Module loaded. Press Ctrl+E or click 👁️ to open.');
     </script>
 
     <script src="multithreaded_chat_enhanced_js.js"></script>
