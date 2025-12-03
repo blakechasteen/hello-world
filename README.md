@@ -1,4 +1,4 @@
-# HoloLoom v1.0
+# HoloLoom v1.1.5
 
 **An AI assistant that actually learns from you.**
 
