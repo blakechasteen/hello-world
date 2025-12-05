@@ -7,10 +7,16 @@ enabling detection of plateaus, regressions, and successful patterns.
 **Location**: `HoloLoom/redteam/refinement/`
 **Performance**: <5ms per quality record
 
-Key Classes:
+Key Classes (Quality Trajectory):
 - QualityTrajectoryTracker: Main trajectory tracking orchestrator
 - StrategyTrajectory: Quality evolution for a single attack strategy
 - RefinementPattern: Discovered patterns for improving attacks
+
+Key Classes (Attack Refinement - Wave 2):
+- AttackRefiner: Main refinement orchestrator with async API
+- AttackRefinementStrategy: Enum of 5 strategies (OBFUSCATE, MUTATE, VERIFY, ELEGANCE, RECURSIVE)
+- AttackQualityMetrics: Multi-dimensional quality scoring (effectiveness, stealth, reliability, elegance)
+- AttackRefinementResult: Complete result container with provenance
 """
 
 from .quality_trajectory import (
@@ -19,8 +25,21 @@ from .quality_trajectory import (
     RefinementPattern
 )
 
+from .attack_refinement import (
+    AttackRefiner,
+    AttackRefinementStrategy,
+    AttackQualityMetrics,
+    AttackRefinementResult
+)
+
 __all__ = [
+    # Quality Trajectory
     'QualityTrajectoryTracker',
     'StrategyTrajectory',
-    'RefinementPattern'
+    'RefinementPattern',
+    # Attack Refinement (Wave 2)
+    'AttackRefiner',
+    'AttackRefinementStrategy',
+    'AttackQualityMetrics',
+    'AttackRefinementResult'
 ]

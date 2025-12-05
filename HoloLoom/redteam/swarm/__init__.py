@@ -72,6 +72,12 @@ from .safety import (
     create_safety_gate,
     create_authorization_token,
 )
+from .coordinator import (
+    SwarmCoordinator,
+    CampaignPhase,
+    SwarmMetrics,
+    SwarmCampaignResult,
+)
 from .agents import (
     # Base agent
     BaseAgent,
@@ -93,7 +99,6 @@ from .agents import (
     ExploiterAgent,
     create_exploiter_agent,
     # Coordinator agent (task distribution, result aggregation)
-    CampaignPhase,
     CampaignStatus,
     TaskAssignment,
     CoordinatorAgent,
@@ -121,8 +126,36 @@ from .learning import (
     HierarchicalLearningCoordinator,
     create_learning_coordinator,
 )
+from .ab_testing import (
+    # Enums
+    ExperimentStatus,
+    TrafficAllocation,
+    SignificanceLevel,
+    EffectSizeCategory,
+    # Data classes
+    Variant,
+    StatisticalResult,
+    ExperimentConfig,
+    Experiment,
+    # Statistical Analysis
+    StatisticalAnalyzer,
+    # Traffic Splitting
+    TrafficSplitter,
+    # Early Stopping
+    EarlyStoppingChecker,
+    # A/B Test Manager
+    ABTestManager,
+    # Factory functions
+    create_ab_test_manager,
+    create_experiment_config,
+    run_ab_test,
+)
 
 __all__ = [
+    # Swarm Coordinator (main orchestrator)
+    "SwarmCoordinator",
+    "SwarmMetrics",
+    "SwarmCampaignResult",
     # Protocol Enums
     "AgentRole",
     "AgentState",
@@ -206,7 +239,26 @@ __all__ = [
     # Unified Learning Coordinator
     "HierarchicalLearningCoordinator",
     "create_learning_coordinator",
+    # A/B Testing Enums
+    "ExperimentStatus",
+    "TrafficAllocation",
+    "SignificanceLevel",
+    "EffectSizeCategory",
+    # A/B Testing Data Classes
+    "Variant",
+    "StatisticalResult",
+    "ExperimentConfig",
+    "Experiment",
+    # A/B Testing Components
+    "StatisticalAnalyzer",
+    "TrafficSplitter",
+    "EarlyStoppingChecker",
+    "ABTestManager",
+    # A/B Testing Factory Functions
+    "create_ab_test_manager",
+    "create_experiment_config",
+    "run_ab_test",
 ]
 
-__version__ = "1.3.0"  # Bumped for learning system
+__version__ = "1.4.0"  # Bumped for A/B testing framework
 __status__ = "Production Ready"

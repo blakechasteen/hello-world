@@ -73,11 +73,50 @@ from .monitor import (
 )
 
 # =============================================================================
+# Sandboxed Executor (Main Integration)
+# =============================================================================
+
+from .sandboxed_executor import (
+    SandboxedExecutor,
+    create_sandboxed_executor,
+    create_sandboxed_executor_sync,
+    sandboxed_attack_execution,
+)
+
+# =============================================================================
+# Filesystem Isolation (NEW - November 2025)
+# =============================================================================
+
+from . import filesystem as _fs_module
+
+FilesystemSandbox = _fs_module.FilesystemSandbox
+FilesystemBackend = _fs_module.SandboxBackend
+FilesystemSandboxConfig = _fs_module.SandboxConfig
+OverlayMount = _fs_module.OverlayMount
+FilesystemSandboxResult = _fs_module.SandboxResult
+create_filesystem_sandbox = _fs_module.create_filesystem_sandbox
+mount_isolated_environment = _fs_module.mount_isolated_environment
+
+# =============================================================================
+# Container Execution (NEW - November 2025)
+# =============================================================================
+
+from . import container as _container_module
+
+ContainerExecutor = _container_module.ContainerExecutor
+ContainerBackend = _container_module.ContainerBackend
+ContainerSandboxConfig = _container_module.SandboxConfig
+ResourceLimits = _container_module.ResourceLimits
+ContainerSandboxResult = _container_module.SandboxResult
+create_container_executor = _container_module.create_container_executor
+execute_in_container = _container_module.execute_in_container
+
+# =============================================================================
 # All Exports
 # =============================================================================
 
 __all__ = [
-    # Protocols
+    # Protocols & Config
     'SandboxMode',
     'SandboxConfig',
     'SandboxResult',
@@ -89,7 +128,31 @@ __all__ = [
     'ResourceSample',
     'ResourceSummary',
     'ResourceMonitor',
+
+    # Sandboxed Executor (Phase 2 - November 2025)
+    'SandboxedExecutor',
+    'create_sandboxed_executor',
+    'create_sandboxed_executor_sync',
+    'sandboxed_attack_execution',
+
+    # Filesystem Isolation (NEW - November 2025)
+    'FilesystemSandbox',
+    'FilesystemBackend',
+    'FilesystemSandboxConfig',
+    'OverlayMount',
+    'FilesystemSandboxResult',
+    'create_filesystem_sandbox',
+    'mount_isolated_environment',
+
+    # Container Execution (NEW - November 2025)
+    'ContainerExecutor',
+    'ContainerBackend',
+    'ContainerSandboxConfig',
+    'ResourceLimits',
+    'ContainerSandboxResult',
+    'create_container_executor',
+    'execute_in_container',
 ]
 
-__version__ = '0.1.0'  # Phase 2 Foundation
+__version__ = '0.2.0'  # Phase 2 with SandboxedExecutor Integration
 __author__ = 'CARTS Team'

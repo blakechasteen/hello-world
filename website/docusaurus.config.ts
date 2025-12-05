@@ -61,7 +61,7 @@ const config: Config = {
           path: '../docs',
           routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/blakestorm/mythRL/edit/main/',
+          editUrl: 'https://github.com/blakechasteen/hello-world/edit/main/',
           showLastUpdateTime: true,
           showLastUpdateAuthor: true,
           // Include all markdown files
@@ -83,7 +83,7 @@ const config: Config = {
             type: ['rss', 'atom'],
             xslt: true,
           },
-          editUrl: 'https://github.com/blakestorm/mythRL/edit/main/',
+          editUrl: 'https://github.com/blakechasteen/hello-world/edit/main/',
           blogTitle: 'HoloLoom Changelog',
           blogDescription: 'Updates and releases for HoloLoom',
           postsPerPage: 10,
@@ -180,12 +180,12 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://github.com/blakestorm/mythRL/discussions',
+          href: 'https://github.com/blakechasteen/hello-world/discussions',
           label: 'Forum',
           position: 'right',
         },
         {
-          href: 'https://github.com/blakestorm/mythRL',
+          href: 'https://github.com/blakechasteen/hello-world',
           label: 'GitHub',
           position: 'right',
         },
@@ -217,11 +217,11 @@ const config: Config = {
           items: [
             {
               label: 'GitHub Discussions',
-              href: 'https://github.com/blakestorm/mythRL/discussions',
+              href: 'https://github.com/blakechasteen/hello-world/discussions',
             },
             {
               label: 'GitHub Issues',
-              href: 'https://github.com/blakestorm/mythRL/issues',
+              href: 'https://github.com/blakechasteen/hello-world/issues',
             },
           ],
         },
@@ -234,7 +234,7 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/blakestorm/mythRL',
+              href: 'https://github.com/blakechasteen/hello-world',
             },
           ],
         },

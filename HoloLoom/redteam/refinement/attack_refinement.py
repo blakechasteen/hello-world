@@ -310,7 +310,7 @@ class AttackRefiner:
         if not payload or not payload.strip():
             raise ValueError("Payload cannot be empty")
 
-        start_time = time.time()
+        start_time = time.perf_counter()  # Use perf_counter for better precision
 
         # Auto-select strategy if not specified
         if strategy is None:
@@ -401,9 +401,18 @@ class AttackRefiner:
 
         # Log all entries to scratchpad
         for entry in scratchpad_entries:
-            self.scratchpad.add_entry(entry)
+            self.scratchpad.add_attack_entry(
+                intent=entry.intent,
+                strategy=entry.strategy,
+                target_layer=entry.target_layer,
+                payload=entry.payload,
+                response=entry.response,
+                score=entry.score,
+                bypassed=entry.bypassed,
+                confidence=entry.confidence
+            )
 
-        elapsed_time = (time.time() - start_time) * 1000  # Convert to ms
+        elapsed_time = (time.perf_counter() - start_time) * 1000  # Convert to ms
 
         # Generate recommendations for next steps
         recommendations = self._generate_recommendations(
@@ -479,8 +488,8 @@ class AttackRefiner:
 
         # Detect obfuscated attacks (encoded patterns)
         obfuscated_patterns = [
-            r'[A-Z0-9]{10,}',      # Hex/base64
-            r'\\x[0-9a-f]{2}',     # Hex escapes
+            r'[0-9a-f]{16,}',       # Long hex strings
+            r'\\x[0-9a-f]{2}',      # Hex escapes
             r'rot13',
             r'caesar',
             r'base64'
@@ -686,16 +695,13 @@ class AttackRefiner:
         """
         elegant = payload
 
-        # Remove redundant words
-        redundant_pairs = [
-            ('very very', 'very'),
-            ('really really', 'really'),
-            ('please please', 'please'),
-            ('and and', 'and')
-        ]
+        # Remove redundant words - iteratively until no more duplicates found
+        redundant_words = ['very', 'really', 'please', 'and']
 
-        for redundant, simplified in redundant_pairs:
-            elegant = elegant.replace(redundant, simplified)
+        for word in redundant_words:
+            # Keep replacing "word word" with "word" until no more duplicates
+            while f'{word} {word}' in elegant:
+                elegant = elegant.replace(f'{word} {word}', word)
 
         # Remove fillers
         fillers = ['actually', 'basically', 'literally', 'honestly', 'frankly']
@@ -947,17 +953,14 @@ class AttackRefiner:
         """
         return self._refinement_history.copy()
 
-    def get_strategy_stats(self) -> Dict[str, Any]:
+    def get_strategy_stats(self) -> Dict[AttackRefinementStrategy, Any]:
         """
         Get aggregate statistics for all strategies.
 
         Returns:
-            Dictionary mapping strategy names to statistics
+            Dictionary mapping strategy enums to statistics
         """
-        return {
-            strategy.value: stats
-            for strategy, stats in self._strategy_stats.items()
-        }
+        return self._strategy_stats.copy()
 
     def get_refinement_stats(self) -> Dict[str, Any]:
         """

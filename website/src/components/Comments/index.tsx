@@ -8,7 +8,7 @@ export default function Comments(): JSX.Element {
   return (
     <div style={{marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid var(--ifm-color-emphasis-300)'}}>
       <Giscus
-        repo="blakestorm/mythRL"
+        repo="blakechasteen/hello-world"
         repoId=""
         category="Documentation"
         categoryId=""

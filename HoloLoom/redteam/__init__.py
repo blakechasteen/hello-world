@@ -74,15 +74,19 @@ Date: 2025-12-01
 # Core Exports
 # =============================================================================
 
-# Strategies
-from .strategies import (
-    AttackStrategy,
-    AttackPayload,
-    PayloadGenerator,
-    create_payload_generator,
-)
+# Strategies (from strategies.py module)
+from . import strategies as _strategies_module
+
+AttackStrategy = _strategies_module.AttackStrategy
+AttackPayload = _strategies_module.AttackPayload
+PayloadGenerator = _strategies_module.PayloadGenerator
+create_payload_generator = _strategies_module.create_payload_generator
+
 # Alias for convenience
 create_generator = create_payload_generator
+
+# Strategy Generators (from strategy_generators/ package)
+from . import strategy_generators
 
 # Mutation
 from .mutator import (
@@ -239,6 +243,50 @@ from .mrf_analytics import (
     log_enhancement_event,
 )
 
+# =============================================================================
+# NEW - Phase 2+: Sandbox, Swarm, Refinement, Probes (November 2025)
+# =============================================================================
+
+# Phase 2: Sandbox Isolation
+from . import sandbox as _sandbox_module
+
+SandboxMode = _sandbox_module.SandboxMode
+SandboxConfig = _sandbox_module.SandboxConfig
+SandboxResult = _sandbox_module.SandboxResult
+SandboxedExecutor = _sandbox_module.SandboxedExecutor
+create_sandboxed_executor = _sandbox_module.create_sandboxed_executor
+
+# Phase 3: Swarm Coordination
+from . import swarm as _swarm_module
+
+SwarmCoordinator = _swarm_module.SwarmCoordinator
+MessageBus = _swarm_module.MessageBus
+BaseAgent = _swarm_module.BaseAgent
+ScoutAgent = _swarm_module.ScoutAgent
+AttackerAgent = _swarm_module.AttackerAgent
+ExploiterAgent = _swarm_module.ExploiterAgent
+CoordinatorAgent = _swarm_module.CoordinatorAgent
+create_scout_agent = _swarm_module.create_scout_agent
+create_attacker_agent = _swarm_module.create_attacker_agent
+create_exploiter_agent = _swarm_module.create_exploiter_agent
+create_coordinator_agent = _swarm_module.create_coordinator_agent
+
+# Phase 4: Attack Refinement
+from . import refinement as _refinement_module
+
+AttackRefiner = _refinement_module.AttackRefiner
+QualityTrajectoryTracker = _refinement_module.QualityTrajectoryTracker
+AttackRefinementStrategy = _refinement_module.AttackRefinementStrategy
+AttackRefinementResult = _refinement_module.AttackRefinementResult
+
+# Phase 5: Behavioral Probes
+from . import probes as _probes_module
+
+AttackProber = _probes_module.AttackProber
+AttackProbe = _probes_module.AttackProbe
+ProbeResult = _probes_module.ProbeResult
+VulnerabilityProbeReport = _probes_module.VulnerabilityProbeReport
+
 
 # =============================================================================
 # All Exports
@@ -346,6 +394,42 @@ __all__ = [
     'UnifiedLearner',
     'create_unified_learner',
     'run_learning_demo',
+
+    # =================================================================
+    # Phase 2+: Sandbox, Swarm, Refinement, Probes (NEW - Nov 2025)
+    # =================================================================
+
+    # Phase 2: Sandbox Isolation
+    'SandboxMode',
+    'SandboxConfig',
+    'SandboxResult',
+    'SandboxedExecutor',
+    'create_sandboxed_executor',
+
+    # Phase 3: Swarm Coordination
+    'SwarmCoordinator',
+    'MessageBus',
+    'BaseAgent',
+    'ScoutAgent',
+    'AttackerAgent',
+    'ExploiterAgent',
+    'CoordinatorAgent',
+    'create_scout_agent',
+    'create_attacker_agent',
+    'create_exploiter_agent',
+    'create_coordinator_agent',
+
+    # Phase 4: Attack Refinement
+    'AttackRefiner',
+    'QualityTrajectoryTracker',
+    'AttackRefinementStrategy',
+    'AttackRefinementResult',
+
+    # Phase 5: Behavioral Probes
+    'AttackProber',
+    'AttackProbe',
+    'ProbeResult',
+    'VulnerabilityProbeReport',
 ]
 
 
