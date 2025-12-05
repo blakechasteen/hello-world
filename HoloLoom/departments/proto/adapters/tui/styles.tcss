@@ -1,0 +1,426 @@
+/* Proto TUI Styles
+ *
+ * Textual CSS for the Proto terminal user interface.
+ * Uses semantic wave animations with ocean theme colors.
+ *
+ * Status: Phase 3 TUI (2025-12-05)
+ */
+
+/* ============================================
+ * Global Screen Layout
+ * ============================================ */
+
+Screen {
+    layout: vertical;
+    background: $surface;
+}
+
+#main-container {
+    height: 1fr;
+    width: 100%;
+}
+
+#content-area {
+    height: 1fr;
+    width: 100%;
+    layout: horizontal;
+}
+
+#input-area {
+    height: auto;
+    min-height: 3;
+    width: 100%;
+    padding: 0 1;
+    background: $surface;
+}
+
+/* ============================================
+ * Wave Headers and Footers
+ * ============================================ */
+
+WaveHeader {
+    height: auto;
+    min-height: 2;
+    max-height: 8;
+    width: 100%;
+    background: $surface;
+    color: cyan;
+    text-align: center;
+}
+
+WaveHeader.idle {
+    color: $text-muted;
+}
+
+WaveHeader.waiting {
+    color: cyan;
+}
+
+WaveHeader.receiving {
+    color: $success;
+}
+
+WaveHeader.processing {
+    color: magenta;
+}
+
+WaveHeader.error {
+    color: $error;
+}
+
+WaveFooter {
+    height: auto;
+    min-height: 2;
+    max-height: 8;
+    width: 100%;
+    background: $surface;
+    color: blue;
+    text-align: center;
+}
+
+WaveFooter.typing {
+    color: yellow;
+}
+
+WaveFooter.sending {
+    color: $primary;
+}
+
+/* ============================================
+ * Response Panel
+ * ============================================ */
+
+ResponsePanel {
+    height: 100%;
+    width: 3fr;
+    padding: 1;
+    background: $surface;
+    border: solid $primary;
+    overflow-y: auto;
+}
+
+ResponsePanel > .welcome {
+    color: $text-muted;
+    text-align: center;
+    padding: 2;
+}
+
+ResponsePanel > .thinking {
+    color: $warning;
+    text-style: italic;
+}
+
+/* Message Types */
+MessageWidget {
+    width: 100%;
+    padding: 0 1;
+    margin-bottom: 1;
+}
+
+MessageWidget.user {
+    background: $surface-darken-1;
+    border-left: thick $primary;
+}
+
+MessageWidget.proto {
+    background: $surface;
+    border-left: thick $success;
+}
+
+MessageWidget.error {
+    background: $error 10%;
+    border-left: thick $error;
+}
+
+MessageWidget.system {
+    background: $warning 10%;
+    border-left: thick $warning;
+}
+
+MessageWidget.debug {
+    color: $text-muted;
+    text-style: italic;
+}
+
+/* ============================================
+ * Context Panel (Sidebar)
+ * ============================================ */
+
+ContextPanel {
+    height: 100%;
+    width: 1fr;
+    min-width: 25;
+    max-width: 40;
+    padding: 1;
+    background: $surface-darken-1;
+    border: solid $secondary;
+}
+
+ContextPanel > .section-title {
+    text-style: bold;
+    margin-bottom: 1;
+    color: $text;
+}
+
+ContextPanel > .section {
+    margin-bottom: 2;
+}
+
+ContextPanel > .mode-display {
+    padding: 0 1;
+}
+
+ContextPanel > .shortcut {
+    color: $text-muted;
+    padding: 0 1;
+}
+
+ContextPanel > .empty-hint {
+    color: $text-muted;
+    text-style: italic;
+    padding: 0 1;
+}
+
+/* File Widgets */
+FileWidget {
+    width: 100%;
+    padding: 0 1;
+    height: auto;
+}
+
+FileWidget:hover {
+    background: $surface-lighten-1;
+}
+
+FileWidget.active {
+    background: $primary 20%;
+    border-left: thick $primary;
+}
+
+/* ============================================
+ * Input Panel
+ * ============================================ */
+
+InputPanel {
+    height: auto;
+    width: 100%;
+    padding: 0 1;
+    background: $surface;
+    layout: horizontal;
+}
+
+InputPanel > .prompt {
+    width: auto;
+    color: $text-muted;
+    padding-right: 1;
+}
+
+InputPanel > CommandInput {
+    width: 1fr;
+}
+
+/* Query Input */
+QueryInput {
+    width: 100%;
+    margin: 0 1;
+}
+
+QueryInput:focus {
+    border: tall $primary;
+}
+
+CommandInput {
+    width: 1fr;
+    border: none;
+}
+
+CommandInput:focus {
+    border: none;
+    background: $surface-lighten-1;
+}
+
+/* ============================================
+ * Footer
+ * ============================================ */
+
+Footer {
+    background: $surface-darken-2;
+    color: $text-muted;
+}
+
+Footer > .footer--key {
+    background: $surface;
+    color: $text;
+}
+
+Footer > .footer--description {
+    color: $text-muted;
+}
+
+/* ============================================
+ * Notifications
+ * ============================================ */
+
+Toast {
+    background: $surface-darken-1;
+    border: solid $primary;
+    padding: 1 2;
+}
+
+Toast.-error {
+    border: solid $error;
+    background: $error 10%;
+}
+
+Toast.-success {
+    border: solid $success;
+    background: $success 10%;
+}
+
+Toast.-warning {
+    border: solid $warning;
+    background: $warning 10%;
+}
+
+/* ============================================
+ * Modal Dialogs
+ * ============================================ */
+
+ModalScreen {
+    align: center middle;
+}
+
+ModalScreen > Container {
+    width: 60%;
+    max-width: 80;
+    height: auto;
+    max-height: 80%;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2;
+}
+
+ModalScreen > Container > Label {
+    margin-bottom: 1;
+}
+
+ModalScreen > Container > Button {
+    margin-top: 1;
+}
+
+/* ============================================
+ * Loading States
+ * ============================================ */
+
+.loading {
+    text-style: italic;
+    color: $text-muted;
+}
+
+.loading::before {
+    content: "⏳ ";
+}
+
+/* ============================================
+ * Status Indicators
+ * ============================================ */
+
+.status-ok {
+    color: $success;
+}
+
+.status-warning {
+    color: $warning;
+}
+
+.status-error {
+    color: $error;
+}
+
+.status-info {
+    color: $primary;
+}
+
+/* ============================================
+ * Code Blocks
+ * ============================================ */
+
+.code-block {
+    background: $surface-darken-2;
+    padding: 1;
+    margin: 1 0;
+    border: solid $secondary;
+}
+
+.code-inline {
+    background: $surface-darken-1;
+    padding: 0 1;
+}
+
+/* ============================================
+ * Themes - Ocean (Default)
+ * ============================================ */
+
+.theme-ocean WaveHeader {
+    color: cyan;
+}
+
+.theme-ocean WaveFooter {
+    color: blue;
+}
+
+/* ============================================
+ * Themes - Cyberpunk
+ * ============================================ */
+
+.theme-cyberpunk WaveHeader {
+    color: magenta;
+}
+
+.theme-cyberpunk WaveFooter {
+    color: yellow;
+}
+
+.theme-cyberpunk ResponsePanel {
+    border: solid magenta;
+}
+
+.theme-cyberpunk ContextPanel {
+    border: solid yellow;
+}
+
+/* ============================================
+ * Themes - Kanagawa
+ * ============================================ */
+
+.theme-kanagawa WaveHeader {
+    color: #7E9CD8;
+}
+
+.theme-kanagawa WaveFooter {
+    color: #957FB8;
+}
+
+.theme-kanagawa ResponsePanel {
+    border: solid #7E9CD8;
+}
+
+/* ============================================
+ * Themes - Minimal
+ * ============================================ */
+
+.theme-minimal WaveHeader {
+    color: $text-muted;
+}
+
+.theme-minimal WaveFooter {
+    color: $text-muted;
+}
+
+.theme-minimal ResponsePanel {
+    border: solid $secondary;
+}
+
+.theme-minimal ContextPanel {
+    border: solid $secondary;
+}

@@ -467,8 +467,8 @@ class TestARContextProvider:
         provider.update_context("user_001", Vector3(0, 0, 0), Quaternion.identity())
         provider.update_context("user_002", Vector3(1, 0, 1), Quaternion.identity())
 
-        # Get context for user_001
-        ctx = provider.get_context("user_001")
+        # Update user_001 context again to detect nearby users (user_002 now exists)
+        ctx = provider.update_context("user_001", Vector3(0, 0, 0), Quaternion.identity())
         assert "user_002" in ctx.nearby_users
 
     def test_zone_detection(self):
@@ -1393,7 +1393,8 @@ class TestTouchGestureRecognizer:
         assert recognizer.tap_threshold_ms > 0
         assert recognizer.long_press_threshold_ms > 0
 
-    def test_touch_start(self):
+    @pytest.mark.asyncio
+    async def test_touch_start(self):
         """Test touch start handling."""
         recognizer = TouchGestureRecognizer()
 
@@ -1402,7 +1403,8 @@ class TestTouchGestureRecognizer:
         assert 0 in recognizer.active_touches
         assert result is None  # No gesture yet
 
-    def test_touch_end_tap(self):
+    @pytest.mark.asyncio
+    async def test_touch_end_tap(self):
         """Test tap detection on touch end."""
         recognizer = TouchGestureRecognizer()
 
@@ -1415,7 +1417,8 @@ class TestTouchGestureRecognizer:
         assert gesture is not None
         assert gesture.gesture_type == TouchGestureType.TAP
 
-    def test_touch_move_pan(self):
+    @pytest.mark.asyncio
+    async def test_touch_move_pan(self):
         """Test pan detection on touch move."""
         recognizer = TouchGestureRecognizer()
 
@@ -1426,7 +1429,8 @@ class TestTouchGestureRecognizer:
         assert gesture is not None
         assert gesture.gesture_type == TouchGestureType.PAN
 
-    def test_swipe_detection(self):
+    @pytest.mark.asyncio
+    async def test_swipe_detection(self):
         """Test swipe detection."""
         recognizer = TouchGestureRecognizer()
 

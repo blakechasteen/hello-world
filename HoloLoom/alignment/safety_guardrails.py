@@ -39,6 +39,17 @@ class RiskLevel(Enum):
     CRITICAL = "critical"      # Critical risk - blocked by default
 
 
+class OutcomeType(Enum):
+    """
+    Outcome type for safety policy decisions.
+
+    Used for policy overrides and decision outcomes.
+    """
+    ALLOW = "allow"            # Allow the action
+    BLOCK = "block"            # Block the action
+    REQUIRE_APPROVAL = "require_approval"  # Require human approval
+
+
 class ActionCategory(Enum):
     """
     Categories of actions the system can perform.
@@ -117,12 +128,26 @@ class ActionRequest:
     Request to perform an action.
 
     Contains all information needed for safety evaluation.
+
+    Args:
+        action_id: Unique identifier for this action request
+        category: Category of action (QUERY, DELETION, SYSTEM, etc.)
+        description: Human-readable description of the action
+        context: Additional context for safety evaluation
+        user_id: Optional user identifier
+        session_id: Optional session identifier
     """
-    action: str
+    action_id: str
     category: ActionCategory
+    description: str = ""
     context: Dict[str, Any] = field(default_factory=dict)
     user_id: Optional[str] = None
     session_id: Optional[str] = None
+
+    @property
+    def action(self) -> str:
+        """Backward compatibility: return description as action."""
+        return self.description
 
 
 class AdversarialDetector:
@@ -193,7 +218,7 @@ class AdversarialDetector:
                 return True, "Potential resource exhaustion attempt detected"
 
         # Check for suspicious length (very long inputs)
-        if len(text) > 50000:  # 50k characters
+        if len(text) >= 50000:  # 50k characters
             return True, "Input exceeds reasonable length"
 
         return False, ""
@@ -379,6 +404,8 @@ class SafetyGuardrails:
         self.action_history: List[ActionRequest] = []
         self.decisions: List[SafetyDecision] = []
         self._decision_records: List[Tuple[ActionRequest, SafetyDecision]] = []
+        # Policy overrides: category -> OutcomeType (ALLOW, BLOCK, REQUIRE_APPROVAL)
+        self.policy_overrides: Dict[ActionCategory, OutcomeType] = {}
 
         # MRF integration (Phase 1 - November 2025)
         self.enable_mrf_enhancement = enable_mrf_enhancement
@@ -536,6 +563,41 @@ class SafetyGuardrails:
                     reason=f"Blocked: {reason}",
                     metadata={"adversarial_detected": True}
                 )
+
+        # Check for policy overrides (allows bypassing default policy)
+        if request.category in self.policy_overrides:
+            override = self.policy_overrides[request.category]
+            if override == OutcomeType.ALLOW:
+                logger.info(f"Policy override: ALLOW for category {request.category.value}")
+                self.action_history.append(request)
+                decision = SafetyDecision(
+                    allowed=True,
+                    risk_level=RiskLevel.LOW,
+                    reason=f"Policy override: ALLOW for {request.category.value}",
+                    requires_approval=False,
+                    metadata={"policy_override": True, "action_id": request.action_id},
+                    context=request.context,
+                )
+                self.decisions.append(decision)
+                self._decision_records.append((request, decision))
+                return decision
+            elif override == OutcomeType.BLOCK:
+                logger.info(f"Policy override: BLOCK for category {request.category.value}")
+                self.action_history.append(request)
+                decision = SafetyDecision(
+                    allowed=False,
+                    risk_level=RiskLevel.HIGH,
+                    reason=f"Policy override: BLOCK for {request.category.value}",
+                    requires_approval=False,
+                    metadata={"policy_override": True, "action_id": request.action_id},
+                    context=request.context,
+                )
+                self.decisions.append(decision)
+                self._decision_records.append((request, decision))
+                return decision
+            elif override == OutcomeType.REQUIRE_APPROVAL:
+                # Continue with normal evaluation but force approval
+                pass  # Will be handled by normal flow with forced approval
 
         # Consciousness Integration - Phase 1 (Nov 2025)
         # Epistemic humility check: Low epistemic confidence = higher risk

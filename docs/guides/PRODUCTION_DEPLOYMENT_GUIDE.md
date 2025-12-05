@@ -1,657 +1,916 @@
-# HoloLoom Memory System - Production Deployment Guide
+# HoloLoom VoiceAgent - Production Deployment Guide
 
-**Version**: 1.0.0 (Weeks 1-4 Complete)
-**Status**: ✅ Production Ready
-**Date**: November 2025
-
-## Table of Contents
-
-1. [Quick Start](#quick-start)
-2. [System Requirements](#system-requirements)
-3. [Installation](#installation)
-4. [Configuration](#configuration)
-5. [Deployment Patterns](#deployment-patterns)
-6. [Monitoring & Observability](#monitoring--observability)
-7. [Performance Tuning](#performance-tuning)
-8. [Security](#security)
-9. [Troubleshooting](#troubleshooting)
-10. [Scaling](#scaling)
+**Version**: 1.0.0
+**Date**: November 15, 2025
+**Status**: Production Ready
 
 ---
 
-## Quick Start
+## 📋 Table of Contents
 
-### Minimal Setup (30 seconds)
-
-```python
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
-
-# Create system (works without any external dependencies)
-system = create_integrated_memory_system()
-
-# Store memory
-await system.store("Important information", importance=0.9)
-
-# Retrieve
-results = await system.retrieve("search query", limit=10)
-
-# That's it! 🎉
-```
-
-### Production Setup (5 minutes)
-
-```python
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
-
-# Create production system with LLM
-system = create_production_memory_system(
-    llm_provider="openai",  # or "anthropic", "ollama"
-    llm_model="gpt-3.5-turbo"
-)
-
-# Start background consolidation
-await system.start_consolidation()
-
-# Use in your application
-async with system:
-    await system.store("User prefers dark mode", importance=0.9)
-    results = await system.retrieve("user preferences", limit=5)
-```
+1. [Prerequisites](#prerequisites)
+2. [Docker Deployment](#docker-deployment)
+3. [Kubernetes Deployment](#kubernetes-deployment)
+4. [Monitoring & Observability](#monitoring--observability)
+5. [Security Hardening](#security-hardening)
+6. [Scaling & Performance](#scaling--performance)
+7. [Backup & Recovery](#backup--recovery)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
-## System Requirements
+## 🔧 Prerequisites
 
-### Minimum Requirements
+### System Requirements
 
-| Component | Requirement |
-|-----------|-------------|
-| **Python** | 3.10+ |
-| **RAM** | 512 MB |
-| **Storage** | 100 MB |
-| **CPU** | 1 core |
+**Minimum**:
+- CPU: 4 cores
+- RAM: 8GB
+- Storage: 50GB
+- Network: 1Gbps
 
-### Recommended Production
+**Recommended**:
+- CPU: 8 cores
+- RAM: 16GB
+- Storage: 100GB SSD
+- Network: 10Gbps
 
-| Component | Requirement |
-|-----------|-------------|
-| **Python** | 3.12+ |
-| **RAM** | 2-4 GB |
-| **Storage** | 1 GB |
-| **CPU** | 2-4 cores |
-
-### Optional Dependencies
+### Software Requirements
 
 ```bash
-# Semantic search (recommended)
-pip install sentence-transformers
+# Docker
+docker --version  # ≥ 20.10.0
+docker-compose --version  # ≥ 2.0.0
 
-# LLM integration
-pip install openai anthropic ollama  # Choose one or more
+# Kubernetes
+kubectl version  # ≥ 1.24.0
+helm version  # ≥ 3.10.0
 
-# Vector database (for >10k memories)
-pip install faiss-cpu  # or faiss-gpu
+# Optional
+k9s --version  # For cluster management
+stern --version  # For log tailing
 ```
+
+### Required Credentials
+
+1. **OpenAI API Key** (for TTS)
+   ```bash
+   export OPENAI_API_KEY='sk-your-api-key'
+   ```
+
+2. **Docker Registry** (if using private registry)
+   ```bash
+   docker login registry.example.com
+   ```
+
+3. **Kubernetes Context** (if deploying to K8s)
+   ```bash
+   kubectl config current-context
+   ```
 
 ---
 
-## Installation
+## 🐳 Docker Deployment
 
-### Core Installation
+### Local Development
+
+#### 1. Build Image
 
 ```bash
-# Clone repository
-git clone https://github.com/blakechasteen/hello-world.git
-cd hello-world
+# Build VoiceAgent image
+docker build -f Dockerfile.voice -t hololoom/voice-agent:latest .
 
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install core dependencies
-pip install torch numpy networkx
-
-# Install HoloLoom
-pip install -e .
+# Verify build
+docker images | grep voice-agent
 ```
 
-### Full Installation (with all features)
+#### 2. Start Services
 
 ```bash
-# Install core + optional dependencies
-pip install torch numpy networkx sentence-transformers openai anthropic
+# Start all services
+docker-compose -f docker-compose.voice.yml up -d
 
-# Verify installation
-python -c "from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system; print('✓ HoloLoom installed successfully')"
+# Check status
+docker-compose -f docker-compose.voice.yml ps
+
+# View logs
+docker-compose -f docker-compose.voice.yml logs -f voice-agent
 ```
 
----
+#### 3. Access Services
 
-## Configuration
+```
+Voice Agent API:  http://localhost:8000
+Neo4j Browser:    http://localhost:7474
+Qdrant API:       http://localhost:6333
+Prometheus:       http://localhost:9090
+Grafana:          http://localhost:3000 (admin/admin)
+```
 
-### Environment Variables
+#### 4. Test VoiceAgent
 
 ```bash
-# LLM API Keys
-export OPENAI_API_KEY="sk-..."
-export ANTHROPIC_API_KEY="sk-ant-..."
+# Enter container
+docker exec -it voice-agent bash
 
-# Ollama (local)
-export OLLAMA_HOST="http://localhost:11434"
+# Run tests
+python -m pytest HoloLoom/voice/tests/ -v
 
-# System configuration
-export HOLOLOOM_LOG_LEVEL="INFO"
-export HOLOLOOM_CONSOLIDATION_INTERVAL="60"  # minutes
+# Run demo
+python demos/demo_voice_agent.py
 ```
 
-### Configuration File
+#### 5. Stop Services
 
-```python
-# config/production.py
-from HoloLoom.memory.integrated_memory_system import IntegratedMemoryConfig
+```bash
+# Stop all services
+docker-compose -f docker-compose.voice.yml down
 
-config = IntegratedMemoryConfig(
-    # Week 3: LLM consolidation
-    llm_provider="openai",
-    llm_model="gpt-3.5-turbo",
-    consolidation_interval_minutes=60,
-    enable_consolidation=True,
-    prune_consolidated_episodes=False,  # Keep for audit trail
-
-    # Week 4: Hybrid retrieval
-    enable_semantic_search=True,
-    enable_bm25_search=True,
-    enable_graph_search=True,
-    semantic_model="all-MiniLM-L6-v2",
-
-    # Memory management
-    enable_archival=True  # Soft-delete for audit trail
-)
+# Remove volumes (data will be lost!)
+docker-compose -f docker-compose.voice.yml down -v
 ```
 
----
+### Production Docker Deployment
 
-## Deployment Patterns
+#### 1. Build Production Image
 
-### Pattern 1: FastAPI Service
+```bash
+# Build with build args
+docker build -f Dockerfile.voice \
+  --build-arg VERSION=1.0.0 \
+  --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+  -t registry.example.com/hololoom/voice-agent:1.0.0 \
+  .
 
-```python
-# app.py
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+# Tag as latest
+docker tag registry.example.com/hololoom/voice-agent:1.0.0 \
+  registry.example.com/hololoom/voice-agent:latest
 
-app = FastAPI(title="HoloLoom Memory API")
-
-# Create system on startup
-@app.on_event("startup")
-async def startup():
-    app.state.memory_system = create_production_memory_system(
-        llm_provider="openai",
-        llm_model="gpt-3.5-turbo"
-    )
-    await app.state.memory_system.start_consolidation()
-
-# Clean shutdown
-@app.on_event("shutdown")
-async def shutdown():
-    await app.state.memory_system.stop_consolidation()
-    await app.state.memory_system.close()
-
-# API endpoints
-class StoreRequest(BaseModel):
-    content: str
-    importance: float = 0.5
-    entities: list[str] | None = None
-
-class RetrieveRequest(BaseModel):
-    query: str
-    limit: int = 10
-
-@app.post("/memory/store")
-async def store_memory(request: StoreRequest):
-    result = await app.state.memory_system.store(
-        content=request.content,
-        importance=request.importance,
-        entities=request.entities
-    )
-    return {"memory_id": result.memory_id, "success": result.success}
-
-@app.post("/memory/retrieve")
-async def retrieve_memories(request: RetrieveRequest):
-    result = await app.state.memory_system.retrieve(
-        query=request.query,
-        limit=request.limit
-    )
-    return {
-        "memories": [{"text": m.text, "id": m.id} for m in result.memories],
-        "retrieval_time_ms": result.retrieval_time_ms
-    }
-
-@app.get("/memory/stats")
-async def get_stats():
-    return app.state.memory_system.get_statistics()
-
-# Run with: uvicorn app:app --host 0.0.0.0 --port 8000 --workers 4
+# Push to registry
+docker push registry.example.com/hololoom/voice-agent:1.0.0
+docker push registry.example.com/hololoom/voice-agent:latest
 ```
 
-### Pattern 2: Background Service
+#### 2. Configure Production Environment
 
-```python
-# background_service.py
-import asyncio
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+```bash
+# Create .env file
+cat > .env.production <<EOF
+# API Keys
+OPENAI_API_KEY=sk-your-real-api-key
 
-async def main():
-    system = create_production_memory_system()
+# Database Passwords
+NEO4J_PASSWORD=your-secure-neo4j-password
+REDIS_PASSWORD=your-secure-redis-password
 
-    # Start background consolidation
-    await system.start_consolidation()
+# Grafana
+GRAFANA_PASSWORD=your-secure-grafana-password
+EOF
 
-    # Keep running
-    try:
-        while True:
-            await asyncio.sleep(60)
-            stats = system.get_statistics()
-            print(f"Stats: {stats}")
-    except KeyboardInterrupt:
-        await system.stop_consolidation()
-        await system.close()
-
-if __name__ == "__main__":
-    asyncio.run(main())
+# Secure the file
+chmod 600 .env.production
 ```
 
-### Pattern 3: Flask Integration
+#### 3. Deploy Production Stack
 
-```python
-# flask_app.py
-from flask import Flask, request, jsonify
-import asyncio
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+```bash
+# Deploy with production environment
+docker-compose -f docker-compose.voice.yml \
+  --env-file .env.production \
+  up -d
 
-app = Flask(__name__)
-memory_system = None
+# Scale voice agents
+docker-compose -f docker-compose.voice.yml up -d --scale voice-agent=5
 
-@app.before_first_request
-def init_memory_system():
-    global memory_system
-    memory_system = create_production_memory_system()
-
-@app.route('/memory/store', methods=['POST'])
-def store():
-    data = request.json
-    loop = asyncio.new_event_loop()
-    result = loop.run_until_complete(
-        memory_system.store(data['content'], importance=data.get('importance', 0.5))
-    )
-    return jsonify({"memory_id": result.memory_id})
-
-@app.route('/memory/retrieve', methods=['POST'])
-def retrieve():
-    data = request.json
-    loop = asyncio.new_event_loop()
-    result = loop.run_until_complete(
-        memory_system.retrieve(data['query'], limit=data.get('limit', 10))
-    )
-    return jsonify({
-        "memories": [{"text": m.text} for m in result.memories]
-    })
+# Monitor deployment
+docker-compose -f docker-compose.voice.yml logs -f
 ```
 
 ---
 
-## Monitoring & Observability
+## ☸️ Kubernetes Deployment
+
+### Prerequisites
+
+#### 1. Cluster Access
+
+```bash
+# Verify cluster access
+kubectl cluster-info
+
+# Check nodes
+kubectl get nodes
+
+# Verify resources
+kubectl top nodes
+```
+
+#### 2. Install Prerequisites
+
+```bash
+# Install metrics server (for HPA)
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+# Verify metrics server
+kubectl get deployment metrics-server -n kube-system
+```
+
+### Deployment Steps
+
+#### 1. Create Namespace
+
+```bash
+# Create namespace
+kubectl apply -f deployment/kubernetes/namespace.yaml
+
+# Verify
+kubectl get namespace hololoom-voice
+```
+
+#### 2. Create Secrets
+
+```bash
+# Create secret for OpenAI API key
+kubectl create secret generic voice-agent-secrets \
+  --from-literal=OPENAI_API_KEY='sk-your-api-key' \
+  --from-literal=NEO4J_PASSWORD='your-neo4j-password' \
+  --namespace=hololoom-voice
+
+# Verify secret
+kubectl get secret voice-agent-secrets -n hololoom-voice
+```
+
+#### 3. Deploy Configuration
+
+```bash
+# Deploy ConfigMap
+kubectl apply -f deployment/kubernetes/configmap.yaml
+
+# Verify
+kubectl get configmap voice-agent-config -n hololoom-voice
+```
+
+#### 4. Deploy Storage
+
+```bash
+# Deploy PVC
+kubectl apply -f deployment/kubernetes/pvc.yaml
+
+# Wait for PVC to be bound
+kubectl get pvc -n hololoom-voice -w
+```
+
+#### 5. Deploy Application
+
+```bash
+# Deploy Voice Agent
+kubectl apply -f deployment/kubernetes/deployment.yaml
+
+# Wait for pods to be ready
+kubectl get pods -n hololoom-voice -w
+
+# Check pod status
+kubectl describe pod -n hololoom-voice -l app=voice-agent
+```
+
+#### 6. Deploy Service
+
+```bash
+# Deploy services
+kubectl apply -f deployment/kubernetes/service.yaml
+
+# Verify services
+kubectl get svc -n hololoom-voice
+```
+
+#### 7. Deploy Autoscaling
+
+```bash
+# Deploy HPA
+kubectl apply -f deployment/kubernetes/hpa.yaml
+
+# Verify HPA
+kubectl get hpa -n hololoom-voice
+```
+
+#### 8. Verify Deployment
+
+```bash
+# Check all resources
+kubectl get all -n hololoom-voice
+
+# Check logs
+kubectl logs -n hololoom-voice -l app=voice-agent -f
+
+# Test pod health
+kubectl exec -n hololoom-voice -it \
+  $(kubectl get pod -n hololoom-voice -l app=voice-agent -o jsonpath='{.items[0].metadata.name}') \
+  -- python -c "from HoloLoom.voice import VoiceAgent; print('healthy')"
+```
+
+### Access Application
+
+#### Port Forward (for testing)
+
+```bash
+# Forward port to local machine
+kubectl port-forward -n hololoom-voice \
+  svc/voice-agent-service 8000:8000
+
+# Access at http://localhost:8000
+```
+
+#### LoadBalancer (for production)
+
+```bash
+# Get external IP
+kubectl get svc voice-agent-external -n hololoom-voice
+
+# Wait for EXTERNAL-IP
+kubectl get svc voice-agent-external -n hololoom-voice -w
+```
+
+#### Ingress (recommended for production)
+
+```yaml
+# Create Ingress (example with nginx)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: voice-agent-ingress
+  namespace: hololoom-voice
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - voice.hololoom.example.com
+      secretName: voice-tls
+  rules:
+    - host: voice.hololoom.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: voice-agent-service
+                port:
+                  number: 8000
+```
+
+```bash
+# Apply Ingress
+kubectl apply -f ingress.yaml
+
+# Get Ingress URL
+kubectl get ingress -n hololoom-voice
+```
+
+---
+
+## 📊 Monitoring & Observability
+
+### Prometheus Setup
+
+#### 1. Deploy Prometheus
+
+```bash
+# Add Prometheus Helm repo
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Install Prometheus
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace hololoom-voice \
+  --values deployment/prometheus/values.yaml
+
+# Verify deployment
+kubectl get pods -n hololoom-voice -l app.kubernetes.io/name=prometheus
+```
+
+#### 2. Access Prometheus
+
+```bash
+# Port forward Prometheus
+kubectl port-forward -n hololoom-voice \
+  svc/prometheus-kube-prometheus-prometheus 9090:9090
+
+# Access at http://localhost:9090
+```
+
+#### 3. Import Dashboards
+
+```bash
+# Apply Grafana dashboards
+kubectl apply -f deployment/grafana/dashboards/
+```
+
+### Grafana Setup
+
+#### 1. Access Grafana
+
+```bash
+# Get Grafana password
+kubectl get secret -n hololoom-voice prometheus-grafana \
+  -o jsonpath="{.data.admin-password}" | base64 --decode
+
+# Port forward Grafana
+kubectl port-forward -n hololoom-voice \
+  svc/prometheus-grafana 3000:80
+
+# Access at http://localhost:3000
+# Username: admin
+# Password: (from above command)
+```
+
+#### 2. Key Dashboards
+
+- **VoiceAgent Overview**: General health and performance
+- **Conversation Metrics**: Active sessions, turn-taking, context usage
+- **TTS Performance**: Synthesis latency, queue depth
+- **Error Tracking**: Failures, retries, timeouts
+- **Resource Usage**: CPU, memory, network, storage
 
 ### Logging
 
-```python
-import logging
+#### 1. Centralized Logging (ELK Stack)
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("hololoom.log"),
-        logging.StreamHandler()
-    ]
-)
+```bash
+# Install ELK via Helm
+helm install elasticsearch elastic/elasticsearch \
+  --namespace logging \
+  --create-namespace
 
-# HoloLoom modules log automatically
-logger = logging.getLogger("HoloLoom")
+helm install kibana elastic/kibana \
+  --namespace logging
+
+helm install filebeat elastic/filebeat \
+  --namespace logging
 ```
 
-### Metrics Collection
+#### 2. Structured Logs Query
 
-```python
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
-import prometheus_client
+```bash
+# View logs with kubectl
+kubectl logs -n hololoom-voice -l app=voice-agent \
+  --tail=100 \
+  --timestamps
 
-# Create metrics
-memory_stored = prometheus_client.Counter('hololoom_memories_stored_total', 'Total memories stored')
-retrieval_latency = prometheus_client.Histogram('hololoom_retrieval_latency_seconds', 'Retrieval latency')
-consolidation_cycles = prometheus_client.Counter('hololoom_consolidation_cycles_total', 'Consolidation cycles')
+# Stream logs
+kubectl logs -n hololoom-voice -l app=voice-agent -f
 
-# Instrument your code
-async def store_with_metrics(system, content, importance):
-    result = await system.store(content, importance=importance)
-    memory_stored.inc()
-    return result
+# Query specific errors
+kubectl logs -n hololoom-voice -l app=voice-agent | \
+  grep -i "error\|exception\|failure"
+```
 
-async def retrieve_with_metrics(system, query, limit):
-    with retrieval_latency.time():
-        result = await system.retrieve(query, limit=limit)
-    return result
+#### 3. Log Aggregation (Stern)
 
-# Expose metrics
-prometheus_client.start_http_server(9090)
+```bash
+# Install stern
+brew install stern  # macOS
+# or download from https://github.com/stern/stern
+
+# Tail all voice-agent pods
+stern -n hololoom-voice voice-agent
+
+# Filter by severity
+stern -n hololoom-voice voice-agent --include "ERROR|CRITICAL"
+```
+
+---
+
+## 🔒 Security Hardening
+
+### 1. Network Policies
+
+```yaml
+# Create NetworkPolicy to restrict pod communication
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: voice-agent-netpol
+  namespace: hololoom-voice
+spec:
+  podSelector:
+    matchLabels:
+      app: voice-agent
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: neo4j
+      ports:
+        - protocol: TCP
+          port: 7687
+    - to:
+        - podSelector:
+            matchLabels:
+              app: qdrant
+      ports:
+        - protocol: TCP
+          port: 6333
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 53  # DNS
+        - protocol: UDP
+          port: 53
+```
+
+### 2. Pod Security Standards
+
+```yaml
+# Create PodSecurityPolicy (if using PSP)
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: voice-agent-psp
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  runAsUser:
+    rule: MustRunAsNonRoot
+  seLinux:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+```
+
+### 3. Secrets Management
+
+```bash
+# Use Sealed Secrets
+helm install sealed-secrets sealed-secrets/sealed-secrets \
+  --namespace kube-system
+
+# Create sealed secret
+kubectl create secret generic voice-agent-secrets \
+  --from-literal=OPENAI_API_KEY='sk-your-key' \
+  --dry-run=client -o yaml | \
+  kubeseal -o yaml > sealed-secret.yaml
+
+# Apply sealed secret
+kubectl apply -f sealed-secret.yaml
+```
+
+### 4. Image Scanning
+
+```bash
+# Scan image with Trivy
+trivy image hololoom/voice-agent:latest
+
+# Scan for HIGH and CRITICAL vulnerabilities only
+trivy image --severity HIGH,CRITICAL hololoom/voice-agent:latest
+```
+
+---
+
+## 📈 Scaling & Performance
+
+### Horizontal Pod Autoscaling
+
+```bash
+# View HPA status
+kubectl get hpa -n hololoom-voice
+
+# Describe HPA
+kubectl describe hpa voice-agent-hpa -n hololoom-voice
+
+# Manual scaling (overrides HPA temporarily)
+kubectl scale deployment voice-agent \
+  --replicas=10 \
+  --namespace=hololoom-voice
+```
+
+### Vertical Pod Autoscaling
+
+```bash
+# Install VPA
+git clone https://github.com/kubernetes/autoscaler.git
+cd autoscaler/vertical-pod-autoscaler
+./hack/vpa-up.sh
+
+# Create VPA
+cat <<EOF | kubectl apply -f -
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: voice-agent-vpa
+  namespace: hololoom-voice
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: voice-agent
+  updatePolicy:
+    updateMode: "Auto"
+EOF
+
+# Check VPA recommendations
+kubectl describe vpa voice-agent-vpa -n hololoom-voice
+```
+
+### Performance Tuning
+
+#### 1. Resource Optimization
+
+```yaml
+# Optimized resource requests/limits
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "1000m"
+  limits:
+    memory: "4Gi"
+    cpu: "4000m"
+```
+
+#### 2. Connection Pooling
+
+```yaml
+# Add to ConfigMap
+NEO4J_MAX_CONNECTIONS: "100"
+QDRANT_MAX_CONNECTIONS: "50"
+REDIS_MAX_CONNECTIONS: "50"
+```
+
+#### 3. Caching
+
+```yaml
+# Enable Redis caching
+ENABLE_REDIS_CACHE: "true"
+CACHE_TTL: "3600"  # 1 hour
+```
+
+---
+
+## 💾 Backup & Recovery
+
+### Database Backups
+
+#### Neo4j Backup
+
+```bash
+# Create Neo4j backup CronJob
+cat <<EOF | kubectl apply -f -
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: neo4j-backup
+  namespace: hololoom-voice
+spec:
+  schedule: "0 2 * * *"  # 2 AM daily
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: backup
+              image: neo4j:5.13
+              command:
+                - /bin/bash
+                - -c
+                - neo4j-admin backup --backup-dir=/backup --name=daily
+              volumeMounts:
+                - name: neo4j-data
+                  mountPath: /data
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: neo4j-data
+              persistentVolumeClaim:
+                claimName: neo4j-pvc
+            - name: backup
+              persistentVolumeClaim:
+                claimName: backup-pvc
+          restartPolicy: OnFailure
+EOF
+```
+
+#### Qdrant Backup
+
+```bash
+# Create snapshot
+kubectl exec -n hololoom-voice qdrant-0 -- \
+  curl -X POST http://localhost:6333/collections/voice_sessions/snapshots
+
+# Download snapshot
+kubectl cp hololoom-voice/qdrant-0:/qdrant/storage/snapshots/snapshot.tar.gz \
+  ./snapshot.tar.gz
+```
+
+### Application State Backup
+
+```bash
+# Backup PVCs using Velero
+velero backup create voice-agent-backup \
+  --include-namespaces hololoom-voice \
+  --wait
+
+# Verify backup
+velero backup describe voice-agent-backup
+
+# List backups
+velero backup get
+```
+
+### Disaster Recovery
+
+#### 1. Restore from Backup
+
+```bash
+# Restore namespace from Velero backup
+velero restore create --from-backup voice-agent-backup
+
+# Monitor restore
+velero restore get
+velero restore describe voice-agent-backup
+```
+
+#### 2. Rollback Deployment
+
+```bash
+# View deployment history
+kubectl rollout history deployment/voice-agent -n hololoom-voice
+
+# Rollback to previous version
+kubectl rollout undo deployment/voice-agent -n hololoom-voice
+
+# Rollback to specific revision
+kubectl rollout undo deployment/voice-agent \
+  --to-revision=2 \
+  -n hololoom-voice
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+#### 1. Pods Not Starting
+
+```bash
+# Check pod status
+kubectl get pods -n hololoom-voice
+
+# Describe pod
+kubectl describe pod <pod-name> -n hololoom-voice
+
+# Check events
+kubectl get events -n hololoom-voice --sort-by='.lastTimestamp'
+
+# Check logs
+kubectl logs <pod-name> -n hololoom-voice
+```
+
+**Common Causes**:
+- Image pull failure
+- Insufficient resources
+- ConfigMap/Secret missing
+- PVC not bound
+
+#### 2. High Memory Usage
+
+```bash
+# Check memory usage
+kubectl top pods -n hololoom-voice
+
+# Increase memory limit
+kubectl set resources deployment voice-agent \
+  --limits=memory=4Gi \
+  --namespace=hololoom-voice
+```
+
+#### 3. Database Connection Failures
+
+```bash
+# Test Neo4j connection
+kubectl exec -n hololoom-voice -it <pod-name> -- \
+  python -c "from neo4j import GraphDatabase; \
+  driver = GraphDatabase.driver('bolt://neo4j-service:7687'); \
+  driver.verify_connectivity(); \
+  print('Connected!')"
+
+# Test Qdrant connection
+kubectl exec -n hololoom-voice -it <pod-name> -- \
+  curl http://qdrant-service:6333/collections
+```
+
+#### 4. TTS Failures
+
+```bash
+# Check OpenAI API key
+kubectl get secret voice-agent-secrets -n hololoom-voice \
+  -o jsonpath='{.data.OPENAI_API_KEY}' | base64 --decode
+
+# Test TTS
+kubectl exec -n hololoom-voice -it <pod-name> -- \
+  python -c "from HoloLoom.voice import OpenAITTS; \
+  tts = OpenAITTS(); \
+  print('TTS initialized')"
+```
+
+### Debug Mode
+
+```bash
+# Enable debug logging
+kubectl set env deployment/voice-agent \
+  LOG_LEVEL=DEBUG \
+  --namespace=hololoom-voice
+
+# View debug logs
+kubectl logs -n hololoom-voice -l app=voice-agent -f | grep DEBUG
 ```
 
 ### Health Checks
 
-```python
-@app.get("/health")
-async def health_check():
-    try:
-        stats = app.state.memory_system.get_statistics()
-
-        return {
-            "status": "healthy",
-            "total_memories": sum(stats["streams"]["memories_by_scope"].values()),
-            "consolidation_running": app.state.memory_system.consolidator._running,
-            "uptime_seconds": time.time() - start_time
-        }
-    except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}, 503
-```
-
----
-
-## Performance Tuning
-
-### Optimization 1: Cache Embeddings
-
-```python
-# Pre-compute and cache embeddings
-from HoloLoom.memory.hybrid_retrieval import SemanticRetriever
-
-retriever = SemanticRetriever()
-
-# Warm cache on startup
-for memory in all_memories:
-    retriever.embed(memory.text)  # Caches automatically
-```
-
-### Optimization 2: Limit Candidates
-
-```python
-# Filter before retrieval to reduce search space
-result = await system.retrieve(
-    query="test",
-    scopes=[MemoryScope.AGENT],  # Limit to relevant scope
-    min_importance=0.7,  # Only high-importance memories
-    limit=10
-)
-```
-
-### Optimization 3: Tune Consolidation
-
-```python
-# Reduce consolidation frequency for lower cost
-config = IntegratedMemoryConfig(
-    consolidation_interval_minutes=120,  # Every 2 hours instead of 1
-    prune_consolidated_episodes=True  # Remove old episodes
-)
-```
-
-### Optimization 4: Use Cheaper LLM
-
-```python
-# Use Claude Haiku (5x cheaper than GPT-3.5)
-system = create_production_memory_system(
-    llm_provider="anthropic",
-    llm_model="claude-3-haiku-20240307"
-)
-```
-
-### Optimization 5: Batch Operations
-
-```python
-# Batch store operations
-memories = [...]  # List of memories to store
-
-# Store in parallel
-results = await asyncio.gather(*[
-    system.store(mem["content"], importance=mem["importance"])
-    for mem in memories
-])
-```
-
----
-
-## Security
-
-### API Key Management
-
-```python
-# Use environment variables (never hardcode!)
-import os
-
-llm_provider = os.getenv("LLM_PROVIDER", "openai")
-llm_api_key = os.getenv("OPENAI_API_KEY")  # Read from environment
-
-system = create_production_memory_system(
-    llm_provider=llm_provider,
-    llm_model="gpt-3.5-turbo"
-)
-# API key read automatically from environment
-```
-
-### Rate Limiting
-
-```python
-from fastapi import FastAPI
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
-app = FastAPI()
-app.state.limiter = limiter
-
-@app.post("/memory/store")
-@limiter.limit("10/minute")  # Max 10 stores per minute
-async def store_memory(request: StoreRequest):
-    # ... store logic ...
-```
-
-### Input Validation
-
-```python
-from pydantic import BaseModel, validator
-
-class StoreRequest(BaseModel):
-    content: str
-    importance: float = 0.5
-
-    @validator('content')
-    def content_not_empty(cls, v):
-        if not v.strip():
-            raise ValueError('Content cannot be empty')
-        if len(v) > 10000:  # Max 10k characters
-            raise ValueError('Content too long')
-        return v
-
-    @validator('importance')
-    def importance_in_range(cls, v):
-        if not 0.0 <= v <= 1.0:
-            raise ValueError('Importance must be between 0 and 1')
-        return v
-```
-
----
-
-## Troubleshooting
-
-### Issue 1: sentence-transformers not found
-
-**Error**: `ModuleNotFoundError: No module named 'sentence_transformers'`
-
-**Solution**:
 ```bash
-pip install sentence-transformers
+# Check liveness probe
+kubectl exec -n hololoom-voice -it <pod-name> -- \
+  python -c "from HoloLoom.voice import VoiceAgent; print('alive')"
+
+# Check readiness probe
+kubectl exec -n hololoom-voice -it <pod-name> -- \
+  python -c "from HoloLoom.voice import VoiceAgent; print('ready')"
 ```
 
-Or disable semantic search:
-```python
-config = IntegratedMemoryConfig(
-    enable_semantic_search=False,  # Use BM25 + graph only
-    enable_bm25_search=True,
-    enable_graph_search=True
-)
-```
+---
 
-### Issue 2: LLM API errors
+## 📞 Support
 
-**Error**: `openai.error.RateLimitError: Rate limit exceeded`
+### Documentation
+- **README**: `HoloLoom/voice/README.md`
+- **Architecture**: `PHASE_2_VOICE_MODE_ARCHITECTURE.md`
+- **Code Review**: `ELLE_AUDIO_REVIEW_SUMMARY.md`
 
-**Solution**:
-- Use retry logic with exponential backoff
-- Switch to cheaper model (claude-3-haiku)
-- Use local model (Ollama)
-- Disable LLM entirely (use rule-based)
+### Monitoring
+- **Prometheus**: Metrics and alerts
+- **Grafana**: Visualization dashboards
+- **Logs**: Centralized logging (ELK/Loki)
 
-### Issue 3: High memory usage
-
-**Symptoms**: Memory usage growing over time
-
-**Solution**:
-- Enable episode pruning: `prune_consolidated_episodes=True`
-- Reduce consolidation frequency
-- Limit embedding cache size
-- Clear old memories periodically
-
-### Issue 4: Slow retrieval
-
-**Symptoms**: Retrieval taking >1 second
-
-**Solution**:
-- Pre-filter candidates by scope/importance
-- Disable semantic search for speed
-- Use smaller embedding dimensions (96 instead of 384)
-- Limit graph traversal hops to 1
+### Contact
+- **Issues**: File on GitHub repository
+- **Email**: support@hololoom.example.com
 
 ---
 
-## Scaling
+## ✅ Pre-Deployment Checklist
 
-### Horizontal Scaling (Multiple Instances)
+### Development
+- [ ] Code tested locally
+- [ ] Unit tests passing
+- [ ] Integration tests passing
+- [ ] Docker image built successfully
+- [ ] docker-compose working
 
-```python
-# Use shared database for multi-instance deployment
-# (Future: Redis/PostgreSQL backend)
+### Staging
+- [ ] Deployed to staging cluster
+- [ ] Load testing completed
+- [ ] Security scan passed
+- [ ] Monitoring dashboards configured
+- [ ] Alerts tested
 
-# For now: Each instance has its own memory
-# Consolidation happens independently per instance
-```
-
-### Vertical Scaling (Single Instance)
-
-**Small Scale** (<1k memories):
-- RAM: 512 MB
-- CPU: 1 core
-- Storage: 100 MB
-
-**Medium Scale** (1k-10k memories):
-- RAM: 2 GB
-- CPU: 2 cores
-- Storage: 500 MB
-
-**Large Scale** (10k-100k memories):
-- RAM: 8 GB
-- CPU: 4 cores
-- Storage: 2 GB
-- Consider FAISS for vector search
-
-### Performance Benchmarks
-
-| Memories | BM25 | Semantic | Graph | Hybrid |
-|----------|------|----------|-------|--------|
-| 100 | 5ms | 50ms | 10ms | 60ms |
-| 1,000 | 20ms | 150ms | 30ms | 180ms |
-| 10,000 | 100ms | 800ms | 150ms | 950ms |
-
-**Scaling Recommendations**:
-- <1k memories: Use all methods
-- 1k-10k memories: Consider disabling semantic search
-- >10k memories: Use FAISS for approximate search
+### Production
+- [ ] Secrets configured
+- [ ] Backups configured
+- [ ] Monitoring enabled
+- [ ] Alerts configured
+- [ ] Runbook documented
+- [ ] On-call rotation set up
+- [ ] Disaster recovery tested
 
 ---
 
-## Cost Estimation (Production)
-
-### LLM Costs (per month, 24 consolidations/day)
-
-| Provider | Model | Cost/Month |
-|----------|-------|------------|
-| **OpenAI** | gpt-3.5-turbo | ~$3.00 |
-| **OpenAI** | gpt-4-turbo | ~$60.00 |
-| **Anthropic** | claude-3-haiku | ~$0.60 |
-| **Anthropic** | claude-3-sonnet | ~$6.00 |
-| **Ollama** | local (llama2) | $0.00 |
-
-**Recommended**: claude-3-haiku (cheapest, good quality)
-
-### Infrastructure Costs
-
-| Component | Cost/Month |
-|-----------|------------|
-| **Compute** (2 vCPU, 4GB RAM) | ~$20-40 |
-| **Storage** (10 GB) | ~$1-2 |
-| **Bandwidth** (100 GB) | ~$5-10 |
-| **Total** | ~$25-50 |
-
-**Total System Cost**: $25-50/month (infrastructure) + $0.60-60/month (LLM) = **$26-110/month**
+**Version**: 1.0.0
+**Last Updated**: November 15, 2025
+**Status**: Production Ready
 
 ---
 
-## Production Checklist
-
-Before deploying to production, verify:
-
-- ✅ Environment variables configured
-- ✅ API keys secured (not hardcoded)
-- ✅ Logging configured
-- ✅ Health checks implemented
-- ✅ Rate limiting enabled
-- ✅ Input validation added
-- ✅ Error handling comprehensive
-- ✅ Monitoring/metrics in place
-- ✅ Backup strategy defined
-- ✅ Documentation complete
-
----
-
-## Support
-
-### Community
-
-- **GitHub Issues**: https://github.com/blakechasteen/hello-world/issues
-- **Documentation**: See `HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md`
-- **Examples**: See `demos/` directory
-
-### Commercial Support
-
-Contact for enterprise support, custom features, and consulting.
-
----
-
-## Next Steps
-
-1. **Start with minimal setup** to get familiar
-2. **Add LLM integration** for better quality
-3. **Enable background consolidation** for automatic fact extraction
-4. **Deploy to production** with FastAPI/Flask
-5. **Monitor and optimize** based on metrics
-
-**You're ready to deploy!** 🚀
+*This guide provides comprehensive production deployment instructions for HoloLoom VoiceAgent using Docker and Kubernetes with best practices for security, monitoring, and reliability.*

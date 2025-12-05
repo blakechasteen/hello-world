@@ -60,7 +60,12 @@ class MemoryConductor:
         enable_spring_dynamics: bool = False,
         enable_multi_wave: bool = False,
         default_strategy: MemoryStrategy = MemoryStrategy.AUTO,
-        verbose: bool = False
+        verbose: bool = False,
+        # Optional memory system instances for integration
+        hot_tracker: Optional[Any] = None,
+        awareness_graph: Optional[Any] = None,
+        spring_dynamics: Optional[Any] = None,
+        multi_wave_engine: Optional[Any] = None,
     ):
         """
         Initialize Memory Conductor.
@@ -74,6 +79,10 @@ class MemoryConductor:
             enable_multi_wave: Enable temporal wave propagation
             default_strategy: Default strategy if AUTO fails
             verbose: Enable debug logging
+            hot_tracker: Optional HotPatternTracker instance for usage-based boosting
+            awareness_graph: Optional AwarenessGraph instance for spreading activation
+            spring_dynamics: Optional SpringDynamics instance for physics-based connectivity
+            multi_wave_engine: Optional MultiWaveEngine instance for temporal propagation
         """
         self.memory_backend = memory_backend
         self.enable_cache = enable_cache
@@ -83,6 +92,12 @@ class MemoryConductor:
         self.enable_multi_wave = enable_multi_wave
         self.default_strategy = default_strategy
         self.verbose = verbose
+
+        # Memory system instances (optional, for integration)
+        self._hot_tracker = hot_tracker
+        self._awareness_graph = awareness_graph
+        self._spring_dynamics = spring_dynamics
+        self._multi_wave_engine = multi_wave_engine
 
         # Performance tracking
         self._metrics = MemoryPerformanceMetrics()
@@ -435,25 +450,285 @@ class MemoryConductor:
 
         return results
 
+    def _get_memory_content(self, node_id: str) -> str:
+        """
+        Get content for a memory node from the backend.
+
+        Helper to retrieve actual content from memory backend
+        for nodes returned by various memory systems.
+
+        Args:
+            node_id: Node identifier
+
+        Returns:
+            Content string (or node_id as fallback)
+        """
+        try:
+            # Try to get from memory backend's graph
+            if hasattr(self.memory_backend, 'graph'):
+                graph = self.memory_backend.graph
+                if hasattr(graph, '_graph') and node_id in graph._graph.nodes:
+                    node_data = graph._graph.nodes[node_id]
+                    # Try common content fields
+                    for field in ['content', 'text', 'data', 'value']:
+                        if field in node_data:
+                            return str(node_data[field])
+
+            # Try direct retrieval methods
+            if hasattr(self.memory_backend, 'get_node'):
+                node = self.memory_backend.get_node(node_id)
+                if node:
+                    return str(getattr(node, 'content', node_id))
+
+        except Exception as e:
+            if self.verbose:
+                logger.debug(f"Could not get content for {node_id}: {e}")
+
+        # Fallback to node_id itself
+        return str(node_id)
+
     async def _query_hot_patterns(self, query: MemoryQuery) -> List[MemoryResult]:
-        """Query hot patterns (usage-based boosting)."""
-        # Placeholder - integrate with HotPatternFeedbackEngine if available
-        return []
+        """
+        Query hot patterns (usage-based boosting).
+
+        Uses HotPatternTracker to find frequently accessed,
+        high-quality memory elements.
+
+        Heat score = access_count × success_rate × avg_confidence
+        """
+        if not self._hot_tracker:
+            return []
+
+        try:
+            # Get hot patterns from tracker
+            # API: get_hot_patterns(element_type, top_k) -> List[UsageRecord]
+            hot_records = self._hot_tracker.get_hot_patterns(
+                element_type=None,  # All types
+                top_k=query.k
+            )
+
+            results = []
+            for record in hot_records:
+                # UsageRecord has: element_id, element_type, heat_score property
+                heat_score = getattr(record, 'heat_score', 0.5)
+
+                results.append(MemoryResult(
+                    node_id=record.element_id,
+                    content=self._get_memory_content(record.element_id),
+                    relevance=min(heat_score, 1.0),  # Cap at 1.0
+                    source_system=MemorySystem.HOT_PATTERNS,
+                    activation=0.0,
+                    heat=heat_score,
+                    metadata={
+                        "element_type": getattr(record, 'element_type', 'unknown'),
+                        "access_count": getattr(record, 'access_count', 0),
+                        "success_rate": getattr(record, 'success_rate', 0.0),
+                    }
+                ))
+
+            return results
+
+        except Exception as e:
+            if self.verbose:
+                logger.warning(f"Hot patterns query failed: {e}")
+            return []
 
     async def _query_awareness_graph(self, query: MemoryQuery) -> List[MemoryResult]:
-        """Query awareness graph (spreading activation)."""
-        # Placeholder - integrate with AwarenessGraph if available
-        return []
+        """
+        Query awareness graph (spreading activation).
+
+        Uses AwarenessGraph to find memories through
+        spreading activation from query-related nodes.
+        """
+        if not self._awareness_graph:
+            return []
+
+        try:
+            # AwarenessGraph API: perceive(content) -> SemanticPerception
+            # Then: activate(perception, budget, strategy) -> List[Memory]
+
+            # First perceive the query
+            if hasattr(self._awareness_graph, 'perceive'):
+                perception = self._awareness_graph.perceive(query.text)
+            else:
+                # Fallback: create minimal perception-like object
+                perception = type('Perception', (), {'query': query.text})()
+
+            # Activate memories based on perception
+            if hasattr(self._awareness_graph, 'activate'):
+                # Try async first
+                if asyncio.iscoroutinefunction(self._awareness_graph.activate):
+                    memories = await self._awareness_graph.activate(perception)
+                else:
+                    memories = self._awareness_graph.activate(perception)
+            else:
+                return []
+
+            results = []
+            for memory in memories[:query.k]:
+                # Memory objects typically have: id/node_id, text/content, context
+                node_id = getattr(memory, 'id', getattr(memory, 'node_id', str(memory)))
+                content = getattr(memory, 'text', getattr(memory, 'content', str(memory)))
+                activation = getattr(memory, 'activation', 0.5)
+
+                results.append(MemoryResult(
+                    node_id=str(node_id),
+                    content=str(content),
+                    relevance=activation,  # Use activation as relevance
+                    source_system=MemorySystem.AWARENESS_GRAPH,
+                    activation=activation,
+                    heat=0.0,
+                    metadata={
+                        "spreading_activation": True,
+                        "context": getattr(memory, 'context', {}),
+                    }
+                ))
+
+            return results
+
+        except Exception as e:
+            if self.verbose:
+                logger.warning(f"Awareness graph query failed: {e}")
+            return []
 
     async def _query_spring_dynamics(self, query: MemoryQuery) -> List[MemoryResult]:
-        """Query spring dynamics (physics-based)."""
-        # Placeholder - integrate with SpringDynamics if available
-        return []
+        """
+        Query spring dynamics (physics-based connectivity).
+
+        Uses Hooke's Law spring physics to propagate activation
+        through memory graph connections.
+        """
+        if not self._spring_dynamics:
+            return []
+
+        try:
+            # SpringDynamics API:
+            # 1. activate_nodes(activations: Dict[str, float])
+            # 2. propagate() -> SpringPropagationResult
+
+            # Get initial seed nodes from vector search
+            seed_nodes = await self._query_vector_memory(query)
+
+            if not seed_nodes:
+                return []
+
+            # Create activation dict from seed nodes
+            activations = {
+                r.node_id: r.relevance
+                for r in seed_nodes[:5]  # Top 5 as seeds
+            }
+
+            # Activate and propagate
+            if hasattr(self._spring_dynamics, 'activate_nodes'):
+                self._spring_dynamics.activate_nodes(activations)
+
+            if hasattr(self._spring_dynamics, 'propagate'):
+                result = self._spring_dynamics.propagate()
+
+                # SpringPropagationResult has: activated_nodes, node_activations
+                results = []
+                activated_nodes = getattr(result, 'activated_nodes', [])
+                node_activations = getattr(result, 'node_activations', {})
+
+                for node_id in activated_nodes[:query.k]:
+                    activation = node_activations.get(node_id, 0.5)
+
+                    results.append(MemoryResult(
+                        node_id=node_id,
+                        content=self._get_memory_content(node_id),
+                        relevance=activation,
+                        source_system=MemorySystem.SPRING_DYNAMICS,
+                        activation=activation,
+                        heat=0.0,
+                        metadata={
+                            "physics_based": True,
+                            "converged": getattr(result, 'converged', False),
+                            "iterations": getattr(result, 'iterations', 0),
+                        }
+                    ))
+
+                return results
+
+            return []
+
+        except Exception as e:
+            if self.verbose:
+                logger.warning(f"Spring dynamics query failed: {e}")
+            return []
 
     async def _query_multi_wave(self, query: MemoryQuery) -> List[MemoryResult]:
-        """Query multi-wave engine (temporal propagation)."""
-        # Placeholder - integrate with MultiWaveEngine if available
-        return []
+        """
+        Query multi-wave engine (temporal propagation).
+
+        Uses brain wave-inspired cycles (Beta/Alpha/Theta/Delta)
+        for temporal memory retrieval.
+        """
+        if not self._multi_wave_engine:
+            return []
+
+        try:
+            # MultiWaveEngine API options:
+            # 1. on_query(query_embedding) -> BetaWaveRecallResult
+            # 2. retrieve_memories(query_embedding, top_k, ...) -> BetaWaveRecallResult
+
+            # Need query embedding - try to get from memory backend
+            query_embedding = None
+            if hasattr(self.memory_backend, 'embed'):
+                query_embedding = self.memory_backend.embed(query.text)
+            elif hasattr(self.memory_backend, 'embedder'):
+                embedder = self.memory_backend.embedder
+                if hasattr(embedder, 'encode'):
+                    import numpy as np
+                    embedding = embedder.encode(query.text)
+                    query_embedding = np.array(embedding)
+
+            if query_embedding is None:
+                # Fallback: create simple embedding placeholder
+                import numpy as np
+                query_embedding = np.zeros(384)  # Default dimension
+
+            # Try retrieve_memories first (more flexible)
+            if hasattr(self._multi_wave_engine, 'retrieve_memories'):
+                result = self._multi_wave_engine.retrieve_memories(
+                    query_embedding=query_embedding,
+                    top_k=query.k,
+                )
+            elif hasattr(self._multi_wave_engine, 'on_query'):
+                result = self._multi_wave_engine.on_query(query_embedding)
+            else:
+                return []
+
+            # BetaWaveRecallResult has: recalled_memories List[(node_id, activation)]
+            results = []
+            recalled = getattr(result, 'recalled_memories', [])
+
+            for item in recalled[:query.k]:
+                # Item is tuple: (node_id, activation_level)
+                if isinstance(item, tuple) and len(item) >= 2:
+                    node_id, activation = item[0], item[1]
+                else:
+                    node_id = str(item)
+                    activation = 0.5
+
+                results.append(MemoryResult(
+                    node_id=str(node_id),
+                    content=self._get_memory_content(str(node_id)),
+                    relevance=float(activation),
+                    source_system=MemorySystem.MULTI_WAVE,
+                    activation=float(activation),
+                    heat=0.0,
+                    metadata={
+                        "wave_based": True,
+                        "creative_insights": len(getattr(result, 'creative_insights', [])),
+                    }
+                ))
+
+            return results
+
+        except Exception as e:
+            if self.verbose:
+                logger.warning(f"Multi-wave query failed: {e}")
+            return []
 
     def _merge_results(
         self,

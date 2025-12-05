@@ -18,3 +18,6 @@ export * from './landscape';
 // Existing standalone components
 export { ConfidenceGauge } from './ConfidenceGauge';
 export { StreamingResponse } from './StreamingResponse';
+
+// Connected components (wired to Zustand store)
+export * from './connected';

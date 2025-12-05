@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 3: Collaborative Intelligence Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f0f1e 0%, #1a1a3e 50%, #0f0f1e 100%);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .demo-header {
+      text-align: center;
+      padding: 30px 20px 20px;
+    }
+
+    .demo-header h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .demo-header p {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Collaboration Toolbar */
+    .collaboration-toolbar {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+    }
+
+    .toolbar-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+
+    .toolbar-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .toolbar-btn.primary {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    }
+
+    .toolbar-btn.active {
+      background: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    }
+
+    .toolbar-btn.danger {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .toolbar-btn.muted {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .session-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      background: rgba(34, 197, 94, 0.1);
+      border-radius: 8px;
+    }
+
+    .session-indicator {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
+
+    .session-name {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .session-code {
+      color: rgba(255, 255, 255, 0.5);
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    /* Presence Avatars */
+    .presence-avatars {
+      display: flex;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: white;
+      border: 2px solid rgba(26, 26, 46, 0.9);
+      margin-left: -8px;
+      position: relative;
+    }
+
+    .avatar:first-child {
+      margin-left: 0;
+    }
+
+    .avatar.current {
+      border-color: #8b5cf6;
+    }
+
+    .status-dot {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid rgba(26, 26, 46, 0.9);
+    }
+
+    .status-dot.online { background: #22c55e; }
+    .status-dot.idle { background: #eab308; }
+
+    /* Canvas Container */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 120px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-top: 60px;
+    }
+
+    .graph-canvas {
+      width: 100%;
+      max-width: 900px;
+      height: 600px;
+    }
+
+    /* Cursor Overlay */
+    .cursor-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .user-cursor {
+      position: absolute;
+      transition: transform 0.1s ease-out;
+    }
+
+    .cursor-pointer {
+      filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+    }
+
+    .cursor-label {
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+      color: white;
+    }
+
+    /* Annotations Panel */
+    .annotations-panel {
+      position: absolute;
+      right: 20px;
+      top: 80px;
+      width: 320px;
+      max-height: 450px;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .panel-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .panel-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .annotations-list {
+      padding: 12px;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+    .annotation-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .annotation-card.insight { border-left: 3px solid #f59e0b; }
+    .annotation-card.question { border-left: 3px solid #3b82f6; }
+    .annotation-card.note { border-left: 3px solid #22c55e; }
+
+    .annotation-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .annotation-type { font-size: 16px; }
+    .annotation-author { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+    .annotation-content { font-size: 13px; line-height: 1.5; }
+
+    .annotation-replies {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .reply {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 6px;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      display: flex;
+      gap: 28px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-indicator.connected { background: #22c55e; }
+    .status-indicator.disconnected { background: #6b7280; }
+
+    /* Speaking indicator */
+    .speaking-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #22c55e;
+      font-size: 12px;
+    }
+
+    /* Annotation Input Modal */
+    .annotation-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(26, 26, 46, 0.98);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 20px;
+      width: 400px;
+      z-index: 2000;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .modal-header .type-icon {
+      font-size: 24px;
+    }
+
+    .modal-header h3 {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .modal-header .close-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 24px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-header .close-btn:hover {
+      color: white;
+    }
+
+    .modal-target {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 12px;
+    }
+
+    .annotation-textarea {
+      width: 100%;
+      min-height: 100px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 12px;
+      color: white;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .annotation-textarea:focus {
+      border-color: rgba(139, 92, 246, 0.6);
+    }
+
+    .annotation-textarea::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 6px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .modal-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-btn.cancel {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+    }
+
+    .modal-btn.cancel:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-btn.submit {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border: none;
+      color: white;
+    }
+
+    .modal-btn.submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+
+    .modal-btn.submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1999;
+    }
+
+    /* Live typing indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: rgba(139, 92, 246, 0.1);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 3px;
+    }
+
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      background: #8b5cf6;
+      border-radius: 50%;
+      animation: typingBounce 1.4s ease-in-out infinite;
+    }
+
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-4px); }
+    }
+
+    /* Reply input */
+    .reply-input-container {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .reply-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: white;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .reply-input:focus {
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+
+    .reply-btn {
+      background: rgba(139, 92, 246, 0.3);
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .reply-btn:hover {
+      background: rgba(139, 92, 246, 0.5);
+    }
+
+    .speaking-wave {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: speakPulse 0.5s ease-in-out infinite;
+    }
+
+    @keyframes speakPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
+    }
+
+    /* Focus ring animation */
+    .focus-ring {
+      animation: focusRotate 10s linear infinite;
+    }
+
+    @keyframes focusRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Hidden state */
+    .hidden { display: none !important; }
+
+    /* MRF Refinement Suggestions Panel */
+    .refinement-panel {
+      position: absolute;
+      left: 20px;
+      top: 80px;
+      width: 340px;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
+    }
+
+    .refinement-panel .panel-header {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2));
+      border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .refinement-panel .panel-header h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mrf-badge {
+      font-size: 9px;
+      padding: 2px 6px;
+      background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .refinement-list {
+      padding: 12px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .refinement-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s;
+    }
+
+    .refinement-card:hover {
+      border-color: rgba(139, 92, 246, 0.4);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .refinement-strategy {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .strategy-tag {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .strategy-tag.elegance { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .strategy-tag.verify { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+    .strategy-tag.critique { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .strategy-tag.hofstadter { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+
+    .refinement-original {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 8px;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 6px;
+      border-left: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .refinement-arrow {
+      text-align: center;
+      color: rgba(139, 92, 246, 0.6);
+      font-size: 16px;
+      margin: 6px 0;
+    }
+
+    .refinement-suggestion {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      background: rgba(139, 92, 246, 0.1);
+      border-radius: 6px;
+      border-left: 2px solid #8b5cf6;
+      line-height: 1.5;
+    }
+
+    .refinement-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .confidence-meter {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .confidence-bar {
+      width: 60px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    .confidence-fill.high { background: #22c55e; }
+    .confidence-fill.medium { background: #f59e0b; }
+    .confidence-fill.low { background: #ef4444; }
+
+    .confidence-text {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .refinement-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .refinement-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .refinement-btn.accept {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .refinement-btn.accept:hover {
+      background: rgba(34, 197, 94, 0.4);
+    }
+
+    .refinement-btn.reject {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .refinement-btn.reject:hover {
+      background: rgba(239, 68, 68, 0.4);
+    }
+
+    /* Learning Statistics Panel */
+    .learning-stats {
+      position: absolute;
+      left: 20px;
+      bottom: 70px;
+      width: 340px;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      padding: 16px;
+    }
+
+    .learning-stats h4 {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .stat-value.positive { color: #22c55e; }
+    .stat-value.neutral { color: #f59e0b; }
+
+    .stat-delta {
+      font-size: 10px;
+      margin-left: 4px;
+    }
+
+    .stat-delta.up { color: #22c55e; }
+    .stat-delta.down { color: #ef4444; }
+
+    /* Thompson Sampling Visualization */
+    .thompson-viz {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .thompson-viz h5 {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 8px;
+    }
+
+    .prior-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .prior-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .prior-label {
+      font-size: 10px;
+      width: 80px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .prior-bar {
+      flex: 1;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .prior-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease-out;
+    }
+
+    .prior-fill.cursor { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .prior-fill.voice { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .prior-fill.annotation { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .prior-fill.presence { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+    /* Learning pulse animation */
+    @keyframes learnPulse {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    .learning-active {
+      animation: learnPulse 1.5s ease-in-out;
+    }
+
+    /* Refinement toast notification */
+    .refinement-toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(26, 26, 46, 0.98);
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      opacity: 0;
+      transition: all 0.3s ease-out;
+      z-index: 3000;
+    }
+
+    .refinement-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      font-size: 20px;
+    }
+
+    .toast-message {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .toast-message strong {
+      color: #8b5cf6;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="demo-header">
+    <h1>🤝 Phase 3: Collaborative Intelligence</h1>
+    <p>Real-time collaboration in HoloLoom's Shared Memory Palace</p>
+  </div>
+
+  <!-- Collaboration Toolbar -->
+  <div class="collaboration-toolbar" id="toolbar">
+    <button class="toolbar-btn primary" id="startSessionBtn" onclick="startSession()">
+      <span>🚀</span>
+      <span>Start Session</span>
+    </button>
+    <button class="toolbar-btn" id="joinBtn" onclick="alert('Enter session code to join')">
+      <span>🔗</span>
+      <span>Join</span>
+    </button>
+  </div>
+
+  <!-- Active Session Toolbar (hidden initially) -->
+  <div class="collaboration-toolbar hidden" id="activeToolbar">
+    <div class="session-info">
+      <span class="session-indicator"></span>
+      <span class="session-name">Research Session</span>
+      <span class="session-code">abc123</span>
+    </div>
+    <button class="toolbar-btn" onclick="alert('Invite link copied!')">📨</button>
+    <button class="toolbar-btn danger" onclick="leaveSession()">🚪</button>
+
+    <div class="toolbar-divider"></div>
+
+    <div class="presence-avatars" id="avatars">
+      <div class="avatar current" style="background: #8b5cf6;" title="You">Y</div>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <button class="toolbar-btn" id="voiceBtn" onclick="toggleVoice()">🔇</button>
+    <button class="toolbar-btn hidden" id="muteBtn" onclick="toggleMute()">🎤</button>
+    <div class="speaking-indicator hidden" id="speakingIndicator">
+      <div class="speaking-wave"></div>
+      <span id="speakingCount">1 speaking</span>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <button class="toolbar-btn" id="noteBtn" onclick="setAnnotationMode('note')">📝</button>
+    <button class="toolbar-btn" id="questionBtn" onclick="setAnnotationMode('question')">❓</button>
+    <button class="toolbar-btn" id="insightBtn" onclick="setAnnotationMode('insight')">💡</button>
+  </div>
+
+  <!-- Canvas Container -->
+  <div class="canvas-container">
+    <!-- Graph SVG -->
+    <svg class="graph-canvas" viewBox="0 0 800 550" id="graphCanvas">
+      <!-- Edges -->
+      <g id="edges">
+        <line x1="350" y1="180" x2="500" y2="300" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+        <line x1="350" y1="180" x2="180" y2="280" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+        <line x1="350" y1="180" x2="520" y2="120" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+        <line x1="350" y1="180" x2="380" y2="420" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+        <line x1="500" y1="300" x2="380" y2="420" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+
+        <!-- Edge labels -->
+        <text x="420" y="230" fill="rgba(255,255,255,0.4)" font-size="10" text-anchor="middle">USES</text>
+        <text x="260" y="220" fill="rgba(255,255,255,0.4)" font-size="10" text-anchor="middle">BALANCES</text>
+        <text x="430" y="140" fill="rgba(255,255,255,0.4)" font-size="10" text-anchor="middle">BALANCES</text>
+        <text x="360" y="300" fill="rgba(255,255,255,0.4)" font-size="10" text-anchor="middle">SOLVES</text>
+      </g>
+
+      <!-- Focus rings (hidden initially) -->
+      <g id="focusRings"></g>
+
+      <!-- Nodes -->
+      <g id="nodes">
+        <!-- Thompson Sampling -->
+        <g transform="translate(350, 180)" class="node" data-id="thompson" onclick="selectNode('thompson')">
+          <circle r="35" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" stroke-width="2"/>
+          <text y="4" fill="white" font-size="11" font-weight="500" text-anchor="middle">Thompson</text>
+          <text y="16" fill="white" font-size="11" font-weight="500" text-anchor="middle">Sampling</text>
+          <g transform="translate(28, -28)" class="annotation-badge hidden" id="badge-thompson">
+            <circle r="10" fill="#f59e0b"/>
+            <text y="4" fill="white" font-size="10" font-weight="600" text-anchor="middle">1</text>
+          </g>
+        </g>
+
+        <!-- Bayesian Methods -->
+        <g transform="translate(500, 300)" class="node" data-id="bayesian" onclick="selectNode('bayesian')">
+          <circle r="32" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" stroke-width="2"/>
+          <text y="4" fill="white" font-size="11" font-weight="500" text-anchor="middle">Bayesian</text>
+          <text y="16" fill="white" font-size="11" font-weight="500" text-anchor="middle">Methods</text>
+          <g transform="translate(26, -26)" class="annotation-badge hidden" id="badge-bayesian">
+            <circle r="10" fill="#3b82f6"/>
+            <text y="4" fill="white" font-size="10" font-weight="600" text-anchor="middle">1</text>
+          </g>
+        </g>
+
+        <!-- Exploration -->
+        <g transform="translate(180, 280)" class="node" data-id="explore" onclick="selectNode('explore')">
+          <circle r="28" fill="rgba(34, 197, 94, 0.2)" stroke="#22c55e" stroke-width="2"/>
+          <text y="4" fill="white" font-size="11" font-weight="500" text-anchor="middle">Exploration</text>
+        </g>
+
+        <!-- Exploitation -->
+        <g transform="translate(520, 120)" class="node" data-id="exploit" onclick="selectNode('exploit')">
+          <circle r="28" fill="rgba(34, 197, 94, 0.2)" stroke="#22c55e" stroke-width="2"/>
+          <text y="4" fill="white" font-size="11" font-weight="500" text-anchor="middle">Exploitation</text>
+        </g>
+
+        <!-- Multi-Armed Bandit -->
+        <g transform="translate(380, 420)" class="node" data-id="bandit" onclick="selectNode('bandit')">
+          <circle r="30" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
+          <text y="-4" fill="white" font-size="11" font-weight="500" text-anchor="middle">Multi-Armed</text>
+          <text y="10" fill="white" font-size="11" font-weight="500" text-anchor="middle">Bandit</text>
+        </g>
+      </g>
+    </svg>
+
+    <!-- Cursor Overlay -->
+    <div class="cursor-overlay" id="cursorOverlay"></div>
+
+    <!-- Annotations Panel -->
+    <div class="annotations-panel hidden" id="annotationsPanel">
+      <div class="panel-header">
+        <h3>📝 Annotations (<span id="annotationCount">2</span>)</h3>
+        <button class="panel-close" onclick="toggleAnnotationsPanel()">×</button>
+      </div>
+      <div class="annotations-list" id="annotationsList">
+        <!-- Annotations will be inserted here -->
+      </div>
+    </div>
+
+    <!-- MRF Refinement Suggestions Panel -->
+    <div class="refinement-panel hidden" id="refinementPanel">
+      <div class="panel-header">
+        <h3>
+          ✨ AI Suggestions
+          <span class="mrf-badge">MRF</span>
+        </h3>
+        <button class="panel-close" onclick="toggleRefinementPanel()">×</button>
+      </div>
+      <div class="refinement-list" id="refinementList">
+        <!-- Refinement suggestions will be inserted here -->
+      </div>
+    </div>
+
+    <!-- Learning Statistics Panel -->
+    <div class="learning-stats hidden" id="learningStats">
+      <h4>
+        🧠 Thompson Sampling Learning
+        <span id="learningIndicator" style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%;"></span>
+      </h4>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">Refinements Accepted</div>
+          <div class="stat-value positive" id="acceptedCount">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Accept Rate</div>
+          <div class="stat-value" id="acceptRate">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Quality Improvement</div>
+          <div class="stat-value positive" id="qualityImprove">+0%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Active Strategy</div>
+          <div class="stat-value neutral" id="activeStrategy">AUTO</div>
+        </div>
+      </div>
+
+      <div class="thompson-viz">
+        <h5>UX Preference Priors (Beta Distribution)</h5>
+        <div class="prior-bars">
+          <div class="prior-bar-item">
+            <span class="prior-label">Cursor Visible</span>
+            <div class="prior-bar">
+              <div class="prior-fill cursor" id="cursorPrior" style="width: 70%;"></div>
+            </div>
+          </div>
+          <div class="prior-bar-item">
+            <span class="prior-label">Voice Default</span>
+            <div class="prior-bar">
+              <div class="prior-fill voice" id="voicePrior" style="width: 45%;"></div>
+            </div>
+          </div>
+          <div class="prior-bar-item">
+            <span class="prior-label">Note Suggest</span>
+            <div class="prior-bar">
+              <div class="prior-fill annotation" id="annotationPrior" style="width: 82%;"></div>
+            </div>
+          </div>
+          <div class="prior-bar-item">
+            <span class="prior-label">Presence Style</span>
+            <div class="prior-bar">
+              <div class="prior-fill presence" id="presencePrior" style="width: 60%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refinement Toast Notification -->
+  <div class="refinement-toast" id="refinementToast">
+    <span class="toast-icon" id="toastIcon">✨</span>
+    <span class="toast-message" id="toastMessage">Refinement applied!</span>
+  </div>
+
+  <!-- Annotation Modal -->
+  <div class="modal-overlay hidden" id="modalOverlay" onclick="closeAnnotationModal()"></div>
+  <div class="annotation-modal hidden" id="annotationModal">
+    <div class="modal-header">
+      <span class="type-icon" id="modalTypeIcon">💡</span>
+      <h3 id="modalTitle">Add Insight</h3>
+      <button class="close-btn" onclick="closeAnnotationModal()">×</button>
+    </div>
+    <div class="modal-target" id="modalTarget">On: Thompson Sampling</div>
+    <textarea
+      class="annotation-textarea"
+      id="annotationInput"
+      placeholder="Type your annotation here..."
+      maxlength="500"
+      oninput="updateCharCount(); broadcastTyping()"
+      onkeydown="handleModalKeydown(event)"
+    ></textarea>
+    <div class="typing-indicator hidden" id="othersTypingIndicator" style="margin-bottom: 8px;">
+      <span style="color: #3b82f6; font-weight: 500;">Alice</span> is also viewing this node
+      <div class="typing-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="char-count"><span id="charCount">0</span>/500</div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeAnnotationModal()">Cancel</button>
+      <button class="modal-btn submit" id="submitBtn" onclick="submitAnnotation()" disabled title="Ctrl+Enter">Add Annotation</button>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="status-indicator disconnected" id="connectionStatus"></span>
+      <span id="connectionText">Not in session</span>
+    </div>
+    <div class="status-item hidden" id="participantStatus">
+      <span>👥</span>
+      <span id="participantCount">1 participant</span>
+    </div>
+    <div class="status-item hidden" id="annotationStatus">
+      <span>📝</span>
+      <span id="annotationStatusCount">0 annotations</span>
+    </div>
+    <div class="status-item hidden" id="voiceStatus">
+      <span>🎧</span>
+      <span>Voice active</span>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let isInSession = false;
+    let isVoiceConnected = false;
+    let isMuted = false;
+    let annotationMode = 'none';
+    let selectedNode = null;
+
+    const users = [
+      { id: 'alice', name: 'Alice Chen', color: '#3b82f6', x: 300, y: 200 },
+      { id: 'bob', name: 'Bob Smith', color: '#22c55e', x: 480, y: 320 },
+      { id: 'carol', name: 'Carol Davis', color: '#f59e0b', x: 200, y: 350 }
+    ];
+
+    const annotations = [
+      {
+        id: 'ann-1',
+        type: 'insight',
+        targetId: 'thompson',
+        content: 'This is the key concept that ties exploration and exploitation together!',
+        author: 'Alice Chen',
+        replies: [{ author: 'Bob Smith', content: 'Agreed! Should we add more examples?' }]
+      },
+      {
+        id: 'ann-2',
+        type: 'question',
+        targetId: 'bayesian',
+        content: 'How does this relate to UCB?',
+        author: 'Bob Smith',
+        replies: []
+      }
+    ];
+
+    // MRF Refinement State
+    const mrfStrategies = {
+      note: 'elegance',      // NOTE → ELEGANCE (clarity, simplicity)
+      question: 'verify',    // QUESTION → VERIFY (ensure answerable)
+      insight: 'critique',   // INSIGHT → CRITIQUE (challenge assumptions)
+      connection: 'hofstadter' // CONNECTION → HOFSTADTER (recursive discovery)
+    };
+
+    const refinementSuggestions = [
+      {
+        id: 'ref-1',
+        annotationId: 'ann-1',
+        original: 'This is the key concept that ties exploration and exploitation together!',
+        suggestion: 'Thompson Sampling elegantly balances exploration (trying new options) and exploitation (using best-known options) by sampling from posterior distributions, naturally weighting both uncertainty and historical performance.',
+        strategy: 'elegance',
+        confidence: 0.87,
+        author: 'Alice Chen'
+      },
+      {
+        id: 'ref-2',
+        annotationId: 'ann-2',
+        original: 'How does this relate to UCB?',
+        suggestion: 'How does Thompson Sampling compare to UCB (Upper Confidence Bound) in terms of (1) regret bounds, (2) computational efficiency, and (3) handling of prior knowledge?',
+        strategy: 'verify',
+        confidence: 0.92,
+        author: 'Bob Smith'
+      }
+    ];
+
+    // Thompson Sampling Learning State
+    let learningStats = {
+      accepted: 0,
+      rejected: 0,
+      totalQualityImprovement: 0,
+      priors: {
+        cursor: { alpha: 7, beta: 3 },      // E[X] = 0.70
+        voice: { alpha: 4.5, beta: 5.5 },   // E[X] = 0.45
+        annotation: { alpha: 8.2, beta: 1.8 }, // E[X] = 0.82
+        presence: { alpha: 6, beta: 4 }     // E[X] = 0.60
+      }
+    };
+
+    // Functions
+    function startSession() {
+      isInSession = true;
+      document.getElementById('toolbar').classList.add('hidden');
+      document.getElementById('activeToolbar').classList.remove('hidden');
+      document.getElementById('connectionStatus').classList.remove('disconnected');
+      document.getElementById('connectionStatus').classList.add('connected');
+      document.getElementById('connectionText').textContent = 'Connected';
+      document.getElementById('participantStatus').classList.remove('hidden');
+      document.getElementById('annotationStatus').classList.remove('hidden');
+      document.getElementById('annotationsPanel').classList.remove('hidden');
+
+      // Add user avatars
+      addUserAvatars();
+
+      // Start cursor animation
+      startCursorAnimation();
+
+      // Show annotations
+      renderAnnotations();
+      showAnnotationBadges();
+
+      // Add focus rings
+      addFocusRings();
+
+      updateCounts();
+    }
+
+    function leaveSession() {
+      isInSession = false;
+      isVoiceConnected = false;
+      document.getElementById('toolbar').classList.remove('hidden');
+      document.getElementById('activeToolbar').classList.add('hidden');
+      document.getElementById('connectionStatus').classList.add('disconnected');
+      document.getElementById('connectionStatus').classList.remove('connected');
+      document.getElementById('connectionText').textContent = 'Not in session';
+      document.getElementById('participantStatus').classList.add('hidden');
+      document.getElementById('annotationStatus').classList.add('hidden');
+      document.getElementById('voiceStatus').classList.add('hidden');
+      document.getElementById('annotationsPanel').classList.add('hidden');
+      document.getElementById('cursorOverlay').innerHTML = '';
+      document.getElementById('focusRings').innerHTML = '';
+
+      // Hide badges
+      document.querySelectorAll('.annotation-badge').forEach(b => b.classList.add('hidden'));
+    }
+
+    function addUserAvatars() {
+      const container = document.getElementById('avatars');
+      container.innerHTML = '<div class="avatar current" style="background: #8b5cf6;" title="You">Y</div>';
+
+      users.forEach(user => {
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        avatar.style.background = user.color;
+        avatar.title = user.name;
+        avatar.textContent = user.name.split(' ').map(n => n[0]).join('');
+
+        const dot = document.createElement('span');
+        dot.className = 'status-dot ' + (user.id === 'carol' ? 'idle' : 'online');
+        avatar.appendChild(dot);
+
+        container.appendChild(avatar);
+      });
+    }
+
+    function startCursorAnimation() {
+      const overlay = document.getElementById('cursorOverlay');
+      overlay.innerHTML = '';
+
+      users.forEach(user => {
+        const cursor = document.createElement('div');
+        cursor.className = 'user-cursor';
+        cursor.id = 'cursor-' + user.id;
+        cursor.innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" class="cursor-pointer">
+            <path d="M0 0 L0 18 L4.5 13.5 L8 20 L11 18.5 L7.5 12 L13 12 Z"
+                  fill="${user.color}" stroke="white" stroke-width="1.5"/>
+          </svg>
+          <div class="cursor-label" style="background: ${user.color}">${user.name}</div>
+        `;
+        cursor.style.left = user.x + 'px';
+        cursor.style.top = user.y + 'px';
+        overlay.appendChild(cursor);
+      });
+
+      // Animate cursors
+      animateCursors();
+    }
+
+    function animateCursors() {
+      if (!isInSession) return;
+
+      users.forEach(user => {
+        const cursor = document.getElementById('cursor-' + user.id);
+        if (cursor) {
+          user.x += (Math.random() - 0.5) * 15;
+          user.y += (Math.random() - 0.5) * 15;
+          user.x = Math.max(50, Math.min(750, user.x));
+          user.y = Math.max(100, Math.min(500, user.y));
+          cursor.style.left = user.x + 'px';
+          cursor.style.top = user.y + 'px';
+        }
+      });
+
+      requestAnimationFrame(() => setTimeout(animateCursors, 80));
+    }
+
+    function addFocusRings() {
+      const focusRings = document.getElementById('focusRings');
+      focusRings.innerHTML = `
+        <g transform="translate(350, 180)" class="focus-ring">
+          <circle r="45" fill="none" stroke="${users[0].color}" stroke-width="2" stroke-dasharray="5,5"/>
+        </g>
+        <g transform="translate(500, 300)" class="focus-ring">
+          <circle r="42" fill="none" stroke="${users[1].color}" stroke-width="2" stroke-dasharray="5,5"/>
+        </g>
+      `;
+    }
+
+    function toggleVoice() {
+      isVoiceConnected = !isVoiceConnected;
+      const btn = document.getElementById('voiceBtn');
+      const muteBtn = document.getElementById('muteBtn');
+      const indicator = document.getElementById('speakingIndicator');
+      const status = document.getElementById('voiceStatus');
+
+      if (isVoiceConnected) {
+        btn.innerHTML = '🎧';
+        btn.classList.add('active');
+        muteBtn.classList.remove('hidden');
+        indicator.classList.remove('hidden');
+        status.classList.remove('hidden');
+      } else {
+        btn.innerHTML = '🔇';
+        btn.classList.remove('active');
+        muteBtn.classList.add('hidden');
+        indicator.classList.add('hidden');
+        status.classList.add('hidden');
+        isMuted = false;
+        muteBtn.innerHTML = '🎤';
+        muteBtn.classList.remove('muted');
+      }
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      const btn = document.getElementById('muteBtn');
+      btn.innerHTML = isMuted ? '🔇' : '🎤';
+      btn.classList.toggle('muted', isMuted);
+    }
+
+    function setAnnotationMode(mode) {
+      const btns = ['noteBtn', 'questionBtn', 'insightBtn'];
+      btns.forEach(id => document.getElementById(id).classList.remove('active'));
+
+      if (annotationMode === mode) {
+        annotationMode = 'none';
+      } else {
+        annotationMode = mode;
+        document.getElementById(mode + 'Btn').classList.add('active');
+      }
+    }
+
+    function selectNode(nodeId) {
+      if (annotationMode !== 'none') {
+        addAnnotation(nodeId);
+        return;
+      }
+      selectedNode = selectedNode === nodeId ? null : nodeId;
+    }
+
+    // Modal state
+    let currentModalNode = null;
+    let currentModalType = null;
+    let typingTimeout = null;
+    let typingIndicatorVisible = false;
+
+    function addAnnotation(nodeId) {
+      // Open the modal for live typing instead of creating stub content
+      openAnnotationModal(nodeId);
+    }
+
+    function openAnnotationModal(nodeId) {
+      const nodeNames = {
+        thompson: 'Thompson Sampling',
+        bayesian: 'Bayesian Methods',
+        explore: 'Exploration',
+        exploit: 'Exploitation',
+        bandit: 'Multi-Armed Bandit'
+      };
+      const typeLabels = { note: 'Add Note', question: 'Ask Question', insight: 'Add Insight' };
+      const typeIcons = { note: '📝', question: '❓', insight: '💡' };
+
+      currentModalNode = nodeId;
+      currentModalType = annotationMode;
+
+      // Update modal content
+      document.getElementById('modalTypeIcon').textContent = typeIcons[annotationMode];
+      document.getElementById('modalTitle').textContent = typeLabels[annotationMode];
+      document.getElementById('modalTarget').textContent = 'On: ' + (nodeNames[nodeId] || nodeId);
+
+      // Reset input
+      document.getElementById('annotationInput').value = '';
+      document.getElementById('charCount').textContent = '0';
+      document.getElementById('submitBtn').disabled = true;
+
+      // Show modal
+      document.getElementById('modalOverlay').classList.remove('hidden');
+      document.getElementById('annotationModal').classList.remove('hidden');
+      document.getElementById('othersTypingIndicator').classList.add('hidden');
+
+      // Focus the input
+      setTimeout(() => document.getElementById('annotationInput').focus(), 100);
+
+      // Simulate other user activity
+      simulateOtherUserActivity();
+    }
+
+    function closeAnnotationModal() {
+      document.getElementById('modalOverlay').classList.add('hidden');
+      document.getElementById('annotationModal').classList.add('hidden');
+      currentModalNode = null;
+      currentModalType = null;
+      setAnnotationMode(annotationMode); // Toggle off the mode
+    }
+
+    function updateCharCount() {
+      const input = document.getElementById('annotationInput');
+      const count = input.value.length;
+      document.getElementById('charCount').textContent = count;
+      document.getElementById('submitBtn').disabled = count === 0;
+    }
+
+    function broadcastTyping() {
+      // Simulate broadcasting typing indicator to other users
+      if (!typingIndicatorVisible) {
+        typingIndicatorVisible = true;
+        showTypingIndicator();
+      }
+
+      // Clear previous timeout
+      clearTimeout(typingTimeout);
+
+      // Hide typing indicator after 2 seconds of no typing
+      typingTimeout = setTimeout(() => {
+        typingIndicatorVisible = false;
+        hideTypingIndicator();
+      }, 2000);
+    }
+
+    function showTypingIndicator() {
+      // Add typing indicator to annotations panel
+      const list = document.getElementById('annotationsList');
+      if (!document.getElementById('typingIndicator')) {
+        const indicator = document.createElement('div');
+        indicator.id = 'typingIndicator';
+        indicator.className = 'typing-indicator';
+        indicator.innerHTML = `
+          <span style="color: #8b5cf6; font-weight: 500;">You</span> is typing
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        `;
+        list.insertBefore(indicator, list.firstChild);
+      }
+    }
+
+    function hideTypingIndicator() {
+      const indicator = document.getElementById('typingIndicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    function submitAnnotation() {
+      const content = document.getElementById('annotationInput').value.trim();
+      if (!content || !currentModalNode || !currentModalType) return;
+
+      annotations.push({
+        id: 'ann-' + Date.now(),
+        type: currentModalType,
+        targetId: currentModalNode,
+        content: content,
+        author: 'You',
+        replies: []
+      });
+
+      closeAnnotationModal();
+      hideTypingIndicator();
+      renderAnnotations();
+      showAnnotationBadges();
+      updateCounts();
+    }
+
+    function handleModalKeydown(event) {
+      // Ctrl+Enter or Cmd+Enter to submit
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        if (!document.getElementById('submitBtn').disabled) {
+          submitAnnotation();
+        }
+      }
+      // Escape to close
+      if (event.key === 'Escape') {
+        closeAnnotationModal();
+      }
+    }
+
+    // Simulate other users viewing/typing (for demo purposes)
+    function simulateOtherUserActivity() {
+      const indicator = document.getElementById('othersTypingIndicator');
+      if (indicator && !indicator.classList.contains('hidden')) return;
+
+      // 30% chance to show "Alice is viewing" when modal opens
+      if (Math.random() < 0.3) {
+        setTimeout(() => {
+          if (document.getElementById('annotationModal').classList.contains('hidden')) return;
+          indicator.classList.remove('hidden');
+
+          // Hide after a few seconds
+          setTimeout(() => {
+            indicator.classList.add('hidden');
+          }, 3000 + Math.random() * 2000);
+        }, 1000 + Math.random() * 1500);
+      }
+    }
+
+    function renderAnnotations() {
+      const list = document.getElementById('annotationsList');
+      const typeIcons = { insight: '💡', question: '❓', note: '📝' };
+
+      list.innerHTML = annotations.map(ann => `
+        <div class="annotation-card ${ann.type}" data-id="${ann.id}">
+          <div class="annotation-header">
+            <span class="annotation-type">${typeIcons[ann.type]}</span>
+            <span class="annotation-author">${ann.author}</span>
+          </div>
+          <p class="annotation-content">${ann.content}</p>
+          ${ann.replies.length > 0 ? `
+            <div class="annotation-replies">
+              ${ann.replies.map(r => `<div class="reply"><strong>${r.author}:</strong> ${r.content}</div>`).join('')}
+            </div>
+          ` : ''}
+          <div class="reply-input-container">
+            <input type="text" class="reply-input" placeholder="Reply..."
+                   id="reply-${ann.id}"
+                   oninput="broadcastReplyTyping('${ann.id}')"
+                   onkeypress="handleReplyKeypress(event, '${ann.id}')">
+            <button class="reply-btn" onclick="submitReply('${ann.id}')">↵</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Track reply typing state
+    const replyTypingStates = {};
+
+    function broadcastReplyTyping(annotationId) {
+      // Simulate broadcasting that you're typing a reply
+      const card = document.querySelector(`[data-id="${annotationId}"]`);
+      if (card && !card.querySelector('.reply-typing-indicator')) {
+        const indicator = document.createElement('div');
+        indicator.className = 'typing-indicator reply-typing-indicator';
+        indicator.style.marginTop = '8px';
+        indicator.innerHTML = `
+          <span style="color: #8b5cf6; font-weight: 500;">You</span> is replying
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        `;
+        const replyContainer = card.querySelector('.reply-input-container');
+        card.insertBefore(indicator, replyContainer);
+      }
+
+      // Clear previous timeout
+      if (replyTypingStates[annotationId]) {
+        clearTimeout(replyTypingStates[annotationId]);
+      }
+
+      // Hide after 2 seconds of no typing
+      replyTypingStates[annotationId] = setTimeout(() => {
+        const indicator = card?.querySelector('.reply-typing-indicator');
+        if (indicator) indicator.remove();
+      }, 2000);
+    }
+
+    function handleReplyKeypress(event, annotationId) {
+      if (event.key === 'Enter') {
+        submitReply(annotationId);
+      }
+    }
+
+    function submitReply(annotationId) {
+      const input = document.getElementById('reply-' + annotationId);
+      const content = input.value.trim();
+      if (!content) return;
+
+      // Find the annotation and add the reply
+      const ann = annotations.find(a => a.id === annotationId);
+      if (ann) {
+        ann.replies.push({
+          author: 'You',
+          content: content
+        });
+      }
+
+      // Clear typing indicator
+      if (replyTypingStates[annotationId]) {
+        clearTimeout(replyTypingStates[annotationId]);
+      }
+
+      renderAnnotations();
+    }
+
+    function showAnnotationBadges() {
+      const countByNode = {};
+      annotations.forEach(a => {
+        countByNode[a.targetId] = (countByNode[a.targetId] || 0) + 1;
+      });
+
+      Object.keys(countByNode).forEach(nodeId => {
+        const badge = document.getElementById('badge-' + nodeId);
+        if (badge) {
+          badge.classList.remove('hidden');
+          badge.querySelector('text').textContent = countByNode[nodeId];
+        }
+      });
+    }
+
+    function toggleAnnotationsPanel() {
+      document.getElementById('annotationsPanel').classList.toggle('hidden');
+    }
+
+    function updateCounts() {
+      document.getElementById('participantCount').textContent = (users.length + 1) + ' participants';
+      document.getElementById('annotationStatusCount').textContent = annotations.length + ' annotations';
+      document.getElementById('annotationCount').textContent = annotations.length;
+    }
+
+    // ==========================================
+    // MRF Refinement Functions
+    // ==========================================
+
+    function toggleRefinementPanel() {
+      document.getElementById('refinementPanel').classList.toggle('hidden');
+    }
+
+    function renderRefinements() {
+      const list = document.getElementById('refinementList');
+
+      if (refinementSuggestions.length === 0) {
+        list.innerHTML = `
+          <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5);">
+            <div style="font-size: 32px; margin-bottom: 8px;">✨</div>
+            <div>No refinement suggestions yet</div>
+            <div style="font-size: 11px; margin-top: 4px;">Add annotations to see AI suggestions</div>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = refinementSuggestions.map(ref => {
+        const confidenceClass = ref.confidence >= 0.8 ? 'high' : ref.confidence >= 0.6 ? 'medium' : 'low';
+        const confidencePercent = Math.round(ref.confidence * 100);
+
+        return `
+          <div class="refinement-card" id="${ref.id}">
+            <div class="refinement-strategy">
+              <span class="strategy-tag ${ref.strategy}">${ref.strategy}</span>
+              <span style="font-size: 11px; color: rgba(255,255,255,0.5);">by ${ref.author}</span>
+            </div>
+            <div class="refinement-original">${ref.original}</div>
+            <div class="refinement-arrow">↓</div>
+            <div class="refinement-suggestion">${ref.suggestion}</div>
+            <div class="refinement-meta">
+              <div class="confidence-meter">
+                <div class="confidence-bar">
+                  <div class="confidence-fill ${confidenceClass}" style="width: ${confidencePercent}%"></div>
+                </div>
+                <span class="confidence-text">${confidencePercent}%</span>
+              </div>
+              <div class="refinement-actions">
+                <button class="refinement-btn accept" onclick="acceptRefinement('${ref.id}')">✓ Accept</button>
+                <button class="refinement-btn reject" onclick="rejectRefinement('${ref.id}')">✗ Reject</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function acceptRefinement(refId) {
+      const ref = refinementSuggestions.find(r => r.id === refId);
+      if (!ref) return;
+
+      // Find and update the annotation with the refined content
+      const ann = annotations.find(a => a.id === ref.annotationId);
+      if (ann) {
+        ann.content = ref.suggestion;
+        renderAnnotations();
+      }
+
+      // Update learning stats (Thompson Sampling update: α ← α + confidence)
+      learningStats.accepted++;
+      learningStats.totalQualityImprovement += ref.confidence * 0.3; // Quality improvement
+      updateThompsonPriors(ref.strategy, true, ref.confidence);
+
+      // Remove from suggestions
+      const idx = refinementSuggestions.findIndex(r => r.id === refId);
+      if (idx !== -1) refinementSuggestions.splice(idx, 1);
+
+      // Show toast and update UI
+      showToast('✅', `Refinement accepted! <strong>${ref.strategy}</strong> strategy applied.`);
+      renderRefinements();
+      updateLearningStats();
+
+      // Trigger learning pulse animation
+      document.getElementById('learningStats').classList.add('learning-active');
+      setTimeout(() => {
+        document.getElementById('learningStats').classList.remove('learning-active');
+      }, 1500);
+    }
+
+    function rejectRefinement(refId) {
+      const ref = refinementSuggestions.find(r => r.id === refId);
+      if (!ref) return;
+
+      // Update learning stats (Thompson Sampling update: β ← β + (1 - confidence))
+      learningStats.rejected++;
+      updateThompsonPriors(ref.strategy, false, ref.confidence);
+
+      // Remove from suggestions
+      const idx = refinementSuggestions.findIndex(r => r.id === refId);
+      if (idx !== -1) refinementSuggestions.splice(idx, 1);
+
+      // Show toast and update UI
+      showToast('❌', `Refinement rejected. Learning from feedback...`);
+      renderRefinements();
+      updateLearningStats();
+    }
+
+    function updateThompsonPriors(strategy, success, confidence) {
+      // Map strategy to UX prior (simplified demo mapping)
+      const priorMap = {
+        'elegance': 'annotation',
+        'verify': 'cursor',
+        'critique': 'voice',
+        'hofstadter': 'presence'
+      };
+
+      const priorKey = priorMap[strategy] || 'annotation';
+      const prior = learningStats.priors[priorKey];
+
+      if (success) {
+        // Success: α ← α + confidence
+        prior.alpha += confidence;
+      } else {
+        // Failure: β ← β + (1 - confidence)
+        prior.beta += (1 - confidence);
+      }
+
+      // Update visual prior bars
+      updatePriorBars();
+    }
+
+    function updatePriorBars() {
+      Object.keys(learningStats.priors).forEach(key => {
+        const prior = learningStats.priors[key];
+        const expectedValue = prior.alpha / (prior.alpha + prior.beta);
+        const percent = Math.round(expectedValue * 100);
+
+        const bar = document.getElementById(key + 'Prior');
+        if (bar) {
+          bar.style.width = percent + '%';
+        }
+      });
+    }
+
+    function updateLearningStats() {
+      const total = learningStats.accepted + learningStats.rejected;
+      const acceptRate = total > 0 ? Math.round((learningStats.accepted / total) * 100) : 0;
+      const qualityImprove = Math.round(learningStats.totalQualityImprovement * 100);
+
+      document.getElementById('acceptedCount').textContent = learningStats.accepted;
+      document.getElementById('acceptRate').textContent = total > 0 ? acceptRate + '%' : '--';
+      document.getElementById('qualityImprove').textContent = '+' + qualityImprove + '%';
+
+      // Update active strategy based on highest prior
+      const strategies = ['elegance', 'verify', 'critique', 'hofstadter'];
+      const priorKeys = ['annotation', 'cursor', 'voice', 'presence'];
+      let maxExpected = 0;
+      let bestStrategy = 'AUTO';
+
+      priorKeys.forEach((key, idx) => {
+        const prior = learningStats.priors[key];
+        const expected = prior.alpha / (prior.alpha + prior.beta);
+        if (expected > maxExpected) {
+          maxExpected = expected;
+          bestStrategy = strategies[idx].toUpperCase();
+        }
+      });
+
+      document.getElementById('activeStrategy').textContent = bestStrategy;
+    }
+
+    function showToast(icon, message) {
+      const toast = document.getElementById('refinementToast');
+      document.getElementById('toastIcon').textContent = icon;
+      document.getElementById('toastMessage').innerHTML = message;
+
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Generate MRF suggestion for new annotation
+    function generateMRFSuggestion(annotation) {
+      const strategy = mrfStrategies[annotation.type] || 'elegance';
+
+      // Simulate MRF refinement based on strategy
+      const suggestions = {
+        elegance: `${annotation.content} This observation highlights the elegant solution that emerges from the underlying mathematical framework.`,
+        verify: `${annotation.content} To verify this claim, consider: (1) reviewing the source material, (2) checking for counterexamples, and (3) validating against established theory.`,
+        critique: `${annotation.content} However, we should critically examine: what assumptions underlie this insight? Are there alternative interpretations?`,
+        hofstadter: `${annotation.content} This creates an interesting self-referential loop: the concept of ${annotation.targetId} itself exhibits the properties it describes.`
+      };
+
+      return {
+        id: 'ref-' + Date.now(),
+        annotationId: annotation.id,
+        original: annotation.content,
+        suggestion: suggestions[strategy],
+        strategy: strategy,
+        confidence: 0.7 + Math.random() * 0.25, // 0.70-0.95
+        author: annotation.author
+      };
+    }
+
+    // Override submitAnnotation to generate MRF suggestions
+    const originalSubmitAnnotation = submitAnnotation;
+    submitAnnotation = function() {
+      const content = document.getElementById('annotationInput').value.trim();
+      if (!content || !currentModalNode || !currentModalType) return;
+
+      const newAnnotation = {
+        id: 'ann-' + Date.now(),
+        type: currentModalType,
+        targetId: currentModalNode,
+        content: content,
+        author: 'You',
+        replies: []
+      };
+
+      annotations.push(newAnnotation);
+
+      // Generate MRF suggestion for the new annotation
+      const suggestion = generateMRFSuggestion(newAnnotation);
+      refinementSuggestions.push(suggestion);
+
+      closeAnnotationModal();
+      hideTypingIndicator();
+      renderAnnotations();
+      renderRefinements();
+      showAnnotationBadges();
+      updateCounts();
+
+      // Show notification about new suggestion
+      setTimeout(() => {
+        showToast('✨', `New <strong>${suggestion.strategy}</strong> refinement available!`);
+      }, 500);
+    };
+
+    // Update startSession to show MRF panels
+    const originalStartSession = startSession;
+    startSession = function() {
+      originalStartSession();
+
+      // Show MRF panels
+      document.getElementById('refinementPanel').classList.remove('hidden');
+      document.getElementById('learningStats').classList.remove('hidden');
+
+      // Render initial refinements
+      renderRefinements();
+      updateLearningStats();
+      updatePriorBars();
+    };
+
+    // Update leaveSession to hide MRF panels
+    const originalLeaveSession = leaveSession;
+    leaveSession = function() {
+      originalLeaveSession();
+
+      // Hide MRF panels
+      document.getElementById('refinementPanel').classList.add('hidden');
+      document.getElementById('learningStats').classList.add('hidden');
+    };
+  </script>
+</body>
+</html>

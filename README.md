@@ -4,6 +4,7 @@
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](V1_SIMPLIFICATION_COMPLETE.md)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](test_v1_simplification.py)
+[![Coverage](https://codecov.io/gh/blakechasteen/mythRL/branch/main/graph/badge.svg)](https://codecov.io/gh/blakechasteen/mythRL)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 

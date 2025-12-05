@@ -115,6 +115,57 @@ export {
 } from './components/StreamingResponse';
 
 // ============================================================================
+// Connected Components (Wired to Store)
+// ============================================================================
+
+export {
+  ConnectedStageTimeline,
+  ConnectedKnowledgeGraph,
+  ConnectedMetricsPane,
+} from './components/connected';
+
+export type {
+  ConnectedStageTimelineProps,
+  ConnectedKnowledgeGraphProps,
+  ConnectedMetricsPaneProps,
+} from './components/connected';
+
+// ============================================================================
+// App Components
+// ============================================================================
+
+export {
+  ThreePaneLayout,
+  HoloLoomApp,
+} from './app';
+
+export type {
+  ThreePaneLayoutProps,
+  PaneConfig,
+  HoloLoomAppProps,
+} from './app';
+
+// ============================================================================
+// WebSocket Actions (Store Integration)
+// ============================================================================
+
+export {
+  wsActions,
+  useWebSocketConnection,
+  useStream,
+  subscribeToState,
+  subscribeToConnection,
+  subscribeToStreamState,
+  subscribeToTokens,
+  subscribeToConfidence,
+} from './store/websocket-actions';
+
+export type {
+  UseWebSocketConnectionOptions,
+  UseStreamOptions,
+} from './store/websocket-actions';
+
+// ============================================================================
 // Utilities
 // ============================================================================
 

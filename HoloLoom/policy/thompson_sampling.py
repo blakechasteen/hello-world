@@ -10,7 +10,7 @@ Author: Claude Code
 Date: November 7, 2025 (Elegance Track - Day 3)
 """
 
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 import numpy as np
 
 # Import BanditStrategy from shared types (no circular dependency)
@@ -72,14 +72,16 @@ class TSBandit:
         priors = np.zeros(self.n_arms)
         for i in range(self.n_arms):
             # Mean of Beta distribution = α / (α + β)
-            priors[i] = self.success[i] / (self.success[i] + self.fail[i])
+            # Guard against division by zero (defensive, though Beta init prevents this)
+            total = self.success[i] + self.fail[i]
+            priors[i] = self.success[i] / max(total, 1e-10)
         return priors
 
     def select_with_strategy(
         self,
         neural_probs: np.ndarray,
         strategy: Optional[BanditStrategy] = None
-    ) -> Tuple[int, Dict[str, any]]:
+    ) -> Tuple[int, Dict[str, Any]]:
         """
         Select arm using specified strategy.
 
@@ -150,7 +152,9 @@ class TSBandit:
         """Get statistics for all arms."""
         stats = {}
         for i in range(len(self.success)):
-            mean = self.success[i] / (self.success[i] + self.fail[i])
+            # Guard against division by zero (defensive programming)
+            total = self.success[i] + self.fail[i]
+            mean = self.success[i] / max(total, 1e-10)
             stats[i] = {
                 'mean': mean,
                 'success': float(self.success[i]),

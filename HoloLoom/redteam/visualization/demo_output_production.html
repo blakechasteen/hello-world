@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attack Trajectory</title>
+</head>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #34495e;
+  background: #f8f9fa;
+  padding: 40px 20px;
+}
+
+.header {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #34495e;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #1a252f;
+}
+
+.header .subtitle {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-style: italic;
+  margin-bottom: 15px;
+}
+
+.metrics-badges {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #ecf0f1;
+  border-left: 3px solid #95a5a6;
+}
+
+.badge.bypass-rate {
+  border-left-color: #e74c3c;
+  background: #fadbd8;
+}
+
+.badge.attack-count {
+  border-left-color: #3498db;
+  background: #d6eaf8;
+}
+
+.badge.success-count {
+  border-left-color: #2ecc71;
+  background: #d5f4e6;
+}
+
+.badge.severity {
+  border-left-color: #f39c12;
+  background: #fdebd0;
+}
+
+.attack-chart {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  border: 1px solid #bdc3c7;
+  background: white;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.statistics,
+.strategy-breakdown {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  background: white;
+  padding: 25px;
+  border: 1px solid #bdc3c7;
+}
+
+.statistics h2,
+.strategy-breakdown h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ecf0f1;
+  color: #1a252f;
+}
+
+.metrics-table,
+.strategy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.metrics-table td,
+.strategy-table td,
+.strategy-table th {
+  padding: 8px 12px;
+  border-bottom: 1px solid #ecf0f1;
+  text-align: left;
+}
+
+.metrics-table td:nth-child(2),
+.strategy-table td:nth-child(2),
+.strategy-table td:nth-child(3) {
+  text-align: right;
+  font-family: "Courier New", monospace;
+}
+
+.metric-name,
+.strategy-name {
+  font-weight: 500;
+  color: #34495e;
+}
+
+.metric-value {
+  font-weight: 600;
+  font-family: "Courier New", monospace;
+}
+
+.trend-indicator {
+  text-align: center;
+  font-size: 11px;
+  color: #7f8c8d;
+}
+
+.trend-badge {
+  font-size: 11px;
+  text-align: center;
+}
+
+.strategy-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #1a252f;
+  border-bottom: 2px solid #34495e;
+}
+
+.strategy-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.sparkline-col {
+  text-align: center;
+}
+
+.sparkline-empty {
+  color: #bdc3c7;
+  font-size: 11px;
+}
+
+/* Legend styling */
+.legend {
+  font-size: 11px;
+}
+
+/* Empty state */
+.empty-state {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 40px;
+  text-align: center;
+  background: white;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  color: #7f8c8d;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  body {
+    padding: 20px 10px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .metrics-badges {
+    flex-direction: column;
+  }
+
+  .badge {
+    width: 100%;
+  }
+
+  .strategy-table {
+    font-size: 11px;
+  }
+
+  .strategy-table td,
+  .strategy-table th {
+    padding: 6px 8px;
+  }
+}
+</style>
+<body>
+<div class="header">
+  <h1>CARTS Attack Campaign: Multi-Strategy Red Team</h1>
+  <p class="subtitle">7-batch campaign across 3 attack vectors with defender improvements</p>
+  <div class="metrics-badges">
+    <span class="badge bypass-rate" title="Overall attack success rate">
+      50.0% Bypass Rate
+    </span>
+    <span class="badge attack-count" title="Total attacks analyzed">
+      70 Attacks
+    </span>
+    <span class="badge success-count" title="Successful bypasses">
+      35 Bypassed
+    </span>
+    <span class="badge severity" title="Average severity of successful attacks">
+      0.70 Avg Severity
+    </span>
+  </div>
+</div>
+<svg class="attack-chart" width="1200" height="400">
+  <!-- Background grid -->
+  <defs>
+    <pattern id="grid" width="50" height="25" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 25" fill="none" stroke="#ecf0f1" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="400" fill="white"/>
+  <rect x="50" y="50" width="1050" height="250" fill="url(#grid)"/>
+
+  <!-- Axis lines -->
+  <line x1="50" y1="300" x2="1100" y2="300" stroke="#34495e" stroke-width="1.5"/>
+  <line x1="50" y1="50" x2="50" y2="300" stroke="#34495e" stroke-width="1.5"/>
+
+  <!-- Y-axis labels (success rate %) -->
+  <text x="20" y="55" font-size="11" fill="#34495e" text-anchor="end">100%</text>
+  <text x="20" y="180.0" font-size="11" fill="#34495e" text-anchor="end">50%</text>
+  <text x="20" y="305" font-size="11" fill="#34495e" text-anchor="end">0%</text>
+
+  <!-- Reference lines (50% threshold) -->
+  <line x1="50" y1="175.0" x2="1100" y2="175.0" stroke="#bdc3c7" stroke-width="0.5" stroke-dasharray="2,2"/>
+  <text x="45" y="170.0" font-size="10" fill="#7f8c8d" text-anchor="end">50%</text>
+
+  <!-- Main line chart -->
+  <path d="M 50.0 91.66666666666666 Q 137.5 91.66666666666666 225.0 74.30555555555554 Q 312.5 74.30555555555554 400.0 50.0 Q 487.5 50.0 575.0 161.11111111111111 Q 662.5 161.11111111111111 750.0 154.16666666666666 Q 837.5 154.16666666666666 925.0 202.77777777777777 Q 1012.5 202.77777777777777 1100.0 109.02777777777777" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Data points -->
+  <circle cx="50.0" cy="91.66666666666666" r="3" fill="#e74c3c" stroke="white" stroke-width="1" title="prompt_injection: 60.0%"/>
+  <circle cx="225.0" cy="74.30555555555554" r="3" fill="#e74c3c" stroke="white" stroke-width="1" title="prompt_injection: 65.0%"/>
+  <circle cx="400.0" cy="50.0" r="3" fill="#e74c3c" stroke="white" stroke-width="1" title="prompt_injection: 72.0%"/>
+  <circle cx="575.0" cy="161.11111111111111" r="3" fill="#2ecc71" stroke="white" stroke-width="1" title="jailbreak: 40.0%"/>
+  <circle cx="750.0" cy="154.16666666666666" r="3" fill="#2ecc71" stroke="white" stroke-width="1" title="jailbreak: 42.0%"/>
+  <circle cx="925.0" cy="202.77777777777777" r="3" fill="#2ecc71" stroke="white" stroke-width="1" title="context_overflow: 28.0%"/>
+  <circle cx="1100.0" cy="109.02777777777777" r="3" fill="#e74c3c" stroke="white" stroke-width="1" title="prompt_injection: 55.0%"/>
+<g class="anomalies">
+  <polygon points="1100.0,104.02777777777777 1105.0,109.02777777777777 1100.0,114.02777777777777 1095.0,109.02777777777777" fill="#e74c3c" opacity="0.8" title="sudden_breakthrough at point 6"/>
+  <polygon points="575.0,156.11111111111111 580.0,161.11111111111111 575.0,166.11111111111111 570.0,161.11111111111111" fill="#2ecc71" opacity="0.8" title="degradation at point 3"/>
+  <polygon points="575.0,156.11111111111111 580.0,161.11111111111111 575.0,166.11111111111111 570.0,161.11111111111111" fill="#3498db" opacity="0.8" title="strategy_shift at point 3"/>
+  <polygon points="925.0,197.77777777777777 930.0,202.77777777777777 925.0,207.77777777777777 920.0,202.77777777777777" fill="#3498db" opacity="0.8" title="strategy_shift at point 5"/>
+  <polygon points="1100.0,104.02777777777777 1105.0,109.02777777777777 1100.0,114.02777777777777 1095.0,109.02777777777777" fill="#3498db" opacity="0.8" title="strategy_shift at point 6"/>
+</g>
+  <text x="50.0" y="320" font-size="10" fill="#7f8c8d" text-anchor="middle">0</text>
+  <text x="225.0" y="320" font-size="10" fill="#7f8c8d" text-anchor="middle">1</text>
+  <text x="400.0" y="320" font-size="10" fill="#7f8c8d" text-anchor="middle">2</text>
+  <text x="575.0" y="320" font-size="10" fill="#7f8c8d" text-anchor="middle">3</text>
+  <text x="750.0" y="320" font-size="10" fill="#7f8c8d" text-anchor="middle">4</text>
+  <text x="925.0" y="320" font-size="10" fill="#7f8c8d" text-anchor="middle">5</text>
+  <text x="1100.0" y="320" font-size="10" fill="#7f8c8d" text-anchor="middle">6</text>
+  <!-- Legend -->
+  <g class="legend">
+    <rect x="60" y="60" width="150" height="80" fill="white" stroke="#bdc3c7" stroke-width="0.5"/>
+    <circle cx="75" cy="75" r="2.5" fill="#e74c3c"/>
+    <text x="90" y="80" font-size="11" fill="#34495e">Attack Succeeded</text>
+
+    <circle cx="75" cy="95" r="2.5" fill="#2ecc71"/>
+    <text x="90" y="100" font-size="11" fill="#34495e">Attack Blocked</text>
+
+    <line x1="70" y1="115" x2="80" y2="115" stroke="#f39c12" stroke-width="2"/>
+    <text x="90" y="120" font-size="11" fill="#34495e">Anomaly</text>
+  </g>
+</svg>
+<div class="statistics"><h2>Key Metrics</h2><table class="metrics-table"><tr>
+    <td class="metric-name">Overall Bypass Rate</td>
+    <td class="metric-value">50.0%</td>
+    <td class="trend-indicator">↓ Improving</td>
+  </tr><tr>
+    <td class="metric-name">Total Attacks</td>
+    <td class="metric-value">70</td>
+    <td class="trend-indicator">—</td>
+  </tr><tr>
+    <td class="metric-name">Successful Bypasses</td>
+    <td class="metric-value">35</td>
+    <td class="trend-indicator">↓ Improving</td>
+  </tr><tr>
+    <td class="metric-name">Average Severity</td>
+    <td class="metric-value">0.70</td>
+    <td class="trend-indicator">—</td>
+  </tr><tr>
+    <td class="metric-name">Peak Success Rate</td>
+    <td class="metric-value">72.0%</td>
+    <td class="trend-indicator">—</td>
+  </tr><tr>
+    <td class="metric-name">Success Volatility</td>
+    <td class="metric-value">0.144</td>
+    <td class="trend-indicator">—</td>
+  </tr></table>
+</div>
+<div class="strategy-breakdown"><h2>Strategy Comparison</h2><table class="strategy-table"><thead><tr><th>Strategy</th><th>Bypass Rate</th><th>Attacks</th><th class="sparkline-col">Trend</th><th>Status</th></tr></thead><tbody><tr>
+    <td class="strategy-name">prompt_injection</td>
+    <td class="bypass-rate" style="color: #e74c3c; font-weight: bold;">60.0%</td>
+    <td class="attack-count">40</td>
+    <td class="sparkline-col"><svg class="strategy-sparkline" width="80" height="20" style="vertical-align: middle; margin: 0 2px;"><path d="M 2.0,13.294117647058828 L 27.333333333333332,8.588235294117645 L 52.666666666666664,2.0 L 78.0,18.0" stroke="#2ecc71" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="2" cy="13.294117647058828" r="1" fill="#2ecc71"/><circle cx="78.0" cy="18.0" r="1" fill="#2ecc71"/></svg></td>
+    <td class="trend-badge">↑ Degrading</td>
+  </tr><tr>
+    <td class="strategy-name">jailbreak</td>
+    <td class="bypass-rate" style="color: #2ecc71; font-weight: bold;">40.0%</td>
+    <td class="attack-count">20</td>
+    <td class="sparkline-col"><svg class="strategy-sparkline" width="80" height="20" style="vertical-align: middle; margin: 0 2px;"><path d="M 2.0,18.0 L 78.0,2.0" stroke="#e74c3c" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="2" cy="18.0" r="1" fill="#e74c3c"/><circle cx="78.0" cy="2.0" r="1" fill="#e74c3c"/></svg></td>
+    <td class="trend-badge">↑ Degrading</td>
+  </tr><tr>
+    <td class="strategy-name">context_overflow</td>
+    <td class="bypass-rate" style="color: #2ecc71; font-weight: bold;">30.0%</td>
+    <td class="attack-count">10</td>
+    <td class="sparkline-col"><span class="sparkline-empty">—</span></td>
+    <td class="trend-badge">→ Stable</td>
+  </tr></tbody>
+</table></div>
+</body>
+</html>

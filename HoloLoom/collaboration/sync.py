@@ -572,6 +572,20 @@ class StateSynchronizer:
             except Exception as e:
                 logger.error(f"Sync event handler error: {e}")
 
+    async def start(self):
+        """Start the synchronizer (lifecycle method)."""
+        self._emit_event("sync_started", {
+            "session_id": self.session_id,
+            "user_id": self.user_id
+        })
+
+    async def stop(self):
+        """Stop the synchronizer (lifecycle method)."""
+        self._emit_event("sync_stopped", {
+            "session_id": self.session_id,
+            "user_id": self.user_id
+        })
+
     def to_state(self) -> Dict[str, Any]:
         """Export synchronizer state."""
         return {

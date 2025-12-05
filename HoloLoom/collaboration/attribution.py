@@ -11,15 +11,19 @@ Created: November 2025
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Callable, Set, Tuple
+from typing import Dict, List, Optional, Any, Callable, Set, Tuple, TYPE_CHECKING
 from collections import defaultdict
 import logging
+
+if TYPE_CHECKING:
+    from .annotation_refinement import AnnotationRefiner, RefinementResult, AnnotationType
 
 logger = logging.getLogger(__name__)
 
 
 class ContributionType(Enum):
     """Types of contributions."""
+    CREATE = "create"                       # Created new object/resource
     KNOWLEDGE_ADD = "knowledge_add"         # Added new knowledge
     KNOWLEDGE_EDIT = "knowledge_edit"       # Modified existing
     KNOWLEDGE_DELETE = "knowledge_delete"   # Removed knowledge
@@ -44,6 +48,112 @@ class QualityRating(Enum):
     POOR = "poor"
 
 
+# Numeric mapping for quality ratings
+QUALITY_RATING_SCORES: Dict[QualityRating, float] = {
+    QualityRating.EXCELLENT: 1.0,
+    QualityRating.GOOD: 0.8,
+    QualityRating.ACCEPTABLE: 0.6,
+    QualityRating.NEEDS_IMPROVEMENT: 0.4,
+    QualityRating.POOR: 0.2,
+}
+
+
+class RaterRole(Enum):
+    """Role of the person rating a contribution."""
+    OWNER = "owner"           # Scene/project owner - weight 2.0
+    EDITOR = "editor"         # Editor - weight 1.5
+    CONTRIBUTOR = "contributor"  # Contributor - weight 1.0
+    VIEWER = "viewer"         # Viewer - weight 0.5
+
+
+# Weight multipliers for different rater roles
+RATER_WEIGHTS: Dict[RaterRole, float] = {
+    RaterRole.OWNER: 2.0,
+    RaterRole.EDITOR: 1.5,
+    RaterRole.CONTRIBUTOR: 1.0,
+    RaterRole.VIEWER: 0.5,
+}
+
+
+@dataclass
+class QualityRatingRecord:
+    """
+    A single quality rating from a rater.
+
+    Supports multiple ratings per contribution with weighted aggregation.
+    """
+    rater_id: str
+    rater_role: RaterRole
+    rating: QualityRating
+    score: float  # Numeric score (0.0-1.0)
+    timestamp: datetime = field(default_factory=datetime.now)
+    comment: str = ""  # Optional feedback
+
+    @classmethod
+    def from_rating(
+        cls,
+        rater_id: str,
+        rating: QualityRating,
+        rater_role: RaterRole = RaterRole.CONTRIBUTOR,
+        comment: str = ""
+    ) -> 'QualityRatingRecord':
+        """Create a rating record from a QualityRating enum."""
+        return cls(
+            rater_id=rater_id,
+            rater_role=rater_role,
+            rating=rating,
+            score=QUALITY_RATING_SCORES[rating],
+            comment=comment
+        )
+
+    @classmethod
+    def from_score(
+        cls,
+        rater_id: str,
+        score: float,
+        rater_role: RaterRole = RaterRole.CONTRIBUTOR,
+        comment: str = ""
+    ) -> 'QualityRatingRecord':
+        """Create a rating record from a numeric score (0.0-1.0)."""
+        # Clamp score to valid range
+        score = max(0.0, min(1.0, score))
+
+        # Map score to closest QualityRating
+        if score >= 0.9:
+            rating = QualityRating.EXCELLENT
+        elif score >= 0.7:
+            rating = QualityRating.GOOD
+        elif score >= 0.5:
+            rating = QualityRating.ACCEPTABLE
+        elif score >= 0.3:
+            rating = QualityRating.NEEDS_IMPROVEMENT
+        else:
+            rating = QualityRating.POOR
+
+        return cls(
+            rater_id=rater_id,
+            rater_role=rater_role,
+            rating=rating,
+            score=score,
+            comment=comment
+        )
+
+    def weighted_score(self) -> float:
+        """Get the weighted score based on rater role."""
+        return self.score * RATER_WEIGHTS[self.rater_role]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "rater_id": self.rater_id,
+            "rater_role": self.rater_role.value,
+            "rating": self.rating.value,
+            "score": self.score,
+            "timestamp": self.timestamp.isoformat(),
+            "comment": self.comment,
+            "weighted_score": self.weighted_score()
+        }
+
+
 @dataclass
 class Contribution:
     """A single contribution record."""
@@ -63,10 +173,13 @@ class Contribution:
     query_id: Optional[str] = None
     parent_contribution_id: Optional[str] = None  # For edits/reviews
 
-    # Quality metrics
+    # Quality metrics (legacy single rating - kept for backward compatibility)
     quality_rating: Optional[QualityRating] = None
     rating_by: Optional[str] = None
     rating_at: Optional[datetime] = None
+
+    # Quality metrics (new multi-rater support)
+    ratings: List['QualityRatingRecord'] = field(default_factory=list)
 
     # Impact metrics
     view_count: int = 0
@@ -77,6 +190,123 @@ class Contribution:
 
     # Metadata
     metadata: Dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def quality_score(self) -> float:
+        """
+        Calculate aggregated quality score from all ratings.
+
+        Uses weighted average where owner ratings count 2x, editor ratings 1.5x,
+        contributor ratings 1x, and viewer ratings 0.5x.
+
+        Returns:
+            float: Weighted average score (0.0-1.0), or 0.0 if no ratings
+        """
+        if not self.ratings:
+            # Fall back to legacy single rating if no multi-ratings
+            if self.quality_rating:
+                return QUALITY_RATING_SCORES.get(self.quality_rating, 0.5)
+            return 0.0
+
+        total_weighted_score = sum(r.weighted_score() for r in self.ratings)
+        total_weight = sum(RATER_WEIGHTS[r.rater_role] for r in self.ratings)
+
+        if total_weight == 0:
+            return 0.0
+
+        return total_weighted_score / total_weight
+
+    @property
+    def rating_count(self) -> int:
+        """Get number of ratings for this contribution."""
+        return len(self.ratings)
+
+    def add_rating(
+        self,
+        rater_id: str,
+        rating: QualityRating,
+        rater_role: RaterRole = RaterRole.CONTRIBUTOR,
+        comment: str = ""
+    ) -> 'QualityRatingRecord':
+        """
+        Add a quality rating from a rater.
+
+        If the same rater has already rated, their previous rating is updated.
+
+        Args:
+            rater_id: ID of the rater
+            rating: Quality rating enum
+            rater_role: Role of the rater (affects weight)
+            comment: Optional feedback comment
+
+        Returns:
+            The created or updated QualityRatingRecord
+        """
+        # Remove existing rating from same rater
+        self.ratings = [r for r in self.ratings if r.rater_id != rater_id]
+
+        # Add new rating
+        record = QualityRatingRecord.from_rating(
+            rater_id=rater_id,
+            rating=rating,
+            rater_role=rater_role,
+            comment=comment
+        )
+        self.ratings.append(record)
+
+        # Update legacy fields for backward compatibility
+        self.quality_rating = rating
+        self.rating_by = rater_id
+        self.rating_at = record.timestamp
+
+        return record
+
+    def add_rating_score(
+        self,
+        rater_id: str,
+        score: float,
+        rater_role: RaterRole = RaterRole.CONTRIBUTOR,
+        comment: str = ""
+    ) -> 'QualityRatingRecord':
+        """
+        Add a numeric quality rating (0.0-1.0).
+
+        If the same rater has already rated, their previous rating is updated.
+
+        Args:
+            rater_id: ID of the rater
+            score: Numeric score (0.0-1.0)
+            rater_role: Role of the rater (affects weight)
+            comment: Optional feedback comment
+
+        Returns:
+            The created or updated QualityRatingRecord
+        """
+        # Remove existing rating from same rater
+        self.ratings = [r for r in self.ratings if r.rater_id != rater_id]
+
+        # Add new rating
+        record = QualityRatingRecord.from_score(
+            rater_id=rater_id,
+            score=score,
+            rater_role=rater_role,
+            comment=comment
+        )
+        self.ratings.append(record)
+
+        # Update legacy fields for backward compatibility
+        self.quality_rating = record.rating
+        self.rating_by = rater_id
+        self.rating_at = record.timestamp
+
+        return record
+
+    def get_rating_by(self, rater_id: str) -> Optional['QualityRatingRecord']:
+        """Get a specific rater's rating."""
+        for r in self.ratings:
+            if r.rater_id == rater_id:
+                return r
+        return None
 
     def calculate_impact_score(self) -> float:
         """Calculate contribution impact score (0-1)."""
@@ -104,6 +334,10 @@ class Contribution:
             "parent_contribution_id": self.parent_contribution_id,
             "quality_rating": self.quality_rating.value if self.quality_rating else None,
             "rating_by": self.rating_by,
+            "rating_at": self.rating_at.isoformat() if self.rating_at else None,
+            "ratings": [r.to_dict() for r in self.ratings],
+            "quality_score": self.quality_score,
+            "rating_count": self.rating_count,
             "view_count": self.view_count,
             "use_count": self.use_count,
             "citation_count": self.citation_count,
@@ -300,24 +534,111 @@ class AttributionManager:
         self,
         contribution_id: str,
         rating: QualityRating,
-        rater_id: str
-    ) -> bool:
-        """Rate a contribution's quality."""
+        rater_id: str,
+        rater_role: RaterRole = RaterRole.CONTRIBUTOR,
+        comment: str = ""
+    ) -> Optional[QualityRatingRecord]:
+        """
+        Rate a contribution's quality.
+
+        Supports multiple ratings per contribution with weighted aggregation.
+        Owner ratings count 2x, editor ratings 1.5x, contributor 1x, viewer 0.5x.
+
+        Args:
+            contribution_id: ID of contribution to rate
+            rating: QualityRating enum value
+            rater_id: ID of the person rating
+            rater_role: Role of the rater (affects weight in aggregation)
+            comment: Optional feedback comment
+
+        Returns:
+            QualityRatingRecord if successful, None if contribution not found
+        """
         contribution = self.contributions.get(contribution_id)
         if not contribution:
-            return False
+            return None
 
-        contribution.quality_rating = rating
-        contribution.rating_by = rater_id
-        contribution.rating_at = datetime.now()
+        record = contribution.add_rating(
+            rater_id=rater_id,
+            rating=rating,
+            rater_role=rater_role,
+            comment=comment
+        )
 
         self._emit_event("contribution_rated", {
             "contribution_id": contribution_id,
             "rating": rating.value,
-            "rater_id": rater_id
+            "rater_id": rater_id,
+            "rater_role": rater_role.value,
+            "quality_score": contribution.quality_score,
+            "rating_count": contribution.rating_count
         })
 
-        return True
+        return record
+
+    def rate_contribution_score(
+        self,
+        contribution_id: str,
+        score: float,
+        rater_id: str,
+        rater_role: RaterRole = RaterRole.CONTRIBUTOR,
+        comment: str = ""
+    ) -> Optional[QualityRatingRecord]:
+        """
+        Rate a contribution with a numeric score (0.0-1.0).
+
+        Supports multiple ratings per contribution with weighted aggregation.
+
+        Args:
+            contribution_id: ID of contribution to rate
+            score: Numeric score (0.0-1.0)
+            rater_id: ID of the person rating
+            rater_role: Role of the rater (affects weight in aggregation)
+            comment: Optional feedback comment
+
+        Returns:
+            QualityRatingRecord if successful, None if contribution not found
+        """
+        contribution = self.contributions.get(contribution_id)
+        if not contribution:
+            return None
+
+        record = contribution.add_rating_score(
+            rater_id=rater_id,
+            score=score,
+            rater_role=rater_role,
+            comment=comment
+        )
+
+        self._emit_event("contribution_rated", {
+            "contribution_id": contribution_id,
+            "score": score,
+            "rating": record.rating.value,
+            "rater_id": rater_id,
+            "rater_role": rater_role.value,
+            "quality_score": contribution.quality_score,
+            "rating_count": contribution.rating_count
+        })
+
+        return record
+
+    def get_contribution_quality(self, contribution_id: str) -> Optional[float]:
+        """
+        Get the aggregated quality score for a contribution.
+
+        Returns weighted average of all ratings (0.0-1.0), or None if not found.
+        """
+        contribution = self.contributions.get(contribution_id)
+        if not contribution:
+            return None
+        return contribution.quality_score
+
+    def get_contribution_ratings(self, contribution_id: str) -> List[QualityRatingRecord]:
+        """Get all ratings for a contribution."""
+        contribution = self.contributions.get(contribution_id)
+        if not contribution:
+            return []
+        return contribution.ratings.copy()
 
     def vote_contribution(
         self,
@@ -628,3 +949,386 @@ class AttributionManager:
 def create_attribution_manager(knowledge_base_id: Optional[str] = None) -> AttributionManager:
     """Create an attribution manager."""
     return AttributionManager(knowledge_base_id=knowledge_base_id)
+
+
+# ============================================================================
+# MRF Refinement Integration (Phase 3 - December 2025)
+# ============================================================================
+
+@dataclass
+class AnnotationWithRefinement:
+    """
+    An annotation contribution with optional MRF refinement.
+
+    Extends the standard Contribution with refinement-specific fields.
+    """
+    contribution: Contribution
+    original_text: str
+    refined_text: Optional[str] = None
+    refinement_applied: bool = False
+    refinement_strategy: Optional[str] = None
+    quality_before: float = 0.0
+    quality_after: float = 0.0
+    refinement_suggestions: List[Dict[str, Any]] = field(default_factory=list)
+    user_accepted_refinement: Optional[bool] = None
+    refinement_timestamp: Optional[datetime] = None
+
+    @property
+    def quality_improvement(self) -> float:
+        """Calculate quality improvement from refinement."""
+        return self.quality_after - self.quality_before
+
+    @property
+    def final_text(self) -> str:
+        """Get the final text (refined if applied, original otherwise)."""
+        if self.refinement_applied and self.refined_text:
+            return self.refined_text
+        return self.original_text
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "contribution": self.contribution.to_dict(),
+            "original_text": self.original_text,
+            "refined_text": self.refined_text,
+            "refinement_applied": self.refinement_applied,
+            "refinement_strategy": self.refinement_strategy,
+            "quality_before": self.quality_before,
+            "quality_after": self.quality_after,
+            "quality_improvement": self.quality_improvement,
+            "refinement_suggestions": self.refinement_suggestions,
+            "user_accepted_refinement": self.user_accepted_refinement,
+            "refinement_timestamp": self.refinement_timestamp.isoformat() if self.refinement_timestamp else None
+        }
+
+
+class RefinementAwareAttributionManager(AttributionManager):
+    """
+    Attribution manager with MRF refinement integration.
+
+    Extends AttributionManager with:
+    - Automatic annotation refinement on creation
+    - Tracking of refinement acceptance/rejection
+    - Quality metrics for refined annotations
+    - Learning from refinement feedback
+    """
+
+    def __init__(
+        self,
+        knowledge_base_id: Optional[str] = None,
+        refiner: Optional['AnnotationRefiner'] = None,
+        auto_refine: bool = True,
+        refinement_threshold: float = 0.7
+    ):
+        """
+        Initialize refinement-aware attribution manager.
+
+        Args:
+            knowledge_base_id: Knowledge base identifier
+            refiner: AnnotationRefiner instance (created if None)
+            auto_refine: Whether to auto-refine annotations
+            refinement_threshold: Quality threshold below which to suggest refinement
+        """
+        super().__init__(knowledge_base_id=knowledge_base_id)
+
+        self.refiner = refiner
+        self.auto_refine = auto_refine
+        self.refinement_threshold = refinement_threshold
+
+        # Refinement tracking
+        self.refined_annotations: Dict[str, AnnotationWithRefinement] = {}
+        self.refinement_stats = {
+            "total_refined": 0,
+            "accepted": 0,
+            "rejected": 0,
+            "auto_applied": 0,
+            "avg_quality_improvement": 0.0
+        }
+
+    def _get_refiner(self) -> Optional['AnnotationRefiner']:
+        """Get or create the refiner."""
+        if self.refiner is None:
+            try:
+                from .annotation_refinement import create_annotation_refiner
+                self.refiner = create_annotation_refiner(enable_learning=True)
+            except ImportError:
+                logger.warning("AnnotationRefiner not available")
+                return None
+        return self.refiner
+
+    def record_annotation(
+        self,
+        user_id: str,
+        user_name: str,
+        target_id: str,
+        annotation_text: str,
+        annotation_type: str = "note",
+        session_id: Optional[str] = None,
+        auto_refine: Optional[bool] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> Tuple[Contribution, Optional['RefinementResult']]:
+        """
+        Record an annotation with optional refinement.
+
+        Args:
+            user_id: User ID
+            user_name: User display name
+            target_id: Target node/object ID
+            annotation_text: The annotation content
+            annotation_type: Type of annotation (note, question, insight, connection)
+            session_id: Session ID
+            auto_refine: Override auto-refine setting
+            metadata: Additional metadata
+
+        Returns:
+            Tuple of (Contribution, optional RefinementResult)
+        """
+        should_refine = auto_refine if auto_refine is not None else self.auto_refine
+
+        # Record base contribution
+        contribution = self.record_contribution(
+            contribution_type=ContributionType.ANNOTATION,
+            user_id=user_id,
+            user_name=user_name,
+            target_type="node",
+            target_id=target_id,
+            content_preview=annotation_text[:200],
+            content_size=len(annotation_text),
+            session_id=session_id,
+            metadata={
+                **(metadata or {}),
+                "annotation_type": annotation_type,
+                "original_text": annotation_text
+            }
+        )
+
+        refinement_result = None
+
+        # Attempt refinement if enabled
+        if should_refine:
+            refiner = self._get_refiner()
+            if refiner:
+                try:
+                    from .annotation_refinement import AnnotationType
+                    ann_type = AnnotationType(annotation_type)
+
+                    refinement_result = refiner.refine(
+                        annotation_id=contribution.contribution_id,
+                        text=annotation_text,
+                        annotation_type=ann_type,
+                        context={
+                            "node_id": target_id,
+                            "session_id": session_id,
+                            "user_id": user_id
+                        }
+                    )
+
+                    # Track refined annotation
+                    self.refined_annotations[contribution.contribution_id] = AnnotationWithRefinement(
+                        contribution=contribution,
+                        original_text=annotation_text,
+                        refined_text=refinement_result.final_text,
+                        refinement_applied=False,  # User must accept
+                        refinement_strategy=refinement_result.strategy_used.value,
+                        quality_before=refinement_result.quality_before,
+                        quality_after=refinement_result.quality_after,
+                        refinement_suggestions=[s.to_dict() for s in refinement_result.suggestions]
+                    )
+
+                    self.refinement_stats["total_refined"] += 1
+
+                    # Emit event
+                    self._emit_event("annotation_refined", {
+                        "contribution_id": contribution.contribution_id,
+                        "quality_before": refinement_result.quality_before,
+                        "quality_after": refinement_result.quality_after,
+                        "strategy": refinement_result.strategy_used.value,
+                        "suggestions_count": len(refinement_result.suggestions)
+                    })
+
+                except Exception as e:
+                    logger.error(f"Refinement failed: {e}")
+
+        return contribution, refinement_result
+
+    def accept_refinement(
+        self,
+        contribution_id: str,
+        user_id: str
+    ) -> bool:
+        """
+        Accept a refinement suggestion.
+
+        Args:
+            contribution_id: The contribution ID
+            user_id: The user accepting the refinement
+
+        Returns:
+            True if refinement was accepted
+        """
+        refined = self.refined_annotations.get(contribution_id)
+        if not refined:
+            return False
+
+        if refined.refinement_applied:
+            return False  # Already applied
+
+        refined.refinement_applied = True
+        refined.user_accepted_refinement = True
+        refined.refinement_timestamp = datetime.now()
+
+        # Update contribution
+        contribution = self.contributions.get(contribution_id)
+        if contribution:
+            contribution.content_preview = refined.refined_text[:200]
+            contribution.metadata["refined_text"] = refined.refined_text
+            contribution.metadata["refinement_accepted"] = True
+            contribution.metadata["refinement_accepted_by"] = user_id
+
+        self.refinement_stats["accepted"] += 1
+        self._update_avg_quality_improvement(refined.quality_improvement)
+
+        # Provide positive feedback to refiner
+        refiner = self._get_refiner()
+        if refiner and refiner.enable_learning:
+            refiner.refinement_history.append({
+                "annotation_id": contribution_id,
+                "accepted": True,
+                "quality_improvement": refined.quality_improvement,
+                "timestamp": datetime.now().isoformat()
+            })
+
+        self._emit_event("refinement_accepted", {
+            "contribution_id": contribution_id,
+            "user_id": user_id,
+            "quality_improvement": refined.quality_improvement
+        })
+
+        return True
+
+    def reject_refinement(
+        self,
+        contribution_id: str,
+        user_id: str,
+        reason: Optional[str] = None
+    ) -> bool:
+        """
+        Reject a refinement suggestion.
+
+        Args:
+            contribution_id: The contribution ID
+            user_id: The user rejecting the refinement
+            reason: Optional reason for rejection
+
+        Returns:
+            True if refinement was rejected
+        """
+        refined = self.refined_annotations.get(contribution_id)
+        if not refined:
+            return False
+
+        if refined.refinement_applied:
+            return False  # Already applied
+
+        refined.user_accepted_refinement = False
+        refined.refinement_timestamp = datetime.now()
+
+        # Update contribution metadata
+        contribution = self.contributions.get(contribution_id)
+        if contribution:
+            contribution.metadata["refinement_rejected"] = True
+            contribution.metadata["refinement_rejected_by"] = user_id
+            if reason:
+                contribution.metadata["refinement_rejection_reason"] = reason
+
+        self.refinement_stats["rejected"] += 1
+
+        # Provide negative feedback to refiner
+        refiner = self._get_refiner()
+        if refiner and refiner.enable_learning:
+            refiner.refinement_history.append({
+                "annotation_id": contribution_id,
+                "accepted": False,
+                "reason": reason,
+                "timestamp": datetime.now().isoformat()
+            })
+
+        self._emit_event("refinement_rejected", {
+            "contribution_id": contribution_id,
+            "user_id": user_id,
+            "reason": reason
+        })
+
+        return True
+
+    def get_refinement_suggestions(
+        self,
+        contribution_id: str
+    ) -> Optional[AnnotationWithRefinement]:
+        """Get refinement suggestions for an annotation."""
+        return self.refined_annotations.get(contribution_id)
+
+    def get_pending_refinements(
+        self,
+        user_id: Optional[str] = None
+    ) -> List[AnnotationWithRefinement]:
+        """
+        Get annotations with pending refinement suggestions.
+
+        Args:
+            user_id: Optional filter by user
+
+        Returns:
+            List of annotations with pending refinements
+        """
+        pending = []
+        for ann_id, refined in self.refined_annotations.items():
+            if refined.user_accepted_refinement is None:  # Not yet decided
+                if user_id is None or refined.contribution.user_id == user_id:
+                    pending.append(refined)
+
+        return pending
+
+    def get_refinement_stats(self) -> Dict[str, Any]:
+        """Get refinement statistics."""
+        stats = self.refinement_stats.copy()
+        stats["pending"] = len(self.get_pending_refinements())
+        stats["acceptance_rate"] = (
+            stats["accepted"] / stats["total_refined"]
+            if stats["total_refined"] > 0 else 0.0
+        )
+        return stats
+
+    def _update_avg_quality_improvement(self, new_improvement: float):
+        """Update running average of quality improvement."""
+        accepted = self.refinement_stats["accepted"]
+        current_avg = self.refinement_stats["avg_quality_improvement"]
+
+        # Running average
+        self.refinement_stats["avg_quality_improvement"] = (
+            (current_avg * (accepted - 1) + new_improvement) / accepted
+            if accepted > 0 else new_improvement
+        )
+
+
+# Factory for refinement-aware manager
+def create_refinement_aware_attribution_manager(
+    knowledge_base_id: Optional[str] = None,
+    auto_refine: bool = True,
+    refinement_threshold: float = 0.7
+) -> RefinementAwareAttributionManager:
+    """
+    Create an attribution manager with MRF refinement integration.
+
+    Args:
+        knowledge_base_id: Knowledge base identifier
+        auto_refine: Whether to automatically refine annotations
+        refinement_threshold: Quality threshold for suggesting refinement
+
+    Returns:
+        RefinementAwareAttributionManager instance
+    """
+    return RefinementAwareAttributionManager(
+        knowledge_base_id=knowledge_base_id,
+        auto_refine=auto_refine,
+        refinement_threshold=refinement_threshold
+    )

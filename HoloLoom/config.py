@@ -294,6 +294,16 @@ class Config:
     enable_safety_guardrails: bool = True  # Master switch for safety system
     safety_log_all_decisions: bool = True  # Log every safety decision (for audit)
 
+    # Conscience Architecture (December 2025) - Unified Safety with consider/witness/learn
+    # Modular conscience integration for agentic reasoning and weaving orchestrator
+    # Toggle at: config, constructor, per-request, or preset level
+    enable_conscience: bool = True  # Master switch for conscience safety layer
+    conscience_preset: str = "standard"  # Lens preset: "standard", "paranoid", "research"
+    conscience_fail_open: bool = True  # Graceful degradation (fail-open for availability)
+    conscience_auto_learn: bool = True  # Auto-learn from execution outcomes
+    conscience_learning_interval: float = 60.0  # Background learning interval (seconds)
+    conscience_persist_path: Optional[str] = None  # Path for conscience wisdom persistence
+
     # Memory management
     working_memory_size: int = 100  # Cache size for recent queries
     episodic_buffer_size: int = 100  # Size of recent interaction buffer
@@ -305,6 +315,19 @@ class Config:
     # Prometheus Metrics (production monitoring)
     enable_prometheus_metrics: bool = True  # Enable Prometheus metrics collection
     prometheus_metrics_port: int = 8001  # Port for metrics HTTP endpoint
+
+    # Jenny Generative UI Runtime (December 2025)
+    enable_jenny: bool = False  # Enable Jenny UI panel generation
+    jenny_persist_path: str = "./jenny_specs"  # SpecLedger persistence directory
+    jenny_default_renderer: str = "html"  # Default renderer: "html", "terminal", "json"
+    jenny_max_panels_per_query: int = 6  # Maximum panels per weave
+    jenny_auto_lifecycle: bool = True  # Auto-transition NASCENT → STABLE
+    jenny_cleanup_interval: float = 60.0  # Cleanup interval for DISSOLVING panels (seconds)
+
+    # Jenny MRF Integration (Phase 2.1-2.2: Thompson Sampling panel learning - December 2025)
+    jenny_enable_mrf: bool = True  # Enable MRF-enhanced panel compilation
+    jenny_enable_learning: bool = True  # Enable Thompson Sampling learning from user actions
+    jenny_learning_persist_path: str = "./jenny_learning"  # Learning state persistence directory
 
     def __post_init__(self):
         """Validate configuration."""

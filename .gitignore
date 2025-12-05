@@ -76,3 +76,9 @@ test_results*.json
 # IDE
 .vscode/settings.json
 .idea/workspace.xml
+
+# Docusaurus website
+website/node_modules/
+website/build/
+website/.docusaurus/
+website/.cache-loader/

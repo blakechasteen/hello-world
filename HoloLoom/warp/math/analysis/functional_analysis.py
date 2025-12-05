@@ -32,7 +32,7 @@ Date: 2025-10-26
 """
 
 import numpy as np
-from typing import Callable, List, Tuple, Optional, Union
+from typing import Any, Callable, List, Tuple, Optional, Union
 from dataclasses import dataclass
 import logging
 
@@ -62,8 +62,8 @@ class NormedSpace:
         """Default L² norm."""
         return np.linalg.norm(x)
 
-    def distance(self, x, y) -> float:
-        """Induced metric: d(x,y) = ||x - y||"""
+    def distance(self, x: np.ndarray, y: np.ndarray) -> float:
+        """Induced metric: d(x,y) = ||x - y||."""
         return self.norm(x - y)
 
     def is_complete(self) -> bool:
@@ -125,8 +125,8 @@ class HilbertSpace:
         """Induced norm: ||x|| = √⟨x,x⟩"""
         return np.sqrt(abs(self.inner_product(x, x)))
 
-    def distance(self, x, y) -> float:
-        """Induced metric: d(x,y) = ||x - y||"""
+    def distance(self, x: np.ndarray, y: np.ndarray) -> float:
+        """Induced metric: d(x,y) = ||x - y||."""
         return self.norm(x - y)
 
     def angle(self, x, y) -> float:

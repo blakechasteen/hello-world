@@ -1,0 +1,311 @@
+name: HoloLoom Test Suite
+
+on:
+  push:
+    branches: [ master, main, 'feature/**' ]
+    paths:
+      - 'HoloLoom/**'
+      - 'tests/**'
+      - '.github/workflows/hololoom-test-suite.yml'
+      - 'requirements.txt'
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - 'HoloLoom/**'
+      - 'tests/**'
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  PYTHONPATH: .
+  PYTHONWARNINGS: ignore
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  # ============================================================================
+  # Unit Tests - Fast feedback (<2 minutes)
+  # ============================================================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-unit-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-unit-
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-timeout numpy torch
+          pip install networkx scipy  # Core dependencies
+          # Optional: sentence-transformers for embeddings (skip in CI for speed)
+
+      - name: Run Unit Tests
+        run: |
+          python -m pytest HoloLoom/tests/unit/ -v \
+            --timeout=30 \
+            --tb=short \
+            -x  # Stop on first failure for fast feedback
+        continue-on-error: false
+
+      - name: Run Policy Tests
+        run: |
+          python -m pytest HoloLoom/policy/ -v \
+            --timeout=30 \
+            --tb=short \
+            --ignore=HoloLoom/policy/tests/test_slow*.py
+        continue-on-error: true
+
+      - name: Run Memory Unit Tests
+        run: |
+          python -m pytest HoloLoom/memory/tests/ -v \
+            --timeout=30 \
+            --tb=short \
+            --ignore=HoloLoom/memory/tests/test_integration*.py
+        continue-on-error: true
+
+  # ============================================================================
+  # Integration Tests - Multi-component testing (<5 minutes)
+  # ============================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: unit-tests  # Only run after unit tests pass
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-integration-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-integration-
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-timeout numpy torch
+          pip install networkx scipy sentence-transformers
+          pip install spacy
+          python -m spacy download en_core_web_sm || true
+
+      - name: Run Integration Tests
+        run: |
+          python -m pytest HoloLoom/tests/integration/ -v \
+            --timeout=60 \
+            --tb=short \
+            -x
+        continue-on-error: false
+
+      - name: Run Cross-Component Tests
+        run: |
+          python -m pytest HoloLoom/tests/integration/test_cross_component_integration.py -v \
+            --timeout=120 \
+            --tb=short
+        continue-on-error: true
+
+  # ============================================================================
+  # RAG Tests - RAG system specific tests
+  # ============================================================================
+  rag-tests:
+    name: RAG System Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-rag-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-rag-
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-timeout numpy torch
+          pip install networkx scipy sentence-transformers
+
+      - name: Run RAG Unit Tests
+        run: |
+          python -m pytest HoloLoom/rag/tests/ -v \
+            --timeout=60 \
+            --tb=short \
+            --ignore=HoloLoom/rag/tests/test_*_e2e.py
+        continue-on-error: true
+
+  # ============================================================================
+  # Routing Tests - Query classification and routing
+  # ============================================================================
+  routing-tests:
+    name: Routing Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-routing-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-routing-
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-timeout numpy
+
+      - name: Run Routing Tests
+        run: |
+          python -m pytest HoloLoom/routing/ -v \
+            --timeout=30 \
+            --tb=short
+        continue-on-error: true
+
+  # ============================================================================
+  # Alignment Tests - Safety and alignment framework
+  # ============================================================================
+  alignment-tests:
+    name: Alignment Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-alignment-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-alignment-
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-timeout numpy
+
+      - name: Run Alignment Tests
+        run: |
+          python -m pytest HoloLoom/alignment/tests/ -v \
+            --timeout=30 \
+            --tb=short
+        continue-on-error: true
+
+  # ============================================================================
+  # E2E Tests - Full pipeline tests (optional, slow)
+  # ============================================================================
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [integration-tests, rag-tests]
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-e2e-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-e2e-
+            ${{ runner.os }}-pip-
+
+      - name: Install all dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-timeout numpy torch
+          pip install networkx scipy sentence-transformers
+          pip install spacy
+          python -m spacy download en_core_web_sm || true
+
+      - name: Run E2E Tests
+        run: |
+          python -m pytest HoloLoom/tests/e2e/ -v \
+            --timeout=300 \
+            --tb=short
+        continue-on-error: true
+
+  # ============================================================================
+  # Test Summary - Aggregate results
+  # ============================================================================
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, rag-tests, routing-tests, alignment-tests]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "## Test Suite Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | ${{ needs.unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration Tests | ${{ needs.integration-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| RAG Tests | ${{ needs.rag-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Routing Tests | ${{ needs.routing-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Alignment Tests | ${{ needs.alignment-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if critical tests failed
+        if: needs.unit-tests.result == 'failure'
+        run: exit 1

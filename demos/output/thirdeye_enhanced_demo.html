@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThirdEye Enhanced Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0c0a09;
+            color: #fafaf9;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 {
+            color: #1e293b;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #1e293b40;
+            padding-bottom: 0.5rem;
+        }
+        h2 {
+            color: #1e293b;
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+        .input-text {
+            background: #1e293b15;
+            border-left: 3px solid #1e293b;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-style: italic;
+            line-height: 1.6;
+        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .card {
+            background: #1e293b10;
+            border: 1px solid #1e293b30;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .card-title {
+            color: #1e293b;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #1e293b15;
+        }
+        .stat-label { opacity: 0.7; }
+        .stat-value { font-weight: 500; }
+        .element {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #1e293b08;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            font-size: 0.85rem;
+        }
+        .element-type {
+            background: #1e293b30;
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+        }
+        .element-name { flex: 1; font-weight: 500; }
+        .element-pos { opacity: 0.5; font-family: monospace; }
+        .badge {
+            display: inline-block;
+            background: #1e293b;
+            color: #0c0a09;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ThirdEye Enhanced Scene</h1>
+
+        <div class="input-text">
+            
+    In the heart of the enchanted forest, Princess Aurora discovered an ancient stone archway.
+    Mysterious runes glowed softly along its edges. Beyond the archway, she could see a
+    floating castle suspended among the clouds, its towers reaching toward an aurora-filled sky.
+    
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">Scene Info</div>
+                <div class="stat">
+                    <span class="stat-label">Mode</span>
+                    <span class="badge">abstract</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Title</span>
+                    <span class="stat-value">Concept Map</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Elements</span>
+                    <span class="stat-value">15</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Visual Style</div>
+                <div class="stat">
+                    <span class="stat-label">Style</span>
+                    <span class="stat-value">cinematic</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Primary Color</span>
+                    <span class="stat-value">#1e293b</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Animation</span>
+                    <span class="stat-value">fadeIn</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Semantic Analysis</div>
+                <div class="stat">
+                    <span class="stat-label">Mood</span>
+                    <span class="badge">neutral</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Density</span>
+                    <span class="stat-value">detailed</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Color Temperature</span>
+                    <span class="stat-value">neutral</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Animation Speed</span>
+                    <span class="stat-value">0.65</span>
+                </div>
+            </div>
+        </div>
+
+        <h2>Scene Elements</h2>
+        <div class="card">
+            
+        <div class="element">
+            <span class="element-type">concept_sphere</span>
+            <span class="element-name">In</span>
+            <span class="element-pos">(-8.0, 0.0, 0.0)</span>
+        </div>
+        
+        <div class="element">
+            <span class="element-type">concept_sphere</span>
+            <span class="element-name">Princess Aurora</span>
+            <span class="element-pos">(-4.0, 0.0, 0.0)</span>
+        </div>
+        
+        <div class="element">
+            <span class="element-type">concept_sphere</span>
+            <span class="element-name">Mysterious</span>
+            <span class="element-pos">(0.0, 0.0, 0.0)</span>
+        </div>
+        
+        <div class="element">
+            <span class="element-type">concept_sphere</span>
+            <span class="element-name">Beyond</span>
+            <span class="element-pos">(4.0, 0.0, 0.0)</span>
+        </div>
+        
+        <div class="element">
+            <span class="element-type">persistent_screen</span>
+            <span class="element-name">login</span>
+            <span class="element-pos">(-8.0, 1.0, 3.0)</span>
+        </div>
+        
+        <div class="element">
+            <span class="element-type">persistent_character</span>
+            <span class="element-name">detective</span>
+            <span class="element-pos">(-6.0, 0.0, 0.0)</span>
+        </div>
+        
+        <div class="element">
+            <span class="element-type">persistent_character</span>
+            <span class="element-name">she</span>
+            <span class="element-pos">(-3.0, 0.0, 0.0)</span>
+        </div>
+        
+        <div class="element">
+            <span class="element-type">persistent_location</span>
+            <span class="element-name">room</span>
+            <span class="element-pos">(0.0, 0.0, -10.0)</span>
+        </div>
+        
+        <div class="element">
+            <span class="element-type">persistent_location</span>
+            <span class="element-name">talk</span>
+            <span class="element-pos">(0.0, 0.0, -15.0)</span>
+        </div>
+        
+        <div class="element">
+            <span class="element-type">persistent_location</span>
+            <span class="element-name">shadow in</span>
+            <span class="element-pos">(0.0, 0.0, -20.0)</span>
+        </div>
+        
+            <div style="opacity:0.5;padding:0.5rem">...and 5 more</div>
+        </div>
+
+        <h2>Raw Scene Data</h2>
+        <div class="card">
+            <pre style="overflow-x:auto;font-size:0.8rem;line-height:1.4;">{
+  "mode": "abstract",
+  "title": "Concept Map",
+  "elements": [
+    {
+      "id": "concept_0",
+      "type": "concept_sphere",
+      "label": "In",
+      "position": {
+        "x": -8.0,
+        "y": 0,
+        "z": 0
+      },
+      "importance": 0.8,
+      "color": "#3b82f6",
+      "material": {
+        "roughness": 0.6,
+        "metalness": 0.2,
+        "opacity": 1.0,
+        "emissiveIntensity": 0.0,
+        "wireframe": false,
+        "flatShading": false
+      },
+      "animation": {
+        "entrance": "fadeIn",
+        "duration": 1.2,
+        "easing": "easeInOutQuint",
+        "idle": "float"
+      },
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "concept_1",
+      "type": "concept_sphere",
+      "label": "Princess Aurora",
+      "position": {
+        "x": -4.0,
+        "y": 0,
+        "z": 0
+      },
+      "importance": 0.7000000000000001,
+      "color": "#10b981",
+      "material": {
+        "roughness": 0.6,
+        "metalness": 0.2,
+        "opacity": 1.0,
+        "emissiveIntensity": 0.0,
+        "wireframe": false,
+        "flatShading": false
+      },
+      "animation": {
+        "entrance": "fadeIn",
+        "duration": 1.2,
+        "easing": "easeInOutQuint",
+        "idle": "float"
+      },
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "concept_2",
+      "type": "concept_sphere",
+      "label": "Mysterious",
+      "position": {
+        "x": 0.0,
+        "y": 0,
+        "z": 0
+      },
+      "importance": 0.6000000000000001,
+      "color": "#8b5cf6",
+      "material": {
+        "roughness": 0.6,
+        "metalness": 0.2,
+        "opacity": 1.0,
+        "emissiveIntensity": 0.0,
+        "wireframe": false,
+        "flatShading": false
+      },
+      "animation": {
+        "entrance": "fadeIn",
+        "duration": 1.2,
+        "easing": "easeInOutQuint",
+        "idle": "float"
+      },
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "concept_3",
+      "type": "concept_sphere",
+      "label": "Beyond",
+      "position": {
+        "x": 4.0,
+        "y": 0,
+        "z": 0
+      },
+      "importance": 0.5,
+      "color": "#f59e0b",
+      "material": {
+        "roughness": 0.6,
+        "metalness": 0.2,
+        "opacity": 1.0,
+        "emissiveIntensity": 0.0,
+        "wireframe": false,
+        "flatShading": false
+      },
+      "animation": {
+        "entrance": "fadeIn",
+        "duration": 1.2,
+        "easing": "easeInOutQuint",
+        "idle": "float"
+      },
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "login_d56b69",
+      "type": "persistent_screen",
+      "name": "login",
+      "label": "login",
+      "position": {
+        "x": -8.0,
+        "y": 1.0,
+        "z": 3.0
+      },
+      "persistent": true,
+      "importance": 0.5499998419444945,
+      "opacity": 0.8649999525833483,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "detective_4af05d",
+      "type": "persistent_character",
+      "name": "detective",
+      ...</pre>
+        </div>
+    </div>
+</body>
+</html>

@@ -9,6 +9,9 @@ import { AgentPanel } from './AgentPanel';
 import { CodeContextProvider } from './CodeContextProvider';
 import { MCPServer } from './MCPServer';
 import { AgentMonitorTreeProvider } from './AgentMonitorTreeProvider';
+import { SkillsManager, createSkillsManager } from './SkillsManager';
+import { SkillsTreeProvider } from './SkillsTreeProvider';
+import { SkillsExplorerPanel } from './SkillsExplorerPanel';
 
 let bridge: HoloLoomBridge;
 let agentPanel: AgentPanel | undefined;
@@ -16,6 +19,8 @@ let contextProvider: CodeContextProvider;
 let statusBarItem: vscode.StatusBarItem;
 let mcpServer: MCPServer;
 let agentMonitorProvider: AgentMonitorTreeProvider;
+let skillsManager: SkillsManager;
+let skillsTreeProvider: SkillsTreeProvider;
 
 async function updateServerStatus() {
     const healthy = await bridge.healthCheck();
@@ -80,8 +85,20 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(treeView);
     context.subscriptions.push(agentMonitorProvider);
 
+    // Initialize Skills Manager and Tree View
+    skillsManager = createSkillsManager(context);
+    skillsTreeProvider = new SkillsTreeProvider(skillsManager);
+    const skillsTreeView = vscode.window.createTreeView('hololoomSkills', {
+        treeDataProvider: skillsTreeProvider,
+        showCollapseAll: true
+    });
+    context.subscriptions.push(skillsTreeView);
+    context.subscriptions.push(skillsTreeProvider);
+    context.subscriptions.push(skillsManager);
+
     // Register commands
     registerCommands(context);
+    registerSkillsCommands(context);
 
     // Periodic health check (every 30 seconds)
     const healthCheckInterval = setInterval(updateServerStatus, 30000);
@@ -253,6 +270,97 @@ function registerCommands(context: vscode.ExtensionContext) {
             );
 
             panel.webview.html = getAgentDetailsHtml(session);
+        })
+    );
+}
+
+function registerSkillsCommands(context: vscode.ExtensionContext) {
+    // Open Skills Explorer
+    context.subscriptions.push(
+        vscode.commands.registerCommand('skills.openExplorer', () => {
+            SkillsExplorerPanel.show(skillsManager, context.extensionUri);
+        })
+    );
+
+    // Refresh Skills
+    context.subscriptions.push(
+        vscode.commands.registerCommand('skills.refresh', () => {
+            skillsTreeProvider.refresh();
+        })
+    );
+
+    // Invoke Skill
+    context.subscriptions.push(
+        vscode.commands.registerCommand('skills.invoke', async (skillId?: string) => {
+            // If no skillId provided, show quick pick
+            if (!skillId) {
+                const skill = await skillsManager.selectSkill({ installed: true });
+                if (!skill) return;
+                skillId = skill.skill_id;
+            }
+
+            // Get input for the skill
+            const input = await vscode.window.showInputBox({
+                prompt: `Enter input for skill "${skillId}"`,
+                placeHolder: 'Skill input...'
+            });
+
+            if (!input) return;
+
+            const result = await skillsManager.invokeSkill(skillId, { query: input });
+
+            if (result.success) {
+                vscode.window.showInformationMessage(
+                    `Skill completed in ${result.duration_ms}ms`
+                );
+                // Could show output in a panel here
+            } else {
+                vscode.window.showErrorMessage(`Skill error: ${result.error}`);
+            }
+        })
+    );
+
+    // Install Skill
+    context.subscriptions.push(
+        vscode.commands.registerCommand('skills.install', async (skillId?: string) => {
+            if (!skillId) {
+                const skill = await skillsManager.selectSkill({ installed: false });
+                if (!skill) return;
+                skillId = skill.skill_id;
+            }
+            await skillsManager.installSkill(skillId);
+        })
+    );
+
+    // Remove Skill
+    context.subscriptions.push(
+        vscode.commands.registerCommand('skills.remove', async (item?: any) => {
+            const skillId = item?.data?.skill?.skill_id;
+            if (skillId) {
+                await skillsManager.removeSkill(skillId);
+            }
+        })
+    );
+
+    // Enable Skill
+    context.subscriptions.push(
+        vscode.commands.registerCommand('skills.enable', async (item?: any) => {
+            const skillId = item?.data?.skill?.skill_id;
+            if (skillId) {
+                await skillsManager.setSkillEnabled(skillId, true);
+                skillsTreeProvider.refresh();
+            }
+        })
+    );
+
+    // Disable Skill
+    context.subscriptions.push(
+        vscode.commands.registerCommand('skills.disable', async (item?: any) => {
+            const skillId = item?.data?.skill?.skill_id;
+            if (skillId) {
+                await skillsManager.setSkillEnabled(skillId, false);
+                skillsTreeProvider.refresh();
+            }
         })
     );
 }

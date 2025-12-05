@@ -1,0 +1,393 @@
+{
+  "mode": "abstract",
+  "title": "Concept Map",
+  "elements": [
+    {
+      "id": "concept_0",
+      "type": "concept_sphere",
+      "label": "In",
+      "position": {
+        "x": -8.0,
+        "y": 0,
+        "z": 0
+      },
+      "importance": 0.8,
+      "color": "#3b82f6",
+      "material": {
+        "roughness": 0.6,
+        "metalness": 0.2,
+        "opacity": 1.0,
+        "emissiveIntensity": 0.0,
+        "wireframe": false,
+        "flatShading": false
+      },
+      "animation": {
+        "entrance": "fadeIn",
+        "duration": 1.2,
+        "easing": "easeInOutQuint",
+        "idle": "float"
+      },
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "concept_1",
+      "type": "concept_sphere",
+      "label": "Princess Aurora",
+      "position": {
+        "x": -4.0,
+        "y": 0,
+        "z": 0
+      },
+      "importance": 0.7000000000000001,
+      "color": "#10b981",
+      "material": {
+        "roughness": 0.6,
+        "metalness": 0.2,
+        "opacity": 1.0,
+        "emissiveIntensity": 0.0,
+        "wireframe": false,
+        "flatShading": false
+      },
+      "animation": {
+        "entrance": "fadeIn",
+        "duration": 1.2,
+        "easing": "easeInOutQuint",
+        "idle": "float"
+      },
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "concept_2",
+      "type": "concept_sphere",
+      "label": "Mysterious",
+      "position": {
+        "x": 0.0,
+        "y": 0,
+        "z": 0
+      },
+      "importance": 0.6000000000000001,
+      "color": "#8b5cf6",
+      "material": {
+        "roughness": 0.6,
+        "metalness": 0.2,
+        "opacity": 1.0,
+        "emissiveIntensity": 0.0,
+        "wireframe": false,
+        "flatShading": false
+      },
+      "animation": {
+        "entrance": "fadeIn",
+        "duration": 1.2,
+        "easing": "easeInOutQuint",
+        "idle": "float"
+      },
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "concept_3",
+      "type": "concept_sphere",
+      "label": "Beyond",
+      "position": {
+        "x": 4.0,
+        "y": 0,
+        "z": 0
+      },
+      "importance": 0.5,
+      "color": "#f59e0b",
+      "material": {
+        "roughness": 0.6,
+        "metalness": 0.2,
+        "opacity": 1.0,
+        "emissiveIntensity": 0.0,
+        "wireframe": false,
+        "flatShading": false
+      },
+      "animation": {
+        "entrance": "fadeIn",
+        "duration": 1.2,
+        "easing": "easeInOutQuint",
+        "idle": "float"
+      },
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "login_d56b69",
+      "type": "persistent_screen",
+      "name": "login",
+      "label": "login",
+      "position": {
+        "x": -8.0,
+        "y": 1.0,
+        "z": 3.0
+      },
+      "persistent": true,
+      "importance": 0.5499998419444945,
+      "opacity": 0.8649999525833483,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "detective_4af05d",
+      "type": "persistent_character",
+      "name": "detective",
+      "label": "detective",
+      "position": {
+        "x": -6.0,
+        "y": 0,
+        "z": 0
+      },
+      "persistent": true,
+      "importance": 0.5499998710833666,
+      "opacity": 0.8649999613250099,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "she_9eb0d0",
+      "type": "persistent_character",
+      "name": "she",
+      "label": "she",
+      "position": {
+        "x": -3.0,
+        "y": 0,
+        "z": 0
+      },
+      "persistent": true,
+      "importance": 0.5499998710833666,
+      "opacity": 0.8649999613250099,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "room_fef257",
+      "type": "persistent_location",
+      "name": "room",
+      "label": "room",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -10.0
+      },
+      "persistent": true,
+      "importance": 0.5499998710833666,
+      "opacity": 0.8649999613250099,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "talk_64b597",
+      "type": "persistent_location",
+      "name": "talk",
+      "label": "talk",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -15.0
+      },
+      "persistent": true,
+      "importance": 0.5499998710833666,
+      "opacity": 0.8649999613250099,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "shadow_in_860a28",
+      "type": "persistent_location",
+      "name": "shadow in",
+      "label": "shadow in",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -20.0
+      },
+      "persistent": true,
+      "importance": 0.5499998710833666,
+      "opacity": 0.8649999613250099,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "authservice_9c12da",
+      "type": "persistent_location",
+      "name": "AuthService",
+      "label": "AuthService",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -25.0
+      },
+      "persistent": true,
+      "importance": 0.5999998710833666,
+      "opacity": 0.8799999613250099,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "the_8fc42c",
+      "type": "persistent_service",
+      "name": "The",
+      "label": "The",
+      "position": {
+        "x": -6.0,
+        "y": 2.0,
+        "z": -0.0
+      },
+      "persistent": true,
+      "importance": 0.5499998710833666,
+      "opacity": 0.8649999613250099,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "forest_f379cf",
+      "type": "persistent_location",
+      "name": "forest",
+      "label": "forest",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -30.0
+      },
+      "persistent": true,
+      "importance": 0.55,
+      "opacity": 0.865,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "castle_9355a9",
+      "type": "persistent_location",
+      "name": "castle",
+      "label": "castle",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -35.0
+      },
+      "persistent": true,
+      "importance": 0.55,
+      "opacity": 0.865,
+      "animationSpeed": 0.6499999999999999
+    },
+    {
+      "id": "heart_of_bfc615",
+      "type": "persistent_location",
+      "name": "heart of",
+      "label": "heart of",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -40.0
+      },
+      "persistent": true,
+      "importance": 0.55,
+      "opacity": 0.865,
+      "animationSpeed": 0.6499999999999999
+    }
+  ],
+  "camera": {
+    "position": {
+      "x": 0,
+      "y": 3,
+      "z": 12
+    },
+    "target": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  "lighting": {
+    "ambient": {
+      "color": "#1e293b",
+      "intensity": 0.10575
+    },
+    "directional": {
+      "color": "#fef3c7",
+      "intensity": 0.564,
+      "position": {
+        "x": 5,
+        "y": 10,
+        "z": 5
+      },
+      "castShadow": true
+    },
+    "fog": {
+      "color": "#1e293b",
+      "near": 15,
+      "far": 40
+    }
+  },
+  "background": {
+    "type": "color",
+    "color": "#0c0a09"
+  },
+  "metadata": {
+    "memory_entity_count": 11,
+    "semantic_mood": "neutral",
+    "style_name": "cinematic"
+  },
+  "style": {
+    "name": "cinematic",
+    "colors": {
+      "primary": "#1e293b",
+      "secondary": "#334155",
+      "accent": "#eab308",
+      "background": "#0c0a09",
+      "surface": "#1c1917",
+      "text": "#fafaf9",
+      "muted": "#57534e",
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444"
+    },
+    "animation": {
+      "duration": 1.2,
+      "easing": "easeInOutQuint",
+      "entrance": "fadeIn"
+    }
+  },
+  "semantic": {
+    "mood": "neutral",
+    "density": "detailed",
+    "color_temperature": "neutral",
+    "animation_speed": 0.6499999999999999
+  },
+  "persistent_entities": [
+    {
+      "name": "login",
+      "id": "login_d56b69"
+    },
+    {
+      "name": "detective",
+      "id": "detective_4af05d"
+    },
+    {
+      "name": "she",
+      "id": "she_9eb0d0"
+    },
+    {
+      "name": "room",
+      "id": "room_fef257"
+    },
+    {
+      "name": "talk",
+      "id": "talk_64b597"
+    },
+    {
+      "name": "shadow in",
+      "id": "shadow_in_860a28"
+    },
+    {
+      "name": "AuthService",
+      "id": "authservice_9c12da"
+    },
+    {
+      "name": "The",
+      "id": "the_8fc42c"
+    },
+    {
+      "name": "forest",
+      "id": "forest_f379cf"
+    },
+    {
+      "name": "castle",
+      "id": "castle_9355a9"
+    },
+    {
+      "name": "heart of",
+      "id": "heart_of_bfc615"
+    }
+  ]
+}

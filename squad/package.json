@@ -23,6 +23,12 @@
           "name": "HoloLoom Agents",
           "icon": "$(pulse)",
           "contextualTitle": "Agent Monitoring"
+        },
+        {
+          "id": "hololoomSkills",
+          "name": "HoloLoom Skills",
+          "icon": "$(extensions)",
+          "contextualTitle": "Installed Skills"
         }
       ]
     },
@@ -65,6 +71,36 @@
       {
         "command": "hololoom.showAgentDetails",
         "title": "HoloLoom: Show Agent Details"
+      },
+      {
+        "command": "skills.openExplorer",
+        "title": "Skills: Open Marketplace",
+        "icon": "$(extensions)"
+      },
+      {
+        "command": "skills.refresh",
+        "title": "Skills: Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "skills.invoke",
+        "title": "Skills: Invoke Skill"
+      },
+      {
+        "command": "skills.install",
+        "title": "Skills: Install Skill"
+      },
+      {
+        "command": "skills.remove",
+        "title": "Skills: Remove Skill"
+      },
+      {
+        "command": "skills.enable",
+        "title": "Skills: Enable Skill"
+      },
+      {
+        "command": "skills.disable",
+        "title": "Skills: Disable Skill"
       }
     ],
     "menus": {
@@ -73,6 +109,38 @@
           "command": "hololoom.refreshAgentMonitor",
           "when": "view == hololoomAgents",
           "group": "navigation"
+        },
+        {
+          "command": "skills.refresh",
+          "when": "view == hololoomSkills",
+          "group": "navigation"
+        },
+        {
+          "command": "skills.openExplorer",
+          "when": "view == hololoomSkills",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "skills.invoke",
+          "when": "view == hololoomSkills && viewItem == skillInstalled",
+          "group": "inline"
+        },
+        {
+          "command": "skills.disable",
+          "when": "view == hololoomSkills && viewItem == skillInstalled",
+          "group": "skill@1"
+        },
+        {
+          "command": "skills.enable",
+          "when": "view == hololoomSkills && viewItem == skillDisabled",
+          "group": "skill@1"
+        },
+        {
+          "command": "skills.remove",
+          "when": "view == hololoomSkills && (viewItem == skillInstalled || viewItem == skillDisabled)",
+          "group": "skill@2"
         }
       ]
     },
@@ -114,6 +182,21 @@
           "type": "boolean",
           "default": true,
           "description": "Show intermediate reasoning steps"
+        },
+        "skills.marketplaceUrl": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "Skills Marketplace API URL"
+        },
+        "skills.autoUpdate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically check for skill updates"
+        },
+        "skills.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications for skill events"
         }
       }
     }

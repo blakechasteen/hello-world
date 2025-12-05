@@ -1,0 +1,22 @@
+# Node Daemon Configuration
+# Per-device WASM job executor
+
+node_id: "desktop-1"  # Unique identifier for this node
+host: "0.0.0.0"
+port: 9090
+
+# Portal Server connection
+portal_url: "http://localhost:8080"
+shared_secret: "dev-secret-change-me"
+
+# WASM execution
+wasm_module_dir: "./wasm_modules"
+max_concurrent_jobs: 4
+job_timeout_seconds: 60
+
+# Heartbeat
+heartbeat_interval_seconds: 30
+
+# Logging
+log_level: "INFO"
+log_json: true

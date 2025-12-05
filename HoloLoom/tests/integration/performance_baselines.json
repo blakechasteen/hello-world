@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-12-01T18:52:35.978715",
+  "baselines": {
+    "fast_mode_standard_query": 0.05700000716994206,
+    "bare_mode_standard_query": 0.033720023930072784,
+    "fused_mode_standard_query": 0.030879979021847248
+  },
+  "budgets": {
+    "cache_hit": 5.0,
+    "BARE": 200.0,
+    "FAST": 500.0,
+    "FULL": 1000.0,
+    "RESEARCH": 3000.0
+  }
+}

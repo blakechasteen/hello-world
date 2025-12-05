@@ -49,10 +49,19 @@ from HoloLoom.collaboration.sync import (
     StateSynchronizer, Operation, OperationType, ConflictResolution
 )
 from HoloLoom.collaboration.attribution import (
-    AttributionManager, Contribution, ContributionType
+    AttributionManager, Contribution, ContributionType,
+    RefinementAwareAttributionManager, create_refinement_aware_attribution_manager
 )
 from HoloLoom.collaboration.voice import (
     VoiceManager, VoiceRoom, VoiceRoomSettings
+)
+
+# Import MRF-powered learning modules (Phase 3)
+from HoloLoom.collaboration.ux_learning import (
+    CollaborationUXLearner, UXFeature, LearningContext, LearningDecision
+)
+from HoloLoom.collaboration.annotation_refinement import (
+    AnnotationRefiner, AnnotationType, RefinementStrategy, RefinementResult
 )
 
 logger = logging.getLogger(__name__)
@@ -674,7 +683,9 @@ class CollaborativeSpatialSession:
         name: str,
         owner_id: str,
         owner_name: str,
-        session_type: SessionType = SessionType.KNOWLEDGE_BASE
+        session_type: SessionType = SessionType.KNOWLEDGE_BASE,
+        enable_ux_learning: bool = True,
+        enable_annotation_refinement: bool = True
     ):
         self.session_id = session_id
         self.name = name
@@ -682,11 +693,34 @@ class CollaborativeSpatialSession:
         self.session_type = session_type
         self.created_at = datetime.now()
 
+        # MRF-powered learning layer (Phase 3)
+        self.enable_ux_learning = enable_ux_learning
+        self.enable_annotation_refinement = enable_annotation_refinement
+
+        # UX Learning - Thompson Sampling for collaboration preferences
+        self.ux_learner: Optional[CollaborationUXLearner] = None
+        if enable_ux_learning:
+            self.ux_learner = CollaborationUXLearner(session_id=session_id)
+
+        # Annotation refinement - MRF strategies for quality improvement
+        self.annotation_refiner: Optional[AnnotationRefiner] = None
+        if enable_annotation_refinement:
+            self.annotation_refiner = AnnotationRefiner()
+
         # Collaboration layer
         self.session_manager = SessionManager()
         self.presence_manager = PresenceManager(session_id)
-        self.sync = StateSynchronizer(session_id)
-        self.attribution = AttributionManager()
+        self.sync = StateSynchronizer(session_id, owner_id)
+
+        # Use refinement-aware attribution if refinement is enabled
+        if enable_annotation_refinement and self.annotation_refiner:
+            self.attribution = create_refinement_aware_attribution_manager(
+                refiner=self.annotation_refiner,
+                ux_learner=self.ux_learner
+            )
+        else:
+            self.attribution = AttributionManager()
+
         self.voice_manager = VoiceManager()
         self.voice_room: Optional[VoiceRoom] = None
 
@@ -863,11 +897,12 @@ class CollaborativeSpatialSession:
         user_id: str,
         display_name: str,
         avatar_preset: str = "casual"
-    ) -> Tuple[Avatar, UserPresence]:
+    ) -> Tuple[Avatar, UserPresence, Dict[str, Any]]:
         """
         User joins the collaborative spatial session.
 
-        Returns (Avatar, UserPresence) for the user.
+        Returns (Avatar, UserPresence, learned_defaults) for the user.
+        learned_defaults contains Thompson Sampling optimized UX preferences.
         """
         # Add to presence
         presence = self.presence_manager.add_user(user_id, display_name)
@@ -897,6 +932,11 @@ class CollaborativeSpatialSession:
         # Place in main stage
         avatar.position = Vector3(0, 0, 0)
 
+        # Apply learned UX defaults (Thompson Sampling)
+        learned_defaults = {}
+        if self.ux_learner:
+            learned_defaults = await self._apply_learned_defaults(user_id, display_name)
+
         # Notify others
         await self.notify_users(
             f"{display_name} joined",
@@ -908,10 +948,106 @@ class CollaborativeSpatialSession:
         self._emit_event("user_joined", {
             "user_id": user_id,
             "display_name": display_name,
-            "avatar_id": avatar.avatar_id
+            "avatar_id": avatar.avatar_id,
+            "learned_defaults": learned_defaults
         })
 
-        return avatar, presence
+        return avatar, presence, learned_defaults
+
+    async def _apply_learned_defaults(
+        self,
+        user_id: str,
+        display_name: str
+    ) -> Dict[str, Any]:
+        """
+        Apply Thompson Sampling learned UX defaults for a user.
+
+        Uses the UX learner to select optimal defaults based on learned preferences.
+        """
+        if not self.ux_learner:
+            return {}
+
+        # Build learning context
+        spatial_ctx = self.context_provider.get_context(user_id)
+        context = LearningContext(
+            user_id=user_id,
+            session_id=self.session_id,
+            zone_type=spatial_ctx.current_zone.name if spatial_ctx and spatial_ctx.current_zone else None,
+            activity_type=spatial_ctx.activity.name if spatial_ctx else "IDLE",
+            nearby_user_count=len(spatial_ctx.nearby_users) if spatial_ctx else 0,
+            session_duration_minutes=0.0,  # Just joined
+            time_of_day=datetime.now().strftime("%H:%M"),
+            is_presenter=user_id == self.owner_id,
+            has_voice_enabled=self.voice_room is not None
+        )
+
+        defaults = {}
+
+        # Get learned preference for each UX feature
+        features_to_learn = [
+            (UXFeature.CURSOR_VISIBILITY, ["show", "hide"]),
+            (UXFeature.VOICE_DEFAULT, ["muted", "unmuted"]),
+            (UXFeature.PRESENCE_STYLE, ["compact", "detailed", "minimal"]),
+            (UXFeature.TYPING_INDICATOR, ["show", "hide"]),
+            (UXFeature.NOTIFICATION_LEVEL, ["all", "mentions", "minimal", "none"]),
+            (UXFeature.COLLABORATION_MODE, ["spectator", "contributor", "presenter"])
+        ]
+
+        for feature, options in features_to_learn:
+            decision = self.ux_learner.decide(feature, options, context)
+            defaults[feature.value] = {
+                "selected": decision.selected_option,
+                "confidence": decision.confidence,
+                "exploration": decision.is_exploration
+            }
+
+            # Log for debugging
+            logger.debug(
+                f"UX Learn [{user_id}]: {feature.value} = {decision.selected_option} "
+                f"(conf={decision.confidence:.2f}, explore={decision.is_exploration})"
+            )
+
+        return defaults
+
+    async def record_ux_feedback(
+        self,
+        user_id: str,
+        feature: UXFeature,
+        selected_option: str,
+        success: bool,
+        engagement_score: float = 0.5
+    ):
+        """
+        Record user feedback for UX learning.
+
+        Called when user accepts/rejects a UX default or explicitly changes a setting.
+        """
+        if not self.ux_learner:
+            return
+
+        # Build context from current state
+        spatial_ctx = self.context_provider.get_context(user_id)
+        context = LearningContext(
+            user_id=user_id,
+            session_id=self.session_id,
+            zone_type=spatial_ctx.current_zone.name if spatial_ctx and spatial_ctx.current_zone else None,
+            activity_type=spatial_ctx.activity.name if spatial_ctx else "IDLE",
+            nearby_user_count=len(spatial_ctx.nearby_users) if spatial_ctx else 0
+        )
+
+        # Update Thompson Sampling priors
+        self.ux_learner.update(
+            feature=feature,
+            option=selected_option,
+            success=success,
+            context=context,
+            engagement_score=engagement_score
+        )
+
+        logger.debug(
+            f"UX Feedback [{user_id}]: {feature.value}/{selected_option} "
+            f"= {'success' if success else 'failure'} (engagement={engagement_score:.2f})"
+        )
 
     async def leave(self, user_id: str):
         """User leaves the session."""
@@ -1303,8 +1439,181 @@ class CollaborativeSpatialSession:
             user_name=user_name,
             target_type="spatial_object",
             target_id=target_id,
-            data=data
+            metadata=data
         )
+
+    # === MRF Annotation Refinement ===
+
+    async def create_annotation(
+        self,
+        user_id: str,
+        text: str,
+        annotation_type: AnnotationType,
+        target_id: str,
+        position: Optional[Vector3] = None,
+        auto_refine: bool = True
+    ) -> Tuple[Contribution, Optional[RefinementResult]]:
+        """
+        Create an annotation with optional MRF refinement.
+
+        If annotation refinement is enabled, the text is automatically improved
+        using the appropriate MRF strategy based on annotation type:
+        - NOTE → ELEGANCE (clarity → simplicity → beauty)
+        - QUESTION → VERIFY (accuracy → completeness → consistency)
+        - INSIGHT → CRITIQUE (challenge assumptions)
+        - CONNECTION → HOFSTADTER (recursive self-reference)
+
+        Returns (Contribution, RefinementResult or None if refinement disabled).
+        """
+        presence = self.presence_manager.get_presence(user_id)
+        user_name = presence.display_name if presence else user_id
+
+        refinement_result = None
+
+        # Use refinement-aware attribution if available
+        if (
+            self.enable_annotation_refinement and
+            hasattr(self.attribution, 'record_annotation') and
+            auto_refine
+        ):
+            contribution, refinement_result = self.attribution.record_annotation(
+                user_id=user_id,
+                user_name=user_name,
+                text=text,
+                annotation_type=annotation_type.value,
+                target_id=target_id,
+                auto_refine=True
+            )
+
+            # Log refinement for debugging
+            if refinement_result and refinement_result.improved:
+                logger.info(
+                    f"Annotation refined [{user_id}]: "
+                    f"strategy={refinement_result.strategy_used.value}, "
+                    f"quality={refinement_result.original_quality:.2f}→{refinement_result.refined_quality:.2f}"
+                )
+        else:
+            # Fallback to standard contribution
+            contribution = self.attribution.record_contribution(
+                contribution_type=ContributionType.COMMENT,
+                user_id=user_id,
+                user_name=user_name,
+                target_type="annotation",
+                target_id=target_id,
+                metadata={
+                    "text": text,
+                    "annotation_type": annotation_type.value,
+                    "position": position.to_dict() if position else None
+                }
+            )
+
+        # Create spatial annotation object
+        if position:
+            await self.create_shared_object(
+                creator_id=user_id,
+                name=f"Annotation by {user_name}",
+                object_type="annotation",
+                position=position,
+                knowledge_node_id=contribution.contribution_id
+            )
+
+        # Emit event
+        self._emit_event("annotation_created", {
+            "user_id": user_id,
+            "contribution_id": contribution.contribution_id,
+            "annotation_type": annotation_type.value,
+            "target_id": target_id,
+            "refined": refinement_result.improved if refinement_result else False,
+            "quality_improvement": (
+                refinement_result.refined_quality - refinement_result.original_quality
+                if refinement_result and refinement_result.improved else 0.0
+            )
+        })
+
+        return contribution, refinement_result
+
+    async def accept_annotation_refinement(
+        self,
+        user_id: str,
+        contribution_id: str
+    ) -> bool:
+        """
+        Accept a refinement suggestion for an annotation.
+
+        Updates Thompson Sampling priors with positive feedback.
+        """
+        if not hasattr(self.attribution, 'accept_refinement'):
+            return False
+
+        success = self.attribution.accept_refinement(contribution_id, user_id)
+
+        if success:
+            self._emit_event("refinement_accepted", {
+                "user_id": user_id,
+                "contribution_id": contribution_id
+            })
+
+        return success
+
+    async def reject_annotation_refinement(
+        self,
+        user_id: str,
+        contribution_id: str,
+        reason: Optional[str] = None
+    ) -> bool:
+        """
+        Reject a refinement suggestion for an annotation.
+
+        Updates Thompson Sampling priors with negative feedback.
+        """
+        if not hasattr(self.attribution, 'reject_refinement'):
+            return False
+
+        success = self.attribution.reject_refinement(contribution_id, user_id, reason)
+
+        if success:
+            self._emit_event("refinement_rejected", {
+                "user_id": user_id,
+                "contribution_id": contribution_id,
+                "reason": reason
+            })
+
+        return success
+
+    def get_pending_refinements(self, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get annotations with pending refinement suggestions.
+
+        Optionally filter by user_id.
+        """
+        if not hasattr(self.attribution, 'get_pending_refinements'):
+            return []
+
+        return self.attribution.get_pending_refinements(user_id)
+
+    def get_learning_statistics(self) -> Dict[str, Any]:
+        """
+        Get learning system statistics for monitoring.
+
+        Returns UX learning stats and refinement stats.
+        """
+        stats = {
+            "ux_learning_enabled": self.enable_ux_learning,
+            "annotation_refinement_enabled": self.enable_annotation_refinement
+        }
+
+        # UX Learning stats
+        if self.ux_learner:
+            stats["ux_learning"] = self.ux_learner.get_statistics()
+
+        # Annotation refinement stats
+        if self.annotation_refiner:
+            stats["refinement"] = {
+                "total_refinements": getattr(self.annotation_refiner, '_refinement_count', 0),
+                "strategies_used": getattr(self.annotation_refiner, '_strategy_counts', {})
+            }
+
+        return stats
 
     # === Events ===
 
@@ -1327,7 +1636,7 @@ class CollaborativeSpatialSession:
 
     def to_state(self) -> Dict[str, Any]:
         """Export complete session state for WebXR client."""
-        return {
+        state = {
             "session_id": self.session_id,
             "name": self.name,
             "session_type": self.session_type.name,
@@ -1351,8 +1660,25 @@ class CollaborativeSpatialSession:
 
             # Stats
             "user_count": len(self.presence_manager.presences),
-            "object_count": len(self.shared_objects)
+            "object_count": len(self.shared_objects),
+
+            # MRF Learning Features (Phase 3)
+            "learning": {
+                "ux_learning_enabled": self.enable_ux_learning,
+                "annotation_refinement_enabled": self.enable_annotation_refinement
+            }
         }
+
+        # Add learning statistics if available
+        if self.enable_ux_learning or self.enable_annotation_refinement:
+            state["learning"]["statistics"] = self.get_learning_statistics()
+
+        # Add pending refinements count
+        if self.enable_annotation_refinement:
+            pending = self.get_pending_refinements()
+            state["learning"]["pending_refinements_count"] = len(pending)
+
+        return state
 
 
 # Factory functions
@@ -1361,16 +1687,32 @@ def create_collaborative_spatial_session(
     name: str,
     owner_id: str,
     owner_name: str,
-    session_type: SessionType = SessionType.KNOWLEDGE_BASE
+    session_type: SessionType = SessionType.KNOWLEDGE_BASE,
+    enable_ux_learning: bool = True,
+    enable_annotation_refinement: bool = True
 ) -> CollaborativeSpatialSession:
-    """Create a new collaborative spatial session."""
+    """Create a new collaborative spatial session.
+
+    Args:
+        name: Session display name
+        owner_id: Owner's user ID
+        owner_name: Owner's display name
+        session_type: Type of collaborative session
+        enable_ux_learning: Enable Thompson Sampling for UX preferences
+        enable_annotation_refinement: Enable MRF annotation refinement
+
+    Returns:
+        Configured CollaborativeSpatialSession with learning features
+    """
     session_id = str(uuid.uuid4())[:12]
     return CollaborativeSpatialSession(
         session_id=session_id,
         name=name,
         owner_id=owner_id,
         owner_name=owner_name,
-        session_type=session_type
+        session_type=session_type,
+        enable_ux_learning=enable_ux_learning,
+        enable_annotation_refinement=enable_annotation_refinement
     )
 
 
@@ -1378,14 +1720,30 @@ async def create_and_start_session(
     name: str,
     owner_id: str,
     owner_name: str,
-    session_type: SessionType = SessionType.KNOWLEDGE_BASE
+    session_type: SessionType = SessionType.KNOWLEDGE_BASE,
+    enable_ux_learning: bool = True,
+    enable_annotation_refinement: bool = True
 ) -> CollaborativeSpatialSession:
-    """Create and start a collaborative spatial session."""
+    """Create and start a collaborative spatial session.
+
+    Args:
+        name: Session display name
+        owner_id: Owner's user ID
+        owner_name: Owner's display name
+        session_type: Type of collaborative session
+        enable_ux_learning: Enable Thompson Sampling for UX preferences
+        enable_annotation_refinement: Enable MRF annotation refinement
+
+    Returns:
+        Started CollaborativeSpatialSession with learning features
+    """
     session = create_collaborative_spatial_session(
         name=name,
         owner_id=owner_id,
         owner_name=owner_name,
-        session_type=session_type
+        session_type=session_type,
+        enable_ux_learning=enable_ux_learning,
+        enable_annotation_refinement=enable_annotation_refinement
     )
     await session.start()
     return session

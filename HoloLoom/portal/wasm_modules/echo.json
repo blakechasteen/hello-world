@@ -1,0 +1,15 @@
+{
+  "id": "echo-v1",
+  "name": "Echo",
+  "version": "1.0.0",
+  "entry_function": "run",
+  "description": "Returns input unchanged (for testing)",
+  "input_schema": {
+    "type": "object",
+    "description": "Any JSON object"
+  },
+  "output_schema": {
+    "type": "object",
+    "description": "Same as input"
+  }
+}

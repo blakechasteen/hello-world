@@ -33,6 +33,15 @@ from datetime import datetime, timedelta
 import uuid
 import logging
 
+# Safety Integration (Dec 2025) - MRF Safe Integration Phase
+# Import alignment framework's adversarial detection for inter-agent messages
+try:
+    from HoloLoom.alignment.safety_guardrails import AdversarialDetector as AlignmentAdversarialDetector
+    ALIGNMENT_ADVERSARIAL_AVAILABLE = True
+except ImportError:
+    ALIGNMENT_ADVERSARIAL_AVAILABLE = False
+    AlignmentAdversarialDetector = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -128,6 +137,16 @@ class SafetyGuardrails:
         self.min_insight_length = min_insight_length
         self.similarity_threshold = similarity_threshold
         self.relevance_keywords = relevance_keywords or []
+
+        # Safety Integration (Dec 2025) - MRF Safe Integration Phase
+        # Add adversarial detection for inter-agent messages
+        self.adversarial_detector = None
+        if ALIGNMENT_ADVERSARIAL_AVAILABLE:
+            try:
+                self.adversarial_detector = AlignmentAdversarialDetector()
+                logger.info("Adversarial detection enabled for multi-agent communication")
+            except Exception as e:
+                logger.warning(f"Could not initialize adversarial detector: {e}")
 
     def check_budget(self, budget: Budget, conversation: Conversation) -> tuple[bool, str]:
         """
@@ -229,6 +248,34 @@ class SafetyGuardrails:
             return False, "No topic overlap"
 
         return True, "Relevant"
+
+    def check_adversarial(self, message: 'Message') -> tuple[bool, str]:
+        """
+        Check if message contains adversarial content.
+
+        Safety Integration (Dec 2025) - MRF Safe Integration Phase
+        Uses alignment framework's adversarial detector for inter-agent messages.
+
+        Args:
+            message: Message to check
+
+        Returns:
+            (is_adversarial, reason) - True if adversarial content detected
+        """
+        if not self.adversarial_detector:
+            return False, "Adversarial detection not available"
+
+        try:
+            is_adversarial, reason = self.adversarial_detector.detect(message.content)
+            if is_adversarial:
+                logger.warning(
+                    f"[SAFETY] Adversarial content detected in inter-agent message: {reason}"
+                )
+            return is_adversarial, reason
+        except Exception as e:
+            logger.error(f"Adversarial detection error: {e}")
+            # Fail-closed: treat errors as potential adversarial (CRITIQUE principle)
+            return True, f"Detection error (fail-closed): {e}"
 
 
 class BudgetManager:

@@ -26,11 +26,15 @@ class GestureType(Enum):
     POINT = "point"              # Index finger extended
     PINCH = "pinch"              # Thumb and index together
     GRAB = "grab"                # Closed fist
+    FIST = "fist"                # Alias for grab/closed fist
     OPEN = "open"                # All fingers extended
     THUMBS_UP = "thumbs_up"      # Approval gesture
+    THUMBS_DOWN = "thumbs_down"  # Disapproval gesture
+    OPEN_PALM = "open_palm"      # Stop/wait gesture
 
     # Interaction gestures
     PINCH_HOLD = "pinch_hold"    # Holding a pinch
+    SPREAD = "spread"            # Fingers spreading apart
     SWIPE_LEFT = "swipe_left"    # Quick leftward movement
     SWIPE_RIGHT = "swipe_right"  # Quick rightward movement
     SWIPE_UP = "swipe_up"        # Quick upward movement

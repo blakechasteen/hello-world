@@ -211,6 +211,7 @@ markers = [
 # ============================================================================
 [tool.coverage.run]
 source = ["HoloLoom"]
+branch = true
 omit = [
     "*/tests/*",
     "*/test_*.py",

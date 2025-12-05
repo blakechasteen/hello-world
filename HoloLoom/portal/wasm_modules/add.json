@@ -1,0 +1,21 @@
+{
+  "id": "add-v1",
+  "name": "Simple Adder",
+  "version": "1.0.0",
+  "entry_function": "run",
+  "description": "Adds two numbers together",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "a": {"type": "number", "description": "First number"},
+      "b": {"type": "number", "description": "Second number"}
+    },
+    "required": ["a", "b"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "result": {"type": "number", "description": "Sum of a + b"}
+    }
+  }
+}

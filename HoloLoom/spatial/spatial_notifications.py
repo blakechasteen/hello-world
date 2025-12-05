@@ -37,9 +37,10 @@ class NotificationPriority(Enum):
     """Notification priority levels."""
     LOW = 0
     NORMAL = 1
-    HIGH = 2
-    URGENT = 3
-    CRITICAL = 4
+    MEDIUM = 2      # Between normal and high
+    HIGH = 3
+    URGENT = 4
+    CRITICAL = 5
 
 
 class NotificationPosition(Enum):

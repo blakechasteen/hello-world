@@ -39,6 +39,31 @@ except ImportError:
     AgentMonitor = None
     AgentStatus = None
 
+# Safety Integration (Dec 2025) - MRF Safe Integration Phase
+try:
+    from HoloLoom.agentic.safety_adapter import AgenticSafetyAdapter, create_safety_adapter
+    from HoloLoom.protocols.safety import SafetyGateDecision, SafetyRiskLevel
+    SAFETY_AVAILABLE = True
+except ImportError:
+    SAFETY_AVAILABLE = False
+    AgenticSafetyAdapter = None
+    SafetyGateDecision = None
+    SafetyRiskLevel = None
+
+# Conscience Integration (Dec 2025) - Phase 2B Per-Step Gating
+try:
+    from HoloLoom.agentic.conscience_adapter import (
+        AgenticConscienceAdapter,
+        create_conscience_adapter,
+    )
+    from HoloLoom.protocols.conscience import ConscienceDecision, StepType
+    CONSCIENCE_AVAILABLE = True
+except ImportError:
+    CONSCIENCE_AVAILABLE = False
+    AgenticConscienceAdapter = None
+    ConscienceDecision = None
+    StepType = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +165,11 @@ class AgenticOrchestrator:
         llm: Optional[Any] = None,  # LLM for intelligent query generation
         awareness_layer: Optional[Any] = None,  # Consciousness Integration - Phase 1 (Nov 2025)
         epistemic_threshold: float = 0.3,  # Early stopping threshold for epistemic confidence
-        monitor: Optional[Any] = None  # Agent Monitor for real-time tracking (Nov 2025)
+        monitor: Optional[Any] = None,  # Agent Monitor for real-time tracking (Nov 2025)
+        safety_adapter: Optional['AgenticSafetyAdapter'] = None,  # Safety Integration (Dec 2025)
+        enable_safety: bool = True,  # Safe by default - MRF ELEGANCE principle
+        conscience_adapter: Optional['AgenticConscienceAdapter'] = None,  # Conscience Integration (Dec 2025)
+        enable_conscience: bool = True  # Per-step gating by default - Phase 2B
     ):
         self.learning_engine = learning_engine
         self.audit_trail = audit_trail or AuditTrail()
@@ -173,6 +202,182 @@ class AgenticOrchestrator:
                 if self.awareness_layer:
                     self.logger.info("Awareness layer extracted from orchestrator for epistemic tracking")
 
+        # Safety Integration (Dec 2025) - MRF Safe Integration Phase
+        # Implements ELEGANCE single gate pattern: one safety check at reason() entry
+        self.enable_safety = enable_safety and SAFETY_AVAILABLE
+        self.safety_adapter = None
+
+        if self.enable_safety:
+            if safety_adapter is not None:
+                self.safety_adapter = safety_adapter
+                self.logger.info("Safety adapter provided - agentic reasoning will be gated")
+            elif hasattr(learning_engine, 'orchestrator'):
+                # Try to extract guardrails from orchestrator (same pattern as awareness_layer)
+                orchestrator = learning_engine.orchestrator
+                if hasattr(orchestrator, 'guardrails') and orchestrator.guardrails:
+                    self.safety_adapter = create_safety_adapter(orchestrator.guardrails)
+                    self.logger.info("Safety adapter created from orchestrator guardrails")
+
+            # Auto-create with safe defaults if none available (safe by default)
+            if self.safety_adapter is None:
+                self.safety_adapter = create_safety_adapter(auto_create=True)
+                self.logger.info("Auto-created safety adapter with safe defaults")
+
+        # Conscience Integration (Dec 2025) - Phase 2B Per-Step Gating
+        # Implements per-step safety checks in VERIFY, RESEARCH, PLAN_EXECUTE modes
+        self.enable_conscience = enable_conscience and CONSCIENCE_AVAILABLE
+        self.conscience_adapter = None
+
+        if self.enable_conscience:
+            if conscience_adapter is not None:
+                self.conscience_adapter = conscience_adapter
+                self.logger.info("Conscience adapter provided - per-step gating enabled")
+            elif hasattr(learning_engine, 'orchestrator'):
+                # Try to extract conscience from orchestrator
+                orchestrator = learning_engine.orchestrator
+                if hasattr(orchestrator, 'conscience') and orchestrator.conscience:
+                    self.conscience_adapter = create_conscience_adapter(
+                        conscience=orchestrator.conscience
+                    )
+                    self.logger.info("Conscience adapter created from orchestrator conscience")
+
+            # Auto-create with safe defaults if none available
+            if self.conscience_adapter is None:
+                self.conscience_adapter = create_conscience_adapter(auto_create=True)
+                self.logger.info("Auto-created conscience adapter for per-step gating")
+
+    async def _gate_with_safety(
+        self,
+        query: Query,
+        mode: ReasoningMode
+    ) -> Optional[SafetyGateDecision]:
+        """
+        Gate reasoning through safety evaluation.
+
+        ELEGANCE: Single safety check at reason() entry point.
+        CRITIQUE: Fail-closed on any exception.
+
+        Args:
+            query: The query to evaluate
+            mode: Reasoning mode
+
+        Returns:
+            SafetyGateDecision if safety is enabled, None otherwise
+        """
+        if not self.safety_adapter:
+            return None
+
+        # Get epistemic confidence from awareness layer (if available)
+        epistemic_conf = None
+        if self.awareness_layer:
+            try:
+                coherence = self.awareness_layer.get_current_coherence()
+                epistemic_conf = coherence if coherence is not None else None
+            except Exception as e:
+                self.logger.warning(f"Could not get epistemic confidence: {e}")
+
+        # Gate through safety adapter
+        decision = await self.safety_adapter.gate_reasoning(
+            query_text=query.text,
+            reasoning_mode=mode.value,
+            epistemic_confidence=epistemic_conf,
+            context={"query_metadata": getattr(query, 'metadata', {})}
+        )
+
+        # Log decision to audit trail
+        if decision:
+            self.audit_trail.log_decision(
+                decision_type=DecisionType.TOOL_SELECTION,
+                outcome=OutcomeType.APPROVED if decision.allowed else OutcomeType.REJECTED,
+                reason=f"Safety gate: {decision.reason}",
+                query_text=query.text,
+                metadata={
+                    "safety_decision": {
+                        "allowed": decision.allowed,
+                        "risk_level": decision.risk_level.value,
+                        "requires_approval": decision.requires_approval,
+                        "epistemic_confidence": epistemic_conf,
+                    }
+                }
+            )
+
+            if not decision.allowed:
+                self.logger.warning(f"[SAFETY] Reasoning blocked: {decision.reason}")
+
+        return decision
+
+    async def _gate_step_with_conscience(
+        self,
+        step_query: str,
+        step_type: 'StepType',
+        step_index: int,
+        parent_decision: Optional['ConscienceDecision'] = None,
+        context: Optional[Dict[str, Any]] = None
+    ) -> Optional['ConscienceDecision']:
+        """
+        Gate individual reasoning step through conscience evaluation.
+
+        Conscience Integration - Phase 2B (Dec 2025)
+        Per-step gating for VERIFY, RESEARCH, PLAN_EXECUTE modes.
+
+        Unlike safety gate (single entry point), conscience gates EACH step:
+        - Each verification query in VERIFY mode
+        - Each research sub-query in RESEARCH mode
+        - Each sub-goal in PLAN_EXECUTE mode
+
+        Args:
+            step_query: The step query text to evaluate
+            step_type: Type of step (VERIFICATION, RESEARCH, PLAN_STEP, etc.)
+            step_index: Index of current step (0-based)
+            parent_decision: Parent reasoning decision (from reason() entry)
+            context: Optional additional context
+
+        Returns:
+            ConscienceDecision if conscience is enabled, None otherwise
+        """
+        if not self.conscience_adapter:
+            return None
+
+        try:
+            decision = await self.conscience_adapter.gate_step(
+                step_action=step_query,  # gate_step expects step_action param
+                step_type=step_type,
+                step_index=step_index,
+                parent_decision=parent_decision,
+                context=context or {}
+            )
+
+            # Log to audit trail
+            if decision:
+                self.audit_trail.log_decision(
+                    decision_type=DecisionType.TOOL_SELECTION,
+                    outcome=OutcomeType.APPROVED if decision.allowed else OutcomeType.REJECTED,
+                    reason=f"Conscience step gate: {decision.reason}",
+                    query_text=step_query,
+                    metadata={
+                        "conscience_decision": {
+                            "allowed": decision.allowed,
+                            "risk_level": decision.risk_level.name,
+                            "voice": decision.voice,
+                            "step_type": step_type.value if hasattr(step_type, 'value') else str(step_type),
+                            "step_index": step_index,
+                            "concerns": decision.concerns,
+                        }
+                    }
+                )
+
+                if not decision.allowed:
+                    self.logger.warning(
+                        f"[CONSCIENCE] Step {step_index + 1} blocked: {decision.reason}"
+                    )
+
+            return decision
+
+        except Exception as e:
+            self.logger.warning(f"[CONSCIENCE] Step gating failed: {e}")
+            # Graceful degradation - return None to allow step
+            return None
+
     async def reason(
         self,
         query: Query,
@@ -195,6 +400,37 @@ class AgenticOrchestrator:
             AgenticResult with complete reasoning trace
         """
         start_time = datetime.now()
+
+        # =================================================================
+        # SAFETY GATE (Dec 2025) - MRF Safe Integration Phase
+        # =================================================================
+        # ELEGANCE: Single safety check at reason() entry point
+        # CRITIQUE: Fail-closed - if blocked, return early with blocked result
+        # =================================================================
+        safety_decision = await self._gate_with_safety(query, mode)
+        if safety_decision and not safety_decision.allowed:
+            # Return blocked result with safety information
+            duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+            return AgenticResult(
+                intent_id=f"intent_{int(start_time.timestamp())}",
+                mode=mode,
+                final_answer=f"[BLOCKED] {safety_decision.reason}",
+                confidence=0.0,
+                verification_passed=False,
+                verification=None,
+                steps_taken=[{
+                    "type": "safety_gate",
+                    "query": query.text,
+                    "blocked": True,
+                    "reason": safety_decision.reason,
+                    "risk_level": safety_decision.risk_level.value,
+                    "requires_approval": safety_decision.requires_approval,
+                    "epistemic_confidence": safety_decision.epistemic_confidence,
+                }],
+                total_queries=0,
+                total_duration_ms=duration_ms,
+                aggregated_epistemic_confidence=safety_decision.epistemic_confidence,
+            )
 
         # Generate agent ID for monitoring
         agent_id = f"agent_{uuid.uuid4().hex[:8]}"
@@ -501,6 +737,27 @@ Please provide a clear and concise answer based on the context above."""
                 )
                 break
 
+            # Conscience Integration - Phase 2B: Per-step gating
+            if CONSCIENCE_AVAILABLE and self.conscience_adapter:
+                conscience_decision = await self._gate_step_with_conscience(
+                    step_query=rq,
+                    step_type=StepType.RESEARCH,
+                    step_index=i,
+                    context={"original_query": query.text, "research_topic": query.text}
+                )
+                if conscience_decision and not conscience_decision.allowed:
+                    self.logger.warning(
+                        f"[CONSCIENCE] Research query {i+1} blocked: {conscience_decision.reason}"
+                    )
+                    steps.append({
+                        "type": "research_query",
+                        "query": rq,
+                        "blocked": True,
+                        "blocked_reason": conscience_decision.reason,
+                        "conscience_voice": conscience_decision.voice,
+                    })
+                    continue  # Skip this research query
+
             # Agent Monitoring: Feed update for current research query
             if self.monitor:
                 try:
@@ -624,6 +881,28 @@ Please provide a clear and concise answer based on the context above."""
                     pass
 
             self.logger.info(f"[AGENTIC] Executing sub-goal {i+1}: {sub_goal}")
+
+            # Conscience Integration - Phase 2B: Per-step gating for sub-goals
+            if CONSCIENCE_AVAILABLE and self.conscience_adapter:
+                conscience_decision = await self._gate_step_with_conscience(
+                    step_query=sub_goal,
+                    step_type=StepType.PLAN_STEP,
+                    step_index=i,
+                    context={"original_query": query.text, "plan_step": True}
+                )
+                if conscience_decision and not conscience_decision.allowed:
+                    self.logger.warning(
+                        f"[CONSCIENCE] Sub-goal {i+1} blocked: {conscience_decision.reason}"
+                    )
+                    steps.append({
+                        "type": "sub_goal",
+                        "goal": sub_goal,
+                        "blocked": True,
+                        "blocked_reason": conscience_decision.reason,
+                        "conscience_voice": conscience_decision.voice,
+                    })
+                    continue  # Skip this sub-goal
+
             result = await self.learning_engine.weave(Query(text=sub_goal))
             results.append(result)
 
@@ -855,6 +1134,27 @@ Please provide a clear and concise answer based on the context above."""
                 )
                 break
 
+            # Conscience Integration - Phase 2B: Per-step gating
+            if CONSCIENCE_AVAILABLE and self.conscience_adapter:
+                conscience_decision = await self._gate_step_with_conscience(
+                    step_query=vq,
+                    step_type=StepType.VERIFICATION,
+                    step_index=i,
+                    context={"original_query": original_query.text}
+                )
+                if conscience_decision and not conscience_decision.allowed:
+                    self.logger.warning(
+                        f"[CONSCIENCE] Verification step {i+1} blocked: {conscience_decision.reason}"
+                    )
+                    steps.append({
+                        "type": "verification",
+                        "query": vq,
+                        "blocked": True,
+                        "blocked_reason": conscience_decision.reason,
+                        "conscience_voice": conscience_decision.voice,
+                    })
+                    continue  # Skip this verification step
+
             self.logger.info(f"[AGENTIC] Verification: {vq}")
             result = await self.learning_engine.weave(Query(text=vq))
 
@@ -1043,7 +1343,9 @@ async def create_agentic_orchestrator(
     enable_verification: bool = True,
     enable_goal_tracking: bool = True,
     audit_trail: Optional[AuditTrail] = None,
-    monitor: Optional[Any] = None  # Agent Monitor for real-time tracking (Nov 2025)
+    monitor: Optional[Any] = None,  # Agent Monitor for real-time tracking (Nov 2025)
+    safety_adapter: Optional['AgenticSafetyAdapter'] = None,  # Safety Integration (Dec 2025)
+    enable_safety: bool = True  # Safe by default - MRF ELEGANCE principle
 ) -> AgenticOrchestrator:
     """
     Create agentic orchestrator with full learning system.
@@ -1055,9 +1357,18 @@ async def create_agentic_orchestrator(
         enable_goal_tracking: Enable goal/intent tracking
         audit_trail: Optional audit trail (creates new if None)
         monitor: Optional agent monitor for real-time tracking (Nov 2025)
+        safety_adapter: Optional safety adapter (auto-created if enable_safety=True)
+        enable_safety: Enable safety gating (default True - safe by default)
 
     Returns:
         AgenticOrchestrator ready to use
+
+    Safety Note (MRF Safe Integration - Dec 2025):
+        By default, enable_safety=True which means:
+        1. Safety adapter is auto-created if not provided
+        2. All reasoning modes are gated through safety checks
+        3. Adversarial patterns are detected and blocked
+        4. Epistemic confidence is used for risk escalation
     """
     # Create full learning engine
     learning_engine = FullLearningEngine(
@@ -1074,5 +1385,7 @@ async def create_agentic_orchestrator(
         audit_trail=audit_trail,
         enable_verification=enable_verification,
         enable_goal_tracking=enable_goal_tracking,
-        monitor=monitor
+        monitor=monitor,
+        safety_adapter=safety_adapter,
+        enable_safety=enable_safety
     )

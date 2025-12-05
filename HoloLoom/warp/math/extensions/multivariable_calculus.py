@@ -56,12 +56,16 @@ class ScalarField:
         Gradient: ∇f = (∂f/∂x, ∂f/∂y, ∂f/∂z).
 
         Points in direction of steepest ascent.
+        Uses central finite difference for O(h²) accuracy.
         """
         grad = np.zeros(self.dim)
         for i in range(self.dim):
             point_plus = point.copy()
+            point_minus = point.copy()
             point_plus[i] += h
-            grad[i] = (self.f(point_plus) - self.f(point)) / h
+            point_minus[i] -= h
+            # Central difference: (f(x+h) - f(x-h)) / 2h has O(h²) error
+            grad[i] = (self.f(point_plus) - self.f(point_minus)) / (2 * h)
         return grad
 
     def directional_derivative(self, point: np.ndarray, direction: np.ndarray) -> float:
@@ -161,33 +165,32 @@ class VectorField:
                   ∂F_x/∂z - ∂F_z/∂x,
                   ∂F_y/∂x - ∂F_x/∂y)
 
-        Measures rotation/circulation.
+        Uses central differences for O(h²) accuracy (matching gradient()).
         """
         if self.dim != 3:
             raise ValueError("Curl only defined in 3D")
 
-        F = self.F(point)
         curl_vec = np.zeros(3)
 
-        # ∂F_z/∂y - ∂F_y/∂z
-        point_y = point.copy()
-        point_y[1] += h
-        curl_vec[0] = (self.F(point_y)[2] - F[2]) / h
+        # Create offset points for central differences
+        point_x_plus = point.copy(); point_x_plus[0] += h
+        point_x_minus = point.copy(); point_x_minus[0] -= h
+        point_y_plus = point.copy(); point_y_plus[1] += h
+        point_y_minus = point.copy(); point_y_minus[1] -= h
+        point_z_plus = point.copy(); point_z_plus[2] += h
+        point_z_minus = point.copy(); point_z_minus[2] -= h
 
-        point_z = point.copy()
-        point_z[2] += h
-        curl_vec[0] -= (self.F(point_z)[1] - F[1]) / h
+        # curl[0] = ∂F_z/∂y - ∂F_y/∂z
+        curl_vec[0] = (self.F(point_y_plus)[2] - self.F(point_y_minus)[2]) / (2 * h)
+        curl_vec[0] -= (self.F(point_z_plus)[1] - self.F(point_z_minus)[1]) / (2 * h)
 
-        # ∂F_x/∂z - ∂F_z/∂x
-        curl_vec[1] = (self.F(point_z)[0] - F[0]) / h
+        # curl[1] = ∂F_x/∂z - ∂F_z/∂x
+        curl_vec[1] = (self.F(point_z_plus)[0] - self.F(point_z_minus)[0]) / (2 * h)
+        curl_vec[1] -= (self.F(point_x_plus)[2] - self.F(point_x_minus)[2]) / (2 * h)
 
-        point_x = point.copy()
-        point_x[0] += h
-        curl_vec[1] -= (self.F(point_x)[2] - F[2]) / h
-
-        # ∂F_y/∂x - ∂F_x/∂y
-        curl_vec[2] = (self.F(point_x)[1] - F[1]) / h
-        curl_vec[2] -= (self.F(point_y)[0] - F[0]) / h
+        # curl[2] = ∂F_y/∂x - ∂F_x/∂y
+        curl_vec[2] = (self.F(point_x_plus)[1] - self.F(point_x_minus)[1]) / (2 * h)
+        curl_vec[2] -= (self.F(point_y_plus)[0] - self.F(point_y_minus)[0]) / (2 * h)
 
         return curl_vec
 

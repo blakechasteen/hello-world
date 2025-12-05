@@ -10,6 +10,7 @@ This package provides:
 - Routing protocols (RoutingStrategy, ExecutionEngine)
 - Tool protocols (ToolExecutor, ToolRegistry)
 - mythRL Shuttle protocols (PatternSelectionProtocol, DecisionEngineProtocol, etc.)
+- Conscience protocols (ConscienceProtocol, ConscienceDecision, StepType, RiskLevel)
 
 Philosophy:
 - Protocols define WHAT, not HOW (interfaces, not implementations)
@@ -23,11 +24,17 @@ Usage:
         MemoryStore,
         PolicyEngine,
         PatternSelectionProtocol,
-        DecisionEngineProtocol
+        DecisionEngineProtocol,
+        # Conscience protocols (December 2025)
+        ConscienceProtocol,
+        ConscienceDecision,
+        StepType,
+        RiskLevel,
     )
 
 Author: mythRL Team
 Date: 2025-10-27 (Phase 1 Protocol Standardization - Task 1.1)
+Updated: 2025-12-03 (Phase 2A Conscience Integration)
 """
 
 # ============================================================================
@@ -93,6 +100,40 @@ from .retrieval import (
     RetrievalStrategy,
     RetrievalResult,
     SpringActivationMetadata,
+)
+
+# ============================================================================
+# Import Jenny UI Protocols (from jenny.py)
+# ============================================================================
+
+from .jenny import (
+    CompilationStrategy,
+    RenderTarget,
+    JennyCompilerProtocol,
+    JennyRendererProtocol,
+    JennyLifecycleProtocol,
+    SpecLedgerProtocol,
+)
+
+# ============================================================================
+# Import Conscience Protocols (December 2025 - Phase 2A)
+# ============================================================================
+
+from .conscience import (
+    # Enums
+    StepType,
+    RiskLevel,
+    # Core types
+    ConscienceDecision,
+    # Protocols
+    ConscienceProtocol,
+    ExtendedConscienceProtocol,
+    # Implementations
+    NullConscience,
+    # Factory functions
+    create_allowed_decision,
+    create_blocked_decision,
+    create_review_decision,
 )
 
 # ============================================================================
@@ -166,6 +207,25 @@ __all__ = [
     'RetrievalResult',
     'SpringActivationMetadata',
 
+    # ===== Jenny UI Protocols =====
+    'CompilationStrategy',
+    'RenderTarget',
+    'JennyCompilerProtocol',
+    'JennyRendererProtocol',
+    'JennyLifecycleProtocol',
+    'SpecLedgerProtocol',
+
+    # ===== Conscience Protocols (December 2025) =====
+    'StepType',
+    'RiskLevel',
+    'ConscienceDecision',
+    'ConscienceProtocol',
+    'ExtendedConscienceProtocol',
+    'NullConscience',
+    'create_allowed_decision',
+    'create_blocked_decision',
+    'create_review_decision',
+
     # ===== Compatibility Aliases =====
     'ToolExecutionProtocol',
 ]
@@ -182,7 +242,7 @@ if _HAS_DOC_TYPES:
 # Version Info
 # ============================================================================
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __author__ = 'mythRL Team'
-__date__ = '2025-10-27'
-__status__ = 'Production - Task 1.1 Complete'
+__date__ = '2025-12-03'
+__status__ = 'Production - Phase 2A Conscience Integration'

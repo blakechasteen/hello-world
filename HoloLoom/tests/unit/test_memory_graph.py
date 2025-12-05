@@ -78,14 +78,15 @@ class TestEdgeOperations:
 
         kg.add_edge(edge)
 
-        # Get edge data
-        edges = list(kg.G.edges("src", "dst", data=True))
+        # Get edge data (use out_edges to get edges from src)
+        edges = [(u, v, d) for u, v, d in kg.G.out_edges("src", data=True) if v == "dst"]
         assert len(edges) == 1
         _, _, data = edges[0]
         assert data["type"] == "CUSTOM"
         assert data["weight"] == 0.9
         assert data["span_id"] == "span_123"
-        assert data["key"] == "value"
+        # Note: 'key' is renamed to '_key' to avoid NetworkX collision
+        assert data["_key"] == "value"
 
     def test_add_edges_batch(self):
         """add_edges should bulk add edges."""
@@ -381,7 +382,8 @@ class TestTemporalConnections:
             weight=0.9
         )
 
-        edges = list(kg.G.edges("event1", thread_id, data=True))
+        # Use out_edges to get edges from event1 to thread_id
+        edges = [(u, v, d) for u, v, d in kg.G.out_edges("event1", data=True) if v == thread_id]
         assert len(edges) == 1
         _, _, data = edges[0]
         assert data["type"] == "OCCURRED_AT"

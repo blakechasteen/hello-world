@@ -341,7 +341,7 @@ class NoiseDetector:
         self.noise_patterns = [
             r'\b(hi|hello|hey|thanks|thank you|ok|okay|bye|cheers)\b',
             r'^(lol|lmao|omg|wtf)$',
-            r'(!!!|???|\.\.\.)$',  # Excessive punctuation
+            r'(!!!|\?\?\?|\.\.\.)$',  # Excessive punctuation (? must be escaped)
             r'\b(click here|buy now|limited time)\b',  # Spam
         ]
 

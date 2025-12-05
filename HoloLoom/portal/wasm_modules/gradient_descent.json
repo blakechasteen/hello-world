@@ -1,0 +1,73 @@
+{
+  "id": "gradient-descent-v1",
+  "name": "Gradient Descent Optimizer",
+  "version": "1.0.0",
+  "entry_function": "optimize",
+  "description": "Runs gradient descent on a function to find minimum. Supports linear regression, quadratic functions, and custom gradients.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "problem_type": {
+        "type": "string",
+        "enum": ["linear_regression", "quadratic", "custom"],
+        "description": "Type of optimization problem"
+      },
+      "initial_params": {
+        "type": "array",
+        "items": {"type": "number"},
+        "description": "Starting parameter values"
+      },
+      "learning_rate": {
+        "type": "number",
+        "default": 0.01,
+        "description": "Step size for updates"
+      },
+      "max_iterations": {
+        "type": "integer",
+        "default": 1000,
+        "description": "Maximum optimization steps"
+      },
+      "tolerance": {
+        "type": "number",
+        "default": 1e-6,
+        "description": "Convergence threshold"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "X": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}},
+          "y": {"type": "array", "items": {"type": "number"}}
+        },
+        "description": "Training data for regression problems"
+      }
+    },
+    "required": ["problem_type", "initial_params"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "optimized_params": {
+        "type": "array",
+        "items": {"type": "number"},
+        "description": "Final parameter values"
+      },
+      "final_loss": {
+        "type": "number",
+        "description": "Loss at convergence"
+      },
+      "iterations": {
+        "type": "integer",
+        "description": "Number of iterations taken"
+      },
+      "converged": {
+        "type": "boolean",
+        "description": "Whether tolerance was reached"
+      },
+      "loss_history": {
+        "type": "array",
+        "items": {"type": "number"},
+        "description": "Loss at each iteration (sampled)"
+      }
+    }
+  }
+}

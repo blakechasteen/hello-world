@@ -335,6 +335,7 @@ class AuditTrail:
         self.auto_flush = auto_flush
         self.flush_interval = flush_interval
         self._logs_since_flush = 0
+        self._flushed_decision_ids: set = set()  # Track already-flushed logs
 
         if self.persist_path:
             self.persist_path.mkdir(parents=True, exist_ok=True)
@@ -404,14 +405,14 @@ class AuditTrail:
         Extracts reasoning chain and data sources from the tracer
         and updates the decision log.
         """
-        if decision_id not in self.logs:
+        # Find the log by decision_id
+        log = next((l for l in self.logs if l.decision_id == decision_id), None)
+        if not log:
             logger.warning(f"Decision {decision_id} not found in logs")
             return
 
-        log = next((log for log in self.logs if log.decision_id == decision_id), None)
         tracer = self.tracers.get(decision_id)
-
-        if not log or not tracer:
+        if not tracer:
             return
 
         # Get final node (most recent)
@@ -467,19 +468,27 @@ class AuditTrail:
 
     # Persistence methods
     def flush(self):
-        """Flush all logs to disk."""
+        """Flush all unflushed logs to disk."""
         if not self.persist_path:
             return
 
+        flushed_count = 0
         for log in self.logs:
-            self._flush_to_disk(log)
+            if log.decision_id not in self._flushed_decision_ids:
+                self._flush_to_disk(log)
+                flushed_count += 1
 
         self._logs_since_flush = 0
-        logger.info(f"Flushed {len(self.logs)} logs to disk")
+        if flushed_count > 0:
+            logger.info(f"Flushed {flushed_count} logs to disk")
 
     def _flush_to_disk(self, log: DecisionLog):
         """Flush a single log to disk (JSON Lines format)."""
         if not self.persist_path:
+            return
+
+        # Skip if already flushed
+        if log.decision_id in self._flushed_decision_ids:
             return
 
         log_file = self.persist_path / "decisions.jsonl"
@@ -487,6 +496,9 @@ class AuditTrail:
         # Write decision log
         with log_file.open("a") as f:
             f.write(json.dumps(log.to_dict()) + "\n")
+
+        # Mark as flushed
+        self._flushed_decision_ids.add(log.decision_id)
 
         # Write provenance graph
         if log.decision_id in self.tracers:
@@ -509,6 +521,8 @@ class AuditTrail:
                 data = json.loads(line.strip())
                 log = DecisionLog.from_dict(data)
                 self.logs.append(log)
+                # Mark as already flushed (loaded from disk)
+                self._flushed_decision_ids.add(log.decision_id)
 
         # Load provenance graphs
         for log in self.logs:

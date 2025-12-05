@@ -840,8 +840,10 @@ class AvatarManager:
         """Remove an avatar."""
         if avatar_id in self.avatars:
             del self.avatars[avatar_id]
-            del self.animators[avatar_id]
-            del self.ik_solvers[avatar_id]
+            if avatar_id in self.animators:
+                del self.animators[avatar_id]
+            if avatar_id in self.ik_solvers:
+                del self.ik_solvers[avatar_id]
             if self.local_avatar_id == avatar_id:
                 self.local_avatar_id = None
             return True

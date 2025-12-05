@@ -478,3 +478,125 @@ def register_code_handlers(
     bot.register_command("code", handle_code_help)
 
     logger.info(f"Registered {len(command_map)} code commands")
+
+
+# ============================================================================
+# Decorator-Based Handler Class (New ChatOps Pattern)
+# ============================================================================
+
+try:
+    from HoloLoom.chatops.handlers.handler_registry import (
+        HandlerRegistry, HandlerCategory, chatops_handler
+    )
+    REGISTRY_AVAILABLE = True
+except ImportError:
+    REGISTRY_AVAILABLE = False
+
+
+class CodeHandlers:
+    """
+    Decorator-based ChatOps handlers for Claude Code integration.
+
+    Usage:
+        from HoloLoom.chatops.handlers.code_handlers import CodeHandlers
+
+        handlers = CodeHandlers(department=code_department)
+        registry.register_instance(handlers)
+    """
+
+    def __init__(self, department: 'ClaudeCodeDepartment'):
+        """
+        Initialize with Claude Code Department.
+
+        Args:
+            department: ClaudeCodeDepartment instance for code operations
+        """
+        self.department = department
+
+    @HandlerRegistry.register(
+        command="code query",
+        description="Ask questions about code",
+        usage="!code query <question>",
+        category=HandlerCategory.QUERY,
+        aliases=["cq"]
+    )
+    async def handle_query(self, room, event, args: str) -> str:
+        """Handle !code query command."""
+        return await handle_code_query(room, event, args, self.department)
+
+    @HandlerRegistry.register(
+        command="code refactor",
+        description="Request code refactoring",
+        usage="!code refactor <instruction>",
+        category=HandlerCategory.QUERY,
+        aliases=["cr"]
+    )
+    async def handle_refactor(self, room, event, args: str) -> str:
+        """Handle !code refactor command."""
+        return await handle_code_refactor(room, event, args, self.department)
+
+    @HandlerRegistry.register(
+        command="code explain",
+        description="Explain code or concepts",
+        usage="!code explain [--brief|--comprehensive] [target]",
+        category=HandlerCategory.QUERY,
+        aliases=["ce"]
+    )
+    async def handle_explain(self, room, event, args: str) -> str:
+        """Handle !code explain command."""
+        return await handle_code_explain(room, event, args, self.department)
+
+    @HandlerRegistry.register(
+        command="code test",
+        description="Generate tests for code",
+        usage="!code test [unit|integration|edge|all]",
+        category=HandlerCategory.QUERY,
+        aliases=["ct"]
+    )
+    async def handle_test(self, room, event, args: str) -> str:
+        """Handle !code test command."""
+        return await handle_code_test(room, event, args, self.department)
+
+    @HandlerRegistry.register(
+        command="code fix",
+        description="Suggest fixes for code issues",
+        usage="!code fix",
+        category=HandlerCategory.QUERY,
+        aliases=["cf"]
+    )
+    async def handle_fix(self, room, event, args: str) -> str:
+        """Handle !code fix command."""
+        return await handle_code_fix(room, event, args, self.department)
+
+    @HandlerRegistry.register(
+        command="code context",
+        description="Get current editor context",
+        usage="!code context",
+        category=HandlerCategory.SYSTEM,
+        aliases=["cc"]
+    )
+    async def handle_context(self, room, event, args: str) -> str:
+        """Handle !code context command."""
+        return await handle_code_context(room, event, args, self.department)
+
+    @HandlerRegistry.register(
+        command="code status",
+        description="Check VS Code connection status",
+        usage="!code status",
+        category=HandlerCategory.SYSTEM,
+        aliases=["cs"]
+    )
+    async def handle_status(self, room, event, args: str) -> str:
+        """Handle !code status command."""
+        return await handle_code_status(room, event, args, self.department)
+
+    @HandlerRegistry.register(
+        command="code help",
+        description="Show Claude Code command help",
+        usage="!code help",
+        category=HandlerCategory.SYSTEM,
+        hidden=True
+    )
+    async def handle_help(self, room, event, args: str) -> str:
+        """Handle !code help command."""
+        return await handle_code_help(room, event, args)

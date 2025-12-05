@@ -342,7 +342,7 @@ def test_selection_priority_constraints_override_auto(loom):
     """Test resource constraints override auto-selection."""
     pattern = loom.select_pattern(
         query_text="hello",  # Short query would auto-select BARE
-        resource_constraints={"max_timeout": 6.0}  # But constraint selects FAST
+        resource_constraints={"max_timeout": 4.0}  # But constraint selects FAST (<=5.0)
     )
 
     # Constraint should win
@@ -558,8 +558,8 @@ def test_select_pattern_empty_query_string(loom):
     """Test pattern selection with empty query string."""
     pattern = loom.select_pattern(query_text="")
 
-    # Should use default (auto-select won't trigger)
-    assert pattern.card == PatternCard.BARE  # 0 chars < 50
+    # Empty string is falsy, so auto-select won't trigger (uses default)
+    assert pattern.card == PatternCard.FAST  # Default pattern
 
 
 def test_select_pattern_none_query_string(loom):

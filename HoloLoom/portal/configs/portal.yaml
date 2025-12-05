@@ -1,0 +1,16 @@
+# Portal Server Configuration
+# Control plane for HoloLoom distributed compute
+
+loom_id: "loom-blake"
+host: "0.0.0.0"
+port: 8080
+
+# Authentication (CHANGE IN PRODUCTION!)
+shared_secret: "dev-secret-change-me"
+
+# Node management
+node_timeout_seconds: 90  # Mark offline after N seconds without heartbeat
+
+# Logging
+log_level: "INFO"
+log_json: true

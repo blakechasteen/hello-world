@@ -204,9 +204,9 @@ class ActivationSpreader:
 
         for freq in frequencies:
             # Frequency affects decay rate (higher freq = less decay)
-            # Beta range: 12-30 Hz -> decay: 0.6-0.8
+            # Beta range: 12-30 Hz -> decay: 0.8-0.6 (inverted: lower decay for higher freq)
             normalized_freq = (freq - 12.0) / (30.0 - 12.0)  # 0.0-1.0
-            freq_decay = 0.6 + (0.2 * normalized_freq)  # 0.6-0.8
+            freq_decay = 0.8 - (0.2 * normalized_freq)  # 0.8 at 12Hz, 0.6 at 30Hz
 
             wave = BetaWave(
                 frequency=freq,

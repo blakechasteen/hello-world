@@ -366,12 +366,23 @@ async def startup():
     state.audit_trail = AuditTrail(persist_path="./alignment_logs")
 
     # Initialize alignment framework (safety guardrails + deception detection)
+    # Safety Integration (Dec 2025) - MRF CRITIQUE: Remove testing_mode in production
     try:
+        import os
+        # Only allow testing_mode if explicitly set via environment variable
+        # Production should NEVER have HOLOLOOM_TESTING_MODE=true
+        testing_mode = os.environ.get("HOLOLOOM_TESTING_MODE", "").lower() == "true"
+        if testing_mode:
+            logger.warning("⚠️  TESTING MODE ENABLED - Safety approval requirements bypassed!")
+            logger.warning("   Set HOLOLOOM_TESTING_MODE=false for production!")
+
         state.safety_guardrails = SafetyGuardrails(
-            testing_mode=True,  # Auto-approve for demo (correct parameter name)
+            testing_mode=testing_mode,  # Safe by default (False unless explicitly enabled)
+            enable_adversarial_detection=True,  # Always detect adversarial patterns
         )
         state.deception_detector = DeceptionDetector()
-        logger.info("✅ Alignment framework initialized (SafetyGuardrails + DeceptionDetection)")
+        mode_str = "TESTING MODE (bypasses approvals)" if testing_mode else "PRODUCTION MODE (full safety)"
+        logger.info(f"✅ Alignment framework initialized: {mode_str}")
     except Exception as e:
         logger.warning(f"⚠️  Alignment framework initialization failed: {e}")
         logger.warning("   Proceeding without safety gating (NOT RECOMMENDED for production)")
@@ -841,12 +852,25 @@ async def get_safety_stats():
             "message": "Safety guardrails not initialized"
         }
 
-    # SafetyGuardrails doesn't have get_stats() - return basic status
+    # SafetyGuardrails stats with proper testing_mode reflection
+    # Safety Integration (Dec 2025) - MRF CRITIQUE fix
+    import os
+    testing_mode = getattr(state.safety_guardrails, 'testing_mode', False)
+    env_testing_mode = os.environ.get("HOLOLOOM_TESTING_MODE", "").lower() == "true"
+
+    if testing_mode:
+        mode_message = "⚠️ TESTING MODE - approval requirements bypassed (development only)"
+    else:
+        mode_message = "✅ PRODUCTION MODE - full safety gating active"
+
     return {
         "enabled": True,
-        "testing_mode": True,
+        "testing_mode": testing_mode,
+        "env_testing_mode_set": env_testing_mode,
+        "adversarial_detection_enabled": state.safety_guardrails.adversarial_detector is not None,
         "deception_detection_enabled": state.deception_detector is not None,
-        "message": "Safety guardrails active (testing mode - auto-approves for demo)"
+        "decisions_logged": len(state.safety_guardrails.decisions) if hasattr(state.safety_guardrails, 'decisions') else 0,
+        "message": mode_message
     }
 
 

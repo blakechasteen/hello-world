@@ -1,0 +1,21 @@
+# Shuttle Bot Configuration
+# Matrix ChatOps interface for the Loom
+
+# Matrix homeserver (EDIT THESE!)
+homeserver: "https://your-homeserver.local"
+user_id: "@shuttle:your-homeserver.local"
+password: "bot-password-change-me"
+room_id: "!roomid:your-homeserver.local"
+
+# Portal Server connection
+portal_url: "http://localhost:8080"
+shared_secret: "dev-secret-change-me"
+
+# Bot behavior
+command_prefix: "!"
+job_timeout_seconds: 60
+max_message_length: 4000
+
+# Logging
+log_level: "INFO"
+log_json: true

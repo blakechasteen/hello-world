@@ -95,3 +95,13 @@ export {
   type VoiceEvent,
   type VoiceParticipant,
 } from './voice';
+
+// React Components
+export {
+  CursorOverlay,
+  MinimapCursors,
+  CollaborationToolbar,
+} from './components';
+
+// Shared Types
+export * from './types';

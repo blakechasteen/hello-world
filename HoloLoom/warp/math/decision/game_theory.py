@@ -21,10 +21,11 @@ Applications:
     - Evolutionary biology
 """
 
+import math
 import numpy as np
 from typing import List, Tuple, Dict, Optional, Callable
 from dataclasses import dataclass
-from itertools import product
+from itertools import product, combinations
 
 
 @dataclass
@@ -104,13 +105,31 @@ class NormalFormGame:
         Best response: action maximizing expected utility.
 
         BR_i(σ_{-i}) = argmax_{a_i} E[U_i(a_i, σ_{-i})]
+
+        Args:
+            player: Index of player finding best response (0 to n_players-1)
+            opponent_strategies: List of (n_players - 1) strategies for OTHER players,
+                                 ordered by player index excluding current player.
+                                 E.g., for player=1 in 3-player game: [s0, s2]
+
+        Returns:
+            Best action index for the player
         """
+        # Validate opponent_strategies length
+        expected_len = self.n_players - 1
+        if len(opponent_strategies) != expected_len:
+            raise ValueError(
+                f"opponent_strategies must have {expected_len} elements "
+                f"(one per opponent), got {len(opponent_strategies)}"
+            )
+
         best_action = 0
         best_utility = -np.inf
 
         for action in range(self.n_actions[player]):
-            # Create strategy profile with player's action
-            test_strategies = opponent_strategies.copy()
+            # Create full strategy profile by inserting player's strategy
+            # list() creates a copy to avoid mutating the original
+            test_strategies = list(opponent_strategies)
             test_strategies.insert(player, Strategy.pure(action, self.n_actions[player]))
 
             utility = self.expected_utility(player, test_strategies)
@@ -243,23 +262,144 @@ class NashEquilibrium:
         return equilibria
 
     @staticmethod
-    def find_mixed_2player(game: NormalFormGame, n_samples: int = 100) -> Optional[List[Strategy]]:
+    def find_mixed_2player(game: NormalFormGame, tolerance: float = 1e-9) -> Optional[List[Strategy]]:
         """
         Find mixed strategy Nash equilibrium for 2-player game.
 
-        Uses support enumeration (simplified).
+        Uses support enumeration algorithm:
+        1. Try all possible support pairs (S1, S2)
+        2. Solve indifference conditions for each support pair
+        3. Verify the solution is a valid Nash equilibrium
+
+        For Matching Pennies: returns (0.5, 0.5) for both players.
+
+        Args:
+            game: 2-player normal form game
+            tolerance: Numerical tolerance for linear algebra
+
+        Returns:
+            List of 2 Strategy objects, or None if no equilibrium found
         """
         if game.n_players != 2:
             raise ValueError("Only 2-player games supported")
 
-        # Try all support sizes
-        for support_size in range(1, min(game.n_actions) + 1):
-            # For simplicity: assume full support (all actions)
-            # Solve indifference conditions
-            pass
+        n1, n2 = game.n_actions[0], game.n_actions[1]
 
-        # Return uniform mixed strategy as placeholder
+        # Build payoff matrices A (player 1) and B (player 2)
+        # A[i,j] = utility to player 1 when P1 plays i, P2 plays j
+        # B[i,j] = utility to player 2 when P1 plays i, P2 plays j
+        A = np.zeros((n1, n2))
+        B = np.zeros((n1, n2))
+        for i in range(n1):
+            for j in range(n2):
+                A[i, j] = game.utility(0, (i, j))
+                B[i, j] = game.utility(1, (i, j))
+
+        # Try all support pairs, starting with smallest
+        for k1 in range(1, n1 + 1):
+            for k2 in range(1, n2 + 1):
+                for supp1 in combinations(range(n1), k1):
+                    for supp2 in combinations(range(n2), k2):
+                        result = NashEquilibrium._solve_support_pair(
+                            A, B, supp1, supp2, n1, n2, tolerance
+                        )
+                        if result is not None:
+                            p, q = result
+                            # Verify it's actually an equilibrium
+                            strat1 = Strategy(p, is_pure=(k1 == 1))
+                            strat2 = Strategy(q, is_pure=(k2 == 1))
+                            if NashEquilibrium.verify_equilibrium(game, [strat1, strat2], tolerance):
+                                return [strat1, strat2]
+
+        # Fallback: return uniform (always an equilibrium for zero-sum)
         return [Strategy.uniform(n) for n in game.n_actions]
+
+    @staticmethod
+    def _solve_support_pair(
+        A: np.ndarray, B: np.ndarray,
+        supp1: Tuple[int, ...], supp2: Tuple[int, ...],
+        n1: int, n2: int, tolerance: float
+    ) -> Optional[Tuple[np.ndarray, np.ndarray]]:
+        """
+        Solve indifference conditions for a given support pair.
+
+        For player 1's strategy p to make player 2 indifferent over supp2:
+          For all j in supp2: sum_i p_i * B[i,j] = v2 (same value)
+
+        For player 2's strategy q to make player 1 indifferent over supp1:
+          For all i in supp1: sum_j A[i,j] * q_j = v1 (same value)
+
+        Returns (p, q) probability vectors if valid, None otherwise.
+        """
+        k1, k2 = len(supp1), len(supp2)
+
+        # Solve for q (player 2's strategy) using player 1's indifference
+        # A_sub[i,:] @ q = v1 for all i in supp1
+        # Also: sum(q[supp2]) = 1, q >= 0
+        A_sub = A[np.ix_(list(supp1), list(supp2))]
+
+        # Set up linear system: make all rows equal (indifference)
+        # [A_sub[0] - A_sub[1], A_sub[0] - A_sub[2], ..., 1 1 1 1] @ q_sub = [0, 0, ..., 1]
+        if k2 == 1:
+            # Single action in support - probability is 1
+            q_sub = np.array([1.0])
+        else:
+            # Indifference conditions + probability sum = 1
+            M_q = np.zeros((k2, k2))
+            b_q = np.zeros(k2)
+            for row in range(k1 - 1):
+                M_q[row, :] = A_sub[row, :] - A_sub[row + 1, :]
+            M_q[k2 - 1, :] = 1.0  # Sum to 1
+            b_q[k2 - 1] = 1.0
+
+            try:
+                q_sub = np.linalg.solve(M_q, b_q)
+            except np.linalg.LinAlgError:
+                return None
+
+            # Check non-negativity
+            if np.any(q_sub < -tolerance):
+                return None
+
+        # Solve for p (player 1's strategy) using player 2's indifference
+        B_sub = B[np.ix_(list(supp1), list(supp2))]
+
+        if k1 == 1:
+            p_sub = np.array([1.0])
+        else:
+            # B_sub.T[j,:] @ p_sub = v2 for all j in supp2
+            M_p = np.zeros((k1, k1))
+            b_p = np.zeros(k1)
+            for row in range(k2 - 1):
+                M_p[row, :] = B_sub[:, row] - B_sub[:, row + 1]
+            M_p[k1 - 1, :] = 1.0
+            b_p[k1 - 1] = 1.0
+
+            try:
+                p_sub = np.linalg.solve(M_p, b_p)
+            except np.linalg.LinAlgError:
+                return None
+
+            if np.any(p_sub < -tolerance):
+                return None
+
+        # Build full probability vectors
+        p = np.zeros(n1)
+        q = np.zeros(n2)
+        for idx, i in enumerate(supp1):
+            p[i] = max(0.0, p_sub[idx])  # Clamp small negatives
+        for idx, j in enumerate(supp2):
+            q[j] = max(0.0, q_sub[idx])
+
+        # Normalize (handle numerical issues)
+        p_sum = np.sum(p)
+        q_sum = np.sum(q)
+        if p_sum < tolerance or q_sum < tolerance:
+            return None
+        p /= p_sum
+        q /= q_sum
+
+        return p, q
 
     @staticmethod
     def verify_equilibrium(game: NormalFormGame, strategies: List[Strategy],
@@ -284,15 +424,88 @@ class NashEquilibrium:
         return True
 
     @staticmethod
-    def iterated_elimination_dominated(game: NormalFormGame) -> NormalFormGame:
+    def iterated_elimination_dominated(game: NormalFormGame) -> Tuple[NormalFormGame, Dict[int, List[int]]]:
         """
-        Iteratively eliminate strictly dominated strategies.
+        Iteratively eliminate strictly dominated strategies (IESDS).
 
-        Returns reduced game (may have unique Nash equilibrium).
+        A strategy s_i is strictly dominated if there exists another strategy s'_i
+        such that for ALL opponent strategy profiles:
+            U_i(s'_i, s_{-i}) > U_i(s_i, s_{-i})
+
+        Returns:
+            Tuple of:
+            - Reduced game with dominated strategies removed
+            - Dictionary mapping player -> list of surviving action indices
         """
-        # Simplified: return original game
-        # For production: implement IESDS algorithm
-        return game
+        if game.n_players != 2:
+            # For simplicity, only implement 2-player case
+            return game, {i: list(range(game.n_actions[i])) for i in range(game.n_players)}
+
+        # Track surviving actions for each player
+        surviving = {
+            0: list(range(game.n_actions[0])),
+            1: list(range(game.n_actions[1]))
+        }
+
+        changed = True
+        while changed:
+            changed = False
+
+            # Check player 1's actions
+            for player in [0, 1]:
+                other = 1 - player
+                to_remove = []
+
+                for action in surviving[player]:
+                    # Check if action is strictly dominated by any other action
+                    for alt_action in surviving[player]:
+                        if alt_action == action:
+                            continue
+
+                        # Check if alt_action strictly dominates action
+                        strictly_better = True
+                        for opp_action in surviving[other]:
+                            if player == 0:
+                                u_action = game.utility(player, (action, opp_action))
+                                u_alt = game.utility(player, (alt_action, opp_action))
+                            else:
+                                u_action = game.utility(player, (opp_action, action))
+                                u_alt = game.utility(player, (opp_action, alt_action))
+
+                            if u_alt <= u_action:
+                                strictly_better = False
+                                break
+
+                        if strictly_better:
+                            # alt_action strictly dominates action
+                            to_remove.append(action)
+                            break
+
+                # Remove dominated actions
+                for action in to_remove:
+                    if action in surviving[player]:
+                        surviving[player].remove(action)
+                        changed = True
+
+        # Build reduced game with only surviving actions
+        n1_new = len(surviving[0])
+        n2_new = len(surviving[1])
+
+        if n1_new == 0 or n2_new == 0:
+            # Degenerate case - return original
+            return game, surviving
+
+        # Create new payoff matrices
+        new_payoffs = []
+        for player in range(2):
+            new_matrix = np.zeros((n1_new, n2_new))
+            for i_new, i_old in enumerate(surviving[0]):
+                for j_new, j_old in enumerate(surviving[1]):
+                    new_matrix[i_new, j_new] = game.utility(player, (i_old, j_old))
+            new_payoffs.append(new_matrix)
+
+        reduced_game = NormalFormGame(new_payoffs)
+        return reduced_game, surviving
 
 
 class MechanismDesign:
@@ -329,15 +542,70 @@ class MechanismDesign:
         return winner, payments
 
     @staticmethod
-    def is_truthful(mechanism: Callable, test_cases: List[np.ndarray]) -> bool:
+    def is_truthful(
+        mechanism: Callable[[np.ndarray], Tuple[int, np.ndarray]],
+        test_cases: List[np.ndarray],
+        n_misreport_samples: int = 10
+    ) -> Tuple[bool, Optional[Dict]]:
         """
-        Check if mechanism is strategy-proof (truthful).
+        Check if mechanism is strategy-proof (truthful/incentive-compatible).
 
-        Truthful iff reporting true value is dominant strategy.
+        Truthful iff reporting true value is a dominant strategy for each agent.
+        Tests by checking that no agent can gain by misreporting their value.
+
+        Args:
+            mechanism: Function taking bids array, returning (winner, payments)
+            test_cases: List of true value profiles to test
+            n_misreport_samples: Number of misreport values to try per agent
+
+        Returns:
+            Tuple of:
+            - True if no profitable deviation found, False otherwise
+            - If False, dict with counterexample details; None if True
         """
-        # Simplified: check VCG property
-        # For production: verify incentive compatibility
-        return True  # Placeholder
+        for true_values in test_cases:
+            n_agents = len(true_values)
+
+            # Get outcome when everyone reports truthfully
+            winner_true, payments_true = mechanism(true_values)
+
+            for agent in range(n_agents):
+                # Agent's utility from truthful reporting
+                if agent == winner_true:
+                    utility_true = true_values[agent] - payments_true[agent]
+                else:
+                    utility_true = 0 - payments_true[agent]  # Didn't win
+
+                # Try different misreports for this agent
+                for misreport_factor in np.linspace(0.0, 2.0, n_misreport_samples):
+                    misreport = true_values[agent] * misreport_factor
+
+                    # Create bid profile with agent's misreport
+                    bids = true_values.copy()
+                    bids[agent] = misreport
+
+                    # Get outcome with misreport
+                    winner_mis, payments_mis = mechanism(bids)
+
+                    # Agent's utility from misreporting (still based on TRUE value)
+                    if agent == winner_mis:
+                        utility_mis = true_values[agent] - payments_mis[agent]
+                    else:
+                        utility_mis = 0 - payments_mis[agent]
+
+                    # Check for profitable deviation
+                    if utility_mis > utility_true + 1e-9:
+                        return False, {
+                            'agent': agent,
+                            'true_value': true_values[agent],
+                            'misreport': misreport,
+                            'utility_true': utility_true,
+                            'utility_misreport': utility_mis,
+                            'gain': utility_mis - utility_true,
+                            'true_values': true_values.tolist()
+                        }
+
+        return True, None
 
     @staticmethod
     def individual_rationality(values: np.ndarray, payments: np.ndarray) -> bool:
@@ -429,7 +697,7 @@ class CooperativeGame:
         self.v = characteristic_function
 
     def shapley_value(self) -> np.ndarray:
-        """
+        r"""
         Shapley value: fair division of total value.
 
         φ_i = Σ_S [(|S|-1)!(n-|S|)!/n!] [v(S) - v(S\{i})]
@@ -453,9 +721,9 @@ class CooperativeGame:
 
                     # Weight: (|S|-1)! (n-|S|)! / n!
                     weight = (
-                        np.math.factorial(coalition_size - 1) *
-                        np.math.factorial(self.n - coalition_size) /
-                        np.math.factorial(self.n)
+                        math.factorial(coalition_size - 1) *
+                        math.factorial(self.n - coalition_size) /
+                        math.factorial(self.n)
                     )
 
                     shapley[player] += weight * marginal

@@ -415,8 +415,8 @@ class ChronoTrigger:
 
         logger.debug("INHALE: Gathering context...")
 
-        # Simulate gathering work
-        await asyncio.sleep(self.breathing.inhale_duration * self.breathing.breathing_rate)
+        # Simulate gathering work (higher rate = faster breathing)
+        await asyncio.sleep(self.breathing.inhale_duration / self.breathing.breathing_rate)
 
         duration = time.time() - phase_start
 
@@ -456,8 +456,8 @@ class ChronoTrigger:
 
         logger.debug("EXHALE: Making decision...")
 
-        # Simulate decision work (faster than inhale)
-        await asyncio.sleep(self.breathing.exhale_duration * self.breathing.breathing_rate)
+        # Simulate decision work (higher rate = faster breathing)
+        await asyncio.sleep(self.breathing.exhale_duration / self.breathing.breathing_rate)
 
         duration = time.time() - phase_start
 

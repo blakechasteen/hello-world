@@ -210,6 +210,23 @@ except ImportError:
 
 logging.basicConfig(level=logging.INFO)
 
+# Jenny MRF Integration (Phase 2.1-2.2: Thompson Sampling + Learned Panel Selection - December 2025)
+try:
+    from HoloLoom.visualization.jenny_mrf import (
+        JennyMRFCompiler,
+        create_mrf_compiler,
+        PanelTypeLearner,
+    )
+    JENNY_MRF_AVAILABLE = True
+except ImportError:
+    JENNY_MRF_AVAILABLE = False
+    import warnings
+    warnings.warn(
+        "Jenny MRF integration not available. Panel type learning disabled. "
+        "Install jenny_mrf module for Thompson Sampling panel selection.",
+        ImportWarning
+    )
+
 # Jenny renderer string-to-enum mapping (elegance: module-level constant)
 # Lazy import to avoid circular dependency - populated on first use
 JENNY_RENDERER_MAP: Optional[Dict[str, Any]] = None
@@ -496,9 +513,12 @@ class WeavingOrchestrator:
                 self.enable_conscience = False
 
         # Initialize Jenny Generative UI Runtime (December 2025 - MVP Week 4)
+        # Phase 2.1-2.2: MRF Integration with Thompson Sampling panel learning
         self.enable_jenny = enable_jenny
         self.jenny_runtime = None
         self._jenny_started = False
+        self.jenny_mrf_compiler = None  # MRF-enhanced compiler (Phase 2.1-2.2)
+        self.jenny_learner = None  # Thompson Sampling learner for panel types
 
         if enable_jenny:
             try:
@@ -516,14 +536,43 @@ class WeavingOrchestrator:
                     cleanup_interval_seconds=getattr(cfg, 'jenny_cleanup_interval', 60.0),
                 )
                 self.jenny_runtime = JennyRuntime(config=jenny_config)
+
+                # Phase 2.1-2.2: Initialize MRF compiler with Thompson Sampling learning
+                jenny_enable_mrf = getattr(cfg, 'jenny_enable_mrf', True)
+                jenny_enable_learning = getattr(cfg, 'jenny_enable_learning', True)
+                jenny_learning_path = getattr(cfg, 'jenny_learning_persist_path', jenny_persist_path)
+
+                if JENNY_MRF_AVAILABLE and jenny_enable_mrf:
+                    try:
+                        # Create MRF-enhanced compiler with Thompson Sampling learning
+                        # Note: create_mrf_compiler creates learner internally
+                        learning_persist_path = f"{jenny_learning_path}/learning.json"
+                        self.jenny_mrf_compiler = create_mrf_compiler(
+                            enable_learning=jenny_enable_learning,
+                            learning_persist_path=learning_persist_path
+                        )
+                        # Get reference to the internal learner for updates
+                        self.jenny_learner = self.jenny_mrf_compiler.learner if self.jenny_mrf_compiler else None
+                        self.logger.info(
+                            f"Jenny MRF compiler enabled (Phase 2.1-2.2), "
+                            f"learning={jenny_enable_learning}, persist={learning_persist_path}"
+                        )
+                    except Exception as e:
+                        self.logger.warning(f"Failed to initialize Jenny MRF compiler: {e}")
+                        self.jenny_mrf_compiler = None
+                        self.jenny_learner = None
+
                 self.logger.info(
                     f"Jenny UI Runtime enabled (Week 4 - full lifecycle), "
-                    f"renderer={default_renderer.value}, persist={jenny_persist_path}"
+                    f"renderer={default_renderer.value}, persist={jenny_persist_path}, "
+                    f"mrf={'enabled' if self.jenny_mrf_compiler else 'disabled'}"
                 )
             except Exception as e:
                 self.logger.warning(f"Failed to initialize Jenny UI Runtime: {e}")
                 self.enable_jenny = False
                 self.jenny_runtime = None
+                self.jenny_mrf_compiler = None
+                self.jenny_learner = None
 
         self.logger.info("WeavingOrchestrator initialization complete")
 
@@ -563,18 +612,140 @@ class WeavingOrchestrator:
     JENNY_STAGES_THRESHOLD = 3        # Above this → TIMELINE panel
     JENNY_DURATION_THRESHOLD_MS = 100 # Above this → METRIC panel
 
+    def _classify_query_type(self, spacetime) -> str:
+        """
+        Classify query type for Thompson Sampling panel selection.
+
+        Simple heuristic classification:
+        - factual: Direct questions, lookups (what, who, when, where)
+        - procedural: How-to questions, step-by-step (how, steps, process)
+        - analytical: Analysis, comparison, evaluation (why, compare, analyze)
+        - exploratory: Open-ended research, discovery
+
+        Args:
+            spacetime: Spacetime result from weaving
+
+        Returns:
+            Query type string for Thompson Sampling lookup
+        """
+        query_text = (getattr(spacetime, 'query_text', '') or '').lower()
+
+        # Procedural indicators
+        if any(kw in query_text for kw in ['how to', 'steps', 'process', 'implement', 'create']):
+            return 'procedural'
+
+        # Analytical indicators
+        if any(kw in query_text for kw in ['why', 'compare', 'analyze', 'evaluate', 'tradeoff']):
+            return 'analytical'
+
+        # Exploratory indicators
+        if any(kw in query_text for kw in ['explore', 'research', 'discover', 'comprehensive']):
+            return 'exploratory'
+
+        # Factual (default) - direct questions
+        return 'factual'
+
     def _detect_jenny_panel_type(self, spacetime) -> "PanelTypeJenny":
         """
         Detect optimal Jenny panel type from Spacetime content.
 
-        Uses heuristics based on response content and trace data to select
-        the most appropriate panel visualization type.
+        Phase 2.1-2.2: Uses MRF-learned Thompson Sampling selection when available,
+        with heuristic fallback for graceful degradation.
 
-        Thresholds:
+        Thresholds (for heuristic fallback):
             JENNY_CONFIDENCE_THRESHOLD (0.7): Below triggers CONFIDENCE panel
             JENNY_THREADS_THRESHOLD (2): Above triggers GRAPH panel
             JENNY_STAGES_THRESHOLD (3): Above triggers TIMELINE panel
             JENNY_DURATION_THRESHOLD_MS (100): Above triggers METRIC panel
+
+        Args:
+            spacetime: Spacetime result from weaving
+
+        Returns:
+            PanelTypeJenny enum value
+        """
+        from HoloLoom.visualization.jenny_spec import PanelTypeJenny
+
+        # Phase 2.1-2.2: Try MRF-learned selection first
+        if self.jenny_mrf_compiler and self.jenny_learner:
+            try:
+                query_type = self._classify_query_type(spacetime)
+
+                # Get candidate panel types based on content analysis
+                candidates = self._get_panel_type_candidates(spacetime)
+
+                # Use Thompson Sampling to select from candidates
+                learned_selection = self.jenny_learner.select(
+                    query_type=query_type,
+                    candidates=candidates,
+                    exploration_bonus=0.1  # Small exploration bonus
+                )
+
+                self.logger.debug(
+                    f"MRF panel selection: query_type={query_type}, "
+                    f"candidates={[c.value for c in candidates]}, selected={learned_selection.value}"
+                )
+                return learned_selection
+
+            except Exception as e:
+                self.logger.warning(f"MRF panel selection failed, falling back to heuristics: {e}")
+
+        # Fallback to heuristic detection
+        return self._detect_panel_type_heuristic(spacetime)
+
+    def _get_panel_type_candidates(self, spacetime) -> List["PanelTypeJenny"]:
+        """
+        Get candidate panel types based on response content analysis.
+
+        Filters panel types to those that make sense for the content,
+        reducing the search space for Thompson Sampling.
+
+        Args:
+            spacetime: Spacetime result from weaving
+
+        Returns:
+            List of appropriate PanelTypeJenny candidates
+        """
+        from HoloLoom.visualization.jenny_spec import PanelTypeJenny
+
+        response = spacetime.response or ""
+        trace = spacetime.trace
+        candidates = []
+
+        # Always include TEXT as a baseline
+        candidates.append(PanelTypeJenny.TEXT)
+
+        # Code panel if response has code blocks
+        if "```" in response:
+            candidates.append(PanelTypeJenny.CODE)
+
+        # Graph panel if multiple threads/entities
+        if trace and len(getattr(trace, 'threads_activated', [])) > 1:
+            candidates.append(PanelTypeJenny.GRAPH)
+
+        # Confidence panel if low confidence
+        if spacetime.confidence < 0.8:
+            candidates.append(PanelTypeJenny.CONFIDENCE)
+
+        # Timeline if has timing data
+        if trace and len(getattr(trace, 'stage_durations', {})) > 1:
+            candidates.append(PanelTypeJenny.TIMELINE)
+
+        # Metric for performance data
+        if trace and getattr(trace, 'duration_ms', 0) > 50:
+            candidates.append(PanelTypeJenny.METRIC)
+
+        # Reasoning for complex multi-step
+        if spacetime.confidence > 0.6 and len(response) > 500:
+            candidates.append(PanelTypeJenny.REASONING)
+
+        return candidates
+
+    def _detect_panel_type_heuristic(self, spacetime) -> "PanelTypeJenny":
+        """
+        Heuristic-based panel type detection (fallback for MRF).
+
+        Original detection logic for graceful degradation.
 
         Args:
             spacetime: Spacetime result from weaving
