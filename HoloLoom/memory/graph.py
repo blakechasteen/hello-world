@@ -21,6 +21,7 @@ explicit relationships, hierarchies, and dependencies.
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Protocol, Set
 import json
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -243,14 +244,21 @@ class KG:
             self.G.add_node(edge.dst)
         
         # Add edge with all metadata
-        self.G.add_edge(
-            edge.src,
-            edge.dst,
-            type=edge.type,
-            weight=edge.weight,
-            span_id=edge.span_id,
-            **edge.metadata
-        )
+        # Note: NetworkX uses 'key' as edge identifier in MultiDiGraph,
+        # so we need to handle it specially if present in metadata
+        edge_attrs = {
+            "type": edge.type,
+            "weight": edge.weight,
+            "span_id": edge.span_id,
+        }
+        # Add metadata, but rename 'key' to avoid collision with NetworkX's key parameter
+        for k, v in edge.metadata.items():
+            if k == "key":
+                edge_attrs["_key"] = v  # Store as _key to avoid NetworkX collision
+            else:
+                edge_attrs[k] = v
+
+        self.G.add_edge(edge.src, edge.dst, **edge_attrs)
         
         # Update entity index for fast lookups
         if edge.src not in self._entity_index:
@@ -417,8 +425,12 @@ class KG:
         """
         if not self.G.has_edge(src, dst):
             return []
-        
-        return [data.get("type", "unknown") for _, _, data in self.G.edges(src, dst, data=True)]
+
+        # For MultiDiGraph, get_edge_data returns dict of {key: edge_data}
+        edge_dict = self.G.get_edge_data(src, dst)
+        if edge_dict is None:
+            return []
+        return [data.get("type", "unknown") for data in edge_dict.values()]
     
     def get_paths(
         self,
@@ -1562,6 +1574,57 @@ def build_kg_from_text(
         ))
     
     return kg
+
+
+# ============================================================================
+# Legacy Shards Adapter (Backward Compatibility)
+# ============================================================================
+
+class LegacyShardsAdapter:
+    """
+    Simple adapter for backward compatibility with deprecated shards parameter.
+
+    This class provides a minimal interface matching the old YarnGraph class
+    that was embedded in weaving_orchestrator.py. It wraps a list of shards
+    and implements select_threads() for the weaving pipeline.
+
+    .. deprecated:: November 2025
+        Use KG (Knowledge Graph) directly with yarn_graph parameter instead.
+        The shards parameter will be removed in a future version.
+
+    Example:
+        >>> adapter = LegacyShardsAdapter(shards)
+        >>> threads = adapter.select_threads(temporal_window, query)
+    """
+
+    def __init__(self, shards: list):
+        """
+        Initialize with memory shards.
+
+        Args:
+            shards: List of MemoryShard objects
+        """
+        self.shards = {shard.id: shard for shard in shards}
+        self._logger = logging.getLogger(__name__)
+        self._logger.debug(f"LegacyShardsAdapter initialized with {len(shards)} threads")
+
+    def select_threads(self, temporal_window, query) -> list:
+        """
+        Select threads based on temporal window.
+
+        This is a simple implementation that returns all shards.
+        For more sophisticated filtering, use KG.select_threads().
+
+        Args:
+            temporal_window: Time bounds for selection (ignored in legacy mode)
+            query: Query for relevance filtering (ignored in legacy mode)
+
+        Returns:
+            List of all memory shards
+        """
+        threads = list(self.shards.values())
+        self._logger.debug(f"Selected {len(threads)} threads (legacy mode)")
+        return threads
 
 
 # ============================================================================

@@ -13,6 +13,7 @@ from .graph import (
     KGStore,
     KGEdge,
     KG,
+    LegacyShardsAdapter,
     extract_entities_simple,
     build_kg_from_text
 )
@@ -37,6 +38,7 @@ __all__ = [
     'KGEdge',
     'KG',
     'YarnGraph',  # Weaving alias
+    'LegacyShardsAdapter',  # Backward compatibility for deprecated shards
     'extract_entities_simple',
     'build_kg_from_text'
 ]

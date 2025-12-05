@@ -4887,6 +4887,7 @@ HoloLoom implements a complete weaving metaphor as first-class abstractions:
 #### 1. Yarn Graph (HoloLoom/memory/graph.py)
 The persistent symbolic memory - discrete thread structure stored as a NetworkX MultiDiGraph.
 - **Alias**: `YarnGraph = KG`
+- **Backward Compat**: `LegacyShardsAdapter` wraps deprecated `shards` parameter (December 2025)
 - Entities and relationships form the "threads" of memory
 - Remains discrete until "tensioned" into Warp Space
 

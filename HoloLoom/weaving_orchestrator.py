@@ -65,6 +65,23 @@ from HoloLoom.memory.graph import KG  # Yarn Graph for thread storage
 from HoloLoom.policy.unified import create_policy
 from HoloLoom.alignment.safety_guardrails import create_guardrails, SafetyGuardrails
 
+# Conscience Integration (Phase 2C - December 2025)
+try:
+    from HoloLoom.agentic.conscience_adapter import AgenticConscienceAdapter
+    from HoloLoom.protocols.conscience import ConscienceDecision, StepType
+    from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+    CONSCIENCE_AVAILABLE = True
+except ImportError:
+    CONSCIENCE_AVAILABLE = False
+    DecisionType = None  # Fallback for graceful degradation
+    OutcomeType = None
+    import warnings
+    warnings.warn(
+        "Conscience integration not available. Install protocols.conscience module for "
+        "per-query conscience gating in WeavingOrchestrator.",
+        ImportWarning
+    )
+
 # Tool Execution (Elegance Pass: Extracted to tools/ module - November 2025)
 from HoloLoom.tools import ToolExecutor
 
@@ -193,55 +210,36 @@ except ImportError:
 
 logging.basicConfig(level=logging.INFO)
 
+# Jenny renderer string-to-enum mapping (elegance: module-level constant)
+# Lazy import to avoid circular dependency - populated on first use
+JENNY_RENDERER_MAP: Optional[Dict[str, Any]] = None
+
+def _get_jenny_renderer_map():
+    """Lazy load Jenny renderer map to avoid import-time dependency."""
+    global JENNY_RENDERER_MAP
+    if JENNY_RENDERER_MAP is None:
+        try:
+            from HoloLoom.visualization.jenny_renderer import RenderTarget
+            JENNY_RENDERER_MAP = {
+                "html": RenderTarget.HTML,
+                "terminal": RenderTarget.TERMINAL,
+                "json": RenderTarget.JSON,
+            }
+        except ImportError:
+            JENNY_RENDERER_MAP = {}
+    return JENNY_RENDERER_MAP
+
 
 if TYPE_CHECKING:
     from HoloLoom.awareness.llm_integration import OllamaLLM
 
 
 # ============================================================================
-# Yarn Graph (Simple Implementation)
-# ============================================================================
-
-class YarnGraph:
-    """
-    Simple in-memory Yarn Graph for thread storage.
-
-    In production, this would be backed by Neo4j or NetworkX.
-    For now, we use a simple dict-based implementation.
-    """
-
-    def __init__(self, shards: List[MemoryShard]):
-        """Initialize with memory shards."""
-        self.shards = {shard.id: shard for shard in shards}
-        self.logger = logging.getLogger(__name__)
-        self.logger.info(f"YarnGraph initialized with {len(shards)} threads")
-
-    def select_threads(self, temporal_window: TemporalWindow, query: Query) -> List[MemoryShard]:
-        """
-        Select threads based on temporal window.
-
-        For now, returns all shards. In production, would filter by:
-        - Temporal window bounds
-        - Recency weighting
-        - Episode filter
-        - Query relevance
-
-        Args:
-            temporal_window: Time bounds for selection
-            query: Query for relevance filtering
-
-        Returns:
-            List of relevant memory shards
-        """
-        # Simple implementation: return all threads
-        threads = list(self.shards.values())
-        self.logger.debug(f"Selected {len(threads)} threads from YarnGraph")
-        return threads
-
-
-# ============================================================================
 # Weaving Shuttle - Full Architecture Integration
 # ============================================================================
+# Note: YarnGraph class has been moved to HoloLoom/memory/graph.py as
+# LegacyShardsAdapter for backward compatibility. Use KG (Knowledge Graph)
+# directly for modern usage.
 
 class WeavingOrchestrator:
     """
@@ -315,6 +313,12 @@ class WeavingOrchestrator:
         enable_auto_enhancement: bool = False,  # Meta-Prompt Auto-Enhancement
         # Consciousness Integration (Phase 1 - November 2025)
         awareness_layer: Optional[Any] = None,  # AwarenessGraph for epistemic consciousness
+        # Conscience Integration (Phase 2C - December 2025)
+        conscience_adapter: Optional[Any] = None,  # AgenticConscienceAdapter for per-query gating
+        enable_conscience: bool = True,  # Enable conscience gating (default True)
+        # Jenny Generative UI Runtime (December 2025 - MVP Week 1)
+        enable_jenny: bool = False,  # Enable Jenny UI spec compilation
+        jenny_persist_path: str = "./jenny_specs",  # SpecLedger persistence path
     ):
         """
         Initialize the Weaving Shuttle with mythRL protocol enhancements.
@@ -347,6 +351,21 @@ class WeavingOrchestrator:
                 - If None, auto-creates AwarenessGraph with semantic calculus
                 - Enables epistemic self-awareness, uncertainty quantification, meta-confidence
                 - Injects awareness context into weaving cycle and Spacetime results
+            conscience_adapter: Optional AgenticConscienceAdapter for per-query gating (default None)
+                - If None and enable_conscience=True, auto-creates with safe defaults
+                - Gates all queries through conscience before weaving cycle begins
+                - Provides risk assessment, voice guidance, and concerns for each query
+            enable_conscience: Enable conscience gating (default True)
+                - When True, all queries are checked by conscience before processing
+                - Blocked queries return early with conscience decision in Spacetime
+                - Gracefully degrades if conscience module unavailable
+            enable_jenny: Enable Jenny Generative UI Runtime (default False)
+                - Compiles Spacetime → JennySpec[] after each weaving cycle
+                - Generates disposable UI panels with lifecycle management
+                - Logs all specs to SpecLedger for provenance tracking
+            jenny_persist_path: Path for SpecLedger JSONL persistence (default "./jenny_specs")
+                - Complete audit trail of all generated UI specifications
+                - Enables session replay and debugging
 
         Note:
             Memory sources (priority order):
@@ -460,6 +479,52 @@ class WeavingOrchestrator:
                 self.logger.warning(f"Failed to auto-create AwarenessGraph: {e}")
                 self.awareness_layer = None
 
+        # Initialize conscience adapter (Conscience Integration - Phase 2C, December 2025)
+        self.enable_conscience = enable_conscience and CONSCIENCE_AVAILABLE
+        self.conscience_adapter = conscience_adapter
+        if self.enable_conscience and self.conscience_adapter is None:
+            # Auto-create conscience adapter with safe defaults
+            try:
+                self.conscience_adapter = AgenticConscienceAdapter(
+                    guardrails=self.guardrails,  # Share guardrails with conscience
+                    auto_create_guardrails=True,  # Create if not provided
+                )
+                self.logger.info("Auto-created AgenticConscienceAdapter for conscience integration")
+            except Exception as e:
+                self.logger.warning(f"Failed to auto-create conscience adapter: {e}")
+                self.conscience_adapter = None
+                self.enable_conscience = False
+
+        # Initialize Jenny Generative UI Runtime (December 2025 - MVP Week 4)
+        self.enable_jenny = enable_jenny
+        self.jenny_runtime = None
+        self._jenny_started = False
+
+        if enable_jenny:
+            try:
+                from HoloLoom.visualization.jenny_runtime import JennyRuntime, JennyConfig
+                from HoloLoom.visualization.jenny_renderer import RenderTarget
+
+                # Use module-level renderer map (elegance: DRY)
+                renderer_map = _get_jenny_renderer_map()
+                renderer_str = getattr(cfg, 'jenny_default_renderer', 'html')
+                default_renderer = renderer_map.get(renderer_str, RenderTarget.HTML)
+
+                jenny_config = JennyConfig(
+                    default_renderer=default_renderer,
+                    ledger_persist_path=jenny_persist_path,
+                    cleanup_interval_seconds=getattr(cfg, 'jenny_cleanup_interval', 60.0),
+                )
+                self.jenny_runtime = JennyRuntime(config=jenny_config)
+                self.logger.info(
+                    f"Jenny UI Runtime enabled (Week 4 - full lifecycle), "
+                    f"renderer={default_renderer.value}, persist={jenny_persist_path}"
+                )
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize Jenny UI Runtime: {e}")
+                self.enable_jenny = False
+                self.jenny_runtime = None
+
         self.logger.info("WeavingOrchestrator initialization complete")
 
     def _analyze_semantics(self, text: str) -> Optional[Dict[str, float]]:
@@ -491,6 +556,90 @@ class WeavingOrchestrator:
                 vec = self.embedder.encode([text])[0]
                 return self.semantic_spectrum.project_vector(vec)
             return None
+
+    # Jenny panel type detection thresholds (elegance: named constants)
+    JENNY_CONFIDENCE_THRESHOLD = 0.7  # Below this → CONFIDENCE panel
+    JENNY_THREADS_THRESHOLD = 2       # Above this → GRAPH panel
+    JENNY_STAGES_THRESHOLD = 3        # Above this → TIMELINE panel
+    JENNY_DURATION_THRESHOLD_MS = 100 # Above this → METRIC panel
+
+    def _detect_jenny_panel_type(self, spacetime) -> "PanelTypeJenny":
+        """
+        Detect optimal Jenny panel type from Spacetime content.
+
+        Uses heuristics based on response content and trace data to select
+        the most appropriate panel visualization type.
+
+        Thresholds:
+            JENNY_CONFIDENCE_THRESHOLD (0.7): Below triggers CONFIDENCE panel
+            JENNY_THREADS_THRESHOLD (2): Above triggers GRAPH panel
+            JENNY_STAGES_THRESHOLD (3): Above triggers TIMELINE panel
+            JENNY_DURATION_THRESHOLD_MS (100): Above triggers METRIC panel
+
+        Args:
+            spacetime: Spacetime result from weaving
+
+        Returns:
+            PanelTypeJenny enum value
+        """
+        from HoloLoom.visualization.jenny_spec import PanelTypeJenny
+
+        response = spacetime.response or ""
+        trace = spacetime.trace
+
+        # Code detection (has code blocks)
+        if "```" in response:
+            return PanelTypeJenny.CODE
+
+        # Graph panels for rich context (multiple threads activated)
+        if trace and len(getattr(trace, 'threads_activated', [])) > self.JENNY_THREADS_THRESHOLD:
+            return PanelTypeJenny.GRAPH
+
+        # Confidence panels for low-confidence results
+        if spacetime.confidence < self.JENNY_CONFIDENCE_THRESHOLD:
+            return PanelTypeJenny.CONFIDENCE
+
+        # Timeline for stage timing data
+        if trace and len(getattr(trace, 'stage_durations', {})) > self.JENNY_STAGES_THRESHOLD:
+            return PanelTypeJenny.TIMELINE
+
+        # Metric for performance-critical or numerical results
+        if trace and getattr(trace, 'duration_ms', 0) > self.JENNY_DURATION_THRESHOLD_MS:
+            return PanelTypeJenny.METRIC
+
+        # Default to TEXT
+        return PanelTypeJenny.TEXT
+
+    def _build_jenny_panel_context(
+        self,
+        query: Query,
+        spacetime: Spacetime,
+        pattern_spec: Optional[PatternSpec],
+        complexity: Optional[ComplexityLevel],
+    ) -> Dict[str, Any]:
+        """
+        Build context dict for Jenny panel generation (elegance: extracted helper).
+
+        Args:
+            query: Original query
+            spacetime: Weaving result
+            pattern_spec: Pattern used (BARE/FAST/FUSED)
+            complexity: Complexity level
+
+        Returns:
+            Context dict for JennyRuntime.ask()
+        """
+        return {
+            'session_id': spacetime.metadata.get('session_id', 'default'),
+            'spacetime_id': spacetime.metadata.get('spacetime_id', f"st_{int(time.time() * 1000)}"),
+            'pattern': pattern_spec.name if pattern_spec else 'unknown',
+            'complexity': complexity.name if complexity else 'unknown',
+            'response': spacetime.response,
+            'confidence': spacetime.confidence,
+            'tool_used': spacetime.tool_used,
+            'trace': spacetime.trace.to_dict() if hasattr(spacetime.trace, 'to_dict') else {},
+            'sources': spacetime.sources_used if hasattr(spacetime, 'sources_used') else [],
+        }
 
     # ========================================================================
     # mythRL Protocol-Based Architecture Methods
@@ -799,38 +948,84 @@ class WeavingOrchestrator:
                 self.logger.warning(f"[AWARENESS] Perception failed, continuing without awareness: {e}")
                 awareness_context = None
 
-    # ========================================================================
-    # EGGROLL Integration (Evolutionary Training)
-    # ========================================================================
+        # ====================================================================
+        # CONSCIENCE GATING (Phase 2C - December 2025)
+        # ====================================================================
+        # Per-query conscience check before processing
+        # Blocks or modifies queries based on ethical evaluation
+        if self.enable_conscience and self.conscience_adapter:
+            try:
+                conscience_start = time.perf_counter()
 
-    async def dream(self, num_epochs: int = 1, num_workers: int = 5):
-        """
-        Trigger a 'Dream' cycle: Run EGGROLL evolutionary training on recent experiences.
-        
-        This method:
-        1. Initializes the EGGROLL integration.
-        2. Pulls tasks from ReflectionBuffer (via Weave).
-        3. Runs the distributed evolutionary loop.
-        4. Updates the internal model (conceptually).
-        
-        Args:
-            num_epochs: Number of evolutionary epochs to run.
-            num_workers: Number of simulated workers.
-        """
-        self.logger.info(f"[DREAM] Starting EGGROLL dream cycle (epochs={num_epochs}, workers={num_workers})")
-        
-        try:
-            from HoloLoom.eggroll.integration import EggrollIntegration
-            
-            integration = EggrollIntegration(num_workers=num_workers)
-            await integration.run_evolution_loop(num_epochs=num_epochs)
-            
-            self.logger.info("[DREAM] Dream cycle complete.")
-            
-        except ImportError:
-            self.logger.error("[DREAM] EGGROLL module not found. Cannot dream.")
-        except Exception as e:
-            self.logger.error(f"[DREAM] Dream cycle failed: {e}")
+                # Gate the query through conscience adapter
+                conscience_decision = await self.conscience_adapter.gate_reasoning(
+                    query_text=query.text,
+                    context={
+                        'awareness': awareness_context,
+                        'complexity': complexity.name if complexity else 'auto',
+                        'source': 'weaving_orchestrator',
+                    }
+                )
+                conscience_time = (time.perf_counter() - conscience_start) * 1000
+
+                stage_timings['conscience_gate'] = conscience_time
+
+                if conscience_decision:
+                    # Log to audit trail
+                    if hasattr(self, 'audit_trail') and self.audit_trail:
+                        self.audit_trail.log_decision(
+                            decision_type=DecisionType.QUERY_EVALUATION if CONSCIENCE_AVAILABLE else "QUERY_EVALUATION",
+                            outcome=OutcomeType.APPROVED if (CONSCIENCE_AVAILABLE and conscience_decision.allowed) else ("APPROVED" if conscience_decision.allowed else "REJECTED"),
+                            reason=f"Conscience gate: {conscience_decision.reason}",
+                            query_text=query.text,
+                            metadata={
+                                'conscience_voice': conscience_decision.voice,
+                                'risk_level': conscience_decision.risk_level,
+                                'concerns': conscience_decision.concerns,
+                                'guidance': conscience_decision.guidance,
+                                'conscience_time_ms': conscience_time,
+                            }
+                        )
+
+                    if not conscience_decision.allowed:
+                        # Query blocked by conscience - return early with blocked response
+                        self.logger.warning(
+                            f"[CONSCIENCE] Query blocked: {conscience_decision.reason} "
+                            f"(voice={conscience_decision.voice}, risk={conscience_decision.risk_level})"
+                        )
+
+                        # Create blocked Spacetime response
+                        blocked_spacetime = Spacetime(
+                            response=conscience_decision.guidance or "I cannot process this query at this time.",
+                            confidence=0.0,
+                            trace=WeavingTrace(),
+                            metadata={
+                                'blocked_by_conscience': True,
+                                'conscience_decision': {
+                                    'allowed': False,
+                                    'reason': conscience_decision.reason,
+                                    'voice': conscience_decision.voice,
+                                    'risk_level': conscience_decision.risk_level,
+                                    'concerns': conscience_decision.concerns,
+                                    'guidance': conscience_decision.guidance,
+                                },
+                                'conscience_time_ms': conscience_time,
+                                'query': query.text,
+                            }
+                        )
+                        return blocked_spacetime
+
+                    # Query allowed - log and continue
+                    self.logger.info(
+                        f"[CONSCIENCE] Query approved: {conscience_decision.reason} "
+                        f"(voice={conscience_decision.voice}, risk={conscience_decision.risk_level}, "
+                        f"time={conscience_time:.2f}ms)"
+                    )
+
+            except Exception as e:
+                # Conscience check failed - log and continue (fail-open for availability)
+                self.logger.warning(f"[CONSCIENCE] Gating failed, continuing without conscience check: {e}")
+                stage_timings['conscience_gate'] = 0.0
 
         # ====================================================================
         # SMART QUERY ROUTING (November 2025 - Performance Optimization)
@@ -1640,6 +1835,61 @@ class WeavingOrchestrator:
                     # Don't fail the weaving cycle if dashboard generation fails
 
             # ================================================================
+            # Jenny Generative UI: Generate Panel with Full Lifecycle
+            # (December 2025 - MVP Week 4)
+            # ================================================================
+            # Philosophy: "Disposable pixels, durable decisions"
+            # Uses JennyRuntime for full lifecycle management, actions, rendering
+            if self.enable_jenny and self.jenny_runtime:
+                try:
+                    jenny_start = time.time()
+
+                    # Lazy start Jenny runtime on first use
+                    if not self._jenny_started:
+                        await self.jenny_runtime.start()
+                        self._jenny_started = True
+
+                    # Detect optimal panel type from Spacetime content
+                    panel_type = self._detect_jenny_panel_type(spacetime)
+
+                    # Generate panel with full lifecycle management
+                    # (elegance: context building extracted to helper)
+                    panel_context = self._build_jenny_panel_context(
+                        query, spacetime, pattern_spec, complexity
+                    )
+                    panel = await self.jenny_runtime.ask(
+                        query=query.text,
+                        context=panel_context,
+                        panel_type=panel_type,
+                    )
+
+                    # Attach panel to Spacetime metadata (full JennyPanel with rendered output)
+                    spacetime.metadata['jenny_panel'] = {
+                        'spec_id': panel.id,
+                        'title': panel.title,
+                        'panel_type': panel.panel_type.value,
+                        'lifecycle': panel.lifecycle.value,
+                        'html': panel.html,
+                        'terminal': panel.terminal,
+                        'json_data': panel.json_data,
+                        'actions': panel.actions,
+                    }
+                    spacetime.metadata['jenny_panel_id'] = panel.id
+                    spacetime.metadata['jenny_panel_count'] = 1
+
+                    jenny_duration = (time.time() - jenny_start) * 1000
+                    stage_timings['jenny_compilation'] = jenny_duration
+
+                    self.logger.info(
+                        f"[JENNY] Generated {panel.panel_type.value} panel "
+                        f"(id={panel.id[:8]}..., lifecycle={panel.lifecycle.value}, "
+                        f"{jenny_duration:.1f}ms)"
+                    )
+                except Exception as e:
+                    self.logger.warning(f"[JENNY] Failed to generate panel: {e}")
+                    # Don't fail the weaving cycle if Jenny fails
+
+            # ================================================================
             # Recursive Learning: Apply learning loop (if enabled)
             # ================================================================
             if self.enable_recursive_learning and self._recursive_components:
@@ -2012,6 +2262,15 @@ class WeavingOrchestrator:
             await self.reflection_buffer.flush()
             await self.reflection_buffer.close()
 
+        # Stop Jenny Generative UI Runtime (December 2025 - MVP Week 4)
+        if self.enable_jenny and self.jenny_runtime and self._jenny_started:
+            self.logger.info("Stopping Jenny UI Runtime...")
+            try:
+                await self.jenny_runtime.stop()
+                self.logger.info("Jenny UI Runtime stopped successfully")
+            except Exception as e:
+                self.logger.warning(f"Error stopping Jenny UI Runtime: {e}")
+
         # Close memory backend connections
         if self.memory:
             self.logger.info("Closing memory backend connections...")
@@ -2145,3 +2404,36 @@ class WeavingOrchestrator:
         except Exception as e:
             self.logger.error(f"[PRODUCTION] Failed to get breaker status: {e}")
             return {"error": str(e), "timestamp": time.time()}
+
+    # ========================================================================
+    # EGGROLL Integration (Evolutionary Training)
+    # ========================================================================
+
+    async def dream(self, num_epochs: int = 1, num_workers: int = 5):
+        """
+        Trigger a 'Dream' cycle: Run EGGROLL evolutionary training on recent experiences.
+
+        This method:
+        1. Initializes the EGGROLL integration.
+        2. Pulls tasks from ReflectionBuffer (via Weave).
+        3. Runs the distributed evolutionary loop.
+        4. Updates the internal model (conceptually).
+
+        Args:
+            num_epochs: Number of evolutionary epochs to run.
+            num_workers: Number of simulated workers.
+        """
+        self.logger.info(f"[DREAM] Starting EGGROLL dream cycle (epochs={num_epochs}, workers={num_workers})")
+
+        try:
+            from HoloLoom.eggroll.integration import EggrollIntegration
+
+            integration = EggrollIntegration(num_workers=num_workers)
+            await integration.run_evolution_loop(num_epochs=num_epochs)
+
+            self.logger.info("[DREAM] Dream cycle complete.")
+
+        except ImportError:
+            self.logger.error("[DREAM] EGGROLL module not found. Cannot dream.")
+        except Exception as e:
+            self.logger.error(f"[DREAM] Dream cycle failed: {e}")

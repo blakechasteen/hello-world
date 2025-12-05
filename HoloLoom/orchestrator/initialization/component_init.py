@@ -135,11 +135,11 @@ def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
         orchestrator.yarn_graph = orchestrator.yarn_graph_param
         logger.info(f"Using Yarn Graph (KG) with {orchestrator.yarn_graph.G.number_of_nodes()} nodes")
     else:
-        # Use in-memory YarnGraph with shards (backward compatibility)
-        # Import YarnGraph from weaving_orchestrator (avoid circular import at module level)
-        from HoloLoom.weaving_orchestrator import YarnGraph
-        orchestrator.yarn_graph = YarnGraph(orchestrator.shards)
-        logger.info(f"Using in-memory YarnGraph (legacy) with {len(orchestrator.shards)} shards")
+        # Use LegacyShardsAdapter with shards (backward compatibility)
+        # This is deprecated - use yarn_graph (KG) or memory parameter instead
+        from HoloLoom.memory.graph import LegacyShardsAdapter
+        orchestrator.yarn_graph = LegacyShardsAdapter(orchestrator.shards)
+        logger.info(f"Using LegacyShardsAdapter (deprecated) with {len(orchestrator.shards)} shards")
 
     # 2a. Shuttle Stage (Step 3: MCTS-powered thread selection) - January 2025
     # OPTIONAL: Enable Shuttle for intelligent Warp↔Yarn intersection
