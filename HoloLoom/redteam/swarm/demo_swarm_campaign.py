@@ -126,9 +126,10 @@ async def demo_safety_layers() -> SafetyGate:
     # Create safety gate with all layers
     safety_gate = create_safety_gate(
         allowed_targets=allowed_targets,
-        rate_limit_per_minute=60,
-        rate_limit_burst=10,
-        enable_anomaly_detection=True,
+        requests_per_minute=60,
+        daily_limit=10000,
+        concurrent_limit=5,
+        cost_limit_usd=10.0,
     )
 
     # Layer 1: Authorization
@@ -136,9 +137,9 @@ async def demo_safety_layers() -> SafetyGate:
 
     # Create valid token
     valid_token = create_authorization_token(
-        operator_id="security_researcher_001",
-        operation_type="penetration_test",
-        authorized_targets=allowed_targets,
+        scope=allowed_targets,
+        issuer="security_researcher_001",
+        permissions={"read", "execute", "scan"},
         expires_in_hours=24,
     )
     print_success(f"Valid token created: {valid_token.token_id[:16]}...")

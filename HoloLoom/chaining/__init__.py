@@ -65,20 +65,73 @@ Date: November 2025
 from .chain import Chain, ChainStep, StepType
 from .orchestrator import ChainOrchestrator, ChainResult, ExecutionTrace
 from .patterns import ChainPatterns
-from .conditions import Conditions, CommonConditions
+from .conditions import (
+    Conditions,
+    CommonConditions,
+    # New domain-specific conditions (December 2025)
+    FactCheckConditions,
+    CodeReviewConditions,
+    SafetyConditions,
+    HallucinationConditions,
+    RAGConditions,
+    MemoryConditions,
+    AgentConditions,
+)
 from .types import StepResult, LoopConfig, ConditionalBranch
+from .evaluation import (
+    # Core evaluation classes
+    LLMJudge,
+    ChainEvaluator,
+    # Config/Result types
+    JudgeCriteria,
+    JudgeConfig,
+    JudgeScore,
+    JudgeResult,
+    TestCase,
+    ChainEvalResult,
+    # Presets
+    EvalPresets,
+    # Convenience functions
+    create_evaluator,
+    create_judge,
+)
 
 __all__ = [
+    # Core chain classes
     "Chain",
     "ChainStep",
     "StepType",
+    # Orchestration
     "ChainOrchestrator",
     "ChainResult",
     "ExecutionTrace",
+    # Patterns
     "ChainPatterns",
+    # Base conditions
     "Conditions",
     "CommonConditions",
+    # Domain-specific conditions
+    "FactCheckConditions",
+    "CodeReviewConditions",
+    "SafetyConditions",
+    "HallucinationConditions",
+    "RAGConditions",
+    "MemoryConditions",
+    "AgentConditions",
+    # Types
     "StepResult",
     "LoopConfig",
     "ConditionalBranch",
+    # Evaluation (new)
+    "LLMJudge",
+    "ChainEvaluator",
+    "JudgeCriteria",
+    "JudgeConfig",
+    "JudgeScore",
+    "JudgeResult",
+    "TestCase",
+    "ChainEvalResult",
+    "EvalPresets",
+    "create_evaluator",
+    "create_judge",
 ]
