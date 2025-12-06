@@ -58,9 +58,14 @@ class FabricInspector:
 
         Args:
             signals: Custom signals to use. None uses all registered signals.
+                     Pass [] for explicit empty list (no signals).
             fail_on_missing_signals: If True, fail when no signals registered.
         """
-        self.signals = signals or SignalRegistry.get_all()
+        # Handle None vs empty list explicitly
+        if signals is None:
+            self.signals = SignalRegistry.get_all()
+        else:
+            self.signals = signals
         self.fail_on_missing_signals = fail_on_missing_signals
 
         if not self.signals and fail_on_missing_signals:
