@@ -18,6 +18,11 @@ from typing import Dict, List, Optional, Set, Tuple
 from .identity import node_id_distance, node_id_prefix_length
 from .protocols import RoutingProtocol
 from .types import Capability, FederationNode, Query, Response
+from .transport import (
+    BaseTransport,
+    MessageType,
+    TransportMessage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -242,11 +247,13 @@ class KademliaRouter:
         k: int = 20,                          # Bucket size
         alpha: int = 3,                       # Parallel lookups
         lookup_timeout_ms: int = 5000,
+        transport: Optional[BaseTransport] = None,
     ):
         self._local = local_node
         self._table = RoutingTable(local_node.node_id, k=k)
         self._alpha = alpha
         self._lookup_timeout = lookup_timeout_ms / 1000
+        self._transport = transport
 
         # Cached lookups
         self._lookup_cache: Dict[str, List[FederationNode]] = {}
@@ -368,9 +375,51 @@ class KademliaRouter:
         node: FederationNode,
         target: str,
     ) -> List[FederationNode]:
-        """Query a node for nodes close to target."""
-        # TODO: Implement actual RPC
-        return []
+        """Query a node for nodes close to target via transport."""
+        if not self._transport:
+            logger.debug("No transport configured for find_node")
+            return []
+
+        message = TransportMessage(
+            type=MessageType.FIND_NODE,
+            sender=self._local.node_id,
+            payload={
+                "target": target,
+                "k": self._table._k,
+            },
+        )
+
+        try:
+            response = await self._transport.send(
+                node,
+                message,
+                timeout_ms=int(self._lookup_timeout * 1000),
+            )
+
+            if not response.success or not response.data:
+                return []
+
+            # Parse response: expect list of node dicts
+            nodes_data = response.data.get("nodes", [])
+            result = []
+            for nd in nodes_data:
+                try:
+                    result.append(FederationNode(
+                        node_id=nd["node_id"],
+                        public_key=bytes.fromhex(nd.get("public_key", "")),
+                        endpoint=nd["endpoint"],
+                        capabilities={Capability[c] for c in nd.get("capabilities", [])},
+                        guilds=set(nd.get("guilds", [])),
+                        trust_score=nd.get("trust_score", 0.5),
+                    ))
+                except (KeyError, ValueError) as e:
+                    logger.debug(f"Invalid node data in response: {e}")
+                    continue
+            return result
+
+        except Exception as e:
+            logger.debug(f"find_node query to {node.node_id[:8]}... failed: {e}")
+            return []
 
     # ───────────────────────────────────────────────────────────────────────
     #  QUERY ROUTING
@@ -416,18 +465,73 @@ class KademliaRouter:
         query: Query,
         node: FederationNode,
     ) -> Response:
-        """Send query to a single node."""
-        # TODO: Implement actual RPC
-        # For now, return placeholder
+        """Send query to a single node via transport."""
         import time
 
-        return Response(
-            text="[Placeholder response]",
-            request_id=query.request_id,
-            responder=node.node_id,
-            confidence=0.0,
-            latency_ms=0.0,
+        start_time = time.perf_counter()
+
+        if not self._transport:
+            logger.debug("No transport configured for query")
+            return Response(
+                text="[No transport]",
+                request_id=query.request_id,
+                responder=node.node_id,
+                confidence=0.0,
+                latency_ms=0.0,
+            )
+
+        message = TransportMessage(
+            type=MessageType.QUERY,
+            sender=self._local.node_id,
+            payload={
+                "text": query.text,
+                "request_id": query.request_id,
+                "requester": query.requester,
+                "level": query.level.value,
+                "guild": query.guild,
+                "context": query.context,
+            },
         )
+
+        try:
+            response = await self._transport.send(
+                node,
+                message,
+                timeout_ms=query.timeout_ms,
+            )
+
+            latency_ms = (time.perf_counter() - start_time) * 1000
+
+            if not response.success or not response.data:
+                return Response(
+                    text="[No response]",
+                    request_id=query.request_id,
+                    responder=node.node_id,
+                    confidence=0.0,
+                    latency_ms=latency_ms,
+                )
+
+            # Parse response
+            return Response(
+                text=response.data.get("text", ""),
+                request_id=query.request_id,
+                responder=node.node_id,
+                confidence=response.data.get("confidence", 0.0),
+                latency_ms=latency_ms,
+                signature=bytes.fromhex(response.data.get("signature", "")),
+                metadata=response.data.get("metadata", {}),
+            )
+
+        except Exception as e:
+            latency_ms = (time.perf_counter() - start_time) * 1000
+            logger.debug(f"Query to {node.node_id[:8]}... failed: {e}")
+            return Response(
+                text=f"[Error: {e}]",
+                request_id=query.request_id,
+                responder=node.node_id,
+                confidence=0.0,
+                latency_ms=latency_ms,
+            )
 
     # ───────────────────────────────────────────────────────────────────────
     #  ANNOUNCEMENTS

@@ -19,8 +19,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, AsyncIterator, Dict, List, Optional, Set
 
+from .gossip import SwimMembership
 from .identity import Identity, create_node, get_or_create_identity
 from .protocols import FederationProtocol
+from .routing import KademliaRouter
+from .transport import (
+    BaseTransport,
+    create_http_transport,
+    MessageType,
+    TransportMessage,
+)
 from .types import (
     Capability,
     FederationError,
@@ -218,10 +226,42 @@ class Federation:
         logger.info(f"Joining federation via {bootstrap}...")
 
         try:
-            # TODO: Initialize transport, membership, routing
-            # For now, just mark as connected
+            # 1. Create and start transport
+            self._transport = create_http_transport(
+                host=self._config.endpoint.split(":")[0],
+                port=int(self._config.endpoint.split(":")[1]),
+                timeout_ms=self._config.connection_timeout_ms,
+                max_connections=self._config.max_connections,
+            )
+            await self._transport.start()
+
+            # 2. Initialize SWIM membership with transport
+            self._membership = SwimMembership(
+                local_node=self._node,
+                ping_interval_ms=self._config.gossip_interval_ms,
+                ping_timeout_ms=self._config.suspicion_timeout_ms,
+                max_gossip_peers=self._config.max_gossip_peers,
+                transport=self._transport,
+            )
+
+            # 3. Initialize Kademlia router with transport
+            self._router = KademliaRouter(
+                local_node=self._node,
+                k=self._config.k_bucket_size,
+                alpha=self._config.alpha,
+                transport=self._transport,
+            )
+
+            # 4. Join via bootstrap node
+            await self._membership.join(bootstrap)
+
+            # 5. Populate routing table with discovered peers
+            for peer in self._membership.get_members():
+                self._router.update(peer)
+                self._peers[peer.node_id] = peer
+
             self._connected = True
-            logger.info(f"Joined federation as {self.node_id[:8]}...")
+            logger.info(f"Joined federation as {self.node_id[:8]}... ({len(self._peers)} peers)")
 
         except Exception as e:
             if self._config.fallback_to_local:
@@ -240,9 +280,26 @@ class Federation:
 
         logger.info("Leaving federation...")
 
-        # TODO: Announce departure, close connections
+        # 1. Announce departure via membership (graceful leave)
+        if self._membership:
+            try:
+                await self._membership.leave()
+            except Exception as e:
+                logger.warning(f"Error during membership leave: {e}")
+
+        # 2. Stop transport server
+        if self._transport:
+            try:
+                await self._transport.stop()
+            except Exception as e:
+                logger.warning(f"Error stopping transport: {e}")
+
+        # 3. Clear state
         self._connected = False
         self._peers.clear()
+        self._membership = None
+        self._router = None
+        self._transport = None
 
         logger.info("Left federation")
 

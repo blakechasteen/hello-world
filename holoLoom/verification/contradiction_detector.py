@@ -233,9 +233,33 @@ class RuleBasedContradictionDetector:
         if not claim_numbers or not answer_numbers:
             return None
 
-        # Check if corresponding numbers differ significantly
+        # Extract years specifically (4-digit numbers in typical year range)
+        def is_year(n: float) -> bool:
+            return 1000 <= n <= 2100 and n == int(n)
+
+        claim_years = [int(n) for n in claim_numbers if is_year(n)]
+        answer_years = [int(n) for n in answer_numbers if is_year(n)]
+
+        # Special handling for years: absolute difference matters
+        if claim_years and answer_years:
+            for cy in claim_years:
+                for ay in answer_years:
+                    year_diff = abs(cy - ay)
+                    if year_diff >= 1:  # Even 1 year difference can be significant
+                        severity = min(1.0, 0.5 + year_diff * 0.05)
+                        return (
+                            f"Temporal mismatch: claim says {cy}, "
+                            f"verification says {ay} (difference: {year_diff} years)",
+                            severity
+                        )
+
+        # Check if corresponding numbers differ significantly (relative difference)
         for cn in claim_numbers:
             for an in answer_numbers:
+                # Skip if already handled as years
+                if is_year(cn) and is_year(an):
+                    continue
+
                 if cn == 0 and an == 0:
                     continue
 

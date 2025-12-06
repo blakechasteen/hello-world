@@ -23,6 +23,11 @@ from typing import Any, Callable, Dict, List, Optional, Set
 
 from .protocols import MembershipProtocol
 from .types import FederationNode, NodeStatus
+from .transport import (
+    BaseTransport,
+    MessageType as TransportMessageType,
+    TransportMessage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +108,7 @@ class SwimMembership:
         self,
         local_node: FederationNode,
         *,
+        transport: Optional[BaseTransport] = None,
         ping_interval_ms: int = 1000,
         ping_timeout_ms: int = 500,
         suspicion_multiplier: int = 5,
@@ -113,6 +119,7 @@ class SwimMembership:
     ):
         self._local = local_node
         self._incarnation = 0
+        self._transport = transport
 
         # Timing
         self._ping_interval = ping_interval_ms / 1000
@@ -559,16 +566,77 @@ class SwimMembership:
                 self._on_leave(msg.target)
 
     # ───────────────────────────────────────────────────────────────────────
-    #  TRANSPORT (TODO: Real implementation)
+    #  TRANSPORT
     # ───────────────────────────────────────────────────────────────────────
 
-    async def _send(self, node: FederationNode, message: GossipMessage) -> None:
-        """Send message to a node."""
-        # TODO: Implement actual transport
-        pass
+    def _gossip_to_transport_type(self, msg_type: MessageType) -> TransportMessageType:
+        """Map gossip MessageType to transport MessageType."""
+        mapping = {
+            MessageType.PING: TransportMessageType.PING,
+            MessageType.PING_REQ: TransportMessageType.PING_REQ,
+            MessageType.ACK: TransportMessageType.ACK,
+            MessageType.ALIVE: TransportMessageType.ALIVE,
+            MessageType.SUSPECT: TransportMessageType.SUSPECT,
+            MessageType.DEAD: TransportMessageType.DEAD,
+            MessageType.JOIN: TransportMessageType.JOIN,
+            MessageType.LEAVE: TransportMessageType.LEAVE,
+        }
+        return mapping[msg_type]
 
-    async def _broadcast(self, message: GossipMessage) -> None:
-        """Broadcast message to random subset of members."""
+    def _gossip_to_transport_message(self, message: GossipMessage) -> TransportMessage:
+        """Convert GossipMessage to TransportMessage for wire transport."""
+        return TransportMessage(
+            type=self._gossip_to_transport_type(message.type),
+            sender=message.sender,
+            payload={
+                "target": message.target,
+                "incarnation": message.incarnation,
+                **message.payload,
+            },
+        )
+
+    async def _send(self, node: FederationNode, message: GossipMessage) -> bool:
+        """
+        Send message to a node via transport layer.
+
+        Args:
+            node: Target node
+            message: Gossip message to send
+
+        Returns:
+            True if send succeeded
+        """
+        if not self._transport:
+            logger.warning("No transport configured, message not sent")
+            return False
+
+        transport_msg = self._gossip_to_transport_message(message)
+
+        try:
+            response = await self._transport.send(
+                node,
+                transport_msg,
+                timeout_ms=int(self._ping_timeout * 1000),
+            )
+            return response.success
+        except Exception as e:
+            logger.debug(f"Send to {node.node_id[:8]}... failed: {e}")
+            return False
+
+    async def _broadcast(self, message: GossipMessage) -> int:
+        """
+        Broadcast message to random subset of members (parallel).
+
+        Returns:
+            Number of successful sends
+        """
         targets = self.get_random_members(self._max_gossip)
-        for node in targets:
-            await self._send(node, message)
+        if not targets:
+            return 0
+
+        # Send to all targets in parallel
+        tasks = [self._send(node, message) for node in targets]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Count successes
+        return sum(1 for r in results if r is True)

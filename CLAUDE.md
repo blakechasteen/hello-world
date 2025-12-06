@@ -2887,6 +2887,93 @@ pytest HoloLoom/context/ -v
 
 ---
 
+## ChatOps Job Observability (December 2025)
+
+**Status**: ✅ Production Ready
+**Location**: `HoloLoom/chatops/handlers/`
+**Performance**: <100ms job submission, real-time progress streaming
+
+Complete observability stack for HoloLoom ChatOps job execution.
+
+### Components
+
+1. **Async Job Execution** (`hololoom_handlers.py`)
+   - Non-blocking `!weave` command (<100ms response)
+   - `!status <job_id>` for polling
+   - `!cancel <job_id>` for cancellation
+   - Background execution with progress tracking
+
+2. **WebSocket Progress Streaming** (`websocket_progress.py`)
+   - Real-time job progress via WebSocket
+   - Pattern-based subscriptions (`job:{id}`, `room:{id}`, `*`)
+   - 9-step weaving cycle progress events
+   - Heartbeat and connection management
+
+3. **Prometheus Metrics** (`prometheus_metrics.py`)
+   - Job throughput (jobs/min)
+   - Latency percentiles (p50, p95, p99)
+   - Queue depth (pending + running)
+   - Error rates by type
+   - Tool usage distribution
+
+### Quick Start
+
+**Matrix Bot Commands:**
+```
+!loom weave What is Thompson Sampling?
+→ Job weave-abc123 submitted. Use !status weave-abc123 to check.
+
+!status weave-abc123
+→ Running (45s elapsed)...
+
+!cancel weave-abc123
+→ Job cancelled.
+```
+
+**WebSocket Subscription:**
+```javascript
+const ws = new WebSocket('ws://localhost:8000/ws/progress');
+ws.send(JSON.stringify({type: 'subscribe', pattern: 'job:weave-abc123'}));
+ws.onmessage = (e) => console.log(JSON.parse(e.data));
+```
+
+**Prometheus Metrics:**
+```bash
+curl http://localhost:8000/api/metrics
+# HELP hololoom_jobs_total Total jobs by status
+# TYPE hololoom_jobs_total counter
+hololoom_jobs_total{status="completed"} 42
+```
+
+### Grafana Dashboard
+
+Import `HoloLoom/chatops/dashboards/hololoom_jobs.json` for:
+- Job throughput over time
+- Queue depth gauge
+- Latency percentile trends
+- Error rate monitoring
+- Tool usage pie chart
+- Confidence distribution histogram
+
+### Key Files
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `hololoom_handlers.py` | ~850 | Matrix bot async job execution |
+| `websocket_progress.py` | ~840 | WebSocket progress streaming |
+| `prometheus_metrics.py` | ~510 | Prometheus metrics collector |
+| `dashboards/hololoom_jobs.json` | ~380 | Grafana dashboard template |
+
+### Testing
+
+```bash
+# Run integration tests
+pytest HoloLoom/tests/integration/test_prometheus_metrics.py -v
+pytest HoloLoom/tests/integration/test_websocket_progress.py -v
+```
+
+---
+
 ## Production Deployment Patterns (November 2025)
 
 **Status**: ✅ Production Ready (2025-11-22)

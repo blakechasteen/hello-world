@@ -227,6 +227,33 @@ class KnowledgeBaseVerifier:
 
         return avg_confidence
 
+    def _sanitize_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Sanitize context to remove original response.
+
+        CRITICAL: Removes keys that could leak the original response
+        into the verification process, preventing self-confirmation bias.
+        """
+        # Keys to remove (could contain original response)
+        FORBIDDEN_KEYS = {
+            'original_response',
+            'response',
+            'baseline_response',
+            'initial_response',
+        }
+
+        sanitized = {}
+        for key, value in context.items():
+            if key.lower() in FORBIDDEN_KEYS:
+                continue
+            # Recursively sanitize nested dicts
+            if isinstance(value, dict):
+                sanitized[key] = self._sanitize_context(value)
+            else:
+                sanitized[key] = value
+
+        return sanitized
+
 
 # =============================================================================
 # LLM-Based Independent Verifier (FULL Level)

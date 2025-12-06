@@ -199,22 +199,23 @@ class VerificationResult:
 
     def summary(self) -> str:
         """Generate human-readable summary of verification result."""
-        status_emoji = {
-            VerificationStatus.VERIFIED: "✅",
-            VerificationStatus.CONTRADICTED: "❌",
-            VerificationStatus.UNCERTAIN: "⚠️",
-            VerificationStatus.NEEDS_HUMAN: "👤",
-            VerificationStatus.SKIPPED: "⏭️",
+        # Use ASCII markers instead of emojis for terminal compatibility
+        status_marker = {
+            VerificationStatus.VERIFIED: "[OK]",
+            VerificationStatus.CONTRADICTED: "[FAIL]",
+            VerificationStatus.UNCERTAIN: "[WARN]",
+            VerificationStatus.NEEDS_HUMAN: "[HUMAN]",
+            VerificationStatus.SKIPPED: "[SKIP]",
         }
 
-        emoji = status_emoji.get(self.status, "❓")
+        marker = status_marker.get(self.status, "[?]")
 
         lines = [
-            f"{emoji} Verification {self.status.value.upper()}",
+            f"{marker} Verification {self.status.value.upper()}",
             f"   Claims extracted: {len(self.claims_extracted)}",
             f"   Questions asked: {len(self.verification_questions)}",
             f"   Contradictions: {len(self.contradictions_found)}",
-            f"   Confidence: {self.confidence_before:.2f} → {self.confidence_after:.2f}",
+            f"   Confidence: {self.confidence_before:.2f} -> {self.confidence_after:.2f}",
             f"   Iterations: {self.iterations}",
             f"   Latency: {self.latency_ms:.1f}ms",
             f"   Level: {self.degradation_level.value}",

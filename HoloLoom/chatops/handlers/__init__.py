@@ -14,6 +14,8 @@ Optional advanced features:
 - pattern_tuning: Pattern optimization
 - visualization_handlers: Dashboard and chart commands
 - memory_symphony_handlers: Memory coordination and strategy commands
+- temporal_handlers: Time-travel and temporal pattern queries
+- department_handlers: Multi-department coordination and routing
 - websocket_progress: WebSocket-based job progress streaming
 - prometheus_metrics: Prometheus metrics for job observability
 """
@@ -222,6 +224,48 @@ try:
         "handle_memory_systems",
         "handle_memory_history",
         "handle_memory_help"
+    ])
+except ImportError:
+    pass
+
+try:
+    from HoloLoom.chatops.handlers.temporal_handlers import (
+        register_temporal_handlers,
+        TemporalHandlers,
+        handle_temporal_travel,
+        handle_temporal_between,
+        handle_temporal_patterns,
+        handle_temporal_help
+    )
+    __all__.extend([
+        "register_temporal_handlers",
+        "TemporalHandlers",
+        "handle_temporal_travel",
+        "handle_temporal_between",
+        "handle_temporal_patterns",
+        "handle_temporal_help"
+    ])
+except ImportError:
+    pass
+
+try:
+    from HoloLoom.chatops.handlers.department_handlers import (
+        register_department_handlers,
+        DepartmentHandlers,
+        handle_dept_list,
+        handle_dept_status,
+        handle_dept_process,
+        handle_dept_capabilities,
+        handle_dept_help
+    )
+    __all__.extend([
+        "register_department_handlers",
+        "DepartmentHandlers",
+        "handle_dept_list",
+        "handle_dept_status",
+        "handle_dept_process",
+        "handle_dept_capabilities",
+        "handle_dept_help"
     ])
 except ImportError:
     pass

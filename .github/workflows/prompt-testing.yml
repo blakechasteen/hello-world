@@ -1,0 +1,38 @@
+name: Prompt Testing
+on: [push, pull_request]
+
+jobs:
+  test-prompts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run prompt tests
+        run: PYTHONPATH=. python -m HoloLoom.prompting.testing.ci_integration
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: prompt-test-results
+          path: ./prompt-test-results
+
+      - name: Comment PR on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ Prompt tests failed. See artifacts for details.'
+            })

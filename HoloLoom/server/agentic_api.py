@@ -281,6 +281,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ChatOps Observability Routers (Prometheus metrics + WebSocket progress)
+try:
+    from HoloLoom.chatops.handlers.prometheus_metrics import (
+        create_metrics_router, get_metrics_collector
+    )
+    _metrics_router = create_metrics_router(get_metrics_collector())
+    if _metrics_router:
+        app.include_router(_metrics_router, prefix="/api")
+        logger.info("Prometheus metrics router mounted at /api/metrics")
+except ImportError:
+    logger.debug("Prometheus metrics not available (missing dependencies)")
+
+try:
+    from HoloLoom.chatops.handlers.websocket_progress import create_progress_router
+    _progress_router = create_progress_router()
+    if _progress_router:
+        app.include_router(_progress_router)
+        logger.info("WebSocket progress router mounted at /ws/progress")
+except ImportError:
+    logger.debug("WebSocket progress not available (missing dependencies)")
+
 
 # Rate limiting middleware
 @app.middleware("http")
