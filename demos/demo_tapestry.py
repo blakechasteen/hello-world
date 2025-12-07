@@ -503,13 +503,14 @@ async def demo_inspector_details(temp_dir: str) -> None:
     print()
 
     # Create a mock thread for testing
-    from datetime import datetime
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
     mock_thread = Thread(
         id="test-1",
         description="Test thread for inspection",
         status=ThreadStatus.WEAVING,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        created_at=now,
+        updated_at=now
     )
 
     print("Running inspection 5 times to show aggregation variability...")

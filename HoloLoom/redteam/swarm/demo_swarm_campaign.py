@@ -43,6 +43,7 @@ from HoloLoom.redteam.swarm import (
     AuditLogger,
     AnomalyDetector,
     SeverityLevel,
+    AuditEventType,
     create_safety_gate,
     create_authorization_token,
     AuthorizationError,
@@ -96,7 +97,7 @@ def print_success(msg: str) -> None:
 
 def print_blocked(msg: str) -> None:
     """Print blocked/safety message."""
-    print(f"  ✗ {msg}")
+    print(f"  [BLOCKED] {msg}")
 
 
 def print_info(msg: str) -> None:
@@ -144,35 +145,28 @@ async def demo_safety_layers() -> SafetyGate:
     )
     print_success(f"Valid token created: {valid_token.token_id[:16]}...")
 
-    # Verify authorization succeeds
-    is_valid = await safety_gate.auth_manager.validate_token(valid_token)
-    print_success(f"Token validation: {'PASSED' if is_valid else 'FAILED'}")
+    # Register and authorize with valid token
+    safety_gate.register_token(valid_token)
+    is_authorized = await safety_gate.authorize(valid_token.token_id)
+    print_success(f"Token authorization: {'PASSED' if is_authorized else 'FAILED'}")
 
-    # Create invalid/expired token to demonstrate rejection
+    # Test invalid authorization (unregistered token)
     print_info("Testing invalid authorization...")
     try:
-        fake_token = AuthorizationToken(
-            token_id="fake-token-123",
-            operator_id="unauthorized_user",
-            operation_type="unknown",
-            authorized_targets=["*"],  # Wildcards not allowed
-            issued_at=time.time() - 86400,  # Yesterday
-            expires_at=time.time() - 3600,  # Already expired
-        )
-        await safety_gate.auth_manager.validate_token(fake_token)
+        await safety_gate.authorize("fake-unregistered-token-123")
         print_blocked("Should have been rejected!")
-    except (AuthorizationError, ValueError) as e:
+    except AuthorizationError as e:
         print_success(f"Invalid token rejected: {type(e).__name__}")
 
     # Layer 2: Scope Validation
     print_subheader("Layer 2: Scope Validation (Whitelist Only)")
 
     # Test in-scope target
-    in_scope = await safety_gate.scope_validator.is_in_scope("test-target.local")
+    in_scope = safety_gate._scope_validator.validate_target("test-target.local")
     print_success(f"test-target.local: {'IN SCOPE' if in_scope else 'OUT OF SCOPE'}")
 
     # Test out-of-scope target
-    out_scope = await safety_gate.scope_validator.is_in_scope("production.example.com")
+    out_scope = safety_gate._scope_validator.validate_target("production.example.com")
     print_blocked(f"production.example.com: {'BLOCKED' if not out_scope else 'ERROR - SHOULD BE BLOCKED'}")
 
     # Layer 3: Rate Limiting
@@ -183,10 +177,7 @@ async def demo_safety_layers() -> SafetyGate:
     rejected_count = 0
 
     for i in range(15):  # Exceed burst limit
-        allowed = await safety_gate.rate_limiter.check_rate_limit(
-            agent_id="test_agent",
-            operation="probe",
-        )
+        allowed = await safety_gate._rate_limiter.acquire(cost_usd=0.01)
         if allowed:
             allowed_count += 1
         else:
@@ -197,38 +188,36 @@ async def demo_safety_layers() -> SafetyGate:
     # Layer 4: Audit Logging
     print_subheader("Layer 4: Audit Logging (Immutable)")
 
-    await safety_gate.audit_logger.log(
-        event_type="OPERATION_START",
+    await safety_gate._audit_logger.log(
+        event_type=AuditEventType.OPERATION_START,
         agent_id="demo_agent",
         target="test-target.local",
-        action="probe_surface",
-        details={"probe_types": ["port_scan", "api_discovery"]},
-        outcome="success",
+        details={"probe_types": ["port_scan", "api_discovery"], "action": "probe_surface"},
     )
     print_success("Audit entry logged (append-only, tamper-evident)")
 
-    recent_logs = await safety_gate.audit_logger.get_recent_logs(limit=5)
+    recent_logs = safety_gate._audit_logger.get_entries()
     print_info(f"Recent audit entries: {len(recent_logs)}")
 
     # Layer 5: Anomaly Detection
     print_subheader("Layer 5: Anomaly Detection (Behavioral)")
 
-    # Report normal behavior
-    safety_gate.anomaly_detector.record_behavior(
+    # Record normal operation
+    safety_gate._anomaly_detector.record_operation(
         agent_id="test_agent",
-        behavior_type="probe_rate",
-        value=5.0,  # Normal rate
+        operation_type="probe",
+        target="test-target.local",
     )
-    print_success("Normal behavior recorded")
+    print_success("Normal operation recorded")
 
-    # Report anomalous behavior
-    safety_gate.anomaly_detector.record_behavior(
-        agent_id="test_agent",
-        behavior_type="probe_rate",
-        value=500.0,  # Suspicious spike
+    # Try to trigger an anomaly (new agent with high-value operation)
+    anomaly = safety_gate._anomaly_detector.check_anomaly(
+        agent_id="suspicious_new_agent",
+        operation_type="exploit",  # High-value operation from new agent
+        target="test-target.local",
     )
 
-    anomalies = safety_gate.anomaly_detector.get_anomalies("test_agent")
+    anomalies = safety_gate._anomaly_detector.get_anomalies()
     if anomalies:
         print_blocked(f"Anomaly detected: {len(anomalies)} suspicious patterns")
     else:
@@ -246,13 +235,8 @@ async def demo_message_bus() -> MessageBus:
     """Demonstrate message bus communication between agents."""
     print_header("DEMO 2: Message Bus Communication")
 
-    # Create message bus
-    bus = MessageBus(
-        max_queue_size=1000,
-        enable_dead_letter=True,
-        message_ttl_seconds=300.0,
-    )
-    await bus.start()
+    # Create message bus (dead letter queue enabled by default)
+    bus = MessageBus(max_queue_size=1000)
 
     print_subheader("Priority-Based Queuing")
 

@@ -288,6 +288,33 @@ class JennyRendererProtocol(Protocol):
         """Return list of supported render targets."""
         ...
 
+    @property
+    def name(self) -> str:
+        """
+        Unique renderer name for registry identification.
+
+        Used for:
+        - Registry lookup by name
+        - Logging and debugging
+        - Plugin discovery
+
+        Returns:
+            Unique string identifier (e.g., "html", "react", "terminal")
+        """
+        ...
+
+    def supports_concurrent(self) -> bool:
+        """
+        Whether this renderer supports concurrent/parallel rendering.
+
+        Stateless renderers that don't share mutable state
+        can return True for parallel rendering of multiple specs.
+
+        Returns:
+            True if safe for concurrent rendering, False otherwise
+        """
+        ...
+
 
 # ============================================================================
 # JennyLifecycleProtocol - Panel Lifecycle Management

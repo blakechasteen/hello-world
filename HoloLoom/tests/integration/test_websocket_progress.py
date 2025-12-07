@@ -151,9 +151,15 @@ class TestJobProgressManager:
             step_name="Testing"
         )
 
-        # conn1 should receive, conn2 should not
-        conn1.send_json.assert_called_once()
-        conn2.send_json.assert_not_called()
+        # conn1 should receive welcome + broadcast, conn2 only welcome
+        # (connect() sends a welcome message)
+        assert conn1.send_json.call_count == 2  # welcome + broadcast
+        assert conn2.send_json.call_count == 1  # welcome only
+
+        # Verify the broadcast message was sent to conn1
+        broadcast_call = conn1.send_json.call_args_list[-1]
+        assert broadcast_call[0][0]["type"] == "job_progress"
+        assert broadcast_call[0][0]["job_id"] == "test-123"
         assert count == 1
 
     @pytest.mark.asyncio
@@ -170,7 +176,12 @@ class TestJobProgressManager:
             message_type=JobMessageType.JOB_STARTED
         )
 
-        mock_ws.send_json.assert_called_once()
+        # connect() sends welcome, then broadcast sends job_started
+        assert mock_ws.send_json.call_count == 2
+
+        # Verify the broadcast message
+        broadcast_call = mock_ws.send_json.call_args_list[-1]
+        assert broadcast_call[0][0]["type"] == "job_started"
 
     @pytest.mark.asyncio
     async def test_room_subscription(self):
@@ -187,7 +198,13 @@ class TestJobProgressManager:
             room_id="!abc123:matrix.org"
         )
 
-        mock_ws.send_json.assert_called_once()
+        # connect() sends welcome, then broadcast sends job_progress
+        assert mock_ws.send_json.call_count == 2
+
+        # Verify the broadcast message
+        broadcast_call = mock_ws.send_json.call_args_list[-1]
+        assert broadcast_call[0][0]["type"] == "job_progress"
+        assert broadcast_call[0][0]["room_id"] == "!abc123:matrix.org"
 
     @pytest.mark.asyncio
     async def test_user_subscription(self):
@@ -204,7 +221,13 @@ class TestJobProgressManager:
             user_id="@alice:matrix.org"
         )
 
-        mock_ws.send_json.assert_called_once()
+        # connect() sends welcome, then broadcast sends job_progress
+        assert mock_ws.send_json.call_count == 2
+
+        # Verify the broadcast message
+        broadcast_call = mock_ws.send_json.call_args_list[-1]
+        assert broadcast_call[0][0]["type"] == "job_progress"
+        assert broadcast_call[0][0]["user_id"] == "@alice:matrix.org"
 
     @pytest.mark.asyncio
     async def test_get_stats(self):

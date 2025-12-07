@@ -543,11 +543,47 @@ class KademliaRouter:
 
         Call this when joining or when capabilities change.
         """
+        import asyncio
+
         # Add to local table
         self._table.add(node)
 
-        # TODO: Propagate to k closest nodes
-        logger.info(f"Announced {node.node_id[:8]}... with {len(node.capabilities)} capabilities")
+        if self._transport is None:
+            logger.info(f"Announced {node.node_id[:8]}... locally (no transport)")
+            return
+
+        # Find k closest nodes to announce to
+        closest = self._table.closest(node.node_id, k=self._k)
+        if not closest:
+            logger.info(f"Announced {node.node_id[:8]}... (no peers to notify)")
+            return
+
+        # Create ANNOUNCE message
+        message = TransportMessage(
+            type=MessageType.ANNOUNCE,
+            sender_id=self._local.node_id,
+            payload={
+                "node_id": node.node_id,
+                "public_key": node.public_key.hex(),
+                "endpoint": node.endpoint,
+                "capabilities": [c.value for c in node.capabilities],
+                "version": node.version,
+            },
+        )
+
+        # Broadcast to closest nodes (fire-and-forget)
+        tasks = [
+            self._transport.send(peer, message, timeout_ms=2000)
+            for peer in closest
+            if peer.node_id != node.node_id
+        ]
+
+        if tasks:
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            successes = sum(1 for r in results if not isinstance(r, Exception) and r.success)
+            logger.info(f"Announced {node.node_id[:8]}... to {successes}/{len(tasks)} peers")
+        else:
+            logger.info(f"Announced {node.node_id[:8]}... with {len(node.capabilities)} capabilities")
 
     async def refresh_buckets(self) -> None:
         """
@@ -556,8 +592,37 @@ class KademliaRouter:
         For each bucket that hasn't been touched recently,
         do a lookup for a random ID in that range.
         """
-        # TODO: Implement bucket refresh
-        pass
+        import secrets
+        import time
+
+        if self._transport is None:
+            return
+
+        now = time.time()
+        stale_threshold = 3600.0  # 1 hour
+
+        refreshed = 0
+        for i, bucket in enumerate(self._table._buckets):
+            # Check if bucket is stale (no activity in last hour)
+            # or has fewer than k/2 nodes
+            is_stale = (now - bucket.last_update) > stale_threshold
+            is_sparse = len(bucket.nodes) < self._k // 2
+
+            if is_stale or is_sparse:
+                # Generate random ID in this bucket's range
+                random_id = secrets.token_hex(20)  # 40 hex chars (160 bits)
+
+                # Do iterative lookup for this random ID
+                try:
+                    found = await self._iterative_find_node(random_id)
+                    for node in found:
+                        self._table.add(node)
+                    refreshed += 1
+                except Exception as e:
+                    logger.debug(f"Bucket {i} refresh failed: {e}")
+
+        if refreshed > 0:
+            logger.info(f"Refreshed {refreshed} buckets")
 
     # ───────────────────────────────────────────────────────────────────────
     #  LOAD BALANCING

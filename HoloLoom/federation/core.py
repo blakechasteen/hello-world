@@ -17,7 +17,10 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, AsyncIterator, Dict, List, Optional, Set
+from typing import Any, AsyncIterator, Dict, List, Optional, Set, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from HoloLoom.hololoom import HoloLoom as HoloLoomType
 
 from .gossip import SwimMembership
 from .identity import Identity, create_node, get_or_create_identity
@@ -154,10 +157,12 @@ class Federation:
         self,
         config: Optional[FederationConfig] = None,
         identity: Optional[Identity] = None,
+        loom: Optional["HoloLoomType"] = None,
     ):
         self._config = config or FederationConfig.default()
         self._identity = identity
         self._node: Optional[FederationNode] = None
+        self._loom: Optional["HoloLoomType"] = loom
 
         # Components (initialized on connect)
         self._membership: Optional[Any] = None  # MembershipProtocol
@@ -407,26 +412,83 @@ class Federation:
         query: Query,
         trace: QueryTrace,
     ) -> "FederatedResponse":
-        """Execute query locally (fallback)."""
+        """Execute query locally using HoloLoom."""
         import time
 
         start = time.perf_counter()
 
-        # TODO: Integrate with local HoloLoom
-        trace.add("local", self.node_id, 0.5)
-        trace.complete()
+        # If no local loom, return placeholder
+        if self._loom is None:
+            trace.add("local", self.node_id, 0.5, error="no_loom_instance")
+            trace.complete()
+            elapsed_ms = (time.perf_counter() - start) * 1000
+            return FederatedResponse(
+                answer="[Local mode: No HoloLoom instance configured]",
+                confidence=0.0,
+                verified=False,
+                verified_by=[],
+                trace=trace,
+                source="local",
+                latency_ms=elapsed_ms,
+            )
 
-        elapsed_ms = (time.perf_counter() - start) * 1000
+        try:
+            # Use HoloLoom's recall() for memory retrieval
+            memories = await self._loom.recall(query.text, limit=10)
 
-        return FederatedResponse(
-            answer="[Local mode: Federation unavailable, using local HoloLoom]",
-            confidence=0.0,
-            verified=False,
-            verified_by=[],
-            trace=trace,
-            source="local",
-            latency_ms=elapsed_ms,
-        )
+            recall_ms = (time.perf_counter() - start) * 1000
+            trace.add("recall", self.node_id, recall_ms, memories_found=len(memories))
+
+            # Build answer from retrieved memories
+            if memories:
+                # Combine top memories into response
+                answer_parts = []
+                total_confidence = 0.0
+                for mem in memories[:5]:  # Top 5
+                    answer_parts.append(mem.text if hasattr(mem, 'text') else str(mem))
+                    # Get confidence from metadata or default
+                    mem_conf = 0.5
+                    if hasattr(mem, 'metadata') and isinstance(mem.metadata, dict):
+                        mem_conf = mem.metadata.get('confidence', 0.5)
+                    elif hasattr(mem, 'relevance'):
+                        mem_conf = mem.relevance
+                    total_confidence += mem_conf
+
+                answer = "\n\n".join(answer_parts)
+                confidence = total_confidence / min(len(memories), 5)
+            else:
+                answer = f"[No relevant memories found for: {query.text}]"
+                confidence = 0.0
+
+            trace.add("synthesize", self.node_id, 1.0)
+            trace.complete()
+
+            elapsed_ms = (time.perf_counter() - start) * 1000
+
+            return FederatedResponse(
+                answer=answer,
+                confidence=confidence,
+                verified=False,  # Local queries are not verified
+                verified_by=[],
+                trace=trace,
+                source="local",
+                latency_ms=elapsed_ms,
+            )
+
+        except Exception as e:
+            logger.warning(f"Local query failed: {e}")
+            trace.add("local", self.node_id, (time.perf_counter() - start) * 1000, error=str(e))
+            trace.complete()
+
+            return FederatedResponse(
+                answer=f"[Local query error: {e}]",
+                confidence=0.0,
+                verified=False,
+                verified_by=[],
+                trace=trace,
+                source="local",
+                latency_ms=(time.perf_counter() - start) * 1000,
+            )
 
     async def verify(
         self,
@@ -572,14 +634,19 @@ class FederatedResponse:
 async def connect(
     bootstrap: str,
     config: Optional[FederationConfig] = None,
+    loom: Optional["HoloLoomType"] = None,
 ) -> AsyncIterator[Federation]:
     """
-    Quick connect to federation.
+    Quick connect to federation with optional local HoloLoom.
 
     Usage:
         async with connect("bootstrap.hololoom.net:9000") as fed:
             result = await fed.query("Hello world")
+
+        # With local fallback
+        async with connect("bootstrap.hololoom.net:9000", loom=my_loom) as fed:
+            result = await fed.query("Hello world")  # Uses loom if network fails
     """
-    async with Federation(config=config) as fed:
+    async with Federation(config=config, loom=loom) as fed:
         await fed.join(bootstrap)
         yield fed

@@ -2,17 +2,26 @@
 Loom - Multi-Loom Architecture
 ===============================
 
-The Loom package provides two complementary capabilities:
+The Loom package provides the complete Multi-Loom Weave House:
 
 1. **Pattern Card Selector** (command.py)
    - LoomCommand: Main pattern selector
    - PatternCard: Enum of pattern cards (BARE/FAST/FUSED)
    - PatternSpec: Pattern specification dataclass
 
-2. **Multi-Loom Weave House** (protocol.py, base_loom.py) - December 2025
+2. **Multi-Loom Protocol** (protocol.py, base_loom.py) - December 2025
    - Loom Protocol: A coherent way of seeing (extends Department)
    - DreamInsight: Insights shared during collective dreaming
    - BaseLoom: Base implementation with DreamingMixin
+
+3. **WeaveHouse** (weave_house.py) - December 2025
+   - WeaveHouse: Composite loom with parallel weaving and auto-exploration
+   - WeaveResult: Complete result of a weaving cycle
+   - ExplorationResult: Result of exploring tension zones
+
+4. **Dreaming** (dreaming.py) - December 2025
+   - DreamOrchestrator: Manages collective dreaming with bleed rates
+   - DreamCycleStats: Statistics from a dream cycle
 
 The Five Core Looms:
 - RECALL (The Librarian): Dense retrieval, memory-grounded
@@ -72,6 +81,22 @@ from .consensus import (
     create_loom_consensus,
 )
 
+# WeaveHouse - Composite Loom (December 2025)
+from .weave_house import (
+    WeaveHouse,
+    WeaveResult,
+    ExplorationResult,
+    create_weave_house,
+)
+
+# Dreaming - Collective Consolidation (December 2025)
+from .dreaming import (
+    DreamCycleStats,
+    DreamOrchestratorMetrics,
+    DreamOrchestrator,
+    create_dream_orchestrator,
+)
+
 __all__ = [
     # ===== Pattern Card Selector =====
     "LoomCommand",
@@ -107,4 +132,16 @@ __all__ = [
     "Claim",
     "Agreement",
     "create_loom_consensus",
+
+    # ===== WeaveHouse =====
+    "WeaveHouse",
+    "WeaveResult",
+    "ExplorationResult",
+    "create_weave_house",
+
+    # ===== Dreaming =====
+    "DreamCycleStats",
+    "DreamOrchestratorMetrics",
+    "DreamOrchestrator",
+    "create_dream_orchestrator",
 ]
