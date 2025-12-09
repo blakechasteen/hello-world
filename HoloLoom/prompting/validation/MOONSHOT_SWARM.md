@@ -1,8 +1,8 @@
 # Moonshot Swarm - Extensible Parallel Validation
 
 **Status**: ✅ Production Ready
-**Version**: 1.1.0
-**Date**: November 2025
+**Version**: 1.2.0
+**Date**: December 2025
 
 ---
 
@@ -213,10 +213,15 @@ Validate across different query complexities:
 swarm.add_complexity_agents(["simple", "moderate", "complex"])
 ```
 
-**Use case**: Different complexity levels may have different improvement targets:
-- Simple queries: +15% target (already good)
-- Moderate queries: +25% target (most benefit)
-- Complex queries: +30% target (needs most help)
+**Graduated Thresholds**: Different complexity levels have different validation requirements:
+
+| Complexity | Quality Improvement | Latency Tolerance | Rationale |
+|------------|---------------------|-------------------|-----------|
+| **simple** | ≥15% | ≤15% regression | Already optimized, smaller gains expected |
+| **moderate** | ≥18% | ≤20% regression | Balanced expectations |
+| **complex** | ≥20% | ≤30% regression | Needs more help, tolerates latency |
+
+**Use case**: This graduated approach prevents false failures - simple queries shouldn't be held to the same bar as complex ones, and complex queries may tolerate more latency due to additional processing.
 
 ### 4. Timeline Dimension
 
@@ -242,7 +247,6 @@ from datetime import datetime, timedelta
 from HoloLoom.prompting.validation import (
     MoonshotSwarm,
     ProductionDataCollector,
-    ValidationPhase
 )
 
 async def four_week_validation():
@@ -474,22 +478,69 @@ results = await swarm.run([q.__dict__ for q in baseline], [q.__dict__ for q in m
 
 ---
 
+## Testing
+
+### Running the Tests
+
+```bash
+# Run all Moonshot Swarm tests
+PYTHONPATH=. pytest HoloLoom/prompting/validation/tests/test_pipeline_swarm.py -v
+
+# Run specific test class
+PYTHONPATH=. pytest HoloLoom/prompting/validation/tests/test_pipeline_swarm.py::TestQualityValidator -v
+```
+
+### Test Coverage (22 Tests)
+
+**Pipeline Validators**:
+- `TestQualityValidator` - Quality improvement thresholds (3 tests)
+- `TestLatencyValidator` - Latency regression limits (2 tests)
+- `TestUserSatisfactionValidator` - User rating thresholds (2 tests)
+
+**Pipeline Composition**:
+- `TestValidationPipeline` - Chaining, parallel execution, pass/fail (5 tests)
+
+**Swarm Agents**:
+- `TestSwarmAgentFiltering` - Dimension-based query filtering (3 tests)
+
+**Swarm Orchestration**:
+- `TestMoonshotSwarm` - Agent creation, execution, results (7 tests)
+
+### Running the Demo
+
+```bash
+PYTHONPATH=. python demos/demo_moonshot_swarm.py
+```
+
+**Demo Output**:
+- Demo 1: ValidationPipeline with 4 validators
+- Demo 2: MoonshotSwarm with 14 agents across 4 dimensions
+- Demo 3: Custom swarm with graduated thresholds
+
+---
+
 ## Files
 
-**Phase 3+ Framework** (9 files total):
+**Phase 3+ Framework** (12 files total):
 
 1. `ab_testing.py` (580 lines) - A/B testing infrastructure
 2. `data_collection.py` (460 lines) - Production data collection
 3. `statistical_analysis.py` (510 lines) - Statistical significance testing
 4. `human_evaluation.py` (590 lines) - Blind side-by-side comparisons
-5. **`pipeline.py` (520 lines)** - Extensible validation pipeline ⭐ NEW
-6. **`swarm.py` (580 lines)** - Moonshot swarm orchestration ⭐ NEW
-7. `__init__.py` (115 lines) - Package exports (updated for v1.1.0)
+5. **`pipeline.py` (468 lines)** - Extensible validation pipeline
+6. **`swarm.py` (451 lines)** - Moonshot swarm orchestration
+7. `__init__.py` (115 lines) - Package exports
 8. `QUICK_START.md` (200 lines) - Quick start guide
 9. `P3_PRODUCTION_VALIDATION_COMPLETE.md` (780 lines) - Complete documentation
-10. **`MOONSHOT_SWARM.md` (this file)** - Swarm documentation ⭐ NEW
+10. **`MOONSHOT_SWARM.md` (this file)** - Swarm documentation
 
-**Total**: 10 files, ~4,335 lines (3,240 code + 980 docs + 115 package)
+**Tests** (v1.2.0):
+11. **`tests/test_pipeline_swarm.py` (481 lines)** - 22 unit tests covering validators and swarm ⭐ NEW
+
+**Demo**:
+12. **`demos/demo_moonshot_swarm.py` (255 lines)** - Standalone demo with 3 examples ⭐ NEW
+
+**Total**: 12 files, ~4,890 lines (3,174 code + 736 tests/demo + 980 docs)
 
 ---
 
@@ -507,6 +558,6 @@ results = await swarm.run([q.__dict__ for q in baseline], [q.__dict__ for q in m
 
 ---
 
-**Version**: 1.1.0
+**Version**: 1.2.0
 **Status**: Production Ready
-**Date**: November 2025
+**Date**: December 2025
