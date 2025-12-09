@@ -3,14 +3,32 @@
 Implements systematic prompt mutations to test robustness and quality degradation
 across different prompt variations (case changes, constraints, punctuation, etc).
 
+Now with LLM-powered evaluation using Ollama (December 2025).
+
 Status: ✅ Production Ready (November 2025)
+Updated: December 2025 - LLMJudge integration
 """
 
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Any
 from HoloLoom.prompting.testing.protocol import PromptTestConfig, PromptTestResult
+
+# LLM Judge integration (December 2025)
+try:
+    from HoloLoom.chaining.evaluation import (
+        LLMJudge,
+        JudgeCriteria,
+        JudgeConfig,
+        create_judge,
+    )
+    LLM_JUDGE_AVAILABLE = True
+except ImportError:
+    LLM_JUDGE_AVAILABLE = False
+    LLMJudge = None
+    JudgeCriteria = None
+    JudgeConfig = None
 
 
 class MutationType(Enum):
@@ -229,25 +247,140 @@ class PromptMutator:
 
 
 class MutationTester:
-    """Tests prompt robustness to mutations."""
+    """Tests prompt robustness to mutations.
+
+    Now supports LLM-powered evaluation using Ollama (December 2025).
+    Falls back to heuristic evaluation when LLM unavailable.
+    """
 
     def __init__(
         self,
-        mutator: PromptMutator,
-        quality_evaluator: Callable,
+        mutator: Optional[PromptMutator] = None,
+        quality_evaluator: Optional[Callable] = None,
         config: Optional[PromptTestConfig] = None,
+        llm_judge: Optional[Any] = None,
     ):
         """Initialize mutation tester.
 
         Args:
-            mutator: PromptMutator instance
-            quality_evaluator: Callable that evaluates prompt quality
+            mutator: PromptMutator instance (created if not provided)
+            quality_evaluator: Callable that evaluates prompt quality (optional if llm_judge provided)
             config: Optional test configuration
+            llm_judge: Optional LLMJudge instance for LLM-based evaluation
         """
-        self.mutator = mutator
-        self.quality_evaluator = quality_evaluator
+        self.mutator = mutator or PromptMutator()
         self.config = config or PromptTestConfig()
         self.baseline_quality = 0.0
+
+        # LLM Judge integration (December 2025)
+        self.llm_judge = llm_judge
+        self._llm_judge_available = (
+            LLM_JUDGE_AVAILABLE
+            and llm_judge is not None
+            and self.config.use_llm_judge
+        )
+
+        # Set quality evaluator - prefer LLM, fallback to provided or heuristic
+        if quality_evaluator is not None:
+            self.quality_evaluator = quality_evaluator
+        elif self._llm_judge_available:
+            self.quality_evaluator = self._evaluate_with_llm
+        else:
+            self.quality_evaluator = self._heuristic_evaluator
+
+    async def _heuristic_evaluator(self, prompt: str) -> float:
+        """Fallback heuristic quality evaluator.
+
+        Uses simple metrics when LLM evaluation unavailable.
+        """
+        # Basic heuristics based on prompt characteristics
+        score = 0.7  # Base score
+
+        # Length check (reasonable length gets bonus)
+        word_count = len(prompt.split())
+        if 5 <= word_count <= 50:
+            score += 0.1
+        elif word_count < 3:
+            score -= 0.2
+
+        # Has question mark (indicates clear question)
+        if "?" in prompt:
+            score += 0.05
+
+        # Has proper capitalization
+        if prompt and prompt[0].isupper():
+            score += 0.05
+
+        # Not all caps (SHOUTING)
+        if prompt.isupper() and len(prompt) > 10:
+            score -= 0.1
+
+        return min(1.0, max(0.0, score))
+
+    async def _evaluate_with_llm(self, prompt: str) -> float:
+        """Evaluate prompt quality using LLM Judge.
+
+        Args:
+            prompt: Prompt text to evaluate
+
+        Returns:
+            Quality score (0.0-1.0)
+        """
+        if not self._llm_judge_available:
+            return await self._heuristic_evaluator(prompt)
+
+        try:
+            # Build criteria list from config
+            criteria = []
+            for criterion_name in self.config.llm_criteria:
+                try:
+                    criteria.append(JudgeCriteria[criterion_name.upper()])
+                except KeyError:
+                    continue
+
+            # Default criteria if none valid
+            if not criteria:
+                criteria = [JudgeCriteria.QUALITY, JudgeCriteria.COHERENCE]
+
+            # Create judge config
+            judge_config = JudgeConfig(
+                criteria=criteria,
+                provider=self.config.llm_provider,
+                model=self.config.llm_model,
+                temperature=self.config.llm_temperature,
+            )
+
+            # Evaluate the prompt (treating it as both task and output for mutation testing)
+            result = await self.llm_judge.evaluate(
+                task="Evaluate this prompt for quality and clarity",
+                output=prompt,
+                config=judge_config,
+            )
+
+            # Calculate average score across criteria
+            if result.scores:
+                total = sum(score.score for score in result.scores)
+                return total / len(result.scores)
+            return 0.5
+
+        except Exception as e:
+            # Fallback to heuristic on error
+            if self.config.fallback_to_heuristic:
+                return await self._heuristic_evaluator(prompt)
+            raise
+
+    def mutate(self, prompt: str) -> List[Mutation]:
+        """Apply mutations to a prompt.
+
+        Convenience method that delegates to internal mutator.
+
+        Args:
+            prompt: Original prompt text
+
+        Returns:
+            List of Mutation objects
+        """
+        return self.mutator.mutate(prompt)
 
     async def test_mutations(
         self, prompt: str, baseline_quality: float
@@ -327,20 +460,76 @@ class MutationTester:
 
 def create_mutation_tester(
     config: Optional[PromptTestConfig] = None,
+    llm_judge: Optional[Any] = None,
+    enabled_mutations: Optional[List[MutationType]] = None,
 ) -> MutationTester:
     """Factory function to create a mutation tester.
 
+    Creates a MutationTester with LLM-based evaluation when available,
+    falling back to heuristics when LLM is unavailable.
+
     Args:
         config: Optional test configuration
+        llm_judge: Optional pre-created LLMJudge instance
+        enabled_mutations: Optional list of mutation types to enable
 
     Returns:
-        MutationTester instance
+        MutationTester instance with appropriate evaluation backend
     """
-    mutator = PromptMutator()
+    config = config or PromptTestConfig()
+    mutator = PromptMutator(enabled_mutations=enabled_mutations)
 
-    # Dummy evaluator - replace with real quality function
-    async def dummy_evaluator(prompt: str) -> float:
-        """Placeholder quality evaluator."""
-        return 0.8
+    # Create LLM Judge if available and configured
+    judge = llm_judge
+    if judge is None and LLM_JUDGE_AVAILABLE and config.use_llm_judge:
+        try:
+            judge = create_judge(
+                provider=config.llm_provider,
+                model=config.llm_model,
+            )
+        except Exception:
+            # Graceful degradation - will use heuristics
+            judge = None
 
-    return MutationTester(mutator, dummy_evaluator, config)
+    return MutationTester(
+        mutator=mutator,
+        config=config,
+        llm_judge=judge,
+    )
+
+
+async def create_mutation_tester_async(
+    config: Optional[PromptTestConfig] = None,
+    enabled_mutations: Optional[List[MutationType]] = None,
+) -> MutationTester:
+    """Async factory function to create a mutation tester.
+
+    Useful when LLM Judge creation requires async initialization.
+
+    Args:
+        config: Optional test configuration
+        enabled_mutations: Optional list of mutation types to enable
+
+    Returns:
+        MutationTester instance with appropriate evaluation backend
+    """
+    config = config or PromptTestConfig()
+    mutator = PromptMutator(enabled_mutations=enabled_mutations)
+
+    # Create LLM Judge if available and configured
+    judge = None
+    if LLM_JUDGE_AVAILABLE and config.use_llm_judge:
+        try:
+            judge = create_judge(
+                provider=config.llm_provider,
+                model=config.llm_model,
+            )
+        except Exception:
+            # Graceful degradation - will use heuristics
+            judge = None
+
+    return MutationTester(
+        mutator=mutator,
+        config=config,
+        llm_judge=judge,
+    )

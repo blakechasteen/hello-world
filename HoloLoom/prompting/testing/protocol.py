@@ -150,6 +150,30 @@ class PromptTestConfig:
     timeout_ms: int = 5000
     """Timeout per test in milliseconds."""
 
+    # LLM Judge Configuration (December 2025)
+    use_llm_judge: bool = True
+    """Use LLM-based quality evaluation instead of heuristics."""
+
+    llm_provider: str = "ollama"
+    """LLM provider for judge ('ollama', 'anthropic', 'openai')."""
+
+    llm_model: str = "llama3.2:3b"
+    """LLM model for evaluation."""
+
+    llm_criteria: List[str] = field(default_factory=lambda: [
+        "quality", "relevance", "coherence", "completeness"
+    ])
+    """Quality criteria to evaluate (maps to JudgeCriteria enum)."""
+
+    llm_temperature: float = 0.3
+    """LLM temperature for consistent scoring (lower = more deterministic)."""
+
+    llm_timeout_seconds: float = 30.0
+    """Timeout for LLM evaluation calls."""
+
+    fallback_to_heuristic: bool = True
+    """Fall back to heuristic scoring if LLM unavailable."""
+
 
 # Protocol Definitions
 
