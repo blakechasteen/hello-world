@@ -22,9 +22,64 @@ import logging
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# Artifact - Tangible Output
+# ============================================================================
+
+class ArtifactType(str, Enum):
+    """Types of artifacts that can be materialized."""
+    CODE = "code"           # Source code files
+    IMAGE = "image"         # Generated images
+    DOCUMENT = "document"   # PDF, Markdown, Reports
+    ARCHIVE = "archive"     # ZIP, TAR bundles
+    AUDIO = "audio"         # Generated speech/audio
+    VIDEO = "video"         # Generated video
+    DATA = "data"           # CSV, JSON, Binary data
+
+
+@dataclass
+class Artifact:
+    """
+    A tangible artifact produced by the weaving process.
+    
+    Artifacts represent the "Matter" created from the "Spacetime" thought.
+    They carry the actual content (or reference to it) that should be 
+    materialized in the user's workspace.
+    """
+    name: str                           # Filename or identifier
+    type: ArtifactType                  # Type of artifact
+    content: Optional[Any] = None       # The payload (str for text/code, bytes for binary)
+    destination_path: Optional[str] = None  # Suggested relative path
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary (content excluded if binary/too large)."""
+        # We might want to handle content carefully if it's huge bytes
+        is_binary = isinstance(self.content, bytes)
+        return {
+            'name': self.name,
+            'type': self.type.value,
+            'content': '<binary>' if is_binary else self.content,
+            'destination_path': self.destination_path,
+            'metadata': self.metadata
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Artifact':
+        """Create from dictionary."""
+        return cls(
+            name=data['name'],
+            type=ArtifactType(data['type']),
+            content=data.get('content'), # Note: Restore binary separately if needed
+            destination_path=data.get('destination_path'),
+            metadata=data.get('metadata', {})
+        )
 
 
 # ============================================================================
@@ -110,10 +165,16 @@ class Spacetime:
     query_text: str
     response: str
     tool_used: str
+
     confidence: float
+    
+
 
     # Computational lineage
     trace: WeavingTrace
+
+    # Material outputs
+    artifacts: List[Artifact] = field(default_factory=list)
 
     # Additional metadata
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -154,6 +215,7 @@ class Spacetime:
             'response': self.response,
             'tool_used': self.tool_used,
             'confidence': self.confidence,
+            'artifacts': [a.to_dict() for a in self.artifacts],
             'trace': asdict(self.trace),
             'metadata': self.metadata,
             'context_summary': self.context_summary,
@@ -196,6 +258,10 @@ class Spacetime:
             errors=trace_data.get('errors', []),
             warnings=trace_data.get('warnings', [])
         )
+        
+        # Parse artifacts
+        artifacts_data = data.get('artifacts', [])
+        artifacts = [Artifact.from_dict(a) for a in artifacts_data]
 
         # Parse created_at
         created_at = datetime.fromisoformat(data['created_at']) if 'created_at' in data else datetime.now()
@@ -204,7 +270,9 @@ class Spacetime:
             query_text=data['query_text'],
             response=data['response'],
             tool_used=data['tool_used'],
+
             confidence=data['confidence'],
+            artifacts=artifacts,
             trace=trace,
             metadata=data.get('metadata', {}),
             context_summary=data.get('context_summary'),

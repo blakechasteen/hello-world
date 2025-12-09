@@ -481,10 +481,15 @@ class WeavingMemoryAdapter:
         weighted.sort(key=lambda x: x[0], reverse=True)
 
         sorted_shards = [shard for score, shard in weighted]
-        self.logger.debug(
-            f"Recency weighting: top shard score={weighted[0][0]:.4f}, "
-            f"bottom shard score={weighted[-1][0]:.4f} (decay_factor={decay_factor})"
-        )
+        
+        if weighted:
+            self.logger.debug(
+                f"Recency weighting: top shard score={weighted[0][0]:.4f}, "
+                f"bottom shard score={weighted[-1][0]:.4f} (decay_factor={decay_factor})"
+            )
+        else:
+            self.logger.debug("Recency weighting: no shards to weight")
+            
         return sorted_shards
 
     # ========================================================================

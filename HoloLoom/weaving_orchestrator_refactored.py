@@ -24,14 +24,9 @@ from HoloLoom.config import Config
 from HoloLoom.weaving.stages import (
     PatternSelectionStage,
     TemporalControlStage,
-    ThreadSelectionStage,
     FeatureExtractionStage,
-    WarpTensioningStage,
     MemoryRetrievalStage,
     DecisionCollapseStage,
-    ToolExecutionStage,
-    FabricWeavingStage,
-    ReflectionStage,
 )
 
 # Import strategies

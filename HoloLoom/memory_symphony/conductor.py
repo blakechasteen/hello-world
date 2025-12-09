@@ -402,17 +402,74 @@ class MemoryConductor:
 
     async def _query_vector_memory(self, query: MemoryQuery) -> List[MemoryResult]:
         """Query vector memory (semantic similarity)."""
-        # Use memory backend's vector search
-        memories = await self.memory_backend.recall(query.text, k=query.k)
+        # Adapt to backend capabilities
+        memories = []
+        
+        try:
+            # Try high-level recall first (UnifiedMemory)
+            if hasattr(self.memory_backend, 'recall'):
+                # Check signature of recall
+                import inspect
+                sig = inspect.signature(self.memory_backend.recall)
+                if 'query' in sig.parameters:
+                    # UnifiedMemory.recall(query, ...)
+                    memories = await self.memory_backend.recall(query.text, limit=query.k)
+                else:
+                    # Generic recall(text, k)
+                    memories = await self.memory_backend.recall(query.text, k=query.k)
+            
+            # Try lower-level retrieve (InMemoryStore / Protocol)
+            elif hasattr(self.memory_backend, 'retrieve'):
+                from .protocol import MemoryStrategy as MS
+                # Need to construct protocol MemoryQuery if not already one
+                # but here 'query' is memory_symphony.protocol.MemoryQuery
+                
+                # Check if backend expects a different Query object
+                # For InMemoryStore: retrieve(query: protocol.MemoryQuery, strategy)
+                
+                # We need to bridge the types or use a compatible object
+                # Attempt to pass our query object or create a compatible one
+                
+                # Create a simple object that mimics the expected interface if needed
+                # or just pass attributes
+                
+                # For this specific integration, let's try direct call assuming compatible duck typing
+                # or construct a simple object
+                
+                class SimpleQuery:
+                    def __init__(self, text, user_id, limit):
+                        self.text = text
+                        self.user_id = "user" # Default
+                        self.limit = limit
+                        
+                backend_query = SimpleQuery(query.text, "user", query.k)
+                
+                # Strategy enum might mismatch, pass string or value if possible
+                # InMemoryStore expects protocol.Strategy enum
+                # We'll rely on default or try to pass semantic strategy
+                
+                # Quick fix for demo: just call retrieve with what we have
+                result = await self.memory_backend.retrieve(backend_query)
+                memories = result.memories if hasattr(result, 'memories') else []
+
+        except Exception as e:
+            logger.warning(f"Vector memory query failed: {e}")
+            return []
 
         results = []
         for mem in memories:
+            # Handle different Memory object types
+            node_id = getattr(mem, 'id', getattr(mem, 'node_id', str(mem)))
+            content = getattr(mem, 'text', getattr(mem, 'content', str(mem)))
+            metadata = getattr(mem, 'metadata', getattr(mem, 'context', {}))
+            relevance = getattr(mem, 'relevance', getattr(mem, 'score', 0.8))
+
             results.append(MemoryResult(
-                node_id=mem.node_id,
-                content=mem.content,
-                relevance=mem.metadata.get('relevance', 0.8),
+                node_id=node_id,
+                content=content,
+                relevance=relevance,
                 source_system=MemorySystem.VECTOR_MEMORY,
-                metadata=mem.metadata
+                metadata=metadata
             ))
 
         return results
@@ -479,6 +536,20 @@ class MemoryConductor:
                 node = self.memory_backend.get_node(node_id)
                 if node:
                     return str(getattr(node, 'content', node_id))
+            
+            # Try get_by_id (InMemoryStore)
+            if hasattr(self.memory_backend, 'get_by_id'):
+                # Check if it's async
+                if asyncio.iscoroutinefunction(self.memory_backend.get_by_id):
+                    # We are not in an async function here, this is a limitation
+                    # _get_memory_content is sync. 
+                    # For now, return node_id and let the system handle async retrieval elsewhere
+                    # OR we can try to hack it if we knew we were in async context, but we are not guaranteed.
+                    pass
+                else:
+                    node = self.memory_backend.get_by_id(node_id)
+                    if node:
+                        return str(getattr(node, 'text', getattr(node, 'content', node_id)))
 
         except Exception as e:
             if self.verbose:

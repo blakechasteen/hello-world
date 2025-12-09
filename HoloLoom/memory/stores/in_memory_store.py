@@ -84,13 +84,6 @@ class InMemoryStore:
     ) -> RetrievalResult:
         """
         Retrieve memories using simple text matching.
-        
-        Strategy mapping:
-        - TEMPORAL: Sort by timestamp
-        - SEMANTIC: Text substring matching (simplified)
-        - GRAPH: Return all connected (simplified)
-        - PATTERN: Random selection (no real patterns)
-        - FUSED: Combine temporal + semantic
         """
         # Get user's memories
         user_mems = self._user_index.get(query.user_id, [])

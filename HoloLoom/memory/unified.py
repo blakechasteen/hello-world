@@ -179,7 +179,7 @@ class UnifiedMemory:
     # Core Operations - Intuitive and Simple
     # ========================================================================
     
-    def store(
+    async def store(
         self,
         text: str = None, # Allow content to be passed as text or content
         context: Optional[Dict[str, str]] = None,
@@ -188,7 +188,7 @@ class UnifiedMemory:
         content: str = None # Add content alias for text
     ) -> str:
         """
-        Store a memory.
+        Store a memory (Async).
         
         System automatically:
         - Extracts important information (mem0)
@@ -220,7 +220,6 @@ class UnifiedMemory:
         # User doesn't need to know any of this!
         import hashlib
         from datetime import datetime
-        import asyncio
 
         # Generate a simple memory ID
         memory_id = f"mem_{hashlib.sha256(text_content.encode()).hexdigest()[:8]}"
@@ -247,14 +246,14 @@ class UnifiedMemory:
             )
             # Run async store
             try:
-                asyncio.run(self._backend.store(protocol_mem))
+                await self._backend.store(protocol_mem)
             except Exception as e:
                 # Graceful fallback
                 pass
 
         return memory_id
     
-    def recall(
+    async def recall(
         self,
         query: str,
         strategy: RecallStrategy = RecallStrategy.BALANCED,
@@ -263,7 +262,7 @@ class UnifiedMemory:
         context_filter: Optional[Dict] = None
     ) -> List[Memory]:
         """
-        Recall relevant memories.
+        Recall relevant memories (Async).
 
         Now powered by Memory Conductor for intelligent multi-system coordination!
         Automatically routes queries through Vector Memory, Knowledge Graph, Cache,
@@ -281,14 +280,14 @@ class UnifiedMemory:
 
         Example:
             # Find similar memories
-            memories = memory.recall(
+            memories = await memory.recall(
                 "winter preparation",
                 strategy=RecallStrategy.SIMILAR,
                 limit=3
             )
 
             # Find recent memories at apiary
-            memories = memory.recall(
+            memories = await memory.recall(
                 "hive status",
                 strategy=RecallStrategy.RECENT,
                 context_filter={'place': 'apiary'}
@@ -315,10 +314,10 @@ class UnifiedMemory:
                 )
 
                 # Execute through conductor
-                coordination_result = asyncio.run(self._conductor.recall(mem_query))
+                coordination_result = await self._conductor.recall(mem_query)
 
                 # Convert results
-                memories = asyncio.run(self._convert_results(coordination_result))
+                memories = await self._convert_results(coordination_result)
 
                 return memories
 
@@ -328,15 +327,15 @@ class UnifiedMemory:
 
         # Fallback: Original strategy dispatch
         if strategy == RecallStrategy.RECENT:
-            return self._recall_temporal(query, limit, time_range)
+            return await self._recall_temporal(query, limit, time_range)
         elif strategy == RecallStrategy.SIMILAR:
-            return self._recall_semantic(query, limit)
+            return await self._recall_semantic(query, limit)
         elif strategy == RecallStrategy.CONNECTED:
-            return self._recall_graph(query, limit)
+            return await self._recall_graph(query, limit)
         elif strategy == RecallStrategy.RESONANT:
-            return self._recall_resonant(query, limit)
+            return await self._recall_resonant(query, limit)
         else:  # BALANCED
-            return self._recall_fused(query, limit, context_filter)
+            return await self._recall_fused(query, limit, context_filter)
     
     def navigate(
         self,
@@ -873,37 +872,35 @@ class UnifiedMemory:
     # Internal Strategy Implementations (Hidden from User)
     # ========================================================================
 
-    def _recall_temporal(self, query, limit, time_range) -> List[Memory]:
+    async def _recall_temporal(self, query, limit, time_range) -> List[Memory]:
         """Temporal strategy: Neo4j time threads."""
         # v1.0.1: Use in-memory store with temporal sorting
-        return self._recall_from_backend(query, limit, strategy="temporal")
+        return await self._recall_from_backend(query, limit, strategy="temporal")
 
-    def _recall_semantic(self, query, limit) -> List[Memory]:
+    async def _recall_semantic(self, query, limit) -> List[Memory]:
         """Semantic strategy: Qdrant similarity."""
         # v1.0.1: Use in-memory store with text matching
-        return self._recall_from_backend(query, limit, strategy="semantic")
+        return await self._recall_from_backend(query, limit, strategy="semantic")
 
-    def _recall_graph(self, query, limit) -> List[Memory]:
+    async def _recall_graph(self, query, limit) -> List[Memory]:
         """Graph strategy: Neo4j traversal."""
         # v1.0.1: Use in-memory store (no graph yet)
-        return self._recall_from_backend(query, limit, strategy="graph")
+        return await self._recall_from_backend(query, limit, strategy="graph")
 
-    def _recall_resonant(self, query, limit) -> List[Memory]:
+    async def _recall_resonant(self, query, limit) -> List[Memory]:
         """Resonance strategy: Hofstadter patterns."""
         # v1.0.1: Use in-memory store (no resonance yet)
-        return self._recall_from_backend(query, limit, strategy="resonant")
+        return await self._recall_from_backend(query, limit, strategy="resonant")
 
-    def _recall_fused(self, query, limit, filters) -> List[Memory]:
+    async def _recall_fused(self, query, limit, filters) -> List[Memory]:
         """Balanced strategy: Weighted fusion of all."""
         # v1.0.1: Use in-memory store with fused strategy
-        return self._recall_from_backend(query, limit, strategy="fused")
+        return await self._recall_from_backend(query, limit, strategy="fused")
 
-    def _recall_from_backend(self, query, limit, strategy="fused") -> List[Memory]:
+    async def _recall_from_backend(self, query, limit, strategy="fused") -> List[Memory]:
         """Actually retrieve from backend store."""
         if not self._backend_available or not self._backend:
             return []
-
-        import asyncio
 
         try:
             # Create query
@@ -923,7 +920,7 @@ class UnifiedMemory:
             strat = strategy_map.get(strategy, self._protocol_strategy.FUSED)
 
             # Retrieve
-            result = asyncio.run(self._backend.retrieve(mem_query, strat))
+            result = await self._backend.retrieve(mem_query, strat)
 
             # Convert protocol Memory to unified Memory
             unified_mems = []
@@ -1365,7 +1362,7 @@ class UnifiedMemory:
     # Production Health Checks (Priority #3)
     # ========================================================================
 
-    def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> Dict[str, Any]:
         """
         Comprehensive health check for production deployments.
 

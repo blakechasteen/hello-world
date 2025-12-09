@@ -53,7 +53,7 @@ from HoloLoom.chrono.trigger import ChronoTrigger, TemporalWindow, ExecutionLimi
 from HoloLoom.resonance.shed import ResonanceShed
 from HoloLoom.warp.space import WarpSpace
 from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy, CollapseResult
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace, Artifact
 from HoloLoom.reflection.buffer import ReflectionBuffer, LearningSignal
 
 # Core modules
@@ -63,18 +63,18 @@ from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
 from HoloLoom.memory.base import create_retriever
 from HoloLoom.memory.graph import KG  # Yarn Graph for thread storage
 from HoloLoom.policy.unified import create_policy
-from HoloLoom.alignment.safety_guardrails import create_guardrails, SafetyGuardrails
+from HoloLoom.alignment.safety_guardrails import (
+    create_guardrails, SafetyGuardrails, ActionRequest, ActionCategory, RiskLevel
+)
+from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 
 # Conscience Integration (Phase 2C - December 2025)
 try:
     from HoloLoom.agentic.conscience_adapter import AgenticConscienceAdapter
     from HoloLoom.protocols.conscience import ConscienceDecision, StepType
-    from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
     CONSCIENCE_AVAILABLE = True
 except ImportError:
     CONSCIENCE_AVAILABLE = False
-    DecisionType = None  # Fallback for graceful degradation
-    OutcomeType = None
     import warnings
     warnings.warn(
         "Conscience integration not available. Install protocols.conscience module for "
@@ -121,6 +121,19 @@ from HoloLoom.orchestrator.physics import (
 # Learning Integration (Elegance Pass: Extracted to orchestrator/learning/ - November 2025 Phase 8)
 from HoloLoom.orchestrator.learning import (
     apply_recursive_learning,
+)
+
+# Jenny Panel Detection (Elegance Pass: Extracted to orchestrator/jenny/ - December 2025)
+from HoloLoom.orchestrator.jenny import (
+    JENNY_CONFIDENCE_THRESHOLD,
+    JENNY_THREADS_THRESHOLD,
+    JENNY_STAGES_THRESHOLD,
+    JENNY_DURATION_THRESHOLD_MS,
+    classify_query_type,
+    get_panel_type_candidates,
+    detect_panel_type_heuristic,
+    detect_jenny_panel_type,
+    build_jenny_panel_context,
 )
 
 # Production Hardening (Part 5: Days 21-25)
@@ -606,211 +619,8 @@ class WeavingOrchestrator:
                 return self.semantic_spectrum.project_vector(vec)
             return None
 
-    # Jenny panel type detection thresholds (elegance: named constants)
-    JENNY_CONFIDENCE_THRESHOLD = 0.7  # Below this → CONFIDENCE panel
-    JENNY_THREADS_THRESHOLD = 2       # Above this → GRAPH panel
-    JENNY_STAGES_THRESHOLD = 3        # Above this → TIMELINE panel
-    JENNY_DURATION_THRESHOLD_MS = 100 # Above this → METRIC panel
-
-    def _classify_query_type(self, spacetime) -> str:
-        """
-        Classify query type for Thompson Sampling panel selection.
-
-        Simple heuristic classification:
-        - factual: Direct questions, lookups (what, who, when, where)
-        - procedural: How-to questions, step-by-step (how, steps, process)
-        - analytical: Analysis, comparison, evaluation (why, compare, analyze)
-        - exploratory: Open-ended research, discovery
-
-        Args:
-            spacetime: Spacetime result from weaving
-
-        Returns:
-            Query type string for Thompson Sampling lookup
-        """
-        query_text = (getattr(spacetime, 'query_text', '') or '').lower()
-
-        # Procedural indicators
-        if any(kw in query_text for kw in ['how to', 'steps', 'process', 'implement', 'create']):
-            return 'procedural'
-
-        # Analytical indicators
-        if any(kw in query_text for kw in ['why', 'compare', 'analyze', 'evaluate', 'tradeoff']):
-            return 'analytical'
-
-        # Exploratory indicators
-        if any(kw in query_text for kw in ['explore', 'research', 'discover', 'comprehensive']):
-            return 'exploratory'
-
-        # Factual (default) - direct questions
-        return 'factual'
-
-    def _detect_jenny_panel_type(self, spacetime) -> "PanelTypeJenny":
-        """
-        Detect optimal Jenny panel type from Spacetime content.
-
-        Phase 2.1-2.2: Uses MRF-learned Thompson Sampling selection when available,
-        with heuristic fallback for graceful degradation.
-
-        Thresholds (for heuristic fallback):
-            JENNY_CONFIDENCE_THRESHOLD (0.7): Below triggers CONFIDENCE panel
-            JENNY_THREADS_THRESHOLD (2): Above triggers GRAPH panel
-            JENNY_STAGES_THRESHOLD (3): Above triggers TIMELINE panel
-            JENNY_DURATION_THRESHOLD_MS (100): Above triggers METRIC panel
-
-        Args:
-            spacetime: Spacetime result from weaving
-
-        Returns:
-            PanelTypeJenny enum value
-        """
-        from HoloLoom.visualization.jenny_spec import PanelTypeJenny
-
-        # Phase 2.1-2.2: Try MRF-learned selection first
-        if self.jenny_mrf_compiler and self.jenny_learner:
-            try:
-                query_type = self._classify_query_type(spacetime)
-
-                # Get candidate panel types based on content analysis
-                candidates = self._get_panel_type_candidates(spacetime)
-
-                # Use Thompson Sampling to select from candidates
-                learned_selection = self.jenny_learner.select(
-                    query_type=query_type,
-                    candidates=candidates,
-                    exploration_bonus=0.1  # Small exploration bonus
-                )
-
-                self.logger.debug(
-                    f"MRF panel selection: query_type={query_type}, "
-                    f"candidates={[c.value for c in candidates]}, selected={learned_selection.value}"
-                )
-                return learned_selection
-
-            except Exception as e:
-                self.logger.warning(f"MRF panel selection failed, falling back to heuristics: {e}")
-
-        # Fallback to heuristic detection
-        return self._detect_panel_type_heuristic(spacetime)
-
-    def _get_panel_type_candidates(self, spacetime) -> List["PanelTypeJenny"]:
-        """
-        Get candidate panel types based on response content analysis.
-
-        Filters panel types to those that make sense for the content,
-        reducing the search space for Thompson Sampling.
-
-        Args:
-            spacetime: Spacetime result from weaving
-
-        Returns:
-            List of appropriate PanelTypeJenny candidates
-        """
-        from HoloLoom.visualization.jenny_spec import PanelTypeJenny
-
-        response = spacetime.response or ""
-        trace = spacetime.trace
-        candidates = []
-
-        # Always include TEXT as a baseline
-        candidates.append(PanelTypeJenny.TEXT)
-
-        # Code panel if response has code blocks
-        if "```" in response:
-            candidates.append(PanelTypeJenny.CODE)
-
-        # Graph panel if multiple threads/entities
-        if trace and len(getattr(trace, 'threads_activated', [])) > 1:
-            candidates.append(PanelTypeJenny.GRAPH)
-
-        # Confidence panel if low confidence
-        if spacetime.confidence < 0.8:
-            candidates.append(PanelTypeJenny.CONFIDENCE)
-
-        # Timeline if has timing data
-        if trace and len(getattr(trace, 'stage_durations', {})) > 1:
-            candidates.append(PanelTypeJenny.TIMELINE)
-
-        # Metric for performance data
-        if trace and getattr(trace, 'duration_ms', 0) > 50:
-            candidates.append(PanelTypeJenny.METRIC)
-
-        # Reasoning for complex multi-step
-        if spacetime.confidence > 0.6 and len(response) > 500:
-            candidates.append(PanelTypeJenny.REASONING)
-
-        return candidates
-
-    def _detect_panel_type_heuristic(self, spacetime) -> "PanelTypeJenny":
-        """
-        Heuristic-based panel type detection (fallback for MRF).
-
-        Original detection logic for graceful degradation.
-
-        Args:
-            spacetime: Spacetime result from weaving
-
-        Returns:
-            PanelTypeJenny enum value
-        """
-        from HoloLoom.visualization.jenny_spec import PanelTypeJenny
-
-        response = spacetime.response or ""
-        trace = spacetime.trace
-
-        # Code detection (has code blocks)
-        if "```" in response:
-            return PanelTypeJenny.CODE
-
-        # Graph panels for rich context (multiple threads activated)
-        if trace and len(getattr(trace, 'threads_activated', [])) > self.JENNY_THREADS_THRESHOLD:
-            return PanelTypeJenny.GRAPH
-
-        # Confidence panels for low-confidence results
-        if spacetime.confidence < self.JENNY_CONFIDENCE_THRESHOLD:
-            return PanelTypeJenny.CONFIDENCE
-
-        # Timeline for stage timing data
-        if trace and len(getattr(trace, 'stage_durations', {})) > self.JENNY_STAGES_THRESHOLD:
-            return PanelTypeJenny.TIMELINE
-
-        # Metric for performance-critical or numerical results
-        if trace and getattr(trace, 'duration_ms', 0) > self.JENNY_DURATION_THRESHOLD_MS:
-            return PanelTypeJenny.METRIC
-
-        # Default to TEXT
-        return PanelTypeJenny.TEXT
-
-    def _build_jenny_panel_context(
-        self,
-        query: Query,
-        spacetime: Spacetime,
-        pattern_spec: Optional[PatternSpec],
-        complexity: Optional[ComplexityLevel],
-    ) -> Dict[str, Any]:
-        """
-        Build context dict for Jenny panel generation (elegance: extracted helper).
-
-        Args:
-            query: Original query
-            spacetime: Weaving result
-            pattern_spec: Pattern used (BARE/FAST/FUSED)
-            complexity: Complexity level
-
-        Returns:
-            Context dict for JennyRuntime.ask()
-        """
-        return {
-            'session_id': spacetime.metadata.get('session_id', 'default'),
-            'spacetime_id': spacetime.metadata.get('spacetime_id', f"st_{int(time.time() * 1000)}"),
-            'pattern': pattern_spec.name if pattern_spec else 'unknown',
-            'complexity': complexity.name if complexity else 'unknown',
-            'response': spacetime.response,
-            'confidence': spacetime.confidence,
-            'tool_used': spacetime.tool_used,
-            'trace': spacetime.trace.to_dict() if hasattr(spacetime.trace, 'to_dict') else {},
-            'sources': spacetime.sources_used if hasattr(spacetime, 'sources_used') else [],
-        }
+    # Jenny panel detection methods extracted to orchestrator/jenny/ (December 2025 Elegance Pass)
+    # See: HoloLoom/orchestrator/jenny/panel_detection.py
 
     # ========================================================================
     # mythRL Protocol-Based Architecture Methods
@@ -1825,12 +1635,97 @@ class WeavingOrchestrator:
             self._emit_stage_event(7, "Convergence Engine", duration)
 
             # ================================================================
-            # STEP 8: Tool Execution
+            # STEP 8: Tool Execution (with Safety Gating - December 2025)
             # ================================================================
             step_start = time.time()
             self._emit_stage_event(8, "Tool Execution")
 
-            # Execute the selected tool
+            # 8a. Action Gating - Check safety before tool execution
+            action_request = None
+            safety_decision = None
+            if self.guardrails:
+                try:
+                    from uuid import uuid4
+                    action_request = ActionRequest(
+                        action_id=str(uuid4()),
+                        action=collapse_result.tool,
+                        category=self._categorize_tool(collapse_result.tool),
+                        description=f"Execute '{collapse_result.tool}' for query: {query.text[:100]}",
+                        context={
+                            "query": query.text,
+                            "confidence": collapse_result.confidence,
+                            "complexity": complexity.value if complexity else "unknown"
+                        }
+                    )
+                    safety_decision = self.guardrails.gate_action(action_request)
+
+                    # Log to audit trail (December 2025)
+                    if self.audit_trail:
+                        self.audit_trail.log_decision(
+                            decision_id=action_request.action_id,
+                            decision_type=DecisionType.TOOL_SELECTION,
+                            action=collapse_result.tool,
+                            outcome=OutcomeType.ALLOWED if safety_decision.allowed else OutcomeType.BLOCKED,
+                            metadata={
+                                "query": query.text[:200],
+                                "confidence": collapse_result.confidence,
+                                "risk_level": safety_decision.risk_level.value if hasattr(safety_decision.risk_level, 'value') else str(safety_decision.risk_level),
+                                "safety_score": safety_decision.safety_score
+                            }
+                        )
+
+                    if not safety_decision.allowed:
+                        self.logger.warning(f"  [8] Tool execution BLOCKED by safety gating: {safety_decision.reason}")
+                        stage_timings['tool_execution'] = (time.time() - step_start) * 1000
+                        self._emit_stage_event(8, "Tool Execution (BLOCKED)", stage_timings['tool_execution'])
+
+                        # Return blocked Spacetime with safety metadata
+                        end_time = datetime.now()
+                        duration_ms = (end_time - start_time).total_seconds() * 1000
+
+                        blocked_trace = WeavingTrace(
+                            start_time=start_time,
+                            end_time=end_time,
+                            duration_ms=duration_ms,
+                            stage_durations=stage_timings,
+                            motifs_detected=[m.pattern if hasattr(m, 'pattern') else str(m) for m in features.motifs],
+                            embedding_scales_used=pattern_spec.scales,
+                            spectral_features=features.metrics.get('spectral'),
+                            threads_activated=thread_ids,
+                            context_shards_count=len(context.shards),
+                            retrieval_mode=pattern_spec.retrieval_mode,
+                            policy_adapter=action_plan.adapter,
+                            tool_selected=collapse_result.tool,
+                            tool_confidence=collapse_result.confidence,
+                            bandit_statistics=collapse_result.bandit_stats,
+                            warp_operations=warp_operations,
+                            tensor_field_stats={"threads_tensioned": len(thread_ids)},
+                            errors=errors + [f"Safety blocked: {safety_decision.reason}"],
+                            warnings=warnings
+                        )
+
+                        blocked_spacetime = Spacetime(
+                            query=query.text,
+                            response=f"[Action blocked by safety guardrails: {safety_decision.reason}]",
+                            confidence=0.0,
+                            tool_used=collapse_result.tool,
+                            trace=blocked_trace,
+                            artifacts=[],
+                            metadata={
+                                'pattern_card': pattern_spec.name,
+                                'safety_blocked': True,
+                                'risk_level': safety_decision.risk_level.value if hasattr(safety_decision.risk_level, 'value') else str(safety_decision.risk_level),
+                                'safety_reason': safety_decision.reason,
+                                'safety_score': safety_decision.safety_score
+                            }
+                        )
+                        return blocked_spacetime
+
+                except Exception as e:
+                    self.logger.warning(f"Safety gating failed (non-blocking): {e}")
+                    # Continue with tool execution if safety gating fails (graceful degradation)
+
+            # 8b. Execute the selected tool
             tool_result = await self.tool_executor.execute(
                 collapse_result.tool,
                 query,
@@ -1915,11 +1810,16 @@ class WeavingOrchestrator:
                     f"coherence={awareness_context.get('coherence', 0.0):.3f}"
                 )
 
+            # Parse artifacts from tool result
+            raw_artifacts = tool_result.get('artifacts', [])
+            artifacts = [Artifact.from_dict(a) for a in raw_artifacts]
+
             spacetime = Spacetime(
                 query_text=query.text,
                 response=tool_result.get('result', 'No response'),
                 tool_used=collapse_result.tool,
                 confidence=collapse_result.confidence,
+                artifacts=artifacts,
                 trace=trace,
                 metadata=metadata,
                 context_summary=f"{len(context.shards)} shards",
@@ -2021,11 +1921,14 @@ class WeavingOrchestrator:
                         self._jenny_started = True
 
                     # Detect optimal panel type from Spacetime content
-                    panel_type = self._detect_jenny_panel_type(spacetime)
+                    # (Elegance Pass: extracted to orchestrator/jenny/ - December 2025)
+                    panel_type = detect_jenny_panel_type(
+                        spacetime, self.jenny_mrf_compiler, self.jenny_learner
+                    )
 
                     # Generate panel with full lifecycle management
-                    # (elegance: context building extracted to helper)
-                    panel_context = self._build_jenny_panel_context(
+                    # (Elegance Pass: context building extracted to orchestrator/jenny/)
+                    panel_context = build_jenny_panel_context(
                         query, spacetime, pattern_spec, complexity
                     )
                     panel = await self.jenny_runtime.ask(
@@ -2150,6 +2053,54 @@ class WeavingOrchestrator:
         }
 
         return mapping.get(bandit_strategy, CollapseStrategy.EPSILON_GREEDY)
+
+    def _categorize_tool(self, tool_name: str) -> ActionCategory:
+        """
+        Categorize a tool name into an ActionCategory for safety gating.
+
+        Maps tool names to risk categories used by SafetyGuardrails.
+
+        Args:
+            tool_name: Name of the tool (e.g., 'answer', 'search', 'notion_write')
+
+        Returns:
+            ActionCategory enum value for safety risk assessment
+
+        Note:
+            Conservative mapping - unknown tools default to EXECUTION (higher risk)
+            for fail-safe behavior.
+        """
+        # Read operations (safe)
+        read_tools = {'answer', 'search', 'retrieve', 'query', 'recall', 'analyze'}
+        # Write operations (moderate risk)
+        write_tools = {'notion_write', 'store', 'save', 'update', 'modify'}
+        # Delete operations (higher risk)
+        delete_tools = {'delete', 'remove', 'purge', 'clear'}
+        # System operations (highest risk)
+        system_tools = {'execute', 'run', 'shell', 'system', 'deploy'}
+        # External API calls
+        external_tools = {'api_call', 'webhook', 'http', 'fetch', 'external'}
+        # Calculation (safe)
+        calc_tools = {'calc', 'calculate', 'compute', 'math'}
+
+        tool_lower = tool_name.lower()
+
+        if tool_lower in read_tools:
+            return ActionCategory.QUERY
+        elif tool_lower in calc_tools:
+            return ActionCategory.ANALYSIS
+        elif tool_lower in write_tools:
+            return ActionCategory.STORAGE
+        elif tool_lower in delete_tools:
+            return ActionCategory.DELETION
+        elif tool_lower in system_tools:
+            return ActionCategory.SYSTEM
+        elif tool_lower in external_tools:
+            return ActionCategory.EXTERNAL
+        else:
+            # Default to EXECUTION for unknown tools (conservative)
+            self.logger.debug(f"Unknown tool '{tool_name}' categorized as EXECUTION")
+            return ActionCategory.EXECUTION
 
     async def weave_with_physics(
         self,

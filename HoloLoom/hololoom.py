@@ -6,8 +6,13 @@ The 10/10 Layer: Everything is a memory operation.
 Usage:
     from HoloLoom import HoloLoom
 
-    # Initialize
+    # Initialize (single-device mode)
     loom = HoloLoom()
+
+    # Initialize (cross-device mode with identity)
+    from HoloLoom.handoff import UnifiedIdentity
+    identity = UnifiedIdentity.generate("blake")
+    loom = HoloLoom(identity=identity)  # Syncs across devices!
 
     # Experience content (any modality)
     memory = await loom.experience("Thompson Sampling balances exploration")
@@ -24,6 +29,7 @@ Design Philosophy:
 - Three core operations (experience/recall/reflect)
 - Implementation details hidden
 - Modality-agnostic
+- Cross-device: Identity owns memory, devices are just windows
 """
 
 from typing import Any, List, Optional, Dict, Union, Tuple, TYPE_CHECKING
@@ -34,6 +40,12 @@ import networkx as nx
 # Config is imported lazily in __init__() method instead of module level
 if TYPE_CHECKING:
     from HoloLoom.config import Config
+    from HoloLoom.handoff.identity import UnifiedIdentity
+    from HoloLoom.handoff.orchestrator import HardenedHandoffOrchestrator
+    from HoloLoom.handoff.synced_memory import SyncedMemory
+    from HoloLoom.loom.weave_house import WeaveHouse, WeaveResult
+    from HoloLoom.loom.dreaming import DreamOrchestrator
+    from HoloLoom.fabric.fabric import Fabric
 
 from HoloLoom.memory.protocol import Memory
 from HoloLoom.memory.awareness_graph import AwarenessGraph
@@ -75,7 +87,9 @@ class HoloLoom:
     def __init__(
         self,
         config: Optional['Config'] = None,
-        graph_backend: Optional[nx.MultiDiGraph] = None
+        graph_backend: Optional[nx.MultiDiGraph] = None,
+        identity: Optional['UnifiedIdentity'] = None,
+        use_multi_perspective: bool = False,
     ):
         """
         Initialize HoloLoom.
@@ -83,20 +97,53 @@ class HoloLoom:
         Args:
             config: System configuration (defaults to Config.fast())
             graph_backend: Optional graph backend (creates new if None)
+            identity: Optional UnifiedIdentity for cross-device sync.
+                      When provided, enables synced memory across devices.
+            use_multi_perspective: Enable multi-perspective WeaveHouse system.
+                      When True (or config.use_weave_house is True), creates
+                      WeaveHouse with 5 looms (RECALL, REASON, REACH, REFLECT, REFUSE)
+                      and optional DreamOrchestrator for background consolidation.
 
         Example:
-            >>> # Simple initialization
+            >>> # Simple initialization (single-device mode)
             >>> loom = HoloLoom()
             >>>
             >>> # With custom config
             >>> from HoloLoom.config import Config
             >>> loom = HoloLoom(config=Config.fused())
+            >>>
+            >>> # Cross-device mode (syncs memories across devices)
+            >>> from HoloLoom.handoff import UnifiedIdentity
+            >>> identity = UnifiedIdentity.generate("blake")
+            >>> loom = HoloLoom(identity=identity)
+            >>>
+            >>> # Multi-perspective mode (5 looms with consensus)
+            >>> loom = HoloLoom(use_multi_perspective=True)
+            >>> # Or via config:
+            >>> loom = HoloLoom(config=Config.multi_perspective())
         """
         # LAZY IMPORT: Import Config here to break circular dependency
         from HoloLoom.config import Config
 
         # Configuration
         self.config = config or Config.fast()
+
+        # Cross-device handoff (if identity provided)
+        self._identity = identity
+        self._handoff = None
+        self._synced_memory = None
+
+        if identity is not None:
+            # Lazy import handoff modules
+            from HoloLoom.handoff.orchestrator import HardenedHandoffOrchestrator
+            from HoloLoom.handoff.synced_memory import SyncedMemory
+
+            # Create synced memory and handoff orchestrator
+            self._synced_memory = SyncedMemory(identity)
+            self._handoff = HardenedHandoffOrchestrator(
+                identity=identity,
+                memory=self._synced_memory,  # Note: parameter is 'memory' not 'synced_memory'
+            )
 
         # Create input router (if available)
         if MULTIMODAL_AVAILABLE:
@@ -118,6 +165,15 @@ class HoloLoom:
             semantic_calculus=self._semantic,
             vector_store=None  # Could add vector store here
         )
+
+        # Multi-perspective WeaveHouse (December 2025)
+        # Stored for lazy initialization in __aenter__ (since create_weave_house_system is async)
+        self._use_multi_perspective = use_multi_perspective or (
+            hasattr(self.config, 'use_weave_house') and self.config.use_weave_house
+        )
+        self._weave_house: Optional['WeaveHouse'] = None
+        self._dream_orchestrator: Optional['DreamOrchestrator'] = None
+        self._weave_house_initialized = False
 
     # =========================================================================
     # Core Operations: The 10/10 API
@@ -180,6 +236,11 @@ class HoloLoom:
                 f"Cannot process content type {type(content)}. "
                 "Either provide text string or install multimodal dependencies."
             )
+
+        # Cross-device mode: also store to synced memory (for background sync)
+        if self._synced_memory is not None:
+            content_text = content if isinstance(content, str) else str(content)
+            await self._synced_memory.experience(content_text, tags=context.get('tags') if context else None)
 
         # Retrieve full Memory object
         memory = self._awareness.graph.nodes[memory_id]
@@ -454,6 +515,161 @@ Active: {metrics['n_active']} (density: {metrics['activation_density']:.2f})
 Trajectory: {metrics['trajectory_length']} steps
 Shift detected: {metrics['shift_detected']}
 """
+
+    # =========================================================================
+    # Multi-Loom Architecture / WeaveHouse (December 2025)
+    # =========================================================================
+
+    async def weave(
+        self,
+        query: str,
+        context: Optional[Dict] = None
+    ) -> 'WeaveResult':
+        """
+        Multi-perspective query using WeaveHouse.
+
+        Sends query to 5 independent looms (RECALL, REASON, REACH, REFLECT, REFUSE),
+        synthesizes their responses through consensus, and auto-explores
+        disagreement zones.
+
+        Requires: multi-perspective mode enabled (use_multi_perspective=True
+        or config=Config.multi_perspective())
+
+        Args:
+            query: Question or request to process
+            context: Optional context metadata
+
+        Returns:
+            WeaveResult with:
+                - response: Synthesized response text
+                - confidence: Overall confidence (0.0-1.0)
+                - epistemic_confidence: Meta-confidence (0.0-1.0)
+                - fabrics: Individual Fabric responses from each loom
+                - tensions: Detected disagreements between looms
+                - exploration_trace: Log of exploration steps
+                - metadata: Additional context
+
+        Raises:
+            RuntimeError: If WeaveHouse not initialized
+                         (multi-perspective mode not enabled or not in async context)
+
+        Example:
+            >>> async with HoloLoom(use_multi_perspective=True) as loom:
+            ...     result = await loom.weave("What is Thompson Sampling?")
+            ...     print(f"Response: {result.response}")
+            ...     print(f"Confidence: {result.confidence:.2f}")
+            ...     print(f"Perspectives: {len(result.fabrics)}")
+            ...
+            ...     # View individual perspectives
+            ...     for fabric in result.fabrics:
+            ...         print(f"  {fabric.perspective}: {fabric.response[:50]}...")
+        """
+        if self._weave_house is None:
+            if not self._use_multi_perspective:
+                raise RuntimeError(
+                    "Multi-perspective mode not enabled. "
+                    "Initialize with use_multi_perspective=True or config=Config.multi_perspective()"
+                )
+            else:
+                raise RuntimeError(
+                    "WeaveHouse not initialized. "
+                    "Ensure you're using 'async with HoloLoom(...) as loom:' context manager"
+                )
+
+        # Execute multi-perspective weaving
+        result = await self._weave_house.weave(query, context=context)
+
+        return result
+
+    async def get_perspectives(self) -> Dict[str, str]:
+        """
+        Get descriptions of all available loom perspectives.
+
+        Returns dictionary mapping loom names to their descriptions:
+        - RECALL (Librarian): Memory retrieval and evidence
+        - REASON (Logician): Logical inference and deduction
+        - REACH (Artist): Creative exploration and analogy
+        - REFLECT (Auditor): Verification and self-critique
+        - REFUSE (Skeptic): Safety and boundary enforcement
+
+        Requires: multi-perspective mode enabled
+
+        Returns:
+            Dict mapping perspective name to description
+
+        Raises:
+            RuntimeError: If WeaveHouse not initialized
+
+        Example:
+            >>> async with HoloLoom(use_multi_perspective=True) as loom:
+            ...     perspectives = await loom.get_perspectives()
+            ...     for name, desc in perspectives.items():
+            ...         print(f"{name}: {desc}")
+        """
+        if self._weave_house is None:
+            if not self._use_multi_perspective:
+                raise RuntimeError(
+                    "Multi-perspective mode not enabled. "
+                    "Initialize with use_multi_perspective=True or config=Config.multi_perspective()"
+                )
+            else:
+                raise RuntimeError(
+                    "WeaveHouse not initialized. "
+                    "Ensure you're using 'async with HoloLoom(...) as loom:' context manager"
+                )
+
+        return {
+            loom.perspective: loom.description if hasattr(loom, 'description') else loom.perspective
+            for loom in self._weave_house.looms
+        }
+
+    @property
+    def weave_house(self) -> Optional['WeaveHouse']:
+        """
+        Direct access to WeaveHouse (advanced users only).
+
+        Returns:
+            WeaveHouse instance if multi-perspective mode enabled and initialized,
+            None otherwise.
+
+        Example:
+            >>> async with HoloLoom(use_multi_perspective=True) as loom:
+            ...     if loom.weave_house:
+            ...         print(f"Looms: {len(loom.weave_house.looms)}")
+        """
+        return self._weave_house
+
+    @property
+    def dream_orchestrator(self) -> Optional['DreamOrchestrator']:
+        """
+        Direct access to DreamOrchestrator (advanced users only).
+
+        Returns:
+            DreamOrchestrator instance if dreaming enabled and initialized,
+            None otherwise.
+
+        Example:
+            >>> async with HoloLoom(config=Config.multi_perspective()) as loom:
+            ...     if loom.dream_orchestrator:
+            ...         stats = await loom.dream_orchestrator.dream_once()
+            ...         print(f"Insights shared: {stats.total_insights_collected}")
+        """
+        return self._dream_orchestrator
+
+    @property
+    def is_multi_perspective(self) -> bool:
+        """
+        Check if multi-perspective mode is enabled.
+
+        Returns:
+            True if multi-perspective WeaveHouse is active.
+
+        Example:
+            >>> loom = HoloLoom(use_multi_perspective=True)
+            >>> print(f"Multi-perspective: {loom.is_multi_perspective}")
+            Multi-perspective: True
+        """
+        return self._use_multi_perspective
 
     # =========================================================================
     # Multimodal Photo Memory (November 2025)
@@ -873,7 +1089,39 @@ Shift detected: {metrics['shift_detected']}
         if hasattr(self, '_photo_memory'):
             await self._photo_memory.__aenter__()
 
+        # Initialize WeaveHouse if multi-perspective mode enabled
+        if self._use_multi_perspective and not self._weave_house_initialized:
+            await self._initialize_weave_house()
+
         return self
+
+    async def _initialize_weave_house(self):
+        """
+        Initialize WeaveHouse and DreamOrchestrator.
+
+        Called lazily when entering async context with multi-perspective mode.
+        """
+        if self._weave_house_initialized:
+            return
+
+        from HoloLoom.loom.initialization import create_weave_house_system
+
+        self._weave_house, self._dream_orchestrator = await create_weave_house_system(
+            config=self.config,
+            memory_backend=self._awareness,  # Share awareness graph with WeaveHouse
+            enable_dreaming=getattr(self.config, 'enable_dreaming', True),
+            dreaming_interval=getattr(self.config, 'dream_consolidation_interval', 3600.0),
+            math_bleed_rate=getattr(self.config, 'dream_math_bleed_rate', 0.3),
+            pattern_bleed_rate=getattr(self.config, 'dream_pattern_bleed_rate', 0.2),
+            exploration_depth=getattr(self.config, 'weave_house_exploration_depth', 2),
+            tension_threshold=getattr(self.config, 'weave_house_tension_threshold', 0.3),
+        )
+
+        # Start dreaming if enabled
+        if self._dream_orchestrator is not None:
+            await self._dream_orchestrator.start_dreaming()
+
+        self._weave_house_initialized = True
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
@@ -886,6 +1134,10 @@ Shift detected: {metrics['shift_detected']}
             ...     memory = await loom.experience("content")
             ...     # Automatic cleanup on exit
         """
+        # Stop dreaming if running
+        if self._dream_orchestrator is not None:
+            await self._dream_orchestrator.stop_dreaming()
+
         # Close photo memory if initialized
         if hasattr(self, '_photo_memory'):
             await self._photo_memory.__aexit__(exc_type, exc_val, exc_tb)
@@ -930,3 +1182,243 @@ Shift detected: {metrics['shift_detected']}
             >>> edges = list(graph.edges(data=True))
         """
         return self._graph
+
+    # =========================================================================
+    # Cross-Device Handoff (December 2025)
+    # =========================================================================
+
+    @property
+    def identity(self) -> Optional['UnifiedIdentity']:
+        """
+        Get the current identity (if in cross-device mode).
+
+        Returns:
+            UnifiedIdentity if cross-device mode enabled, None otherwise.
+
+        Example:
+            >>> if loom.identity:
+            ...     print(f"Logged in as: {loom.identity.nickname}")
+            ...     print(f"DID: {loom.identity.did}")
+        """
+        return self._identity
+
+    @property
+    def is_synced(self) -> bool:
+        """
+        Check if cross-device sync is enabled.
+
+        Returns:
+            True if identity is configured for sync.
+
+        Example:
+            >>> if loom.is_synced:
+            ...     print("Memory syncs across devices")
+        """
+        return self._identity is not None
+
+    async def handoff_to(
+        self,
+        target_device: str,
+        context: Optional[Dict[str, Any]] = None
+    ) -> 'HandoffResult':
+        """
+        Hand off current work context to another device.
+
+        Transfers pending memory operations and context to target device,
+        allowing seamless continuation of work.
+
+        Requires: identity must be set (cross-device mode)
+
+        Args:
+            target_device: Device ID to hand off to (from identity.devices)
+            context: Optional UI state, ambient context, etc.
+
+        Returns:
+            HandoffResult with transfer statistics
+
+        Raises:
+            ValueError: If not in cross-device mode
+            HandoffError: If handoff fails
+
+        Example:
+            >>> # Hand off to laptop
+            >>> result = await loom.handoff_to("blake-laptop")
+            >>> print(f"Transferred {result.ops_transferred} operations")
+            >>>
+            >>> # Hand off with context
+            >>> result = await loom.handoff_to(
+            ...     "blake-phone",
+            ...     context={"current_task": "reviewing_code", "file": "main.py"}
+            ... )
+        """
+        if self._handoff is None:
+            raise ValueError(
+                "Cross-device sync not enabled. "
+                "Initialize HoloLoom with an identity: HoloLoom(identity=my_identity)"
+            )
+
+        return await self._handoff.handoff_to(target_device, context)
+
+    async def receive_handoff(
+        self,
+        signed_request: 'HandoffRequest'
+    ) -> 'MergeResult':
+        """
+        Receive and apply a handoff from another device.
+
+        Validates the signed request and merges incoming operations.
+
+        Requires: identity must be set (cross-device mode)
+
+        Args:
+            signed_request: HandoffRequest signed by source device
+
+        Returns:
+            MergeResult with merge statistics
+
+        Raises:
+            ValueError: If not in cross-device mode
+            InvalidSignatureError: If signature verification fails
+            ReplayAttackError: If request is stale or reused
+
+        Example:
+            >>> # Receive handoff (typically via transport layer)
+            >>> result = await loom.receive_handoff(signed_request)
+            >>> print(f"Merged {result.merged} operations")
+        """
+        if self._handoff is None:
+            raise ValueError(
+                "Cross-device sync not enabled. "
+                "Initialize HoloLoom with an identity: HoloLoom(identity=my_identity)"
+            )
+
+        return await self._handoff.receive_handoff(signed_request)
+
+    def get_pending_sync(self) -> List[Dict[str, Any]]:
+        """
+        Get pending memory operations waiting to sync.
+
+        Returns:
+            List of operations not yet synced to other devices.
+
+        Example:
+            >>> pending = loom.get_pending_sync()
+            >>> print(f"{len(pending)} operations pending sync")
+        """
+        if self._synced_memory is None:
+            return []
+
+        ops = self._synced_memory.pending_delta()
+        return [op.to_dict() for op in ops]
+
+    def get_device_registry(self) -> Dict[str, Any]:
+        """
+        Get information about paired devices.
+
+        Returns:
+            Dictionary with device registry information:
+            - devices: List of paired devices
+            - active_count: Number of active devices
+            - this_device: Current device ID
+
+        Example:
+            >>> registry = loom.get_device_registry()
+            >>> for device in registry['devices']:
+            ...     print(f"{device['name']}: {device['status']}")
+        """
+        if self._identity is None:
+            return {
+                'devices': [],
+                'active_count': 0,
+                'this_device': None
+            }
+
+        devices = []
+        active_count = 0
+        for device_id, manifest in self._identity.devices.items():
+            devices.append({
+                'device_id': device_id,
+                'name': manifest.device_name,
+                'status': manifest.status.name,
+                'last_seen': manifest.last_seen.isoformat() if manifest.last_seen else None,
+                'last_sync': manifest.last_sync.isoformat() if manifest.last_sync else None,
+                'capabilities': list(manifest.capabilities),
+            })
+            if manifest.is_active():
+                active_count += 1
+
+        return {
+            'devices': devices,
+            'active_count': active_count,
+            'this_device': self._identity.current_device_id if hasattr(self._identity, 'current_device_id') else None
+        }
+
+    async def add_device(
+        self,
+        device_name: str,
+        pairing_code: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Add a new device to the identity's device registry.
+
+        Initiates device pairing process for cross-device sync.
+
+        Args:
+            device_name: Human-readable name for the device
+            pairing_code: Optional pairing code from QR exchange
+
+        Returns:
+            Dictionary with pairing information:
+            - device_id: New device ID
+            - pairing_code: Code to enter on other device (if not provided)
+            - status: Pairing status
+
+        Example:
+            >>> # Generate pairing code for new device
+            >>> result = await loom.add_device("blake-phone")
+            >>> print(f"Enter code on phone: {result['pairing_code']}")
+            >>>
+            >>> # Complete pairing with code from other device
+            >>> result = await loom.add_device("blake-phone", pairing_code="ABC123")
+        """
+        if self._identity is None:
+            raise ValueError(
+                "Cross-device sync not enabled. "
+                "Initialize HoloLoom with an identity: HoloLoom(identity=my_identity)"
+            )
+
+        # Add device to identity registry
+        manifest = await self._identity.add_device(device_name, pairing_code)
+
+        return {
+            'device_id': manifest.device_id,
+            'device_name': manifest.device_name,
+            'status': manifest.status.name,
+            'pairing_code': pairing_code or manifest.metadata.get('pairing_code'),
+        }
+
+    async def revoke_device(self, device_id: str) -> bool:
+        """
+        Revoke a device from the identity's device registry.
+
+        Immediately blocks the device from syncing.
+
+        Args:
+            device_id: Device ID to revoke
+
+        Returns:
+            True if successfully revoked
+
+        Example:
+            >>> # Revoke compromised device
+            >>> await loom.revoke_device("blake-old-phone")
+            >>> print("Device revoked - cannot sync anymore")
+        """
+        if self._identity is None:
+            raise ValueError(
+                "Cross-device sync not enabled. "
+                "Initialize HoloLoom with an identity: HoloLoom(identity=my_identity)"
+            )
+
+        await self._identity.revoke_device(device_id)
+        return True
