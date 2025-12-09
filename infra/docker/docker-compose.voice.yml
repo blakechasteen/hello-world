@@ -1,0 +1,266 @@
+# Docker Compose for HoloLoom VoiceAgent Development
+# ====================================================
+# Complete stack for local development and testing
+# Date: November 15, 2025
+
+version: '3.8'
+
+services:
+  # VoiceAgent Service
+  voice-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.voice
+    image: hololoom/voice-agent:latest
+    container_name: voice-agent
+    restart: unless-stopped
+
+    environment:
+      # OpenAI API Key (required for TTS)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+      # HoloLoom Configuration
+      - HOLOLOOM_MODE=FAST
+      - HOLOLOOM_LOG_LEVEL=INFO
+
+      # Voice Configuration
+      - VOICE_AGENT_NAME=Elle
+      - VOICE_TTS_VOICE=nova
+      - VOICE_TURN_MODE=hybrid
+
+      # TTS Cache Configuration (Phase 5 - Nov 2025)
+      - TTS_CACHE_ENABLED=true
+      - TTS_CACHE_REDIS_HOST=redis
+      - TTS_CACHE_REDIS_PORT=6379
+      - TTS_CACHE_COMMON_TTL=86400  # 24 hours
+      - TTS_CACHE_DYNAMIC_TTL=3600  # 1 hour
+
+      # Memory Configuration
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
+
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+
+      # Logging
+      - STRUCTLOG_ENABLED=true
+      - LOG_FORMAT=json
+
+    volumes:
+      # Mount code for development (remove in production)
+      - ./HoloLoom:/app/HoloLoom:ro
+      - ./demos:/app/demos:ro
+
+      # Data persistence
+      - voice-sessions:/data/sessions
+      - voice-logs:/logs
+
+    ports:
+      - "8000:8000"  # HTTP API (if enabled)
+
+    depends_on:
+      - neo4j
+      - qdrant
+      - redis
+
+    networks:
+      - hololoom-network
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "from HoloLoom.voice import VoiceAgent; print('healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
+  # Neo4j - Knowledge Graph Storage
+  neo4j:
+    image: neo4j:5.13-community
+    container_name: hololoom-neo4j
+    restart: unless-stopped
+
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-password}
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
+      - NEO4J_dbms_memory_heap_max__size=2G
+      - NEO4J_dbms_memory_pagecache_size=1G
+
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+
+    networks:
+      - hololoom-network
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+  # Qdrant - Vector Database
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: hololoom-qdrant
+    restart: unless-stopped
+
+    volumes:
+      - qdrant-data:/qdrant/storage
+
+    ports:
+      - "6333:6333"  # HTTP
+      - "6334:6334"  # gRPC
+
+    networks:
+      - hololoom-network
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+  # Prometheus - Metrics Collection
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: hololoom-prometheus
+    restart: unless-stopped
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+
+    volumes:
+      - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    ports:
+      - "9090:9090"
+
+    networks:
+      - hololoom-network
+
+    depends_on:
+      - voice-agent
+
+
+  # Grafana - Metrics Visualization
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: hololoom-grafana
+    restart: unless-stopped
+
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+    volumes:
+      - ./deployment/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./deployment/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - grafana-data:/var/lib/grafana
+
+    ports:
+      - "3000:3000"
+
+    networks:
+      - hololoom-network
+
+    depends_on:
+      - prometheus
+
+
+  # Redis - TTS Cache Storage
+  # TTS audio caching with 1GB memory limit, LRU eviction, and persistence
+  redis:
+    image: redis:7-alpine
+    container_name: hololoom-tts-cache
+    restart: unless-stopped
+
+    command: >
+      redis-server
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --appendonly yes
+      --appendfsync everysec
+
+    volumes:
+      - tts-cache-data:/data
+
+    ports:
+      - "6379:6379"
+
+    networks:
+      - hololoom-network
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+    environment:
+      - REDIS_MAXMEMORY=1gb
+      - REDIS_MAXMEMORY_POLICY=allkeys-lru
+
+
+networks:
+  hololoom-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+
+volumes:
+  # VoiceAgent volumes
+  voice-sessions:
+    driver: local
+  voice-logs:
+    driver: local
+
+  # Database volumes
+  neo4j-data:
+    driver: local
+  neo4j-logs:
+    driver: local
+  qdrant-data:
+    driver: local
+
+  # TTS Cache volume
+  tts-cache-data:
+    driver: local
+
+  # Monitoring volumes
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+
+# Usage:
+# ------
+# Development:
+#   docker-compose -f docker-compose.voice.yml up -d
+#
+# View logs:
+#   docker-compose -f docker-compose.voice.yml logs -f voice-agent
+#
+# Stop all services:
+#   docker-compose -f docker-compose.voice.yml down
+#
+# Remove all data:
+#   docker-compose -f docker-compose.voice.yml down -v
+#
+# Scale voice agents:
+#   docker-compose -f docker-compose.voice.yml up -d --scale voice-agent=3

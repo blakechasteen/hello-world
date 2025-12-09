@@ -1,0 +1,360 @@
+{
+  "dashboard": {
+    "title": "HoloLoom Emotion Trends",
+    "uid": "hololoom-emotion-trends",
+    "timezone": "browser",
+    "schemaVersion": 27,
+    "version": 1,
+    "refresh": "30s",
+    "tags": ["hololoom", "emotion", "ai"],
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Emotion Requests",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "emotion_requests_total",
+            "refId": "A",
+            "legendFormat": "Total Requests"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 1000, "color": "yellow"},
+                {"value": 5000, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Success Rate",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "emotion_requests_successful / emotion_requests_total * 100",
+            "refId": "A",
+            "legendFormat": "Success %"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 80, "color": "yellow"},
+                {"value": 95, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Average Processing Time",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "emotion_processing_time_ms",
+            "refId": "A",
+            "legendFormat": "Avg Time (ms)"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 200, "color": "yellow"},
+                {"value": 500, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "System Uptime",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "emotion_uptime_seconds / 3600",
+            "refId": "A",
+            "legendFormat": "Uptime (hours)"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "h",
+            "decimals": 1,
+            "color": {"mode": "fixed", "fixedColor": "blue"}
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Emotion Distribution",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "targets": [
+          {
+            "expr": "emotion_by_type",
+            "refId": "A",
+            "legendFormat": "{{emotion}}"
+          }
+        ],
+        "options": {
+          "pieType": "pie",
+          "displayLabels": ["name", "percent"],
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Processing Mode Distribution",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [
+          {
+            "expr": "emotion_by_mode",
+            "refId": "A",
+            "legendFormat": "{{mode}}"
+          }
+        ],
+        "options": {
+          "pieType": "donut",
+          "displayLabels": ["name", "percent"],
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Request Rate (per minute)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 12},
+        "targets": [
+          {
+            "expr": "rate(emotion_requests_total[1m]) * 60",
+            "refId": "A",
+            "legendFormat": "Total Requests/min"
+          },
+          {
+            "expr": "rate(emotion_requests_successful[1m]) * 60",
+            "refId": "B",
+            "legendFormat": "Successful/min"
+          },
+          {
+            "expr": "rate(emotion_requests_failed[1m]) * 60",
+            "refId": "C",
+            "legendFormat": "Failed/min"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "Requests/min",
+            "logBase": 1,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "xaxis": {
+          "mode": "time",
+          "show": true
+        },
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "pointradius": 2,
+        "points": false,
+        "bars": false,
+        "stack": false,
+        "percentage": false,
+        "legend": {
+          "show": true,
+          "values": true,
+          "min": true,
+          "max": true,
+          "current": true,
+          "total": false,
+          "avg": true,
+          "alignAsTable": true,
+          "rightSide": false
+        },
+        "nullPointMode": "null",
+        "tooltip": {
+          "value_type": "individual",
+          "shared": true,
+          "sort": 0
+        }
+      },
+      {
+        "id": 8,
+        "title": "Top Detected Emotions (Last Hour)",
+        "type": "bargauge",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+        "targets": [
+          {
+            "expr": "topk(10, increase(emotion_by_type[1h]))",
+            "refId": "A",
+            "legendFormat": "{{emotion}}"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Processing Time Percentiles",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+        "targets": [
+          {
+            "expr": "emotion_processing_time_ms",
+            "refId": "A",
+            "legendFormat": "Current Avg"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": "Processing Time",
+            "logBase": 1,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "show": false
+          }
+        ],
+        "xaxis": {
+          "mode": "time",
+          "show": true
+        },
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "pointradius": 2,
+        "points": false,
+        "bars": false,
+        "stack": false,
+        "percentage": false,
+        "legend": {
+          "show": true,
+          "values": true,
+          "min": true,
+          "max": true,
+          "current": true,
+          "total": false,
+          "avg": true,
+          "alignAsTable": true,
+          "rightSide": false
+        },
+        "nullPointMode": "null",
+        "tooltip": {
+          "value_type": "individual",
+          "shared": true,
+          "sort": 0
+        }
+      }
+    ]
+  }
+}

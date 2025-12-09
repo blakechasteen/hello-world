@@ -1,0 +1,48 @@
+# Docker Compose for HoloLoom SQL Backend
+# Part 2: Foundation Infrastructure (Days 1-5)
+
+version: '3.8'
+
+services:
+  # PostgreSQL database for precision data
+  hololoom-postgres:
+    image: postgres:15-alpine
+    container_name: hololoom-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hololoom
+      POSTGRES_USER: hololoom
+      POSTGRES_PASSWORD: hololoom
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - hololoom-postgres-data:/var/lib/postgresql/data
+      - ./HoloLoom/infrastructure/sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hololoom"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin for database management (optional)
+  hololoom-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: hololoom-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@hololoom.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - hololoom-postgres
+    volumes:
+      - hololoom-pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  hololoom-postgres-data:
+    driver: local
+  hololoom-pgadmin-data:
+    driver: local

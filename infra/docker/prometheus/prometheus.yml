@@ -1,0 +1,81 @@
+# Prometheus Configuration for HoloLoom Production Deployment
+# November 2025
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: 'production'
+    project: 'hololoom'
+
+# Alerting configuration (optional - requires Alertmanager)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # - 'alertmanager:9093'
+
+# Load rules
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+# Scrape configurations
+scrape_configs:
+  # HoloLoom API Server
+  - job_name: 'hololoom-api'
+    static_configs:
+      - targets: ['hololoom-api:9090']
+        labels:
+          service: 'hololoom-api'
+          component: 'backend'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Emotion Intelligence Service
+  - job_name: 'emotion-intelligence'
+    static_configs:
+      - targets: ['emotion-intelligence:9091']
+        labels:
+          service: 'emotion-intelligence'
+          component: 'ai-pipeline'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Neo4j Graph Database
+  - job_name: 'neo4j'
+    static_configs:
+      - targets: ['neo4j:7474']
+        labels:
+          service: 'neo4j'
+          component: 'database'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Qdrant Vector Database
+  - job_name: 'qdrant'
+    static_configs:
+      - targets: ['qdrant:6333']
+        labels:
+          service: 'qdrant'
+          component: 'database'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Redis Cache
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+        labels:
+          service: 'redis'
+          component: 'cache'
+    # Note: Redis requires redis_exporter for Prometheus metrics
+    # This is a placeholder - enable when redis_exporter is added
+    scrape_interval: 30s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          component: 'monitoring'
