@@ -1,0 +1,53 @@
+
+# Holo-Defense Safety Policy
+# ==========================
+
+# Current DEFCON Level (Overridden by runtime state)
+# 5: Relaxed (Dev)
+# 4: Standard (Prod)
+# 3: Heightened (Suspicious Activity)
+# 2: Severe (Under Attack)
+# 1: Paranoid (Lockdown)
+default_defcon: 4
+
+# Rules per Level
+levels:
+  5:
+    description: "Relaxed / Development Mode"
+    risk_threshold_block: 95
+    risk_threshold_quarantine: 90
+    use_sandbox: false
+    block_extensions: []
+    
+  4:
+    description: "Standard / Production Mode"
+    risk_threshold_block: 85
+    risk_threshold_quarantine: 60
+    use_sandbox: false
+    block_extensions: ['.exe', '.dll', '.sh']
+    
+  3:
+    description: "Heightened Security"
+    risk_threshold_block: 70
+    risk_threshold_quarantine: 40
+    use_sandbox: true
+    sandbox_timeout: 2
+    block_extensions: ['.exe', '.dll', '.sh', '.bat', '.ps1', '.vbs']
+    
+  2:
+    description: "Severe / Attack Imminent"
+    risk_threshold_block: 40
+    risk_threshold_quarantine: 20
+    use_sandbox: true
+    sandbox_timeout: 5
+    block_extensions: ['.exe', '.dll', '.sh', '.bat', '.ps1', '.vbs', '.py', '.js']
+
+  1:
+    description: "Paranoid / Lockdown"
+    readonly: true
+    allow_only_provenance: true
+
+# Taint Analysis Sources & Sinks
+taint:
+  sources: ['input', 'request', 'socket', 'argparse']
+  sinks: ['exec', 'eval', 'subprocess', 'os.system', 'os.popen']
