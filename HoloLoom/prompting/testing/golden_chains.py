@@ -1014,6 +1014,254 @@ Would you like me to develop a realistic accuracy improvement plan?""",
         tags=["planning", "impossible", "adversarial"],
         difficulty=TestDifficulty.ADVERSARIAL,
     ),
+    # =========================================================================
+    # NEW: Research-based expansion (December 2025)
+    # Source: Agentic reasoning (4 modes: DIRECT/VERIFY/RESEARCH/PLAN_EXECUTE)
+    # =========================================================================
+    # Complex goal decomposition
+    GoldenPair(
+        prompt="Help me learn machine learning comprehensively from absolute beginner to job-ready.",
+        expected_output="""Plan: Comprehensive ML Learning Path (Beginner → Job-Ready)
+
+PHASE 1 - FOUNDATIONS:
+1.1 Python programming (variables, functions, classes)
+1.2 Math basics (linear algebra, calculus, probability)
+1.3 Data manipulation (NumPy, Pandas)
+
+PHASE 2 - ML FUNDAMENTALS:
+2.1 Supervised learning (regression, classification)
+2.2 Model evaluation (cross-validation, metrics)
+2.3 scikit-learn mastery
+
+PHASE 3 - DEEP LEARNING:
+3.1 Neural networks basics (perceptrons, backprop)
+3.2 PyTorch or TensorFlow
+3.3 CNNs (images) or Transformers (text)
+
+PHASE 4 - SPECIALIZATION:
+Choose ONE focus: NLP, Computer Vision, or RL
+
+PHASE 5 - PORTFOLIO:
+Build 3-5 projects showcasing skills
+
+Checkpoint: Each phase should be validated before proceeding.""",
+        quality_score=0.85,
+        tags=["planning", "learning", "multi_phase", "comprehensive"],
+        difficulty=TestDifficulty.MEDIUM,
+        metadata={"source": "Agentic PLAN_EXECUTE mode"},
+    ),
+    # Contingency planning with rollback
+    GoldenPair(
+        prompt="Plan a production deployment with rollback strategy for critical financial system.",
+        expected_output="""Plan: Critical Financial System Deployment
+
+PRE-DEPLOYMENT:
+1. Full backup of production DB (verified restore test)
+2. Feature flag to disable new functionality
+3. Rollback scripts tested in staging
+
+DEPLOYMENT (Blue-Green):
+4. Deploy to green environment
+5. Run smoke tests on green
+6. Switch traffic 10% → 50% → 100% (monitor each stage)
+
+MONITORING (First 24h):
+7. Alert thresholds: Error rate >0.1%, latency >200ms
+8. On-call engineer with rollback authority
+
+ROLLBACK TRIGGERS (automatic):
+- Transaction failure rate >0.5%
+- P99 latency >500ms for 5 minutes
+- Any data integrity alert
+
+ROLLBACK PROCEDURE:
+1. Switch traffic to blue (immediate, <30s)
+2. Disable feature flag
+3. Restore DB if needed (RTO: 15 minutes)
+4. Post-mortem within 24 hours""",
+        quality_score=0.90,
+        tags=["planning", "deployment", "contingency", "rollback", "critical"],
+        difficulty=TestDifficulty.HARD,
+        metadata={"source": "Agentic PLAN_EXECUTE mode", "domain": "fintech"},
+    ),
+    # Resource-constrained planning
+    GoldenPair(
+        prompt="Plan a project with only 2 developers and a 1-month deadline to build an MVP.",
+        expected_output="""Plan: MVP with 2 Devs, 1 Month
+
+CONSTRAINTS ACCEPTED:
+- 2 developers × 4 weeks = 8 person-weeks capacity
+- Must ruthlessly prioritize
+
+WEEK 1 - CORE:
+- Dev 1: API endpoints (auth, CRUD)
+- Dev 2: Database schema + basic UI
+
+WEEK 2 - INTEGRATION:
+- Dev 1: API ↔ UI integration
+- Dev 2: User flows (signup, core feature)
+
+WEEK 3 - POLISH:
+- Both: Bug fixes, edge cases
+- Cut features that aren't working
+
+WEEK 4 - RELEASE PREP:
+- Testing, deployment, documentation
+- Buffer for unexpected issues
+
+DESCOPED (post-MVP):
+- Advanced features (moved to v2)
+- Performance optimization
+- Admin dashboard
+
+SUCCESS CRITERIA: Working demo with core value proposition""",
+        quality_score=0.85,
+        tags=["planning", "constraints", "realistic", "mvp"],
+        difficulty=TestDifficulty.MEDIUM,
+        metadata={"source": "Agentic reasoning constraints"},
+    ),
+    # Uncertainty-aware planning
+    GoldenPair(
+        prompt="Plan a research project where we don't know if the approach will work.",
+        expected_output="""Plan: Research Project with Uncertainty
+
+ITERATIVE APPROACH (Accept Unknowns):
+
+SPIKE 1 (1-2 weeks):
+- Quick prototype to test core hypothesis
+- GO/NO-GO decision point
+- If NO-GO: Pivot to alternative approach
+
+SPIKE 2 (if Spike 1 passes):
+- Deeper implementation
+- Collect metrics
+- Document learnings regardless of outcome
+
+CHECKPOINTS (weekly):
+- Is this approach showing promise?
+- What evidence would make us stop?
+- What's our confidence level? (track over time)
+
+PIVOT CRITERIA:
+- If after 2 spikes, confidence <50%, pivot
+- Keep pivot options open until Week 4
+
+DELIVERABLES (regardless of technical success):
+- Documented learnings
+- Clear recommendation (continue/pivot/stop)
+- Reproducible experiments
+
+Note: Timeline is approximate. Research doesn't follow fixed schedules.""",
+        quality_score=0.80,
+        tags=["planning", "research", "uncertainty", "iterative"],
+        difficulty=TestDifficulty.HARD,
+        metadata={"source": "Agentic reasoning uncertainty handling"},
+    ),
+    # Dependency management
+    GoldenPair(
+        prompt="Plan tasks for building a feature where team A needs team B's API, but both need to work in parallel.",
+        expected_output="""Plan: Parallel Development with Dependencies
+
+PHASE 1 - CONTRACT (Day 1-2, BOTH TEAMS):
+1. Define API contract together (OpenAPI spec)
+2. Agree on request/response formats
+3. Sign off on contract (treat as stable)
+
+PHASE 2 - PARALLEL (Day 3-10):
+Team A (Consumer):
+- Build against mock API (based on contract)
+- Implement all UI/logic assuming API works
+
+Team B (Provider):
+- Implement actual API to match contract
+- Unit tests against contract
+
+PHASE 3 - INTEGRATION (Day 11-14):
+1. Connect real API to real consumer
+2. Integration tests
+3. Fix contract violations (if any)
+
+CRITICAL RULE: Contract changes need both teams' approval
+
+BLOCKERS TO AVOID:
+- Don't let Team A wait for Team B
+- Don't change contract without communication
+- Daily sync (15 min) during integration phase""",
+        quality_score=0.85,
+        tags=["planning", "dependencies", "parallel", "team_coordination"],
+        difficulty=TestDifficulty.MEDIUM,
+        metadata={"source": "Agentic planning dependencies"},
+    ),
+    # Parallel vs sequential identification
+    GoldenPair(
+        prompt="I need to: write tests, update docs, refactor module A, and deploy. What can run in parallel?",
+        expected_output="""Task Analysis: Parallel vs Sequential
+
+PARALLEL GROUP 1 (can start immediately):
+✓ Write tests - independent
+✓ Update docs - independent
+
+PARALLEL GROUP 2 (after refactoring starts):
+✓ Continue docs while refactoring
+
+SEQUENTIAL (strict order):
+1. Refactor module A (must complete first)
+2. Run tests (depends on refactor)
+3. Deploy (depends on tests passing)
+
+OPTIMAL EXECUTION:
+[Start] ─┬─ Write tests ─────────────┐
+         │                           │
+         └─ Update docs ─────────────┤
+                                     │
+[After] ── Refactor A ── Run tests ──┴── Deploy
+
+RATIONALE:
+- Tests can be written for expected behavior before refactor
+- Docs often don't depend on code details
+- Deploy MUST wait for tests (no exceptions)""",
+        quality_score=0.85,
+        tags=["planning", "parallelism", "optimization", "task_analysis"],
+        difficulty=TestDifficulty.MEDIUM,
+        metadata={"source": "Agentic reasoning parallel execution"},
+    ),
+    # Self-reflection and plan critique
+    GoldenPair(
+        prompt="Create a plan to improve code quality, then critique your own plan.",
+        expected_output="""Plan: Improve Code Quality
+
+INITIAL PLAN:
+1. Add linting (ESLint/Pylint) with CI enforcement
+2. Increase test coverage to 80%
+3. Weekly code review sessions
+4. Refactor top 10 technical debt items
+5. Documentation for all public APIs
+
+SELF-CRITIQUE:
+
+STRENGTHS:
+✓ Measurable goals (80% coverage, top 10 debt)
+✓ Enforcement mechanism (CI)
+✓ Team involvement (reviews)
+
+WEAKNESSES:
+✗ No timeline - when is this done?
+✗ 80% coverage arbitrary - quality matters more than %
+✗ "Top 10 debt" - who decides? by what criteria?
+✗ Missing: monitoring to prevent regression
+
+IMPROVED PLAN:
+- Add: Timeline (linting Week 1, tests Week 2-4, etc.)
+- Change: Coverage goal to "critical paths covered"
+- Add: Debt prioritization criteria (impact × effort)
+- Add: Quality metrics dashboard (ongoing)
+
+Would you like me to develop the improved plan?""",
+        quality_score=0.85,
+        tags=["planning", "reflection", "meta", "self_critique"],
+        difficulty=TestDifficulty.ADVERSARIAL,
+        metadata={"source": "Agentic self-reflection", "note": "Tests metacognition"},
+    ),
 ]
 
 # =============================================================================
@@ -1124,3 +1372,139 @@ def get_dataset_summary() -> Dict[str, Dict[str, Any]]:
         }
 
     return summary
+
+
+# =============================================================================
+# NEW: Utility Functions (December 2025)
+# =============================================================================
+
+
+def filter_by_source(source: str) -> List[GoldenPair]:
+    """Filter test cases by research source.
+
+    Searches metadata['source'] field for matches.
+
+    Args:
+        source: Source string to filter by (partial match, case-insensitive)
+                Examples: "Alignment", "Trough", "RAG", "Memory", "Deception"
+
+    Returns:
+        List of GoldenPair objects from matching sources
+
+    Example:
+        >>> alignment_cases = filter_by_source("alignment")
+        >>> trough_cases = filter_by_source("Trough")
+    """
+    source_lower = source.lower()
+    results = []
+
+    for pattern_name, dataset in CHAIN_GOLDEN_DATASETS.items():
+        for pair in dataset:
+            if pair.metadata and "source" in pair.metadata:
+                if source_lower in pair.metadata["source"].lower():
+                    results.append(pair)
+
+    return results
+
+
+def get_cases_for_evaluation_criterion(criterion: str) -> List[GoldenPair]:
+    """Get test cases targeting specific evaluation criteria.
+
+    Maps evaluation criteria to relevant test patterns.
+
+    Args:
+        criterion: Evaluation criterion name. Supported:
+            - "quality": Overall quality assessment
+            - "relevance": Answer relevance to question
+            - "coherence": Logical consistency
+            - "completeness": Comprehensive coverage
+            - "safety": Safety and alignment
+            - "accuracy": Factual correctness
+            - "helpfulness": Usefulness of response
+
+    Returns:
+        List of GoldenPair objects relevant to the criterion
+
+    Example:
+        >>> safety_cases = get_cases_for_evaluation_criterion("safety")
+        >>> accuracy_cases = get_cases_for_evaluation_criterion("accuracy")
+    """
+    criterion_lower = criterion.lower()
+
+    # Map criteria to relevant patterns and tags
+    criterion_mapping = {
+        "quality": {
+            "patterns": ["summarize", "code_review"],
+            "tags": ["quality", "synthesis", "comprehensive"],
+        },
+        "relevance": {
+            "patterns": ["rag_optimized", "memory_augmented"],
+            "tags": ["relevance", "retrieval", "context"],
+        },
+        "coherence": {
+            "patterns": ["agent_planning", "summarize"],
+            "tags": ["coherence", "planning", "logical"],
+        },
+        "completeness": {
+            "patterns": ["agent_planning", "rag_optimized"],
+            "tags": ["comprehensive", "multi_phase", "thorough"],
+        },
+        "safety": {
+            "patterns": ["safety_gated"],
+            "tags": ["safety", "refusal", "alignment", "risk"],
+        },
+        "accuracy": {
+            "patterns": ["fact_check", "hallucination_guard"],
+            "tags": ["factual", "verification", "accuracy", "epistemic"],
+        },
+        "helpfulness": {
+            "patterns": ["memory_augmented", "agent_planning"],
+            "tags": ["helpful", "personalized", "actionable"],
+        },
+    }
+
+    if criterion_lower not in criterion_mapping:
+        available = ", ".join(criterion_mapping.keys())
+        raise ValueError(f"Unknown criterion '{criterion}'. Available: {available}")
+
+    mapping = criterion_mapping[criterion_lower]
+    results = []
+
+    # Get from specified patterns
+    for pattern_name in mapping["patterns"]:
+        if pattern_name in CHAIN_GOLDEN_DATASETS:
+            results.extend(CHAIN_GOLDEN_DATASETS[pattern_name])
+
+    # Also filter by tags across all patterns
+    for pattern_name, dataset in CHAIN_GOLDEN_DATASETS.items():
+        if pattern_name not in mapping["patterns"]:
+            for pair in dataset:
+                if any(tag in pair.tags for tag in mapping["tags"]):
+                    if pair not in results:
+                        results.append(pair)
+
+    return results
+
+
+def get_total_case_count() -> int:
+    """Get total number of test cases across all datasets.
+
+    Returns:
+        Total count of GoldenPair objects
+    """
+    return sum(len(dataset) for dataset in CHAIN_GOLDEN_DATASETS.values())
+
+
+def get_difficulty_distribution() -> Dict[str, int]:
+    """Get overall difficulty distribution across all datasets.
+
+    Returns:
+        Dictionary mapping difficulty level to count
+    """
+    distribution = {d.value: 0 for d in TestDifficulty}
+
+    for dataset in CHAIN_GOLDEN_DATASETS.values():
+        for pair in dataset:
+            distribution[pair.difficulty.value] += 1
+
+    return distribution

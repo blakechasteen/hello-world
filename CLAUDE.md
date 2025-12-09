@@ -1100,12 +1100,13 @@ PYTHONPATH=. python demos/demo_mrf_skill.py
 
 ---
 
-## Context Packing System (November 2025)
+## Context Packing System (November 2025, Phase 5: December 2025)
 
 **Status**: ✅ Production Ready
 **Location**: `HoloLoom/context_packing/`
 **Performance**: 40-90% token savings
 **Documentation**: [README.md](HoloLoom/context_packing/README.md)
+**Phase 5**: Information-theoretic packing (Tishby's Information Bottleneck)
 
 Physics-inspired context compression that achieves 40-90% token savings while preserving information density through beta wave activation spreading, multi-signal importance scoring, and Matryoshka-aware embedding compression.
 
@@ -1114,8 +1115,9 @@ Physics-inspired context compression that achieves 40-90% token savings while pr
 The Context Packing System solves the LLM context window problem by intelligently compressing memory retrieval results before sending to language models. Unlike simple truncation or random sampling, it uses:
 
 1. **Beta Wave Activation Spreading** - Neuroscience-inspired (12-30 Hz) physics-based propagation across knowledge graphs
-2. **Multi-Signal Importance Scoring** - Combines 6 importance signals (recency, relevance, centrality, frequency, confidence, heat)
+2. **Multi-Signal Importance Scoring** - Combines 7 importance signals (recency, relevance, centrality, frequency, confidence, heat, **mutual information**)
 3. **Matryoshka-Aware Compression** - Multi-scale embeddings (384D/256D/128D) optimize detail vs compression tradeoff
+4. **Information Budget Compression** (Phase 5) - Tishby's Information Bottleneck for optimal I(Context; Query)
 
 ### Quick Start
 
@@ -1175,14 +1177,17 @@ activation_map = spreader.spread_activation(
 
 #### 2. Multi-Signal Importance Scoring
 
-Combines 6 importance signals to rank memory nodes:
+Combines 7 importance signals to rank memory nodes:
 
-1. **Recency** - How recently accessed (exponential decay)
-2. **Relevance** - Semantic similarity to query (cosine similarity)
-3. **Centrality** - Graph importance (PageRank/betweenness/closeness)
-4. **Access Frequency** - Historical access count (logarithmic scaling)
-5. **Confidence** - Historical confidence scores
-6. **Heat** - Hot pattern feedback score
+| Signal | Weight | Description |
+|--------|--------|-------------|
+| **Recency** | 15% | How recently accessed (exponential decay) |
+| **Relevance** | 20% | Semantic similarity to query (cosine similarity) |
+| **Centrality** | 12% | Graph importance (PageRank/betweenness/closeness) |
+| **Access Frequency** | 8% | Historical access count (logarithmic scaling) |
+| **Confidence** | 12% | Historical confidence scores |
+| **Heat** | 8% | Hot pattern feedback score |
+| **Information Content** | 25% | Mutual information I(Node; Query) - **Phase 5** |
 
 ```python
 from HoloLoom.context_packing import ImportanceScorer
@@ -1216,6 +1221,50 @@ kept_nodes, scale_assignments = compressor.matryoshka_compress(
 )
 
 # Scale assignments: {"node_1": 384, "node_2": 256, "node_3": 128}
+```
+
+#### 4. Phase 5: Information Budget Packing (December 2025)
+
+Information-theoretic compression using Tishby's Information Bottleneck principle. Maximizes I(Context; Query) while respecting token budget.
+
+**MI-Aware Matryoshka Scale Assignment**:
+
+| MI Score | Scale | Tokens | Rationale |
+|----------|-------|--------|-----------|
+| **≥0.7** (High MI) | 384D | ~100 | Full detail for high-information nodes |
+| **0.4-0.7** (Medium MI) | 256D | ~67 | Moderate compression |
+| **0.2-0.4** (Low MI) | 128D | ~33 | Aggressive compression |
+| **<0.2** (Very Low MI) | Dropped | 0 | Below information threshold |
+
+**Quick Start**:
+```python
+from HoloLoom.context_packing import information_budget_pack
+
+# Pack with information budget constraint
+nodes, scales, mi_scores = information_budget_pack(
+    query="What is Thompson Sampling?",
+    candidate_nodes=memory_nodes,
+    graph=knowledge_graph,
+    node_contents=contents,
+    information_budget=5.0  # bits
+)
+
+# MI scores show information value of each node
+for node_id, mi in mi_scores.items():
+    print(f"{node_id}: MI={mi:.3f} bits")
+```
+
+**Performance with Caching**:
+- Cold cache: ~5ms per query (includes MI computation)
+- Warm cache: <0.1ms per query (**50-100x speedup**)
+- Cache hit rate: 85-95% in typical workloads
+
+**Entropy-Aware Aggregation**:
+```python
+# Low entropy (certain information) gets boosted
+# High entropy (uncertain) gets penalized
+final_score = 0.7 * base_score + 0.3 * (base_score * entropy_weight)
+# where entropy_weight = 1.0 / (1.0 + node_entropy)
 ```
 
 ### Configuration Presets

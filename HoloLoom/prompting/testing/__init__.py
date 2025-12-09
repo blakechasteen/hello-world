@@ -68,6 +68,10 @@ from HoloLoom.prompting.testing.golden_chains import (
     filter_by_difficulty,
     filter_by_tags,
     get_dataset_summary,
+    filter_by_source,
+    get_cases_for_evaluation_criterion,
+    get_total_case_count,
+    get_difficulty_distribution,
     GoldenPair as ChainGoldenPair,  # Alias for compatibility
 )
 
@@ -110,5 +114,9 @@ __all__ = [
     "filter_by_difficulty",
     "filter_by_tags",
     "get_dataset_summary",
+    "filter_by_source",
+    "get_cases_for_evaluation_criterion",
+    "get_total_case_count",
+    "get_difficulty_distribution",
     "ChainGoldenPair",
 ]
