@@ -16,6 +16,8 @@ Optional advanced features:
 - memory_symphony_handlers: Memory coordination and strategy commands
 - temporal_handlers: Time-travel and temporal pattern queries
 - department_handlers: Multi-department coordination and routing
+- feedback_handler: Reaction-based Thompson Sampling feedback
+- ingestion_handlers: SpinningWheel data ingestion commands
 - websocket_progress: WebSocket-based job progress streaming
 - prometheus_metrics: Prometheus metrics for job observability
 """
@@ -266,6 +268,68 @@ try:
         "handle_dept_process",
         "handle_dept_capabilities",
         "handle_dept_help"
+    ])
+except ImportError:
+    pass
+
+try:
+    from HoloLoom.chatops.handlers.feedback_handler import (
+        FeedbackProcessor,
+        BotMessageTracker,
+        ThompsonFeedbackUpdater,
+        get_feedback_processor,
+        set_feedback_processor,
+        handle_reaction_event,
+        FeedbackHandlers,
+        handle_feedback_stats,
+        handle_feedback_process,
+        handle_feedback_help,
+        register_feedback_handlers
+    )
+    __all__.extend([
+        "FeedbackProcessor",
+        "BotMessageTracker",
+        "ThompsonFeedbackUpdater",
+        "get_feedback_processor",
+        "set_feedback_processor",
+        "handle_reaction_event",
+        "FeedbackHandlers",
+        "handle_feedback_stats",
+        "handle_feedback_process",
+        "handle_feedback_help",
+        "register_feedback_handlers"
+    ])
+except ImportError:
+    pass
+
+try:
+    from HoloLoom.chatops.handlers.ingestion_handlers import (
+        register_ingestion_handlers,
+        IngestionHandlers,
+        SourceDetection,
+        detect_source_type,
+        handle_ingest,
+        handle_ingest_youtube,
+        handle_ingest_pdf,
+        handle_ingest_url,
+        handle_ingest_git,
+        handle_ingest_image,
+        handle_ingest_status,
+        handle_ingest_help
+    )
+    __all__.extend([
+        "register_ingestion_handlers",
+        "IngestionHandlers",
+        "SourceDetection",
+        "detect_source_type",
+        "handle_ingest",
+        "handle_ingest_youtube",
+        "handle_ingest_pdf",
+        "handle_ingest_url",
+        "handle_ingest_git",
+        "handle_ingest_image",
+        "handle_ingest_status",
+        "handle_ingest_help"
     ])
 except ImportError:
     pass

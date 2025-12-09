@@ -792,6 +792,209 @@ class MRFDashboard:
             for name, test in self.ab_tests.items()
         }
 
+    # ===== CoVe (Chain of Verification) Integration =====
+
+    def log_verification(
+        self,
+        verification_result: Dict[str, Any],
+        context: Optional[Dict[str, Any]] = None
+    ):
+        """
+        Log Chain of Verification (CoVe) usage.
+
+        Tracks CoVe verification alongside MRF strategies, enabling
+        comparison and analysis of verification effectiveness.
+
+        Args:
+            verification_result: Result from CoVe verification containing:
+                - verified_response: The verified output
+                - original_response: Original response (if available)
+                - claims_extracted: Number of claims extracted
+                - questions_generated: Number of verification questions
+                - contradictions_found: Number of contradictions detected
+                - verification_time_ms: Time taken for verification
+                - confidence: Final confidence score (0.0-1.0)
+                - metadata: Additional verification metadata
+            context: Optional context including:
+                - query: Original query text
+                - system: System that requested verification
+                - model_provider: LLM provider used
+
+        Example:
+            dashboard.log_verification(
+                verification_result={
+                    "claims_extracted": 5,
+                    "questions_generated": 10,
+                    "contradictions_found": 1,
+                    "verification_time_ms": 450.0,
+                    "confidence": 0.85
+                },
+                context={
+                    "query": "What is Thompson Sampling?",
+                    "system": "agentic"
+                }
+            )
+        """
+        context = context or {}
+
+        # Extract verification metrics
+        claims = verification_result.get("claims_extracted", 0)
+        questions = verification_result.get("questions_generated", 0)
+        contradictions = verification_result.get("contradictions_found", 0)
+        time_ms = verification_result.get("verification_time_ms", 0.0)
+        confidence = verification_result.get("confidence", 0.0)
+
+        # Initialize CoVe statistics if not present
+        if not hasattr(self, "_cove_stats"):
+            self._cove_stats = {
+                "total_verifications": 0,
+                "total_claims_extracted": 0,
+                "total_questions_generated": 0,
+                "total_contradictions_found": 0,
+                "total_time_ms": 0.0,
+                "confidence_sum": 0.0,
+                "per_system": {},
+                "recent_logs": []
+            }
+
+        # Update global CoVe statistics
+        self._cove_stats["total_verifications"] += 1
+        self._cove_stats["total_claims_extracted"] += claims
+        self._cove_stats["total_questions_generated"] += questions
+        self._cove_stats["total_contradictions_found"] += contradictions
+        self._cove_stats["total_time_ms"] += time_ms
+        self._cove_stats["confidence_sum"] += confidence
+
+        # Track per-system statistics
+        system = context.get("system", "unknown")
+        if system not in self._cove_stats["per_system"]:
+            self._cove_stats["per_system"][system] = {
+                "verifications": 0,
+                "claims": 0,
+                "questions": 0,
+                "contradictions": 0,
+                "time_ms": 0.0,
+                "confidence_sum": 0.0
+            }
+
+        sys_stats = self._cove_stats["per_system"][system]
+        sys_stats["verifications"] += 1
+        sys_stats["claims"] += claims
+        sys_stats["questions"] += questions
+        sys_stats["contradictions"] += contradictions
+        sys_stats["time_ms"] += time_ms
+        sys_stats["confidence_sum"] += confidence
+
+        # Store recent log (keep last 100)
+        log_entry = {
+            "timestamp": time.time(),
+            "system": system,
+            "claims_extracted": claims,
+            "questions_generated": questions,
+            "contradictions_found": contradictions,
+            "verification_time_ms": time_ms,
+            "confidence": confidence,
+            "query": context.get("query", ""),
+            "model_provider": context.get("model_provider", "unknown")
+        }
+        self._cove_stats["recent_logs"].append(log_entry)
+        if len(self._cove_stats["recent_logs"]) > 100:
+            self._cove_stats["recent_logs"] = self._cove_stats["recent_logs"][-100:]
+
+        # Persist to disk
+        self._persist_cove_log(log_entry)
+
+        logger.info(
+            f"[CoVe] {system}: {claims} claims, {questions} questions, "
+            f"{contradictions} contradictions | Confidence: {confidence:.2f} | "
+            f"Time: {time_ms:.1f}ms"
+        )
+
+    def get_cove_statistics(self) -> Dict[str, Any]:
+        """
+        Get Chain of Verification (CoVe) usage statistics.
+
+        Returns comprehensive statistics about CoVe usage across all systems,
+        including averages, per-system breakdowns, and effectiveness metrics.
+
+        Returns:
+            Dictionary containing:
+                - total_verifications: Total number of verifications
+                - avg_claims_extracted: Average claims per verification
+                - avg_questions_generated: Average questions per verification
+                - avg_contradictions_found: Average contradictions per verification
+                - contradiction_rate: Contradictions per claim (quality indicator)
+                - avg_verification_time_ms: Average verification time
+                - avg_confidence: Average final confidence
+                - per_system: Per-system breakdown
+                - recent_trend: Last 10 verification confidence scores
+
+        Example:
+            stats = dashboard.get_cove_statistics()
+            print(f"Total verifications: {stats['total_verifications']}")
+            print(f"Contradiction rate: {stats['contradiction_rate']:.1%}")
+        """
+        if not hasattr(self, "_cove_stats") or self._cove_stats["total_verifications"] == 0:
+            return {
+                "error": "No CoVe verifications logged yet",
+                "total_verifications": 0
+            }
+
+        stats = self._cove_stats
+        total = stats["total_verifications"]
+
+        # Calculate averages
+        avg_claims = stats["total_claims_extracted"] / total
+        avg_questions = stats["total_questions_generated"] / total
+        avg_contradictions = stats["total_contradictions_found"] / total
+        avg_time = stats["total_time_ms"] / total
+        avg_confidence = stats["confidence_sum"] / total
+
+        # Calculate contradiction rate (contradictions per claim)
+        contradiction_rate = (
+            stats["total_contradictions_found"] / stats["total_claims_extracted"]
+            if stats["total_claims_extracted"] > 0 else 0.0
+        )
+
+        # Per-system statistics
+        per_system = {}
+        for system, sys_stats in stats["per_system"].items():
+            sys_total = sys_stats["verifications"]
+            per_system[system] = {
+                "verifications": sys_total,
+                "avg_claims": sys_stats["claims"] / sys_total if sys_total > 0 else 0,
+                "avg_questions": sys_stats["questions"] / sys_total if sys_total > 0 else 0,
+                "avg_contradictions": sys_stats["contradictions"] / sys_total if sys_total > 0 else 0,
+                "avg_time_ms": sys_stats["time_ms"] / sys_total if sys_total > 0 else 0,
+                "avg_confidence": sys_stats["confidence_sum"] / sys_total if sys_total > 0 else 0
+            }
+
+        # Recent trend (last 10 confidence scores)
+        recent_confidences = [
+            log["confidence"] for log in stats["recent_logs"][-10:]
+        ]
+
+        return {
+            "total_verifications": total,
+            "total_claims_extracted": stats["total_claims_extracted"],
+            "total_questions_generated": stats["total_questions_generated"],
+            "total_contradictions_found": stats["total_contradictions_found"],
+            "avg_claims_extracted": avg_claims,
+            "avg_questions_generated": avg_questions,
+            "avg_contradictions_found": avg_contradictions,
+            "contradiction_rate": contradiction_rate,
+            "avg_verification_time_ms": avg_time,
+            "avg_confidence": avg_confidence,
+            "per_system": per_system,
+            "recent_trend": recent_confidences
+        }
+
+    def _persist_cove_log(self, log_entry: Dict[str, Any]):
+        """Persist CoVe log entry to disk."""
+        log_file = self.persist_path / f"cove_log_{datetime.now().strftime('%Y%m%d')}.jsonl"
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(log_entry) + "\n")
+
     # ===== Prometheus Metrics Export =====
 
     def export_prometheus_metrics(self) -> str:
@@ -867,6 +1070,46 @@ class MRFDashboard:
                     lines.append(f'# TYPE mrf_ab_test_significant gauge')
                     lines.append(f'mrf_ab_test_significant{{test="{test_name}"}} {1 if analysis["is_significant"] else 0}')
                     lines.append("")
+
+        # CoVe (Chain of Verification) statistics (if available)
+        cove_stats = self.get_cove_statistics()
+        if "error" not in cove_stats:
+            lines.append("# HELP cove_verifications_total Total CoVe verifications")
+            lines.append("# TYPE cove_verifications_total counter")
+            lines.append(f"cove_verifications_total {cove_stats['total_verifications']}")
+            lines.append("")
+
+            lines.append("# HELP cove_claims_extracted_total Total claims extracted")
+            lines.append("# TYPE cove_claims_extracted_total counter")
+            lines.append(f"cove_claims_extracted_total {cove_stats['total_claims_extracted']}")
+            lines.append("")
+
+            lines.append("# HELP cove_contradictions_found_total Total contradictions found")
+            lines.append("# TYPE cove_contradictions_found_total counter")
+            lines.append(f"cove_contradictions_found_total {cove_stats['total_contradictions_found']}")
+            lines.append("")
+
+            lines.append("# HELP cove_contradiction_rate Contradictions per claim (quality indicator)")
+            lines.append("# TYPE cove_contradiction_rate gauge")
+            lines.append(f"cove_contradiction_rate {cove_stats['contradiction_rate']:.4f}")
+            lines.append("")
+
+            lines.append("# HELP cove_avg_verification_time_ms Average verification time")
+            lines.append("# TYPE cove_avg_verification_time_ms gauge")
+            lines.append(f"cove_avg_verification_time_ms {cove_stats['avg_verification_time_ms']:.2f}")
+            lines.append("")
+
+            lines.append("# HELP cove_avg_confidence Average verification confidence")
+            lines.append("# TYPE cove_avg_confidence gauge")
+            lines.append(f"cove_avg_confidence {cove_stats['avg_confidence']:.4f}")
+            lines.append("")
+
+            # Per-system CoVe metrics
+            lines.append("# HELP cove_system_verifications_total Verifications per system")
+            lines.append("# TYPE cove_system_verifications_total counter")
+            for system, sys_data in cove_stats["per_system"].items():
+                lines.append(f'cove_system_verifications_total{{system="{system}"}} {sys_data["verifications"]}')
+            lines.append("")
 
         return "\n".join(lines)
 

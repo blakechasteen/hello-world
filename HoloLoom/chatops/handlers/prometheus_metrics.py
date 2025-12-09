@@ -141,7 +141,7 @@ class JobMetricsCollector:
     """
 
     def __init__(self, window_size_minutes: int = 5):
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()  # RLock allows re-entrant locking (fixes deadlock in get_summary)
         self._jobs: Dict[str, JobMetrics] = {}
         self._completed_jobs: deque = deque(maxlen=10000)  # Rolling window
 

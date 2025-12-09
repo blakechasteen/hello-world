@@ -40,6 +40,12 @@ class DecisionType(Enum):
     REFINEMENT = "refinement"
     HUMAN_APPROVAL = "human_approval"
 
+    # Cross-device handoff types (December 2025)
+    HANDOFF = "handoff"                  # Transfer work to another device
+    DEVICE_SYNC = "device_sync"          # Memory synchronization across devices
+    DEVICE_PAIRING = "device_pairing"    # Add/remove device from identity
+    DEVICE_REVOCATION = "device_revocation"  # Revoke compromised device
+
 
 class OutcomeType(Enum):
     """Outcome of a decision."""

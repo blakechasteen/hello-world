@@ -40,7 +40,7 @@ Usage:
 
 import json
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from collections import defaultdict

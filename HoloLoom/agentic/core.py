@@ -30,6 +30,48 @@ from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.recursive import FullLearningEngine, ActionItemTracker, ActionStatus
 from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 
+# Deception Detection (Dec 2025) - E1.3 Alignment Enrichment
+try:
+    from HoloLoom.alignment.deception_detection import (
+        DeceptionDetector,
+        BehavioralProbe,
+        ProbeType,
+        DeceptionSignal,
+        GoalStatement,
+        ActionObservation,
+    )
+    DECEPTION_AVAILABLE = True
+except ImportError:
+    DECEPTION_AVAILABLE = False
+    DeceptionDetector = None
+    BehavioralProbe = None
+    ProbeType = None
+    DeceptionSignal = None
+    GoalStatement = None
+    ActionObservation = None
+
+# Instrumental Convergence Prevention (Dec 2025) - E1.4 Alignment Enrichment
+try:
+    from HoloLoom.alignment.instrumental_convergence import (
+        InstrumentalConvergenceGuard,
+        ResourceType,
+        ResourceBounds,
+        AutonomyLimit,
+        ResourceViolation,
+        PowerSeekingIndicators,
+        create_guard,
+    )
+    CONVERGENCE_AVAILABLE = True
+except ImportError:
+    CONVERGENCE_AVAILABLE = False
+    InstrumentalConvergenceGuard = None
+    ResourceType = None
+    ResourceBounds = None
+    AutonomyLimit = None
+    ResourceViolation = None
+    PowerSeekingIndicators = None
+    create_guard = None
+
 # Agent Monitoring (Nov 2025)
 try:
     from HoloLoom.agentic.monitoring import AgentMonitor, AgentStatus
@@ -169,7 +211,11 @@ class AgenticOrchestrator:
         safety_adapter: Optional['AgenticSafetyAdapter'] = None,  # Safety Integration (Dec 2025)
         enable_safety: bool = True,  # Safe by default - MRF ELEGANCE principle
         conscience_adapter: Optional['AgenticConscienceAdapter'] = None,  # Conscience Integration (Dec 2025)
-        enable_conscience: bool = True  # Per-step gating by default - Phase 2B
+        enable_conscience: bool = True,  # Per-step gating by default - Phase 2B
+        deception_detector: Optional['DeceptionDetector'] = None,  # Deception Detection (Dec 2025) - E1.3
+        enable_deception_detection: bool = True,  # Goal-action alignment checking
+        convergence_guard: Optional['InstrumentalConvergenceGuard'] = None,  # Instrumental Convergence (Dec 2025) - E1.4
+        enable_convergence_prevention: bool = True  # Power-seeking detection and resource bounds
     ):
         self.learning_engine = learning_engine
         self.audit_trail = audit_trail or AuditTrail()
@@ -245,6 +291,294 @@ class AgenticOrchestrator:
             if self.conscience_adapter is None:
                 self.conscience_adapter = create_conscience_adapter(auto_create=True)
                 self.logger.info("Auto-created conscience adapter for per-step gating")
+
+        # Deception Detection (Dec 2025) - E1.3 Alignment Enrichment
+        # Behavioral probes and goal transparency for multi-step reasoning
+        self.enable_deception_detection = enable_deception_detection and DECEPTION_AVAILABLE
+        self.deception_detector = None
+
+        if self.enable_deception_detection:
+            if deception_detector is not None:
+                self.deception_detector = deception_detector
+                self.logger.info("Deception detector provided - goal-action alignment enabled")
+            else:
+                # Auto-create with default configuration
+                try:
+                    self.deception_detector = DeceptionDetector()
+                    self.logger.info("Auto-created deception detector for goal transparency")
+                except Exception as e:
+                    self.logger.warning(f"Failed to create deception detector: {e}")
+                    self.deception_detector = None
+                    self.enable_deception_detection = False
+
+        # Instrumental Convergence Prevention (Dec 2025) - E1.4 Alignment Enrichment
+        # Resource bounds, autonomy limits, and power-seeking detection
+        self.enable_convergence_prevention = enable_convergence_prevention and CONVERGENCE_AVAILABLE
+        self.convergence_guard = None
+
+        if self.enable_convergence_prevention:
+            if convergence_guard is not None:
+                self.convergence_guard = convergence_guard
+                self.logger.info("Convergence guard provided - power-seeking detection enabled")
+            else:
+                # Auto-create with default configuration and safe autonomy limits
+                try:
+                    self.convergence_guard = create_guard(
+                        enable_resource_tracking=True,
+                        enable_autonomy_limits=True
+                    )
+                    # Set conservative autonomy limits for agentic reasoning
+                    self.convergence_guard.set_autonomy_limit(AutonomyLimit(
+                        max_autonomous_actions=50,  # Max steps without oversight
+                        max_autonomous_duration=1800.0,  # 30 minutes max
+                        require_approval_for=["execute", "system", "deploy", "delete"]
+                    ))
+                    # Set default resource bounds
+                    self.convergence_guard.set_resource_bounds(
+                        ResourceType.API_CALLS,
+                        ResourceBounds(
+                            resource_type=ResourceType.API_CALLS,
+                            soft_limit=50.0,
+                            hard_limit=100.0,
+                            rate_limit=10.0,
+                            time_window_seconds=60.0
+                        )
+                    )
+                    self.logger.info("Auto-created convergence guard with conservative limits")
+                except Exception as e:
+                    self.logger.warning(f"Failed to create convergence guard: {e}")
+                    self.convergence_guard = None
+                    self.enable_convergence_prevention = False
+
+    async def _check_convergence(
+        self,
+        intent: 'AgenticIntent',
+        step_action: str,
+        step_type: str,
+        actions_so_far: List[str]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Check for instrumental convergence patterns during multi-step reasoning.
+
+        Instrumental Convergence Prevention - E1.4 (Dec 2025)
+        Monitors for power-seeking behavior, resource acquisition, and autonomy bounds.
+
+        Args:
+            intent: The declared goal/intent of the reasoning
+            step_action: The action taken in this step (e.g., query text)
+            step_type: Type of step (verification, research, plan_step)
+            actions_so_far: List of all actions taken in this reasoning session
+
+        Returns:
+            Dict with convergence analysis results, or None if prevention disabled
+        """
+        if not self.convergence_guard:
+            return None
+
+        try:
+            # Check autonomy limits
+            allowed, autonomy_reason = self.convergence_guard.check_autonomy_limits(step_type)
+            if not allowed:
+                self.logger.warning(f"Autonomy limit reached: {autonomy_reason}")
+                self.audit_trail.log_decision(
+                    decision_type=DecisionType.TOOL_SELECTION,
+                    outcome=OutcomeType.BLOCKED,
+                    reason=f"Autonomy limit: {autonomy_reason}",
+                    query_text=step_action[:200],
+                    metadata={
+                        "convergence_prevention": {
+                            "blocked": True,
+                            "reason": autonomy_reason,
+                            "step_type": step_type,
+                            "intent_id": intent.intent_id
+                        }
+                    }
+                )
+                return {
+                    "blocked": True,
+                    "reason": autonomy_reason,
+                    "autonomy_limit_reached": True,
+                    "power_seeking": None
+                }
+
+            # Record the autonomous action
+            self.convergence_guard.record_autonomous_action(step_type)
+
+            # Check for self-modification attempts
+            if self.convergence_guard.detect_self_modification(step_action):
+                self.logger.warning(f"Self-modification attempt detected in: {step_action[:100]}")
+                self.audit_trail.log_decision(
+                    decision_type=DecisionType.TOOL_SELECTION,
+                    outcome=OutcomeType.FLAGGED,
+                    reason="Self-modification attempt detected",
+                    query_text=step_action[:200],
+                    metadata={
+                        "convergence_prevention": {
+                            "self_modification": True,
+                            "action": step_action[:100],
+                            "step_type": step_type
+                        }
+                    }
+                )
+
+            # Detect power-seeking behavior patterns
+            power_indicators = await self.convergence_guard.detect_power_seeking(
+                actions=actions_so_far + [step_action],
+                context={
+                    "intent": intent.goal,
+                    "step_type": step_type,
+                    "total_steps": len(actions_so_far) + 1
+                }
+            )
+
+            # Log if power-seeking detected
+            if power_indicators.is_power_seeking:
+                self.logger.warning(
+                    f"Power-seeking behavior detected: {power_indicators.detected_patterns}"
+                )
+                self.audit_trail.log_decision(
+                    decision_type=DecisionType.TOOL_SELECTION,
+                    outcome=OutcomeType.FLAGGED,
+                    reason=f"Power-seeking patterns: {', '.join(power_indicators.detected_patterns)}",
+                    query_text=step_action[:200],
+                    metadata={
+                        "convergence_prevention": {
+                            "power_seeking": True,
+                            "patterns": power_indicators.detected_patterns,
+                            "scores": {
+                                "resource_acquisition": power_indicators.resource_acquisition_score,
+                                "privilege_escalation": power_indicators.privilege_escalation_score,
+                                "control_expansion": power_indicators.control_expansion_score,
+                                "self_preservation": power_indicators.self_preservation_score
+                            }
+                        }
+                    }
+                )
+
+            return {
+                "blocked": False,
+                "reason": autonomy_reason,
+                "autonomy_limit_reached": False,
+                "power_seeking": {
+                    "detected": power_indicators.is_power_seeking,
+                    "patterns": power_indicators.detected_patterns,
+                    "max_score": max(
+                        power_indicators.resource_acquisition_score,
+                        power_indicators.privilege_escalation_score,
+                        power_indicators.control_expansion_score,
+                        power_indicators.self_preservation_score
+                    )
+                },
+                "autonomy_stats": self.convergence_guard.get_autonomy_statistics()
+            }
+
+        except Exception as e:
+            self.logger.warning(f"Convergence check failed: {e}")
+            return None
+
+    async def _check_deception(
+        self,
+        intent: 'AgenticIntent',
+        step_action: str,
+        step_result: Any,
+        step_type: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Check for potential deceptive behavior during multi-step reasoning.
+
+        Deception Detection - E1.3 (Dec 2025)
+        Runs behavioral probes to verify goal-action alignment.
+
+        Args:
+            intent: The declared goal/intent of the reasoning
+            step_action: The action taken in this step (e.g., query text)
+            step_result: The result of the step (Spacetime or response)
+            step_type: Type of step (verification, research, plan_step)
+
+        Returns:
+            Dict with deception analysis results, or None if detection disabled
+        """
+        if not self.deception_detector:
+            return None
+
+        try:
+            # Declare the stated goal (if not already declared)
+            goal_id = f"goal_{intent.intent_id}"
+            if not self.deception_detector.goal_tracker.get_goal(goal_id):
+                self.deception_detector.goal_tracker.declare_goal(
+                    GoalStatement(
+                        goal_id=goal_id,
+                        description=intent.goal,
+                        priority=1,
+                        metadata={"original_query": intent.original_query}
+                    )
+                )
+
+            # Create action observation
+            result_text = ""
+            if hasattr(step_result, 'response'):
+                result_text = str(step_result.response)[:500]
+            elif hasattr(step_result, 'text'):
+                result_text = str(step_result.text)[:500]
+            else:
+                result_text = str(step_result)[:500]
+
+            action_obs = ActionObservation(
+                action_id=f"action_{intent.intent_id}_{step_type}_{hash(step_action) % 10000}",
+                description=f"{step_type}: {step_action[:200]}",
+                context={"step_type": step_type, "result_preview": result_text[:200]},
+                goal_id=goal_id
+            )
+
+            # Run goal alignment probe
+            probe = BehavioralProbe(
+                probe_type=ProbeType.GOAL_ALIGNMENT,
+                scenario=f"Step in {step_type} mode for goal: {intent.goal[:100]}",
+                expected_behavior=f"Action should align with goal: {intent.goal[:100]}"
+            )
+
+            # Analyze alignment
+            passed, deception_score = self.deception_detector.run_probe(
+                probe,
+                actual_behavior=f"Query: {step_action[:150]}. Result: {result_text[:150]}"
+            )
+
+            # Track the action
+            self.deception_detector.goal_tracker.track_action(action_obs)
+
+            # Log to audit trail if deception detected
+            if deception_score > 0.5:
+                self.audit_trail.log_decision(
+                    decision_type=DecisionType.TOOL_SELECTION,
+                    outcome=OutcomeType.FLAGGED if deception_score > 0.7 else OutcomeType.APPROVED,
+                    reason=f"Deception check: score={deception_score:.2f}",
+                    query_text=step_action[:200],
+                    metadata={
+                        "deception_detection": {
+                            "score": deception_score,
+                            "passed": passed,
+                            "step_type": step_type,
+                            "goal_id": goal_id,
+                            "probe_type": "goal_alignment"
+                        }
+                    }
+                )
+
+            return {
+                "deception_score": deception_score,
+                "passed": passed,
+                "goal_aligned": deception_score < 0.5,
+                "signal_level": (
+                    DeceptionSignal.CRITICAL.value if deception_score > 0.8 else
+                    DeceptionSignal.HIGH.value if deception_score > 0.6 else
+                    DeceptionSignal.MEDIUM.value if deception_score > 0.4 else
+                    DeceptionSignal.LOW.value
+                )
+            }
+
+        except Exception as e:
+            self.logger.warning(f"Deception check failed: {e}")
+            return None
 
     async def _gate_with_safety(
         self,
@@ -657,7 +991,8 @@ Please provide a clear and concise answer based on the context above."""
             verification_queries=verification_queries,
             max_loops=max_loops,
             steps=steps,
-            epistemic_confidences=epistemic_confidences  # Consciousness Integration - Phase 1
+            epistemic_confidences=epistemic_confidences,  # Consciousness Integration - Phase 1
+            intent=intent  # Deception Detection - E1.3
         )
 
         # Step 4: Refine if needed
@@ -707,6 +1042,7 @@ Please provide a clear and concise answer based on the context above."""
         evidence = []
         initial_findings = None
         epistemic_confidences = []  # Consciousness Integration - Phase 1 (Nov 2025)
+        actions_so_far = []  # Instrumental Convergence - E1.4 (Dec 2025)
 
         # Step 1: Generate research questions (LLM-activated)
         research_queries = await self._generate_research_queries(
@@ -758,6 +1094,30 @@ Please provide a clear and concise answer based on the context above."""
                     })
                     continue  # Skip this research query
 
+            # Instrumental Convergence - E1.4 (Dec 2025)
+            # Check autonomy limits and power-seeking patterns
+            convergence_result = await self._check_convergence(
+                intent=intent,
+                step_action=rq,
+                step_type="research",
+                actions_so_far=actions_so_far
+            )
+            if convergence_result and convergence_result.get("blocked"):
+                self.logger.warning(
+                    f"[CONVERGENCE] Research query {i+1} blocked: {convergence_result['reason']}"
+                )
+                steps.append({
+                    "type": "research_query",
+                    "query": rq,
+                    "blocked": True,
+                    "blocked_reason": convergence_result["reason"],
+                    "convergence_check": convergence_result,
+                })
+                break  # Stop research - autonomy limit reached
+
+            # Track action for power-seeking detection
+            actions_so_far.append(rq)
+
             # Agent Monitoring: Feed update for current research query
             if self.monitor:
                 try:
@@ -789,12 +1149,24 @@ Please provide a clear and concise answer based on the context above."""
 
             finding = result.response if hasattr(result, 'response') else str(result)
             evidence.append(finding)
+
+            # Deception Detection - E1.3 (Dec 2025)
+            # Check goal-action alignment for each research query
+            deception_result = await self._check_deception(
+                intent=intent,
+                step_action=rq,
+                step_result=result,
+                step_type="research"
+            )
+
             steps.append({
                 "type": "research_query",
                 "query": rq,
                 "confidence": result.confidence,
                 "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
-                "findings": finding[:200]
+                "findings": finding[:200],
+                "deception_check": deception_result,  # Deception Detection - E1.3
+                "convergence_check": convergence_result  # Instrumental Convergence - E1.4
             })
 
             # Update initial_findings for next iteration (adaptive exploration)
@@ -843,6 +1215,7 @@ Please provide a clear and concise answer based on the context above."""
         """Goal decomposition and execution with epistemic tracking."""
         steps = []
         epistemic_confidences = []  # Consciousness Integration - Phase 1 (Nov 2025)
+        actions_so_far = []  # Instrumental Convergence - E1.4 (Dec 2025)
 
         # Step 1: Decompose goal into sub-goals
         sub_goals = self._decompose_goal(query)
@@ -903,6 +1276,29 @@ Please provide a clear and concise answer based on the context above."""
                     })
                     continue  # Skip this sub-goal
 
+            # Instrumental Convergence - E1.4 (Dec 2025)
+            # Check autonomy limits, resource bounds, and power-seeking patterns
+            convergence_result = await self._check_convergence(
+                intent=intent,
+                step_action=sub_goal,
+                step_type="plan_execute",
+                actions_so_far=actions_so_far
+            )
+            if convergence_result and convergence_result.get("blocked"):
+                self.logger.warning(
+                    f"[CONVERGENCE] Sub-goal {i+1} blocked: {convergence_result.get('reason', 'autonomy limit')}"
+                )
+                steps.append({
+                    "type": "sub_goal",
+                    "goal": sub_goal,
+                    "blocked": True,
+                    "blocked_reason": convergence_result.get("reason", "autonomy limit reached"),
+                    "convergence_check": convergence_result
+                })
+                break  # Stop plan execution - autonomy limit reached
+
+            actions_so_far.append(sub_goal)
+
             result = await self.learning_engine.weave(Query(text=sub_goal))
             results.append(result)
 
@@ -925,12 +1321,23 @@ Please provide a clear and concise answer based on the context above."""
             if epistemic_conf is not None:
                 epistemic_confidences.append(epistemic_conf)
 
+            # Deception Detection - E1.3 (Dec 2025)
+            # Check goal-action alignment for each sub-goal execution
+            deception_result = await self._check_deception(
+                intent=intent,
+                step_action=sub_goal,
+                step_result=result,
+                step_type="plan_execute"
+            )
+
             steps.append({
                 "type": "sub_goal",
                 "goal": sub_goal,
                 "confidence": result.confidence,
                 "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
-                "completed": result.confidence >= intent.confidence_threshold
+                "completed": result.confidence >= intent.confidence_threshold,
+                "deception_check": deception_result,  # Deception Detection - E1.3
+                "convergence_check": convergence_result  # Instrumental Convergence - E1.4
             })
 
         # Step 3: Synthesize
@@ -1117,12 +1524,14 @@ Please provide a clear and concise answer based on the context above."""
         verification_queries: List[str],
         max_loops: int,
         steps: List[Dict],
-        epistemic_confidences: List[float]  # Consciousness Integration - Phase 1 (Nov 2025)
+        epistemic_confidences: List[float],  # Consciousness Integration - Phase 1 (Nov 2025)
+        intent: Optional['AgenticIntent'] = None  # Deception Detection - E1.3 (Dec 2025)
     ) -> VerificationResult:
-        """Execute verification loops with epistemic tracking."""
+        """Execute verification loops with epistemic tracking, deception detection, and convergence prevention."""
         contradictions = []
         supporting = []
         sources = []
+        actions_so_far = []  # Instrumental Convergence - E1.4 (Dec 2025)
 
         for i, vq in enumerate(verification_queries[:max_loops]):
             # Consciousness Integration - Phase 1
@@ -1155,6 +1564,32 @@ Please provide a clear and concise answer based on the context above."""
                     })
                     continue  # Skip this verification step
 
+            # Instrumental Convergence - E1.4 (Dec 2025)
+            # Check autonomy limits and power-seeking patterns
+            convergence_result = None
+            if intent:
+                convergence_result = await self._check_convergence(
+                    intent=intent,
+                    step_action=vq,
+                    step_type="verification",
+                    actions_so_far=actions_so_far
+                )
+                if convergence_result and convergence_result.get("blocked"):
+                    self.logger.warning(
+                        f"[CONVERGENCE] Verification step {i+1} blocked: {convergence_result['reason']}"
+                    )
+                    steps.append({
+                        "type": "verification",
+                        "query": vq,
+                        "blocked": True,
+                        "blocked_reason": convergence_result["reason"],
+                        "convergence_check": convergence_result,
+                    })
+                    break  # Stop verification - autonomy limit reached
+
+            # Track action for power-seeking detection
+            actions_so_far.append(vq)
+
             self.logger.info(f"[AGENTIC] Verification: {vq}")
             result = await self.learning_engine.weave(Query(text=vq))
 
@@ -1172,12 +1607,25 @@ Please provide a clear and concise answer based on the context above."""
             else:
                 supporting.append(response[:200])
 
+            # Deception Detection - E1.3 (Dec 2025)
+            # Check goal-action alignment for each verification query
+            deception_result = None
+            if intent:
+                deception_result = await self._check_deception(
+                    intent=intent,
+                    step_action=vq,
+                    step_result=result,
+                    step_type="verification"
+                )
+
             steps.append({
                 "type": "verification",
                 "query": vq,
                 "confidence": result.confidence,
                 "epistemic_confidence": epistemic_conf,  # Consciousness Integration - Phase 1
-                "finding": "contradiction" if contradictions else "supporting"
+                "finding": "contradiction" if contradictions else "supporting",
+                "deception_check": deception_result,  # Deception Detection - E1.3
+                "convergence_check": convergence_result  # Instrumental Convergence - E1.4
             })
 
         # Determine if verified
