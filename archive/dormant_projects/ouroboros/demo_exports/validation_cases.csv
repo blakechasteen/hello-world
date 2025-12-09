@@ -1,2 +1,0 @@
-case_id,session_id,clinician_id,specialty,timestamp,medications,allergies,case_category,clinician_decision,ouroboros_decision,agreement,confidence_rating,interactions_shown,comments,alert_clarity,time_to_decision_seconds,known_ground_truth
-18275761-4004-42a1-a6a4-b273c9cd6d74,session_001,dr_smith,Emergency Medicine,2025-11-09T01:44:42.601618,"[""warfarin"", ""aspirin""]",[],CRITICAL,BLOCKED,BLOCKED,1,5,"[{""drug_a"": ""warfarin"", ""drug_b"": ""aspirin"", ""severity"": ""critical""}]","Absolutely correct, this is a classic dangerous combo",5,12.3,BLOCKED

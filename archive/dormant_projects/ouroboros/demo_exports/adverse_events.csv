@@ -1,1 +1,0 @@
-event_id,patient_id_hash,timestamp,related_check_id,event_type,severity,outcome,medications_at_time,suspected_interaction,was_detected_by_ouroboros,ouroboros_decision_at_time,description

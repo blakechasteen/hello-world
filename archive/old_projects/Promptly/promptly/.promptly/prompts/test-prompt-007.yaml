@@ -1,6 +1,0 @@
-branch: main
-commit_hash: generated
-content: 'You are a helpful assistant. Please help with: {request}'
-metadata: {}
-name: test prompt 007
-version: 1
