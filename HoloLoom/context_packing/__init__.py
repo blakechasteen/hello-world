@@ -91,6 +91,13 @@ __all__ = [
     "pack_context",
     "adaptive_pack_context",
     "information_budget_pack",
+    # Phase 6.1: Adaptive strategy (lazy loaded)
+    "AdaptiveComplexity",
+    "AdaptiveCompressionStrategy",
+    "StrategySelection",
+    "select_adaptive_strategy",
+    "get_adaptive_mi_budget",
+    "get_adaptive_config",
 ]
 
 
@@ -130,5 +137,36 @@ def __getattr__(name):
         from .packer import information_budget_pack
         globals()[name] = information_budget_pack
         return information_budget_pack
+
+    # Phase 6.1: Adaptive strategy
+    elif name == "AdaptiveComplexity":
+        from .adaptive_strategy import AdaptiveComplexity
+        globals()[name] = AdaptiveComplexity
+        return AdaptiveComplexity
+
+    elif name == "AdaptiveCompressionStrategy":
+        from .adaptive_strategy import AdaptiveCompressionStrategy
+        globals()[name] = AdaptiveCompressionStrategy
+        return AdaptiveCompressionStrategy
+
+    elif name == "StrategySelection":
+        from .adaptive_strategy import StrategySelection
+        globals()[name] = StrategySelection
+        return StrategySelection
+
+    elif name == "select_adaptive_strategy":
+        from .adaptive_strategy import select_adaptive_strategy
+        globals()[name] = select_adaptive_strategy
+        return select_adaptive_strategy
+
+    elif name == "get_adaptive_mi_budget":
+        from .adaptive_strategy import get_adaptive_mi_budget
+        globals()[name] = get_adaptive_mi_budget
+        return get_adaptive_mi_budget
+
+    elif name == "get_adaptive_config":
+        from .adaptive_strategy import get_adaptive_config
+        globals()[name] = get_adaptive_config
+        return get_adaptive_config
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

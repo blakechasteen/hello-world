@@ -140,7 +140,7 @@ class CASStorage:
         # Internal state
         self._entries: Dict[str, CASEntry] = {}
         self._references: Dict[str, Dict[str, CASReference]] = {}  # module_id -> version -> ref
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()  # Reentrant lock to allow nested locking
 
         # Ensure directories exist
         self.objects_dir.mkdir(parents=True, exist_ok=True)

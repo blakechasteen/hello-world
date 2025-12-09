@@ -767,6 +767,86 @@ class CodebaseProject:
             ]
         }
 
+    def get_low_cohesion_modules(self, threshold: float = 0.3) -> List[Tuple[str, float, int]]:
+        """
+        Get modules with cohesion score below threshold.
+
+        Low cohesion indicates the module's functions mostly call external
+        modules, which may suggest refactoring opportunities.
+
+        Args:
+            threshold: Maximum cohesion score to include (default: 0.3 = "low")
+
+        Returns:
+            List of (file_path, cohesion_score, total_calls) sorted by cohesion ascending
+        """
+        results = []
+        for file_path, code_file in self.files.items():
+            if code_file.cohesion and code_file.cohesion.total_calls > 0:
+                if code_file.cohesion.cohesion_score < threshold:
+                    results.append((
+                        file_path,
+                        code_file.cohesion.cohesion_score,
+                        code_file.cohesion.total_calls
+                    ))
+
+        return sorted(results, key=lambda x: x[1])
+
+    def get_cohesion_summary(self) -> Dict[str, Any]:
+        """
+        Get aggregated cohesion statistics across the codebase.
+
+        Returns:
+            Dictionary with cohesion stats:
+            - total_files_analyzed: Files with cohesion data
+            - avg_cohesion: Average cohesion score
+            - total_internal_calls: Sum of internal calls
+            - total_external_calls: Sum of external calls
+            - rating_distribution: Count by rating (high/moderate/low)
+            - low_cohesion_count: Files below 0.3 threshold
+        """
+        cohesion_data = []
+
+        for code_file in self.files.values():
+            if code_file.cohesion:
+                cohesion_data.append(code_file.cohesion)
+
+        if not cohesion_data:
+            return {
+                'total_files_analyzed': 0,
+                'avg_cohesion': 0.0,
+                'total_internal_calls': 0,
+                'total_external_calls': 0,
+                'rating_distribution': {'high': 0, 'moderate': 0, 'low': 0},
+                'low_cohesion_count': 0
+            }
+
+        # Calculate stats
+        total_internal = sum(c.internal_calls for c in cohesion_data)
+        total_external = sum(c.external_calls for c in cohesion_data)
+
+        # Average cohesion (only for files with calls)
+        files_with_calls = [c for c in cohesion_data if c.total_calls > 0]
+        avg_cohesion = (
+            sum(c.cohesion_score for c in files_with_calls) / len(files_with_calls)
+            if files_with_calls else 1.0
+        )
+
+        # Rating distribution
+        rating_dist = {'high': 0, 'moderate': 0, 'low': 0}
+        for c in cohesion_data:
+            if c.total_calls > 0:  # Only count files with actual calls
+                rating_dist[c.rating] += 1
+
+        return {
+            'total_files_analyzed': len(cohesion_data),
+            'avg_cohesion': avg_cohesion,
+            'total_internal_calls': total_internal,
+            'total_external_calls': total_external,
+            'rating_distribution': rating_dist,
+            'low_cohesion_count': sum(1 for c in cohesion_data if c.total_calls > 0 and c.cohesion_score < 0.3)
+        }
+
     def to_dict(self) -> Dict[str, Any]:
         """Export project analysis to dictionary"""
         return {
@@ -785,7 +865,9 @@ class CodebaseProject:
             'circular_dependencies': self.get_circular_dependencies(),
             'complexity_summary': self.get_complexity_summary(),
             'high_complexity_functions': self.get_high_complexity_functions(10)[:10],
-            'api_surface_summary': self.get_api_surface_summary()
+            'api_surface_summary': self.get_api_surface_summary(),
+            'cohesion_summary': self.get_cohesion_summary(),
+            'low_cohesion_modules': self.get_low_cohesion_modules()[:5]
         }
 
 
@@ -1878,6 +1960,9 @@ class CodebaseSpinner(BaseSpinner):
         # Phase 3: Build call graph
         self._build_call_graph(project)
 
+        # Phase 4: Calculate cohesion metrics
+        self._calculate_cohesion(project)
+
         return project
 
     async def analyze_codebase_incremental(
@@ -2200,6 +2285,43 @@ class CodebaseSpinner(BaseSpinner):
                             call_count=1
                         )
                         project.call_edges.append(edge)
+
+    def _calculate_cohesion(self, project: CodebaseProject) -> None:
+        """
+        Calculate cohesion metrics for each file based on call graph.
+
+        Cohesion measures internal vs external function calls:
+        - High cohesion = functions mostly call within same file
+        - Low cohesion = functions mostly call external modules
+        """
+        # Count internal vs external calls per file
+        file_calls: Dict[str, Dict[str, int]] = {
+            file_path: {'internal': 0, 'external': 0}
+            for file_path in project.files
+        }
+
+        # Analyze call edges
+        for edge in project.call_edges:
+            caller_file = edge.caller_file
+            callee_file = edge.callee_file
+
+            if caller_file in file_calls:
+                if caller_file == callee_file:
+                    file_calls[caller_file]['internal'] += 1
+                else:
+                    file_calls[caller_file]['external'] += 1
+
+        # Assign cohesion metrics to each file
+        for file_path, code_file in project.files.items():
+            calls = file_calls.get(file_path, {'internal': 0, 'external': 0})
+            internal = calls['internal']
+            external = calls['external']
+
+            code_file.cohesion = CohesionMetrics(
+                internal_calls=internal,
+                external_calls=external,
+                total_calls=internal + external
+            )
 
     async def spin_stream(
         self,
