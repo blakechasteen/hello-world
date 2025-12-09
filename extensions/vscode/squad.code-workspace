@@ -1,0 +1,55 @@
+{
+  "folders": [
+    {
+      "name": "Squad Extension",
+      "path": "squad"
+    },
+    {
+      "name": "HoloLoom Core",
+      "path": "HoloLoom"
+    }
+  ],
+  "settings": {
+    "python.analysis.extraPaths": [
+      "${workspaceFolder:Squad Extension}/..",
+      "${workspaceFolder:HoloLoom Core}"
+    ],
+    "python.envFile": "${workspaceFolder:Squad Extension}/../.env"
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Run Squad Extension",
+        "type": "extensionHost",
+        "request": "launch",
+        "args": [
+          "--extensionDevelopmentPath=${workspaceFolder:Squad Extension}"
+        ],
+        "outFiles": [
+          "${workspaceFolder:Squad Extension}/out/**/*.js"
+        ]
+      },
+      {
+        "name": "Start Squad Server",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder:Squad Extension}/server.py",
+        "console": "integratedTerminal",
+        "env": {
+          "PYTHONPATH": "${workspaceFolder:Squad Extension}/.."
+        }
+      }
+    ],
+    "compounds": [
+      {
+        "name": "Full Squad (Extension + Server)",
+        "configurations": [
+          "Start Squad Server",
+          "Run Squad Extension"
+        ],
+        "stopAll": true
+      }
+    ]
+  }
+}
