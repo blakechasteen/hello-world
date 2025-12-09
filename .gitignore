@@ -82,3 +82,12 @@ website/node_modules/
 website/build/
 website/.docusaurus/
 website/.cache-loader/
+
+# VS Code extension build artifacts
+extensions/vscode/node_modules/
+extensions/vscode/out/
+
+# Archive and generated outputs (2025-12)
+.archive/
+HoloLoom/demo_expanded/
+HoloLoom/frontier_test_output/
