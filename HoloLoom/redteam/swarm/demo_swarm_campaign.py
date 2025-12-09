@@ -290,13 +290,13 @@ async def demo_message_bus() -> MessageBus:
 
     # Check dead letter queue after timeout
     await asyncio.sleep(0.1)
-    dlq_count = bus.get_dead_letter_count()
-    print_info(f"Dead letter queue size: {dlq_count}")
+    dead_letters = bus.get_dead_letters()
+    print_info(f"Dead letter queue size: {len(dead_letters)}")
 
     # Get bus metrics
     metrics = bus.get_metrics()
-    print_success(f"Messages sent: {metrics.get('messages_sent', 0)}")
-    print_success(f"Messages delivered: {metrics.get('messages_delivered', 0)}")
+    print_success(f"Messages sent: {metrics['message_counts']['total_sent']}")
+    print_success(f"Messages received: {metrics['message_counts']['total_received']}")
 
     return bus
 
@@ -318,21 +318,26 @@ async def demo_hierarchical_learning() -> HierarchicalLearningCoordinator:
 
     # Record payload usage with outcome
     payload_id = "prompt_injection_v1"
+    payload_hash = "hash_" + payload_id  # Simple hash for demo
     for i in range(5):
         success = i % 2 == 0  # Alternate success/failure
         confidence = 0.8 if success else 0.3
 
-        learning.per_attack.record_usage(
+        heat = await learning._per_attack.record_attack(
             payload_id=payload_id,
-            strategy="prompt_injection",
-            target="test-target.local",
+            payload_hash=payload_hash,
             success=success,
             confidence=confidence,
         )
 
-    heat = learning.per_attack.get_heat(payload_id)
-    print_success(f"Payload heat score: {heat.score:.2f}")
-    print_info(f"Usage count: {heat.usage_count}, Success rate: {heat.success_rate:.1%}")
+    # Get hot payloads to show heat info
+    hot_payloads = await learning._per_attack.get_hot_payloads(limit=5)
+    if hot_payloads:
+        top_payload = hot_payloads[0]
+        print_success(f"Top payload heat score: {top_payload.heat_score():.2f}")
+        print_info(f"Access count: {top_payload.access_count}, Success rate: {top_payload.success_rate:.1%}")
+    else:
+        print_info("No payloads recorded yet")
 
     # Timescale 2: Per-Task (~seconds)
     print_subheader("Timescale 2: Per-Task Learning (~seconds)")
@@ -345,33 +350,39 @@ async def demo_hierarchical_learning() -> HierarchicalLearningCoordinator:
         success = strategy != "jailbreak"  # Jailbreak fails in this sim
         confidence = 0.9 if success else 0.4
 
-        learning.per_task.update_strategy(
-            strategy=strategy,
+        await learning._per_task.update_strategy(
+            strategy_id=strategy,
             success=success,
             confidence=confidence,
         )
 
     # Show Thompson Sampling recommendations
-    priors = learning.per_task.get_all_priors()
+    stats = learning._per_task.get_stats()
     print_info("Thompson Sampling Priors (a, b):")
-    for strategy, prior in list(priors.items())[:3]:
-        expected = prior.alpha / (prior.alpha + prior.beta)
-        print_info(f"  {strategy}: a={prior.alpha:.1f}, b={prior.beta:.1f} -> E[X]={expected:.2f}")
+    for strategy_id, prior_info in list(stats.get("strategies", {}).items())[:3]:
+        alpha = prior_info["alpha"]
+        beta = prior_info["beta"]
+        expected = alpha / (alpha + beta)
+        print_info(f"  {strategy_id}: a={alpha:.1f}, b={beta:.1f} -> E[X]={expected:.2f}")
 
     # Timescale 3: Per-Cycle (~minutes)
     print_subheader("Timescale 3: Per-Cycle Learning (~minutes)")
 
-    # Aggregate cross-strategy insights
-    learning.per_cycle.aggregate_cycle_results(
-        cycle_id="cycle_001",
-        strategy_results={
-            "prompt_injection": {"success_rate": 0.6, "attempts": 10},
-            "encoding_bypass": {"success_rate": 0.8, "attempts": 5},
-            "jailbreak": {"success_rate": 0.2, "attempts": 8},
-        },
-    )
+    # Record events for cross-strategy analysis
+    cycle_events = [
+        ("prompt_injection", "attack", True, 0.6),
+        ("encoding_bypass", "attack", True, 0.8),
+        ("jailbreak", "attack", False, 0.2),
+    ]
+    for strategy_id, event_type, success, confidence in cycle_events:
+        await learning._per_cycle.record_event(
+            strategy_id=strategy_id,
+            event_type=event_type,
+            success=success,
+            confidence=confidence,
+        )
 
-    insights = learning.per_cycle.get_insights()
+    insights = await learning._per_cycle.get_insights()
     print_success(f"Cross-strategy insights generated: {len(insights)}")
 
     for insight in insights[:2]:
@@ -381,18 +392,17 @@ async def demo_hierarchical_learning() -> HierarchicalLearningCoordinator:
     print_subheader("Timescale 4: Background Learning (~hours)")
 
     # Record patterns for long-term learning
-    learning.background.record_pattern(
-        pattern_id="pattern_001",
-        pattern_type="target_vulnerability",
-        context={"target_type": "api_endpoint", "defense": "rate_limiting"},
-        effectiveness=0.75,
+    await learning._background.record_history(
+        event_type="target_vulnerability",
+        data={"target_type": "api_endpoint", "defense": "rate_limiting"},
+        success=True,
+        confidence=0.75,
     )
 
-    patterns = learning.background.get_learned_patterns()
+    patterns = await learning._background.get_patterns()
     print_success(f"Learned patterns: {len(patterns)}")
 
-    system_priors = learning.background.get_system_priors()
-    print_info(f"System-wide priors updated based on {system_priors.observation_count} observations")
+    print_info("Background learning records historical patterns for system-wide optimization")
 
     return learning
 
@@ -410,133 +420,75 @@ async def demo_campaign_phases(
     """Demonstrate full campaign with phase transitions."""
     print_header("DEMO 4: Campaign Phase Transitions")
 
-    # Create authorization token
-    token = create_authorization_token(
-        operator_id="demo_researcher",
-        operation_type="security_assessment",
-        authorized_targets=["test-target.local", "*.test-target.local"],
-        expires_in_hours=1,
-    )
+    # Create swarm coordinator (it manages its own agents internally)
+    print_subheader("Creating Swarm Coordinator")
 
-    # Create agents
-    print_subheader("Creating Agent Swarm")
-
-    scout = create_scout_agent(
-        message_bus=bus,
-        safety_gate=safety_gate,
-        authorization_token=token,
-        agent_id="scout_alpha",
-    )
-    print_success(f"Scout agent created: {scout.agent_id}")
-
-    attacker = create_attacker_agent(
-        message_bus=bus,
-        safety_gate=safety_gate,
-        authorization_token=token,
-        agent_id="attacker_alpha",
-    )
-    print_success(f"Attacker agent created: {attacker.agent_id}")
-
-    exploiter = create_exploiter_agent(
-        message_bus=bus,
-        safety_gate=safety_gate,
-        authorization_token=token,
-        agent_id="exploiter_alpha",
-    )
-    print_success(f"Exploiter agent created: {exploiter.agent_id}")
-
-    coordinator = create_coordinator_agent(
-        message_bus=bus,
-        safety_gate=safety_gate,
-        authorization_token=token,
-        agent_id="coordinator_alpha",
-    )
-    print_success(f"Coordinator agent created: {coordinator.agent_id}")
-
-    # Create swarm coordinator
     swarm = SwarmCoordinator(
         message_bus=bus,
-        safety_gate=safety_gate,
-        learning_coordinator=learning,
-        authorization_token=token,
+        num_scouts=2,
+        num_attackers=2,
+        num_exploiters=1,
+    )
+    print_success(f"Swarm coordinator created with 2 scouts, 2 attackers, 1 exploiter")
+
+    # Start swarm coordinator
+    await swarm.start()
+    print_success("Swarm coordinator started")
+
+    print_subheader("Running Full Campaign")
+    print_info("Campaign executes 3 phases sequentially:")
+    print_info("  1. RECONNAISSANCE - Scout agents probe attack surface")
+    print_info("  2. ATTACK - Attack agents exploit discovered surfaces")
+    print_info("  3. EXPLOITATION - Exploit agents escalate access")
+    print()
+
+    # Run full campaign (all 3 phases automatically)
+    target = "test-target.local"
+    print_info(f"Starting campaign against: {target}")
+
+    campaign_result = await swarm.run_campaign(
+        target=target,
+        duration_seconds=30,
     )
 
-    # Start agents
-    await scout.start()
-    await attacker.start()
-    await exploiter.start()
-    await coordinator.start()
-    await swarm.start()
+    # Display phase-by-phase results
+    phase_results = campaign_result.phase_results
+    metrics = campaign_result.metrics
 
     print_subheader("Phase 1: RECONNAISSANCE")
-    print_info("Scout probing attack surface...")
+    recon = phase_results.get("reconnaissance", {})
+    print_success(f"Discoveries: {recon.get('discoveries', 0)}")
+    print_success(f"Phase duration: {recon.get('duration_ms', 0):.1f}ms")
 
-    # Run reconnaissance phase
-    recon_result = await swarm.run_phase(
-        phase=CampaignPhase.RECONNAISSANCE,
-        targets=["test-target.local"],
-        timeout_seconds=5.0,
-    )
-
-    print_success(f"Discoveries: {recon_result.discovery_count}")
-    print_success(f"Phase duration: {recon_result.duration_ms:.1f}ms")
-
-    for discovery in recon_result.discoveries[:3]:
-        print_info(f"  Found: {discovery.get('discovery_type', 'unknown')} - {discovery.get('target', 'N/A')}")
+    for i, discovery in enumerate(campaign_result.vulnerabilities_found[:3]):
+        print_info(f"  [{i+1}] Found: {discovery.get('type', 'unknown')} - {discovery.get('target', target)}")
 
     print_subheader("Phase 2: ATTACK")
-    print_info("Attacker executing strategies with Thompson Sampling...")
-
-    # Run attack phase
-    attack_result = await swarm.run_phase(
-        phase=CampaignPhase.ATTACK,
-        targets=["test-target.local"],
-        timeout_seconds=5.0,
-    )
-
-    print_success(f"Attacks executed: {attack_result.attack_count}")
-    print_success(f"Successful attacks: {attack_result.successful_attacks}")
-
-    for outcome in attack_result.attack_outcomes[:3]:
-        strategy = outcome.get('strategy_type', 'unknown')
-        success = '[OK]' if outcome.get('success') else '[X]'
-        print_info(f"  {success} {strategy}: {outcome.get('severity', 'N/A')}")
+    attack = phase_results.get("attack", {})
+    print_success(f"Tasks completed: {attack.get('tasks_completed', 0)}")
+    print_success(f"Phase duration: {attack.get('duration_ms', 0):.1f}ms")
+    print_success(f"Vulnerabilities found: {len(campaign_result.vulnerabilities_found)}")
 
     print_subheader("Phase 3: EXPLOITATION")
-    print_info("Exploiter attempting privilege escalation...")
+    exploit = phase_results.get("exploitation", {})
+    print_success(f"Exploits attempted: {exploit.get('exploits', 0)}")
+    print_success(f"Successful exploits: {len(campaign_result.exploits_successful)}")
+    print_success(f"Phase duration: {exploit.get('duration_ms', 0):.1f}ms")
 
-    # Run exploitation phase
-    exploit_result = await swarm.run_phase(
-        phase=CampaignPhase.EXPLOITATION,
-        targets=["test-target.local"],
-        timeout_seconds=5.0,
-    )
+    for i, exp in enumerate(campaign_result.exploits_successful[:3]):
+        status = "[OK]" if exp.get("success", True) else "[X]"
+        print_info(f"  {status} {exp.get('type', 'unknown')}: {exp.get('severity', 'N/A')}")
 
-    print_success(f"Exploitation attempts: {exploit_result.exploit_count}")
-    print_success(f"Successful exploits: {exploit_result.successful_exploits}")
+    print_subheader("Campaign Summary")
+    print_success(f"Target: {campaign_result.target}")
+    print_success(f"Total duration: {campaign_result.total_duration_ms:.1f}ms")
+    print_success(f"Discoveries: {metrics.discoveries}")
+    print_success(f"Exploits: {metrics.exploits}")
+    print_success(f"Tasks completed: {metrics.tasks_completed}")
 
-    # Compile full campaign result
-    campaign_result = SwarmCampaignResult(
-        campaign_id=swarm.campaign_id,
-        start_time=swarm.start_time,
-        end_time=time.time(),
-        phases_completed=[
-            CampaignPhase.RECONNAISSANCE,
-            CampaignPhase.ATTACK,
-            CampaignPhase.EXPLOITATION,
-        ],
-        total_discoveries=recon_result.discovery_count,
-        total_vulnerabilities=attack_result.successful_attacks,
-        total_exploits=exploit_result.successful_exploits,
-        metrics=swarm.get_metrics(),
-    )
-
-    # Stop agents
-    await scout.stop()
-    await attacker.stop()
-    await exploiter.stop()
-    await coordinator.stop()
+    # Stop swarm coordinator
     await swarm.stop()
+    print_success("Swarm coordinator stopped")
 
     return campaign_result
 
@@ -558,36 +510,40 @@ async def demo_ab_testing() -> None:
 
     config = create_experiment_config(
         name="prompt_injection_variants",
+        control_strategy="direct_injection",
+        treatment_strategy="context_manipulation",
         description="Compare direct vs indirect prompt injection",
-        control_name="direct_injection",
-        treatment_name="context_manipulation",
-        metric_name="success_rate",
-        min_sample_size=30,
-        significance_level=0.05,
+        min_samples=10,  # Reduced for demo
     )
 
-    experiment = await ab_manager.create_experiment(config)
-    print_success(f"Experiment created: {experiment.experiment_id}")
+    experiment = ab_manager.create_experiment(config)
+    print_success(f"Experiment created: {experiment.id}")
     print_info(f"Status: {experiment.status.value}")
+
+    # Start the experiment
+    ab_manager.start_experiment(experiment.id)
+    print_success("Experiment started")
 
     print_subheader("Simulating Test Results")
 
-    # Simulate results for control (direct injection)
+    # Simulate results for control (direct injection) - moderate success rates
     control_results = [0.6, 0.5, 0.7, 0.55, 0.65, 0.6, 0.58, 0.62, 0.55, 0.68]
     for result in control_results:
-        await ab_manager.record_observation(
-            experiment_id=experiment.experiment_id,
-            variant="control",
-            value=result,
+        ab_manager.record_result(
+            experiment_id=experiment.id,
+            variant_name="control",
+            reward=result,
+            success=result > 0.5,
         )
 
-    # Simulate results for treatment (context manipulation)
+    # Simulate results for treatment (context manipulation) - higher success rates
     treatment_results = [0.75, 0.8, 0.7, 0.78, 0.82, 0.77, 0.73, 0.85, 0.79, 0.76]
     for result in treatment_results:
-        await ab_manager.record_observation(
-            experiment_id=experiment.experiment_id,
-            variant="treatment",
-            value=result,
+        ab_manager.record_result(
+            experiment_id=experiment.id,
+            variant_name="treatment",
+            reward=result,
+            success=result > 0.5,
         )
 
     print_success(f"Recorded {len(control_results)} control observations")
@@ -596,17 +552,21 @@ async def demo_ab_testing() -> None:
     print_subheader("Statistical Analysis")
 
     # Analyze results
-    analysis = await ab_manager.analyze_experiment(experiment.experiment_id)
+    analysis = ab_manager.analyze(experiment.id)
 
-    print_info(f"Control mean: {analysis.control_mean:.3f}")
-    print_info(f"Treatment mean: {analysis.treatment_mean:.3f}")
-    print_info(f"Difference: {analysis.difference:.3f}")
+    # Get means from variants
+    control_mean = experiment.control.mean_reward
+    treatment_mean = experiment.treatment.mean_reward
+
+    print_info(f"Control mean: {control_mean:.3f}")
+    print_info(f"Treatment mean: {treatment_mean:.3f}")
+    print_info(f"Relative improvement: {analysis.relative_improvement:.1f}%")
     print_info(f"P-value: {analysis.p_value:.4f}")
-    print_info(f"Cohen's d: {analysis.effect_size:.3f}")
+    print_info(f"Cohen's d: {analysis.cohens_d:.3f} ({analysis.effect_category.value})")
 
     if analysis.is_significant:
         print_success("Result is STATISTICALLY SIGNIFICANT")
-        if analysis.treatment_better:
+        if analysis.cohens_d > 0:
             print_success("Treatment (context_manipulation) is BETTER")
         else:
             print_blocked("Control (direct_injection) is BETTER")
@@ -615,9 +575,9 @@ async def demo_ab_testing() -> None:
 
     print_subheader("Deployment Recommendation")
 
-    recommendation = ab_manager.get_recommendation(experiment.experiment_id)
-    print_info(f"Recommendation: {recommendation.action}")
-    print_info(f"Confidence: {recommendation.confidence:.1%}")
+    can_deploy, reason = ab_manager.can_deploy(experiment.id)
+    print_info(f"Can deploy: {can_deploy}")
+    print_info(f"Recommendation: {analysis.recommendation}")
 
 
 # =============================================================================
@@ -633,12 +593,15 @@ def generate_vulnerability_report(
     print_header("DEMO 6: Vulnerability Report Generation")
 
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    metrics = campaign_result.metrics
+    phase_results = campaign_result.phase_results
 
     report = f"""# CARTS Security Assessment Report
 
-**Campaign ID:** {campaign_result.campaign_id}
+**Target:** {campaign_result.target}
 **Generated:** {now}
 **Status:** COMPLETE
+**Duration:** {campaign_result.total_duration_ms:.1f}ms
 
 ---
 
@@ -652,10 +615,11 @@ system to identify vulnerabilities before malicious actors could exploit them.
 
 | Metric | Value |
 |--------|-------|
-| Phases Completed | {len(campaign_result.phases_completed)} |
-| Total Discoveries | {campaign_result.total_discoveries} |
-| Vulnerabilities Found | {campaign_result.total_vulnerabilities} |
-| Successful Exploits | {campaign_result.total_exploits} |
+| Phases Completed | 3 (Recon -> Attack -> Exploit) |
+| Total Discoveries | {metrics.discoveries} |
+| Vulnerabilities Found | {len(campaign_result.vulnerabilities_found)} |
+| Successful Exploits | {len(campaign_result.exploits_successful)} |
+| Tasks Completed | {metrics.tasks_completed} |
 
 ---
 
@@ -666,7 +630,8 @@ system to identify vulnerabilities before malicious actors could exploit them.
 **Objective:** Map the attack surface through non-intrusive probing.
 
 - **Probe Types:** Port scanning, API discovery, version detection, header analysis
-- **Discoveries:** {campaign_result.total_discoveries}
+- **Discoveries:** {metrics.discoveries}
+- **Duration:** {phase_results.get('reconnaissance', {}).get('duration_ms', 0):.1f}ms
 - **Approach:** Breadth-first surface mapping
 
 ### Phase 2: Attack
@@ -674,14 +639,15 @@ system to identify vulnerabilities before malicious actors could exploit them.
 **Objective:** Execute attack strategies using Thompson Sampling selection.
 
 - **Strategies Tested:** Prompt injection, jailbreak, encoding bypass, context manipulation
-- **Attacks Executed:** {campaign_result.metrics.get('attacks_executed', 'N/A')}
-- **Success Rate:** {campaign_result.metrics.get('attack_success_rate', 'N/A')}
+- **Tasks Completed:** {phase_results.get('attack', {}).get('tasks_completed', 0)}
+- **Duration:** {phase_results.get('attack', {}).get('duration_ms', 0):.1f}ms
 
 ### Phase 3: Exploitation
 
 **Objective:** Validate and escalate confirmed vulnerabilities.
 
-- **Exploits Attempted:** {campaign_result.total_exploits}
+- **Exploits Successful:** {metrics.exploits}
+- **Duration:** {phase_results.get('exploitation', {}).get('duration_ms', 0):.1f}ms
 - **Privilege Escalation:** Limited (as expected for test environment)
 
 ---
@@ -789,9 +755,6 @@ async def run_full_demo() -> None:
             campaign_result=campaign_result,
             learning=learning,
         )
-
-        # Cleanup
-        await bus.stop()
 
         # Summary
         print_header("DEMO COMPLETE")

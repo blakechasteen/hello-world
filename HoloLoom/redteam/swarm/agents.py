@@ -188,13 +188,11 @@ class BaseAgent:
         )
 
         # Log startup
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_START,
             agent_id=self._agent_id,
+            details={"role": self._role.value, "action": "agent_start", "outcome": "success"},
             target="self",
-            action="agent_start",
-            details={"role": self._role.value},
-            outcome="success",
         )
 
     async def stop(self) -> None:
@@ -214,17 +212,17 @@ class BaseAgent:
                 pass
 
         # Log shutdown
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_COMPLETE,
             agent_id=self._agent_id,
-            target="self",
-            action="agent_stop",
             details={
                 "tasks_completed": self._tasks_completed,
                 "tasks_failed": self._tasks_failed,
                 "discoveries_made": self._discoveries_made,
+                "action": "agent_stop",
+                "outcome": "success",
             },
-            outcome="success",
+            target="self",
         )
 
     async def _message_handling_loop(self) -> None:
@@ -253,13 +251,11 @@ class BaseAgent:
                 break
             except Exception as e:
                 # Log error but continue
-                await self._safety_gate.audit_logger.log(
+                await self._safety_gate._audit_logger.log(
                     event_type=AuditEventType.OPERATION_FAIL,
                     agent_id=self._agent_id,
+                    details={"error": str(e), "action": "handle_message", "outcome": "error"},
                     target="message_handler",
-                    action="handle_message",
-                    details={"error": str(e)},
-                    outcome="error",
                 )
 
     async def handle_message(self, message: AgentMessage) -> Optional[AgentMessage]:
@@ -510,13 +506,11 @@ class ScoutAgent(BaseAgent):
             self._state = AgentState.FAILED
 
             # Log error
-            await self._safety_gate.audit_logger.log(
+            await self._safety_gate._audit_logger.log(
                 event_type=AuditEventType.OPERATION_FAIL,
                 agent_id=self._agent_id,
+                details={"error": str(e), "task_id": task.task_id, "action": task.task_type, "outcome": "error"},
                 target=task.target,
-                action=task.task_type,
-                details={"error": str(e), "task_id": task.task_id},
-                outcome="error",
             )
 
             return AgentResult(
@@ -581,13 +575,11 @@ class ScoutAgent(BaseAgent):
                 discoveries.extend(result)
             elif isinstance(result, Exception):
                 # Log but don't fail entire probe
-                await self._safety_gate.audit_logger.log(
+                await self._safety_gate._audit_logger.log(
                     event_type=AuditEventType.OPERATION_FAIL,
                     agent_id=self._agent_id,
+                    details={"error": str(result), "action": "probe_surface", "outcome": "partial_failure"},
                     target=target,
-                    action="probe_surface",
-                    details={"error": str(result)},
-                    outcome="partial_failure",
                 )
 
         return discoveries
@@ -1270,13 +1262,11 @@ class AttackerAgent(BaseAgent):
             self._tasks_failed += 1
             self._state = AgentState.FAILED
 
-            await self._safety_gate.audit_logger.log(
+            await self._safety_gate._audit_logger.log(
                 event_type=AuditEventType.OPERATION_FAIL,
                 agent_id=self._agent_id,
+                details={"error": str(e), "task_id": task.task_id, "action": task.task_type, "outcome": "error"},
                 target=task.target,
-                action=task.task_type,
-                details={"error": str(e), "task_id": task.task_id},
-                outcome="error",
             )
 
             return AgentResult(
@@ -1310,13 +1300,11 @@ class AttackerAgent(BaseAgent):
         start_time = time.time()
 
         # Log attack start
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_START,
             agent_id=self._agent_id,
+            details={"strategy": strategy.name, "action": f"attack_{strategy.strategy_type.value}", "outcome": "started"},
             target=target,
-            action=f"attack_{strategy.strategy_type.value}",
-            details={"strategy": strategy.name},
-            outcome="started",
         )
 
         # SIMULATION: Execute strategy-specific attack
@@ -1324,17 +1312,17 @@ class AttackerAgent(BaseAgent):
         outcome = await self._simulate_attack(strategy, target, parameters)
 
         # Log attack completion
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_COMPLETE,
             agent_id=self._agent_id,
-            target=target,
-            action=f"attack_{strategy.strategy_type.value}",
             details={
                 "success": outcome.success,
                 "severity": outcome.severity.value,
                 "confidence": outcome.confidence,
+                "action": f"attack_{strategy.strategy_type.value}",
+                "outcome": "success" if outcome.success else "failure",
             },
-            outcome="success" if outcome.success else "failure",
+            target=target,
         )
 
         outcome.execution_time_ms = (time.time() - start_time) * 1000
@@ -1380,16 +1368,16 @@ class AttackerAgent(BaseAgent):
 
         # CRITICAL severity requires human review (from first principles)
         if severity == SeverityLevel.CRITICAL:
-            await self._safety_gate.audit_logger.log(
+            await self._safety_gate._audit_logger.log(
                 event_type=AuditEventType.SECURITY_ALERT,
                 agent_id=self._agent_id,
-                target=target,
-                action="critical_finding",
                 details={
                     "strategy": strategy.strategy_type.value,
                     "message": "CRITICAL severity - awaiting human review",
+                    "action": "critical_finding",
+                    "outcome": "escalated",
                 },
-                outcome="escalated",
+                target=target,
             )
 
         return AttackOutcome(
@@ -1849,13 +1837,11 @@ class ExploiterAgent(BaseAgent):
             self._tasks_failed += 1
             self._state = AgentState.FAILED
 
-            await self._safety_gate.audit_logger.log(
+            await self._safety_gate._audit_logger.log(
                 event_type=AuditEventType.OPERATION_FAIL,
                 agent_id=self._agent_id,
+                details={"error": str(e), "task_id": task.task_id, "action": task.task_type, "outcome": "error"},
                 target=task.target,
-                action=task.task_type,
-                details={"error": str(e), "task_id": task.task_id},
-                outcome="error",
             )
 
             return AgentResult(
@@ -1889,34 +1875,34 @@ class ExploiterAgent(BaseAgent):
         technique = self._select_technique_for_vulnerability(vulnerability)
 
         # Log exploitation start
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_START,
             agent_id=self._agent_id,
-            target=target,
-            action=f"exploit_{technique.exploitation_type.value}",
             details={
                 "technique": technique.name,
                 "vulnerability": vulnerability.get("type", "unknown"),
                 "risk_level": technique.risk_level.value,
+                "action": f"exploit_{technique.exploitation_type.value}",
+                "outcome": "started",
             },
-            outcome="started",
+            target=target,
         )
 
         # CRITICAL severity check (from First Principles)
         # "If CRITICAL → STOP. Report. Await human decision."
         if technique.risk_level == SeverityLevel.CRITICAL:
             if self._require_human_review_for_critical:
-                await self._safety_gate.audit_logger.log(
+                await self._safety_gate._audit_logger.log(
                     event_type=AuditEventType.SECURITY_ALERT,
                     agent_id=self._agent_id,
-                    target=target,
-                    action="critical_exploitation_pending",
                     details={
                         "technique": technique.name,
                         "message": "CRITICAL exploitation - awaiting human review",
                         "vulnerability": vulnerability,
+                        "action": "critical_exploitation_pending",
+                        "outcome": "pending_review",
                     },
-                    outcome="pending_review",
+                    target=target,
                 )
 
                 return ExploitResult(
@@ -1944,17 +1930,17 @@ class ExploiterAgent(BaseAgent):
         )
 
         # Log completion
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_COMPLETE,
             agent_id=self._agent_id,
-            target=target,
-            action=f"exploit_{technique.exploitation_type.value}",
             details={
                 "success": result.success,
                 "severity": result.severity.value,
                 "access_gained": result.access_gained,
+                "action": f"exploit_{technique.exploitation_type.value}",
+                "outcome": "success" if result.success else "failure",
             },
-            outcome="success" if result.success else "failure",
+            target=target,
         )
 
         result.execution_time_ms = (time.time() - start_time) * 1000
@@ -2039,13 +2025,11 @@ class ExploiterAgent(BaseAgent):
                 "applicable": True,  # Simulated
             })
 
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_COMPLETE,
             agent_id=self._agent_id,
+            details={"techniques_found": len(applicable_techniques), "action": "assess_exploitation", "outcome": "success"},
             target=target,
-            action="assess_exploitation",
-            details={"techniques_found": len(applicable_techniques)},
-            outcome="success",
         )
 
         return ExploitResult(
@@ -2106,17 +2090,17 @@ class ExploiterAgent(BaseAgent):
         )
 
         if requires_review and success:
-            await self._safety_gate.audit_logger.log(
+            await self._safety_gate._audit_logger.log(
                 event_type=AuditEventType.SECURITY_ALERT,
                 agent_id=self._agent_id,
-                target=target,
-                action="high_severity_finding",
                 details={
                     "technique": technique.name,
                     "severity": severity.value,
                     "message": "High severity exploitation - flagged for review",
+                    "action": "high_severity_finding",
+                    "outcome": "escalated",
                 },
-                outcome="escalated",
+                target=target,
             )
 
         return ExploitResult(
@@ -2464,7 +2448,7 @@ class CoordinatorAgent(BaseAgent):
             )
 
             if not gate_result.allowed:
-                await self._safety_gate.audit_logger.log(
+                await self._safety_gate._audit_logger.log(
                     event_type=AuditEventType.AUTHORIZATION_FAIL,
                     agent_id=self._agent_id,
                     target=target,
@@ -2477,16 +2461,16 @@ class CoordinatorAgent(BaseAgent):
                 )
 
         # Log campaign start
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_START,
             agent_id=self._agent_id,
-            target="campaign",
-            action="campaign_start",
             details={
                 "targets": self._campaign_status.targets,
                 "phase": self._campaign_status.phase.value,
+                "action": "campaign_start",
+                "outcome": "success",
             },
-            outcome="success",
+            target="campaign",
         )
 
     async def execute_task(self, task: AgentTask) -> AgentResult:
@@ -2587,13 +2571,11 @@ class CoordinatorAgent(BaseAgent):
             self._tasks_failed += 1
             self._state = AgentState.FAILED
 
-            await self._safety_gate.audit_logger.log(
+            await self._safety_gate._audit_logger.log(
                 event_type=AuditEventType.OPERATION_FAIL,
                 agent_id=self._agent_id,
+                details={"error": str(e), "task_id": task.task_id, "action": task.task_type, "outcome": "error"},
                 target=task.target or "coordinator",
-                action=task.task_type,
-                details={"error": str(e), "task_id": task.task_id},
-                outcome="error",
             )
 
             return AgentResult(
@@ -2632,13 +2614,11 @@ class CoordinatorAgent(BaseAgent):
             "tasks_completed": 0,
         }
 
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_COMPLETE,
             agent_id=self._agent_id,
+            details={"role": agent_role, "capabilities": capabilities, "action": "register_agent", "outcome": "success"},
             target=agent_id,
-            action="register_agent",
-            details={"role": agent_role, "capabilities": capabilities},
-            outcome="success",
         )
 
         return {
@@ -2721,17 +2701,17 @@ class CoordinatorAgent(BaseAgent):
 
         await self._message_bus.send(message)
 
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_START,
             agent_id=self._agent_id,
-            target=target,
-            action="dispatch_task",
             details={
                 "task_id": task.task_id,
                 "task_type": task_type,
                 "assigned_to": agent_id,
+                "action": "dispatch_task",
+                "outcome": "dispatched",
             },
-            outcome="dispatched",
+            target=target,
         )
 
         return {
@@ -2807,7 +2787,7 @@ class CoordinatorAgent(BaseAgent):
             self._campaign_status.critical_findings += 1
 
             # Log critical finding
-            await self._safety_gate.audit_logger.log(
+            await self._safety_gate._audit_logger.log(
                 event_type=AuditEventType.SECURITY_ALERT,
                 agent_id=self._agent_id,
                 target=result_data.get("target", "unknown"),
@@ -2886,7 +2866,7 @@ class CoordinatorAgent(BaseAgent):
             )
 
         # Log phase transition
-        await self._safety_gate.audit_logger.log(
+        await self._safety_gate._audit_logger.log(
             event_type=AuditEventType.OPERATION_COMPLETE,
             agent_id=self._agent_id,
             target="campaign",
