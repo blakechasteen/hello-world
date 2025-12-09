@@ -647,6 +647,38 @@ async def safety_gate(request: SafetyGateRequest):
     }
 
 
+@app.get("/safety/alignment-metrics")
+async def alignment_metrics():
+    """
+    Get alignment-specific metrics (E2.1 - December 2025).
+
+    Returns comprehensive alignment metrics including:
+    - Safety decisions by risk level and outcome
+    - Deception flags by type
+    - Convergence violations by type
+    - Autonomy actions by step type
+    - Resource utilization ratios
+    """
+    try:
+        from HoloLoom.alignment import get_global_monitor
+        monitor = get_global_monitor()
+        if monitor:
+            return monitor.get_alignment_summary()
+    except Exception as e:
+        logger.error(f"Failed to get alignment metrics: {e}")
+
+    # Return empty metrics if monitor unavailable
+    return {
+        "safety_decisions": {},
+        "deception_flags": {},
+        "convergence_violations": {},
+        "autonomy_actions": {},
+        "resource_utilization": {},
+        "period": {"start": None, "end": None},
+        "total_events": 0
+    }
+
+
 # ============================================================================
 # Data Ingestion Endpoints
 # ============================================================================

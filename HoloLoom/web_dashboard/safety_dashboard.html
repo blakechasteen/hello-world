@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Safety Dashboard</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border-color: #30363d;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-orange: #db6d28;
+            --accent-red: #f85149;
+            --accent-purple: #a371f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 svg {
+            color: var(--accent-green);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-red);
+        }
+
+        .connection-dot.connected {
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main {
+            padding: 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 1200px) {
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .grid-3, .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-tertiary);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        /* Status Indicators */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.success { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .badge.warning { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+        .badge.danger { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+        .badge.info { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+        .badge.purple { background: rgba(163, 113, 247, 0.2); color: var(--accent-purple); }
+
+        /* Metrics Cards */
+        .metric-card {
+            text-align: center;
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Risk Distribution Chart */
+        .risk-distribution {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .risk-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .risk-bar-label {
+            width: 80px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .risk-bar-track {
+            flex: 1;
+            height: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .risk-bar-fill.safe { background: var(--accent-green); }
+        .risk-bar-fill.low { background: var(--accent-blue); }
+        .risk-bar-fill.medium { background: var(--accent-yellow); }
+        .risk-bar-fill.high { background: var(--accent-orange); }
+        .risk-bar-fill.critical { background: var(--accent-red); }
+
+        .risk-bar-value {
+            width: 50px;
+            text-align: right;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Live Feed */
+        .live-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .feed-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+
+        .feed-item.new {
+            animation: highlight 2s ease;
+        }
+
+        @keyframes highlight {
+            0% { background: rgba(88, 166, 255, 0.2); }
+            100% { background: transparent; }
+        }
+
+        .feed-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .feed-icon.success { color: var(--accent-green); }
+        .feed-icon.warning { color: var(--accent-yellow); }
+        .feed-icon.danger { color: var(--accent-red); }
+        .feed-icon.info { color: var(--accent-blue); }
+
+        .feed-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .feed-message {
+            font-size: 13px;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .feed-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Resource Gauges */
+        .gauge-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .gauge {
+            width: 100px;
+            text-align: center;
+        }
+
+        .gauge-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--accent-green) 0deg,
+                var(--accent-green) var(--gauge-angle, 0deg),
+                var(--bg-tertiary) var(--gauge-angle, 0deg),
+                var(--bg-tertiary) 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            position: relative;
+        }
+
+        .gauge-circle::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+        }
+
+        .gauge-value {
+            position: relative;
+            z-index: 1;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .gauge-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Alerts Panel */
+        .alert-item {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-item.warning {
+            background: rgba(210, 153, 34, 0.1);
+            border-left: 3px solid var(--accent-yellow);
+        }
+
+        .alert-item.critical {
+            background: rgba(248, 81, 73, 0.1);
+            border-left: 3px solid var(--accent-red);
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .alert-description {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .alert-time {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Audit Trail Table */
+        .audit-table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        code {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--text-muted);
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-primary:hover {
+            background: #4a9eff;
+        }
+
+        /* Search */
+        .search-bar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        /* Section spacing */
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+            </svg>
+            HoloLoom Safety Dashboard
+        </h1>
+        <div class="connection-status">
+            <span class="connection-dot" id="ws-status"></span>
+            <span id="ws-status-text">Disconnected</span>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Status Overview -->
+        <section class="section">
+            <div class="grid grid-3">
+                <!-- System Status -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">System Status</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <span class="status-label">Safety Guardrails</span>
+                                <span class="badge success" id="guardrails-status">Active</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Deception Detector</span>
+                                <span class="badge success" id="deception-detector-status">Active</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Convergence Guard</span>
+                                <span class="badge success" id="convergence-guard-status">Active</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Audit Trail</span>
+                                <span class="badge success" id="audit-trail-status">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Key Metrics</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-grid">
+                            <div class="metric-card">
+                                <div class="metric-value" id="total-decisions">0</div>
+                                <div class="metric-label">Total Decisions</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="blocked-count">0</div>
+                                <div class="metric-label">Blocked</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="block-rate">0%</div>
+                                <div class="metric-label">Block Rate</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="alert-count">0</div>
+                                <div class="metric-label">Active Alerts</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Distribution -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Risk Level Distribution</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="risk-distribution" id="risk-distribution">
+                            <div class="risk-bar">
+                                <span class="risk-bar-label">SAFE</span>
+                                <div class="risk-bar-track">
+                                    <div class="risk-bar-fill safe" id="risk-safe" style="width: 0%"></div>
+                                </div>
+                                <span class="risk-bar-value" id="risk-safe-value">0</span>
+                            </div>
+                            <div class="risk-bar">
+                                <span class="risk-bar-label">LOW</span>
+                                <div class="risk-bar-track">
+                                    <div class="risk-bar-fill low" id="risk-low" style="width: 0%"></div>
+                                </div>
+                                <span class="risk-bar-value" id="risk-low-value">0</span>
+                            </div>
+                            <div class="risk-bar">
+                                <span class="risk-bar-label">MEDIUM</span>
+                                <div class="risk-bar-track">
+                                    <div class="risk-bar-fill medium" id="risk-medium" style="width: 0%"></div>
+                                </div>
+                                <span class="risk-bar-value" id="risk-medium-value">0</span>
+                            </div>
+                            <div class="risk-bar">
+                                <span class="risk-bar-label">HIGH</span>
+                                <div class="risk-bar-track">
+                                    <div class="risk-bar-fill high" id="risk-high" style="width: 0%"></div>
+                                </div>
+                                <span class="risk-bar-value" id="risk-high-value">0</span>
+                            </div>
+                            <div class="risk-bar">
+                                <span class="risk-bar-label">CRITICAL</span>
+                                <div class="risk-bar-track">
+                                    <div class="risk-bar-fill critical" id="risk-critical" style="width: 0%"></div>
+                                </div>
+                                <span class="risk-bar-value" id="risk-critical-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Feed & Alerts -->
+        <section class="section">
+            <div class="grid grid-2">
+                <!-- Live Safety Feed -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Live Safety Feed</span>
+                        <span class="badge info" id="feed-count">0 events</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="live-feed" id="live-feed">
+                            <div class="empty-state">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z"/>
+                                </svg>
+                                <div>Waiting for events...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Alerts -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Active Alerts</span>
+                        <button class="btn" id="clear-alerts-btn">Clear All</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="alerts-container">
+                            <div class="empty-state">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z"/>
+                                </svg>
+                                <div>No active alerts</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resource Utilization -->
+        <section class="section">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Resource Utilization (Autonomy Bounds)</span>
+                </div>
+                <div class="card-body">
+                    <div class="gauge-container" id="resource-gauges">
+                        <div class="gauge">
+                            <div class="gauge-circle" id="gauge-api" style="--gauge-angle: 0deg;">
+                                <span class="gauge-value">0%</span>
+                            </div>
+                            <div class="gauge-label">API Calls</div>
+                        </div>
+                        <div class="gauge">
+                            <div class="gauge-circle" id="gauge-compute" style="--gauge-angle: 0deg;">
+                                <span class="gauge-value">0%</span>
+                            </div>
+                            <div class="gauge-label">Compute</div>
+                        </div>
+                        <div class="gauge">
+                            <div class="gauge-circle" id="gauge-memory" style="--gauge-angle: 0deg;">
+                                <span class="gauge-value">0%</span>
+                            </div>
+                            <div class="gauge-label">Memory</div>
+                        </div>
+                        <div class="gauge">
+                            <div class="gauge-circle" id="gauge-storage" style="--gauge-angle: 0deg;">
+                                <span class="gauge-value">0%</span>
+                            </div>
+                            <div class="gauge-label">Storage</div>
+                        </div>
+                        <div class="gauge">
+                            <div class="gauge-circle" id="gauge-network" style="--gauge-angle: 0deg;">
+                                <span class="gauge-value">0%</span>
+                            </div>
+                            <div class="gauge-label">Network</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Audit Trail -->
+        <section class="section">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Audit Trail</span>
+                    <div class="search-bar">
+                        <input type="text" class="search-input" id="audit-search-input" placeholder="Search decisions...">
+                        <button class="btn" id="audit-search-btn">Search</button>
+                        <button class="btn" id="audit-refresh-btn">Refresh</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="audit-table-container" id="audit-trail-container">
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 13h6v-2H9v2zm0 4h6v-2H9v2zm0-8h6V7H9v2zm11-6H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H4V5h16v14z"/>
+                            </svg>
+                            <div>No audit trail entries yet</div>
+                        </div>
+                    </div>
+                    <button class="btn" id="audit-load-more-btn" style="display: none; margin-top: 12px;">Load More</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/safety_dashboard.js"></script>
+    <script src="js/safety_dashboard_enhanced.js"></script>
+    <script>
+        // Initialize enhanced dashboard with WebSocket support
+        const dashboard = new EnhancedSafetyDashboard('http://localhost:8000', 'ws://localhost:8000/ws/safety');
+        dashboard.initialize();
+    </script>
+</body>
+</html>

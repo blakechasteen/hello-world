@@ -242,6 +242,121 @@ class CohesionMetrics:
         }
 
 
+# =============================================================================
+# Dead Code Detection
+# =============================================================================
+
+@dataclass
+class DeadCodeSymbol:
+    """
+    A symbol detected as potentially dead (unreachable) code.
+
+    Dead code = functions/methods with no callers AND not entry points.
+    """
+    name: str
+    symbol_type: str              # "function", "method", "class"
+    file_path: str
+    line_number: int
+    reason: str                   # Why it's considered dead
+    confidence: float = 0.5       # 0.0-1.0, how confident we are
+
+    # Entry point check results
+    is_entry_point: bool = False
+    entry_point_reason: Optional[str] = None  # Why it's an entry point (if it is)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'name': self.name,
+            'type': self.symbol_type,
+            'file': self.file_path,
+            'line': self.line_number,
+            'reason': self.reason,
+            'confidence': self.confidence,
+            'is_entry_point': self.is_entry_point,
+            'entry_point_reason': self.entry_point_reason
+        }
+
+
+@dataclass
+class DeadCodeAnalysis:
+    """
+    Dead code analysis results for a codebase.
+
+    Identifies functions/methods/classes with no callers that aren't entry points.
+    """
+    dead_functions: List[DeadCodeSymbol] = field(default_factory=list)
+    dead_methods: List[DeadCodeSymbol] = field(default_factory=list)
+    dead_classes: List[DeadCodeSymbol] = field(default_factory=list)
+
+    # Totals for context
+    total_functions: int = 0
+    total_methods: int = 0
+    total_classes: int = 0
+
+    @property
+    def dead_count(self) -> int:
+        """Total dead symbols across all types."""
+        return len(self.dead_functions) + len(self.dead_methods) + len(self.dead_classes)
+
+    @property
+    def total_symbols(self) -> int:
+        """Total symbols analyzed."""
+        return self.total_functions + self.total_methods + self.total_classes
+
+    @property
+    def dead_code_ratio(self) -> float:
+        """Ratio of dead code to total code."""
+        if self.total_symbols == 0:
+            return 0.0
+        return self.dead_count / self.total_symbols
+
+    @property
+    def dead_code_percentage(self) -> float:
+        """Dead code as a percentage."""
+        return self.dead_code_ratio * 100
+
+    @property
+    def health_rating(self) -> str:
+        """Classify codebase health based on dead code ratio."""
+        ratio = self.dead_code_ratio
+        if ratio <= 0.05:
+            return "excellent"    # <5% dead code
+        elif ratio <= 0.10:
+            return "good"         # 5-10% dead code
+        elif ratio <= 0.20:
+            return "moderate"     # 10-20% dead code
+        elif ratio <= 0.30:
+            return "poor"         # 20-30% dead code
+        else:
+            return "critical"     # >30% dead code
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'dead_functions': [s.to_dict() for s in self.dead_functions],
+            'dead_methods': [s.to_dict() for s in self.dead_methods],
+            'dead_classes': [s.to_dict() for s in self.dead_classes],
+            'dead_count': self.dead_count,
+            'total_symbols': self.total_symbols,
+            'dead_code_ratio': self.dead_code_ratio,
+            'dead_code_percentage': self.dead_code_percentage,
+            'health_rating': self.health_rating,
+            'by_type': {
+                'functions': {
+                    'dead': len(self.dead_functions),
+                    'total': self.total_functions
+                },
+                'methods': {
+                    'dead': len(self.dead_methods),
+                    'total': self.total_methods
+                },
+                'classes': {
+                    'dead': len(self.dead_classes),
+                    'total': self.total_classes
+                }
+            }
+        }
+
+
 @dataclass
 class CodeFunction:
     """Parsed function/method"""
@@ -511,6 +626,9 @@ class CodebaseProject:
     dependency_edges: List[DependencyEdge] = field(default_factory=list)
     call_edges: List[CallEdge] = field(default_factory=list)
     git_info: Dict[str, GitFileInfo] = field(default_factory=dict)  # path -> GitFileInfo
+
+    # Analysis results
+    dead_code_analysis: Optional[DeadCodeAnalysis] = None  # Dead code detection results
 
     # Codebase-level stats
     total_files: int = 0
@@ -847,6 +965,75 @@ class CodebaseProject:
             'low_cohesion_count': sum(1 for c in cohesion_data if c.total_calls > 0 and c.cohesion_score < 0.3)
         }
 
+    def get_dead_code_summary(self) -> Dict[str, Any]:
+        """
+        Get dead code analysis summary for the codebase.
+
+        Returns:
+            Dictionary with dead code stats:
+            - dead_count: Total dead symbols found
+            - total_symbols: Total symbols analyzed
+            - dead_code_ratio: Ratio of dead to total
+            - dead_code_percentage: Dead code percentage
+            - health_rating: Codebase health based on dead code
+            - by_type: Breakdown by symbol type
+            - top_dead_files: Files with most dead code
+        """
+        if not self.dead_code_analysis:
+            return {
+                'dead_count': 0,
+                'total_symbols': 0,
+                'dead_code_ratio': 0.0,
+                'dead_code_percentage': 0.0,
+                'health_rating': 'excellent',
+                'by_type': {
+                    'functions': {'dead': 0, 'total': 0},
+                    'methods': {'dead': 0, 'total': 0},
+                    'classes': {'dead': 0, 'total': 0}
+                },
+                'top_dead_files': []
+            }
+
+        analysis = self.dead_code_analysis
+
+        # Find files with most dead code
+        dead_by_file: Dict[str, int] = {}
+        for symbol in analysis.dead_functions + analysis.dead_methods + analysis.dead_classes:
+            file_path = symbol.file_path
+            dead_by_file[file_path] = dead_by_file.get(file_path, 0) + 1
+
+        top_dead_files = sorted(
+            dead_by_file.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )[:5]
+
+        return {
+            'dead_count': analysis.dead_count,
+            'total_symbols': analysis.total_symbols,
+            'dead_code_ratio': analysis.dead_code_ratio,
+            'dead_code_percentage': analysis.dead_code_percentage,
+            'health_rating': analysis.health_rating,
+            'by_type': {
+                'functions': {
+                    'dead': len(analysis.dead_functions),
+                    'total': analysis.total_functions
+                },
+                'methods': {
+                    'dead': len(analysis.dead_methods),
+                    'total': analysis.total_methods
+                },
+                'classes': {
+                    'dead': len(analysis.dead_classes),
+                    'total': analysis.total_classes
+                }
+            },
+            'top_dead_files': [
+                {'file': f, 'dead_count': c}
+                for f, c in top_dead_files
+            ]
+        }
+
     def to_dict(self) -> Dict[str, Any]:
         """Export project analysis to dictionary"""
         return {
@@ -867,7 +1054,8 @@ class CodebaseProject:
             'high_complexity_functions': self.get_high_complexity_functions(10)[:10],
             'api_surface_summary': self.get_api_surface_summary(),
             'cohesion_summary': self.get_cohesion_summary(),
-            'low_cohesion_modules': self.get_low_cohesion_modules()[:5]
+            'low_cohesion_modules': self.get_low_cohesion_modules()[:5],
+            'dead_code_summary': self.get_dead_code_summary()
         }
 
 
@@ -1399,6 +1587,236 @@ class CohesionCalculator:
             external_calls=external,
             total_calls=internal + external
         )
+
+
+# =============================================================================
+# Dead Code Detection
+# =============================================================================
+
+class DeadCodeDetector:
+    """
+    Detect potentially dead (unreachable) code in a codebase.
+
+    Dead code = functions/methods/classes with no callers AND not entry points.
+
+    Entry points include:
+    - main, __init__, __new__, __main__
+    - Magic/dunder methods (__str__, __repr__, etc.)
+    - Test functions (test_*, *_test)
+    - Decorated functions (@app.route, @pytest.fixture, @property, etc.)
+    - Public API (in __all__)
+    """
+
+    # Entry point function names
+    ENTRY_POINT_NAMES = {
+        'main', '__init__', '__new__', '__main__', '__call__',
+        'setup', 'teardown', 'setUp', 'tearDown',  # unittest
+        'run', 'execute', 'start', 'stop',  # common CLI entry points
+    }
+
+    # Magic methods that are called by Python runtime
+    MAGIC_METHODS = {
+        '__str__', '__repr__', '__len__', '__iter__', '__next__',
+        '__getitem__', '__setitem__', '__delitem__', '__contains__',
+        '__add__', '__sub__', '__mul__', '__truediv__', '__floordiv__',
+        '__mod__', '__pow__', '__neg__', '__pos__', '__abs__',
+        '__eq__', '__ne__', '__lt__', '__le__', '__gt__', '__ge__',
+        '__hash__', '__bool__', '__int__', '__float__', '__complex__',
+        '__enter__', '__exit__', '__aenter__', '__aexit__',
+        '__await__', '__aiter__', '__anext__',
+        '__get__', '__set__', '__delete__', '__set_name__',
+        '__class_getitem__', '__init_subclass__', '__prepare__',
+        '__instancecheck__', '__subclasscheck__',
+        '__copy__', '__deepcopy__', '__reduce__', '__reduce_ex__',
+        '__getattr__', '__setattr__', '__delattr__', '__getattribute__',
+        '__dir__', '__format__', '__sizeof__',
+    }
+
+    # Decorators that mark entry points
+    ENTRY_POINT_DECORATORS = {
+        # Web frameworks
+        'app.route', 'app.get', 'app.post', 'app.put', 'app.delete',
+        'router.route', 'router.get', 'router.post',
+        'api_view', 'action', 'endpoint',
+        # Testing
+        'pytest.fixture', 'fixture', 'pytest.mark',
+        'unittest.mock.patch', 'patch', 'mock',
+        # Properties and descriptors
+        'property', 'staticmethod', 'classmethod',
+        'cached_property', 'abstractmethod', 'abstractproperty',
+        # Signals and events
+        'receiver', 'on_event', 'event_handler', 'listener',
+        # CLI
+        'click.command', 'command', 'click.group',
+        'typer.command', 'typer.callback',
+        # Celery/async tasks
+        'task', 'celery.task', 'shared_task',
+        # Django
+        'admin.register', 'register',
+        # FastAPI
+        'api_router.get', 'api_router.post',
+        # Other
+        'override', 'deprecated', 'dataclass', 'dataclasses.dataclass',
+    }
+
+    @staticmethod
+    def detect(project: 'CodebaseProject') -> DeadCodeAnalysis:
+        """
+        Detect dead code in a codebase project.
+
+        Args:
+            project: CodebaseProject with parsed files and call edges
+
+        Returns:
+            DeadCodeAnalysis with dead symbols categorized
+        """
+        analysis = DeadCodeAnalysis()
+
+        # Build reverse call graph: callee -> set of callers
+        callee_to_callers: Dict[str, Set[str]] = defaultdict(set)
+        for edge in project.call_edges:
+            caller_key = f"{edge.caller_file}::{edge.caller_function}"
+            callee_key = f"{edge.callee_file}::{edge.callee_function}"
+            callee_to_callers[callee_key].add(caller_key)
+
+        # Get all symbols defined in __all__ for each file
+        all_exports: Dict[str, Set[str]] = {}
+        for file_path, code_file in project.files.items():
+            if code_file.api_surface and code_file.api_surface.has_all_export:
+                all_exports[file_path] = set(code_file.api_surface.all_exports)
+            else:
+                all_exports[file_path] = set()
+
+        # Analyze each file
+        for file_path, code_file in project.files.items():
+            file_exports = all_exports.get(file_path, set())
+
+            # Check top-level functions
+            for func in code_file.functions:
+                analysis.total_functions += 1
+                func_key = f"{file_path}::{func.name}"
+
+                is_entry, entry_reason = DeadCodeDetector._is_entry_point(
+                    func.name, func.decorators, file_exports, is_method=False
+                )
+
+                if is_entry:
+                    continue  # Not dead - it's an entry point
+
+                callers = callee_to_callers.get(func_key, set())
+                if not callers:
+                    # No callers and not an entry point = dead
+                    analysis.dead_functions.append(DeadCodeSymbol(
+                        name=func.name,
+                        symbol_type='function',
+                        file_path=file_path,
+                        line_number=func.line_start,
+                        reason='No callers found',
+                        confidence=0.8,  # High confidence for functions
+                        is_entry_point=False
+                    ))
+
+            # Check classes and their methods
+            for cls in code_file.classes:
+                analysis.total_classes += 1
+                cls_key = f"{file_path}::{cls.name}"
+
+                is_cls_entry, _ = DeadCodeDetector._is_entry_point(
+                    cls.name, cls.decorators, file_exports, is_method=False
+                )
+
+                # Check if class is ever instantiated (has callers to __init__)
+                init_key = f"{file_path}::{cls.name}.__init__"
+                cls_callers = callee_to_callers.get(cls_key, set())
+                init_callers = callee_to_callers.get(init_key, set())
+
+                if not is_cls_entry and not cls_callers and not init_callers:
+                    # Class is never instantiated or referenced
+                    analysis.dead_classes.append(DeadCodeSymbol(
+                        name=cls.name,
+                        symbol_type='class',
+                        file_path=file_path,
+                        line_number=cls.line_start,
+                        reason='Class never instantiated or referenced',
+                        confidence=0.6,  # Lower confidence - class might be used externally
+                        is_entry_point=False
+                    ))
+
+                # Check methods
+                for method in cls.methods:
+                    analysis.total_methods += 1
+                    method_key = f"{file_path}::{cls.name}.{method.name}"
+
+                    is_method_entry, entry_reason = DeadCodeDetector._is_entry_point(
+                        method.name, method.decorators, file_exports, is_method=True
+                    )
+
+                    if is_method_entry:
+                        continue  # Not dead - it's an entry point
+
+                    method_callers = callee_to_callers.get(method_key, set())
+                    if not method_callers:
+                        # No callers and not an entry point = dead
+                        analysis.dead_methods.append(DeadCodeSymbol(
+                            name=f"{cls.name}.{method.name}",
+                            symbol_type='method',
+                            file_path=file_path,
+                            line_number=method.line_start,
+                            reason='No callers found',
+                            confidence=0.7,  # Medium-high confidence
+                            is_entry_point=False
+                        ))
+
+        return analysis
+
+    @staticmethod
+    def _is_entry_point(
+        name: str,
+        decorators: List[str],
+        file_exports: Set[str],
+        is_method: bool
+    ) -> Tuple[bool, Optional[str]]:
+        """
+        Check if a function/method/class is an entry point.
+
+        Args:
+            name: Symbol name
+            decorators: List of decorator names
+            file_exports: Set of names in __all__
+            is_method: True if this is a method, False for function/class
+
+        Returns:
+            Tuple of (is_entry_point, reason)
+        """
+        # Check if in __all__
+        if name in file_exports:
+            return True, f"Exported in __all__"
+
+        # Check entry point names
+        if name in DeadCodeDetector.ENTRY_POINT_NAMES:
+            return True, f"Known entry point: {name}"
+
+        # Check magic methods (only for methods)
+        if is_method and name in DeadCodeDetector.MAGIC_METHODS:
+            return True, f"Magic method: {name}"
+
+        # Check test functions
+        if name.startswith('test_') or name.endswith('_test'):
+            return True, "Test function"
+
+        # Check decorators
+        for decorator in decorators:
+            # Normalize decorator name (remove @ and arguments)
+            dec_name = decorator.lstrip('@').split('(')[0].strip()
+            if dec_name in DeadCodeDetector.ENTRY_POINT_DECORATORS:
+                return True, f"Entry point decorator: {dec_name}"
+
+            # Check partial matches (e.g., 'app.route' matches '@app.route(...)')
+            for entry_dec in DeadCodeDetector.ENTRY_POINT_DECORATORS:
+                if entry_dec in dec_name:
+                    return True, f"Entry point decorator: {entry_dec}"
+
+        return False, None
 
 
 class PythonParser:
@@ -1962,6 +2380,9 @@ class CodebaseSpinner(BaseSpinner):
 
         # Phase 4: Calculate cohesion metrics
         self._calculate_cohesion(project)
+
+        # Phase 5: Detect dead code
+        project.dead_code_analysis = DeadCodeDetector.detect(project)
 
         return project
 
