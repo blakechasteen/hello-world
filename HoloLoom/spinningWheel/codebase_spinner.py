@@ -773,6 +773,7 @@ class CyclomaticComplexityCalculator:
         }
 
         max_depth = [0]  # Use list to allow modification in nested function
+        visited_ifs = set()  # Track If nodes we've already processed
 
         def visit(node: ast.AST, depth: int = 0) -> None:
             """Recursively visit AST nodes to count decision points."""
@@ -780,11 +781,21 @@ class CyclomaticComplexityCalculator:
 
             for child in ast.iter_child_nodes(node):
                 if isinstance(child, ast.If):
+                    # Skip if we've already counted this If (as elif)
+                    if id(child) in visited_ifs:
+                        visit(child, depth)
+                        continue
+
                     counters['if_count'] += 1
-                    # Check for elif chains in orelse
-                    for orelse_node in child.orelse:
-                        if isinstance(orelse_node, ast.If):
-                            counters['elif_count'] += 1
+                    visited_ifs.add(id(child))
+
+                    # Count elif chain
+                    elif_node = child
+                    while elif_node.orelse and len(elif_node.orelse) == 1 and isinstance(elif_node.orelse[0], ast.If):
+                        counters['elif_count'] += 1
+                        elif_node = elif_node.orelse[0]
+                        visited_ifs.add(id(elif_node))
+
                     visit(child, depth + 1)
 
                 elif isinstance(child, ast.For):

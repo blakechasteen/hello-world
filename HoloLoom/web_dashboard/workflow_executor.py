@@ -145,6 +145,59 @@ class EntityResponse(BaseModel):
     relationships: List[EntityRelationship] = []
     relationship_count: int = 0
 
+# Collaboration Models
+class CollaborationSession(BaseModel):
+    session_id: str
+    workflow_id: str
+    participants: List[Dict[str, Any]] = []
+    created_at: float
+
+class CursorUpdate(BaseModel):
+    user_id: str
+    user_name: str
+    x: float
+    y: float
+    color: str = "#3b82f6"
+
+class PresenceUpdate(BaseModel):
+    user_id: str
+    user_name: str
+    status: str  # "active", "idle", "editing"
+    selected_node: Optional[str] = None
+
+class NodeLockRequest(BaseModel):
+    user_id: str
+    user_name: str
+    node_id: str
+
+class JoinSessionRequest(BaseModel):
+    user_id: str
+    user_name: str
+    color: Optional[str] = None
+
+# Optimization Models
+class OptimizationSuggestion(BaseModel):
+    suggestion_id: str
+    workflow_id: str
+    suggestion_type: str  # "parallelize", "cache", "reorder", "substitute"
+    description: str
+    expected_improvement: float  # percentage
+    confidence: float
+    affected_nodes: List[str]
+
+class PerformanceProfile(BaseModel):
+    node_id: str
+    node_type: str
+    avg_latency_ms: float
+    p95_latency_ms: float
+    success_rate: float
+    throughput: float  # calls per minute
+    bottleneck_score: float  # 0-1, higher = more likely bottleneck
+
+# Thompson Sampling state for workflow optimization
+node_performance_stats = {}  # node_type -> {alpha, beta, latency_samples, success_count, failure_count}
+optimization_history = []  # List of optimization suggestions and their outcomes
+
 # Global state
 active_workflows: Dict[str, "WorkflowExecutor"] = {}
 ws_connections: List[WebSocket] = []
@@ -153,6 +206,10 @@ version_counter = 0
 branch_store: Dict[str, Dict[str, Any]] = {
     'main': {'versions': [], 'head': None}
 }
+
+# Collaboration state
+collaboration_sessions: Dict[str, Dict[str, Any]] = {}  # session_id -> {workflow_id, participants, cursor_positions, last_activity}
+presence_subscriptions: Dict[WebSocket, str] = {}  # websocket -> session_id
 
 
 class WorkflowExecutor:
