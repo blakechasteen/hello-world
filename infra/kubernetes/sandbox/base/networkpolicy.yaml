@@ -1,0 +1,73 @@
+# CARTS Sandbox Network Policy
+# =============================
+# Default-deny network policy for sandbox isolation
+#
+# Author: CARTS Team
+# Date: 2025-12-09
+
+---
+# Default deny all ingress and egress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: carts-sandbox-deny-all
+  namespace: carts
+  labels:
+    app.kubernetes.io/name: carts-sandbox
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: carts-sandbox
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# Allow DNS resolution only (required for container startup)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: carts-sandbox-allow-dns
+  namespace: carts
+  labels:
+    app.kubernetes.io/name: carts-sandbox
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: carts-sandbox
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# Allow metrics scraping (if monitoring enabled)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: carts-sandbox-allow-metrics
+  namespace: carts
+  labels:
+    app.kubernetes.io/name: carts-sandbox
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: carts-sandbox
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090

@@ -1,0 +1,148 @@
+# CARTS Sandbox Docker Compose
+# =============================
+#
+# One-command sandbox deployment for CARTS red teaming.
+#
+# Usage:
+#   docker-compose -f docker-compose-sandbox.yml up -d
+#   docker-compose -f docker-compose-sandbox.yml exec sandbox python attack.py
+#   docker-compose -f docker-compose-sandbox.yml down -v
+#
+# Environments:
+#   SANDBOX_CPU_LIMIT=1.0         CPU cores
+#   SANDBOX_MEMORY_LIMIT=512m     Memory limit
+#   SANDBOX_TIMEOUT=300           Max execution seconds
+#   SANDBOX_NETWORK_ENABLED=false Enable network access
+#
+# Author: CARTS Team
+# Date: 2025-12-09
+
+services:
+  # Main sandbox container
+  sandbox:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.sandbox
+    image: hololoom/carts-sandbox:latest
+    container_name: carts-sandbox
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '${SANDBOX_CPU_LIMIT:-1.0}'
+          memory: ${SANDBOX_MEMORY_LIMIT:-512M}
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:unconfined  # TODO: Add custom seccomp profile
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE  # Only if network enabled
+    read_only: true
+    user: "1000:1000"  # sandbox user
+
+    # Network isolation
+    networks:
+      - sandbox-isolated
+
+    # Volumes
+    volumes:
+      - sandbox-workspace:/workspace
+      - sandbox-output:/output:rw
+      - /tmp  # Tmpfs for temp files
+
+    # Tmpfs for /tmp
+    tmpfs:
+      - /tmp:size=100M,mode=1777
+
+    # Environment
+    environment:
+      - SANDBOX_MODE=isolated
+      - TIMEOUT_SECONDS=${SANDBOX_TIMEOUT:-300}
+      - PYTHONPATH=/workspace
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "print('healthy')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+    # Restart policy
+    restart: "no"  # Don't auto-restart sandbox
+
+    # Logging
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Metrics collector (optional)
+  metrics:
+    image: prom/node-exporter:v1.7.0
+    container_name: carts-sandbox-metrics
+    profiles:
+      - monitoring  # Only start with --profile monitoring
+    ports:
+      - "9100:9100"
+    networks:
+      - sandbox-isolated
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+
+  # Log aggregator (optional)
+  logs:
+    image: grafana/promtail:2.9.0
+    container_name: carts-sandbox-logs
+    profiles:
+      - monitoring
+    volumes:
+      - sandbox-output:/output:ro
+      - ./promtail-config.yml:/etc/promtail/config.yml:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - sandbox-isolated
+    restart: unless-stopped
+
+networks:
+  # Isolated network - no external access
+  sandbox-isolated:
+    driver: bridge
+    internal: true  # No external connectivity
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+
+  # External network (only used if SANDBOX_NETWORK_ENABLED=true)
+  sandbox-external:
+    driver: bridge
+    internal: false
+
+volumes:
+  # Workspace for attack files
+  sandbox-workspace:
+    driver: local
+
+  # Output for results
+  sandbox-output:
+    driver: local
+
+# Compose version
+version: '3.8'

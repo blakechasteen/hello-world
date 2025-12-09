@@ -1,0 +1,90 @@
+# CARTS Sandbox Container
+# Minimal, secure container for isolated attack execution
+#
+# Security features:
+# - Multi-stage build (minimal runtime image)
+# - Non-root user
+# - Read-only filesystem
+# - No capabilities
+# - Minimal installed packages
+#
+# Author: CARTS Team
+# Date: 2025-12-09
+
+# Stage 1: Builder
+FROM python:3.11-slim as builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only requirements first (cache layer)
+COPY requirements.txt .
+
+# Install Python dependencies to user directory
+RUN pip install --no-cache-dir --user \
+    requests \
+    httpx \
+    pyyaml \
+    && rm -rf ~/.cache
+
+# Stage 2: Runtime
+FROM python:3.11-slim
+
+# Security: Run as non-root user
+RUN groupadd -g 1000 sandbox && \
+    useradd -m -u 1000 -g sandbox sandbox
+
+WORKDIR /workspace
+
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copy Python dependencies from builder
+COPY --from=builder /root/.local /home/sandbox/.local
+
+# Create required directories
+RUN mkdir -p /workspace /output /tmp && \
+    chown -R sandbox:sandbox /workspace /output /tmp
+
+# Environment
+ENV PATH=/home/sandbox/.local/bin:$PATH
+ENV PYTHONPATH=/workspace
+ENV HOME=/home/sandbox
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Copy sandbox runtime scripts
+COPY --chown=sandbox:sandbox HoloLoom/redteam/sandbox/runtime/ /opt/sandbox/
+RUN chmod +x /opt/sandbox/*.sh 2>/dev/null || true
+
+# Switch to non-root user
+USER sandbox
+
+# Working directory for attack execution
+WORKDIR /workspace
+
+# Output directory (writable)
+VOLUME ["/workspace", "/output"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD python -c "print('healthy')" || exit 1
+
+# Default: keep container running for exec
+CMD ["tail", "-f", "/dev/null"]
+
+# Labels for identification
+LABEL org.opencontainers.image.title="CARTS Sandbox"
+LABEL org.opencontainers.image.description="Isolated execution environment for CARTS red teaming"
+LABEL org.opencontainers.image.vendor="HoloLoom"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL com.carts.security="isolated"

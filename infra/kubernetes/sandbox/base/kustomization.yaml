@@ -1,0 +1,28 @@
+# CARTS Sandbox Base Kustomization
+# ==================================
+# Base resources for all environments
+#
+# Author: CARTS Team
+# Date: 2025-12-09
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: carts
+
+# Common labels
+commonLabels:
+  app.kubernetes.io/part-of: hololoom
+  app.kubernetes.io/managed-by: kustomize
+
+# Base resources
+resources:
+  - namespace.yaml
+  - rbac.yaml
+  - configmap.yaml
+  - job.yaml
+  - networkpolicy.yaml
+
+# Common annotations
+commonAnnotations:
+  carts.hololoom.dev/version: "1.0.0"

@@ -1,0 +1,112 @@
+# CARTS Sandbox Prometheus Alerting Rules
+# =========================================
+#
+# Alerting rules for sandbox monitoring:
+# - Job failures
+# - Sandbox violations
+# - Resource exhaustion
+# - Budget alerts
+#
+# Author: CARTS Team
+# Date: 2025-12-09
+
+groups:
+  - name: carts-sandbox
+    interval: 30s
+    rules:
+      # Job failure rate alert
+      - alert: CartsSandboxHighFailureRate
+        expr: |
+          rate(carts_sandbox_jobs_total{status="failed"}[5m])
+          / rate(carts_sandbox_jobs_total[5m]) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          team: redteam
+        annotations:
+          summary: "High sandbox job failure rate"
+          description: >
+            More than 20% of sandbox jobs are failing.
+            Current failure rate: {{ $value | printf "%.2f" }}
+          runbook_url: "https://wiki.example.com/carts/runbook/high-failure-rate"
+
+      # Sandbox violation alert
+      - alert: CartsSandboxViolationDetected
+        expr: increase(carts_sandbox_violations_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Sandbox violation detected"
+          description: >
+            A sandbox security violation was detected.
+            Type: {{ $labels.type }}
+            Count in last 5m: {{ $value }}
+          runbook_url: "https://wiki.example.com/carts/runbook/violation"
+
+      # Long running jobs
+      - alert: CartsSandboxJobTooLong
+        expr: |
+          carts_sandbox_execution_seconds_bucket{le="300"}
+          / carts_sandbox_execution_seconds_count < 0.95
+        for: 10m
+        labels:
+          severity: warning
+          team: redteam
+        annotations:
+          summary: "Sandbox jobs taking too long"
+          description: >
+            More than 5% of jobs are taking longer than 5 minutes.
+          runbook_url: "https://wiki.example.com/carts/runbook/slow-jobs"
+
+      # Budget warning
+      - alert: CartsSandboxBudgetWarning
+        expr: carts_sandbox_budget_remaining_usd < 100
+        for: 0m
+        labels:
+          severity: warning
+          team: finance
+        annotations:
+          summary: "CARTS sandbox budget running low"
+          description: >
+            Remaining budget: ${{ $value }}
+          runbook_url: "https://wiki.example.com/carts/runbook/budget"
+
+      # Budget exhausted
+      - alert: CartsSandboxBudgetExhausted
+        expr: carts_sandbox_budget_remaining_usd <= 0
+        for: 0m
+        labels:
+          severity: critical
+          team: finance
+        annotations:
+          summary: "CARTS sandbox budget exhausted"
+          description: "Sandbox budget has been completely used."
+          runbook_url: "https://wiki.example.com/carts/runbook/budget"
+
+      # No jobs running (potential system issue)
+      - alert: CartsSandboxNoJobsRunning
+        expr: carts_sandbox_active_jobs == 0 and changes(carts_sandbox_jobs_total[1h]) == 0
+        for: 30m
+        labels:
+          severity: info
+          team: redteam
+        annotations:
+          summary: "No sandbox jobs in last hour"
+          description: "No sandbox jobs have been executed in the last hour."
+
+      # Recording rules for dashboard efficiency
+      - record: carts:sandbox:success_rate:5m
+        expr: |
+          rate(carts_sandbox_jobs_total{status="succeeded"}[5m])
+          / rate(carts_sandbox_jobs_total[5m])
+
+      - record: carts:sandbox:avg_execution_seconds:5m
+        expr: |
+          rate(carts_sandbox_execution_seconds_sum[5m])
+          / rate(carts_sandbox_execution_seconds_count[5m])
+
+      - record: carts:sandbox:cost_per_hour
+        expr: |
+          increase(carts_sandbox_cost_usd_total[1h])

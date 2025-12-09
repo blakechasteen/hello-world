@@ -1,0 +1,71 @@
+# CARTS Sandbox Staging Overlay
+# ==============================
+# Staging environment configuration
+#
+# Features:
+# - Production-like resource limits
+# - Full security enforcement
+# - Metrics enabled
+# - Standard timeouts
+#
+# Author: CARTS Team
+# Date: 2025-12-09
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Extend base
+resources:
+  - ../../base
+
+# Environment-specific namespace suffix
+nameSuffix: -staging
+
+# Environment labels
+commonLabels:
+  environment: staging
+  carts.hololoom.dev/tier: staging
+
+# Cost tracking labels
+commonAnnotations:
+  carts.hololoom.dev/cost-center: engineering
+  carts.hololoom.dev/project: carts
+
+# Patches for staging configuration
+patches:
+  # Standard resource limits
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "1000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "250m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "256Mi"
+    target:
+      kind: Job
+      name: carts-sandbox-job
+
+  # Standard timeout
+  - patch: |-
+      - op: replace
+        path: /spec/activeDeadlineSeconds
+        value: 300
+    target:
+      kind: Job
+      name: carts-sandbox-job
+
+# ConfigMap patches
+configMapGenerator:
+  - name: carts-sandbox-config
+    behavior: merge
+    literals:
+      - TIMEOUT_SECONDS=300
+      - MAX_MEMORY_MB=512
+      - LOG_LEVEL=INFO
+      - METRICS_ENABLED=true

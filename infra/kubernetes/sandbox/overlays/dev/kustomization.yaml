@@ -1,0 +1,65 @@
+# CARTS Sandbox Development Overlay
+# ===================================
+# Development environment configuration
+#
+# Features:
+# - Reduced resource limits
+# - Relaxed security (for debugging)
+# - Extended timeouts
+# - Verbose logging
+#
+# Author: CARTS Team
+# Date: 2025-12-09
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Extend base
+resources:
+  - ../../base
+
+# Environment-specific namespace suffix
+nameSuffix: -dev
+
+# Environment labels
+commonLabels:
+  environment: dev
+  carts.hololoom.dev/tier: development
+
+# Patches for dev configuration
+patches:
+  # Reduce resource limits
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "500m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "256Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "100m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "128Mi"
+    target:
+      kind: Job
+      name: carts-sandbox-job
+
+  # Extend timeout for debugging
+  - patch: |-
+      - op: replace
+        path: /spec/activeDeadlineSeconds
+        value: 600
+    target:
+      kind: Job
+      name: carts-sandbox-job
+
+# ConfigMap patches
+configMapGenerator:
+  - name: carts-sandbox-config
+    behavior: merge
+    literals:
+      - TIMEOUT_SECONDS=600
+      - MAX_MEMORY_MB=256
+      - LOG_LEVEL=DEBUG

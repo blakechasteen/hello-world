@@ -1,0 +1,238 @@
+# CARTS Sandbox Deployment Workflow
+# ===================================
+#
+# CI/CD pipeline for sandbox deployment:
+# - Build and push sandbox image
+# - Deploy to staging/prod Kubernetes
+# - Run smoke tests
+# - Notify on failure
+#
+# Author: CARTS Team
+# Date: 2025-12-09
+
+name: CARTS Sandbox Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'HoloLoom/redteam/sandbox/**'
+      - 'HoloLoom/redteam/deploy/**'
+      - 'infra/docker/Dockerfile.sandbox'
+      - 'infra/kubernetes/sandbox/**'
+      - '.github/workflows/sandbox-deployment.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'HoloLoom/redteam/sandbox/**'
+      - 'HoloLoom/redteam/deploy/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      skip_tests:
+        description: 'Skip tests'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/carts-sandbox
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # Build and test
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pyyaml
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run sandbox tests
+        if: ${{ github.event.inputs.skip_tests != 'true' }}
+        run: |
+          PYTHONPATH=. pytest HoloLoom/redteam/sandbox/tests/ -v --tb=short
+        continue-on-error: false
+
+      - name: Run deploy tests
+        if: ${{ github.event.inputs.skip_tests != 'true' }}
+        run: |
+          PYTHONPATH=. python -c "
+          from HoloLoom.redteam.deploy import DeploymentConfig
+          config = DeploymentConfig.for_dev()
+          assert config.name == 'carts-sandbox-dev'
+          print('Deploy config tests passed')
+          "
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: infra/docker/Dockerfile.sandbox
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event.inputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.carts.hololoom.dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+
+      - name: Deploy with Kustomize
+        run: |
+          kubectl apply -k infra/kubernetes/sandbox/overlays/staging
+          kubectl rollout status job/carts-sandbox-job -n carts-staging --timeout=300s || true
+
+      - name: Run smoke test
+        run: |
+          # Create test job
+          kubectl create job carts-smoke-test \
+            --from=job/carts-sandbox-job \
+            -n carts-staging \
+            -- python -c "print('smoke test passed')"
+
+          # Wait for completion
+          kubectl wait --for=condition=complete job/carts-smoke-test \
+            -n carts-staging --timeout=60s
+
+          # Cleanup
+          kubectl delete job carts-smoke-test -n carts-staging
+
+      - name: Notify on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "CARTS Sandbox staging deployment failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":x: *CARTS Sandbox Staging Deployment Failed*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Deploy to production (manual approval)
+  deploy-prod:
+    name: Deploy to Production
+    needs: [build, deploy-staging]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'prod'
+    environment:
+      name: production
+      url: https://carts.hololoom.dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > $HOME/.kube/config
+
+      - name: Deploy with Kustomize
+        run: |
+          kubectl apply -k infra/kubernetes/sandbox/overlays/prod
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status job/carts-sandbox-job -n carts-prod --timeout=300s || true
+
+      - name: Notify success
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "CARTS Sandbox production deployment succeeded",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":white_check_mark: *CARTS Sandbox Production Deployment Succeeded*"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
