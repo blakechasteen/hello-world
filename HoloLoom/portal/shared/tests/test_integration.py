@@ -445,12 +445,15 @@ class TestPKIIntegration:
         assert context.verify_mode == ssl.CERT_REQUIRED
 
     def test_malformed_certificate_rejected(self, temp_certs_dir):
-        """Malformed certificates return None."""
+        """Malformed certificates are marked invalid."""
         pki = PKIManager(temp_certs_dir)
         pki.generate_ca()
 
         info = pki.verify_client_certificate(b"not a certificate")
-        assert info is None
+        # PKI returns CertificateInfo with is_valid=False for parse errors
+        assert info is not None
+        assert not info.is_valid
+        assert info.error_message is not None
 
 
 # =============================================================================
