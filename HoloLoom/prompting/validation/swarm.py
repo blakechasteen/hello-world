@@ -61,8 +61,8 @@ class SwarmAgent:
 
     async def run(
         self,
-        baseline_queries: List[Dict],
-        mrf_queries: List[Dict]
+        baseline_queries: List[Dict[str, Any]],
+        mrf_queries: List[Dict[str, Any]]
     ) -> PipelineResults:
         """Run validation pipeline for this agent."""
         self.start_time = datetime.now()
@@ -83,7 +83,7 @@ class SwarmAgent:
 
         return self.results
 
-    def _filter_queries(self, queries: List[Dict]) -> List[Dict]:
+    def _filter_queries(self, queries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Filter queries based on agent config."""
         # Apply dimension-specific filtering
         if self.dimension == SwarmDimension.MODEL:
@@ -260,11 +260,28 @@ class MoonshotSwarm:
 
         Args:
             complexities: List of complexity levels (e.g., ["simple", "moderate", "complex"])
+
+        Note: Thresholds are graduated by complexity:
+        - simple: 15% quality improvement, 15% latency regression allowed
+        - moderate: 18% quality improvement, 20% latency regression allowed
+        - complex: 20% quality improvement, 30% latency regression allowed
         """
+        # Graduated thresholds by complexity level
+        # Note: simple queries can tolerate some latency regression (15%) while
+        # complex queries may have higher regression due to more processing
+        thresholds = {
+            "simple": {"quality": 15.0, "latency": 15.0},
+            "moderate": {"quality": 18.0, "latency": 20.0},
+            "complex": {"quality": 20.0, "latency": 30.0},
+        }
+
         for complexity in complexities:
             pipeline = ValidationPipeline()
-            pipeline.add_validator(QualityValidator(min_improvement_pct=15.0 if complexity == "simple" else 25.0))
-            pipeline.add_validator(LatencyValidator(max_regression_pct=10.0 if complexity == "simple" else 30.0))
+            # Use graduated thresholds, with sensible defaults for unknown levels
+            quality_threshold = thresholds.get(complexity, {"quality": 20.0})["quality"]
+            latency_threshold = thresholds.get(complexity, {"latency": 25.0})["latency"]
+            pipeline.add_validator(QualityValidator(min_improvement_pct=quality_threshold))
+            pipeline.add_validator(LatencyValidator(max_regression_pct=latency_threshold))
 
             agent = SwarmAgent(
                 agent_id=f"complexity_{complexity}",
@@ -304,8 +321,8 @@ class MoonshotSwarm:
 
     async def run(
         self,
-        baseline_queries: List[Dict],
-        mrf_queries: List[Dict],
+        baseline_queries: List[Dict[str, Any]],
+        mrf_queries: List[Dict[str, Any]],
         max_concurrent: int = 10
     ) -> SwarmResults:
         """

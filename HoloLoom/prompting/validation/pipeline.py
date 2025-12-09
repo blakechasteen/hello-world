@@ -33,8 +33,8 @@ class ValidationContext:
     start_time: datetime = field(default_factory=datetime.now)
 
     # Data accumulated across phases
-    baseline_queries: List[Any] = field(default_factory=list)
-    mrf_queries: List[Any] = field(default_factory=list)
+    baseline_queries: List[Dict[str, Any]] = field(default_factory=list)
+    mrf_queries: List[Dict[str, Any]] = field(default_factory=list)
 
     # Results from validators
     validator_results: Dict[str, Any] = field(default_factory=dict)
@@ -288,8 +288,8 @@ class ValidationPipeline:
 
     async def run(
         self,
-        baseline_queries: List[Dict],
-        mrf_queries: List[Dict],
+        baseline_queries: List[Dict[str, Any]],
+        mrf_queries: List[Dict[str, Any]],
         phase: ValidationPhase = ValidationPhase.ANALYSIS
     ) -> 'PipelineResults':
         """
