@@ -43,15 +43,20 @@ class ImportanceScorerConfig:
 
     Weights determine how much each signal contributes to final importance.
     Default weights are balanced for general-purpose use.
+
+    Phase 5 (December 2025): Added INFORMATION_CONTENT signal using
+    Tishby's Information Bottleneck principle - mutual information I(Node; Query).
     """
     # Signal weights (should sum to 1.0)
+    # Phase 5: Rebalanced to include INFORMATION_CONTENT (25% weight)
     weights: Dict[ImportanceSignal, float] = field(default_factory=lambda: {
-        ImportanceSignal.RECENCY: 0.20,        # Recent = important
-        ImportanceSignal.RELEVANCE: 0.30,      # Relevant = most important
-        ImportanceSignal.CENTRALITY: 0.15,     # Central = moderately important
-        ImportanceSignal.ACCESS_FREQUENCY: 0.10,  # Frequent = somewhat important
-        ImportanceSignal.CONFIDENCE: 0.15,     # High confidence = important
-        ImportanceSignal.HEAT: 0.10            # Hot patterns = important
+        ImportanceSignal.RECENCY: 0.15,           # Recent = important (reduced from 0.20)
+        ImportanceSignal.RELEVANCE: 0.20,         # Relevant = important (reduced from 0.30)
+        ImportanceSignal.CENTRALITY: 0.12,        # Central = moderately important (reduced from 0.15)
+        ImportanceSignal.ACCESS_FREQUENCY: 0.08,  # Frequent = somewhat important (reduced from 0.10)
+        ImportanceSignal.CONFIDENCE: 0.12,        # High confidence = important (reduced from 0.15)
+        ImportanceSignal.HEAT: 0.08,              # Hot patterns = important (reduced from 0.10)
+        ImportanceSignal.INFORMATION_CONTENT: 0.25  # NEW: Mutual information signal (Phase 5)
     })
 
     # Recency decay (how quickly importance decays with time)
@@ -63,6 +68,12 @@ class ImportanceScorerConfig:
     # Centrality algorithm
     centrality_algorithm: str = "pagerank"  # or "betweenness", "closeness"
 
+    # Information theory settings (Phase 5)
+    enable_information_scoring: bool = True  # Enable MI-based scoring
+    mi_estimation_bins: int = 10             # Histogram bins for MI estimation
+    entropy_threshold: float = 0.5           # High entropy nodes get different treatment
+    use_entropy_aware_aggregation: bool = True  # Use entropy-weighted aggregation
+
     def validate(self):
         """Validate configuration values."""
         total_weight = sum(self.weights.values())
@@ -70,6 +81,8 @@ class ImportanceScorerConfig:
         assert self.recency_half_life > 0, "Recency half-life must be positive"
         assert 0.0 <= self.min_confidence <= 1.0, "Min confidence must be in [0, 1]"
         assert self.centrality_algorithm in ["pagerank", "betweenness", "closeness"]
+        assert self.mi_estimation_bins > 0, "MI estimation bins must be positive"
+        assert 0.0 < self.entropy_threshold < 1.0, "Entropy threshold must be in (0, 1)"
 
 
 @dataclass
@@ -79,6 +92,10 @@ class CompressionConfig:
 
     Controls how aggressively to compress context and which
     Matryoshka scales to use.
+
+    Phase 5 (December 2025): Added information budget compression using
+    Tishby's Information Bottleneck principle - maximize I(Context; Query)
+    while respecting token/information budgets.
     """
     # Target compression ratio (0.5 = keep 50%, drop 50%)
     target_ratio: float = 0.5
@@ -101,6 +118,17 @@ class CompressionConfig:
     # Estimated tokens per node (for budget calculation)
     avg_tokens_per_node: int = 50
 
+    # Information budget settings (Phase 5)
+    enable_information_budget: bool = True   # Use MI-based compression
+    information_budget: float = 5.0          # Total MI budget in bits
+    mi_diminishing_returns_threshold: float = 0.1  # Stop when marginal MI < this
+
+    # MI-aware Matryoshka thresholds (Phase 5)
+    # When using MI scores (0-1 normalized), these thresholds determine scale
+    mi_high_threshold: float = 0.7   # MI > 0.7 → 384D (high info shared with query)
+    mi_mid_threshold: float = 0.4    # MI 0.4-0.7 → 256D (moderate)
+    mi_low_threshold: float = 0.2    # MI 0.2-0.4 → 128D (low), below → dropped
+
     def validate(self):
         """Validate configuration values."""
         assert 0.0 < self.target_ratio <= 1.0, "Target ratio must be in (0, 1]"
@@ -113,6 +141,12 @@ class CompressionConfig:
             "Importance thresholds must be ordered: low < mid < high"
         assert self.preserve_top_k > 0, "preserve_top_k must be positive"
         assert self.avg_tokens_per_node > 0, "avg_tokens_per_node must be positive"
+        assert self.information_budget > 0, "Information budget must be positive"
+        assert 0.0 < self.mi_diminishing_returns_threshold < 1.0, \
+            "MI diminishing returns threshold must be in (0, 1)"
+        assert 0.0 < self.mi_low_threshold < self.mi_mid_threshold < \
+               self.mi_high_threshold <= 1.0, \
+            "MI thresholds must be ordered: low < mid < high"
 
 
 @dataclass

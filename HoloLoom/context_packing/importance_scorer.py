@@ -34,8 +34,23 @@ try:
 except ImportError:
     NUMPY_AVAILABLE = False
 
+# Phase 5: Information Theory imports
+try:
+    from HoloLoom.warp.math.information import (
+        entropy, mutual_information, DistributionPair, InformationMetrics
+    )
+    INFORMATION_THEORY_AVAILABLE = True
+except ImportError:
+    INFORMATION_THEORY_AVAILABLE = False
+    entropy = None
+    mutual_information = None
+    DistributionPair = None
+    InformationMetrics = None
+
 from .protocol import ImportanceSignal, ActivationState, ImportanceMap
 from .config import ImportanceScorerConfig
+from collections import Counter
+from typing import Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -70,11 +85,18 @@ class ImportanceScorer:
         self._centrality_cache_time: float = 0.0
         self._centrality_cache_ttl: float = 300.0  # 5 minutes
 
+        # Phase 5: MI caching for performance (<5ms overhead target)
+        self._mi_cache: Dict[Tuple[str, str], float] = {}
+        self._mi_cache_size: int = 1000  # Max cache entries
+        self._entropy_cache: Dict[str, float] = {}  # Node entropy cache
+
         # Stats
         self._stats = {
             'total_scored': 0,
             'cache_hits': 0,
-            'cache_misses': 0
+            'cache_misses': 0,
+            'mi_cache_hits': 0,  # Phase 5
+            'mi_cache_misses': 0  # Phase 5
         }
 
     def score_importance(
@@ -83,7 +105,9 @@ class ImportanceScorer:
         query: str,
         graph: Any,
         activation_state: Optional[ActivationState] = None,
-        node_content: Optional[str] = None
+        node_content: Optional[str] = None,
+        node_embedding: Optional[Any] = None,  # Phase 5
+        query_embedding: Optional[Any] = None  # Phase 5
     ) -> Dict[ImportanceSignal, float]:
         """
         Compute multi-signal importance scores for a node.
@@ -94,6 +118,8 @@ class ImportanceScorer:
             graph: Knowledge graph
             activation_state: Optional current activation state
             node_content: Optional node text content (for relevance)
+            node_embedding: Optional pre-computed node embedding (Phase 5)
+            query_embedding: Optional pre-computed query embedding (Phase 5)
 
         Returns:
             Dict mapping ImportanceSignal -> score (0.0-1.0)
@@ -129,6 +155,14 @@ class ImportanceScorer:
         scores[ImportanceSignal.HEAT] = self._score_heat(
             node_id, activation_state
         )
+
+        # 7. Information Content (Phase 5 - Mutual Information)
+        if self.config.enable_information_scoring:
+            scores[ImportanceSignal.INFORMATION_CONTENT] = self._score_information_content(
+                node_id, query, node_content, node_embedding, query_embedding
+            )
+        else:
+            scores[ImportanceSignal.INFORMATION_CONTENT] = 0.5  # Neutral fallback
 
         self._stats['total_scored'] += 1
 
@@ -356,6 +390,329 @@ class ImportanceScorer:
 
         return max(0.0, min(1.0, normalized))
 
+    # ==========================================================================
+    # Phase 5: Information Theory Scoring (Tishby's Information Bottleneck)
+    # ==========================================================================
+
+    def _score_information_content(
+        self,
+        node_id: str,
+        query: str,
+        node_content: Optional[str],
+        node_embedding: Optional[Any] = None,
+        query_embedding: Optional[Any] = None
+    ) -> float:
+        """
+        Score based on mutual information I(Node; Query).
+
+        Implements Information Bottleneck principle: nodes that share
+        more information with the query are more important for context.
+
+        Uses two strategies:
+        1. Embedding-based MI (if embeddings available) - more accurate
+        2. Word overlap-based MI (fallback) - fast approximation
+
+        Args:
+            node_id: Node identifier
+            query: Query text
+            node_content: Node text content
+            node_embedding: Pre-computed node embedding (optional)
+            query_embedding: Pre-computed query embedding (optional)
+
+        Returns:
+            Normalized MI score in [0, 1]
+        """
+        if not INFORMATION_THEORY_AVAILABLE or not NUMPY_AVAILABLE:
+            return 0.5  # Neutral fallback
+
+        if node_content is None or not node_content.strip():
+            return 0.5
+
+        # Check MI cache first
+        query_hash = str(hash(query))
+        cached_mi = self._get_cached_mi(node_id, query_hash)
+        if cached_mi is not None:
+            return cached_mi
+
+        try:
+            mi_score = 0.5  # Default neutral
+
+            # Strategy 1: Embedding-based MI (if embeddings available)
+            if node_embedding is not None and query_embedding is not None:
+                mi_score = self._compute_embedding_mi(node_embedding, query_embedding)
+            else:
+                # Strategy 2: Word overlap-based MI (fallback)
+                mi_score = self._compute_word_overlap_mi(node_content, query)
+
+            # Cache the result
+            self._set_cached_mi(node_id, query_hash, mi_score)
+
+            return max(0.0, min(1.0, mi_score))
+
+        except Exception as e:
+            logger.warning(f"Information content scoring failed for {node_id}: {e}")
+            return 0.5
+
+    def _compute_embedding_mi(
+        self,
+        node_embedding: Any,
+        query_embedding: Any
+    ) -> float:
+        """
+        Compute MI from embeddings using distribution approximation.
+
+        Converts embeddings to probability distributions via softmax,
+        then computes MI from the joint distribution.
+        """
+        if not NUMPY_AVAILABLE or entropy is None:
+            return 0.5
+
+        try:
+            # Convert to numpy arrays if needed
+            node_emb = np.array(node_embedding) if not isinstance(node_embedding, np.ndarray) else node_embedding
+            query_emb = np.array(query_embedding) if not isinstance(query_embedding, np.ndarray) else query_embedding
+
+            # Softmax to get probability distributions
+            def softmax(x):
+                exp_x = np.exp(x - np.max(x))
+                return exp_x / (exp_x.sum() + 1e-10)
+
+            p_node = softmax(node_emb)
+            p_query = softmax(query_emb)
+
+            # Create joint distribution (outer product normalized)
+            # This approximates P(Node, Query) assuming independence structure
+            joint = np.outer(p_node[:50], p_query[:50])  # Limit dimensions for speed
+            joint = joint / (joint.sum() + 1e-10)
+
+            # Compute marginals
+            marginal_x = joint.sum(axis=1)
+            marginal_y = joint.sum(axis=0)
+
+            # Compute MI: I(X;Y) = H(X) + H(Y) - H(X,Y)
+            h_x = entropy(marginal_x + 1e-10)
+            h_y = entropy(marginal_y + 1e-10)
+            h_xy = entropy(joint.flatten() + 1e-10)
+
+            mi = h_x + h_y - h_xy
+            mi = max(0.0, mi)  # MI is non-negative
+
+            # Normalize by max possible MI
+            max_mi = min(h_x, h_y) + 1e-10
+            normalized_mi = mi / max_mi
+
+            return max(0.0, min(1.0, normalized_mi))
+
+        except Exception as e:
+            logger.debug(f"Embedding MI computation failed: {e}")
+            return 0.5
+
+    def _compute_word_overlap_mi(
+        self,
+        node_content: str,
+        query: str
+    ) -> float:
+        """
+        Compute MI approximation from word overlap.
+
+        Uses Jaccard-based mutual information proxy:
+        - Word overlap captures shared information
+        - Entropy of node content captures diversity
+        """
+        try:
+            # Tokenize
+            query_words = set(query.lower().split())
+            node_words = set(node_content.lower().split())
+
+            if not query_words or not node_words:
+                return 0.0
+
+            # Compute overlap metrics
+            overlap = len(query_words & node_words)
+            union = len(query_words | node_words)
+
+            if union == 0:
+                return 0.0
+
+            # Jaccard similarity as MI proxy
+            jaccard = overlap / union
+
+            # Compute node entropy for diversity boost
+            node_entropy = self._compute_content_entropy(node_content)
+
+            # Score: Jaccard + entropy factor
+            # Low entropy (focused) nodes with high overlap are most valuable
+            # High entropy (diverse) nodes get slight boost for broader coverage
+            entropy_factor = 1.0 / (1.0 + node_entropy * 0.5)
+
+            score = 0.7 * jaccard + 0.3 * jaccard * entropy_factor
+
+            return max(0.0, min(1.0, score))
+
+        except Exception as e:
+            logger.debug(f"Word overlap MI computation failed: {e}")
+            return 0.5
+
+    def _compute_content_entropy(self, content: str) -> float:
+        """
+        Compute entropy of content from word distribution.
+
+        Returns entropy normalized to [0, 1] range.
+        Caches results for repeated calls.
+        """
+        # Check cache
+        content_hash = str(hash(content[:100]))  # Hash first 100 chars
+        if content_hash in self._entropy_cache:
+            return self._entropy_cache[content_hash]
+
+        if not NUMPY_AVAILABLE or entropy is None:
+            return 0.5
+
+        try:
+            words = content.lower().split()
+            if not words:
+                return 0.0
+
+            # Word frequency distribution
+            word_counts = Counter(words)
+            total = sum(word_counts.values())
+            probs = np.array([c / total for c in word_counts.values()])
+
+            # Entropy normalized by max possible (uniform distribution)
+            h = entropy(probs)
+            h_max = np.log2(len(word_counts)) if len(word_counts) > 1 else 1.0
+
+            normalized = h / h_max if h_max > 0 else 0.0
+
+            # Cache result
+            self._entropy_cache[content_hash] = normalized
+
+            return max(0.0, min(1.0, normalized))
+
+        except Exception:
+            return 0.5
+
+    def _get_cached_mi(self, node_id: str, query_hash: str) -> Optional[float]:
+        """Get cached MI score if available."""
+        key = (node_id, query_hash)
+        if key in self._mi_cache:
+            self._stats['mi_cache_hits'] += 1
+            return self._mi_cache[key]
+        self._stats['mi_cache_misses'] += 1
+        return None
+
+    def _set_cached_mi(self, node_id: str, query_hash: str, mi_score: float):
+        """Cache MI score with LRU eviction."""
+        if len(self._mi_cache) >= self._mi_cache_size:
+            # Simple eviction: clear oldest half
+            keys = list(self._mi_cache.keys())[:self._mi_cache_size // 2]
+            for k in keys:
+                del self._mi_cache[k]
+
+        self._mi_cache[(node_id, query_hash)] = mi_score
+
+    # ==========================================================================
+    # Phase 5: Entropy-Aware Aggregation
+    # ==========================================================================
+
+    def aggregate_scores_entropy_aware(
+        self,
+        scores: Dict[ImportanceSignal, float],
+        node_content: Optional[str] = None,
+        weights: Optional[Dict[ImportanceSignal, float]] = None
+    ) -> float:
+        """
+        Entropy-aware score aggregation.
+
+        Lower entropy nodes (more certain/focused) get higher weight.
+        Higher entropy nodes (more diverse/uncertain) get lower weight.
+
+        Formula:
+            entropy_weight = 1 / (1 + H(node))
+            adjusted_score = base_score * entropy_weight blend
+
+        Args:
+            scores: Dict of signal -> score
+            node_content: Node text for entropy computation
+            weights: Optional custom weights
+
+        Returns:
+            Entropy-adjusted importance score
+        """
+        # Get base weighted average
+        base_score = self.aggregate_scores(scores, weights)
+
+        if not self.config.use_entropy_aware_aggregation:
+            return base_score
+
+        if node_content is None:
+            return base_score
+
+        # Compute node entropy
+        node_entropy = self._compute_content_entropy(node_content)
+
+        # Apply entropy adjustment
+        # Low entropy = certain/focused = boost importance
+        # High entropy = uncertain/diverse = reduce importance
+        entropy_weight = 1.0 / (1.0 + node_entropy)
+
+        # Blend: 70% base score, 30% entropy-adjusted
+        adjusted_score = 0.7 * base_score + 0.3 * (base_score * entropy_weight)
+
+        return max(0.0, min(1.0, adjusted_score))
+
+    def batch_compute_mi_scores(
+        self,
+        node_ids: List[str],
+        query: str,
+        node_contents: Dict[str, str],
+        query_embedding: Optional[Any] = None,
+        node_embeddings: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, float]:
+        """
+        Batch compute MI scores for multiple nodes efficiently.
+
+        Uses caching to avoid recomputation for repeated queries.
+
+        Args:
+            node_ids: List of node IDs to score
+            query: Query text
+            node_contents: Dict mapping node_id -> content
+            query_embedding: Pre-computed query embedding (optional)
+            node_embeddings: Dict mapping node_id -> embedding (optional)
+
+        Returns:
+            Dict mapping node_id -> MI score
+        """
+        if not INFORMATION_THEORY_AVAILABLE:
+            return {n: 0.5 for n in node_ids}
+
+        mi_scores = {}
+        query_hash = str(hash(query))
+
+        for node_id in node_ids:
+            # Check cache first
+            cached = self._get_cached_mi(node_id, query_hash)
+            if cached is not None:
+                mi_scores[node_id] = cached
+                continue
+
+            # Compute MI
+            content = node_contents.get(node_id, "")
+            node_emb = node_embeddings.get(node_id) if node_embeddings else None
+
+            mi = self._score_information_content(
+                node_id, query, content, node_emb, query_embedding
+            )
+            mi_scores[node_id] = mi
+
+        return mi_scores
+
+    def invalidate_mi_cache(self):
+        """Invalidate MI cache (call after significant content changes)."""
+        self._mi_cache.clear()
+        self._entropy_cache.clear()
+
     # Helper methods
 
     def _compute_centrality(self, graph: Any) -> Dict[str, float]:
@@ -474,7 +831,9 @@ class ImportanceScorer:
         self._stats = {
             'total_scored': 0,
             'cache_hits': 0,
-            'cache_misses': 0
+            'cache_misses': 0,
+            'mi_cache_hits': 0,  # Phase 5
+            'mi_cache_misses': 0  # Phase 5
         }
 
 

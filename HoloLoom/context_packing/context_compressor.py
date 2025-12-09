@@ -14,6 +14,11 @@ Key Innovation: Not all nodes need full 384D embeddings!
 
 This enables 40-90% token savings while preserving information density.
 
+Phase 5 (December 2025): Added information-theoretic compression using
+Tishby's Information Bottleneck principle:
+- information_budget_compress(): Greedy MI-based selection until budget exhausted
+- MI-aware Matryoshka scales: High MI → 384D, Low MI → 128D
+
 Author: Claude Code
 Date: 2025-11-22
 """
@@ -155,22 +160,30 @@ class ContextCompressor:
         nodes: List[str],
         importance_scores: ImportanceMap,
         embeddings: Optional[NodeEmbeddings] = None,
-        scales: Optional[List[int]] = None
+        scales: Optional[List[int]] = None,
+        mi_scores: Optional[Dict[str, float]] = None
     ) -> Tuple[List[str], ScaleAssignments]:
         """
         Multi-scale compression using Matryoshka embeddings.
 
-        Assigns different embedding scales based on importance:
-        - High importance (>0.75): 384D (full detail)
-        - Medium importance (0.5-0.75): 256D (moderate detail)
-        - Low importance (0.25-0.5): 128D (minimal detail)
-        - Very low importance (<0.25): Dropped
+        Assigns different embedding scales based on importance or MI:
+        - High importance/MI: 384D (full detail)
+        - Medium importance/MI: 256D (moderate detail)
+        - Low importance/MI: 128D (minimal detail)
+        - Very low: Dropped
+
+        Phase 5 Enhancement: When mi_scores provided, uses MI-aware thresholds:
+        - MI > 0.7: 384D (high information shared with query)
+        - MI 0.4-0.7: 256D (moderate)
+        - MI 0.2-0.4: 128D (low)
+        - MI < 0.2: dropped
 
         Args:
             nodes: List of node IDs
             importance_scores: Dict mapping node_id -> importance
             embeddings: Optional full embeddings (unused, for future use)
             scales: Optional override of Matryoshka scales
+            mi_scores: Optional MI scores for information-theoretic assignment
 
         Returns:
             Tuple of (kept_nodes, node_id -> assigned_scale)
@@ -180,37 +193,58 @@ class ContextCompressor:
         kept_nodes = []
         scale_assignments = {}
 
-        # Sort nodes by importance
-        sorted_nodes = sorted(
-            nodes,
-            key=lambda n: importance_scores.get(n, 0.0),
-            reverse=True
-        )
+        # Determine which scores to use for scale assignment
+        use_mi = mi_scores is not None and len(mi_scores) > 0
 
-        # Assign scales based on importance thresholds
+        # Sort nodes by primary score (MI if available, otherwise importance)
+        if use_mi:
+            sorted_nodes = sorted(
+                nodes,
+                key=lambda n: mi_scores.get(n, 0.0),
+                reverse=True
+            )
+        else:
+            sorted_nodes = sorted(
+                nodes,
+                key=lambda n: importance_scores.get(n, 0.0),
+                reverse=True
+            )
+
+        # Assign scales based on thresholds
         for node in sorted_nodes:
-            importance = importance_scores.get(node, 0.0)
+            if use_mi:
+                # MI-aware assignment (Phase 5)
+                score = mi_scores.get(node, 0.0)
+                high_thresh = self.config.mi_high_threshold
+                mid_thresh = self.config.mi_mid_threshold
+                low_thresh = self.config.mi_low_threshold
+            else:
+                # Traditional importance-based assignment
+                score = importance_scores.get(node, 0.0)
+                high_thresh = self.config.high_importance_threshold
+                mid_thresh = self.config.mid_importance_threshold
+                low_thresh = self.config.low_importance_threshold
 
-            if importance >= self.config.high_importance_threshold:
-                # High importance: full scale
+            if score >= high_thresh:
+                # High score: full scale
                 scale = scales[0] if scales else 384
                 kept_nodes.append(node)
                 scale_assignments[node] = scale
 
-            elif importance >= self.config.mid_importance_threshold:
-                # Medium importance: middle scale
+            elif score >= mid_thresh:
+                # Medium score: middle scale
                 scale = scales[1] if len(scales) > 1 else 256
                 kept_nodes.append(node)
                 scale_assignments[node] = scale
 
-            elif importance >= self.config.low_importance_threshold:
-                # Low importance: smallest scale
+            elif score >= low_thresh:
+                # Low score: smallest scale
                 scale = scales[-1] if scales else 128
                 kept_nodes.append(node)
                 scale_assignments[node] = scale
 
             else:
-                # Very low importance: drop
+                # Very low score: drop
                 pass
 
         # Ensure we keep at least preserve_top_k nodes
@@ -222,8 +256,9 @@ class ContextCompressor:
                     scale_assignments[node] = scales[-1] if scales else 128
                     missing -= 1
 
+        mode_str = "MI-aware" if use_mi else "importance-based"
         logger.debug(
-            f"Matryoshka compression: {len(nodes)} -> {len(kept_nodes)} nodes "
+            f"Matryoshka compression ({mode_str}): {len(nodes)} -> {len(kept_nodes)} nodes "
             f"(scales: {self._count_by_scale(scale_assignments)})"
         )
 
@@ -294,6 +329,167 @@ class ContextCompressor:
         )
 
         return best_result
+
+    def information_budget_compress(
+        self,
+        nodes: List[str],
+        importance_scores: ImportanceMap,
+        mi_scores: Dict[str, float],
+        information_budget: Optional[float] = None,
+        token_budget: Optional[int] = None
+    ) -> CompressionResult:
+        """
+        Information Bottleneck-based compression using Tishby's principle.
+
+        Greedily selects nodes by mutual information until:
+        1. Information budget is exhausted (cumulative MI >= budget)
+        2. Token budget is exhausted
+        3. Marginal MI gain falls below threshold (diminishing returns)
+
+        This implements the Information Bottleneck objective:
+        Maximize I(Context; Query) subject to constraints.
+
+        Args:
+            nodes: List of node IDs to compress
+            importance_scores: Dict mapping node_id -> importance (0-1)
+            mi_scores: Dict mapping node_id -> mutual information score
+            information_budget: Maximum cumulative MI (default: from config)
+            token_budget: Maximum token count (optional additional constraint)
+
+        Returns:
+            CompressionResult with information-optimal compressed nodes
+        """
+        # Use config defaults if not specified
+        if information_budget is None:
+            information_budget = self.config.information_budget
+
+        if not self.config.enable_information_budget:
+            # Fall back to standard compression
+            return self.compress(nodes, importance_scores)
+
+        original_count = len(nodes)
+
+        if original_count == 0:
+            return CompressionResult(
+                compressed_nodes=[],
+                original_count=0,
+                compressed_count=0,
+                compression_ratio=0.0,
+                token_savings=0,
+                importance_threshold=0.0
+            )
+
+        # Sort nodes by MI (descending) - greedy selection
+        sorted_nodes = sorted(
+            nodes,
+            key=lambda n: mi_scores.get(n, 0.0),
+            reverse=True
+        )
+
+        # Greedy selection until budget exhausted
+        selected_nodes = []
+        cumulative_mi = 0.0
+        cumulative_tokens = 0
+        last_mi = float('inf')  # For diminishing returns detection
+
+        for node in sorted_nodes:
+            node_mi = mi_scores.get(node, 0.0)
+            node_tokens = self.config.avg_tokens_per_node
+
+            # Check stopping conditions
+
+            # 1. Information budget exhausted
+            if cumulative_mi + node_mi > information_budget:
+                # Check if we should include this node (might still have value)
+                remaining_budget = information_budget - cumulative_mi
+                if remaining_budget > 0 and node_mi > 0:
+                    # Proportional inclusion (node partially contributes)
+                    # Include if at least 50% of node's MI fits in budget
+                    if remaining_budget >= node_mi * 0.5:
+                        selected_nodes.append(node)
+                        cumulative_mi += node_mi
+                        cumulative_tokens += node_tokens
+                break
+
+            # 2. Token budget exhausted
+            if token_budget is not None:
+                if cumulative_tokens + node_tokens > token_budget:
+                    break
+
+            # 3. Diminishing returns - marginal MI gain too small
+            marginal_gain = node_mi
+            if marginal_gain < self.config.mi_diminishing_returns_threshold:
+                logger.debug(
+                    f"Stopping: marginal MI gain {marginal_gain:.4f} < "
+                    f"threshold {self.config.mi_diminishing_returns_threshold}"
+                )
+                break
+
+            # Include this node
+            selected_nodes.append(node)
+            cumulative_mi += node_mi
+            cumulative_tokens += node_tokens
+            last_mi = node_mi
+
+        # Ensure we keep at least preserve_top_k nodes
+        if len(selected_nodes) < self.config.preserve_top_k:
+            # Add more nodes from sorted list
+            for node in sorted_nodes:
+                if node not in selected_nodes:
+                    selected_nodes.append(node)
+                    if len(selected_nodes) >= self.config.preserve_top_k:
+                        break
+
+        # Calculate metrics
+        compressed_count = len(selected_nodes)
+        compression_ratio = compressed_count / original_count if original_count > 0 else 0.0
+        dropped_count = original_count - compressed_count
+        token_savings = dropped_count * self.config.avg_tokens_per_node
+
+        # Determine threshold (MI of last kept node)
+        if selected_nodes:
+            importance_threshold = importance_scores.get(selected_nodes[-1], 0.0)
+        else:
+            importance_threshold = 0.0
+
+        # Update stats
+        self._stats['total_compressions'] += 1
+        self._update_running_average('avg_compression_ratio', compression_ratio)
+        self._update_running_average('avg_token_savings', token_savings)
+
+        # Track MI-specific stats
+        if 'avg_cumulative_mi' not in self._stats:
+            self._stats['avg_cumulative_mi'] = 0.0
+            self._stats['mi_budget_compressions'] = 0
+
+        self._stats['mi_budget_compressions'] += 1
+        self._stats['avg_cumulative_mi'] = (
+            (self._stats['avg_cumulative_mi'] * (self._stats['mi_budget_compressions'] - 1) +
+             cumulative_mi) / self._stats['mi_budget_compressions']
+        )
+
+        logger.debug(
+            f"Information budget compression: {original_count} -> {compressed_count} nodes "
+            f"(cumulative MI: {cumulative_mi:.3f} / {information_budget}, "
+            f"{token_savings} tokens saved)"
+        )
+
+        return CompressionResult(
+            compressed_nodes=selected_nodes,
+            original_count=original_count,
+            compressed_count=compressed_count,
+            compression_ratio=compression_ratio,
+            token_savings=token_savings,
+            importance_threshold=importance_threshold
+        )
+
+    def _update_running_average(self, stat_name: str, value: float):
+        """Helper to update running average statistics."""
+        count = self._stats['total_compressions']
+        if count > 0:
+            self._stats[stat_name] = (
+                (self._stats[stat_name] * (count - 1) + value) / count
+            )
 
     def estimate_tokens(
         self,

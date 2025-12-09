@@ -21,6 +21,7 @@ class ImportanceSignal(str, Enum):
     ACCESS_FREQUENCY = "frequency"   # How often accessed
     CONFIDENCE = "confidence"        # Historical confidence scores
     HEAT = "heat"                    # Hot pattern feedback score
+    INFORMATION_CONTENT = "information"  # Mutual information I(Node; Query) - Phase 5
 
 
 @dataclass

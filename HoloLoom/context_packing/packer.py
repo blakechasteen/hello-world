@@ -6,10 +6,17 @@ Main entry point for context packing system.
 
 Combines:
 1. Beta wave activation spreading (physics-based graph traversal)
-2. Multi-signal importance scoring (6 signals)
+2. Multi-signal importance scoring (7 signals including MI - Phase 5)
 3. Matryoshka-aware compression (multi-scale embeddings)
+4. Information budget compression (Phase 5 - Tishby's Information Bottleneck)
 
 Result: 40-90% token savings while preserving information density.
+
+Phase 5 (December 2025): Added information-theoretic packing:
+- 7th importance signal: INFORMATION_CONTENT (mutual information)
+- Information budget compression: Stop when cumulative MI exceeds budget
+- MI-aware Matryoshka scales: High MI → 384D, Low MI → 128D
+- Entropy-aware aggregation: Lower entropy = higher confidence
 
 Author: Claude Code
 Date: 2025-11-22
@@ -29,6 +36,15 @@ Usage:
     >>>
     >>> print(f"Compressed: {result.original_count} -> {result.compressed_count}")
     >>> print(f"Token savings: {result.token_savings}")
+    >>>
+    >>> # Phase 5: Information-theoretic packing
+    >>> result = packer.pack_with_information_budget(
+    ...     query="What is Thompson Sampling?",
+    ...     candidate_nodes=memory_nodes,
+    ...     graph=knowledge_graph,
+    ...     node_contents=contents,
+    ...     information_budget=5.0  # bits
+    ... )
 """
 
 import logging
@@ -363,6 +379,154 @@ class ContextPacker:
 
         return result, scale_assignments
 
+    def pack_with_information_budget(
+        self,
+        query: str,
+        candidate_nodes: List[str],
+        graph: Any,
+        node_contents: Dict[str, str],
+        information_budget: Optional[float] = None,
+        token_budget: Optional[int] = None,
+        query_embedding: Optional[Any] = None,
+        node_embeddings: Optional[Dict[str, Any]] = None
+    ) -> Tuple[CompressionResult, ScaleAssignments, Dict[str, float]]:
+        """
+        Pack context using Information Bottleneck principle (Phase 5).
+
+        Uses Tishby's Information Bottleneck for optimal compression:
+        Maximize I(Context; Query) subject to information/token budget.
+
+        Pipeline:
+        1. Spread activation from query-relevant nodes
+        2. Score importance using 7 signals (including MI)
+        3. Compute batch MI scores for all candidates
+        4. Apply information budget compression (greedy MI selection)
+        5. Assign MI-aware Matryoshka scales
+
+        Args:
+            query: Current query text
+            candidate_nodes: Initial set of candidate memory nodes
+            graph: Knowledge graph
+            node_contents: Dict mapping node_id -> text content (REQUIRED for MI)
+            information_budget: Maximum cumulative MI (default: from config)
+            token_budget: Optional additional token constraint
+            query_embedding: Optional pre-computed query embedding
+            node_embeddings: Optional pre-computed node embeddings
+
+        Returns:
+            Tuple of:
+                - CompressionResult with information-optimal packed nodes
+                - ScaleAssignments (node_id -> Matryoshka scale)
+                - MI scores dict (node_id -> MI score)
+        """
+        if not self.config.importance_scorer.enable_information_scoring:
+            # Fall back to standard pack_with_scales
+            logger.warning(
+                "Information scoring disabled. Using standard pack_with_scales. "
+                "Enable via config.importance_scorer.enable_information_scoring = True"
+            )
+            result, scales = self.pack_with_scales(
+                query, candidate_nodes, graph,
+                node_contents=node_contents
+            )
+            return result, scales, {}
+
+        if self.config.verbose:
+            logger.info(
+                f"Information budget packing: {len(candidate_nodes)} candidates, "
+                f"budget: {information_budget or self.config.compression.information_budget}"
+            )
+
+        # Step 1: Activation spreading
+        activation_map = {}
+        if self.config.enable_activation_spreading:
+            activation_map = self.activation_spreader.spread_activation(
+                source_nodes=candidate_nodes,
+                graph=graph
+            )
+            all_candidates = list(set(candidate_nodes) | set(activation_map.keys()))
+
+            if self.config.verbose:
+                logger.info(f"Activated {len(activation_map)} nodes via beta waves")
+        else:
+            all_candidates = candidate_nodes
+
+        # Step 2: Importance scoring (includes 7th MI signal)
+        importance_scores = self.importance_scorer.score_batch(
+            node_ids=all_candidates,
+            query=query,
+            graph=graph,
+            node_contents=node_contents
+        )
+
+        if activation_map:
+            importance_scores = self._blend_activation_importance(
+                importance_scores, activation_map
+            )
+
+        # Step 3: Compute batch MI scores for compression decisions
+        mi_scores = self.importance_scorer.batch_compute_mi_scores(
+            node_ids=all_candidates,
+            query=query,
+            node_contents=node_contents,
+            query_embedding=query_embedding,
+            node_embeddings=node_embeddings
+        )
+
+        if self.config.verbose:
+            avg_mi = sum(mi_scores.values()) / len(mi_scores) if mi_scores else 0.0
+            logger.info(
+                f"Computed MI scores for {len(mi_scores)} nodes "
+                f"(avg MI: {avg_mi:.4f})"
+            )
+
+        # Step 4: Information budget compression
+        result = self.context_compressor.information_budget_compress(
+            nodes=all_candidates,
+            importance_scores=importance_scores,
+            mi_scores=mi_scores,
+            information_budget=information_budget,
+            token_budget=token_budget
+        )
+
+        # Step 5: MI-aware Matryoshka scale assignment
+        kept_nodes, scale_assignments = self.context_compressor.matryoshka_compress(
+            nodes=result.compressed_nodes,
+            importance_scores=importance_scores,
+            mi_scores=mi_scores  # Use MI-aware thresholds
+        )
+
+        # Update result with scale-aware token estimation
+        estimated_tokens = self.context_compressor.estimate_tokens(
+            kept_nodes, scale_assignments
+        )
+
+        # Track MI-specific stats
+        if 'info_budget_packs' not in self._stats:
+            self._stats['info_budget_packs'] = 0
+            self._stats['avg_mi_utilization'] = 0.0
+
+        self._stats['info_budget_packs'] += 1
+        budget = information_budget or self.config.compression.information_budget
+        used_mi = sum(mi_scores.get(n, 0.0) for n in kept_nodes)
+        utilization = used_mi / budget if budget > 0 else 0.0
+
+        n = self._stats['info_budget_packs']
+        self._stats['avg_mi_utilization'] = (
+            (self._stats['avg_mi_utilization'] * (n - 1) + utilization) / n
+        )
+
+        self._pack_history.append(result)
+        self._update_stats(result)
+
+        if self.config.verbose:
+            logger.info(
+                f"Info budget packed: {result.original_count} -> {len(kept_nodes)} nodes "
+                f"(MI utilization: {utilization:.1%}, ~{estimated_tokens} tokens)"
+            )
+
+        return result, scale_assignments, mi_scores
+
     def get_stats(self) -> Dict[str, Any]:
         """Get packing statistics."""
         stats = self._stats.copy()
@@ -501,3 +665,44 @@ def adaptive_pack_context(
     )
 
     return result.compressed_nodes
+
+
+def information_budget_pack(
+    query: str,
+    candidate_nodes: List[str],
+    graph: Any,
+    node_contents: Dict[str, str],
+    information_budget: float = 5.0,
+    token_budget: Optional[int] = None
+) -> Tuple[List[str], Dict[str, int], Dict[str, float]]:
+    """
+    Information-theoretic context packing (Phase 5).
+
+    Uses Tishby's Information Bottleneck principle to optimally
+    compress context by maximizing I(Context; Query).
+
+    Args:
+        query: Query text
+        candidate_nodes: Candidate nodes
+        graph: Knowledge graph
+        node_contents: Dict mapping node_id -> text content
+        information_budget: Maximum cumulative MI in bits (default: 5.0)
+        token_budget: Optional additional token constraint
+
+    Returns:
+        Tuple of:
+            - List of packed node IDs
+            - Dict of node_id -> Matryoshka scale (384/256/128)
+            - Dict of node_id -> MI score
+    """
+    packer = ContextPacker()
+    result, scale_assignments, mi_scores = packer.pack_with_information_budget(
+        query=query,
+        candidate_nodes=candidate_nodes,
+        graph=graph,
+        node_contents=node_contents,
+        information_budget=information_budget,
+        token_budget=token_budget
+    )
+
+    return result.compressed_nodes, scale_assignments, mi_scores
