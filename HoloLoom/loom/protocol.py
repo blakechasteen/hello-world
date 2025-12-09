@@ -392,6 +392,7 @@ REASON = "reason"    # The Logician
 REACH = "reach"      # The Artist
 REFLECT = "reflect"  # The Auditor
 REFUSE = "refuse"    # The Skeptic
+COLLECTIVE = "collective" # The Unified Whole
 
 
 # ============================================================================
@@ -419,4 +420,5 @@ __all__ = [
     'REACH',
     'REFLECT',
     'REFUSE',
+    'COLLECTIVE',
 ]

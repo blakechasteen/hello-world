@@ -590,21 +590,56 @@ class VoiceOrchestrator {
 
         // Create voice metrics entry
         const metrics = {
-            timestamp: new Date(),
-            intentType: intent.type,
-            intentConfidence: intent.confidence,
+            timestamp: new Date().toISOString(),
+            intent: intent.type,
+            confidence: intent.confidence || 0.0,
             latencyMs: latencyMs,
             success: !response.isError,
             batteryLevel: perf.currentBatteryLevel,
             networkType: perf.networkMonitoring.effectiveType,
-            memoryUsagePercent: perf.memoryMonitoring.currentUsagePercent
+            memoryUsagePercent: perf.memoryMonitoring.currentUsagePercent,
+            transcript: intent.rawTranscript || '',
+            responseText: response.text || ''
         };
 
         // Log metrics
         console.log('[VoiceOrchestrator] Metrics:', metrics);
 
-        // TODO: Store in analytics monitor's voice history
-        // Will be implemented in next step
+        // Store in analytics monitor's voice history (Phase 3.11)
+        if (perf.voiceUX) {
+            // Ensure history array exists
+            if (!perf.voiceUX.commandHistory) {
+                perf.voiceUX.commandHistory = [];
+            }
+
+            // Add to command history (maintain max length)
+            perf.voiceUX.commandHistory.push(metrics);
+
+            // Trim history if exceeds max length
+            if (perf.voiceUX.commandHistory.length > perf.voiceUX.maxHistoryLength) {
+                perf.voiceUX.commandHistory = perf.voiceUX.commandHistory.slice(-perf.voiceUX.maxHistoryLength);
+            }
+
+            // Update session metrics
+            if (perf.voiceUX.sessionMetrics) {
+                perf.voiceUX.sessionMetrics.commandsProcessed++;
+
+                // Calculate average latency
+                const totalLatency = perf.voiceUX.commandHistory.reduce((sum, m) => sum + m.latencyMs, 0);
+                perf.voiceUX.sessionMetrics.averageLatencyMs = totalLatency / perf.voiceUX.commandHistory.length;
+
+                // Calculate success rate
+                const successCount = perf.voiceUX.commandHistory.filter(m => m.success).length;
+                perf.voiceUX.sessionMetrics.successRate = successCount / perf.voiceUX.commandHistory.length;
+            }
+
+            // Log to console
+            console.log('[VoiceOrchestrator] Voice history updated:', {
+                totalCommands: perf.voiceUX.commandHistory.length,
+                averageLatency: perf.voiceUX.sessionMetrics?.averageLatencyMs?.toFixed(2),
+                successRate: (perf.voiceUX.sessionMetrics?.successRate * 100)?.toFixed(1) + '%'
+            });
+        }
     }
 
     /**

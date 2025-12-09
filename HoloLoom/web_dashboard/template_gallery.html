@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoloLoom Workflow Templates</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 16px;
+            padding: 30px 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: -0.5px;
+        }
+
+        .header-title .icon {
+            font-size: 32px;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 10px 16px;
+            border: 1px solid #e0e0e0;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            width: 100%;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+        }
+
+        .search-bar input::placeholder {
+            color: #999;
+        }
+
+        .search-icon {
+            color: #999;
+            font-size: 16px;
+        }
+
+        /* Category Filter Tabs */
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #666;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-tab:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .filter-tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Template Gallery Grid */
+        .gallery-section {
+            margin-bottom: 40px;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .gallery-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .template-count {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Template Card */
+        .template-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .template-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .template-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .template-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: shimmer 20s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 20px); }
+        }
+
+        .template-icon {
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .template-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .template-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            max-height: 2.6em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .template-description {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            max-height: 2.8em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .template-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .meta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .complexity-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .complexity-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .complexity-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #e0e0e0;
+        }
+
+        .complexity-dot.filled {
+            background: #667eea;
+        }
+
+        .complexity-dot.filled.high {
+            background: #ff6b6b;
+        }
+
+        .template-footer {
+            display: flex;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .template-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 11px;
+            color: #666;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .use-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .use-button:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .use-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .empty-message {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow: auto;
+            box-shadow: 0 20px 64px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .modal-close:hover {
+            opacity: 1;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-preview {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px dashed #e0e0e0;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .modal-preview svg {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .modal-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .info-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-button.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .modal-button.primary:hover {
+            background: #5568d3;
+        }
+
+        .modal-button.secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .modal-button.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* No Templates Message */
+        .no-templates {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .no-templates-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .no-templates-text {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .no-templates-hint {
+            font-size: 12px;
+            color: #bbb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-bar {
+                max-width: 100%;
+            }
+
+            .templates-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 15px;
+            }
+
+            .modal-content {
+                width: 95%;
+                max-height: 90vh;
+            }
+
+            .modal-header {
+                padding: 15px 20px;
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+
+            .modal-info {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-section {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                scrollbar-width: thin;
+            }
+
+            .filter-tabs {
+                flex-wrap: nowrap;
+            }
+        }
+
+        /* Scrollbar Styling */
+        .templates-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .templates-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .templates-grid::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 4px;
+        }
+
+        .templates-grid::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.5);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: bounce 1.4s infinite;
+        }
+
+        .loading:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { opacity: 0; }
+            40% { opacity: 1; }
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-indicator.new {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-indicator.popular {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-indicator.beta {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="header-top">
+                <div>
+                    <div class="header-title">
+                        <span class="icon">📋</span>
+                        <h1>Workflow Templates</h1>
+                    </div>
+                    <p class="header-subtitle">Pre-built workflows to jumpstart your automation tasks</p>
+                </div>
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search templates..."
+                        aria-label="Search templates"
+                    >
+                </div>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div class="filter-section">
+                <span class="filter-label">Filter by:</span>
+                <div class="filter-tabs" id="filterTabs"></div>
+            </div>
+        </div>
+
+        <!-- Template Gallery -->
+        <div class="gallery-section">
+            <div class="gallery-header">
+                <h2 class="gallery-title">
+                    <span id="categoryTitle">All Templates</span>
+                </h2>
+                <div class="template-count" id="templateCount">0 templates</div>
+            </div>
+            <div class="templates-grid" id="templatesGrid"></div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal" id="previewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Template Preview</h2>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-preview" id="modalPreview">
+                    <p>Loading preview...</p>
+                </div>
+                <div class="modal-info">
+                    <div class="info-item">
+                        <div class="info-label">Complexity</div>
+                        <div class="info-value" id="modalComplexity">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Agents</div>
+                        <div class="info-value" id="modalAgents">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Est. Time</div>
+                        <div class="info-value" id="modalTime">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Category</div>
+                        <div class="info-value" id="modalCategory">-</div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-button secondary" id="modalCancel">Close</button>
+                    <button class="modal-button primary" id="modalUse">Use Template</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Template Categories
+        const TEMPLATE_CATEGORIES = [
+            { id: 'all', name: 'All Templates', icon: '📋' },
+            { id: 'research', name: 'Research', icon: '🔍' },
+            { id: 'crm', name: 'CRM', icon: '👥' },
+            { id: 'support', name: 'Support', icon: '🎧' },
+            { id: 'content', name: 'Content', icon: '✍️' },
+            { id: 'safety', name: 'Safety', icon: '🛡️' }
+        ];
+
+        // Template Metadata
+        const TEMPLATE_METADATA = {
+            'research_pipeline.json': {
+                name: 'Research Pipeline',
+                description: 'Multi-query research with synthesis and refinement for comprehensive exploration.',
+                icon: '🔍',
+                category: 'research',
+                complexity: 3,
+                agents: 6,
+                time: '2-5 min',
+                tags: ['Research', 'Multi-Query', 'Analysis'],
+                status: 'popular'
+            },
+            'safety_gated_query.json': {
+                name: 'Safety-Gated Query',
+                description: 'Query with safety checks and conditional branching for risk-aware execution.',
+                icon: '🛡️',
+                category: 'safety',
+                complexity: 2,
+                agents: 6,
+                time: '1-3 min',
+                tags: ['Safety', 'Risk', 'Gating'],
+                status: 'new'
+            },
+            'bdr_outbound_sequence.json': {
+                name: 'BDR Outbound Sequence',
+                description: 'Business development outreach automation with CRM integration.',
+                icon: '📧',
+                category: 'crm',
+                complexity: 2,
+                agents: 5,
+                time: '1-2 min',
+                tags: ['CRM', 'Outreach', 'Sales'],
+                status: null
+            },
+            'lead_scoring_simple.json': {
+                name: 'Lead Scoring (Simple)',
+                description: 'Basic lead qualification and scoring for sales prioritization.',
+                icon: '⭐',
+                category: 'crm',
+                complexity: 1,
+                agents: 3,
+                time: '<1 min',
+                tags: ['CRM', 'Scoring', 'Sales'],
+                status: null
+            },
+            'multi_factor_scoring.json': {
+                name: 'Multi-Factor Lead Scoring',
+                description: 'Advanced lead scoring with multiple evaluation criteria and weighting.',
+                icon: '📊',
+                category: 'crm',
+                complexity: 3,
+                agents: 8,
+                time: '2-3 min',
+                tags: ['CRM', 'Scoring', 'Advanced'],
+                status: null
+            },
+            'daily_action_list.json': {
+                name: 'Daily Action List',
+                description: 'Generate prioritized daily tasks from CRM data and context.',
+                icon: '📅',
+                category: 'crm',
+                complexity: 2,
+                agents: 4,
+                time: '1-2 min',
+                tags: ['CRM', 'Tasks', 'Planning'],
+                status: null
+            },
+            'customer_support_triage.json': {
+                name: 'Customer Support Triage',
+                description: 'Intelligent routing and triage of customer support tickets.',
+                icon: '🎧',
+                category: 'support',
+                complexity: 2,
+                agents: 5,
+                time: '1-2 min',
+                tags: ['Support', 'Triage', 'Routing'],
+                status: null
+            },
+            'content_creation.json': {
+                name: 'Content Creation Pipeline',
+                description: 'Multi-stage content generation with research, drafting, and refinement.',
+                icon: '✍️',
+                category: 'content',
+                complexity: 3,
+                agents: 7,
+                time: '3-5 min',
+                tags: ['Content', 'Writing', 'Creative'],
+                status: 'beta'
+            }
+        };
+
+        // State
+        let currentCategory = 'all';
+        let searchQuery = '';
+        let templates = [];
+        let selectedTemplate = null;
+
+        // Initialize
+        function init() {
+            renderCategoryTabs();
+            loadTemplates();
+            setupEventListeners();
+            displayTemplates();
+        }
+
+        // Render Category Tabs
+        function renderCategoryTabs() {
+            const tabsContainer = document.getElementById('filterTabs');
+            tabsContainer.innerHTML = TEMPLATE_CATEGORIES
+                .map(cat => `
+                    <button
+                        class="filter-tab ${cat.id === 'all' ? 'active' : ''}"
+                        data-category="${cat.id}"
+                        title="${cat.name}"
+                    >
+                        <span>${cat.icon}</span>
+                        <span>${cat.name}</span>
+                    </button>
+                `)
+                .join('');
+
+            // Add click handlers
+            tabsContainer.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentCategory = tab.dataset.category;
+                    displayTemplates();
+                });
+            });
+        }
+
+        // Load Templates
+        async function loadTemplates() {
+            templates = [];
+            for (const [filename, metadata] of Object.entries(TEMPLATE_METADATA)) {
+                templates.push({
+                    id: filename.replace('.json', ''),
+                    filename,
+                    ...metadata
+                });
+            }
+            templates.sort((a, b) => (b.status ? -1 : 0));
+        }
+
+        // Filter Templates
+        function getFilteredTemplates() {
+            return templates.filter(t => {
+                const matchesCategory = currentCategory === 'all' || t.category === currentCategory;
+                const matchesSearch =
+                    t.name.toLowerCase().includes(searchQuery) ||
+                    t.description.toLowerCase().includes(searchQuery) ||
+                    t.tags.some(tag => tag.toLowerCase().includes(searchQuery));
+                return matchesCategory && matchesSearch;
+            });
+        }
+
+        // Display Templates
+        function displayTemplates() {
+            const filtered = getFilteredTemplates();
+            const grid = document.getElementById('templatesGrid');
+            const categoryTitle = document.getElementById('categoryTitle');
+            const countElement = document.getElementById('templateCount');
+
+            // Update header
+            const category = TEMPLATE_CATEGORIES.find(c => c.id === currentCategory);
+            categoryTitle.textContent = category.name;
+            countElement.textContent = `${filtered.length} template${filtered.length !== 1 ? 's' : ''}`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-templates">
+                        <div class="no-templates-icon">🔍</div>
+                        <div class="no-templates-text">No templates found</div>
+                        <div class="no-templates-hint">Try adjusting your search or filters</div>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered
+                .map(template => `
+                    <div class="template-card" data-template-id="${template.id}">
+                        <div class="template-header">
+                            <span class="template-icon">${template.icon}</span>
+                        </div>
+                        <div class="template-content">
+                            <h3 class="template-name">
+                                ${template.name}
+                                ${template.status ? `<span class="status-indicator ${template.status}">${template.status.toUpperCase()}</span>` : ''}
+                            </h3>
+                            <p class="template-description">${template.description}</p>
+                            <div class="template-meta">
+                                <span class="meta-badge complexity-badge">
+                                    <span>Complexity:</span>
+                                    <span class="complexity-dots">
+                                        ${Array(3).fill(0).map((_, i) =>
+                                            `<div class="complexity-dot ${i < template.complexity ? 'filled' : ''} ${template.complexity >= 3 && i === 2 ? 'high' : ''}"></div>`
+                                        ).join('')}
+                                    </span>
+                                </span>
+                                <span class="meta-badge">📦 ${template.agents} agents</span>
+                                <span class="meta-badge">⏱️ ${template.time}</span>
+                            </div>
+                        </div>
+                        <div class="template-footer">
+                            ${template.tags.slice(0, 2).map(tag => `<span class="template-tag">${tag}</span>`).join('')}
+                            <button class="use-button" onclick="previewTemplate('${template.id}')">Use</button>
+                        </div>
+                    </div>
+                `)
+                .join('');
+        }
+
+        // Preview Template
+        function previewTemplate(templateId) {
+            const template = templates.find(t => t.id === templateId);
+            if (!template) return;
+
+            selectedTemplate = template;
+            const modal = document.getElementById('previewModal');
+
+            // Update modal content
+            document.getElementById('modalTitle').textContent = template.name;
+            document.getElementById('modalComplexity').textContent =
+                ['Simple', 'Medium', 'Complex'][template.complexity - 1];
+            document.getElementById('modalAgents').textContent = `${template.agents} agents`;
+            document.getElementById('modalTime').textContent = template.time;
+            document.getElementById('modalCategory').textContent =
+                TEMPLATE_CATEGORIES.find(c => c.id === template.category)?.name;
+
+            // Generate preview diagram (simple ASCII for now)
+            const preview = document.getElementById('modalPreview');
+            preview.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    <div style="font-size: 24px; margin-bottom: 15px;">🔗</div>
+                    <p style="margin-bottom: 20px; font-weight: 500;">${template.name}</p>
+                    <p style="font-size: 12px; margin-bottom: 20px;">${template.description}</p>
+                    <div style="background: white; border-radius: 8px; padding: 15px; text-align: left; display: inline-block;">
+                        <p style="font-size: 12px; color: #333; margin: 5px 0;">
+                            <strong>Workflow Stages:</strong>
+                        </p>
+                        <ul style="font-size: 12px; color: #666; margin-left: 20px; margin-top: 8px;">
+                            ${Array(template.agents).fill(0).map((_, i) =>
+                                `<li>Stage ${i + 1}: Processing</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                    <p style="font-size: 11px; color: #bbb; margin-top: 20px;">Visual preview coming soon →</p>
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Search
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase();
+                displayTemplates();
+            });
+
+            // Modal close button
+            document.querySelector('.modal-close').addEventListener('click', closeModal);
+            document.getElementById('modalCancel').addEventListener('click', closeModal);
+
+            // Modal background click
+            const modal = document.getElementById('previewModal');
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            // Use Template button
+            document.getElementById('modalUse').addEventListener('click', () => {
+                if (selectedTemplate) {
+                    loadTemplate(selectedTemplate);
+                }
+            });
+
+            // Keyboard escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('previewModal').classList.remove('active');
+            selectedTemplate = null;
+        }
+
+        // Load Template in Builder
+        function loadTemplate(template) {
+            // Method 1: postMessage to parent (for iframe)
+            if (window.parent !== window) {
+                try {
+                    window.parent.postMessage({
+                        type: 'templateSelected',
+                        filename: template.filename
+                    }, '*');
+                    console.log('Sent template selection to parent:', template.filename);
+                    return;
+                } catch (error) {
+                    console.warn('Failed to send postMessage to parent:', error);
+                    // Fall through to Method 2
+                }
+            }
+
+            // Method 2: sessionStorage + redirect (for standalone)
+            sessionStorage.setItem('selectedTemplate', template.filename);
+            window.location.href = `workflow_builder.html?template=${template.filename}`;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -221,13 +221,140 @@ class MemoryExplorer {
     /**
      * Select an entity to view details
      */
-    selectEntity(entity) {
+    async selectEntity(entity) {
         this.selectedEntity = entity;
         console.log('Selected entity:', entity);
 
-        // TODO: Fetch entity details and relationships
-        // For now, just show selection
-        alert(`Selected entity: ${entity}\n\nEntity details and relationship visualization coming in Phase 3!`);
+        try {
+            // Fetch entity details from backend
+            const response = await fetch(`${this.apiBase}/api/memory/entity/${encodeURIComponent(entity)}`, {
+                method: 'GET',
+                headers: {'Content-Type': 'application/json'}
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch entity details: ${response.status}`);
+            }
+
+            const entityData = await response.json();
+            console.log('Entity details:', entityData);
+
+            // Display entity details in a panel
+            this.displayEntityDetails(entityData);
+
+        } catch (error) {
+            console.error('Failed to fetch entity details:', error);
+            this.showError('entity', `Could not load details for "${entity}": ${error.message}`);
+        }
+    }
+
+    /**
+     * Display entity details in a side panel
+     */
+    displayEntityDetails(entityData) {
+        // Create or update details panel
+        let panel = document.getElementById('memory-entity-details-panel');
+        if (!panel) {
+            panel = document.createElement('div');
+            panel.id = 'memory-entity-details-panel';
+            panel.style.cssText = `
+                position: fixed;
+                right: 0;
+                top: 0;
+                width: 350px;
+                height: 100vh;
+                background: var(--surface);
+                border-left: 1px solid var(--border);
+                box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+                overflow-y: auto;
+                z-index: 1000;
+                padding: 1.5rem;
+            `;
+            document.body.appendChild(panel);
+        }
+
+        // Build HTML content
+        let html = `
+            <div style="margin-bottom: 1.5rem;">
+                <button id="close-entity-panel" style="
+                    float: right;
+                    background: none;
+                    border: none;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    color: var(--secondary);
+                ">×</button>
+                <h3 style="margin-top: 0;">${this.escapeHtml(entityData.name || entityData.id)}</h3>
+                <span class="badge info">${this.escapeHtml(entityData.type || 'Entity')}</span>
+            </div>
+
+            ${entityData.description ? `
+                <div style="margin-bottom: 1rem;">
+                    <strong>Description:</strong>
+                    <p style="margin-top: 0.5rem; color: var(--secondary);">
+                        ${this.escapeHtml(entityData.description)}
+                    </p>
+                </div>
+            ` : ''}
+
+            ${entityData.metadata ? `
+                <div style="margin-bottom: 1rem;">
+                    <strong>Metadata:</strong>
+                    <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                        ${Object.entries(entityData.metadata).map(([key, value]) => `
+                            <li><code>${this.escapeHtml(key)}</code>: ${this.escapeHtml(String(value))}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+
+            ${entityData.relationships && entityData.relationships.length > 0 ? `
+                <div style="margin-bottom: 1rem;">
+                    <strong>Related Entities (${entityData.relationships.length}):</strong>
+                    <div style="margin-top: 0.5rem;">
+                        ${entityData.relationships.slice(0, 10).map(rel => `
+                            <div style="
+                                padding: 0.75rem;
+                                background: var(--background);
+                                border-radius: 4px;
+                                margin-bottom: 0.5rem;
+                                cursor: pointer;
+                                transition: background 0.2s;
+                            " onmouseover="this.style.background='var(--border)'"
+                               onmouseout="this.style.background='var(--background)'"
+                               onclick="memoryExplorer.selectEntity('${this.escapeHtml(rel.target_entity)}')">
+                                <div style="font-size: 0.875rem; color: var(--secondary);">
+                                    ${this.escapeHtml(rel.relationship_type || 'RELATED_TO')}
+                                </div>
+                                <div style="font-weight: 500;">
+                                    ${this.escapeHtml(rel.target_entity)}
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${entityData.relationships.length > 10 ? `
+                            <div style="color: var(--secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+                                ... and ${entityData.relationships.length - 10} more
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            ` : `
+                <div style="color: var(--secondary); font-style: italic;">
+                    No relationships found for this entity.
+                </div>
+            `}
+        `;
+
+        panel.innerHTML = html;
+
+        // Add close button handler
+        const closeBtn = document.getElementById('close-entity-panel');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                panel.style.display = 'none';
+                this.selectedEntity = null;
+            });
+        }
     }
 
     /**

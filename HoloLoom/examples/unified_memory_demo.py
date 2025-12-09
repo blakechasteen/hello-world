@@ -108,25 +108,25 @@ async def example_1_in_memory():
     # Semantic search
     print("\n   Strategy: SEMANTIC (text similarity)")
     results = await memory.recall("winter preparation", strategy=Strategy.SEMANTIC)
-    for i, (mem, score) in enumerate(zip(results.memories, results.scores), 1):
-        print(f"     [{i}] Score: {score:.3f} | {mem.text[:60]}...")
+    for i, mem in enumerate(results, 1):
+        print(f"     [{i}] Score: {mem.relevance:.3f} | {mem.text[:60]}...")
     
     # Temporal search
     print("\n   Strategy: TEMPORAL (most recent)")
     results = await memory.recall("hive", strategy=Strategy.TEMPORAL)
-    for i, (mem, score) in enumerate(zip(results.memories, results.scores), 1):
-        print(f"     [{i}] Score: {score:.3f} | {mem.text[:60]}...")
+    for i, mem in enumerate(results, 1):
+        print(f"     [{i}] Score: {mem.relevance:.3f} | {mem.text[:60]}...")
     
     # Fused search
     print("\n   Strategy: FUSED (combined)")
     results = await memory.recall("honey bees", strategy=Strategy.FUSED)
-    for i, (mem, score) in enumerate(zip(results.memories, results.scores), 1):
-        print(f"     [{i}] Score: {score:.3f} | {mem.text[:60]}...")
+    for i, mem in enumerate(results, 1):
+        print(f"     [{i}] Score: {mem.relevance:.3f} | {mem.text[:60]}...")
     
     print("\n3. Health check...")
     health = await memory.health_check()
-    print(f"   Status: {health['store']['status']}")
-    print(f"   Memory count: {health['store']['memory_count']}")
+    print(f"   Status: {health['status']}")
+    print(f"   Memory count: {health['metrics'].get('total_memories', 'unknown')}")
     
     print("\n✓ Example 1 complete!\n")
 
@@ -265,34 +265,30 @@ async def example_2_hybrid():
         strategy=Strategy.FUSED
     )
     
-    print(f"\n   Found {len(results.memories)} memories:")
-    print(f"   Fusion method: {results.metadata['fusion_method']}")
-    print(f"   Backends used: {results.metadata.get('backends_used', [])}")
+    print(f"\n   Found {len(results)} memories:")
+    # Note: Accessing fusion metadata is not supported in the simplified UnifiedMemory API
+    # print(f"   Fusion method: {results.metadata['fusion_method']}")
+    # print(f"   Backends used: {results.metadata.get('backends_used', [])}")
     
-    for i, (mem, score) in enumerate(zip(results.memories, results.scores), 1):
-        sources = mem.metadata.get('fusion_sources', ['unknown'])
-        print(f"\n   [{i}] Score: {score:.3f} | Sources: {sources}")
+    for i, mem in enumerate(results, 1):
+        try:
+            sources = mem.context.get('fusion_sources', ['unknown'])
+            # Metadata might be merged into context
+        except:
+            sources = ['weighted']
+            
+        print(f"\n   [{i}] Score: {mem.relevance:.3f} | Sources: {sources}")
         print(f"       {mem.text[:80]}...")
     
     print("\n3. Health check across all backends...")
     health = await memory.health_check()
     print(f"\n   Overall status: {health['status']}")
-    print(f"   Backends: {health['healthy_backends']}/{health['total_backends']} healthy")
+    print("   Components:")
     
-    for backend_name, backend_health in health['backends'].items():
-        status_emoji = "✓" if backend_health['status'] == 'healthy' else "✗"
-        print(f"\n   {status_emoji} {backend_name}:")
-        if backend_health['status'] == 'healthy':
-            if 'memory_count' in backend_health:
-                print(f"      Memory count: {backend_health['memory_count']}")
-            if 'knot_count' in backend_health:
-                print(f"      KNOT count: {backend_health['knot_count']}")
-                print(f"      THREAD count: {backend_health['thread_count']}")
-            if 'collections' in backend_health:
-                for scale, stats in backend_health['collections'].items():
-                    print(f"      {scale}: {stats['points']} points")
-        else:
-            print(f"      Error: {backend_health.get('error', 'unknown')}")
+    for comp_name, comp_data in health['components'].items():
+        available = comp_data.get('available', False)
+        status_emoji = "✓" if available else "✗"
+        print(f"   {status_emoji} {comp_name}: {comp_data}")
     
     print("\n✓ Example 2 complete!\n")
 
@@ -315,9 +311,9 @@ async def example_3_factory():
     
     print("1. Checking what's available...")
     health = await memory.health_check()
-    print(f"   Store backend: {health['store'].get('backend', 'unknown')}")
-    print(f"   Navigator: {health.get('navigator', 'not configured')}")
-    print(f"   Detector: {health.get('detector', 'not configured')}")
+    backend_info = health['components'].get('backend', {})
+    print(f"   Store backend: {backend_info.get('type', 'unknown')}")
+    print(f"   Conductor: {health['components'].get('conductor', {}).get('enabled', False)}")
     
     print("\n2. Storing a test memory...")
     mem_id = await memory.store(
@@ -328,7 +324,7 @@ async def example_3_factory():
     
     print("\n3. Recalling...")
     results = await memory.recall("test")
-    print(f"   Found {len(results.memories)} memories")
+    print(f"   Found {len(results)} memories")
     
     print("\n✓ Example 3 complete!\n")
 

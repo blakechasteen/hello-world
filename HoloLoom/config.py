@@ -329,6 +329,18 @@ class Config:
     jenny_enable_learning: bool = True  # Enable Thompson Sampling learning from user actions
     jenny_learning_persist_path: str = "./jenny_learning"  # Learning state persistence directory
 
+    # Multi-Loom Architecture / WeaveHouse (December 2025)
+    # Enable multi-perspective reasoning via 5 core looms (RECALL, REASON, REACH, REFLECT, REFUSE)
+    use_weave_house: bool = False  # Enable WeaveHouse multi-perspective system
+    weave_house_exploration_depth: int = 2  # How deep to explore disagreement zones
+    weave_house_tension_threshold: float = 0.3  # Minimum tension to trigger exploration
+
+    # Dreaming / Collective Consolidation
+    enable_dreaming: bool = True  # Enable background dream consolidation
+    dream_consolidation_interval: float = 3600.0  # Seconds between dream cycles (default: 1 hour)
+    dream_math_bleed_rate: float = 0.3  # Math insight sharing rate (30% - universal)
+    dream_pattern_bleed_rate: float = 0.2  # Pattern insight sharing rate (20% - preserve diversity)
+
     def __post_init__(self):
         """Validate configuration."""
         # Set defaults
@@ -481,7 +493,42 @@ class Config:
             # Zero-copy embeddings (1.4x speedup, 50% memory savings)
             enable_zero_copy_embeddings=True
         )
-    
+
+    @classmethod
+    def multi_perspective(cls) -> 'Config':
+        """
+        Create a configuration for multi-perspective WeaveHouse system.
+
+        This enables the Multi-Loom Architecture with:
+        - 5 core looms (RECALL, REASON, REACH, REFLECT, REFUSE)
+        - LoomConsensus for synthesizing perspectives
+        - Auto-exploration of disagreement zones
+        - Optional background dreaming for collective consolidation
+
+        Example:
+            ```python
+            from HoloLoom.config import Config
+            from HoloLoom import HoloLoom
+
+            config = Config.multi_perspective()
+            async with HoloLoom(config=config) as loom:
+                result = await loom.weave("Complex question?")
+                # Receives multi-perspective synthesis
+            ```
+
+        Returns:
+            Config optimized for multi-perspective reasoning
+        """
+        cfg = cls.fused()  # Start with FUSED as base (highest quality)
+        cfg.use_weave_house = True
+        cfg.enable_dreaming = True
+        cfg.weave_house_exploration_depth = 2
+        cfg.weave_house_tension_threshold = 0.3
+        cfg.dream_consolidation_interval = 3600.0
+        cfg.dream_math_bleed_rate = 0.3
+        cfg.dream_pattern_bleed_rate = 0.2
+        return cfg
+
     def to_dict(self) -> Dict:
         """Serialize config to dictionary."""
         return {

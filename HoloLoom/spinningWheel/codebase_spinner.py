@@ -56,6 +56,61 @@ from HoloLoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass
+class ComplexityMetrics:
+    """Cyclomatic complexity metrics for a function/method."""
+    cyclomatic_complexity: int  # Primary metric (McCabe): 1 + decision_points
+    decision_points: int        # Number of branches
+    nesting_depth: int          # Maximum nesting level
+    line_count: int             # Lines in function body
+
+    # Breakdown of decision points
+    if_count: int = 0
+    elif_count: int = 0
+    for_count: int = 0
+    while_count: int = 0
+    except_count: int = 0
+    with_count: int = 0
+    and_or_count: int = 0       # Boolean operators
+    comprehension_count: int = 0
+    ternary_count: int = 0
+    assert_count: int = 0
+
+    @property
+    def risk_category(self) -> str:
+        """Classify complexity risk level."""
+        if self.cyclomatic_complexity <= 5:
+            return "low"          # Simple, low risk
+        elif self.cyclomatic_complexity <= 10:
+            return "moderate"     # Acceptable
+        elif self.cyclomatic_complexity <= 20:
+            return "high"         # Consider refactoring
+        else:
+            return "very_high"    # Refactor strongly recommended
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        return {
+            'cyclomatic_complexity': self.cyclomatic_complexity,
+            'decision_points': self.decision_points,
+            'nesting_depth': self.nesting_depth,
+            'line_count': self.line_count,
+            'risk_category': self.risk_category,
+            'breakdown': {
+                'if': self.if_count,
+                'elif': self.elif_count,
+                'for': self.for_count,
+                'while': self.while_count,
+                'except': self.except_count,
+                'with': self.with_count,
+                'and_or': self.and_or_count,
+                'comprehension': self.comprehension_count,
+                'ternary': self.ternary_count,
+                'assert': self.assert_count
+            }
+        }
+
+
+@dataclass
 class CodeFunction:
     """Parsed function/method"""
     name: str
@@ -67,6 +122,7 @@ class CodeFunction:
     is_method: bool = False
     decorators: List[str] = field(default_factory=list)
     calls: List[str] = field(default_factory=list)  # Functions called
+    complexity: Optional[ComplexityMetrics] = None  # Cyclomatic complexity metrics
 
 
 @dataclass
@@ -432,6 +488,84 @@ class CodebaseProject:
 
         return cycles
 
+    def get_high_complexity_functions(self, threshold: int = 10) -> List[Tuple[str, str, int]]:
+        """
+        Get functions with cyclomatic complexity above threshold.
+
+        Args:
+            threshold: Minimum complexity to include (default: 10 = "high" risk)
+
+        Returns:
+            List of (file_path, function_name, complexity) sorted by complexity descending
+        """
+        results = []
+        for file_path, code_file in self.files.items():
+            # Check top-level functions
+            for func in code_file.functions:
+                if func.complexity and func.complexity.cyclomatic_complexity > threshold:
+                    results.append((
+                        file_path,
+                        func.name,
+                        func.complexity.cyclomatic_complexity
+                    ))
+            # Check class methods
+            for cls in code_file.classes:
+                for method in cls.methods:
+                    if method.complexity and method.complexity.cyclomatic_complexity > threshold:
+                        results.append((
+                            file_path,
+                            f"{cls.name}.{method.name}",
+                            method.complexity.cyclomatic_complexity
+                        ))
+
+        return sorted(results, key=lambda x: x[2], reverse=True)
+
+    def get_complexity_summary(self) -> Dict[str, Any]:
+        """
+        Get aggregated complexity statistics across the codebase.
+
+        Returns:
+            Dictionary with complexity stats:
+            - total_functions: Total functions analyzed
+            - avg_complexity: Average cyclomatic complexity
+            - max_complexity: Highest complexity found
+            - risk_distribution: Count by risk category
+            - high_complexity_count: Functions above threshold (10)
+        """
+        complexities = []
+
+        for code_file in self.files.values():
+            for func in code_file.functions:
+                if func.complexity:
+                    complexities.append(func.complexity)
+            for cls in code_file.classes:
+                for method in cls.methods:
+                    if method.complexity:
+                        complexities.append(method.complexity)
+
+        if not complexities:
+            return {
+                'total_functions': 0,
+                'avg_complexity': 0.0,
+                'max_complexity': 0,
+                'risk_distribution': {'low': 0, 'moderate': 0, 'high': 0, 'very_high': 0},
+                'high_complexity_count': 0
+            }
+
+        # Calculate stats
+        cc_values = [c.cyclomatic_complexity for c in complexities]
+        risk_dist = {'low': 0, 'moderate': 0, 'high': 0, 'very_high': 0}
+        for c in complexities:
+            risk_dist[c.risk_category] += 1
+
+        return {
+            'total_functions': len(complexities),
+            'avg_complexity': sum(cc_values) / len(cc_values),
+            'max_complexity': max(cc_values),
+            'risk_distribution': risk_dist,
+            'high_complexity_count': sum(1 for cc in cc_values if cc > 10)
+        }
+
     def to_dict(self) -> Dict[str, Any]:
         """Export project analysis to dictionary"""
         return {
@@ -447,7 +581,9 @@ class CodebaseProject:
             'most_imported': self.get_most_imported_files(5),
             'most_connected': self.get_most_connected_files(5),
             'orphan_files': self.get_orphan_files(),
-            'circular_dependencies': self.get_circular_dependencies()
+            'circular_dependencies': self.get_circular_dependencies(),
+            'complexity_summary': self.get_complexity_summary(),
+            'high_complexity_functions': self.get_high_complexity_functions(10)[:10]
         }
 
 
@@ -587,6 +723,140 @@ class TypeScriptParser:
                 'interfaces': [i[0] if isinstance(i, tuple) else i for i in interfaces],
                 'types': types
             }
+        )
+
+
+# =============================================================================
+# Cyclomatic Complexity Calculator
+# =============================================================================
+
+class CyclomaticComplexityCalculator:
+    """
+    Calculate cyclomatic complexity using AST analysis.
+
+    Formula: CC = E - N + 2P (edges - nodes + 2*connected_components)
+    Simplified: CC = 1 + number_of_decision_points
+
+    Decision points:
+    - if, elif statements
+    - for, while loops
+    - except handlers
+    - and/or in boolean expressions
+    - assert statements
+    - comprehensions with 'if' clauses
+    - ternary expressions (x if cond else y)
+    """
+
+    @staticmethod
+    def calculate(func_node: ast.FunctionDef) -> ComplexityMetrics:
+        """
+        Calculate cyclomatic complexity for a function/method AST node.
+
+        Args:
+            func_node: ast.FunctionDef or ast.AsyncFunctionDef node
+
+        Returns:
+            ComplexityMetrics with all complexity measurements
+        """
+        # Initialize counters
+        counters = {
+            'if_count': 0,
+            'elif_count': 0,
+            'for_count': 0,
+            'while_count': 0,
+            'except_count': 0,
+            'with_count': 0,
+            'and_or_count': 0,
+            'comprehension_count': 0,
+            'ternary_count': 0,
+            'assert_count': 0
+        }
+
+        max_depth = [0]  # Use list to allow modification in nested function
+
+        def visit(node: ast.AST, depth: int = 0) -> None:
+            """Recursively visit AST nodes to count decision points."""
+            max_depth[0] = max(max_depth[0], depth)
+
+            for child in ast.iter_child_nodes(node):
+                if isinstance(child, ast.If):
+                    counters['if_count'] += 1
+                    # Check for elif chains in orelse
+                    for orelse_node in child.orelse:
+                        if isinstance(orelse_node, ast.If):
+                            counters['elif_count'] += 1
+                    visit(child, depth + 1)
+
+                elif isinstance(child, ast.For):
+                    counters['for_count'] += 1
+                    visit(child, depth + 1)
+
+                elif isinstance(child, ast.While):
+                    counters['while_count'] += 1
+                    visit(child, depth + 1)
+
+                elif isinstance(child, ast.ExceptHandler):
+                    counters['except_count'] += 1
+                    visit(child, depth)
+
+                elif isinstance(child, ast.With):
+                    counters['with_count'] += 1
+                    visit(child, depth + 1)
+
+                elif isinstance(child, ast.Assert):
+                    counters['assert_count'] += 1
+                    visit(child, depth)
+
+                elif isinstance(child, ast.BoolOp):
+                    # and/or count as decision points
+                    # CC += number of and/or operators (len(values) - 1)
+                    if isinstance(child.op, (ast.And, ast.Or)):
+                        counters['and_or_count'] += len(child.values) - 1
+                    visit(child, depth)
+
+                elif isinstance(child, ast.IfExp):
+                    # Ternary expression: x if cond else y
+                    counters['ternary_count'] += 1
+                    visit(child, depth)
+
+                elif isinstance(child, (ast.ListComp, ast.SetComp,
+                                        ast.DictComp, ast.GeneratorExp)):
+                    # Comprehensions with 'if' clauses
+                    for generator in child.generators:
+                        counters['comprehension_count'] += len(generator.ifs)
+                    visit(child, depth)
+
+                else:
+                    visit(child, depth)
+
+        # Start traversal from function body
+        visit(func_node)
+
+        # Calculate total decision points
+        decision_points = (
+            counters['if_count'] +
+            counters['elif_count'] +
+            counters['for_count'] +
+            counters['while_count'] +
+            counters['except_count'] +
+            counters['with_count'] +
+            counters['and_or_count'] +
+            counters['comprehension_count'] +
+            counters['ternary_count'] +
+            counters['assert_count']
+        )
+
+        # Calculate line count (handle missing end_lineno gracefully)
+        line_count = 1
+        if hasattr(func_node, 'end_lineno') and func_node.end_lineno and func_node.lineno:
+            line_count = func_node.end_lineno - func_node.lineno + 1
+
+        return ComplexityMetrics(
+            cyclomatic_complexity=1 + decision_points,
+            decision_points=decision_points,
+            nesting_depth=max_depth[0],
+            line_count=line_count,
+            **counters
         )
 
 
@@ -740,6 +1010,9 @@ class PythonParser:
             if isinstance(child, ast.Call) and isinstance(child.func, ast.Name):
                 calls.append(child.func.id)
 
+        # Calculate cyclomatic complexity
+        complexity = CyclomaticComplexityCalculator.calculate(node)
+
         return CodeFunction(
             name=name,
             signature=signature,
@@ -749,7 +1022,8 @@ class PythonParser:
             is_async=isinstance(node, ast.AsyncFunctionDef),
             is_method=is_method,
             decorators=decorators,
-            calls=list(set(calls))  # Deduplicate
+            calls=list(set(calls)),  # Deduplicate
+            complexity=complexity
         )
 
     @staticmethod

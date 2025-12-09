@@ -21,12 +21,13 @@ Usage:
 import asyncio
 import json
 import logging
+import uuid
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 from pathlib import Path
 
 try:
-    from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.staticfiles import StaticFiles
     from pydantic import BaseModel
@@ -112,6 +113,37 @@ class CreateBranchRequest(BaseModel):
     branch_name: str
     from_branch: str = 'main'
     from_version: int = 1
+
+class URLIngestRequest(BaseModel):
+    url: str
+    options: Dict[str, Any] = {}
+
+class FileIngestResponse(BaseModel):
+    job_id: str
+    shards_created: int
+    filename: str
+    content_type: Optional[str] = None
+    file_size: int = 0
+    warning: Optional[str] = None
+
+class URLIngestResponse(BaseModel):
+    job_id: str
+    shards_created: int
+    url: str
+    options_applied: Dict[str, Any] = {}
+    warning: Optional[str] = None
+
+class EntityRelationship(BaseModel):
+    target: str
+    relation_type: str
+    weight: float = 1.0
+
+class EntityResponse(BaseModel):
+    entity_id: str
+    content: Optional[str] = None
+    metadata: Dict[str, Any] = {}
+    relationships: List[EntityRelationship] = []
+    relationship_count: int = 0
 
 # Global state
 active_workflows: Dict[str, "WorkflowExecutor"] = {}
@@ -741,6 +773,207 @@ async def list_branches():
         })
 
     return {'branches': branches}
+
+
+# Ingestion Endpoints (Wave 1.5) - Enhanced with proper models
+@app.post("/api/ingest/file", response_model=FileIngestResponse)
+async def ingest_file(file: UploadFile = File(...)):
+    """Ingest a file using SpinningWheel auto-format detection.
+
+    Supports:
+    - PDFs, DOCX, PPTX, Excel files
+    - Code files (Python, JavaScript, TypeScript, etc.)
+    - Markdown, LaTeX, plain text
+    - JSON, YAML, CSV, XML
+    - Audio transcripts, video metadata
+
+    Returns job_id for tracking ingestion progress.
+    """
+    try:
+        job_id = str(uuid.uuid4())
+        content = await file.read()
+
+        # Try to use SpinningWheel for auto-format detection
+        shards_created = 0
+        warning = None
+
+        try:
+            from HoloLoom.spinningWheel import spin
+            shards = await spin(content, filename=file.filename)
+            shards_created = len(shards) if shards else 0
+            logger.info(f"File {file.filename} ingested: {shards_created} shards created (job: {job_id})")
+        except ImportError:
+            logger.warning("SpinningWheel not available, returning file metadata only")
+            warning = "SpinningWheel not available - install with: pip install -e ."
+        except Exception as e:
+            logger.warning(f"SpinningWheel processing failed: {e}, returning file metadata")
+            warning = str(e)
+
+        return FileIngestResponse(
+            job_id=job_id,
+            shards_created=shards_created,
+            filename=file.filename,
+            content_type=file.content_type,
+            file_size=len(content),
+            warning=warning
+        )
+    except Exception as e:
+        logger.error(f"File ingestion failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/ingest/url", response_model=URLIngestResponse)
+async def ingest_url(request: URLIngestRequest):
+    """Ingest content from a URL using SpinningWheel.
+
+    Supports:
+    - Web pages (HTML, Markdown conversion)
+    - RSS feeds
+    - API responses (JSON, XML)
+    - PDF/Document URLs
+    - Code repository URLs (GitHub, GitLab)
+
+    Request body:
+    {
+        "url": "https://example.com/article",
+        "options": {
+            "chunk_size": 512,
+            "include_metadata": true
+        }
+    }
+    """
+    try:
+        job_id = str(uuid.uuid4())
+        shards_created = 0
+        warning = None
+
+        # Try to use SpinningWheel for URL processing
+        try:
+            from HoloLoom.spinningWheel import spin
+            shards = await spin(request.url, **request.options)
+            shards_created = len(shards) if shards else 0
+            logger.info(f"URL {request.url} ingested: {shards_created} shards created (job: {job_id})")
+        except ImportError:
+            logger.warning("SpinningWheel not available, returning URL metadata only")
+            warning = "SpinningWheel not available - install with: pip install -e ."
+        except Exception as e:
+            logger.warning(f"SpinningWheel URL processing failed: {e}")
+            warning = str(e)
+
+        return URLIngestResponse(
+            job_id=job_id,
+            shards_created=shards_created,
+            url=request.url,
+            options_applied=request.options,
+            warning=warning
+        )
+    except Exception as e:
+        logger.error(f"URL ingestion failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/memory/entity/{entity_id}", response_model=EntityResponse)
+async def get_entity(entity_id: str):
+    """Get entity details and relationships from knowledge graph.
+
+    Returns:
+    - Entity content and metadata
+    - All incoming and outgoing relationships
+    - Relationship types (IS_A, USES, MENTIONS, LEADS_TO, PART_OF, IN_TIME, OCCURRED_AT)
+    - Relationship weights for importance ranking
+
+    Example response:
+    {
+        "entity_id": "thompson_sampling",
+        "content": "Thompson Sampling is a Bayesian approach...",
+        "metadata": {
+            "type": "algorithm",
+            "domain": "machine_learning",
+            "confidence": 0.92
+        },
+        "relationships": [
+            {
+                "target": "bayesian_methods",
+                "relation_type": "IS_A",
+                "weight": 1.0
+            },
+            {
+                "target": "exploration_exploitation",
+                "relation_type": "USES",
+                "weight": 0.85
+            }
+        ],
+        "relationship_count": 2
+    }
+    """
+    try:
+        if not entity_id or not entity_id.strip():
+            raise HTTPException(status_code=400, detail="Entity ID cannot be empty")
+
+        # Initialize empty response
+        entity_content = None
+        metadata = {}
+        relationships = []
+
+        # Try to access any active executor's memory backend
+        # This is a graceful implementation that works without persistent executor state
+        global active_workflows
+
+        hololoom_instance = None
+        for executor in active_workflows.values():
+            if executor.hololoom:
+                hololoom_instance = executor.hololoom
+                break
+
+        # If we found a HoloLoom instance with memory backend, try to use it
+        if hololoom_instance:
+            try:
+                # Try to access the memory graph
+                if hasattr(hololoom_instance, '_memory') and hasattr(hololoom_instance._memory, '_backend'):
+                    graph = hololoom_instance._memory._backend.graph
+
+                    # Check if entity exists in graph
+                    if hasattr(graph, 'G') and entity_id in graph.G.nodes:
+                        node_data = graph.G.nodes[entity_id]
+                        entity_content = node_data.get('content')
+                        metadata = {k: v for k, v in node_data.items() if k != 'content'}
+
+                        # Get relationships (edges)
+                        for _, target, edge_data in graph.G.out_edges(entity_id, data=True):
+                            relationships.append(EntityRelationship(
+                                target=target,
+                                relation_type=edge_data.get('relation', 'RELATED'),
+                                weight=float(edge_data.get('weight', 1.0))
+                            ))
+
+                        # Also get incoming relationships
+                        for source, _, edge_data in graph.G.in_edges(entity_id, data=True):
+                            relationships.append(EntityRelationship(
+                                target=source,
+                                relation_type=f"{edge_data.get('relation', 'RELATED')}_FROM",
+                                weight=float(edge_data.get('weight', 1.0))
+                            ))
+
+                        logger.info(f"Entity query: {entity_id} - found with {len(relationships)} relationships")
+                    else:
+                        logger.info(f"Entity query: {entity_id} - not found in graph")
+            except Exception as e:
+                logger.warning(f"Error accessing memory backend for entity {entity_id}: {e}")
+        else:
+            logger.info(f"Entity query: {entity_id} - no active executors with HoloLoom instance")
+
+        return EntityResponse(
+            entity_id=entity_id,
+            content=entity_content,
+            metadata=metadata,
+            relationships=relationships,
+            relationship_count=len(relationships)
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Entity lookup failed for {entity_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

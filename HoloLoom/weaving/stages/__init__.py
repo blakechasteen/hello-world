@@ -12,14 +12,9 @@ Each stage is a self-contained unit that:
 
 from .pattern_selection import PatternSelectionStage
 from .temporal_control import TemporalControlStage
-from .thread_selection import ThreadSelectionStage
 from .feature_extraction import FeatureExtractionStage
-from .warp_tensioning import WarpTensioningStage
 from .memory_retrieval import MemoryRetrievalStage
 from .decision_collapse import DecisionCollapseStage
-from .tool_execution import ToolExecutionStage
-from .fabric_weaving import FabricWeavingStage
-from .reflection import ReflectionStage
 
 __all__ = [
     "PatternSelectionStage",

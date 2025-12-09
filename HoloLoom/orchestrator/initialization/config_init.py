@@ -37,6 +37,7 @@ from HoloLoom.config import ExecutionMode
 from HoloLoom.loom.command import PatternCard
 from HoloLoom.protocols import ComplexityLevel
 from HoloLoom.alignment import create_guardrails
+from HoloLoom.alignment.audit_trail import AuditTrail
 
 
 logger = logging.getLogger(__name__)
@@ -87,6 +88,7 @@ def initialize_config_and_memory(
         - _complexity_thresholds: Thresholds for complexity detection
         - _crawl_config: Multipass memory crawling configuration
         - guardrails: SafetyGuardrails instance
+        - audit_trail: AuditTrail instance for decision logging
         - default_pattern: Default pattern card
         - _background_tasks: Background task list
         - _bg_lock: Background task lock
@@ -171,6 +173,18 @@ def initialize_config_and_memory(
     except Exception as e:
         logger.warning(f"Failed to initialize shared guardrails: {e}. Falling back to local guardrails where needed.")
         orchestrator.guardrails = None
+
+    # Create AuditTrail for decision logging and provenance tracking (December 2025)
+    try:
+        persist_path = getattr(orchestrator.cfg, 'audit_trail_path', None)
+        orchestrator.audit_trail = AuditTrail(
+            persist_path=persist_path,
+            auto_flush=True  # Flush logs immediately for durability
+        )
+        logger.info(f"AuditTrail initialized (persist_path={persist_path})")
+    except Exception as e:
+        logger.warning(f"Failed to initialize AuditTrail: {e}. Decision logging will be disabled.")
+        orchestrator.audit_trail = None
 
     # Determine pattern card from config or preference
     if pattern_preference:

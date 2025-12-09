@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Analytics Dashboard - HoloLoom</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Tufte-inspired dark theme */
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --border-color: #0f3460;
+            --text-primary: #eee;
+            --text-secondary: #aaa;
+            --accent-1: #667eea;
+            --accent-2: #764ba2;
+            --success: #51cf66;
+            --warning: #ffa500;
+            --danger: #ff6b6b;
+            --data-density: 11px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Mono', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Header - Minimal and information-rich */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .workflow-info {
+            font-size: var(--data-density);
+            color: var(--text-secondary);
+            font-family: 'SF Mono', 'Monaco', monospace;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .connection-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            animation: pulse 2s infinite;
+        }
+
+        .connection-status.connected {
+            background: var(--success);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid #533483;
+            color: var(--text-primary);
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            background: #533483;
+            border-color: var(--accent-1);
+        }
+
+        .btn-primary {
+            background: var(--accent-1);
+            border-color: var(--accent-1);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-2);
+            border-color: var(--accent-2);
+        }
+
+        /* Grid layout - responsive */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 30px;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        .section-full {
+            grid-column: 1 / -1;
+        }
+
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Metrics Grid - High data density */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .metric-card {
+            background: var(--bg-tertiary);
+            border: 1px solid #533483;
+            padding: 12px;
+            border-radius: 2px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'SF Mono', 'Monaco', monospace;
+            line-height: 1.2;
+        }
+
+        .metric-unit {
+            font-size: 10px;
+            color: var(--accent-1);
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .metric-subtext {
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        /* Execution Timeline - Gantt-style */
+        .timeline-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            margin-top: 10px;
+        }
+
+        .timeline-wrapper {
+            min-width: 100%;
+        }
+
+        .timeline-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+            min-height: 24px;
+        }
+
+        .timeline-label {
+            width: 110px;
+            font-size: 10px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            text-align: right;
+            padding-right: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .timeline-bars {
+            flex: 1;
+            display: flex;
+            gap: 1px;
+            min-height: 18px;
+            align-items: center;
+        }
+
+        .timeline-bar {
+            height: 16px;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+            border-radius: 1px;
+            position: relative;
+            cursor: help;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #fff;
+            font-weight: 600;
+            opacity: 0.85;
+            transition: opacity 0.2s;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .timeline-bar:hover {
+            opacity: 1;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+        }
+
+        .timeline-bar.bottleneck {
+            background: linear-gradient(90deg, var(--danger), #ff8787);
+            border: 1px solid #ff5252;
+        }
+
+        .timeline-bar.warning {
+            background: linear-gradient(90deg, var(--warning), #ffb84d);
+            border: 1px solid #ff8c00;
+        }
+
+        .timeline-bar.success {
+            background: linear-gradient(90deg, var(--success), #69db7c);
+            border: 1px solid #40c057;
+        }
+
+        .timeline-time {
+            width: 50px;
+            text-align: right;
+            font-size: 10px;
+            color: var(--accent-1);
+            font-family: 'SF Mono', 'Monaco', monospace;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+
+        /* Node Performance Table - Dense typography */
+        .table-wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--data-density);
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        table thead {
+            background: var(--bg-tertiary);
+            border-bottom: 2px solid #533483;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        table th {
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            border-right: 1px solid #0f3460;
+        }
+
+        table th:hover {
+            background: #1a2852;
+        }
+
+        table th:last-child {
+            border-right: none;
+        }
+
+        table td {
+            padding: 6px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        table tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .node-name {
+            font-weight: 600;
+            color: var(--accent-1);
+        }
+
+        .metric-good {
+            color: var(--success);
+        }
+
+        .metric-warning {
+            color: var(--warning);
+        }
+
+        .metric-critical {
+            color: var(--danger);
+        }
+
+        .bottleneck-pct {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        /* Sparkline */
+        .sparkline-container {
+            width: 80px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Confidence Trajectory Chart */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            background: var(--bg-tertiary);
+            border: 1px solid #533483;
+            border-radius: 2px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 10px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-marker {
+            width: 3px;
+            height: 10px;
+            border-radius: 1px;
+        }
+
+        .legend-marker.primary {
+            background: var(--accent-1);
+        }
+
+        .legend-marker.secondary {
+            background: var(--accent-2);
+        }
+
+        .legend-marker.anomaly {
+            background: var(--danger);
+        }
+
+        /* Cache Performance Gauge */
+        .gauge-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .gauge-container {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) 0deg, var(--success) var(--gauge-angle), var(--bg-tertiary) var(--gauge-angle));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: inset 0 0 1px #533483;
+        }
+
+        .gauge-inner {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        .gauge-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-1);
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .gauge-label {
+            font-size: 9px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .gauge-subtext {
+            font-size: 9px;
+            color: var(--text-secondary);
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Bottleneck Analysis */
+        .bottleneck-item {
+            margin-bottom: 8px;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border-left: 3px solid;
+            border-radius: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bottleneck-item.critical {
+            border-left-color: var(--danger);
+        }
+
+        .bottleneck-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        .bottleneck-name {
+            font-weight: 600;
+            color: var(--accent-1);
+            font-size: var(--data-density);
+        }
+
+        .bottleneck-pct-label {
+            font-weight: 600;
+            font-size: 12px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .bottleneck-time {
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        /* Loading state */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .loading::after {
+            content: '';
+            width: 3px;
+            height: 3px;
+            background: var(--accent-1);
+            border-radius: 50%;
+            margin-left: 6px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Scrollbar styling */
+        .table-wrapper::-webkit-scrollbar,
+        .timeline-container::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track,
+        .timeline-container::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb,
+        .timeline-container::-webkit-scrollbar-thumb {
+            background: #533483;
+            border-radius: 2px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover,
+        .timeline-container::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-1);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .section-full {
+                grid-column: 1;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .timeline-label {
+                width: 80px;
+                font-size: 9px;
+            }
+
+            table {
+                font-size: 10px;
+            }
+
+            table th, table td {
+                padding: 4px;
+            }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: var(--bg-tertiary);
+            border: 1px solid #533483;
+            border-radius: 2px;
+            padding: 6px;
+            font-size: 10px;
+            color: var(--text-primary);
+            pointer-events: none;
+            z-index: 1000;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            white-space: nowrap;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <h1 class="header-title">Workflow Analytics</h1>
+            <div class="workflow-info">
+                <span id="workflowId">workflow_id: —</span>
+                <div class="connection-status" id="connectionStatus" title="Connecting..."></div>
+            </div>
+        </div>
+        <div class="header-controls">
+            <button class="btn" onclick="loadWorkflow()" title="Load a specific workflow by ID">Load</button>
+            <button class="btn" onclick="clearData()" title="Reset all data">Reset</button>
+            <button class="btn btn-primary" onclick="exportData()" title="Export analytics data as JSON">Export</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Performance Metrics -->
+        <section class="section section-full">
+            <div class="section-title">Performance Metrics</div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Time</div>
+                    <div class="metric-value"><span id="totalTime">0</span><span class="metric-unit">ms</span></div>
+                    <div class="metric-subtext" id="totalTimeAvg">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Avg Latency</div>
+                    <div class="metric-value"><span id="avgLatency">0</span><span class="metric-unit">ms</span></div>
+                    <div class="metric-subtext" id="avgLatencyStd">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Node Count</div>
+                    <div class="metric-value" id="nodeCount">0</div>
+                    <div class="metric-subtext" id="nodeStatus">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Success Rate</div>
+                    <div class="metric-value"><span id="successRate">0</span><span class="metric-unit">%</span></div>
+                    <div class="metric-subtext" id="successDetails">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Cache Hit Rate</div>
+                    <div class="metric-value"><span id="cacheHitRate">0</span><span class="metric-unit">%</span></div>
+                    <div class="metric-subtext" id="cacheDetails">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Executions</div>
+                    <div class="metric-value" id="executionCount">0</div>
+                    <div class="metric-subtext" id="executionStatus">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Execution Timeline -->
+        <section class="section section-full">
+            <div class="section-title">Execution Timeline (Gantt)</div>
+            <div class="timeline-container">
+                <div class="timeline-wrapper" id="timelineWrapper">
+                    <div class="loading">Waiting for workflow execution data...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Node Performance Table -->
+        <section class="section section-full">
+            <div class="section-title">Node Performance (Data-Dense)</div>
+            <div class="table-wrapper">
+                <table id="performanceTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)" style="cursor: pointer;">Node Name</th>
+                            <th onclick="sortTable(1)" style="text-align: right; cursor: pointer;">Exec</th>
+                            <th onclick="sortTable(2)" style="text-align: right; cursor: pointer;">Avg Time</th>
+                            <th onclick="sortTable(3)" style="text-align: right; cursor: pointer;">Success %</th>
+                            <th onclick="sortTable(4)" style="text-align: right; cursor: pointer;">Bottleneck %</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="performanceTableBody">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 20px;">No data</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Confidence Trajectory -->
+        <section class="section section-full">
+            <div class="section-title">Confidence Trajectory</div>
+            <div class="chart-container">
+                <svg id="confidenceChart">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.25" />
+                            <stop offset="100%" style="stop-color:#667eea;stop-opacity:0" />
+                        </linearGradient>
+                    </defs>
+                    <g id="gridLines"></g>
+                    <g id="dataGroup"></g>
+                    <g id="anomalies"></g>
+                    <line x1="35" y1="10" x2="35" y2="270" stroke="#533483" stroke-width="1"/>
+                    <line x1="35" y1="270" x2="100%" y2="270" stroke="#533483" stroke-width="1"/>
+                </svg>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-marker primary"></div>
+                        <span>Confidence</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker secondary"></div>
+                        <span>Rolling Avg (3-point)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker anomaly"></div>
+                        <span>Anomalies</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cache Performance -->
+        <section class="section">
+            <div class="section-title">Cache Performance</div>
+            <div class="gauge-section">
+                <div class="gauge-container" style="--gauge-angle: 0deg;" id="cacheGauge">
+                    <div class="gauge-inner">
+                        <div class="gauge-value" id="gaugeValue">0%</div>
+                        <div class="gauge-label">Hit Rate</div>
+                    </div>
+                </div>
+                <div class="gauge-subtext" id="cacheStatus">No cache data</div>
+            </div>
+        </section>
+
+        <!-- Bottleneck Analysis -->
+        <section class="section">
+            <div class="section-title">Top Bottlenecks</div>
+            <div id="bottleneckList" style="font-size: var(--data-density);">
+                <div style="color: var(--text-secondary); padding: 20px; text-align: center;">No bottlenecks detected</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        // Global application state
+        const state = {
+            currentWorkflow: null,
+            executions: [],
+            nodes: {},
+            confidenceData: [],
+            anomalies: [],
+            ws: null,
+            connected: false
+        };
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            try {
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsHost = window.location.hostname || 'localhost';
+                state.ws = new WebSocket(`${wsProtocol}//${wsHost}:8001/ws`);
+
+                state.ws.onopen = () => {
+                    state.connected = true;
+                    updateConnectionStatus();
+                };
+
+                state.ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleWSMessage(data);
+                    } catch (e) {
+                        console.error('WebSocket parse error:', e);
+                    }
+                };
+
+                state.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    state.connected = false;
+                    updateConnectionStatus();
+                };
+
+                state.ws.onclose = () => {
+                    state.connected = false;
+                    updateConnectionStatus();
+                    setTimeout(initWebSocket, 3000);
+                };
+            } catch (e) {
+                console.warn('WebSocket unavailable, using demo mode');
+                setTimeout(loadDemoData, 1000);
+            }
+        }
+
+        // Handle incoming WebSocket messages
+        function handleWSMessage(data) {
+            if (data.type === 'execution_start') {
+                state.currentWorkflow = data.workflow_id;
+                document.getElementById('workflowId').textContent = `workflow_id: ${data.workflow_id}`;
+            } else if (data.type === 'execution_step') {
+                addExecutionStep(data);
+            } else if (data.type === 'execution_complete') {
+                completeExecution(data);
+            }
+        }
+
+        // Add execution step to state
+        function addExecutionStep(stepData) {
+            const step = {
+                timestamp: Date.now(),
+                node: stepData.node_name,
+                duration: stepData.duration_ms || 0,
+                status: stepData.status || 'success',
+                confidence: stepData.confidence || 0.5,
+                cached: stepData.cached || false
+            };
+
+            state.executions.push(step);
+            state.confidenceData.push(step.confidence);
+
+            // Update node statistics
+            if (!state.nodes[stepData.node_name]) {
+                state.nodes[stepData.node_name] = {
+                    name: stepData.node_name,
+                    executions: 0,
+                    totalTime: 0,
+                    successes: 0,
+                    cacheHits: 0,
+                    durations: []
+                };
+            }
+
+            const node = state.nodes[stepData.node_name];
+            node.executions++;
+            node.totalTime += step.duration;
+            node.durations.push(step.duration);
+            if (step.status === 'success') node.successes++;
+            if (step.cached) node.cacheHits++;
+
+            // Update all visualizations
+            updateMetrics();
+            updateTimeline();
+            updatePerformanceTable();
+            updateConfidenceChart();
+        }
+
+        // Complete execution
+        function completeExecution(data) {
+            updateMetrics();
+            updateBottleneckAnalysis();
+        }
+
+        // Update all performance metrics
+        function updateMetrics() {
+            if (state.executions.length === 0) return;
+
+            const totalTime = state.executions.reduce((sum, e) => sum + e.duration, 0);
+            const avgLatency = totalTime / state.executions.length;
+            const successCount = Object.values(state.nodes).reduce((sum, n) => sum + n.successes, 0);
+            const totalExecutions = Object.values(state.nodes).reduce((sum, n) => sum + n.executions, 0);
+            const cacheHits = Object.values(state.nodes).reduce((sum, n) => sum + n.cacheHits, 0);
+
+            document.getElementById('totalTime').textContent = Math.round(totalTime);
+            document.getElementById('avgLatency').textContent = Math.round(avgLatency);
+            document.getElementById('nodeCount').textContent = Object.keys(state.nodes).length;
+
+            const stdDev = Math.sqrt(
+                state.executions.reduce((sum, e) => sum + Math.pow(e.duration - avgLatency, 2), 0) / state.executions.length
+            );
+            document.getElementById('avgLatencyStd').textContent = `σ: ${Math.round(stdDev)}ms`;
+            document.getElementById('nodeStatus').textContent = `${Object.keys(state.nodes).length} nodes`;
+            document.getElementById('totalTimeAvg').textContent = `μ: ${Math.round(totalTime / Math.max(1, Object.keys(state.nodes).length))}ms`;
+
+            const successRate = totalExecutions > 0 ? Math.round((successCount / totalExecutions) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate;
+            document.getElementById('successDetails').textContent = `${successCount}/${totalExecutions}`;
+
+            const cacheRate = totalExecutions > 0 ? Math.round((cacheHits / totalExecutions) * 100) : 0;
+            document.getElementById('cacheHitRate').textContent = cacheRate;
+            document.getElementById('cacheDetails').textContent = `${cacheHits}/${totalExecutions}`;
+
+            document.getElementById('executionCount').textContent = state.executions.length;
+            document.getElementById('executionStatus').textContent = 'steps';
+
+            // Update cache gauge
+            const gaugeAngle = (cacheRate / 100) * 360;
+            document.getElementById('cacheGauge').style.setProperty('--gauge-angle', `${gaugeAngle}deg`);
+            document.getElementById('gaugeValue').textContent = `${cacheRate}%`;
+            document.getElementById('cacheStatus').textContent = `${cacheHits} hits of ${totalExecutions} requests`;
+        }
+
+        // Update execution timeline visualization
+        function updateTimeline() {
+            const wrapper = document.getElementById('timelineWrapper');
+            wrapper.innerHTML = '';
+
+            if (Object.keys(state.nodes).length === 0) {
+                wrapper.innerHTML = '<div class="loading">Waiting for workflow execution data...</div>';
+                return;
+            }
+
+            const totalTime = Object.values(state.nodes).reduce((sum, n) => sum + n.totalTime, 0);
+            if (totalTime === 0) return;
+
+            Object.values(state.nodes).forEach(node => {
+                const avgDuration = node.totalTime / Math.max(1, node.executions);
+                const bottleneckPct = (avgDuration / totalTime) * 100;
+                const isBottleneck = bottleneckPct > 40;
+                const isWarning = bottleneckPct > 30 && !isBottleneck;
+
+                const row = document.createElement('div');
+                row.className = 'timeline-row';
+
+                const label = document.createElement('div');
+                label.className = 'timeline-label';
+                label.textContent = node.name;
+                label.title = node.name;
+
+                const barsContainer = document.createElement('div');
+                barsContainer.className = 'timeline-bars';
+
+                const width = Math.max((avgDuration / totalTime) * 100, 2);
+                const bar = document.createElement('div');
+                bar.className = `timeline-bar ${isBottleneck ? 'bottleneck' : isWarning ? 'warning' : 'success'}`;
+                bar.style.width = `${width}%`;
+                bar.textContent = `${Math.round(avgDuration)}`;
+                bar.title = `${node.name}: ${Math.round(avgDuration)}ms (${bottleneckPct.toFixed(1)}%)`;
+                bar.addEventListener('mouseenter', (e) => showTooltip(e, bar.title));
+                bar.addEventListener('mouseleave', hideTooltip);
+
+                barsContainer.appendChild(bar);
+
+                const timeLabel = document.createElement('div');
+                timeLabel.className = 'timeline-time';
+                timeLabel.textContent = `${Math.round(avgDuration)}ms`;
+
+                row.appendChild(label);
+                row.appendChild(barsContainer);
+                row.appendChild(timeLabel);
+                wrapper.appendChild(row);
+            });
+        }
+
+        // Update node performance table
+        function updatePerformanceTable() {
+            const tbody = document.getElementById('performanceTableBody');
+            const nodes = Object.values(state.nodes);
+
+            if (nodes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 20px;">No data</td></tr>';
+                return;
+            }
+
+            const totalTime = nodes.reduce((sum, n) => sum + n.totalTime, 0);
+
+            tbody.innerHTML = nodes.map(node => {
+                const avgTime = node.totalTime / Math.max(1, node.executions);
+                const successRate = node.executions > 0 ? ((node.successes / node.executions) * 100) : 0;
+                const bottleneckPct = totalTime > 0 ? (avgTime / totalTime) * 100 : 0;
+
+                const successClass = successRate === 100 ? 'metric-good' : successRate >= 90 ? '' : successRate >= 70 ? 'metric-warning' : 'metric-critical';
+                const bottleneckClass = bottleneckPct > 30 ? 'bottleneck-pct' : '';
+
+                // Create simple sparkline
+                const maxD = Math.max(...node.durations, 1);
+                const points = node.durations.map((d, i) => {
+                    const x = (i / Math.max(1, node.durations.length - 1)) * 100;
+                    const y = 20 - (d / maxD) * 16;
+                    return `${x},${y}`;
+                }).join(' ');
+
+                const sparklineHtml = `<svg class="sparkline-container" viewBox="0 0 100 20">
+                    <polyline points="${points}" fill="none" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+                </svg>`;
+
+                return `<tr>
+                    <td><span class="node-name">${node.name}</span></td>
+                    <td style="text-align: right;">${node.executions}</td>
+                    <td style="text-align: right;">${Math.round(avgTime)}</td>
+                    <td style="text-align: right;"><span class="${successClass}">${Math.round(successRate)}</span></td>
+                    <td style="text-align: right;"><span class="${bottleneckClass}">${bottleneckPct.toFixed(1)}</span></td>
+                    <td style="color: #667eea;">${sparklineHtml}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Update confidence trajectory chart
+        function updateConfidenceChart() {
+            const svg = document.getElementById('confidenceChart');
+            const width = svg.clientWidth || 900;
+            const height = svg.clientHeight || 300;
+            const padding = { top: 20, right: 15, bottom: 30, left: 45 };
+
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            const data = state.confidenceData;
+
+            if (data.length === 0) return;
+
+            // Draw grid lines
+            const gridLines = document.getElementById('gridLines');
+            gridLines.innerHTML = '';
+
+            for (let i = 0; i <= 5; i++) {
+                const y = padding.top + (i / 5) * chartHeight;
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', padding.left);
+                line.setAttribute('x2', width - padding.right);
+                line.setAttribute('y1', y);
+                line.setAttribute('y2', y);
+                line.setAttribute('stroke', '#533483');
+                line.setAttribute('stroke-width', '0.5');
+                line.setAttribute('opacity', '0.4');
+                gridLines.appendChild(line);
+
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', padding.left - 10);
+                label.setAttribute('y', y + 3);
+                label.setAttribute('font-size', '10');
+                label.setAttribute('fill', '#aaa');
+                label.setAttribute('text-anchor', 'end');
+                label.textContent = `${(1 - i / 5).toFixed(1)}`;
+                gridLines.appendChild(label);
+            }
+
+            // Draw data visualization
+            const dataGroup = document.getElementById('dataGroup');
+            dataGroup.innerHTML = '';
+
+            const points = data.map((d, i) => {
+                const x = padding.left + (i / Math.max(1, data.length - 1)) * chartWidth;
+                const y = padding.top + (1 - d) * chartHeight;
+                return `${x},${y}`;
+            }).join(' ');
+
+            // Area under curve
+            const area = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            area.setAttribute('points', `${padding.left},${padding.top + chartHeight} ${points} ${width - padding.right},${padding.top + chartHeight}`);
+            area.setAttribute('fill', 'url(#gradient)');
+            dataGroup.appendChild(area);
+
+            // Main line
+            const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            polyline.setAttribute('points', points);
+            polyline.setAttribute('fill', 'none');
+            polyline.setAttribute('stroke', '#667eea');
+            polyline.setAttribute('stroke-width', '2');
+            polyline.setAttribute('stroke-linejoin', 'round');
+            dataGroup.appendChild(polyline);
+
+            // Rolling average
+            if (data.length >= 3) {
+                const rolling = [];
+                for (let i = 1; i < data.length - 1; i++) {
+                    rolling.push((data[i - 1] + data[i] + data[i + 1]) / 3);
+                }
+
+                const rollingPoints = rolling.map((d, i) => {
+                    const x = padding.left + ((i + 1) / Math.max(1, data.length - 1)) * chartWidth;
+                    const y = padding.top + (1 - d) * chartHeight;
+                    return `${x},${y}`;
+                }).join(' ');
+
+                const rollingLine = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                rollingLine.setAttribute('points', rollingPoints);
+                rollingLine.setAttribute('fill', 'none');
+                rollingLine.setAttribute('stroke', '#764ba2');
+                rollingLine.setAttribute('stroke-width', '1.5');
+                rollingLine.setAttribute('stroke-dasharray', '3,3');
+                dataGroup.appendChild(rollingLine);
+            }
+
+            // Detect and draw anomalies
+            detectAnomalies();
+            const anomaliesGroup = document.getElementById('anomalies');
+            anomaliesGroup.innerHTML = '';
+
+            state.anomalies.forEach(anom => {
+                const x = padding.left + (anom.index / Math.max(1, data.length - 1)) * chartWidth;
+                const y = padding.top + (1 - data[anom.index]) * chartHeight;
+
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', '4');
+                circle.setAttribute('fill', 'none');
+                circle.setAttribute('stroke', anom.type === 'sudden_drop' ? '#ff6b6b' : '#ffa500');
+                circle.setAttribute('stroke-width', '2');
+                circle.title = anom.description;
+                anomaliesGroup.appendChild(circle);
+            });
+
+            // X-axis labels
+            const step = Math.max(1, Math.floor(data.length / 5));
+            for (let i = 0; i < data.length; i += step) {
+                const x = padding.left + (i / Math.max(1, data.length - 1)) * chartWidth;
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', height - padding.bottom + 15);
+                label.setAttribute('font-size', '10');
+                label.setAttribute('fill', '#aaa');
+                label.setAttribute('text-anchor', 'middle');
+                label.textContent = i;
+                dataGroup.appendChild(label);
+            }
+        }
+
+        // Detect anomalies in confidence data
+        function detectAnomalies() {
+            state.anomalies = [];
+            const data = state.confidenceData;
+            if (data.length < 3) return;
+
+            // Sudden drop detection
+            for (let i = 1; i < data.length; i++) {
+                if (data[i - 1] - data[i] > 0.2) {
+                    state.anomalies.push({
+                        type: 'sudden_drop',
+                        index: i,
+                        description: `Sudden drop: ${data[i - 1].toFixed(2)} → ${data[i].toFixed(2)}`
+                    });
+                }
+            }
+
+            // Prolonged low confidence
+            for (let i = 0; i < data.length - 2; i++) {
+                if (data[i] < 0.3 && data[i + 1] < 0.3 && data[i + 2] < 0.3) {
+                    state.anomalies.push({
+                        type: 'prolonged_low',
+                        index: i + 1,
+                        description: `Prolonged low: ${data[i + 1].toFixed(2)}`
+                    });
+                    i += 2;
+                }
+            }
+        }
+
+        // Update bottleneck analysis
+        function updateBottleneckAnalysis() {
+            const list = document.getElementById('bottleneckList');
+            const nodes = Object.values(state.nodes);
+            const totalTime = nodes.reduce((sum, n) => sum + n.totalTime, 0);
+
+            if (totalTime === 0) {
+                list.innerHTML = '<div style="color: var(--text-secondary); padding: 20px; text-align: center;">No data</div>';
+                return;
+            }
+
+            const bottlenecks = nodes
+                .map(node => ({
+                    name: node.name,
+                    avgTime: node.totalTime / Math.max(1, node.executions),
+                    pct: (node.totalTime / totalTime) * 100
+                }))
+                .filter(b => b.pct > 20)
+                .sort((a, b) => b.pct - a.pct);
+
+            if (bottlenecks.length === 0) {
+                list.innerHTML = '<div style="color: var(--text-secondary); padding: 20px; text-align: center;">No bottlenecks</div>';
+                return;
+            }
+
+            list.innerHTML = bottlenecks.map(b => `
+                <div class="bottleneck-item ${b.pct > 40 ? 'critical' : 'warning'}">
+                    <div>
+                        <div class="bottleneck-name">${b.name}</div>
+                        <div class="bottleneck-time">${Math.round(b.avgTime)}ms</div>
+                    </div>
+                    <div class="bottleneck-pct-label">${b.pct.toFixed(1)}%</div>
+                </div>
+            `).join('');
+        }
+
+        // Sort table by column
+        function sortTable(colIndex) {
+            const tbody = document.getElementById('performanceTableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                const aVal = a.children[colIndex].textContent.trim();
+                const bVal = b.children[colIndex].textContent.trim();
+                const aNum = parseFloat(aVal);
+                const bNum = parseFloat(bVal);
+
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return aNum - bNum;
+                }
+                return aVal.localeCompare(bVal);
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Tooltip handlers
+        function showTooltip(event, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = text;
+            tooltip.classList.add('visible');
+            tooltip.style.left = (event.clientX + 10) + 'px';
+            tooltip.style.top = (event.clientY + 10) + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.remove('visible');
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus() {
+            const status = document.getElementById('connectionStatus');
+            status.className = state.connected ? 'connection-status connected' : 'connection-status';
+            status.title = state.connected ? 'Connected to WebSocket' : 'Disconnected';
+        }
+
+        // Load a specific workflow
+        function loadWorkflow() {
+            const id = prompt('Enter workflow ID:');
+            if (id) {
+                state.currentWorkflow = id;
+                document.getElementById('workflowId').textContent = `workflow_id: ${id}`;
+                clearData();
+            }
+        }
+
+        // Clear all data
+        function clearData() {
+            state.executions = [];
+            state.nodes = {};
+            state.confidenceData = [];
+            state.anomalies = [];
+
+            document.getElementById('timelineWrapper').innerHTML = '<div class="loading">Waiting for workflow execution data...</div>';
+            document.getElementById('performanceTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 20px;">No data</td></tr>';
+
+            updateMetrics();
+            updateConfidenceChart();
+        }
+
+        // Export analytics data as JSON
+        function exportData() {
+            const exportObj = {
+                workflow: state.currentWorkflow,
+                timestamp: new Date().toISOString(),
+                executions: state.executions,
+                nodes: state.nodes,
+                confidenceData: state.confidenceData,
+                anomalies: state.anomalies
+            };
+
+            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `workflow-analytics-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Load demo data for testing without WebSocket
+        function loadDemoData() {
+            const nodeTypes = [
+                { name: 'query_agent', baseTime: 85 },
+                { name: 'retrieval', baseTime: 120 },
+                { name: 'synthesis', baseTime: 45 },
+                { name: 'ranking', baseTime: 30 },
+                { name: 'response_gen', baseTime: 65 }
+            ];
+
+            nodeTypes.forEach((type, idx) => {
+                for (let i = 0; i < 6; i++) {
+                    const duration = type.baseTime + (Math.random() - 0.5) * 25;
+                    const confidence = 0.6 + Math.random() * 0.35 + (idx * 0.02);
+
+                    addExecutionStep({
+                        node_name: type.name,
+                        duration_ms: Math.max(15, duration),
+                        status: Math.random() > 0.08 ? 'success' : 'warning',
+                        confidence: Math.min(0.95, confidence),
+                        cached: Math.random() > 0.65
+                    });
+                }
+            });
+
+            completeExecution({});
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+
+            // Check for workflow_id in URL parameters
+            const params = new URLSearchParams(window.location.search);
+            const workflowId = params.get('workflow_id');
+            if (workflowId) {
+                state.currentWorkflow = workflowId;
+                document.getElementById('workflowId').textContent = `workflow_id: ${workflowId}`;
+            }
+        });
+
+        // Resize handler for responsive charts
+        window.addEventListener('resize', () => {
+            updateConfidenceChart();
+        });
+    </script>
+</body>
+</html>

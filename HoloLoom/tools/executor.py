@@ -27,8 +27,11 @@ from __future__ import annotations
 
 import logging
 from typing import Dict, Optional, TYPE_CHECKING
+import os
 
 from HoloLoom.protocols.types import Query, Context
+from HoloLoom.fabric.spacetime import Artifact, ArtifactType
+import re
 
 if TYPE_CHECKING:
     from HoloLoom.awareness.llm_integration import OllamaLLM
@@ -248,8 +251,10 @@ Answer:"""
                     "llm_model": response.model if hasattr(response, 'model') else "unknown",
                     "usage": response.usage if hasattr(response, 'usage') else {},
                     "context_tokens": context_tokens,
-                    "packing_stats": packing_stats
+                    "packing_stats": packing_stats,
+                    "artifacts": self._extract_artifacts(response.content)
                 }
+
             except Exception as e:
                 self.logger.error(f"LLM generation failed: {e}")
                 # Fall through to fallback
@@ -263,8 +268,10 @@ Answer:"""
             "sources": len(context.shards) if context and hasattr(context, 'shards') else 0,
             "context_preview": llm_context[:200] + "..." if len(llm_context) > 200 else llm_context,
             "context_tokens": context_tokens,
-            "packing_stats": packing_stats
+            "packing_stats": packing_stats,
+            "artifacts": self._extract_artifacts(f"[Fallback] Generated answer for: {query.text}\n\nContext: {llm_context[:300]}...") # unlikely to find artifacts here but consistent
         }
+
 
     async def _handle_search(self, query: Query, context: Context) -> Dict:
         """
@@ -388,8 +395,16 @@ Answer:"""
                 parameters=parameters,
                 query=query,
                 context=context,
+
                 use_cache=True
             )
+            
+            # Extract artifacts if result is text-based
+            if isinstance(result, dict) and 'result' in result and isinstance(result['result'], str):
+                artifacts = self._extract_artifacts(result['result'])
+                if artifacts:
+                    result['artifacts'] = artifacts
+            
             return result
 
         except ValueError as e:
@@ -413,3 +428,60 @@ Answer:"""
                 "error": f"Execution failed: {e}",
                 "confidence": 0.0
             }
+
+    def _extract_artifacts(self, text: str) -> list[dict]:
+        """
+        Extract artifacts from text response.
+        
+        Looks for code blocks with filename headers.
+        """
+        artifacts = []
+        if not text:
+            return artifacts
+            
+        # Pattern 1: Code block with filename comment inside
+        code_block_pattern = re.compile(r"```(?:\w+)?\n(?:#\s*filename:\s*([^\n]+)\n)(.*?)```", re.DOTALL)
+        
+        for match in code_block_pattern.finditer(text):
+            filename = match.group(1).strip()
+            content = match.group(2)
+            
+            # Simple heuristic to determine type
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in ['.png', '.jpg', '.jpeg', '.gif']:
+                 atype = ArtifactType.IMAGE
+            elif ext in ['.zip', '.tar', '.gz']:
+                 atype = ArtifactType.ARCHIVE
+            else:
+                 atype = ArtifactType.CODE
+
+            artifacts.append(Artifact(
+                name=os.path.basename(filename),
+                type=atype,
+                content=content,
+                destination_path=filename,
+                metadata={'extracted_from': 'code_block'}
+            ).to_dict())
+
+        # Pattern 2: Explicit XML-like tags (optional)
+        xml_pattern = re.compile(r"<artifact\s+name=\"([^\"]+)\"\s+type=\"([^\"]+)\">(.*?)</artifact>", re.DOTALL)
+        for match in xml_pattern.finditer(text):
+            filename = match.group(1).strip()
+            art_type = match.group(2).strip()
+            content = match.group(3).strip()
+            
+            # Map string type to enum if possible
+            try:
+                type_enum = ArtifactType(art_type)
+            except ValueError:
+                type_enum = ArtifactType.CODE # Default
+                
+            artifacts.append(Artifact(
+                name=os.path.basename(filename),
+                type=type_enum,
+                content=content,
+                destination_path=filename,
+                metadata={'extracted_from': 'xml_tag'}
+            ).to_dict())
+            
+        return artifacts

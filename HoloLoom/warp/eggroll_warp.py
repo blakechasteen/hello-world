@@ -29,6 +29,39 @@ class ContextPacker:
             
         return packed.strip()
 
+class SpectralScorer:
+    """
+    Analyzes the spectral properties of weight matrices to estimate 'Model IQ'.
+    Based on research suggesting that heavy-tailed eigenvalue distributions correlate with generalization.
+    """
+    @staticmethod
+    def compute_spectral_radius(weights: np.ndarray) -> float:
+        """
+        Compute the spectral radius (largest absolute eigenvalue).
+        Stable dynamics usually require radius ~ 1.0 (for RNNs) or specific patterns for Transformers.
+        """
+        if weights.ndim != 2 or weights.shape[0] != weights.shape[1]:
+            # For non-square matrices, use singular values (spectral norm)
+            try:
+                s = np.linalg.svd(weights, compute_uv=False)
+                return float(s[0]) if len(s) > 0 else 0.0
+            except:
+                return 0.0
+        
+        try:
+            # Eigenvalues for square matrices
+            eigvals = np.linalg.eigvals(weights)
+            return float(np.max(np.abs(eigvals)))
+        except:
+            return 0.0
+
+    @staticmethod
+    def analyze_sparsity(weights: np.ndarray, threshold: float = 1e-4) -> float:
+        """Returns valid sparsity ratio (0.0 to 1.0)."""
+        total = weights.size
+        zero_count = np.sum(np.abs(weights) < threshold)
+        return float(zero_count / total)
+
 class Warp:
     """
     Warp (Evaluator & Vector Space Manager)
@@ -48,7 +81,7 @@ class Warp:
             self.has_safety = True
         except ImportError:
             self.has_safety = False
-            print("Warning: SafetyGuardrails not available.")
+            # print("Warning: SafetyGuardrails not available.")
 
         try:
             from HoloLoom.resonance.shed import ResonanceShed
@@ -56,7 +89,7 @@ class Warp:
             self.has_resonance = True
         except ImportError:
             self.has_resonance = False
-            print("Warning: ResonanceShed not available.")
+            # print("Warning: ResonanceShed not available.")
             
         # Initialize Vector Embedding Model
         try:
@@ -65,7 +98,7 @@ class Warp:
             self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
             self.has_embedder = True
         except ImportError:
-            print("Warning: sentence-transformers not installed. Using random embeddings.")
+            # print("Warning: sentence-transformers not installed. Using random embeddings.")
             self.has_embedder = False
             
         self.packer = ContextPacker()
@@ -79,7 +112,7 @@ class Warp:
                 # Returns a numpy array (384-dim for MiniLM)
                 return self.embedder.encode(text)
             except Exception as e:
-                print(f"Embedding failed: {e}")
+                # print(f"Embedding failed: {e}")
                 return np.random.randn(384)
         else:
             return np.random.randn(384)
@@ -94,32 +127,41 @@ class Warp:
             
         return np.dot(vec_a, vec_b) / (norm_a * norm_b)
 
-    def score(self, target: Any, output_text: str, pattern_name: str = "balanced") -> float:
+    def score(self, target: Any, output_text: str, pattern_name: str = "balanced", metrics: Optional[Dict[str, float]] = None) -> float:
         """
         Compute a composite score with dynamic weighting based on the active Pattern Card.
+        Args:
+            target: The ideal output or reference.
+            output_text: The actual generated text.
+            pattern_name: The strategy (balanced, quality_first, etc).
+            metrics: Optional architectural metrics (sparsity, energy, etc) passed from the worker.
         """
         # Define Weights based on Pattern
-        # Default: Balanced
         weights = {
             "semantic": 1.0, "safety": 1.0, "coherence": 1.0, 
-            "hyperbolic": 1.0, "novelty": 1.0, "info": 1.0, "topology": 1.0
+            "hyperbolic": 1.0, "novelty": 1.0, "info": 1.0, "topology": 1.0,
+            
+            # Architecture Metrics
+            "sparsity_bonus": 0.5,      # Reward for SNN/Sparse models
+            "efficiency": 0.5,          # Reward for low energy
+            "spectral_stability": 1.0   # Penalty for exploding gradients proxy
         }
         
         if pattern_name == "quality_first":
-            weights = {
-                "semantic": 2.0, "safety": 2.0, "coherence": 1.5, 
-                "hyperbolic": 1.0, "novelty": 0.5, "info": 1.0, "topology": 1.0
-            }
+            weights.update({
+                "semantic": 2.0, "safety": 2.0, "coherence": 1.5
+            })
         elif pattern_name == "research_pipeline":
-            weights = {
-                "semantic": 1.0, "safety": 1.0, "coherence": 1.0, 
-                "hyperbolic": 2.0, "novelty": 0.5, "info": 2.0, "topology": 1.5
-            }
-        elif pattern_name == "quick_answer":
-            weights = {
-                "semantic": 1.5, "safety": 1.0, "coherence": 1.0, 
-                "hyperbolic": 0.5, "novelty": 0.2, "info": 0.5, "topology": 0.5
-            }
+            # Value novelty and interesting topology over pure correctness
+            weights.update({
+                "hyperbolic": 2.0, "novelty": 0.5, "info": 2.0, "topology": 1.5,
+                "spectral_stability": 2.0 # Ensure we are studying stable models
+            })
+        elif pattern_name == "efficiency_run":
+            # For SNN/MoE testing
+            weights.update({
+                "semantic": 1.0, "efficiency": 3.0, "sparsity_bonus": 2.0
+            })
             
         scores = {}
         
@@ -166,11 +208,10 @@ class Warp:
                 scores["topology"] = 0.5
         else:
             # Fallbacks
-            scores["semantic"] = 0.5
-            scores["hyperbolic"] = 0.5
-            scores["info"] = 0.5
-            scores["novelty"] = 0.5
-            scores["topology"] = 0.5
+            scores.update({
+                "semantic": 0.5, "hyperbolic": 0.5, 
+                "info": 0.5, "novelty": 0.5, "topology": 0.5
+            })
         
         # 2. Safety
         if self.has_safety:
@@ -198,12 +239,42 @@ class Warp:
         else:
             scores["coherence"] = 0.5
 
+        # 4. Architectural Metrics Integration
+        if metrics:
+            # SNN / MoE Bonuses
+            if "sparsity" in metrics:
+                # Ideally we want high sparsity (efficiency) BUT not too high (brain dead)
+                # Let's say optimal is 0.8? Or just reward "more is better" for SNNs?
+                # Simple linear bonus
+                scores["sparsity_bonus"] = metrics["sparsity"]
+            else:
+                scores["sparsity_bonus"] = 0.5
+                
+            if "energy" in metrics:
+                # Lower energy is better. Assuming metric is normalized 0..1 where 1 is MAX energy
+                scores["efficiency"] = 1.0 - metrics["energy"]
+            else:
+                scores["efficiency"] = 0.5
+                
+            if "spectral_radius" in metrics:
+                # Stability Check: Radius near 1.0 is often good. >1.5 is unstable. <0.5 is vanishing.
+                # Gaussian reward around 1.0
+                rho = metrics["spectral_radius"]
+                scores["spectral_stability"] = np.exp(-(rho - 1.0)**2 / 0.1)
+            else:
+                scores["spectral_stability"] = 0.5
+        else:
+            # Defaults if no metrics provided
+            scores["sparsity_bonus"] = 0.5
+            scores["efficiency"] = 0.5
+            scores["spectral_stability"] = 0.5
+
         # Weighted Average
         total_score = 0.0
         total_weight = 0.0
         
         for key, val in scores.items():
-            w = weights.get(key, 1.0)
+            w = weights.get(key, 1.0) # Default to 1.0 if not specified in pattern
             total_score += val * w
             total_weight += w
             

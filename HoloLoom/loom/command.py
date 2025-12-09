@@ -292,8 +292,10 @@ class LoomCommand:
 
         # Run safety guardrails before selection to block adversarial input
         if self.guardrails:
+            import uuid
             action_request = ActionRequest(
-                action="select_pattern",
+                action_id=f"select_pattern_{uuid.uuid4().hex[:8]}",
+                description="select_pattern",
                 category=ActionCategory.ANALYSIS,
                 context={
                     "user_preference": user_preference,

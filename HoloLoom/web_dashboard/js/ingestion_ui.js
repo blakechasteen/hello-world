@@ -156,16 +156,48 @@ class IngestionUI {
         const file = files[0];
 
         try {
-            // TODO: Implement file upload API endpoint
+            // Show loading state
+            const input = event.target;
+            const originalText = input.parentElement?.querySelector('label')?.textContent || 'Upload File';
+
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('file_type', file.type);
+            formData.append('file_size', file.size);
+
             console.log('File upload:', file.name, file.size, file.type);
 
-            this.showWarning('File upload not yet implemented (coming in Phase 3)');
+            // Show upload progress message
+            this.showSuccess(`Uploading ${file.name}...`);
+
+            // Call backend endpoint
+            const response = await fetch(`${this.apiBase}/api/ingest/file`, {
+                method: 'POST',
+                body: formData
+                // Note: Don't set Content-Type header - browser will set it with correct boundary
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || `Upload failed with status ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('File ingestion started:', result);
+
+            // Show success message with job ID
+            this.showSuccess(`File ingestion started (Job ID: ${result.job_id})`);
+
+            // Refresh queue to show new job
+            await this.refreshQueue();
 
             // Clear input
             event.target.value = '';
         } catch (error) {
             console.error('File upload failed:', error);
-            this.showError(error.message);
+            this.showError(`File upload failed: ${error.message}`);
+            event.target.value = '';
         }
     }
 
@@ -182,17 +214,72 @@ class IngestionUI {
             return;
         }
 
+        // Validate URL format
         try {
-            // TODO: Implement web ingestion API endpoint
+            new URL(url); // Will throw if invalid URL
+        } catch {
+            this.showError('Invalid URL format. Please enter a valid HTTP(S) URL.');
+            return;
+        }
+
+        try {
+            // Show loading state
+            const btn = document.getElementById('web-ingest-btn');
+            const originalText = btn?.textContent || 'Ingest URL';
+            if (btn) {
+                btn.textContent = 'Processing...';
+                btn.disabled = true;
+            }
+
             console.log('Web ingestion:', url);
 
-            this.showWarning('Web URL ingestion not yet implemented (coming in Phase 3)');
+            // Show loading message
+            this.showSuccess(`Fetching and processing ${new URL(url).hostname}...`);
+
+            // Call backend endpoint for web ingestion
+            const response = await fetch(`${this.apiBase}/api/ingest/url`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    url: url,
+                    extract_links: false,
+                    extract_images: true,
+                    chunk_size: 500
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || `Web ingestion failed with status ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Web ingestion started:', result);
+
+            // Show success message with job ID
+            this.showSuccess(`Web ingestion started (Job ID: ${result.job_id})`);
+
+            // Refresh queue to show new job
+            await this.refreshQueue();
 
             // Clear input
             input.value = '';
+
+            // Restore button state
+            if (btn) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
         } catch (error) {
             console.error('Web ingestion failed:', error);
-            this.showError(error.message);
+            this.showError(`Web ingestion failed: ${error.message}`);
+
+            // Restore button state
+            const btn = document.getElementById('web-ingest-btn');
+            if (btn) {
+                btn.textContent = 'Ingest URL';
+                btn.disabled = false;
+            }
         }
     }
 

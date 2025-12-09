@@ -597,11 +597,212 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeDragAndDrop();
     initializeCanvas();
     setupEventListeners();
+    initializeMobileFeatures();
 });
+
+/**
+ * Initialize mobile-specific features
+ * - Bottom sheet for agent palette
+ * - Floating action button for adding nodes
+ * - Properties panel toggle on tablet
+ * - Touch-friendly UI adjustments
+ */
+function initializeMobileFeatures() {
+    // Detect if device is mobile/tablet
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+    if (!isMobile) return; // Skip on desktop
+
+    const agentPalette = document.querySelector('.agent-palette');
+    const propertiesPanel = document.querySelector('.properties-panel');
+
+    // Phone: Bottom sheet animation
+    if (window.matchMedia('(max-width: 480px)').matches) {
+        // Add drag handle for bottom sheet
+        const paletteHeader = agentPalette.querySelector('.palette-header');
+        if (paletteHeader) {
+            paletteHeader.style.cursor = 'grab';
+            paletteHeader.style.userSelect = 'none';
+
+            // Allow drag to close on mobile
+            let touchStart = 0;
+            paletteHeader.addEventListener('touchstart', (e) => {
+                touchStart = e.touches[0].clientY;
+            }, { passive: true });
+
+            paletteHeader.addEventListener('touchend', (e) => {
+                const touchEnd = e.changedTouches[0].clientY;
+                const diff = touchEnd - touchStart;
+
+                // Swipe down to close palette
+                if (diff > 50) {
+                    agentPalette.classList.remove('mobile-open');
+                }
+            }, { passive: true });
+        }
+
+        // Create floating action button for adding nodes
+        const fab = document.createElement('button');
+        fab.className = 'fab-add-node mobile-only';
+        fab.innerHTML = '➕';
+        fab.title = 'Add Node (tap to open templates)';
+        fab.onclick = () => showTemplatesModal();
+        document.body.appendChild(fab);
+
+        // Make palette toggleable with tap
+        const canvas = document.getElementById('canvas');
+        canvas.addEventListener('tap-hold', (e) => {
+            // Long press to open palette (optional feature for quick access)
+        }, { passive: true });
+    }
+
+    // Tablet: Side panel toggle
+    if (window.matchMedia('(min-width: 481px) and (max-width: 768px)').matches) {
+        // Create toggle button for properties panel
+        const toggle = document.createElement('button');
+        toggle.className = 'properties-toggle';
+        toggle.innerHTML = '⚙️';
+        toggle.title = 'Toggle Properties';
+        toggle.onclick = () => {
+            propertiesPanel.classList.toggle('mobile-open');
+            toggle.classList.toggle('hidden');
+        };
+        document.body.appendChild(toggle);
+
+        // Close properties panel when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.properties-panel') &&
+                !e.target.closest('.properties-toggle')) {
+                propertiesPanel.classList.remove('mobile-open');
+                toggle.classList.remove('hidden');
+            }
+        });
+    }
+
+    // Handle viewport resize to update mobile state
+    window.addEventListener('resize', () => {
+        const newIsMobile = window.matchMedia('(max-width: 768px)').matches;
+        if (isMobile !== newIsMobile) {
+            // Force page reload on orientation change (optional)
+            // location.reload();
+        }
+    });
+}
+
+/**
+ * Support touch-based template dragging for mobile
+ * Implements tap-and-hold to show context menu instead of drag
+ */
+function setupMobileDragDrop() {
+    const templates = document.querySelectorAll('.agent-template');
+
+    templates.forEach(template => {
+        let pressTimer = null;
+        let startX, startY;
+
+        // Touch start - begin timer for long press
+        template.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+
+            // 500ms long press
+            pressTimer = setTimeout(() => {
+                const agentType = template.dataset.agent;
+                showAgentPreview(agentType);
+            }, 500);
+        }, { passive: true });
+
+        // Touch move - cancel long press if user moves
+        template.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const dist = Math.sqrt(
+                Math.pow(touch.clientX - startX, 2) +
+                Math.pow(touch.clientY - startY, 2)
+            );
+
+            // Cancel if moved more than 10px
+            if (dist > 10) {
+                clearTimeout(pressTimer);
+            }
+        }, { passive: true });
+
+        // Touch end - cancel if still pressing
+        template.addEventListener('touchend', () => {
+            clearTimeout(pressTimer);
+        }, { passive: true });
+
+        // Touch cancel - cleanup
+        template.addEventListener('touchcancel', () => {
+            clearTimeout(pressTimer);
+        }, { passive: true });
+    });
+}
+
+/**
+ * Show agent preview/confirmation for mobile users
+ * Before adding to canvas
+ */
+function showAgentPreview(agentType) {
+    const definition = agentDefinitions[agentType];
+    if (!definition) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">Add ${definition.name}</div>
+            <div class="modal-body">
+                <div style="font-size: 48px; margin-bottom: 15px; text-align: center;">
+                    ${getAgentIcon(definition.type)}
+                </div>
+                <p style="color: #666; text-align: center; margin-bottom: 15px;">
+                    Add this agent to your workflow
+                </p>
+                <div style="background: #f5f5f5; padding: 10px; border-radius: 6px; font-size: 12px; color: #666;">
+                    <strong>Inputs:</strong> ${definition.inputs.join(', ')}<br>
+                    <strong>Outputs:</strong> ${definition.outputs.join(', ')}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                <button class="modal-btn primary" onclick="
+                    const canvas = document.getElementById('canvas');
+                    const rect = canvas.getBoundingClientRect();
+                    createNode('${agentType}',
+                        rect.width / 2,
+                        rect.height / 2);
+                    this.closest('.modal').remove();
+                    document.querySelector('.agent-palette').classList.remove('mobile-open');
+                ">Add to Canvas</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+/**
+ * Get emoji icon for agent type
+ */
+function getAgentIcon(type) {
+    const icons = {
+        'query': '❓',
+        'process': '⚙️',
+        'memory': '💾',
+        'decision': '🔮',
+        'output': '📤',
+        'control': '🔀',
+        'llm': '🧠',
+        'tool': '🔧'
+    };
+    return icons[type] || '📌';
+}
 
 function initializeDragAndDrop() {
     const templates = document.querySelectorAll('.agent-template');
 
+    // Desktop: Drag-and-drop initialization
     templates.forEach(template => {
         template.addEventListener('dragstart', (e) => {
             const agentType = template.dataset.agent;
@@ -609,6 +810,11 @@ function initializeDragAndDrop() {
             e.dataTransfer.effectAllowed = 'copy';
         });
     });
+
+    // Mobile: Long-press initialization
+    if (window.matchMedia('(max-width: 768px)').matches) {
+        setupMobileDragDrop();
+    }
 }
 
 function initializeCanvas() {
@@ -782,7 +988,9 @@ function createConfigInput(node, key, configDef) {
 function makeNodeDraggable(element, node) {
     let isDragging = false;
     let startX, startY, initialX, initialY;
+    let isTouch = false;
 
+    // Mouse drag handlers
     element.addEventListener('mousedown', (e) => {
         if (e.target.closest('.node-delete') || e.target.closest('.node-port') ||
             e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
@@ -790,6 +998,7 @@ function makeNodeDraggable(element, node) {
         }
 
         isDragging = true;
+        isTouch = false;
         startX = e.clientX;
         startY = e.clientY;
         initialX = node.x;
@@ -800,7 +1009,7 @@ function makeNodeDraggable(element, node) {
     });
 
     document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
+        if (!isDragging || isTouch) return;
 
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
@@ -815,8 +1024,70 @@ function makeNodeDraggable(element, node) {
     });
 
     document.addEventListener('mouseup', () => {
-        if (isDragging) {
+        if (isDragging && !isTouch) {
             isDragging = false;
+            element.classList.remove('dragging');
+        }
+    });
+
+    // Touch drag handlers for mobile devices
+    element.addEventListener('touchstart', (e) => {
+        // Ignore if on interactive elements
+        if (e.target.closest('.node-delete') || e.target.closest('.node-port') ||
+            e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+            return;
+        }
+
+        // Only handle single touch
+        if (e.touches.length !== 1) return;
+
+        isDragging = true;
+        isTouch = true;
+        const touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        initialX = node.x;
+        initialY = node.y;
+        element.classList.add('dragging');
+
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isDragging || !isTouch) return;
+
+        if (e.touches.length !== 1) {
+            isDragging = false;
+            return;
+        }
+
+        const touch = e.touches[0];
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+
+        node.x = initialX + dx;
+        node.y = initialY + dy;
+
+        element.style.left = node.x + 'px';
+        element.style.top = node.y + 'px';
+
+        updateConnections();
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchend', () => {
+        if (isDragging && isTouch) {
+            isDragging = false;
+            isTouch = false;
+            element.classList.remove('dragging');
+        }
+    });
+
+    // Handle touch cancel (e.g., swipe interruption)
+    document.addEventListener('touchcancel', () => {
+        if (isDragging && isTouch) {
+            isDragging = false;
+            isTouch = false;
             element.classList.remove('dragging');
         }
     });

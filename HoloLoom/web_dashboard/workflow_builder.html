@@ -736,6 +736,614 @@
         .modal-btn.secondary:hover {
             background: #e8e8e8;
         }
+
+        /* ===== MOBILE-FIRST RESPONSIVE CSS ===== */
+        /* Base: Optimized for all devices */
+
+        /* Touch-friendly optimizations */
+        @supports (touch-action: manipulation) {
+            * {
+                touch-action: manipulation;
+            }
+        }
+
+        /* Remove tap highlight on touch devices */
+        a, button, input, select, textarea, [role="button"] {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Prevent double-tap zoom on buttons */
+        button, input, select, textarea {
+            font-size: 16px;
+        }
+
+        /* Enlarge touch targets for easier tapping */
+        .agent-template,
+        .toolbar-btn,
+        .node-port,
+        .modal-btn,
+        button {
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Make connection points larger on touch */
+        .node-port {
+            width: 16px;
+            height: 16px;
+        }
+
+        .node-port:hover {
+            width: 20px;
+            height: 20px;
+            margin: -2px;
+        }
+
+        /* ===== PHONE: max-width 480px ===== */
+        @media (max-width: 480px) {
+            body {
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .container {
+                flex-direction: column;
+                height: 100vh;
+            }
+
+            /* Hide left sidebar on phone, show bottom sheet */
+            .agent-palette {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 0;
+                max-height: 60vh;
+                border-right: none;
+                border-top: 1px solid rgba(0, 0, 0, 0.1);
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+                z-index: 100;
+                padding: 0;
+                overflow: hidden;
+                transition: height 0.3s ease;
+            }
+
+            .agent-palette.mobile-open {
+                height: 60vh;
+                padding: 15px;
+                overflow-y: auto;
+            }
+
+            .agent-palette.mobile-open .palette-header {
+                display: block;
+            }
+
+            .palette-header {
+                display: none;
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 15px;
+                color: #333;
+                border-bottom: 2px solid #667eea;
+                padding-bottom: 10px;
+            }
+
+            .agent-category {
+                margin-bottom: 20px;
+            }
+
+            /* Larger agent templates for touch */
+            .agent-template {
+                padding: 14px;
+                margin-bottom: 12px;
+                min-height: 50px;
+            }
+
+            .agent-icon {
+                width: 28px;
+                height: 28px;
+                margin-right: 10px;
+            }
+
+            .agent-name {
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .agent-description {
+                font-size: 11px;
+            }
+
+            /* Hide version indicator on phone */
+            .version-indicator {
+                display: none;
+            }
+
+            /* Simplify toolbar on phone */
+            .canvas-toolbar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .toolbar-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            /* Hide text labels on toolbar, show only icons */
+            .toolbar-btn span {
+                display: none;
+            }
+
+            /* Hide zoom controls on phone */
+            .toolbar-btn[onclick*="zoom"],
+            .toolbar-btn[onclick*="resetZoom"],
+            #zoomLevel {
+                display: none;
+            }
+
+            /* Expand canvas to full width */
+            .canvas-area {
+                flex: 1;
+                order: 1;
+                margin-bottom: 60vh;
+                position: relative;
+            }
+
+            .canvas-viewport {
+                top: 60px;
+            }
+
+            /* Hide right sidebar on phone */
+            .properties-panel {
+                display: none;
+            }
+
+            /* Floating Action Button (FAB) for adding nodes */
+            .fab-add-node {
+                position: fixed;
+                bottom: 70px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: #667eea;
+                color: white;
+                border: none;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                cursor: pointer;
+                font-size: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 50;
+                transition: all 0.2s;
+            }
+
+            .fab-add-node:active {
+                transform: scale(0.95);
+            }
+
+            /* Mini-map hidden on phone */
+            .minimap {
+                display: none;
+            }
+
+            /* Make workflow nodes larger on phone */
+            .workflow-node {
+                min-width: 180px;
+                padding: 14px;
+            }
+
+            .node-header {
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+            }
+
+            .node-title {
+                font-size: 13px;
+            }
+
+            .node-delete {
+                opacity: 1;
+                width: 24px;
+                height: 24px;
+            }
+
+            /* Larger modals on phone */
+            .modal-content {
+                width: 95%;
+                max-height: 85vh;
+                padding: 20px;
+            }
+
+            .modal-header {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+
+            .modal-input,
+            .modal-textarea {
+                padding: 12px;
+                font-size: 16px;
+                border-radius: 8px;
+            }
+
+            .modal-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+
+            /* Stack modal buttons vertically on phone */
+            .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-btn {
+                width: 100%;
+            }
+
+            /* Toast position on phone */
+            .toast {
+                bottom: 80px;
+                left: 20px;
+                right: 20px;
+                transform: none;
+                width: auto;
+            }
+
+            /* Keyboard help modal - 2 columns on phone */
+            @media (max-width: 480px) {
+                .hotkeysModal .modal-body > div:first-child {
+                    grid-template-columns: 1fr;
+                    gap: 15px;
+                }
+            }
+        }
+
+        /* ===== TABLET: 481px to 768px ===== */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            /* Stack sidebar below canvas */
+            .agent-palette {
+                order: 2;
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+                border-right: none;
+                border-top: 1px solid rgba(0, 0, 0, 0.1);
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+                padding: 15px;
+                overflow-y: auto;
+            }
+
+            .agent-category {
+                display: inline-block;
+                width: calc(50% - 10px);
+                margin-right: 20px;
+                margin-bottom: 15px;
+                vertical-align: top;
+            }
+
+            .agent-category:nth-child(2n) {
+                margin-right: 0;
+            }
+
+            /* Full-width agent templates */
+            .agent-template {
+                padding: 12px;
+                margin-bottom: 10px;
+            }
+
+            .palette-header {
+                display: block;
+                width: 100%;
+                margin-bottom: 15px;
+                font-size: 16px;
+            }
+
+            /* Simplify toolbar on tablet */
+            .canvas-toolbar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .toolbar-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            /* Hide some toolbar buttons on tablet */
+            .toolbar-btn[onclick*="zoom"],
+            #zoomLevel {
+                display: none;
+            }
+
+            /* Move canvas above sidebar */
+            .canvas-area {
+                order: 1;
+                flex: 1;
+            }
+
+            /* Hide right sidebar on tablet, show as toggle */
+            .properties-panel {
+                position: fixed;
+                right: -320px;
+                top: 0;
+                height: 100%;
+                z-index: 90;
+                transition: right 0.3s ease;
+                border-left: 1px solid rgba(0, 0, 0, 0.1);
+            }
+
+            .properties-panel.mobile-open {
+                right: 0;
+            }
+
+            /* Tab for toggling properties panel */
+            .properties-toggle {
+                position: fixed;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 40px;
+                height: 60px;
+                background: #667eea;
+                color: white;
+                border: none;
+                cursor: pointer;
+                z-index: 85;
+                font-size: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 8px 0 0 8px;
+            }
+
+            .properties-toggle.hidden {
+                display: none;
+            }
+
+            /* Hide minimap on tablet */
+            .minimap {
+                display: none;
+            }
+
+            /* Larger touch targets */
+            .workflow-node {
+                min-width: 180px;
+            }
+
+            .node-delete {
+                opacity: 1;
+            }
+
+            /* Modal adjustments */
+            .modal-content {
+                width: 90%;
+                max-height: 80vh;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-btn {
+                width: 100%;
+                padding: 12px;
+                min-height: 44px;
+            }
+
+            /* Toast position on tablet */
+            .toast {
+                bottom: 40vh;
+            }
+        }
+
+        /* ===== DESKTOP: 769px and above ===== */
+        @media (min-width: 769px) {
+            /* Desktop layout unchanged */
+            .agent-palette {
+                display: flex !important;
+                flex-direction: column;
+                width: 280px;
+            }
+
+            .canvas-area {
+                flex: 1;
+            }
+
+            .properties-panel {
+                position: static !important;
+                width: 320px;
+                right: auto !important;
+            }
+
+            /* Show all toolbar buttons on desktop */
+            .toolbar-btn {
+                display: flex !important;
+            }
+
+            #zoomLevel {
+                display: inline !important;
+            }
+
+            /* Show minimap on desktop */
+            .minimap {
+                display: block;
+            }
+
+            /* Delete button only on hover */
+            .node-delete {
+                opacity: 0;
+            }
+
+            .workflow-node:hover .node-delete {
+                opacity: 1;
+            }
+
+            /* Modal normal width on desktop */
+            .modal-content {
+                width: auto;
+                max-width: 600px;
+            }
+
+            .modal-footer {
+                flex-direction: row;
+            }
+
+            .modal-btn {
+                width: auto;
+            }
+
+            .properties-toggle {
+                display: none;
+            }
+        }
+
+        /* ===== LANDSCAPE MODE ===== */
+        @media (max-height: 600px) {
+            .agent-palette {
+                max-height: 30vh;
+            }
+
+            .canvas-area {
+                margin-bottom: 30vh;
+            }
+
+            .workflow-node {
+                min-width: 140px;
+                padding: 10px;
+            }
+
+            .node-title {
+                font-size: 12px;
+            }
+
+            .canvas-header {
+                padding: 8px 15px;
+            }
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .agent-palette,
+            .canvas-header,
+            .properties-panel,
+            .minimap,
+            .toast {
+                display: none;
+            }
+
+            .canvas-area {
+                position: static;
+            }
+
+            .workflow-node {
+                page-break-inside: avoid;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        /* ===== ACCESSIBILITY: Reduced Motion ===== */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ===== DARK MODE SUPPORT ===== */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            }
+
+            .agent-palette,
+            .canvas-header,
+            .properties-panel,
+            .modal-content {
+                background: rgba(30, 30, 40, 0.95);
+                color: #e0e0e0;
+            }
+
+            .agent-template,
+            .workflow-node,
+            .toolbar-btn,
+            .property-value,
+            .modal-input,
+            .modal-textarea,
+            .property-input,
+            .property-select {
+                background: #2a2a3e;
+                border-color: #444;
+                color: #e0e0e0;
+            }
+
+            .agent-template:hover,
+            .workflow-node:hover {
+                border-color: #667eea;
+            }
+
+            .palette-header,
+            .properties-header,
+            .modal-header,
+            .workflow-title,
+            .node-title {
+                color: #ffffff;
+            }
+
+            .category-title,
+            .property-label,
+            .agent-description,
+            .node-config {
+                color: #b0b0b0;
+            }
+        }
+
+        /* ===== HIGH DPI / RETINA SCREENS ===== */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .workflow-node,
+            .agent-template {
+                border-width: 1px;
+            }
+        }
+
+        /* ===== HELPER CLASSES ===== */
+        .mobile-only {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-only {
+                display: block;
+            }
+
+            .desktop-only {
+                display: none;
+            }
+        }
+
+        .touch-friendly {
+            padding: 12px;
+            min-height: 48px;
+            min-width: 48px;
+        }
     </style>
 </head>
 <body>
@@ -1001,30 +1609,26 @@
     <div class="toast" id="toast"></div>
 
     <!-- Save Version Modal -->
-    <!-- Workflow Templates Modal -->
+    <!-- Workflow Templates Modal with Gallery -->
     <div class="modal" id="templatesModal">
-        <div class="modal-content" style="max-width: 900px;">
-            <div class="modal-header">📚 Workflow Templates</div>
-            <div class="modal-body">
-                <div style="display: flex; gap: 20px; margin-bottom: 15px;">
-                    <input type="text" class="modal-input" id="templateSearch" placeholder="Search templates..." style="flex: 1;" oninput="filterTemplates()" />
-                    <select class="modal-input" id="templateCategory" onchange="filterTemplates()" style="width: 200px;">
-                        <option value="all">All Categories</option>
-                        <option value="crm">CRM</option>
-                        <option value="llm">LLM</option>
-                        <option value="research">Research</option>
-                        <option value="automation">Automation</option>
-                        <option value="custom">My Templates</option>
-                    </select>
-                </div>
-                <div id="templatesList" style="max-height: 400px; overflow-y: auto;">
-                    <!-- Templates will be populated here -->
+        <div class="modal-content" style="max-width: 1200px; height: 90vh; padding: 0; display: flex; flex-direction: column;">
+            <!-- Modal Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #e0e0e0; flex-shrink: 0;">
+                <div style="font-size: 18px; font-weight: 600; color: #333;">📚 Workflow Templates</div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="modal-btn" onclick="saveAsTemplate()" style="font-size: 12px; padding: 8px 16px;">💾 Save Current</button>
+                    <button onclick="closeModal('templatesModal')" style="background: none; border: none; color: #333; font-size: 28px; cursor: pointer; width: 40px; height: 40px; padding: 0;">&times;</button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" onclick="closeModal('templatesModal')">Close</button>
-                <button class="modal-btn" onclick="saveAsTemplate()">💾 Save Current as Template</button>
-            </div>
+
+            <!-- Gallery iframe (will be loaded from template_gallery.html) -->
+            <iframe
+                id="templateGalleryFrame"
+                src="template_gallery.html"
+                style="flex: 1; border: none; width: 100%;"
+                sandbox="allow-same-origin allow-scripts allow-popups"
+                title="Workflow Templates Gallery"
+            ></iframe>
         </div>
     </div>
 
@@ -1161,5 +1765,343 @@
     </div>
 
     <script src="workflow_builder.js"></script>
+
+    <!-- Template Gallery Integration -->
+    <script>
+        // ============================================
+        // Template Gallery Integration (Complete)
+        // ============================================
+
+        /**
+         * Show templates modal with embedded gallery iframe
+         * Uses postMessage for secure cross-origin communication
+         */
+        function showTemplatesModal() {
+            const modal = document.getElementById('templatesModal');
+            if (!modal) {
+                console.error('Templates modal not found');
+                return;
+            }
+
+            modal.classList.add('show');
+
+            // Reload iframe to ensure fresh template list
+            const frame = document.getElementById('templateGalleryFrame');
+            if (frame) {
+                // Reset iframe to clear any cached state
+                const src = frame.src;
+                frame.src = '';
+                setTimeout(() => {
+                    frame.src = src;
+                }, 100);
+            }
+        }
+
+        /**
+         * Close a modal by ID
+         */
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+
+        /**
+         * Listen for template selection from iframe (postMessage)
+         * Security: validates origin before processing message
+         */
+        window.addEventListener('message', function(event) {
+            // Security: only accept messages from same origin
+            if (event.origin !== window.location.origin) {
+                console.warn('Rejected message from untrusted origin:', event.origin);
+                return;
+            }
+
+            // Handle template selected event
+            if (event.data && event.data.type === 'templateSelected') {
+                const { filename, workflow } = event.data;
+
+                if (workflow) {
+                    // Load provided workflow object directly
+                    loadWorkflowFromObject(workflow);
+                } else if (filename) {
+                    // Load workflow from file
+                    loadWorkflowFromTemplate(filename);
+                }
+                closeModal('templatesModal');
+            }
+        });
+
+        /**
+         * Load a workflow from a template file
+         * @param {string} filename - The template filename (e.g., 'research_pipeline.json')
+         */
+        async function loadWorkflowFromTemplate(filename) {
+            try {
+                // Construct path to template file
+                const templatePath = `example_workflows/${filename}`;
+
+                const response = await fetch(templatePath);
+                if (!response.ok) {
+                    throw new Error(`Failed to load template: HTTP ${response.status}`);
+                }
+
+                const workflow = await response.json();
+                loadWorkflowFromObject(workflow);
+
+            } catch (error) {
+                console.error('Error loading template:', error);
+                showNotification(`Failed to load template: ${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * Load a workflow object into the canvas
+         * @param {Object} workflow - The workflow object with nodes and connections
+         */
+        function loadWorkflowFromObject(workflow) {
+            try {
+                // Validate workflow structure
+                if (!workflow || !workflow.nodes || !Array.isArray(workflow.nodes)) {
+                    throw new Error('Invalid workflow structure: missing or invalid nodes array');
+                }
+
+                // Populate the canvas with the workflow
+                // Try multiple methods for compatibility with different implementations
+                if (typeof window.loadWorkflow === 'function') {
+                    window.loadWorkflow(workflow);
+                } else if (typeof window.populateCanvas === 'function') {
+                    window.populateCanvas(workflow);
+                } else if (typeof window.nodes !== 'undefined') {
+                    // Fallback: manually set nodes and connections
+                    window.nodes = workflow.nodes || [];
+                    window.connections = workflow.connections || [];
+
+                    // Clear canvas and re-render
+                    const canvas = document.getElementById('canvas');
+                    if (canvas) {
+                        canvas.innerHTML = '';
+                    }
+
+                    // Render nodes
+                    window.nodes.forEach(node => {
+                        if (typeof createNode === 'function') {
+                            createNode(node);
+                        }
+                    });
+
+                    // Re-render connections
+                    if (typeof redrawConnections === 'function') {
+                        redrawConnections();
+                    }
+                } else {
+                    throw new Error('No workflow loading function found in window scope');
+                }
+
+                // Update workflow title
+                const titleElement = document.querySelector('.workflow-title');
+                if (titleElement) {
+                    titleElement.textContent = workflow.name || 'Loaded Workflow';
+                    titleElement.contentEditable = 'true';
+                }
+
+                // Update version indicator if available
+                const versionSpan = document.getElementById('versionNumber');
+                if (versionSpan) {
+                    versionSpan.textContent = 'v1';
+                }
+
+                // Show success notification
+                showNotification(`Template "${workflow.name || 'workflow'}" loaded successfully!`, 'success');
+
+            } catch (error) {
+                console.error('Error loading workflow:', error);
+                showNotification(`Failed to load workflow: ${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * Save current workflow as a template
+         */
+        function saveAsTemplate() {
+            try {
+                // Get current workflow state
+                const titleElement = document.querySelector('.workflow-title');
+                const title = titleElement ? titleElement.textContent : 'My Workflow';
+
+                // Collect workflow data
+                const workflow = {
+                    name: title,
+                    version: '1.0',
+                    created: new Date().toISOString(),
+                    nodes: window.nodes || [],
+                    connections: window.connections || []
+                };
+
+                // Prompt for template name
+                const templateName = prompt('Enter template name:', title);
+                if (!templateName) return;
+
+                // Create downloadable JSON
+                const dataStr = JSON.stringify(workflow, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${templateName.toLowerCase().replace(/\s+/g, '_')}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showNotification(`Template "${templateName}" saved successfully!`, 'success');
+
+            } catch (error) {
+                console.error('Error saving template:', error);
+                showNotification(`Failed to save template: ${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * Show a notification toast message
+         * @param {string} message - The notification message
+         * @param {string} type - The notification type: 'info', 'success', 'error', 'warning'
+         * @param {number} duration - Duration in milliseconds (default: 3000)
+         */
+        function showNotification(message, type = 'info', duration = 3000) {
+            const existingToast = document.getElementById('toast');
+            if (existingToast) {
+                existingToast.textContent = message;
+                existingToast.className = `toast show ${type}`;
+
+                setTimeout(() => {
+                    existingToast.classList.remove('show');
+                }, duration);
+            } else {
+                // Fallback: create notification element
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+
+                const bgColor = {
+                    'success': '#10b981',
+                    'error': '#ef4444',
+                    'warning': '#f59e0b',
+                    'info': '#3b82f6'
+                }[type] || '#3b82f6';
+
+                notification.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    font-size: 14px;
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease;
+                    background: ${bgColor};
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    max-width: 400px;
+                    word-wrap: break-word;
+                `;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }, duration);
+            }
+        }
+
+        /**
+         * Handle template loading on page load
+         * Checks URL parameters and sessionStorage for auto-loading templates
+         */
+        function initTemplateLoading() {
+            // Check URL parameters for template auto-load
+            const params = new URLSearchParams(window.location.search);
+            const templateFile = params.get('template');
+
+            if (templateFile) {
+                // Delay slightly to ensure DOM is ready
+                setTimeout(() => {
+                    loadWorkflowFromTemplate(templateFile);
+                }, 100);
+
+                // Clear the URL param to avoid reloading on refresh
+                window.history.replaceState({}, '', window.location.pathname);
+            } else {
+                // Check sessionStorage (fallback method)
+                const storedTemplate = sessionStorage.getItem('selectedTemplate');
+                if (storedTemplate) {
+                    try {
+                        const workflow = JSON.parse(storedTemplate);
+                        loadWorkflowFromObject(workflow);
+                    } catch (e) {
+                        // Try as filename if not JSON
+                        loadWorkflowFromTemplate(storedTemplate);
+                    }
+                    sessionStorage.removeItem('selectedTemplate');
+                }
+            }
+        }
+
+        /**
+         * Add keyboard shortcut for templates (T key)
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize template loading
+            initTemplateLoading();
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // T key: Show templates
+                if (e.key === 't' || e.key === 'T') {
+                    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+                        const modal = document.getElementById('templatesModal');
+                        if (modal && !modal.classList.contains('show')) {
+                            showTemplatesModal();
+                            e.preventDefault();
+                        }
+                    }
+                }
+            });
+        });
+
+        /**
+         * CSS animation styles for notifications
+         */
+        if (!document.querySelector('style[data-notification-styles]')) {
+            const style = document.createElement('style');
+            style.setAttribute('data-notification-styles', 'true');
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(-400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(-400px);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
 </body>
 </html>
