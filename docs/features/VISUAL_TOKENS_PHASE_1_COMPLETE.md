@@ -245,17 +245,17 @@ pip install Pillow numpy openai-clip torch
 - ✅ Persistence (save/load) works correctly
 - ✅ Deduplication (same image hash) works correctly
 
-### Unit Tests (TODO - Phase 1.5)
+### Unit Tests (BACKLOG - December 2025)
 
-**Needed**:
+**Planned** (add when visual modality usage increases):
 - [ ] `test_photo_token.py` - PhotoToken serialization
 - [ ] `test_photo_token_memory.py` - Storage/retrieval
 - [ ] `test_multimodal_encoder.py` - Encoding accuracy
 - [ ] `test_structural_similarity.py` - Feature comparison
 
-### Integration Tests (TODO - Phase 2)
+### Integration Tests (BACKLOG - Q1 2026)
 
-**Needed**:
+**Planned** (add when integration stabilizes):
 - [ ] `test_yarngraph_photo_nodes.py` - Graph integration
 - [ ] `test_multimodal_search.py` - Combined text+photo search
 - [ ] `test_hololoom_photo_api.py` - HoloLoom API

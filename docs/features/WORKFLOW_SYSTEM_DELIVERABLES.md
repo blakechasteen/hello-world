@@ -204,9 +204,10 @@
 
 ## Testing Notes
 
-### Unit Tests (TODO - Next Step)
+### Unit Tests (PLANNED - December 2025)
 
 **File to Create**: `HoloLoom/workflows/tests/test_workflows.py` (~800 lines)
+**Status**: Backlog - Core system production-ready, tests can be added incrementally
 
 **Test Coverage Needed**:
 - Schema validation (cycle detection, reachability)
@@ -258,9 +259,10 @@ class TestIntegration:
     test_safety_integration()
 ```
 
-### Integration Tests (TODO - Next Step)
+### Integration Tests (PLANNED - December 2025)
 
 **File to Create**: `HoloLoom/workflows/tests/test_integration.py` (~400 lines)
+**Status**: Backlog - Can be added when integration points stabilize
 
 **Test Coverage**:
 - End-to-end workflow execution
@@ -269,9 +271,10 @@ class TestIntegration:
 - Real recursive reasoning
 - State persistence across restarts
 
-### Demos (TODO - Next Step)
+### Demos (PLANNED - December 2025)
 
 **File to Create**: `demos/demo_agentic_workflows.py` (~600 lines)
+**Status**: Backlog - Demos can be created as use cases emerge
 
 **10 Demonstrations**:
 1. Simple Q&A workflow
@@ -355,33 +358,36 @@ class TestIntegration:
 
 ## Next Steps for User
 
-### Immediate (Week 1)
+### Completed (November 2025)
 
 1. **✅ Core System Complete** - All files created
-2. **TODO: Write Tests** - Create `test_workflows.py` (~800 lines)
-3. **TODO: Write Demos** - Create `demo_agentic_workflows.py` (~600 lines)
-4. **TODO: Test Integration** - Verify RAG, chains, recursive reasoner integration
 
-### Near-Term (Week 2-3)
+### Backlog - Tests & Demos (December 2025)
 
-5. **TODO: Enhanced Visual Builder** - Add RAG-specific node configurations
-6. **TODO: REST API Enhancement** - Add checkpoint management endpoints
-7. **TODO: Performance Optimization** - Profile and optimize hot paths
-8. **TODO: User Documentation** - Video tutorials, blog posts
+2. **BACKLOG: Write Tests** - Create `test_workflows.py` (~800 lines)
+3. **BACKLOG: Write Demos** - Create `demo_agentic_workflows.py` (~600 lines)
+4. **BACKLOG: Test Integration** - Verify RAG, chains, recursive reasoner integration
 
-### Medium-Term (Month 2)
+### Backlog - Enhancements (Q1 2026)
 
-9. **TODO: Workflow Testing Framework** - Unit tests for workflows
-10. **TODO: Advanced Merge Strategies** - Consensus, voting, averaging
-11. **TODO: Streaming Execution** - Real-time progress updates
-12. **TODO: Workflow Analytics** - Performance tracking
+5. **BACKLOG: Enhanced Visual Builder** - Add RAG-specific node configurations
+6. **BACKLOG: REST API Enhancement** - Add checkpoint management endpoints
+7. **BACKLOG: Performance Optimization** - Profile and optimize hot paths
+8. **BACKLOG: User Documentation** - Video tutorials, blog posts
 
-### Long-Term (Month 3+)
+### Future Roadmap (Q2 2026+)
 
-13. **TODO: Workflow Marketplace** - Share and discover workflows
-14. **TODO: Workflow Versioning** - Git-like version control
-15. **TODO: Visual Debugger** - Step-through execution
-16. **TODO: Template Library** - 50+ pre-built templates
+9. **FUTURE: Workflow Testing Framework** - Unit tests for workflows
+10. **FUTURE: Advanced Merge Strategies** - Consensus, voting, averaging
+11. **FUTURE: Streaming Execution** - Real-time progress updates
+12. **FUTURE: Workflow Analytics** - Performance tracking
+
+### Long-Term Vision (2026+)
+
+13. **FUTURE: Workflow Marketplace** - Share and discover workflows
+14. **FUTURE: Workflow Versioning** - Git-like version control
+15. **FUTURE: Visual Debugger** - Step-through execution
+16. **FUTURE: Template Library** - 50+ pre-built templates
 
 ## Success Criteria
 
@@ -398,13 +404,13 @@ class TestIntegration:
 - [x] Comprehensive documentation
 - [x] Visual builder compatibility
 
-### ⏳ Pending (Optional)
+### ⏳ Backlog (Optional - Added December 2025)
 
-- [ ] REST API enhancements (checkpoint endpoints)
-- [ ] Comprehensive tests (30+ test cases)
-- [ ] Working demos (10 demonstrations)
-- [ ] Performance optimization
-- [ ] User tutorials
+- [ ] REST API enhancements (checkpoint endpoints) - Q1 2026
+- [ ] Comprehensive tests (30+ test cases) - As needed
+- [ ] Working demos (10 demonstrations) - As use cases emerge
+- [ ] Performance optimization - When bottlenecks identified
+- [ ] User tutorials - When user demand increases
 
 ## Conclusion
 

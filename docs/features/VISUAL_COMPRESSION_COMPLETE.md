@@ -422,16 +422,16 @@ pip install Pillow numpy matplotlib networkx
 - ✅ Simple demo runs successfully
 - ✅ Full demo runs successfully (with HoloLoom init)
 
-### Unit Tests (TODO)
+### Unit Tests (BACKLOG - December 2025)
 
-**Needed**:
+**Planned** (add when compression feature usage increases):
 - [ ] `test_visual_compression.py` - Test all renderers
 - [ ] `test_compression_metrics.py` - Test token estimation
 - [ ] `test_hololoom_compression_api.py` - Test API methods
 
-### Integration Tests (TODO)
+### Integration Tests (BACKLOG - Q1 2026)
 
-**Needed**:
+**Planned** (add when integration stabilizes):
 - [ ] `test_compress_decompress_cycle.py` - Full cycle test
 - [ ] `test_compression_multimodal.py` - Integration with photo memory
 
