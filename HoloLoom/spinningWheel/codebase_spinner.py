@@ -110,6 +110,138 @@ class ComplexityMetrics:
         }
 
 
+# =============================================================================
+# API Surface Analysis
+# =============================================================================
+
+@dataclass
+class APISymbol:
+    """A symbol in the API surface."""
+    name: str
+    symbol_type: str            # "function", "method", "class", "constant"
+    visibility: str             # "public", "protected", "private"
+    line_number: int
+    docstring: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'name': self.name,
+            'type': self.symbol_type,
+            'visibility': self.visibility,
+            'line': self.line_number,
+            'has_docstring': self.docstring is not None
+        }
+
+
+@dataclass
+class APISurface:
+    """API surface analysis for a file."""
+    # Symbol classification
+    public_symbols: List[APISymbol] = field(default_factory=list)
+    protected_symbols: List[APISymbol] = field(default_factory=list)  # _prefix
+    private_symbols: List[APISymbol] = field(default_factory=list)    # __prefix
+
+    # __all__ tracking
+    has_all_export: bool = False
+    all_exports: List[str] = field(default_factory=list)
+
+    @property
+    def exposure_ratio(self) -> float:
+        """Ratio of public symbols to total."""
+        total = len(self.public_symbols) + len(self.protected_symbols) + len(self.private_symbols)
+        if total == 0:
+            return 0.0
+        return len(self.public_symbols) / total
+
+    @property
+    def truly_public_count(self) -> int:
+        """Symbols that are truly public (in __all__ or no underscore)."""
+        if self.has_all_export:
+            return len(self.all_exports)
+        return len(self.public_symbols)
+
+    @property
+    def total_symbols(self) -> int:
+        """Total number of symbols analyzed."""
+        return len(self.public_symbols) + len(self.protected_symbols) + len(self.private_symbols)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'public_count': len(self.public_symbols),
+            'protected_count': len(self.protected_symbols),
+            'private_count': len(self.private_symbols),
+            'total_symbols': self.total_symbols,
+            'exposure_ratio': self.exposure_ratio,
+            'has_all_export': self.has_all_export,
+            'all_exports': self.all_exports,
+            'truly_public_count': self.truly_public_count,
+            'public_symbols': [s.to_dict() for s in self.public_symbols],
+            'protected_symbols': [s.to_dict() for s in self.protected_symbols],
+            'private_symbols': [s.to_dict() for s in self.private_symbols]
+        }
+
+
+# =============================================================================
+# Module Cohesion Metrics
+# =============================================================================
+
+@dataclass
+class CohesionMetrics:
+    """
+    Module cohesion metrics measuring internal vs external coupling.
+
+    High cohesion (score close to 1.0) = module functions call each other (good)
+    Low cohesion (score close to 0.0) = module functions call external modules (less ideal)
+
+    Based on LCOM (Lack of Cohesion of Methods) principles.
+    """
+    internal_calls: int = 0   # Calls to functions within same module
+    external_calls: int = 0   # Calls to functions in other modules
+    total_calls: int = 0      # Total outgoing calls
+
+    @property
+    def cohesion_score(self) -> float:
+        """
+        Cohesion score from 0.0 to 1.0.
+
+        Higher = more cohesive (internal calls dominate)
+        Returns 1.0 if no calls (maximally cohesive by default)
+        """
+        if self.total_calls == 0:
+            return 1.0  # No calls = maximally cohesive
+        return self.internal_calls / self.total_calls
+
+    @property
+    def coupling_score(self) -> float:
+        """
+        Coupling score from 0.0 to 1.0.
+
+        Higher = more coupled to external modules
+        Inverse of cohesion score.
+        """
+        return 1.0 - self.cohesion_score
+
+    @property
+    def rating(self) -> str:
+        """Classify cohesion level."""
+        if self.cohesion_score >= 0.7:
+            return "high"      # Good: mostly internal calls
+        elif self.cohesion_score >= 0.4:
+            return "moderate"  # Acceptable mix
+        else:
+            return "low"       # Consider refactoring
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'internal_calls': self.internal_calls,
+            'external_calls': self.external_calls,
+            'total_calls': self.total_calls,
+            'cohesion_score': self.cohesion_score,
+            'coupling_score': self.coupling_score,
+            'rating': self.rating
+        }
+
+
 @dataclass
 class CodeFunction:
     """Parsed function/method"""
@@ -150,6 +282,8 @@ class CodeFile:
     code_lines: int = 0
     comment_lines: int = 0
     metadata: Dict[str, Any] = field(default_factory=dict)
+    api_surface: Optional[APISurface] = None  # API visibility analysis
+    cohesion: Optional[CohesionMetrics] = None  # Module cohesion metrics
 
     @property
     def complexity_score(self) -> float:
@@ -566,6 +700,73 @@ class CodebaseProject:
             'high_complexity_count': sum(1 for cc in cc_values if cc > 10)
         }
 
+    def get_api_surface_summary(self) -> Dict[str, Any]:
+        """
+        Get aggregated API surface statistics across the codebase.
+
+        Returns:
+            Dictionary with API surface stats:
+            - total_files_analyzed: Files with API surface data
+            - total_public: Total public symbols
+            - total_protected: Total protected symbols
+            - total_private: Total private symbols
+            - avg_exposure_ratio: Average exposure ratio (0-1)
+            - files_with_all: Files that define __all__
+            - most_exposed_files: Top 5 files by exposure ratio
+        """
+        surfaces = []
+        file_exposures = []
+
+        for file_path, code_file in self.files.items():
+            if code_file.api_surface:
+                surfaces.append(code_file.api_surface)
+                file_exposures.append((
+                    file_path,
+                    code_file.api_surface.exposure_ratio,
+                    code_file.api_surface.total_symbols
+                ))
+
+        if not surfaces:
+            return {
+                'total_files_analyzed': 0,
+                'total_public': 0,
+                'total_protected': 0,
+                'total_private': 0,
+                'avg_exposure_ratio': 0.0,
+                'files_with_all': 0,
+                'most_exposed_files': []
+            }
+
+        # Calculate stats
+        total_public = sum(len(s.public_symbols) for s in surfaces)
+        total_protected = sum(len(s.protected_symbols) for s in surfaces)
+        total_private = sum(len(s.private_symbols) for s in surfaces)
+        files_with_all = sum(1 for s in surfaces if s.has_all_export)
+
+        # Average exposure ratio (only for files with symbols)
+        valid_ratios = [s.exposure_ratio for s in surfaces if s.total_symbols > 0]
+        avg_exposure = sum(valid_ratios) / len(valid_ratios) if valid_ratios else 0.0
+
+        # Most exposed files (sorted by exposure ratio, descending)
+        most_exposed = sorted(
+            [(f, e, t) for f, e, t in file_exposures if t > 0],
+            key=lambda x: x[1],
+            reverse=True
+        )[:5]
+
+        return {
+            'total_files_analyzed': len(surfaces),
+            'total_public': total_public,
+            'total_protected': total_protected,
+            'total_private': total_private,
+            'avg_exposure_ratio': avg_exposure,
+            'files_with_all': files_with_all,
+            'most_exposed_files': [
+                {'file': f, 'exposure_ratio': e, 'total_symbols': t}
+                for f, e, t in most_exposed
+            ]
+        }
+
     def to_dict(self) -> Dict[str, Any]:
         """Export project analysis to dictionary"""
         return {
@@ -583,7 +784,8 @@ class CodebaseProject:
             'orphan_files': self.get_orphan_files(),
             'circular_dependencies': self.get_circular_dependencies(),
             'complexity_summary': self.get_complexity_summary(),
-            'high_complexity_functions': self.get_high_complexity_functions(10)[:10]
+            'high_complexity_functions': self.get_high_complexity_functions(10)[:10],
+            'api_surface_summary': self.get_api_surface_summary()
         }
 
 
@@ -871,6 +1073,252 @@ class CyclomaticComplexityCalculator:
         )
 
 
+# =============================================================================
+# API Surface Analyzer
+# =============================================================================
+
+class APISurfaceAnalyzer:
+    """
+    Analyze API surface visibility for Python modules.
+
+    Classifies symbols by Python naming conventions:
+    - public: No underscore prefix (normal names)
+    - protected: Single underscore prefix (_name)
+    - private: Double underscore prefix (__name, but NOT dunder __name__)
+
+    Also detects explicit __all__ exports.
+    """
+
+    @staticmethod
+    def analyze(tree: ast.AST, source: str = "") -> APISurface:
+        """
+        Analyze API surface of a Python module.
+
+        Args:
+            tree: Parsed AST of the module
+            source: Source code (optional, for additional context)
+
+        Returns:
+            APISurface with classified symbols
+        """
+        surface = APISurface()
+
+        # First, look for __all__ assignment
+        surface.has_all_export, surface.all_exports = APISurfaceAnalyzer._find_all_export(tree)
+
+        # Analyze top-level definitions
+        for node in ast.iter_child_nodes(tree):
+            if isinstance(node, ast.ClassDef):
+                symbol = APISurfaceAnalyzer._classify_symbol(
+                    name=node.name,
+                    symbol_type="class",
+                    line_number=node.lineno,
+                    docstring=ast.get_docstring(node)
+                )
+                APISurfaceAnalyzer._add_to_surface(surface, symbol)
+
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                symbol = APISurfaceAnalyzer._classify_symbol(
+                    name=node.name,
+                    symbol_type="function",
+                    line_number=node.lineno,
+                    docstring=ast.get_docstring(node)
+                )
+                APISurfaceAnalyzer._add_to_surface(surface, symbol)
+
+            elif isinstance(node, ast.Assign):
+                # Module-level constants (NAME = value)
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        # Skip __all__, __version__, etc. (dunder attributes)
+                        if not APISurfaceAnalyzer._is_dunder(target.id):
+                            symbol = APISurfaceAnalyzer._classify_symbol(
+                                name=target.id,
+                                symbol_type="constant",
+                                line_number=node.lineno,
+                                docstring=None
+                            )
+                            APISurfaceAnalyzer._add_to_surface(surface, symbol)
+
+            elif isinstance(node, ast.AnnAssign):
+                # Annotated assignments: NAME: Type = value
+                if isinstance(node.target, ast.Name):
+                    if not APISurfaceAnalyzer._is_dunder(node.target.id):
+                        symbol = APISurfaceAnalyzer._classify_symbol(
+                            name=node.target.id,
+                            symbol_type="constant",
+                            line_number=node.lineno,
+                            docstring=None
+                        )
+                        APISurfaceAnalyzer._add_to_surface(surface, symbol)
+
+        return surface
+
+    @staticmethod
+    def _find_all_export(tree: ast.AST) -> Tuple[bool, List[str]]:
+        """Find __all__ assignment and extract exported names."""
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == '__all__':
+                        # Found __all__ assignment
+                        exports = []
+                        if isinstance(node.value, (ast.List, ast.Tuple)):
+                            for elt in node.value.elts:
+                                if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                                    exports.append(elt.value)
+                                elif isinstance(elt, ast.Str):  # Python 3.7 compatibility
+                                    exports.append(elt.s)
+                        return True, exports
+        return False, []
+
+    @staticmethod
+    def _classify_symbol(name: str, symbol_type: str, line_number: int,
+                         docstring: Optional[str]) -> APISymbol:
+        """Classify a symbol's visibility based on naming convention."""
+        visibility = APISurfaceAnalyzer._get_visibility(name)
+        return APISymbol(
+            name=name,
+            symbol_type=symbol_type,
+            visibility=visibility,
+            line_number=line_number,
+            docstring=docstring
+        )
+
+    @staticmethod
+    def _get_visibility(name: str) -> str:
+        """Determine visibility from name."""
+        if APISurfaceAnalyzer._is_dunder(name):
+            return "public"  # Dunder methods are part of public API
+        elif name.startswith('__'):
+            return "private"  # __name (not dunder) is private
+        elif name.startswith('_'):
+            return "protected"  # _name is protected
+        else:
+            return "public"
+
+    @staticmethod
+    def _is_dunder(name: str) -> bool:
+        """Check if name is a dunder (double underscore both sides)."""
+        return name.startswith('__') and name.endswith('__') and len(name) > 4
+
+    @staticmethod
+    def _add_to_surface(surface: APISurface, symbol: APISymbol) -> None:
+        """Add symbol to appropriate visibility list."""
+        if symbol.visibility == "public":
+            surface.public_symbols.append(symbol)
+        elif symbol.visibility == "protected":
+            surface.protected_symbols.append(symbol)
+        elif symbol.visibility == "private":
+            surface.private_symbols.append(symbol)
+
+
+# =============================================================================
+# Module Cohesion Calculator
+# =============================================================================
+
+class CohesionCalculator:
+    """
+    Calculate module cohesion based on call graph analysis.
+
+    Cohesion measures how much functions within a module call each other
+    (internal calls) vs calling external modules (external calls).
+
+    High cohesion = good modularization (functions work together)
+    Low cohesion = potential refactoring opportunity
+    """
+
+    @staticmethod
+    def calculate_for_project(project: 'CodebaseProject') -> Dict[str, CohesionMetrics]:
+        """
+        Calculate cohesion metrics for all files in a project.
+
+        Uses the call_edges from the project's call graph to determine
+        internal vs external calls per module.
+
+        Args:
+            project: CodebaseProject with populated call_edges
+
+        Returns:
+            Dict mapping file_path -> CohesionMetrics
+        """
+        cohesion_by_file: Dict[str, CohesionMetrics] = {}
+
+        # Get all functions per file for fast lookup
+        functions_by_file: Dict[str, Set[str]] = {}
+        for file_path, code_file in project.files.items():
+            func_names = set()
+            for func in code_file.functions:
+                func_names.add(func.name)
+            for cls in code_file.classes:
+                for method in cls.methods:
+                    func_names.add(f"{cls.name}.{method.name}")
+            functions_by_file[file_path] = func_names
+
+        # Count internal vs external calls per file
+        for file_path in project.files:
+            internal = 0
+            external = 0
+
+            # Look through call edges originating from this file
+            for edge in project.call_edges:
+                caller_file = edge.get('caller_file', '')
+                callee_file = edge.get('callee_file', '')
+
+                if caller_file == file_path:
+                    if callee_file == file_path:
+                        internal += 1
+                    else:
+                        external += 1
+
+            total = internal + external
+            cohesion_by_file[file_path] = CohesionMetrics(
+                internal_calls=internal,
+                external_calls=external,
+                total_calls=total
+            )
+
+        return cohesion_by_file
+
+    @staticmethod
+    def calculate_for_file(code_file: CodeFile, all_functions_in_file: Set[str]) -> CohesionMetrics:
+        """
+        Calculate cohesion metrics for a single file based on function calls.
+
+        Args:
+            code_file: CodeFile with parsed functions
+            all_functions_in_file: Set of all function names defined in this file
+
+        Returns:
+            CohesionMetrics for the file
+        """
+        internal = 0
+        external = 0
+
+        # Collect all calls from all functions
+        for func in code_file.functions:
+            for call in func.calls:
+                if call in all_functions_in_file:
+                    internal += 1
+                else:
+                    external += 1
+
+        for cls in code_file.classes:
+            for method in cls.methods:
+                for call in method.calls:
+                    # Check if call is to a method in same class or function in file
+                    if call in all_functions_in_file or f"{cls.name}.{call}" in all_functions_in_file:
+                        internal += 1
+                    else:
+                        external += 1
+
+        return CohesionMetrics(
+            internal_calls=internal,
+            external_calls=external,
+            total_calls=internal + external
+        )
+
+
 class PythonParser:
     """Parse Python source code using AST"""
 
@@ -915,6 +1363,9 @@ class PythonParser:
         code_lines = PythonParser._count_code_lines(source)
         comment_lines = PythonParser._count_comment_lines(source)
 
+        # Analyze API surface
+        api_surface = APISurfaceAnalyzer.analyze(tree, source)
+
         return CodeFile(
             file_path=file_path,
             language='python',
@@ -924,7 +1375,8 @@ class PythonParser:
             docstring=docstring,
             total_lines=total_lines,
             code_lines=code_lines,
-            comment_lines=comment_lines
+            comment_lines=comment_lines,
+            api_surface=api_surface
         )
 
     @staticmethod

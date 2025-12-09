@@ -62,6 +62,16 @@ except ImportError as e:
             'agent_type': agent_type
         }
 
+# Import optimization engine
+try:
+    from HoloLoom.web_dashboard.optimization_engine import ThompsonOptimizer
+    optimizer = ThompsonOptimizer()
+    OPTIMIZATION_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Optimization engine not available: {e}")
+    OPTIMIZATION_AVAILABLE = False
+    optimizer = None
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -210,6 +220,132 @@ branch_store: Dict[str, Dict[str, Any]] = {
 # Collaboration state
 collaboration_sessions: Dict[str, Dict[str, Any]] = {}  # session_id -> {workflow_id, participants, cursor_positions, last_activity}
 presence_subscriptions: Dict[WebSocket, str] = {}  # websocket -> session_id
+
+
+class WorkflowCRDT:
+    """
+    Simple Conflict-Free Replicated Data Type for workflow state.
+
+    Uses last-writer-wins strategy with vector clocks for conflict resolution.
+    This ensures eventual consistency across all collaborators.
+    """
+
+    def __init__(self, workflow_id: str):
+        self.workflow_id = workflow_id
+        self.state = {"nodes": {}, "connections": {}}
+        self.vector_clock: Dict[str, float] = {}  # user_id -> timestamp
+        self.node_locks: Dict[str, Dict[str, Any]] = {}  # node_id -> {user_id, locked_at}
+
+    def apply_operation(self, user_id: str, operation: dict) -> dict:
+        """
+        Apply an operation to the workflow state.
+
+        Args:
+            user_id: User performing the operation
+            operation: {
+                'type': 'add_node' | 'update_node' | 'delete_node' | 'add_connection' | 'delete_connection',
+                'data': {...},
+                'timestamp': float
+            }
+
+        Returns:
+            Merged state after applying operation
+        """
+        op_type = operation.get('type')
+        data = operation.get('data', {})
+        timestamp = operation.get('timestamp', datetime.now().timestamp())
+
+        # Update vector clock
+        if user_id not in self.vector_clock or timestamp > self.vector_clock[user_id]:
+            self.vector_clock[user_id] = timestamp
+        else:
+            # Reject stale operation
+            logger.warning(f"Rejected stale operation from {user_id}: {op_type}")
+            return self.state
+
+        # Apply operation based on type
+        if op_type == 'add_node' or op_type == 'update_node':
+            node_id = data.get('id')
+            if node_id:
+                self.state['nodes'][node_id] = {
+                    **data,
+                    'last_modified_by': user_id,
+                    'last_modified_at': timestamp
+                }
+                logger.info(f"Applied {op_type}: {node_id} by {user_id}")
+
+        elif op_type == 'delete_node':
+            node_id = data.get('id')
+            if node_id and node_id in self.state['nodes']:
+                del self.state['nodes'][node_id]
+                # Also remove connections referencing this node
+                self.state['connections'] = {
+                    conn_id: conn for conn_id, conn in self.state['connections'].items()
+                    if conn.get('from') != node_id and conn.get('to') != node_id
+                }
+                logger.info(f"Applied delete_node: {node_id} by {user_id}")
+
+        elif op_type == 'add_connection':
+            conn_id = data.get('id')
+            if conn_id:
+                self.state['connections'][conn_id] = {
+                    **data,
+                    'last_modified_by': user_id,
+                    'last_modified_at': timestamp
+                }
+                logger.info(f"Applied add_connection: {conn_id} by {user_id}")
+
+        elif op_type == 'delete_connection':
+            conn_id = data.get('id')
+            if conn_id and conn_id in self.state['connections']:
+                del self.state['connections'][conn_id]
+                logger.info(f"Applied delete_connection: {conn_id} by {user_id}")
+
+        return self.state
+
+    def try_lock_node(self, node_id: str, user_id: str) -> bool:
+        """
+        Try to acquire exclusive lock on a node for editing.
+
+        Returns:
+            True if lock acquired, False if already locked by another user
+        """
+        if node_id in self.node_locks:
+            lock = self.node_locks[node_id]
+            # Check if lock is stale (>30 seconds)
+            if datetime.now().timestamp() - lock['locked_at'] > 30:
+                # Release stale lock
+                del self.node_locks[node_id]
+            elif lock['user_id'] != user_id:
+                # Node locked by another user
+                return False
+
+        # Acquire lock
+        self.node_locks[node_id] = {
+            'user_id': user_id,
+            'locked_at': datetime.now().timestamp()
+        }
+        logger.info(f"Lock acquired: node {node_id} by {user_id}")
+        return True
+
+    def unlock_node(self, node_id: str, user_id: str) -> bool:
+        """
+        Release lock on a node.
+
+        Returns:
+            True if lock released, False if not locked or locked by another user
+        """
+        if node_id in self.node_locks:
+            lock = self.node_locks[node_id]
+            if lock['user_id'] == user_id:
+                del self.node_locks[node_id]
+                logger.info(f"Lock released: node {node_id} by {user_id}")
+                return True
+        return False
+
+    def get_lock_status(self, node_id: str) -> Optional[Dict[str, Any]]:
+        """Get current lock status for a node."""
+        return self.node_locks.get(node_id)
 
 
 class WorkflowExecutor:
@@ -638,20 +774,231 @@ async def validate_workflow(workflow: Workflow):
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket for real-time execution updates."""
+    """
+    WebSocket for real-time execution updates and collaboration.
+
+    Supported message types:
+    - cursor_move: Broadcast cursor position to all participants
+    - presence_update: Update user presence status
+    - node_lock: Request exclusive edit lock on a node
+    - node_unlock: Release edit lock on a node
+    - workflow_operation: Apply CRDT operation to workflow state
+    """
     await websocket.accept()
     ws_connections.append(websocket)
     logger.info("WebSocket client connected")
 
+    session_id = None
+    user_id = None
+
     try:
         while True:
             data = await websocket.receive_text()
-            # Handle incoming messages if needed
-            logger.info(f"Received: {data}")
+            message = json.loads(data)
+            msg_type = message.get('type')
+
+            logger.info(f"Received WebSocket message: {msg_type}")
+
+            # Handle collaboration messages
+            if msg_type == 'subscribe':
+                # Subscribe to a collaboration session
+                session_id = message.get('session_id')
+                user_id = message.get('user_id')
+
+                if session_id and session_id in collaboration_sessions:
+                    presence_subscriptions[websocket] = session_id
+                    logger.info(f"WebSocket subscribed to session {session_id}")
+
+                    await websocket.send_json({
+                        'type': 'subscribed',
+                        'session_id': session_id,
+                        'timestamp': datetime.now().isoformat()
+                    })
+                else:
+                    await websocket.send_json({
+                        'type': 'error',
+                        'error': 'Session not found',
+                        'session_id': session_id
+                    })
+
+            elif msg_type == 'cursor_move':
+                # Broadcast cursor position to session participants
+                if session_id and session_id in collaboration_sessions:
+                    session = collaboration_sessions[session_id]
+                    cursor_data = message.get('data', {})
+
+                    # Update cursor position in session
+                    session['cursor_positions'][user_id] = {
+                        'x': cursor_data.get('x', 0),
+                        'y': cursor_data.get('y', 0),
+                        'user_name': cursor_data.get('user_name', 'Unknown'),
+                        'color': cursor_data.get('color', '#3b82f6'),
+                        'timestamp': datetime.now().timestamp()
+                    }
+
+                    # Broadcast to all session participants
+                    await broadcast_to_session(session_id, {
+                        'type': 'cursor_update',
+                        'user_id': user_id,
+                        'data': session['cursor_positions'][user_id]
+                    }, exclude_ws=websocket)
+
+            elif msg_type == 'presence_update':
+                # Update user presence status
+                if session_id and session_id in collaboration_sessions:
+                    session = collaboration_sessions[session_id]
+                    presence_data = message.get('data', {})
+
+                    # Update participant status
+                    for participant in session['participants']:
+                        if participant['user_id'] == user_id:
+                            participant['status'] = presence_data.get('status', 'active')
+                            participant['selected_node'] = presence_data.get('selected_node')
+                            break
+
+                    # Broadcast presence update
+                    await broadcast_to_session(session_id, {
+                        'type': 'presence_update',
+                        'user_id': user_id,
+                        'data': presence_data
+                    }, exclude_ws=websocket)
+
+            elif msg_type == 'node_lock':
+                # Request exclusive lock on a node
+                if session_id and session_id in collaboration_sessions:
+                    session = collaboration_sessions[session_id]
+                    crdt = session['crdt']
+                    node_id = message.get('node_id')
+
+                    if node_id:
+                        lock_acquired = crdt.try_lock_node(node_id, user_id)
+
+                        await websocket.send_json({
+                            'type': 'node_lock_response',
+                            'node_id': node_id,
+                            'locked': lock_acquired,
+                            'user_id': user_id
+                        })
+
+                        if lock_acquired:
+                            # Broadcast lock to other participants
+                            await broadcast_to_session(session_id, {
+                                'type': 'node_locked',
+                                'node_id': node_id,
+                                'user_id': user_id,
+                                'user_name': message.get('user_name', 'Unknown')
+                            }, exclude_ws=websocket)
+
+            elif msg_type == 'node_unlock':
+                # Release lock on a node
+                if session_id and session_id in collaboration_sessions:
+                    session = collaboration_sessions[session_id]
+                    crdt = session['crdt']
+                    node_id = message.get('node_id')
+
+                    if node_id:
+                        lock_released = crdt.unlock_node(node_id, user_id)
+
+                        await websocket.send_json({
+                            'type': 'node_unlock_response',
+                            'node_id': node_id,
+                            'unlocked': lock_released
+                        })
+
+                        if lock_released:
+                            # Broadcast unlock to other participants
+                            await broadcast_to_session(session_id, {
+                                'type': 'node_unlocked',
+                                'node_id': node_id,
+                                'user_id': user_id
+                            }, exclude_ws=websocket)
+
+            elif msg_type == 'workflow_operation':
+                # Apply CRDT operation to workflow state
+                if session_id and session_id in collaboration_sessions:
+                    session = collaboration_sessions[session_id]
+                    crdt = session['crdt']
+                    operation = message.get('operation', {})
+
+                    # Apply operation
+                    new_state = crdt.apply_operation(user_id, operation)
+
+                    # Broadcast operation to all participants
+                    await broadcast_to_session(session_id, {
+                        'type': 'workflow_state_update',
+                        'operation': operation,
+                        'user_id': user_id,
+                        'state': new_state,
+                        'timestamp': datetime.now().isoformat()
+                    }, exclude_ws=websocket)
+
+                    # Acknowledge to sender
+                    await websocket.send_json({
+                        'type': 'operation_applied',
+                        'operation': operation,
+                        'state': new_state
+                    })
 
     except WebSocketDisconnect:
         ws_connections.remove(websocket)
+
+        # Clean up collaboration state
+        if session_id and session_id in collaboration_sessions:
+            session = collaboration_sessions[session_id]
+
+            # Remove from presence subscriptions
+            if websocket in presence_subscriptions:
+                del presence_subscriptions[websocket]
+
+            # Release all locks held by this user
+            if user_id:
+                crdt = session['crdt']
+                for node_id in list(crdt.node_locks.keys()):
+                    lock = crdt.node_locks[node_id]
+                    if lock['user_id'] == user_id:
+                        crdt.unlock_node(node_id, user_id)
+
+                # Broadcast user disconnection
+                await broadcast_to_session(session_id, {
+                    'type': 'user_disconnected',
+                    'user_id': user_id,
+                    'timestamp': datetime.now().isoformat()
+                })
+
         logger.info("WebSocket client disconnected")
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+        ws_connections.remove(websocket)
+
+
+async def broadcast_to_session(session_id: str, message: dict, exclude_ws: Optional[WebSocket] = None):
+    """
+    Broadcast a message to all participants in a collaboration session.
+
+    Args:
+        session_id: ID of the session
+        message: Message to broadcast
+        exclude_ws: Optional WebSocket to exclude from broadcast (sender)
+    """
+    if session_id not in collaboration_sessions:
+        return
+
+    disconnected = []
+
+    for ws, ws_session_id in presence_subscriptions.items():
+        if ws_session_id == session_id and ws != exclude_ws:
+            try:
+                await ws.send_json(message)
+            except Exception as e:
+                logger.warning(f"Failed to broadcast to WebSocket: {e}")
+                disconnected.append(ws)
+
+    # Clean up disconnected WebSockets
+    for ws in disconnected:
+        if ws in presence_subscriptions:
+            del presence_subscriptions[ws]
+        if ws in ws_connections:
+            ws_connections.remove(ws)
 
 
 @app.get("/api/agents")
@@ -1031,6 +1378,413 @@ async def get_entity(entity_id: str):
     except Exception as e:
         logger.error(f"Entity lookup failed for {entity_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Collaboration Endpoints
+@app.post("/api/collaboration/create")
+async def create_collaboration_session(workflow_id: str):
+    """
+    Create a new collaboration session for a workflow.
+
+    Args:
+        workflow_id: ID of the workflow to collaborate on
+
+    Returns:
+        {
+            'session_id': str,
+            'workflow_id': str,
+            'created_at': float
+        }
+    """
+    session_id = str(uuid.uuid4())
+    now = datetime.now().timestamp()
+
+    collaboration_sessions[session_id] = {
+        'session_id': session_id,
+        'workflow_id': workflow_id,
+        'participants': [],
+        'cursor_positions': {},
+        'last_activity': now,
+        'created_at': now,
+        'crdt': WorkflowCRDT(workflow_id)
+    }
+
+    logger.info(f"Created collaboration session {session_id} for workflow {workflow_id}")
+
+    return {
+        'session_id': session_id,
+        'workflow_id': workflow_id,
+        'created_at': now
+    }
+
+
+@app.post("/api/collaboration/join/{session_id}")
+async def join_collaboration_session(session_id: str, request: JoinSessionRequest):
+    """
+    Join an existing collaboration session.
+
+    Args:
+        session_id: ID of the session to join
+        request: User info (user_id, user_name, optional color)
+
+    Returns:
+        Session state with current participants
+    """
+    if session_id not in collaboration_sessions:
+        raise HTTPException(status_code=404, detail="Collaboration session not found")
+
+    session = collaboration_sessions[session_id]
+
+    # Check if user already in session
+    existing_participant = next(
+        (p for p in session['participants'] if p['user_id'] == request.user_id),
+        None
+    )
+
+    if not existing_participant:
+        # Add new participant
+        participant = {
+            'user_id': request.user_id,
+            'user_name': request.user_name,
+            'color': request.color or f"#{hash(request.user_id) % 0xFFFFFF:06x}",
+            'joined_at': datetime.now().timestamp(),
+            'status': 'active'
+        }
+        session['participants'].append(participant)
+        logger.info(f"User {request.user_name} joined session {session_id}")
+    else:
+        # Update existing participant
+        existing_participant['status'] = 'active'
+        logger.info(f"User {request.user_name} rejoined session {session_id}")
+
+    session['last_activity'] = datetime.now().timestamp()
+
+    return {
+        'session_id': session_id,
+        'workflow_id': session['workflow_id'],
+        'participants': session['participants'],
+        'created_at': session['created_at']
+    }
+
+
+@app.get("/api/collaboration/session/{session_id}")
+async def get_collaboration_session(session_id: str):
+    """
+    Get current state of a collaboration session.
+
+    Returns:
+        Complete session state including participants, cursor positions, locks
+    """
+    if session_id not in collaboration_sessions:
+        raise HTTPException(status_code=404, detail="Collaboration session not found")
+
+    session = collaboration_sessions[session_id]
+    crdt = session['crdt']
+
+    return {
+        'session_id': session_id,
+        'workflow_id': session['workflow_id'],
+        'participants': session['participants'],
+        'cursor_positions': session.get('cursor_positions', {}),
+        'node_locks': crdt.node_locks,
+        'workflow_state': crdt.state,
+        'created_at': session['created_at'],
+        'last_activity': session['last_activity']
+    }
+
+
+@app.post("/api/collaboration/leave/{session_id}")
+async def leave_collaboration_session(session_id: str, user_id: str):
+    """
+    Leave a collaboration session.
+
+    Args:
+        session_id: ID of the session to leave
+        user_id: ID of the user leaving
+
+    Returns:
+        Updated session state
+    """
+    if session_id not in collaboration_sessions:
+        raise HTTPException(status_code=404, detail="Collaboration session not found")
+
+    session = collaboration_sessions[session_id]
+    crdt = session['crdt']
+
+    # Remove participant
+    session['participants'] = [
+        p for p in session['participants']
+        if p['user_id'] != user_id
+    ]
+
+    # Release all node locks held by this user
+    for node_id in list(crdt.node_locks.keys()):
+        lock = crdt.node_locks[node_id]
+        if lock['user_id'] == user_id:
+            crdt.unlock_node(node_id, user_id)
+
+    # Remove cursor position
+    if user_id in session.get('cursor_positions', {}):
+        del session['cursor_positions'][user_id]
+
+    session['last_activity'] = datetime.now().timestamp()
+
+    logger.info(f"User {user_id} left session {session_id}")
+
+    # If no participants left, clean up session after 5 minutes
+    if not session['participants']:
+        logger.info(f"Session {session_id} now empty, will clean up after timeout")
+
+    return {
+        'session_id': session_id,
+        'participants': session['participants'],
+        'left': True
+    }
+
+
+# ============================================================================
+# Auto-Optimization Endpoints (Wave 2)
+# ============================================================================
+
+@app.get("/api/workflow/{workflow_id}/profile")
+async def get_workflow_performance_profile(workflow_id: str):
+    """
+    Get performance profile for a workflow.
+
+    Returns performance metrics for all nodes including:
+    - Average and p95 latency
+    - Success rate
+    - Throughput (calls per minute)
+    - Bottleneck score (0-1, higher = more likely bottleneck)
+
+    Example response:
+    {
+        "workflow_id": "my_workflow",
+        "profiles": [
+            {
+                "node_id": "node_1",
+                "node_type": "hololoom",
+                "avg_latency_ms": 150.0,
+                "p95_latency_ms": 250.0,
+                "success_rate": 0.95,
+                "throughput": 10.0,
+                "bottleneck_score": 0.45
+            }
+        ],
+        "total_nodes": 5
+    }
+    """
+    if not OPTIMIZATION_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Optimization engine not available"
+        )
+
+    # Mock performance data (in production, this would come from execution history)
+    # You would track this in node_performance_stats during execution
+    mock_workflow = {
+        'name': workflow_id,
+        'nodes': [
+            {'id': 'node_1', 'agentType': 'hololoom'},
+            {'id': 'node_2', 'agentType': 'embedder'},
+            {'id': 'node_3', 'agentType': 'synthesizer'}
+        ]
+    }
+
+    mock_performance = {
+        'node_1': {'avg_latency_ms': 150, 'p95_latency_ms': 250, 'success_rate': 0.95, 'call_count': 10},
+        'node_2': {'avg_latency_ms': 50, 'p95_latency_ms': 75, 'success_rate': 0.98, 'call_count': 15},
+        'node_3': {'avg_latency_ms': 200, 'p95_latency_ms': 400, 'success_rate': 0.85, 'call_count': 8}
+    }
+
+    profiles = optimizer.get_performance_profile(mock_workflow, mock_performance)
+
+    return {
+        'workflow_id': workflow_id,
+        'profiles': profiles,
+        'total_nodes': len(profiles)
+    }
+
+
+@app.post("/api/workflow/{workflow_id}/optimize")
+async def get_optimization_suggestions(workflow_id: str, workflow: Workflow):
+    """
+    Get Thompson Sampling-based optimization suggestions for a workflow.
+
+    Request body should contain the full workflow definition.
+
+    Returns suggestions with:
+    - Suggestion type (parallelize, cache, reorder, substitute)
+    - Description of optimization
+    - Expected improvement percentage
+    - Confidence level from Thompson Sampling
+    - List of affected nodes
+
+    Example response:
+    {
+        "workflow_id": "my_workflow",
+        "suggestion": {
+            "suggestion_id": "abc-123",
+            "workflow_id": "my_workflow",
+            "suggestion_type": "parallelize",
+            "description": "Parallelize nodes node_2, node_3 - no data dependencies",
+            "expected_improvement": 35.5,
+            "confidence": 0.72,
+            "affected_nodes": ["node_2", "node_3"]
+        },
+        "timestamp": "2025-12-09T10:30:00"
+    }
+    """
+    if not OPTIMIZATION_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Optimization engine not available"
+        )
+
+    # Mock performance data (in production, from execution history)
+    mock_performance = {
+        node.id: {
+            'avg_latency_ms': 100 + (hash(node.id) % 100),
+            'p95_latency_ms': 150 + (hash(node.id) % 150),
+            'success_rate': 0.85 + (hash(node.id) % 15) / 100,
+            'call_count': 5 + (hash(node.id) % 10)
+        }
+        for node in workflow.nodes
+    }
+
+    # Get suggestion using Thompson Sampling
+    workflow_dict = workflow.dict()
+    suggestion = optimizer.suggest_optimization(workflow_dict, mock_performance)
+
+    # Store in optimization history
+    optimization_history.append({
+        **suggestion,
+        'timestamp': datetime.now().isoformat(),
+        'status': 'suggested'
+    })
+
+    logger.info(f"Generated optimization suggestion for {workflow_id}: {suggestion['suggestion_type']}")
+
+    return {
+        'workflow_id': workflow_id,
+        'suggestion': suggestion,
+        'timestamp': datetime.now().isoformat()
+    }
+
+
+@app.post("/api/workflow/{workflow_id}/apply-optimization")
+async def apply_optimization(workflow_id: str, suggestion_id: str, success: bool = True, improvement: float = 0.0):
+    """
+    Apply an optimization suggestion and update Thompson Sampling beliefs.
+
+    Query parameters:
+    - suggestion_id: ID of the suggestion to apply
+    - success: Whether the optimization was successful (default: True)
+    - improvement: Actual improvement percentage achieved (default: 0.0)
+
+    This updates the Thompson Sampling priors (alpha/beta) based on outcome,
+    allowing the system to learn which optimization strategies work best.
+
+    Example:
+    POST /api/workflow/my_workflow/apply-optimization?suggestion_id=abc-123&success=true&improvement=32.5
+
+    Response:
+    {
+        "workflow_id": "my_workflow",
+        "suggestion_id": "abc-123",
+        "applied": true,
+        "outcome": {
+            "success": true,
+            "improvement": 32.5
+        },
+        "updated_priors": {
+            "parallelize": {"alpha": 2.0, "beta": 1.0}
+        }
+    }
+    """
+    if not OPTIMIZATION_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Optimization engine not available"
+        )
+
+    outcome = {
+        'success': success,
+        'improvement': improvement
+    }
+
+    # Update Thompson Sampling beliefs
+    optimizer.update_belief(suggestion_id, outcome, optimization_history)
+
+    # Update suggestion status in history
+    for item in optimization_history:
+        if item.get('suggestion_id') == suggestion_id:
+            item['status'] = 'applied'
+            item['outcome'] = outcome
+            item['applied_at'] = datetime.now().isoformat()
+            break
+
+    logger.info(f"Applied optimization {suggestion_id} for {workflow_id}: success={success}, improvement={improvement}%")
+
+    return {
+        'workflow_id': workflow_id,
+        'suggestion_id': suggestion_id,
+        'applied': True,
+        'outcome': outcome,
+        'updated_priors': optimizer.priors,
+        'timestamp': datetime.now().isoformat()
+    }
+
+
+@app.get("/api/optimization/history")
+async def get_optimization_history(limit: int = 10):
+    """
+    Get history of optimization suggestions and their outcomes.
+
+    Query parameters:
+    - limit: Maximum number of history entries to return (default: 10)
+
+    Returns chronological list of suggestions with their status and outcomes.
+
+    Example response:
+    {
+        "history": [
+            {
+                "suggestion_id": "abc-123",
+                "workflow_id": "my_workflow",
+                "suggestion_type": "parallelize",
+                "timestamp": "2025-12-09T10:30:00",
+                "status": "applied",
+                "outcome": {
+                    "success": true,
+                    "improvement": 32.5
+                }
+            }
+        ],
+        "total": 1,
+        "thompson_priors": {
+            "parallelize": {"alpha": 2.0, "beta": 1.0},
+            "cache": {"alpha": 1.0, "beta": 1.0},
+            "reorder": {"alpha": 1.0, "beta": 1.0},
+            "substitute": {"alpha": 1.0, "beta": 1.0}
+        }
+    }
+    """
+    if not OPTIMIZATION_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Optimization engine not available"
+        )
+
+    # Return most recent entries
+    recent_history = optimization_history[-limit:] if limit > 0 else optimization_history
+
+    return {
+        'history': recent_history,
+        'total': len(optimization_history),
+        'thompson_priors': optimizer.priors,
+        'timestamp': datetime.now().isoformat()
+    }
 
 
 if __name__ == "__main__":

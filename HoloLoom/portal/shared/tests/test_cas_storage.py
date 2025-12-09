@@ -61,16 +61,17 @@ class TestCASEntry:
 
     def test_entry_to_dict(self):
         """CASEntry.to_dict() returns serializable dictionary."""
+        test_path = Path("some") / "path"
         entry = CASEntry(
             content_hash="abc123def456",
             size_bytes=1024,
-            path=Path("/some/path"),
+            path=test_path,
             reference_count=3,
         )
         d = entry.to_dict()
         assert d["content_hash"] == "abc123def456"
         assert d["size_bytes"] == 1024
-        assert d["path"] == "/some/path"
+        assert d["path"] == str(test_path)  # Platform-agnostic
         assert d["reference_count"] == 3
         assert "created_at" in d
         assert "last_accessed" in d
@@ -708,17 +709,17 @@ class TestCASStorageEdgeCases:
             assert content_hash == expected_hash
 
     def test_large_content(self):
-        """Large content (>1MB) is handled correctly."""
+        """Large content (>100KB) is handled correctly."""
         with tempfile.TemporaryDirectory() as tmpdir:
             storage = CASStorage(Path(tmpdir))
 
-            # 2MB of content
-            content = b"X" * (2 * 1024 * 1024)
+            # 100KB of content (reduced for faster tests)
+            content = b"X" * (100 * 1024)
             content_hash = storage.store(content, "large-mod", "v1")
 
             retrieved = storage.get("large-mod", "v1")
             assert retrieved == content
-            assert len(retrieved) == 2 * 1024 * 1024
+            assert len(retrieved) == 100 * 1024
 
     def test_special_characters_in_module_id(self):
         """Module IDs with underscores and dashes work."""

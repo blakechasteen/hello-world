@@ -8,6 +8,7 @@ Phase 1 - Core Safety (Shipped):
 - deception_detection: Behavioral probes, goal transparency
 - instrumental_convergence: Resource-seeking bounds, autonomy limits
 - audit_trail: Complete decision logging and provenance
+- monitoring: Latency tracking, Prometheus export, alignment metrics (E2.1 Dec 2025)
 
 Phase 2 - Advanced Interpretability (In Progress):
 - shap_lime_explainer: Model-agnostic feature attribution
@@ -46,6 +47,22 @@ from .audit_trail import (
     create_audit_trail,  # Factory function
 )
 
+# E2.1: Monitoring & Prometheus Metrics (December 2025)
+from .monitoring import (
+    AlignmentMonitor,
+    AlignmentMetrics,
+    AlertLevel,
+    Alert,
+    LatencyMetrics,
+    SafetyRiskLevel,
+    DeceptionFlagType,
+    ConvergenceViolationType,
+    AutonomyStepType,
+    ResourceMetricType,
+    get_global_monitor,
+    set_global_monitor,
+)
+
 # Phase 2: Advanced Interpretability
 from .agentic_explainability import (
     AgenticExplainer,
@@ -78,6 +95,19 @@ __all__ = [
     "create_detector",
     "create_guard",
     "create_audit_trail",
+    # E2.1 - Monitoring & Prometheus Metrics (December 2025)
+    "AlignmentMonitor",
+    "AlignmentMetrics",
+    "AlertLevel",
+    "Alert",
+    "LatencyMetrics",
+    "SafetyRiskLevel",
+    "DeceptionFlagType",
+    "ConvergenceViolationType",
+    "AutonomyStepType",
+    "ResourceMetricType",
+    "get_global_monitor",
+    "set_global_monitor",
     # Phase 2
     "AgenticExplainer",
     "StepExplanation",

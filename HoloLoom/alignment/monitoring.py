@@ -2,7 +2,14 @@
 Alignment Framework Production Monitoring
 
 Tracks latency metrics (P50, P95, P99) for all alignment components
-with real-time alerting and dashboard integration.
+with real-time alerting, dashboard integration, and Prometheus export.
+
+**E2.1 Update (December 2025)**: Added alignment-specific metrics:
+- Safety decision counters by risk level and outcome
+- Deception flag counters by type
+- Convergence violation counters by type
+- Autonomy action counters by step type
+- Resource utilization gauges by type
 
 Usage:
     from HoloLoom.alignment.monitoring import AlignmentMonitor
@@ -12,11 +19,18 @@ Usage:
     with monitor.track("guardrails"):
         # ... guardrails.evaluate() ...
 
+    # Record alignment decisions
+    monitor.record_safety_decision("HIGH", "blocked")
+    monitor.record_deception_flag("CONSISTENCY")
+    monitor.record_convergence_violation("POWER_SEEKING")
+    monitor.record_autonomy_action("research")
+    monitor.record_resource_usage("API_CALLS", 0.75)
+
     # View metrics
     print(monitor.get_summary())
 
-    # Check alerts
-    alerts = monitor.check_alerts()
+    # Export for Prometheus
+    print(monitor.export_prometheus())
 """
 
 import time
@@ -28,6 +42,7 @@ from enum import Enum
 from contextlib import contextmanager
 import json
 from pathlib import Path
+from collections import defaultdict
 
 
 class AlertLevel(Enum):
@@ -105,11 +120,96 @@ class Alert:
             "level": self.level.value,
             "component": self.component,
             "metric": self.metric,
-            "value": value,
+            "value": self.value,
             "threshold": self.threshold,
             "message": self.message,
             "timestamp": self.timestamp.isoformat(),
         }
+
+
+# =============================================================================
+# E2.1: Alignment-Specific Metrics (December 2025)
+# =============================================================================
+
+class SafetyRiskLevel(Enum):
+    """Risk levels for safety decisions (mirrors safety_guardrails.RiskLevel)."""
+    SAFE = "SAFE"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
+class DeceptionFlagType(Enum):
+    """Types of deception detection flags."""
+    HIDDEN_GOAL = "HIDDEN_GOAL"
+    GOAL_DRIFT = "GOAL_DRIFT"
+    INCONSISTENT = "INCONSISTENT"
+    CAPABILITY_HIDING = "CAPABILITY_HIDING"
+    REWARD_HACKING = "REWARD_HACKING"
+
+
+class ConvergenceViolationType(Enum):
+    """Types of instrumental convergence violations."""
+    POWER_SEEKING = "POWER_SEEKING"
+    RESOURCE_ACQUISITION = "RESOURCE_ACQUISITION"
+    SELF_MODIFICATION = "SELF_MODIFICATION"
+    SELF_PRESERVATION = "SELF_PRESERVATION"
+    GOAL_CONTENT_INTEGRITY = "GOAL_CONTENT_INTEGRITY"
+
+
+class AutonomyStepType(Enum):
+    """Types of autonomy actions (agentic reasoning steps)."""
+    RESEARCH = "research"
+    VERIFICATION = "verification"
+    PLAN_EXECUTE = "plan_execute"
+    DIRECT = "direct"
+
+
+class ResourceMetricType(Enum):
+    """Types of resources tracked for utilization."""
+    API_CALLS = "API_CALLS"
+    COMPUTE = "COMPUTE"
+    MEMORY = "MEMORY"
+    STORAGE = "STORAGE"
+    NETWORK = "NETWORK"
+
+
+@dataclass
+class AlignmentMetrics:
+    """
+    Counters and gauges for alignment-specific metrics.
+
+    Designed for Prometheus export with labeled dimensions.
+    """
+    # Safety decision counters: {(risk_level, outcome): count}
+    safety_decisions: Dict[Tuple[str, str], int] = field(default_factory=lambda: defaultdict(int))
+
+    # Deception flag counters: {flag_type: count}
+    deception_flags: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+
+    # Convergence violation counters: {violation_type: count}
+    convergence_violations: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+
+    # Autonomy action counters: {step_type: count}
+    autonomy_actions: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+
+    # Resource utilization gauges: {resource_type: ratio (0.0-1.0)}
+    resource_utilization: Dict[str, float] = field(default_factory=dict)
+
+    # Timestamps for rate calculation
+    first_event: Optional[datetime] = None
+    last_event: Optional[datetime] = None
+
+    def reset(self):
+        """Reset all counters (useful for testing or periodic reset)."""
+        self.safety_decisions.clear()
+        self.deception_flags.clear()
+        self.convergence_violations.clear()
+        self.autonomy_actions.clear()
+        self.resource_utilization.clear()
+        self.first_event = None
+        self.last_event = None
 
 
 class AlignmentMonitor:
@@ -159,6 +259,9 @@ class AlignmentMonitor:
 
         # Session tracking
         self.session_start = datetime.now()
+
+        # E2.1: Alignment-specific metrics (December 2025)
+        self.alignment_metrics = AlignmentMetrics()
 
     def _get_or_create_metrics(self, component: str) -> LatencyMetrics:
         """Get or create metrics for component."""
@@ -349,6 +452,216 @@ class AlignmentMonitor:
         self.alerts.clear()
         self.alert_cooldown.clear()
 
+    # =========================================================================
+    # E2.1: Alignment-Specific Metric Recording Methods (December 2025)
+    # =========================================================================
+
+    def record_safety_decision(
+        self,
+        risk_level: str,
+        outcome: str,
+    ):
+        """
+        Record a safety guardrails decision.
+
+        Args:
+            risk_level: One of SAFE, LOW, MEDIUM, HIGH, CRITICAL
+            outcome: Either "allowed" or "blocked"
+
+        Usage:
+            monitor.record_safety_decision("HIGH", "blocked")
+            monitor.record_safety_decision("LOW", "allowed")
+        """
+        # Normalize inputs
+        risk_level = risk_level.upper()
+        outcome = outcome.lower()
+
+        # Validate
+        valid_levels = {"SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL"}
+        valid_outcomes = {"allowed", "blocked"}
+
+        if risk_level not in valid_levels:
+            risk_level = "UNKNOWN"
+        if outcome not in valid_outcomes:
+            outcome = "unknown"
+
+        # Record
+        key = (risk_level, outcome)
+        self.alignment_metrics.safety_decisions[key] += 1
+        self._update_event_timestamps()
+
+    def record_deception_flag(self, flag_type: str):
+        """
+        Record a deception detection flag.
+
+        Args:
+            flag_type: One of HIDDEN_GOAL, GOAL_DRIFT, INCONSISTENT,
+                      CAPABILITY_HIDING, REWARD_HACKING
+
+        Usage:
+            monitor.record_deception_flag("GOAL_DRIFT")
+        """
+        flag_type = flag_type.upper()
+        valid_types = {
+            "HIDDEN_GOAL", "GOAL_DRIFT", "INCONSISTENT",
+            "CAPABILITY_HIDING", "REWARD_HACKING"
+        }
+
+        if flag_type not in valid_types:
+            flag_type = "UNKNOWN"
+
+        self.alignment_metrics.deception_flags[flag_type] += 1
+        self._update_event_timestamps()
+
+        # High severity flags trigger alerts
+        if flag_type in {"HIDDEN_GOAL", "GOAL_DRIFT"}:
+            self._create_alert(
+                level=AlertLevel.CRITICAL,
+                component="deception_detection",
+                metric="deception_flag",
+                value=1.0,
+                threshold=0.0,
+                message=f"Deception flag raised: {flag_type}"
+            )
+
+    def record_convergence_violation(self, violation_type: str):
+        """
+        Record an instrumental convergence violation.
+
+        Args:
+            violation_type: One of POWER_SEEKING, RESOURCE_ACQUISITION,
+                           SELF_MODIFICATION, SELF_PRESERVATION, GOAL_CONTENT_INTEGRITY
+
+        Usage:
+            monitor.record_convergence_violation("POWER_SEEKING")
+        """
+        violation_type = violation_type.upper()
+        valid_types = {
+            "POWER_SEEKING", "RESOURCE_ACQUISITION", "SELF_MODIFICATION",
+            "SELF_PRESERVATION", "GOAL_CONTENT_INTEGRITY"
+        }
+
+        if violation_type not in valid_types:
+            violation_type = "UNKNOWN"
+
+        self.alignment_metrics.convergence_violations[violation_type] += 1
+        self._update_event_timestamps()
+
+        # All convergence violations are concerning
+        self._create_alert(
+            level=AlertLevel.WARNING,
+            component="convergence_guard",
+            metric="convergence_violation",
+            value=1.0,
+            threshold=0.0,
+            message=f"Convergence violation detected: {violation_type}"
+        )
+
+    def record_autonomy_action(self, step_type: str):
+        """
+        Record an autonomy action (agentic reasoning step).
+
+        Args:
+            step_type: One of research, verification, plan_execute, direct
+
+        Usage:
+            monitor.record_autonomy_action("research")
+        """
+        step_type = step_type.lower()
+        valid_types = {"research", "verification", "plan_execute", "direct"}
+
+        if step_type not in valid_types:
+            step_type = "unknown"
+
+        self.alignment_metrics.autonomy_actions[step_type] += 1
+        self._update_event_timestamps()
+
+    def record_resource_usage(self, resource_type: str, ratio: float):
+        """
+        Record resource utilization ratio.
+
+        Args:
+            resource_type: One of API_CALLS, COMPUTE, MEMORY, STORAGE, NETWORK
+            ratio: Utilization ratio from 0.0 to 1.0
+
+        Usage:
+            monitor.record_resource_usage("API_CALLS", 0.75)
+        """
+        resource_type = resource_type.upper()
+        valid_types = {"API_CALLS", "COMPUTE", "MEMORY", "STORAGE", "NETWORK"}
+
+        if resource_type not in valid_types:
+            resource_type = "UNKNOWN"
+
+        # Clamp ratio to [0.0, 1.0]
+        ratio = max(0.0, min(1.0, ratio))
+
+        self.alignment_metrics.resource_utilization[resource_type] = ratio
+        self._update_event_timestamps()
+
+        # Alert on high resource usage
+        if ratio > 0.9:
+            self._create_alert(
+                level=AlertLevel.WARNING,
+                component="resource_monitor",
+                metric=f"resource_{resource_type.lower()}",
+                value=ratio,
+                threshold=0.9,
+                message=f"High resource utilization: {resource_type} at {ratio:.1%}"
+            )
+
+    def _update_event_timestamps(self):
+        """Update first/last event timestamps."""
+        now = datetime.now()
+        if self.alignment_metrics.first_event is None:
+            self.alignment_metrics.first_event = now
+        self.alignment_metrics.last_event = now
+
+    def get_alignment_summary(self) -> Dict[str, Any]:
+        """
+        Get summary of alignment-specific metrics.
+
+        Returns:
+            Dictionary with all alignment counters and gauges
+        """
+        am = self.alignment_metrics
+
+        # Calculate totals
+        total_safety_decisions = sum(am.safety_decisions.values())
+        total_blocked = sum(
+            count for (level, outcome), count in am.safety_decisions.items()
+            if outcome == "blocked"
+        )
+        total_deception_flags = sum(am.deception_flags.values())
+        total_convergence_violations = sum(am.convergence_violations.values())
+        total_autonomy_actions = sum(am.autonomy_actions.values())
+
+        return {
+            "safety_decisions": {
+                "total": total_safety_decisions,
+                "blocked": total_blocked,
+                "blocked_rate": total_blocked / total_safety_decisions if total_safety_decisions > 0 else 0.0,
+                "by_risk_level_outcome": dict(am.safety_decisions),
+            },
+            "deception_flags": {
+                "total": total_deception_flags,
+                "by_type": dict(am.deception_flags),
+            },
+            "convergence_violations": {
+                "total": total_convergence_violations,
+                "by_type": dict(am.convergence_violations),
+            },
+            "autonomy_actions": {
+                "total": total_autonomy_actions,
+                "by_step_type": dict(am.autonomy_actions),
+            },
+            "resource_utilization": dict(am.resource_utilization),
+            "event_window": {
+                "first_event": am.first_event.isoformat() if am.first_event else None,
+                "last_event": am.last_event.isoformat() if am.last_event else None,
+            },
+        }
+
     def persist_metrics(self):
         """Persist metrics to disk."""
         if not self.persist_path:
@@ -415,10 +728,30 @@ class AlignmentMonitor:
         """
         Export metrics in Prometheus format.
 
+        Includes:
+        - Latency metrics (P50, P95, P99 per component)
+        - Alert counts
+        - E2.1 (December 2025): Alignment-specific metrics:
+          - alignment_safety_decisions_total{risk_level, outcome}
+          - alignment_deception_flags_total{flag_type}
+          - alignment_convergence_violations_total{type}
+          - alignment_autonomy_actions_total{step_type}
+          - alignment_resource_utilization_ratio{resource_type}
+
         Returns:
             Metrics in Prometheus text format
         """
         lines = []
+
+        # --- Latency metrics ---
+        lines.append("# HELP alignment_latency_p50 50th percentile latency in milliseconds")
+        lines.append("# TYPE alignment_latency_p50 gauge")
+        lines.append("# HELP alignment_latency_p95 95th percentile latency in milliseconds")
+        lines.append("# TYPE alignment_latency_p95 gauge")
+        lines.append("# HELP alignment_latency_p99 99th percentile latency in milliseconds")
+        lines.append("# TYPE alignment_latency_p99 gauge")
+        lines.append("# HELP alignment_samples_total Total samples recorded")
+        lines.append("# TYPE alignment_samples_total counter")
 
         for component, metrics in self.metrics.items():
             stats = metrics.get_stats()
@@ -434,10 +767,70 @@ class AlignmentMonitor:
             # Sample count
             lines.append(f'alignment_samples_total{{component="{component}"}} {stats["count"]}')
 
-        # Alert counts
+        # --- Alert counts ---
+        lines.append("")
+        lines.append("# HELP alignment_alerts_total Total alerts by severity level")
+        lines.append("# TYPE alignment_alerts_total counter")
+
         for level in AlertLevel:
             count = len([a for a in self.alerts if a.level == level])
             lines.append(f'alignment_alerts_total{{level="{level.value}"}} {count}')
+
+        # =================================================================
+        # E2.1: Alignment-Specific Metrics (December 2025)
+        # =================================================================
+
+        am = self.alignment_metrics
+
+        # --- Safety Decision Counters ---
+        lines.append("")
+        lines.append("# HELP alignment_safety_decisions_total Total safety decisions by risk level and outcome")
+        lines.append("# TYPE alignment_safety_decisions_total counter")
+
+        for (risk_level, outcome), count in am.safety_decisions.items():
+            lines.append(
+                f'alignment_safety_decisions_total{{risk_level="{risk_level}",outcome="{outcome}"}} {count}'
+            )
+
+        # --- Deception Flag Counters ---
+        lines.append("")
+        lines.append("# HELP alignment_deception_flags_total Total deception flags by type")
+        lines.append("# TYPE alignment_deception_flags_total counter")
+
+        for flag_type, count in am.deception_flags.items():
+            lines.append(
+                f'alignment_deception_flags_total{{flag_type="{flag_type}"}} {count}'
+            )
+
+        # --- Convergence Violation Counters ---
+        lines.append("")
+        lines.append("# HELP alignment_convergence_violations_total Total convergence violations by type")
+        lines.append("# TYPE alignment_convergence_violations_total counter")
+
+        for violation_type, count in am.convergence_violations.items():
+            lines.append(
+                f'alignment_convergence_violations_total{{type="{violation_type}"}} {count}'
+            )
+
+        # --- Autonomy Action Counters ---
+        lines.append("")
+        lines.append("# HELP alignment_autonomy_actions_total Total autonomy actions by step type")
+        lines.append("# TYPE alignment_autonomy_actions_total counter")
+
+        for step_type, count in am.autonomy_actions.items():
+            lines.append(
+                f'alignment_autonomy_actions_total{{step_type="{step_type}"}} {count}'
+            )
+
+        # --- Resource Utilization Gauges ---
+        lines.append("")
+        lines.append("# HELP alignment_resource_utilization_ratio Resource utilization ratio (0.0-1.0)")
+        lines.append("# TYPE alignment_resource_utilization_ratio gauge")
+
+        for resource_type, ratio in am.resource_utilization.items():
+            lines.append(
+                f'alignment_resource_utilization_ratio{{resource_type="{resource_type}"}} {ratio}'
+            )
 
         return "\n".join(lines)
 
