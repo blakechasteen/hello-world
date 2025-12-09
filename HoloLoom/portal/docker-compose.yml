@@ -1,0 +1,283 @@
+# Portal WASM Execution System - Docker Compose
+#
+# This configuration provides a complete Portal deployment with:
+# - 1 Portal Server (control plane)
+# - 6 Node Daemons (compute nodes for load balancing demo)
+# - Shared network for inter-service communication
+#
+# Usage:
+#   docker-compose up -d       # Start all services
+#   docker-compose logs -f     # View logs
+#   docker-compose down        # Stop all services
+#
+# Test endpoints:
+#   Portal Server: http://localhost:8080/health
+#   Node 1:        http://localhost:9091/health
+#   Node 2:        http://localhost:9092/health
+#   Node 3:        http://localhost:9093/health
+#   Node 4:        http://localhost:9094/health
+#   Node 5:        http://localhost:9095/health
+#   Node 6:        http://localhost:9096/health
+
+version: "3.8"
+
+services:
+  # =============================================================================
+  # Portal Server - Control Plane
+  # =============================================================================
+  portal-server:
+    build:
+      context: ..
+      dockerfile: portal/Dockerfile
+      target: portal-server
+    container_name: portal-server
+    ports:
+      - "8080:8080"
+    environment:
+      - PORTAL_LOOM_ID=loom-docker
+      - PORTAL_HOST=0.0.0.0
+      - PORTAL_PORT=8080
+      - PORTAL_SHARED_SECRET=portal-demo-secret-2025
+      - PORTAL_NODE_TIMEOUT=120
+      - PORTAL_LOG_LEVEL=INFO
+      - PORTAL_LOG_JSON=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - portal-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # Node Daemon 1 - Compute Node
+  # =============================================================================
+  node-daemon-1:
+    build:
+      context: ..
+      dockerfile: portal/Dockerfile
+      target: node-daemon
+    container_name: node-daemon-1
+    ports:
+      - "9091:9090"
+    environment:
+      - NODE_ID=node-1
+      - NODE_HOST=0.0.0.0
+      - NODE_PORT=9090
+      - NODE_PORTAL_URL=http://portal-server:8080
+      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      - NODE_HEARTBEAT_INTERVAL=30
+      - NODE_MAX_JOBS=4
+      - NODE_JOB_TIMEOUT=60
+      - NODE_LOG_LEVEL=INFO
+      - NODE_LOG_JSON=false
+    volumes:
+      - ./wasm_modules:/app/wasm_modules:ro
+    depends_on:
+      portal-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - portal-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # Node Daemon 2 - Compute Node (for load balancing demo)
+  # =============================================================================
+  node-daemon-2:
+    build:
+      context: ..
+      dockerfile: portal/Dockerfile
+      target: node-daemon
+    container_name: node-daemon-2
+    ports:
+      - "9092:9090"
+    environment:
+      - NODE_ID=node-2
+      - NODE_HOST=0.0.0.0
+      - NODE_PORT=9090
+      - NODE_PORTAL_URL=http://portal-server:8080
+      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      - NODE_HEARTBEAT_INTERVAL=30
+      - NODE_MAX_JOBS=4
+      - NODE_JOB_TIMEOUT=60
+      - NODE_LOG_LEVEL=INFO
+      - NODE_LOG_JSON=false
+    volumes:
+      - ./wasm_modules:/app/wasm_modules:ro
+    depends_on:
+      portal-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - portal-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # Node Daemon 3 - Compute Node
+  # =============================================================================
+  node-daemon-3:
+    build:
+      context: ..
+      dockerfile: portal/Dockerfile
+      target: node-daemon
+    container_name: node-daemon-3
+    ports:
+      - "9093:9090"
+    environment:
+      - NODE_ID=node-3
+      - NODE_HOST=0.0.0.0
+      - NODE_PORT=9090
+      - NODE_PORTAL_URL=http://portal-server:8080
+      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      - NODE_HEARTBEAT_INTERVAL=30
+      - NODE_MAX_JOBS=4
+      - NODE_JOB_TIMEOUT=60
+      - NODE_LOG_LEVEL=INFO
+      - NODE_LOG_JSON=false
+    volumes:
+      - ./wasm_modules:/app/wasm_modules:ro
+    depends_on:
+      portal-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - portal-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # Node Daemon 4 - Compute Node
+  # =============================================================================
+  node-daemon-4:
+    build:
+      context: ..
+      dockerfile: portal/Dockerfile
+      target: node-daemon
+    container_name: node-daemon-4
+    ports:
+      - "9094:9090"
+    environment:
+      - NODE_ID=node-4
+      - NODE_HOST=0.0.0.0
+      - NODE_PORT=9090
+      - NODE_PORTAL_URL=http://portal-server:8080
+      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      - NODE_HEARTBEAT_INTERVAL=30
+      - NODE_MAX_JOBS=4
+      - NODE_JOB_TIMEOUT=60
+      - NODE_LOG_LEVEL=INFO
+      - NODE_LOG_JSON=false
+    volumes:
+      - ./wasm_modules:/app/wasm_modules:ro
+    depends_on:
+      portal-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - portal-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # Node Daemon 5 - Compute Node
+  # =============================================================================
+  node-daemon-5:
+    build:
+      context: ..
+      dockerfile: portal/Dockerfile
+      target: node-daemon
+    container_name: node-daemon-5
+    ports:
+      - "9095:9090"
+    environment:
+      - NODE_ID=node-5
+      - NODE_HOST=0.0.0.0
+      - NODE_PORT=9090
+      - NODE_PORTAL_URL=http://portal-server:8080
+      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      - NODE_HEARTBEAT_INTERVAL=30
+      - NODE_MAX_JOBS=4
+      - NODE_JOB_TIMEOUT=60
+      - NODE_LOG_LEVEL=INFO
+      - NODE_LOG_JSON=false
+    volumes:
+      - ./wasm_modules:/app/wasm_modules:ro
+    depends_on:
+      portal-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - portal-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # Node Daemon 6 - Compute Node
+  # =============================================================================
+  node-daemon-6:
+    build:
+      context: ..
+      dockerfile: portal/Dockerfile
+      target: node-daemon
+    container_name: node-daemon-6
+    ports:
+      - "9096:9090"
+    environment:
+      - NODE_ID=node-6
+      - NODE_HOST=0.0.0.0
+      - NODE_PORT=9090
+      - NODE_PORTAL_URL=http://portal-server:8080
+      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      - NODE_HEARTBEAT_INTERVAL=30
+      - NODE_MAX_JOBS=4
+      - NODE_JOB_TIMEOUT=60
+      - NODE_LOG_LEVEL=INFO
+      - NODE_LOG_JSON=false
+    volumes:
+      - ./wasm_modules:/app/wasm_modules:ro
+    depends_on:
+      portal-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - portal-network
+    restart: unless-stopped
+
+networks:
+  portal-network:
+    driver: bridge
+    name: portal-network
+
+volumes:
+  wasm-modules:
+    driver: local

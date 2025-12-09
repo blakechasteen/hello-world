@@ -9,6 +9,7 @@ Phase 1 - Core Safety (Shipped):
 - instrumental_convergence: Resource-seeking bounds, autonomy limits
 - audit_trail: Complete decision logging and provenance
 - monitoring: Latency tracking, Prometheus export, alignment metrics (E2.1 Dec 2025)
+- alerting: Webhook alerts for Slack/Discord/Email (E2.3 Dec 2025)
 
 Phase 2 - Advanced Interpretability (In Progress):
 - shap_lime_explainer: Model-agnostic feature attribution
@@ -63,6 +64,21 @@ from .monitoring import (
     set_global_monitor,
 )
 
+# E2.3: Webhook Alerting (December 2025)
+from .alerting import (
+    AlertDispatcher,
+    AlertConfig,
+    AlertSeverity,
+    AlertChannel,
+    Alert as WebhookAlert,  # Rename to avoid conflict with monitoring.Alert
+    get_alert_dispatcher,
+    set_alert_dispatcher,
+    dispatch_alignment_alert,
+    alert_deception_detected,
+    alert_convergence_violation,
+    alert_high_risk_action,
+)
+
 # Phase 2: Advanced Interpretability
 from .agentic_explainability import (
     AgenticExplainer,
@@ -108,6 +124,18 @@ __all__ = [
     "ResourceMetricType",
     "get_global_monitor",
     "set_global_monitor",
+    # E2.3 - Webhook Alerting (December 2025)
+    "AlertDispatcher",
+    "AlertConfig",
+    "AlertSeverity",
+    "AlertChannel",
+    "WebhookAlert",
+    "get_alert_dispatcher",
+    "set_alert_dispatcher",
+    "dispatch_alignment_alert",
+    "alert_deception_detected",
+    "alert_convergence_violation",
+    "alert_high_risk_action",
     # Phase 2
     "AgenticExplainer",
     "StepExplanation",

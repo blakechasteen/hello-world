@@ -11,150 +11,466 @@ Tests integration between:
 
 Author: Claude Code
 Date: 2025-12-09
+Updated: 2025-12-09 (3 E's: Enrichment, Elegance, Extensibility)
 Tests: 15 integration tests across 4 test classes
+
+Example Usage:
+    # Run all integration tests
+    pytest HoloLoom/tests/integration/test_cove_integration.py -v
+
+    # Run specific test class
+    pytest HoloLoom/tests/integration/test_cove_integration.py::TestVerificationMRFBridgeIntegration -v
+
+    # Run with coverage
+    pytest HoloLoom/tests/integration/test_cove_integration.py --cov=HoloLoom.prompting
 """
 
+from __future__ import annotations
+
+import re
 import pytest
-import asyncio
 from pathlib import Path
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from dataclasses import dataclass
-from typing import Dict, Any, List, Optional
+from unittest.mock import Mock, AsyncMock, patch
+from dataclasses import dataclass, field
+from typing import Dict, Any, List, Optional, Union
+from enum import Enum
+
+# ===== Module Imports (consolidated at top) =====
+# These are imported at module level to avoid repeated imports in test methods
+
+# Verification modules
+from HoloLoom.verification.protocol import VerificationStatus
+
+# Prompting modules
+from HoloLoom.prompting.verification_integration import (
+    VerificationMRFBridge,
+    CoVeRefinementStrategy,
+)
+from HoloLoom.prompting.testing.verification_bridge import (
+    PromptVerificationBridge,
+    VerificationInsights,
+)
+from HoloLoom.prompting.testing.protocol import PromptTestCase, PromptTestResult
+from HoloLoom.prompting.testing.metrics_collector import MetricsCollector
+from HoloLoom.prompting.analytics.dashboard import create_dashboard
+
+# Visualization modules
+from HoloLoom.visualization.verification_panel import (
+    VerificationPanelData,
+    Contradiction,
+    SeverityLevel,
+    render_verification_panel,
+    _render_sparkline,
+)
 
 
-# ===== Test Fixtures =====
+# ===== Type Aliases for Clarity =====
+
+ConfidenceValue = float  # 0.0 to 1.0
+LatencyMs = float  # Milliseconds
+ClaimCount = int
+
+
+# ===== Mock Data Classes with Type Hints =====
 
 @dataclass
 class MockClaim:
-    """Mock claim for testing."""
+    """
+    Mock claim for testing verification results.
+
+    Attributes:
+        text: The claim text being verified.
+        verified: Whether the claim was verified as accurate.
+
+    Example:
+        >>> claim = MockClaim(text="Thompson Sampling uses Bayesian priors", verified=True)
+        >>> assert claim.verified is True
+    """
     text: str
     verified: bool = True
 
 
 @dataclass
 class MockContradiction:
-    """Mock contradiction for testing."""
+    """
+    Mock contradiction for testing contradiction detection.
+
+    Attributes:
+        contradiction_type: Type of contradiction (factual, logical, etc.).
+        claim: The claim that was contradicted.
+        explanation: Human-readable explanation of the contradiction.
+
+    Example:
+        >>> contradiction = MockContradiction(
+        ...     contradiction_type=Mock(value="logical"),
+        ...     claim=MockClaim(text="Contradicting claim"),
+        ...     explanation="Logic error detected"
+        ... )
+    """
     contradiction_type: Mock
     claim: MockClaim
     explanation: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.contradiction_type is None:
             self.contradiction_type = Mock(value="factual")
 
 
 @dataclass
 class MockVerificationResult:
-    """Mock verification result matching VerificationResult interface."""
-    status: Mock
+    """
+    Mock verification result matching VerificationResult protocol interface.
+
+    This dataclass mirrors the real VerificationResult for testing purposes,
+    allowing full control over verification outcomes without LLM calls.
+
+    Attributes:
+        status: VerificationStatus enum value (VERIFIED, UNCERTAIN, CONTRADICTED, etc.).
+        claims: List of extracted and verified claims.
+        contradictions: List of detected contradictions.
+        corrected_response: The response after corrections applied.
+        confidence: Initial confidence score (0.0-1.0).
+        confidence_after: Confidence after verification (0.0-1.0).
+        verification_passed: Whether verification succeeded overall.
+        latency_ms: Time taken for verification in milliseconds.
+        contradictions_found: Alias for contradictions (backward compat).
+
+    Example:
+        >>> result = create_mock_verification_result(
+        ...     status=VerificationStatus.VERIFIED,
+        ...     confidence=0.85
+        ... )
+        >>> assert result.verification_passed is True
+    """
+    status: Union[VerificationStatus, str]
     claims: List[MockClaim]
     contradictions: List[Any]
     corrected_response: str
-    confidence: float
-    confidence_after: float
+    confidence: ConfidenceValue
+    confidence_after: ConfidenceValue
     verification_passed: bool
-    latency_ms: float = 100.0
+    latency_ms: LatencyMs = 100.0
     contradictions_found: Optional[List[Any]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.contradictions_found is None:
             self.contradictions_found = self.contradictions
 
 
-@pytest.fixture
-def mock_verification_status():
-    """Mock VerificationStatus enum."""
-    mock = Mock()
-    mock.VERIFIED = "verified"
-    mock.PARTIALLY_VERIFIED = "partially_verified"
-    mock.CONTRADICTED = "contradicted"
-    mock.UNKNOWN = "unknown"
-    return mock
+# ===== Factory Functions for Test Data =====
+
+def create_mock_claim(
+    text: str = "Test claim",
+    verified: bool = True
+) -> MockClaim:
+    """
+    Factory function for creating mock claims.
+
+    Args:
+        text: The claim text.
+        verified: Whether the claim is verified.
+
+    Returns:
+        MockClaim instance.
+
+    Example:
+        >>> claim = create_mock_claim("Python uses indentation", verified=True)
+    """
+    return MockClaim(text=text, verified=verified)
 
 
-@pytest.fixture
-def mock_verification_result_success(mock_verification_status):
-    """Create a successful mock verification result."""
-    status = Mock()
-    status.__eq__ = lambda self, other: False  # Default to not verified for testing
+def create_mock_contradiction(
+    contradiction_type: str = "factual",
+    claim_text: str = "Contradicting claim",
+    explanation: str = "Error detected"
+) -> MockContradiction:
+    """
+    Factory function for creating mock contradictions.
+
+    Args:
+        contradiction_type: Type of contradiction (factual, logical, etc.).
+        claim_text: Text of the contradicted claim.
+        explanation: Human-readable explanation.
+
+    Returns:
+        MockContradiction instance.
+
+    Example:
+        >>> c = create_mock_contradiction("logical", "X and not-X", "Contradiction")
+    """
+    return MockContradiction(
+        contradiction_type=Mock(value=contradiction_type),
+        claim=create_mock_claim(claim_text, verified=False),
+        explanation=explanation
+    )
+
+
+def create_mock_verification_result(
+    status: VerificationStatus = VerificationStatus.VERIFIED,
+    num_claims: int = 3,
+    verified_ratio: float = 0.67,
+    num_contradictions: int = 0,
+    corrected_response: str = "Verified response text",
+    confidence: ConfidenceValue = 0.85,
+    confidence_after: ConfidenceValue = 0.92,
+    verification_passed: bool = True,
+    latency_ms: LatencyMs = 100.0
+) -> MockVerificationResult:
+    """
+    Factory function for creating mock verification results.
+
+    Creates a MockVerificationResult with controllable parameters for testing
+    different verification scenarios (success, failure, partial).
+
+    Args:
+        status: VerificationStatus enum value.
+        num_claims: Total number of claims to generate.
+        verified_ratio: Ratio of claims that should be verified (0.0-1.0).
+        num_contradictions: Number of contradictions to include.
+        corrected_response: Response text after corrections.
+        confidence: Initial confidence score.
+        confidence_after: Final confidence score.
+        verification_passed: Overall verification success.
+        latency_ms: Simulated verification latency.
+
+    Returns:
+        MockVerificationResult instance.
+
+    Example:
+        >>> # Create successful verification
+        >>> result = create_mock_verification_result(
+        ...     status=VerificationStatus.VERIFIED,
+        ...     confidence=0.90
+        ... )
+
+        >>> # Create failed verification with contradictions
+        >>> result = create_mock_verification_result(
+        ...     status=VerificationStatus.CONTRADICTED,
+        ...     num_contradictions=2,
+        ...     verification_passed=False
+        ... )
+    """
+    # Generate claims with specified verification ratio
+    num_verified = int(num_claims * verified_ratio)
+    claims = [
+        create_mock_claim(f"Claim {i+1}", verified=(i < num_verified))
+        for i in range(num_claims)
+    ]
+
+    # Generate contradictions if requested
+    contradictions = [
+        create_mock_contradiction(
+            "logical" if i % 2 == 0 else "factual",
+            f"Contradicting claim {i+1}",
+            f"Error {i+1} detected"
+        )
+        for i in range(num_contradictions)
+    ]
 
     return MockVerificationResult(
-        status=mock_verification_status.VERIFIED,
-        claims=[
-            MockClaim(text="Claim 1", verified=True),
-            MockClaim(text="Claim 2", verified=True),
-            MockClaim(text="Claim 3", verified=False),
-        ],
-        contradictions=[],
-        corrected_response="Verified response text",
+        status=status,
+        claims=claims,
+        contradictions=contradictions,
+        corrected_response=corrected_response,
+        confidence=confidence,
+        confidence_after=confidence_after,
+        verification_passed=verification_passed,
+        latency_ms=latency_ms
+    )
+
+
+def create_mock_test_case(
+    name: str = "test_case",
+    prompt_template: str = "Explain {concept}",
+    test_inputs: Optional[List[Dict[str, Any]]] = None,
+    expected_qualities: Optional[Dict[str, float]] = None
+) -> PromptTestCase:
+    """
+    Factory function for creating mock test cases.
+
+    Args:
+        name: Test case name.
+        prompt_template: Template string with placeholders.
+        test_inputs: List of input dictionaries.
+        expected_qualities: Quality metric expectations.
+
+    Returns:
+        PromptTestCase instance.
+
+    Example:
+        >>> tc = create_mock_test_case(
+        ...     name="test_thompson",
+        ...     prompt_template="Explain {concept}",
+        ...     test_inputs=[{"concept": "Thompson Sampling"}]
+        ... )
+    """
+    return PromptTestCase(
+        name=name,
+        prompt_template=prompt_template,
+        test_inputs=test_inputs or [{}],
+        expected_qualities=expected_qualities or {"accuracy": 0.8}
+    )
+
+
+def create_mock_test_result(
+    test_case: Optional[PromptTestCase] = None,
+    quality_scores: Optional[Dict[str, float]] = None,
+    regressions: Optional[List[str]] = None
+) -> Mock:
+    """
+    Factory function for creating mock test results.
+
+    Args:
+        test_case: Associated test case.
+        quality_scores: Quality metric scores.
+        regressions: List of detected regressions.
+
+    Returns:
+        Mock PromptTestResult instance.
+
+    Example:
+        >>> result = create_mock_test_result(
+        ...     quality_scores={"overall": 0.75},
+        ...     regressions=["factual error"]
+        ... )
+    """
+    mock_result = Mock(spec=PromptTestResult)
+    mock_result.test_case = test_case or create_mock_test_case()
+    mock_result.quality_scores = quality_scores or {"overall": 0.75}
+    mock_result.regressions_detected = regressions or []
+    return mock_result
+
+
+# ===== Pytest Fixtures =====
+
+@pytest.fixture
+def mock_verification_status() -> VerificationStatus:
+    """
+    Provide the actual VerificationStatus enum for tests.
+
+    Returns the real enum rather than a mock to ensure tests use
+    valid status values that match production code.
+
+    Returns:
+        VerificationStatus enum class.
+
+    Note:
+        The enum has values: VERIFIED, CONTRADICTED, UNCERTAIN, NEEDS_HUMAN, SKIPPED
+    """
+    return VerificationStatus
+
+
+@pytest.fixture
+def mock_verification_result_success() -> MockVerificationResult:
+    """
+    Create a successful mock verification result.
+
+    Uses factory function for consistent test data creation.
+    Represents a typical successful verification with 3 claims
+    (2 verified, 1 unverified) and no contradictions.
+
+    Returns:
+        MockVerificationResult with VERIFIED status.
+    """
+    return create_mock_verification_result(
+        status=VerificationStatus.VERIFIED,
+        num_claims=3,
+        verified_ratio=0.67,  # 2 of 3 verified
+        num_contradictions=0,
         confidence=0.85,
         confidence_after=0.92,
-        verification_passed=True,
+        verification_passed=True
     )
 
 
 @pytest.fixture
-def mock_verification_result_with_contradictions(mock_verification_status):
-    """Create a mock verification result with contradictions."""
-    contradiction_type = Mock(value="logical")
+def mock_verification_result_with_contradictions() -> MockVerificationResult:
+    """
+    Create a mock verification result with contradictions.
 
-    return MockVerificationResult(
-        status=mock_verification_status.PARTIALLY_VERIFIED,
-        claims=[
-            MockClaim(text="Claim A", verified=True),
-            MockClaim(text="Claim B", verified=False),
-        ],
-        contradictions=[
-            MockContradiction(
-                contradiction_type=contradiction_type,
-                claim=MockClaim(text="Contradicting claim"),
-                explanation="Logic error detected"
-            )
-        ],
+    Represents a partially successful verification where contradictions
+    were detected and the status is UNCERTAIN (formerly PARTIALLY_VERIFIED).
+
+    Returns:
+        MockVerificationResult with UNCERTAIN status and 1 contradiction.
+    """
+    return create_mock_verification_result(
+        status=VerificationStatus.UNCERTAIN,  # Correct enum value
+        num_claims=2,
+        verified_ratio=0.5,  # 1 of 2 verified
+        num_contradictions=1,
         corrected_response="Corrected response with fix",
         confidence=0.65,
         confidence_after=0.78,
-        verification_passed=False,
+        verification_passed=False
     )
 
 
 @pytest.fixture
-def mock_verification_chain(mock_verification_result_success):
-    """Create a mock VerificationChain."""
+def mock_verification_chain(mock_verification_result_success: MockVerificationResult) -> AsyncMock:
+    """
+    Create a mock VerificationChain for async verification testing.
+
+    The mock chain returns the success result by default. Tests can
+    override the return value for specific scenarios.
+
+    Args:
+        mock_verification_result_success: Default result to return.
+
+    Returns:
+        AsyncMock configured to return verification results.
+    """
     mock = AsyncMock()
     mock.verify = AsyncMock(return_value=mock_verification_result_success)
     return mock
 
 
 @pytest.fixture
-def temp_dir(tmp_path):
-    """Create a temporary directory for test files."""
+def temp_dir(tmp_path: Path) -> Path:
+    """
+    Create a temporary directory for test files.
+
+    Args:
+        tmp_path: pytest-provided temporary path.
+
+    Returns:
+        Path to temporary directory.
+    """
     return tmp_path
 
 
 # ===== Class 1: TestVerificationMRFBridgeIntegration =====
 
 class TestVerificationMRFBridgeIntegration:
-    """Tests for VerificationMRFBridge integration with MRF system."""
+    """
+    Tests for VerificationMRFBridge integration with MRF system.
+
+    These tests verify that the bridge correctly:
+    - Enhances responses through the verification chain
+    - Handles graceful fallback when verification unavailable
+    - Extracts and weights quality signals correctly
+    - Returns appropriate applicability scores for CoVe strategy
+    """
 
     @pytest.mark.asyncio
-    async def test_enhance_with_cove_full_flow(self, mock_verification_chain):
-        """Bridge enhances response through verification chain."""
-        from HoloLoom.prompting.verification_integration import VerificationMRFBridge
+    async def test_enhance_with_cove_full_flow(
+        self,
+        mock_verification_chain: AsyncMock
+    ) -> None:
+        """
+        Bridge enhances response through verification chain.
 
-        # Create a simple mock result - use spec to limit auto-created attributes
-        from HoloLoom.verification.protocol import VerificationStatus
-
-        simple_result = Mock()
-        simple_result.status = VerificationStatus.VERIFIED
-        simple_result.claims = [Mock(verified=True), Mock(verified=True), Mock(verified=False)]
-        simple_result.contradictions = []
-        simple_result.corrected_response = "Verified response text"
-        simple_result.confidence = 0.85
-        simple_result.confidence_after = 0.92
-        simple_result.verification_passed = True
-
-        mock_verification_chain.verify = AsyncMock(return_value=simple_result)
+        Verifies the complete flow from query submission through
+        verification and result extraction.
+        """
+        # Create a verification result using factory function
+        verification_result = create_mock_verification_result(
+            status=VerificationStatus.VERIFIED,
+            num_claims=3,
+            verified_ratio=0.67,
+            confidence=0.85
+        )
+        mock_verification_chain.verify = AsyncMock(return_value=verification_result)
 
         # Create bridge with mock chain
         bridge = VerificationMRFBridge(verification_chain=mock_verification_chain)
@@ -173,14 +489,17 @@ class TestVerificationMRFBridgeIntegration:
         # Assert result structure
         assert result.original_response == "Thompson Sampling is a Bayesian algorithm"
         assert result.verified_response == "Verified response text"
-        assert result.claims_extracted == 3  # 3 mock claims
+        assert result.claims_extracted == 3
         assert result.contradictions_found == 0
 
     @pytest.mark.asyncio
-    async def test_enhance_with_cove_graceful_fallback(self):
-        """Bridge returns original response when verification unavailable."""
-        from HoloLoom.prompting.verification_integration import VerificationMRFBridge
+    async def test_enhance_with_cove_graceful_fallback(self) -> None:
+        """
+        Bridge returns original response when verification unavailable.
 
+        Ensures graceful degradation when the verification system
+        is not available or configured.
+        """
         # Create bridge without chain (unavailable)
         bridge = VerificationMRFBridge()
         bridge.available = False  # Force unavailable
@@ -198,17 +517,23 @@ class TestVerificationMRFBridgeIntegration:
         assert result.quality_improvement == 0.0
         assert result.verification_result is None
 
-    def test_quality_signal_extraction(self, mock_verification_result_success, mock_verification_status):
-        """Quality signals correctly weighted (40/30/20/10%)."""
-        from HoloLoom.prompting.verification_integration import VerificationMRFBridge
+    def test_quality_signal_extraction(
+        self,
+        mock_verification_result_success: MockVerificationResult
+    ) -> None:
+        """
+        Quality signals correctly weighted (40/30/20/10%).
 
+        Verifies that the quality signal extraction produces
+        values within valid bounds.
+        """
         # Create bridge
         bridge = VerificationMRFBridge()
         bridge.available = True
 
         # Mock VERIFICATION_AVAILABLE
         with patch('HoloLoom.prompting.verification_integration.VERIFICATION_AVAILABLE', True):
-            with patch('HoloLoom.prompting.verification_integration.VerificationStatus', mock_verification_status):
+            with patch('HoloLoom.prompting.verification_integration.VerificationStatus', VerificationStatus):
                 # Get quality signals
                 signals = bridge.get_quality_signals(mock_verification_result_success)
 
@@ -221,10 +546,14 @@ class TestVerificationMRFBridgeIntegration:
             for key, value in signals.items():
                 assert 0.0 <= value <= 1.0, f"{key} should be between 0 and 1"
 
-    def test_cove_strategy_applicability(self):
-        """CoVeRefinementStrategy returns higher score for low-confidence queries."""
-        from HoloLoom.prompting.verification_integration import CoVeRefinementStrategy
+    def test_cove_strategy_applicability(self) -> None:
+        """
+        CoVeRefinementStrategy returns higher score for low-confidence queries.
 
+        Validates the applicability scoring logic:
+        - Low confidence queries should score higher
+        - Factual queries should get a +0.2 boost
+        """
         # Create strategy (with mock bridge)
         strategy = CoVeRefinementStrategy()
 
@@ -257,15 +586,27 @@ class TestVerificationMRFBridgeIntegration:
 # ===== Class 2: TestPromptVerificationBridgeIntegration =====
 
 class TestPromptVerificationBridgeIntegration:
-    """Tests for PromptVerificationBridge integration with testing framework."""
+    """
+    Tests for PromptVerificationBridge integration with testing framework.
+
+    These tests verify that the bridge correctly:
+    - Verifies test responses and records metrics
+    - Generates insights from failure analysis
+    - Classifies regressions by keyword patterns
+    - Runs complete E2E verification pipelines
+    """
 
     @pytest.mark.asyncio
-    async def test_verify_test_response_with_metrics(self, mock_verification_chain):
-        """Bridge verifies response and records metrics to collector."""
-        from HoloLoom.prompting.testing.verification_bridge import PromptVerificationBridge
-        from HoloLoom.prompting.testing.protocol import PromptTestCase, PromptTestResult
-        from HoloLoom.prompting.testing.metrics_collector import MetricsCollector
+    async def test_verify_test_response_with_metrics(
+        self,
+        mock_verification_chain: AsyncMock
+    ) -> None:
+        """
+        Bridge verifies response and records metrics to collector.
 
+        Validates that verification results are properly recorded
+        to the metrics collector for monitoring.
+        """
         # Create mock metrics collector
         metrics_collector = Mock(spec=MetricsCollector)
         metrics_collector.record_metric = Mock()
@@ -276,18 +617,19 @@ class TestPromptVerificationBridgeIntegration:
             metrics_collector=metrics_collector
         )
 
-        # Create test case with correct interface
-        test_case = PromptTestCase(
+        # Create test case using factory function
+        test_case = create_mock_test_case(
             name="test_thompson_sampling",
             prompt_template="Explain {concept}",
-            test_inputs=[{"concept": "Thompson Sampling"}],  # List of dicts
+            test_inputs=[{"concept": "Thompson Sampling"}],
             expected_qualities={"accuracy": 0.8, "clarity": 0.7}
         )
 
-        test_result = Mock(spec=PromptTestResult)
-        test_result.test_case = test_case
-        test_result.quality_scores = {"overall": 0.75}
-        test_result.regressions_detected = []
+        test_result = create_mock_test_result(
+            test_case=test_case,
+            quality_scores={"overall": 0.75},
+            regressions=[]
+        )
 
         # Call verify_test_response
         enhanced = await bridge.verify_test_response(
@@ -307,27 +649,26 @@ class TestPromptVerificationBridgeIntegration:
         assert metrics_collector.record_metric.called
 
     @pytest.mark.asyncio
-    async def test_analyze_failures_generates_insights(self):
-        """analyze_failures() produces VerificationInsights with recommendations."""
-        from HoloLoom.prompting.testing.verification_bridge import (
-            PromptVerificationBridge,
-            VerificationInsights
-        )
-        from HoloLoom.prompting.testing.protocol import PromptTestResult
+    async def test_analyze_failures_generates_insights(self) -> None:
+        """
+        analyze_failures() produces VerificationInsights with recommendations.
 
+        Validates that high failure counts trigger appropriate recommendations.
+        """
         # Create bridge without verification (for failure analysis only)
         bridge = PromptVerificationBridge()
 
-        # Create mock failed results
-        failed_results = []
-        for i in range(7):  # More than 5 to trigger recommendation
-            mock_result = Mock(spec=PromptTestResult)
-            mock_result.quality_scores = {"overall": 0.4}  # Low quality
-            mock_result.regressions_detected = [
-                "factual error in claim 1",
-                "logic contradiction detected"
-            ]
-            failed_results.append(mock_result)
+        # Create mock failed results using factory function
+        failed_results = [
+            create_mock_test_result(
+                quality_scores={"overall": 0.4},  # Low quality
+                regressions=[
+                    "factual error in claim 1",
+                    "logic contradiction detected"
+                ]
+            )
+            for _ in range(7)  # More than 5 to trigger recommendation
+        ]
 
         # Call analyze_failures
         insights = await bridge.analyze_failures(failed_results)
@@ -343,45 +684,57 @@ class TestPromptVerificationBridgeIntegration:
         assert has_high_failure_rec or insights.recommendations, \
             "Should have recommendations for high failure rate"
 
-    def test_regression_classification(self):
-        """Regressions classified correctly by keyword patterns."""
-        from HoloLoom.prompting.testing.verification_bridge import PromptVerificationBridge
+    @pytest.mark.parametrize("regression_text,expected_type", [
+        ("factual error in response", "factual"),
+        ("fact accuracy issue", "factual"),
+        ("logical contradiction found", "logical"),
+        ("consistent data mismatch", "logical"),  # Uses "consistent" keyword
+        ("temporal inconsistency detected", "temporal"),
+        ("date mismatch in timeline", "temporal"),
+        ("number mismatch in data", "quantitative"),
+        ("quantity calculation error", "quantitative"),
+        ("semantic drift observed", "semantic"),
+        ("meaning shifted unexpectedly", "semantic"),
+        ("random unknown issue", "unknown"),
+        ("unexplained anomaly", "unknown"),
+    ])
+    def test_regression_classification(
+        self,
+        regression_text: str,
+        expected_type: str
+    ) -> None:
+        """
+        Regressions classified correctly by keyword patterns.
 
+        Uses parametrized testing for comprehensive coverage of
+        all regression classification categories.
+        """
         bridge = PromptVerificationBridge()
-
-        # Test classification patterns
-        test_cases = [
-            ("factual error in response", "factual"),
-            ("logical contradiction found", "logical"),
-            ("temporal inconsistency detected", "temporal"),
-            ("number mismatch in data", "quantitative"),
-            ("semantic drift observed", "semantic"),
-            ("random unknown issue", "unknown"),
-        ]
-
-        for regression, expected_type in test_cases:
-            result = bridge._classify_regression(regression)
-            assert result == expected_type, \
-                f"'{regression}' should classify as '{expected_type}', got '{result}'"
+        result = bridge._classify_regression(regression_text)
+        assert result == expected_type, \
+            f"'{regression_text}' should classify as '{expected_type}', got '{result}'"
 
     @pytest.mark.asyncio
-    async def test_e2e_test_verification_pipeline(self, mock_verification_chain, mock_verification_result_with_contradictions):
-        """Full pipeline: test_case -> verify -> analyze -> insights."""
-        from HoloLoom.prompting.testing.verification_bridge import PromptVerificationBridge
-        from HoloLoom.prompting.testing.protocol import PromptTestCase, PromptTestResult
+    async def test_e2e_test_verification_pipeline(
+        self,
+        mock_verification_chain: AsyncMock,
+        mock_verification_result_with_contradictions: MockVerificationResult
+    ) -> None:
+        """
+        Full pipeline: test_case -> verify -> analyze -> insights.
 
+        End-to-end test covering the complete verification workflow.
+        """
         # Use mock with contradictions
         mock_verification_chain.verify = AsyncMock(return_value=mock_verification_result_with_contradictions)
 
         bridge = PromptVerificationBridge(verification_chain=mock_verification_chain)
 
-        # Create multiple test cases with correct interface
+        # Create multiple test cases using factory function
         test_cases = [
-            PromptTestCase(
+            create_mock_test_case(
                 name=f"test_case_{i}",
-                prompt_template=f"Query {i}",
-                test_inputs=[{}],  # List of dicts
-                expected_qualities={"accuracy": 0.8}
+                prompt_template=f"Query {i}"
             )
             for i in range(3)
         ]
@@ -389,10 +742,11 @@ class TestPromptVerificationBridgeIntegration:
         # Run verification on each
         enhanced_results = []
         for tc in test_cases:
-            mock_result = Mock(spec=PromptTestResult)
-            mock_result.test_case = tc
-            mock_result.quality_scores = {"overall": 0.5}
-            mock_result.regressions_detected = ["logical contradiction"]
+            mock_result = create_mock_test_result(
+                test_case=tc,
+                quality_scores={"overall": 0.5},
+                regressions=["logical contradiction"]
+            )
 
             enhanced = await bridge.verify_test_response(
                 test_case=tc,
@@ -416,12 +770,23 @@ class TestPromptVerificationBridgeIntegration:
 # ===== Class 3: TestDashboardCoVeIntegration =====
 
 class TestDashboardCoVeIntegration:
-    """Tests for MRFDashboard CoVe tracking integration."""
+    """
+    Tests for MRFDashboard CoVe tracking integration.
 
-    def test_log_verification_stats_tracking(self, temp_dir):
-        """log_verification() properly tracks cumulative statistics."""
-        from HoloLoom.prompting.analytics.dashboard import create_dashboard
+    These tests verify that the dashboard correctly:
+    - Tracks cumulative verification statistics
+    - Isolates per-system metrics
+    - Exports Prometheus-compatible metrics
+    - Maintains recent trend data
+    """
 
+    def test_log_verification_stats_tracking(self, temp_dir: Path) -> None:
+        """
+        log_verification() properly tracks cumulative statistics.
+
+        Validates that totals and averages are correctly calculated
+        across multiple verification log entries.
+        """
         # Create dashboard with temp directory
         dashboard = create_dashboard(persist_path=temp_dir)
 
@@ -455,14 +820,26 @@ class TestDashboardCoVeIntegration:
         assert abs(stats["avg_claims_extracted"] - 4.0) < 0.01  # 20/5
         assert abs(stats["avg_confidence"] - 0.84) < 0.01  # (0.9+0.8+0.95+0.7+0.85)/5
 
-    def test_per_system_statistics_isolation(self, temp_dir):
-        """Different systems tracked independently."""
-        from HoloLoom.prompting.analytics.dashboard import create_dashboard
+    @pytest.mark.parametrize("systems,expected_counts", [
+        (["agentic"], {"agentic": 1}),
+        (["agentic", "rag"], {"agentic": 1, "rag": 2}),
+        (["agentic", "rag", "alignment"], {"agentic": 1, "rag": 2, "alignment": 3}),
+    ])
+    def test_per_system_statistics_isolation(
+        self,
+        temp_dir: Path,
+        systems: List[str],
+        expected_counts: Dict[str, int]
+    ) -> None:
+        """
+        Different systems tracked independently.
 
+        Uses parametrized testing to verify isolation across
+        different system configurations.
+        """
         dashboard = create_dashboard(persist_path=temp_dir)
 
         # Log verifications for different systems
-        systems = ["agentic", "rag", "alignment"]
         for i, system in enumerate(systems):
             for j in range(i + 1):  # agentic: 1, rag: 2, alignment: 3
                 dashboard.log_verification(
@@ -477,23 +854,21 @@ class TestDashboardCoVeIntegration:
 
         # Check per-system isolation
         per_system = stats["per_system"]
-        assert "agentic" in per_system
-        assert "rag" in per_system
-        assert "alignment" in per_system
-
-        # Verify counts
-        assert per_system["agentic"]["verifications"] == 1
-        assert per_system["rag"]["verifications"] == 2
-        assert per_system["alignment"]["verifications"] == 3
+        for system in systems:
+            assert system in per_system
+            assert per_system[system]["verifications"] == expected_counts[system]
 
         # Global total = sum of per-system
         total_verifications = sum(s["verifications"] for s in per_system.values())
         assert stats["total_verifications"] == total_verifications
 
-    def test_prometheus_export_includes_cove(self, temp_dir):
-        """export_prometheus_metrics() includes all CoVe metrics."""
-        from HoloLoom.prompting.analytics.dashboard import create_dashboard
+    def test_prometheus_export_includes_cove(self, temp_dir: Path) -> None:
+        """
+        export_prometheus_metrics() includes all CoVe metrics.
 
+        Verifies that Prometheus-format output contains expected
+        verification metrics.
+        """
         dashboard = create_dashboard(persist_path=temp_dir)
 
         # Log some verifications
@@ -521,10 +896,12 @@ class TestDashboardCoVeIntegration:
         assert "cove_verifications_total" in metrics_output
         assert "cove_contradiction_rate" in metrics_output or "cove_avg_confidence" in metrics_output
 
-    def test_recent_trend_tracking(self, temp_dir):
-        """recent_trend contains last 10 confidence scores."""
-        from HoloLoom.prompting.analytics.dashboard import create_dashboard
+    def test_recent_trend_tracking(self, temp_dir: Path) -> None:
+        """
+        recent_trend contains last 10 confidence scores.
 
+        Validates FIFO behavior of trend tracking with window size 10.
+        """
         dashboard = create_dashboard(persist_path=temp_dir)
 
         # Log 15 verifications with distinct confidence scores
@@ -554,16 +931,22 @@ class TestDashboardCoVeIntegration:
 # ===== Class 4: TestVerificationPanelIntegration =====
 
 class TestVerificationPanelIntegration:
-    """Tests for verification panel visualization integration."""
+    """
+    Tests for verification panel visualization integration.
 
-    def test_panel_renders_from_dashboard_stats(self, temp_dir):
-        """Panel correctly visualizes dashboard CoVe statistics."""
-        from HoloLoom.prompting.analytics.dashboard import create_dashboard
-        from HoloLoom.visualization.verification_panel import (
-            VerificationPanelData,
-            render_verification_panel
-        )
+    These tests verify that the visualization panel correctly:
+    - Renders dashboard statistics into visual HTML
+    - Generates SVG sparklines from trend data
+    - Applies semantic colors based on severity levels
+    """
 
+    def test_panel_renders_from_dashboard_stats(self, temp_dir: Path) -> None:
+        """
+        Panel correctly visualizes dashboard CoVe statistics.
+
+        Validates the complete flow from dashboard logging through
+        statistics aggregation to HTML panel rendering.
+        """
         # Create and populate dashboard
         dashboard = create_dashboard(persist_path=temp_dir)
 
@@ -599,14 +982,17 @@ class TestVerificationPanelIntegration:
         assert str(stats["total_questions_generated"]) in html  # Questions count
         assert "Quality" in html  # Quality section header
 
-    def test_sparkline_renders_trend(self):
-        """Sparkline correctly visualizes confidence trend."""
-        from HoloLoom.visualization.verification_panel import _render_sparkline
+    def test_sparkline_renders_trend(self) -> None:
+        """
+        Sparkline correctly visualizes confidence trend.
 
+        Validates SVG structure and ensures polyline points match
+        the number of input data points.
+        """
         # Create trend data with 10 values
-        trend_data = [0.7, 0.75, 0.8, 0.82, 0.78, 0.85, 0.88, 0.86, 0.9, 0.92]
+        trend_data: List[ConfidenceValue] = [0.7, 0.75, 0.8, 0.82, 0.78, 0.85, 0.88, 0.86, 0.9, 0.92]
 
-        # Render sparkline
+        # Render sparkline (using module-level import)
         svg = _render_sparkline(trend_data, width=100, height=30)
 
         # Assert SVG structure
@@ -616,8 +1002,7 @@ class TestVerificationPanelIntegration:
         assert "<polyline" in svg
         assert "points=" in svg
 
-        # Extract points and verify count matches data points
-        import re
+        # Extract points and verify count matches data points (using module-level re)
         points_match = re.search(r'points="([^"]+)"', svg)
         assert points_match is not None
 
@@ -626,17 +1011,17 @@ class TestVerificationPanelIntegration:
         assert len(points) == len(trend_data), \
             f"Expected {len(trend_data)} points, got {len(points)}"
 
-    def test_severity_colors_applied(self):
-        """Contradictions rendered with correct semantic colors."""
-        from HoloLoom.visualization.verification_panel import (
-            VerificationPanelData,
-            Contradiction,
-            SeverityLevel,
-            render_verification_panel
-        )
+    def test_severity_colors_applied(self) -> None:
+        """
+        Contradictions rendered with correct semantic colors.
 
-        # Create contradictions with different severities
-        contradictions = [
+        Validates that severity levels map to expected color codes:
+        - NONE: Green (#10B981)
+        - MINOR: Amber (#F59E0B)
+        - MAJOR: Red (#EF4444)
+        """
+        # Create contradictions with different severities (using module-level imports)
+        contradictions: List[Contradiction] = [
             Contradiction(
                 contradiction_type="test_none",
                 severity=SeverityLevel.NONE,

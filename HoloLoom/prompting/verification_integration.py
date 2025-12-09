@@ -238,7 +238,7 @@ class VerificationMRFBridge:
         if hasattr(result, "status"):
             if result.status == VerificationStatus.VERIFIED:
                 signals["status_score"] = 1.0
-            elif result.status == VerificationStatus.PARTIALLY_VERIFIED:
+            elif result.status == VerificationStatus.UNCERTAIN:
                 signals["status_score"] = 0.6
             elif result.status == VerificationStatus.CONTRADICTED:
                 signals["status_score"] = 0.2

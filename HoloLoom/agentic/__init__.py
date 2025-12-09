@@ -67,6 +67,71 @@ from .skills import (
     SkillExecutionResult,
 )
 
+# Phase 7.1: Multi-Agent Communication Protocol
+from .multi_agent import (
+    # Data Types
+    AgentCapability,
+    MessageType,
+    MessagePriority,
+    AgentStatus,
+    # Message Classes
+    AgentMessage,
+    AgentInfo,
+    # Registry
+    AgentRegistry,
+    # Message Bus
+    MessageBus,
+    # Shared Memory
+    SharedMemoryEntry,
+    SharedMemory,
+    # Coordinator
+    MultiAgentCoordinator,
+    # Convenience Functions
+    create_coordinator,
+    create_agent_message,
+    create_research_agent,
+    create_synthesis_agent,
+    create_code_agent,
+)
+
+# Phase 6.3: Context Handoff (Foundation for 7.1)
+from .context_handoff import (
+    ContextItem,
+    HandoffContext,
+    HandoffStrategy,
+    ContextHandoff,
+    prepare_agent_handoff,
+    get_optimal_handoff_strategy,
+)
+
+# Phase 7.2: Task Delegation System
+from .capability_analyzer import (
+    QueryCapabilityAnalyzer,
+    CapabilityAnalysis,
+    QueryComplexity,
+    analyze_query_capabilities,
+)
+
+from .expert_router import (
+    ExpertRouter,
+    SelectionStrategy,
+    ThompsonPrior,
+    AgentScore,
+    RoutingDecision,
+    create_expert_router,
+)
+
+from .ensemble_decision import (
+    EnsembleAggregator,
+    EnsembleStrategy,
+    EnsembleResult,
+    AgentResponse,
+    NumericEnsemble,
+    TextEnsemble,
+    aggregate_responses,
+    create_agent_response,
+)
+
 __all__ = [
     # Core agentic reasoning
     "AgenticOrchestrator",
@@ -95,4 +160,53 @@ __all__ = [
     "SkillExecutor",
     "SkillTemplate",
     "SkillExecutionResult",
+
+    # Phase 7.1: Multi-Agent Communication Protocol
+    "AgentCapability",
+    "MessageType",
+    "MessagePriority",
+    "AgentStatus",
+    "AgentMessage",
+    "AgentInfo",
+    "AgentRegistry",
+    "MessageBus",
+    "SharedMemoryEntry",
+    "SharedMemory",
+    "MultiAgentCoordinator",
+    "create_coordinator",
+    "create_agent_message",
+    "create_research_agent",
+    "create_synthesis_agent",
+    "create_code_agent",
+
+    # Phase 6.3: Context Handoff
+    "ContextItem",
+    "HandoffContext",
+    "HandoffStrategy",
+    "ContextHandoff",
+    "prepare_agent_handoff",
+    "get_optimal_handoff_strategy",
+
+    # Phase 7.2: Task Delegation System
+    # Capability Analyzer
+    "QueryCapabilityAnalyzer",
+    "CapabilityAnalysis",
+    "QueryComplexity",
+    "analyze_query_capabilities",
+    # Expert Router (Thompson Sampling)
+    "ExpertRouter",
+    "SelectionStrategy",
+    "ThompsonPrior",
+    "AgentScore",
+    "RoutingDecision",
+    "create_expert_router",
+    # Ensemble Decision
+    "EnsembleAggregator",
+    "EnsembleStrategy",
+    "EnsembleResult",
+    "AgentResponse",
+    "NumericEnsemble",
+    "TextEnsemble",
+    "aggregate_responses",
+    "create_agent_response",
 ]

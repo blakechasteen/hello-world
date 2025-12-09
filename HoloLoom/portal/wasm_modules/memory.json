@@ -1,0 +1,23 @@
+{
+  "id": "memory-v1",
+  "name": "Memory Allocator Test",
+  "version": "1.0.0",
+  "entry_function": "run",
+  "description": "Allocates and fills memory buffer (memory stress test)",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "size_kb": {"type": "integer", "description": "Size in KB to allocate"},
+      "fill_value": {"type": "integer", "description": "Byte value to fill (0-255)", "default": 0}
+    },
+    "required": ["size_kb"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "allocated_kb": {"type": "integer", "description": "Actual KB allocated"},
+      "checksum": {"type": "integer", "description": "Simple checksum of filled buffer"},
+      "duration_ms": {"type": "number", "description": "Time taken in milliseconds"}
+    }
+  }
+}

@@ -81,11 +81,14 @@ from collections import defaultdict, deque
 from time import time
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field, validator
 from sse_starlette.sse import EventSourceResponse
+
+# Safety WebSocket Manager (E2.2 - December 2025)
+from HoloLoom.server.safety_websocket import get_safety_ws_manager, SafetyWebSocketManager
 
 # HoloLoom Core
 from HoloLoom.config import Config, MemoryBackend
@@ -372,11 +375,21 @@ async def startup_event():
     """Initialize server on startup."""
     await state.initialize()
 
+    # Initialize Safety WebSocket Manager (E2.2)
+    ws_manager = get_safety_ws_manager()
+    await ws_manager.start()
+    logger.info("Safety WebSocket Manager started")
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown."""
     logger.info("Shutting down HoloLoom Unified Server...")
+
+    # Stop Safety WebSocket Manager
+    ws_manager = get_safety_ws_manager()
+    await ws_manager.stop()
+
     if state.learning_engine:
         await state.learning_engine.close()
 
@@ -677,6 +690,43 @@ async def alignment_metrics():
         "period": {"start": None, "end": None},
         "total_events": 0
     }
+
+
+@app.websocket("/ws/safety")
+async def safety_websocket_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time safety events (E2.2 - December 2025).
+
+    Supports subscriptions:
+    - safety:* - All safety events
+    - safety:decision - Safety decisions only
+    - safety:deception - Deception flags only
+    - safety:convergence - Convergence violations only
+    - safety:autonomy - Autonomy actions only
+    - safety:resource - Resource updates only
+    - safety:alert - Alerts only
+
+    Message formats:
+    - Subscribe: {"type": "subscribe", "pattern": "safety:*"}
+    - Unsubscribe: {"type": "unsubscribe", "pattern": "safety:decision"}
+    - Heartbeat: {"type": "heartbeat"}
+    - Get metrics: {"type": "get_metrics"}
+    """
+    await websocket.accept()
+
+    ws_manager = get_safety_ws_manager()
+    client_id = await ws_manager.connect(websocket)
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            await ws_manager.handle_message(websocket, data)
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)
+        logger.info(f"Safety WebSocket client disconnected: {client_id}")
+    except Exception as e:
+        logger.error(f"Safety WebSocket error for {client_id}: {e}")
+        ws_manager.disconnect(websocket)
 
 
 # ============================================================================

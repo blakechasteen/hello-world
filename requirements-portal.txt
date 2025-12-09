@@ -1,0 +1,21 @@
+# Portal WASM Execution System Dependencies
+#
+# These are the minimal dependencies required for Portal Server and Node Daemon.
+# Install with: pip install -r requirements-portal.txt
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+
+# HTTP Client (for node-to-portal communication)
+httpx>=0.25.0
+
+# Configuration
+pyyaml>=6.0.0
+
+# System Metrics (optional, falls back gracefully)
+psutil>=5.9.0
+
+# Cryptography for PKI/mTLS
+cryptography>=41.0.0

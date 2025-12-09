@@ -20,6 +20,8 @@ Optional advanced features:
 - ingestion_handlers: SpinningWheel data ingestion commands
 - websocket_progress: WebSocket-based job progress streaming
 - prometheus_metrics: Prometheus metrics for job observability
+- conversation_handlers: Multi-turn conversation support (!continue, !context)
+- cluster_handlers: Eggroll distributed cluster management (!cluster)
 """
 
 # Core handler registry - always available
@@ -370,6 +372,62 @@ try:
         "create_metrics_router",
         "get_metrics_collector",
         "set_metrics_collector"
+    ])
+except ImportError:
+    pass
+
+try:
+    from HoloLoom.chatops.handlers.conversation_handlers import (
+        register_conversation_handlers,
+        ConversationHandlers,
+        SessionManager,
+        UserSessionState,
+        get_session_manager,
+        handle_continue,
+        handle_context,
+        handle_conversation_help
+    )
+    __all__.extend([
+        "register_conversation_handlers",
+        "ConversationHandlers",
+        "SessionManager",
+        "UserSessionState",
+        "get_session_manager",
+        "handle_continue",
+        "handle_context",
+        "handle_conversation_help"
+    ])
+except ImportError:
+    pass
+
+try:
+    from HoloLoom.chatops.handlers.cluster_handlers import (
+        register_cluster_handlers,
+        ClusterHandlers,
+        ClusterManager,
+        NodeInfo,
+        ClusterInfo,
+        NodeStatus,
+        get_cluster_manager,
+        set_cluster_manager,
+        handle_cluster_status,
+        handle_cluster_nodes,
+        handle_cluster_balance,
+        handle_cluster_help
+    )
+    __all__.extend([
+        "register_cluster_handlers",
+        "ClusterHandlers",
+        "ClusterManager",
+        "NodeInfo",
+        "ClusterInfo",
+        "NodeStatus",
+        "get_cluster_manager",
+        "set_cluster_manager",
+        "handle_cluster_status",
+        "handle_cluster_nodes",
+        "handle_cluster_balance",
+        "handle_cluster_help"
     ])
 except ImportError:
     pass

@@ -22,6 +22,17 @@ from typing import Dict, Set, List, Any, Optional, Callable
 from datetime import datetime
 from collections import defaultdict
 
+# Import alerting system (optional - graceful degradation if not available)
+try:
+    from HoloLoom.alignment.alerting import (
+        alert_deception_detected,
+        alert_convergence_violation,
+        alert_high_risk_action
+    )
+    ALERTING_AVAILABLE = True
+except ImportError:
+    ALERTING_AVAILABLE = False
+
 logger = logging.getLogger("HoloLoom.server.safety_websocket")
 
 
@@ -228,6 +239,18 @@ class SafetyWebSocketManager:
         }
         await self._broadcast("safety:decision", event)
 
+        # Dispatch to external webhooks for HIGH/CRITICAL risk actions
+        if risk_level in ("HIGH", "CRITICAL") and ALERTING_AVAILABLE:
+            try:
+                await alert_high_risk_action(
+                    action=action,
+                    risk_level=risk_level,
+                    outcome=outcome,
+                    metadata=details
+                )
+            except Exception as e:
+                logger.warning(f"Failed to dispatch webhook alert: {e}")
+
     async def broadcast_deception_flag(
         self,
         flag_type: str,
@@ -254,12 +277,24 @@ class SafetyWebSocketManager:
         }
         await self._broadcast("safety:deception", event)
 
-        # Also broadcast as alert
+        # Also broadcast as alert (WebSocket)
         await self.broadcast_alert(
             level="CRITICAL",
             title=f"Deception Detected: {flag_type}",
             message=description
         )
+
+        # Dispatch to external webhooks (Slack/Discord/Email)
+        if ALERTING_AVAILABLE:
+            try:
+                await alert_deception_detected(
+                    flag_type=flag_type,
+                    description=description,
+                    confidence=confidence,
+                    metadata=details
+                )
+            except Exception as e:
+                logger.warning(f"Failed to dispatch webhook alert: {e}")
 
     async def broadcast_convergence_violation(
         self,
@@ -287,12 +322,24 @@ class SafetyWebSocketManager:
         }
         await self._broadcast("safety:convergence", event)
 
-        # Also broadcast as alert
+        # Also broadcast as alert (WebSocket)
         await self.broadcast_alert(
             level=severity,
             title=f"Convergence Violation: {violation_type}",
             message=description
         )
+
+        # Dispatch to external webhooks (Slack/Discord/Email)
+        if ALERTING_AVAILABLE:
+            try:
+                await alert_convergence_violation(
+                    violation_type=violation_type,
+                    description=description,
+                    severity_str=severity,
+                    metadata=details
+                )
+            except Exception as e:
+                logger.warning(f"Failed to dispatch webhook alert: {e}")
 
     async def broadcast_autonomy_action(
         self,

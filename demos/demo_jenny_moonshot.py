@@ -362,37 +362,37 @@ async def demo_m6_analytics() -> None:
     # Record some events
     print_subheader("Recording Events")
 
-    # Render events
-    for target, latency in [("html", 45.2), ("react", 38.5), ("ar", 52.1)]:
-        event = RenderEvent(
-            value=latency,
+    # Render events using record_render()
+    for target, latency, cached in [("html", 45.2, True), ("react", 38.5, False), ("ar", 52.1, False)]:
+        collector.record_render(
+            latency_ms=latency,
             target=target,
             panel_count=3,
-            cache_hit=target == "html",
+            cache_hit=cached,
         )
-        collector.record(event)
-        print(f"  RenderEvent: target={target}, latency={latency}ms, cached={event.cache_hit}")
+        print(f"  RenderEvent: target={target}, latency={latency}ms, cached={cached}")
 
     print()
 
-    # Compile events
+    # Compile events using record_compile()
     for panel_count, compile_time in [(3, 12.5), (5, 18.2), (2, 8.1)]:
-        event = CompileEvent(
-            value=compile_time,
-            panel_count=panel_count,
+        collector.record_compile(
+            latency_ms=compile_time,
+            panels_generated=panel_count,
             query_type="factual",
         )
-        collector.record(event)
         print(f"  CompileEvent: panels={panel_count}, time={compile_time}ms")
 
     print()
 
     print_subheader("Analytics Summary")
-    summary = collector.summary()
+    summary = collector.get_summary()
     print(f"  Total Events: {summary.get('total_events', 0)}")
-    print(f"  Avg Render Latency: {summary.get('avg_render_latency_ms', 0):.1f}ms")
-    print(f"  Avg Compile Time: {summary.get('avg_compile_time_ms', 0):.1f}ms")
-    print(f"  Cache Hit Rate: {summary.get('cache_hit_rate', 0)*100:.1f}%")
+    render_metrics = summary.get('render', {})
+    compile_metrics = summary.get('compile', {})
+    print(f"  Avg Render Latency: {render_metrics.get('avg_latency_ms', 0):.1f}ms")
+    print(f"  Avg Compile Time: {compile_metrics.get('avg_latency_ms', 0):.1f}ms")
+    print(f"  Cache Hit Rate: {render_metrics.get('cache_hit_rate', 0)*100:.1f}%")
     print()
 
     print_subheader("Dashboard Generation")
@@ -434,13 +434,13 @@ async def demo_full_pipeline() -> None:
 
             results[target.value] = result
 
-            # M6: Record analytics
-            collector.record(RenderEvent(
-                value=render_time,
+            # M6: Record analytics using record_render()
+            collector.record_render(
+                latency_ms=render_time,
                 target=target.value,
                 panel_count=len(specs),
                 cache_hit=False,
-            ))
+            )
 
     # Print results
     print("  Pipeline Results:")
@@ -456,10 +456,11 @@ async def demo_full_pipeline() -> None:
     print()
 
     # M6: Show analytics
-    summary = collector.summary()
+    summary = collector.get_summary()
+    render_metrics = summary.get('render', {})
     print("  Analytics:")
     print(f"    Total Render Events: {summary.get('total_events', 0)}")
-    print(f"    Avg Latency: {summary.get('avg_render_latency_ms', 0):.2f}ms")
+    print(f"    Avg Latency: {render_metrics.get('avg_latency_ms', 0):.2f}ms")
     print()
 
     # M3: Accessibility check

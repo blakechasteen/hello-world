@@ -1,0 +1,21 @@
+{
+  "id": "fib-v1",
+  "name": "Fibonacci Calculator",
+  "version": "1.0.0",
+  "entry_function": "run",
+  "description": "Calculates the nth Fibonacci number (CPU-intensive test)",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "n": {"type": "integer", "description": "Index of Fibonacci number (0-indexed)"}
+    },
+    "required": ["n"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "result": {"type": "integer", "description": "The nth Fibonacci number"},
+      "iterations": {"type": "integer", "description": "Number of iterations performed"}
+    }
+  }
+}

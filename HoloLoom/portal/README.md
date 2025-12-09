@@ -204,11 +204,114 @@ portal/
 └── tests/            # Test suite
 ```
 
+## Docker Quick Start (Recommended)
+
+The easiest way to run Portal is with Docker Compose:
+
+### 1. Start All Services
+
+```bash
+cd HoloLoom/portal
+docker-compose up -d
+```
+
+This starts:
+- **Portal Server** - http://localhost:8080
+- **Node Daemon 1** - http://localhost:9091
+- **Node Daemon 2** - http://localhost:9092
+
+### 2. Verify Health
+
+```bash
+curl http://localhost:8080/health
+curl http://localhost:9091/health
+curl http://localhost:9092/health
+```
+
+### 3. Run End-to-End Demo
+
+```bash
+pip install httpx
+python demo_e2e.py
+```
+
+### 4. Submit a Test Job
+
+```bash
+curl -X POST http://localhost:9091/jobs \
+  -H "Content-Type: application/json" \
+  -H "X-Shared-Secret: portal-demo-secret-2025" \
+  -d '{
+    "job_id": "test-001",
+    "module_id": "mock-add",
+    "entry_function": "run",
+    "input_json": {"a": 5, "b": 3},
+    "timeout_seconds": 30
+  }'
+```
+
+### 5. Stop Services
+
+```bash
+docker-compose down
+```
+
+### Build Images Manually
+
+```bash
+# From repository root
+docker build --target portal-server -t portal-server:latest -f HoloLoom/portal/Dockerfile .
+docker build --target node-daemon -t node-daemon:latest -f HoloLoom/portal/Dockerfile .
+```
+
+### View Logs
+
+```bash
+docker-compose logs -f              # All services
+docker-compose logs -f portal-server # Portal only
+```
+
+## Production Hardening (Phase 1 Complete)
+
+The following production features have been implemented:
+
+| Feature | Status | File |
+|---------|--------|------|
+| Load Balancer | ✅ Complete | `shared/load_balancer.py` |
+| Type System | ✅ Complete | `shared/types.py` |
+| Prometheus Metrics | ✅ Complete | `shared/metrics.py` |
+| PKI/mTLS | ✅ Complete | `shared/pki.py` |
+| CAS Storage | ✅ Complete | `shared/cas_storage.py` |
+| Integration Tests | ✅ Complete | `shared/tests/` |
+
+**Total: ~3,100 lines of production code**
+
+### Load Balancing Strategies
+
+Configure via `PORTAL_LB_STRATEGY`:
+
+- **`round_robin`**: Rotate through nodes sequentially
+- **`least_loaded`**: Pick node with fewest current jobs (default)
+- **`weighted`**: Score by capacity / current load
+- **`capability`**: Match job requirements to node capabilities
+
+### Content-Addressed Storage
+
+WASM modules are stored by SHA256 hash for deduplication:
+
+```python
+from HoloLoom.portal.shared.cas_storage import CASStorage
+
+storage = CASStorage(Path("./cas"))
+content_hash = storage.store(wasm_bytes, "my-module", "v1.0.0")
+# Identical content stored only once
+```
+
 ## Future Roadmap
 
 See the original plan for future enhancements:
-- PKI/mTLS authentication
-- Content-addressed WASM storage
+- ~~PKI/mTLS authentication~~ ✅ Done
+- ~~Content-addressed WASM storage~~ ✅ Done
+- ~~Load balancing and job queues~~ ✅ Done
 - Multi-loom federation
-- Load balancing and job queues
 - GPU compute support

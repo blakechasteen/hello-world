@@ -98,6 +98,16 @@ __all__ = [
     "select_adaptive_strategy",
     "get_adaptive_mi_budget",
     "get_adaptive_config",
+    # Phase 6.4: Outcome-based learning (lazy loaded)
+    "QueryComplexity",
+    "BudgetOutcome",
+    "BudgetRecommendation",
+    "ThompsonSampler",
+    "AdaptiveBudgetLearner",
+    "get_learner",
+    "get_adaptive_budget",
+    "record_outcome",
+    "get_learning_statistics",
 ]
 
 
@@ -168,5 +178,51 @@ def __getattr__(name):
         from .adaptive_strategy import get_adaptive_config
         globals()[name] = get_adaptive_config
         return get_adaptive_config
+
+    # Phase 6.4: Outcome-based learning
+    elif name == "QueryComplexity":
+        from .learning import QueryComplexity
+        globals()[name] = QueryComplexity
+        return QueryComplexity
+
+    elif name == "BudgetOutcome":
+        from .learning import BudgetOutcome
+        globals()[name] = BudgetOutcome
+        return BudgetOutcome
+
+    elif name == "BudgetRecommendation":
+        from .learning import BudgetRecommendation
+        globals()[name] = BudgetRecommendation
+        return BudgetRecommendation
+
+    elif name == "ThompsonSampler":
+        from .learning import ThompsonSampler
+        globals()[name] = ThompsonSampler
+        return ThompsonSampler
+
+    elif name == "AdaptiveBudgetLearner":
+        from .learning import AdaptiveBudgetLearner
+        globals()[name] = AdaptiveBudgetLearner
+        return AdaptiveBudgetLearner
+
+    elif name == "get_learner":
+        from .learning import get_learner
+        globals()[name] = get_learner
+        return get_learner
+
+    elif name == "get_adaptive_budget":
+        from .learning import get_adaptive_budget
+        globals()[name] = get_adaptive_budget
+        return get_adaptive_budget
+
+    elif name == "record_outcome":
+        from .learning import record_outcome
+        globals()[name] = record_outcome
+        return record_outcome
+
+    elif name == "get_learning_statistics":
+        from .learning import get_learning_statistics
+        globals()[name] = get_learning_statistics
+        return get_learning_statistics
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

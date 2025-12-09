@@ -294,6 +294,12 @@ class WasmRunner:
         elif module_id == "gradient-descent" or module_id == "gradient-descent-v1":
             output = self._mock_gradient_descent(input_json)
 
+        elif module_id == "fib" or module_id == "fib-v1":
+            output = self._mock_fibonacci(input_json)
+
+        elif module_id == "memory" or module_id == "memory-v1":
+            output = self._mock_memory_alloc(input_json)
+
         else:
             # Unknown module - echo with module info
             output = {
@@ -419,6 +425,58 @@ class WasmRunner:
             "iterations": len(loss_history),
             "converged": converged,
             "loss_history": loss_history
+        }
+
+    def _mock_fibonacci(self, input_json: Any) -> dict:
+        """
+        Mock Fibonacci implementation (CPU-intensive test).
+
+        Uses iterative approach for efficiency.
+        """
+        n = input_json.get("n", 10)
+
+        # Cap at reasonable value for mock
+        n = min(max(0, n), 92)  # fib(92) is max for 64-bit
+
+        if n <= 1:
+            return {"result": n, "iterations": 0}
+
+        # Iterative Fibonacci
+        a, b = 0, 1
+        for i in range(2, n + 1):
+            a, b = b, a + b
+
+        return {"result": b, "iterations": n - 1}
+
+    def _mock_memory_alloc(self, input_json: Any) -> dict:
+        """
+        Mock memory allocation test.
+
+        Simulates allocating and filling a buffer.
+        """
+        import time
+
+        size_kb = input_json.get("size_kb", 1)
+        fill_value = input_json.get("fill_value", 0) & 0xFF  # Ensure 0-255
+
+        # Cap at reasonable value for mock (10MB max)
+        size_kb = min(max(1, size_kb), 10240)
+
+        start = time.time()
+
+        # Simulate allocation and filling
+        buffer_size = size_kb * 1024
+        buffer = bytearray([fill_value] * buffer_size)
+
+        # Simple checksum
+        checksum = sum(buffer) % (2**32)
+
+        duration_ms = (time.time() - start) * 1000
+
+        return {
+            "allocated_kb": size_kb,
+            "checksum": checksum,
+            "duration_ms": round(duration_ms, 2)
         }
 
     def clear_cache(self) -> None:

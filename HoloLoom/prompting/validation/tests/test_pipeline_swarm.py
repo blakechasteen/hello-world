@@ -212,6 +212,92 @@ class TestUserSatisfactionValidator:
         assert result["avg_rating"] < 4.0
 
 
+class TestStatisticalValidator:
+    """Tests for StatisticalValidator."""
+
+    @pytest.mark.asyncio
+    async def test_statistical_validator_sufficient_samples(self, baseline_queries, mrf_queries):
+        """StatisticalValidator with >= 30 samples should run t-test."""
+        validator = StatisticalValidator(significance_level=0.05)
+        context = ValidationContext(
+            phase=ValidationPhase.ANALYSIS,
+            baseline_queries=baseline_queries,  # 100 samples
+            mrf_queries=mrf_queries,  # 100 samples
+        )
+
+        result = await validator.validate(context)
+
+        # Should have run full statistical analysis
+        assert result["status"] in ["pass", "fail"]
+        assert "p_value" in result
+        assert "is_significant" in result
+        assert "effect_size" in result
+        assert "confidence_interval" in result
+        assert result["p_value"] >= 0.0
+        assert result["p_value"] <= 1.0
+
+    @pytest.mark.asyncio
+    async def test_statistical_validator_insufficient_samples(self):
+        """StatisticalValidator with < 30 samples should return insufficient_data."""
+        validator = StatisticalValidator(significance_level=0.05)
+
+        # Create small sample sets (< 30)
+        small_baseline = [{"quality_score": 0.7 + i * 0.01} for i in range(20)]
+        small_mrf = [{"quality_score": 0.9 + i * 0.01} for i in range(20)]
+
+        context = ValidationContext(
+            phase=ValidationPhase.ANALYSIS,
+            baseline_queries=small_baseline,
+            mrf_queries=small_mrf,
+        )
+
+        result = await validator.validate(context)
+
+        assert result["status"] == "insufficient_data"
+        assert "message" in result
+        assert "30" in result["message"]
+
+    @pytest.mark.asyncio
+    async def test_statistical_validator_edge_case_exactly_30(self):
+        """StatisticalValidator with exactly 30 samples should run analysis."""
+        validator = StatisticalValidator(significance_level=0.05)
+
+        # Exactly 30 samples
+        baseline_30 = [{"quality_score": 0.7 + (i % 10) * 0.01} for i in range(30)]
+        mrf_30 = [{"quality_score": 0.9 + (i % 10) * 0.01} for i in range(30)]
+
+        context = ValidationContext(
+            phase=ValidationPhase.ANALYSIS,
+            baseline_queries=baseline_30,
+            mrf_queries=mrf_30,
+        )
+
+        result = await validator.validate(context)
+
+        # Should run full analysis (exactly 30 is the threshold)
+        assert result["status"] in ["pass", "fail"]
+        assert "p_value" in result
+
+    @pytest.mark.asyncio
+    async def test_statistical_validator_confidence_interval_structure(self, baseline_queries, mrf_queries):
+        """Confidence interval should have lower and upper bounds."""
+        validator = StatisticalValidator(significance_level=0.05)
+        context = ValidationContext(
+            phase=ValidationPhase.ANALYSIS,
+            baseline_queries=baseline_queries,
+            mrf_queries=mrf_queries,
+        )
+
+        result = await validator.validate(context)
+
+        # Check confidence interval structure
+        assert "confidence_interval" in result
+        ci = result["confidence_interval"]
+        assert "lower" in ci
+        assert "upper" in ci
+        assert ci["lower"] <= ci["upper"]
+
+
 # =============================================================================
 # Pipeline Composition Tests
 # =============================================================================
@@ -337,6 +423,191 @@ class TestSwarmAgentFiltering:
 
         assert len(filtered) > 0
         assert all(q["complexity"] == "simple" for q in filtered)
+
+    def test_filter_by_timeline(self, baseline_queries):
+        """Agent should filter queries by time window."""
+        pipeline = ValidationPipeline().add_validator(QualityValidator())
+
+        # Create a time window for "week 1" (7-14 days ago)
+        now = datetime.now()
+        start_time = now - timedelta(days=14)
+        end_time = now - timedelta(days=7)
+
+        agent = SwarmAgent(
+            agent_id="week_1",
+            dimension=SwarmDimension.TIMELINE,
+            config={"start_time": start_time, "end_time": end_time},
+            pipeline=pipeline,
+        )
+
+        filtered = agent._filter_queries(baseline_queries)
+
+        # Verify all filtered queries fall within the time window
+        for q in filtered:
+            timestamp = q.get("timestamp")
+            assert timestamp is not None
+            assert start_time <= timestamp <= end_time
+
+    def test_filter_by_timeline_empty_result(self):
+        """Timeline filter with no matching queries should return empty list."""
+        pipeline = ValidationPipeline().add_validator(QualityValidator())
+
+        # Time window in the distant past (no queries match)
+        now = datetime.now()
+        start_time = now - timedelta(days=365)  # 1 year ago
+        end_time = now - timedelta(days=364)
+
+        agent = SwarmAgent(
+            agent_id="distant_past",
+            dimension=SwarmDimension.TIMELINE,
+            config={"start_time": start_time, "end_time": end_time},
+            pipeline=pipeline,
+        )
+
+        # Queries from last 28 days only
+        queries = [
+            {"timestamp": datetime.now() - timedelta(days=i % 28), "quality_score": 0.8}
+            for i in range(50)
+        ]
+
+        filtered = agent._filter_queries(queries)
+
+        # No queries should match the distant past window
+        assert len(filtered) == 0
+
+    def test_filter_no_config_returns_all(self, baseline_queries):
+        """Agent without filter config should return all queries."""
+        pipeline = ValidationPipeline().add_validator(QualityValidator())
+        agent = SwarmAgent(
+            agent_id="no_filter",
+            dimension=SwarmDimension.TIMELINE,
+            config={},  # Empty config
+            pipeline=pipeline,
+        )
+
+        filtered = agent._filter_queries(baseline_queries)
+
+        # Should return all queries (no filtering applied)
+        assert len(filtered) == len(baseline_queries)
+
+
+# =============================================================================
+# Swarm Edge Case Tests
+# =============================================================================
+
+class TestSwarmEdgeCases:
+    """Tests for edge cases and error handling in swarm."""
+
+    @pytest.mark.asyncio
+    async def test_swarm_pass_rate_threshold_75_percent(self, baseline_queries, mrf_queries):
+        """SwarmResults.overall_passed requires 75% pass rate."""
+        swarm = MoonshotSwarm()
+        swarm.add_model_agents(["claude", "gemini", "gpt"])
+
+        results = await swarm.run(
+            baseline_queries=baseline_queries,
+            mrf_queries=mrf_queries,
+        )
+
+        results.calculate_statistics()
+
+        # Verify 75% threshold logic
+        if results.pass_rate >= 0.75:
+            assert results.overall_passed is True
+        else:
+            assert results.overall_passed is False
+
+    @pytest.mark.asyncio
+    async def test_swarm_empty_agents_handling(self):
+        """Swarm with no agents should handle gracefully."""
+        swarm = MoonshotSwarm()
+        # No agents added
+
+        results = await swarm.run(
+            baseline_queries=[],
+            mrf_queries=[],
+        )
+
+        results.calculate_statistics()
+
+        assert results.pass_rate == 0.0
+        assert results.overall_passed is False
+        assert len(results.agents) == 0
+
+    @pytest.mark.asyncio
+    async def test_swarm_single_agent(self, baseline_queries, mrf_queries):
+        """Swarm with single agent should work correctly."""
+        swarm = MoonshotSwarm()
+        swarm.add_model_agents(["claude"])  # Only one agent
+
+        results = await swarm.run(
+            baseline_queries=baseline_queries,
+            mrf_queries=mrf_queries,
+        )
+
+        results.calculate_statistics()
+
+        assert len(results.agents) == 1
+        # Pass rate is 0% or 100% with single agent
+        assert results.pass_rate in [0.0, 1.0]
+
+    @pytest.mark.asyncio
+    async def test_swarm_recommendation_below_75_percent(self, baseline_queries, low_improvement_mrf):
+        """Swarm below 75% pass rate should recommend INVESTIGATE."""
+        swarm = MoonshotSwarm()
+        # Add many agents to increase chance of failures
+        swarm.add_model_agents(["claude", "gemini", "gpt"])
+        swarm.add_complexity_agents(["simple", "moderate", "complex"])
+
+        results = await swarm.run(
+            baseline_queries=baseline_queries,
+            mrf_queries=low_improvement_mrf,  # Low improvement data
+        )
+
+        results.calculate_statistics()
+
+        # With low improvement data, most should fail
+        if results.pass_rate < 0.75:
+            recommendation = results.get_recommendation()
+            assert "INVESTIGATE" in recommendation
+
+    @pytest.mark.asyncio
+    async def test_swarm_all_validators_error_handling(self):
+        """Swarm should handle validator errors gracefully."""
+        # Create queries that will cause issues (missing required fields)
+        bad_queries = [{"invalid": "data"} for _ in range(50)]
+
+        swarm = MoonshotSwarm()
+        swarm.add_model_agents(["claude"])
+
+        # Should not raise, even with bad data
+        results = await swarm.run(
+            baseline_queries=bad_queries,
+            mrf_queries=bad_queries,
+        )
+
+        results.calculate_statistics()
+
+        # Should complete without exception
+        assert len(results.agents) == 1
+
+    @pytest.mark.asyncio
+    async def test_swarm_concurrent_limit_respected(self, baseline_queries, mrf_queries):
+        """Swarm should respect max_concurrent limit."""
+        swarm = MoonshotSwarm()
+        # Add many agents
+        swarm.add_model_agents(["claude", "gemini", "gpt"])
+        swarm.add_system_agents(["recursive", "skills", "rag", "memory"])
+
+        results = await swarm.run(
+            baseline_queries=baseline_queries,
+            mrf_queries=mrf_queries,
+            max_concurrent=2,  # Low limit
+        )
+
+        # All agents should complete regardless of concurrency limit
+        assert len(results.agents) == 7
+        assert all(a.results is not None for a in results.agents)
 
 
 # =============================================================================

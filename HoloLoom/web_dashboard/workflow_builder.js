@@ -589,6 +589,64 @@ const agentDefinitions = {
                 default: false
             }
         }
+    },
+    // ========== GROUP/CONTAINER NODES (Wave 4.4) ==========
+    group: {
+        name: 'Group Container',
+        type: 'group',
+        color: '#6c757d',
+        inputs: ['input'],
+        outputs: ['output'],
+        config: {
+            label: {
+                type: 'text',
+                default: 'Group',
+                placeholder: 'Group label'
+            },
+            description: {
+                type: 'textarea',
+                default: '',
+                placeholder: 'Description of this group'
+            },
+            collapsed: {
+                type: 'boolean',
+                default: false
+            },
+            color: {
+                type: 'select',
+                options: ['gray', 'blue', 'green', 'orange', 'purple', 'red'],
+                default: 'gray'
+            }
+        },
+        isContainer: true,
+        minWidth: 300,
+        minHeight: 200
+    },
+    subworkflow: {
+        name: 'Sub-Workflow',
+        type: 'group',
+        color: '#6c757d',
+        inputs: ['input'],
+        outputs: ['output'],
+        config: {
+            label: {
+                type: 'text',
+                default: 'Sub-Workflow',
+                placeholder: 'Sub-workflow name'
+            },
+            workflow_id: {
+                type: 'text',
+                default: '',
+                placeholder: 'ID of saved workflow to embed'
+            },
+            collapsed: {
+                type: 'boolean',
+                default: false
+            }
+        },
+        isContainer: true,
+        minWidth: 300,
+        minHeight: 200
     }
 };
 
@@ -865,12 +923,19 @@ function createNode(agentType, x, y) {
 
     nodes.push(node);
     renderNode(node);
+    saveUndoState('add_node', `Added ${definition.name}`);
     showToast(`Added ${definition.name}`, 'success');
 }
 
 function renderNode(node) {
     const canvas = document.getElementById('canvas');
     const def = node.definition;
+
+    // Check if this is a group/container node
+    if (def.isContainer || def.type === 'group') {
+        renderGroupNode(node);
+        return;
+    }
 
     const nodeEl = document.createElement('div');
     nodeEl.className = 'workflow-node';
@@ -936,6 +1001,688 @@ function renderNode(node) {
     });
 
     canvas.appendChild(nodeEl);
+}
+
+/**
+ * Render a group/container node (Wave 4.4)
+ */
+function renderGroupNode(node) {
+    const canvas = document.getElementById('canvas');
+    const def = node.definition;
+
+    // Initialize group-specific properties if not present
+    if (!node.children) node.children = [];
+    if (!node.width) node.width = def.minWidth || 300;
+    if (!node.height) node.height = def.minHeight || 200;
+
+    const nodeEl = document.createElement('div');
+    const colorClass = `group-color-${node.config.color || 'gray'}`;
+    nodeEl.className = `workflow-node group-node ${colorClass}`;
+    if (node.config.collapsed) {
+        nodeEl.classList.add('collapsed');
+    }
+    nodeEl.id = node.id;
+    nodeEl.style.left = node.x + 'px';
+    nodeEl.style.top = node.y + 'px';
+    nodeEl.style.width = node.width + 'px';
+    nodeEl.style.height = node.config.collapsed ? 'auto' : (node.height + 'px');
+
+    // Group Header
+    const header = document.createElement('div');
+    header.className = 'group-header';
+
+    // Collapse/Expand button
+    const collapseBtn = document.createElement('button');
+    collapseBtn.className = 'group-collapse-btn' + (node.config.collapsed ? ' collapsed' : '');
+    collapseBtn.innerHTML = '▼';
+    collapseBtn.onclick = (e) => {
+        e.stopPropagation();
+        toggleGroupCollapse(node.id);
+    };
+
+    // Editable label
+    const labelContainer = document.createElement('div');
+    labelContainer.className = 'group-label';
+    const labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.value = node.config.label || 'Group';
+    labelInput.onclick = (e) => e.stopPropagation();
+    labelInput.onchange = (e) => {
+        node.config.label = e.target.value;
+        saveUndoState('edit_group', `Renamed group to "${e.target.value}"`);
+    };
+    labelContainer.appendChild(labelInput);
+
+    // Node count badge
+    const nodeCount = document.createElement('span');
+    nodeCount.className = 'group-node-count';
+    nodeCount.textContent = `${node.children.length} node${node.children.length !== 1 ? 's' : ''}`;
+    nodeCount.id = `${node.id}-count`;
+
+    // Action buttons
+    const actions = document.createElement('div');
+    actions.className = 'group-actions';
+
+    const colorBtn = document.createElement('button');
+    colorBtn.className = 'group-action-btn';
+    colorBtn.innerHTML = '🎨';
+    colorBtn.title = 'Change color';
+    colorBtn.onclick = (e) => {
+        e.stopPropagation();
+        cycleGroupColor(node.id);
+    };
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'group-action-btn delete';
+    deleteBtn.innerHTML = '✕';
+    deleteBtn.title = 'Delete group';
+    deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        deleteGroupNode(node.id);
+    };
+
+    actions.appendChild(colorBtn);
+    actions.appendChild(deleteBtn);
+
+    header.appendChild(collapseBtn);
+    header.appendChild(labelContainer);
+    header.appendChild(nodeCount);
+    header.appendChild(actions);
+
+    // Group Content area
+    const content = document.createElement('div');
+    content.className = 'group-content' + (node.config.collapsed ? ' collapsed' : '');
+    content.id = `${node.id}-content`;
+
+    // Drop zone indicator
+    const dropZone = document.createElement('div');
+    dropZone.className = 'group-drop-zone';
+    const dropText = document.createElement('span');
+    dropText.className = 'group-drop-zone-text';
+    dropText.textContent = 'Drop nodes here';
+    dropZone.appendChild(dropText);
+    content.appendChild(dropZone);
+
+    // Connection ports for group
+    const inputPort = document.createElement('div');
+    inputPort.className = 'node-port input';
+    inputPort.dataset.nodeId = node.id;
+    inputPort.dataset.portType = 'input';
+    inputPort.addEventListener('click', (e) => handlePortClick(e, node.id, 'input'));
+
+    const outputPort = document.createElement('div');
+    outputPort.className = 'node-port output';
+    outputPort.dataset.nodeId = node.id;
+    outputPort.dataset.portType = 'output';
+    outputPort.addEventListener('click', (e) => handlePortClick(e, node.id, 'output'));
+
+    // Resize handle
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'group-resize-handle';
+    makeGroupResizable(resizeHandle, nodeEl, node);
+
+    nodeEl.appendChild(header);
+    nodeEl.appendChild(content);
+    nodeEl.appendChild(inputPort);
+    nodeEl.appendChild(outputPort);
+    nodeEl.appendChild(resizeHandle);
+
+    // Make draggable (by header only)
+    makeGroupDraggable(header, nodeEl, node);
+
+    // Setup drop zone for receiving nodes
+    setupGroupDropZone(nodeEl, node);
+
+    // Click to select
+    nodeEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectNode(node.id);
+    });
+
+    canvas.appendChild(nodeEl);
+
+    // Render children inside group
+    renderGroupChildren(node);
+}
+
+/**
+ * Toggle group collapse/expand state
+ */
+function toggleGroupCollapse(nodeId) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    node.config.collapsed = !node.config.collapsed;
+
+    const nodeEl = document.getElementById(nodeId);
+    const content = document.getElementById(`${nodeId}-content`);
+    const collapseBtn = nodeEl.querySelector('.group-collapse-btn');
+
+    if (node.config.collapsed) {
+        nodeEl.classList.add('collapsed');
+        content.classList.add('collapsed');
+        collapseBtn.classList.add('collapsed');
+        nodeEl.style.height = 'auto';
+    } else {
+        nodeEl.classList.remove('collapsed');
+        content.classList.remove('collapsed');
+        collapseBtn.classList.remove('collapsed');
+        nodeEl.style.height = node.height + 'px';
+    }
+
+    // Update connections
+    renderConnections();
+    saveUndoState('toggle_collapse', `${node.config.collapsed ? 'Collapsed' : 'Expanded'} group`);
+}
+
+/**
+ * Cycle through group colors
+ */
+function cycleGroupColor(nodeId) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    const colors = ['gray', 'blue', 'green', 'orange', 'purple', 'red'];
+    const currentIndex = colors.indexOf(node.config.color || 'gray');
+    const nextIndex = (currentIndex + 1) % colors.length;
+    const newColor = colors[nextIndex];
+
+    node.config.color = newColor;
+
+    const nodeEl = document.getElementById(nodeId);
+    colors.forEach(c => nodeEl.classList.remove(`group-color-${c}`));
+    nodeEl.classList.add(`group-color-${newColor}`);
+
+    saveUndoState('change_color', `Changed group color to ${newColor}`);
+}
+
+/**
+ * Delete a group node and optionally ungroup its children
+ */
+function deleteGroupNode(nodeId) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    // Ungroup children first (move them out of the group)
+    if (node.children && node.children.length > 0) {
+        node.children.forEach(childId => {
+            const child = nodes.find(n => n.id === childId);
+            if (child) {
+                // Convert relative position to absolute
+                child.x = node.x + (child.relativeX || 0);
+                child.y = node.y + 56 + (child.relativeY || 0); // 56 = header height
+                delete child.parentGroup;
+                delete child.relativeX;
+                delete child.relativeY;
+
+                // Re-render child at new position
+                const childEl = document.getElementById(childId);
+                if (childEl) {
+                    childEl.style.left = child.x + 'px';
+                    childEl.style.top = child.y + 'px';
+                    // Move child out of group to canvas
+                    document.getElementById('canvas').appendChild(childEl);
+                }
+            }
+        });
+    }
+
+    // Now delete the group node itself
+    deleteNode(nodeId);
+}
+
+/**
+ * Make group resizable
+ */
+function makeGroupResizable(handle, nodeEl, node) {
+    let isResizing = false;
+    let startX, startY, startWidth, startHeight;
+
+    handle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        isResizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = node.width;
+        startHeight = node.height;
+        document.body.style.cursor = 'se-resize';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        const minWidth = node.definition.minWidth || 300;
+        const minHeight = node.definition.minHeight || 200;
+
+        node.width = Math.max(minWidth, startWidth + dx);
+        node.height = Math.max(minHeight, startHeight + dy);
+
+        nodeEl.style.width = node.width + 'px';
+        if (!node.config.collapsed) {
+            nodeEl.style.height = node.height + 'px';
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.cursor = '';
+            saveUndoState('resize_group', 'Resized group');
+        }
+    });
+}
+
+/**
+ * Make group draggable by header
+ */
+function makeGroupDraggable(header, nodeEl, node) {
+    let isDragging = false;
+    let startX, startY, nodeStartX, nodeStartY;
+
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+
+        isDragging = true;
+        nodeEl.classList.add('dragging');
+
+        const rect = document.getElementById('canvas').getBoundingClientRect();
+        const zoom = currentZoom;
+
+        startX = e.clientX;
+        startY = e.clientY;
+        nodeStartX = node.x;
+        nodeStartY = node.y;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        const dx = (e.clientX - startX) / currentZoom;
+        const dy = (e.clientY - startY) / currentZoom;
+
+        node.x = nodeStartX + dx;
+        node.y = nodeStartY + dy;
+
+        nodeEl.style.left = node.x + 'px';
+        nodeEl.style.top = node.y + 'px';
+
+        // Move children with group
+        if (node.children) {
+            node.children.forEach(childId => {
+                const child = nodes.find(n => n.id === childId);
+                if (child) {
+                    const childEl = document.getElementById(childId);
+                    if (childEl) {
+                        childEl.style.left = (node.x + (child.relativeX || 0)) + 'px';
+                        childEl.style.top = (node.y + 56 + (child.relativeY || 0)) + 'px';
+                    }
+                }
+            });
+        }
+
+        renderConnections();
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            nodeEl.classList.remove('dragging');
+            saveUndoState('move_group', 'Moved group');
+        }
+    });
+}
+
+/**
+ * Setup drop zone for receiving nodes into group
+ */
+function setupGroupDropZone(groupEl, groupNode) {
+    groupEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        groupEl.classList.add('drag-over');
+    });
+
+    groupEl.addEventListener('dragleave', (e) => {
+        if (!groupEl.contains(e.relatedTarget)) {
+            groupEl.classList.remove('drag-over');
+        }
+    });
+
+    groupEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        groupEl.classList.remove('drag-over');
+
+        const nodeId = e.dataTransfer.getData('nodeId');
+        if (nodeId && nodeId !== groupNode.id) {
+            addNodeToGroup(nodeId, groupNode.id);
+        }
+    });
+}
+
+/**
+ * Add a node to a group
+ */
+function addNodeToGroup(nodeId, groupId) {
+    const node = nodes.find(n => n.id === nodeId);
+    const group = nodes.find(n => n.id === groupId);
+    if (!node || !group) return;
+
+    // Check if node is already in another group
+    if (node.parentGroup) {
+        removeNodeFromGroup(nodeId, node.parentGroup);
+    }
+
+    // Check if trying to add a group to itself or create circular reference
+    if (node.definition.isContainer && isGroupAncestor(groupId, nodeId)) {
+        showToast('Cannot create circular group reference', 'error');
+        return;
+    }
+
+    // Calculate relative position within group
+    node.relativeX = node.x - group.x;
+    node.relativeY = node.y - group.y - 56; // 56 = header height
+    node.parentGroup = groupId;
+
+    // Add to group's children
+    if (!group.children) group.children = [];
+    if (!group.children.includes(nodeId)) {
+        group.children.push(nodeId);
+    }
+
+    // Move node element inside group content
+    const nodeEl = document.getElementById(nodeId);
+    const groupContent = document.getElementById(`${groupId}-content`);
+    if (nodeEl && groupContent) {
+        nodeEl.style.left = node.relativeX + 'px';
+        nodeEl.style.top = node.relativeY + 'px';
+        groupContent.appendChild(nodeEl);
+    }
+
+    // Update group node count
+    updateGroupNodeCount(groupId);
+
+    renderConnections();
+    saveUndoState('add_to_group', `Added node to group`);
+}
+
+/**
+ * Remove a node from a group
+ */
+function removeNodeFromGroup(nodeId, groupId) {
+    const node = nodes.find(n => n.id === nodeId);
+    const group = nodes.find(n => n.id === groupId);
+    if (!node || !group) return;
+
+    // Convert relative position to absolute
+    node.x = group.x + (node.relativeX || 0);
+    node.y = group.y + 56 + (node.relativeY || 0);
+    delete node.parentGroup;
+    delete node.relativeX;
+    delete node.relativeY;
+
+    // Remove from group's children
+    if (group.children) {
+        group.children = group.children.filter(id => id !== nodeId);
+    }
+
+    // Move node element back to canvas
+    const nodeEl = document.getElementById(nodeId);
+    const canvas = document.getElementById('canvas');
+    if (nodeEl && canvas) {
+        nodeEl.style.left = node.x + 'px';
+        nodeEl.style.top = node.y + 'px';
+        canvas.appendChild(nodeEl);
+    }
+
+    // Update group node count
+    updateGroupNodeCount(groupId);
+
+    renderConnections();
+}
+
+/**
+ * Check if groupA is an ancestor of groupB (to prevent circular references)
+ */
+function isGroupAncestor(groupAId, groupBId) {
+    const groupB = nodes.find(n => n.id === groupBId);
+    if (!groupB || !groupB.children) return false;
+
+    if (groupB.children.includes(groupAId)) return true;
+
+    for (const childId of groupB.children) {
+        const child = nodes.find(n => n.id === childId);
+        if (child && child.definition.isContainer) {
+            if (isGroupAncestor(groupAId, childId)) return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Update group node count badge
+ */
+function updateGroupNodeCount(groupId) {
+    const group = nodes.find(n => n.id === groupId);
+    if (!group) return;
+
+    const countEl = document.getElementById(`${groupId}-count`);
+    if (countEl) {
+        const count = group.children ? group.children.length : 0;
+        countEl.textContent = `${count} node${count !== 1 ? 's' : ''}`;
+    }
+}
+
+/**
+ * Render children inside a group
+ */
+function renderGroupChildren(groupNode) {
+    if (!groupNode.children || groupNode.children.length === 0) return;
+
+    const groupContent = document.getElementById(`${groupNode.id}-content`);
+    if (!groupContent) return;
+
+    groupNode.children.forEach(childId => {
+        const child = nodes.find(n => n.id === childId);
+        if (!child) return;
+
+        // Check if child element already exists
+        let childEl = document.getElementById(childId);
+        if (!childEl) {
+            // Render the child node (it will be added to canvas, we need to move it)
+            const def = child.definition;
+            if (def.isContainer || def.type === 'group') {
+                renderGroupNode(child);
+            } else {
+                // Create a temporary renderNode that doesn't add to canvas
+                childEl = createNodeElement(child);
+            }
+            childEl = document.getElementById(childId);
+        }
+
+        if (childEl) {
+            // Move to group content and set relative position
+            childEl.style.left = (child.relativeX || 0) + 'px';
+            childEl.style.top = (child.relativeY || 0) + 'px';
+            groupContent.appendChild(childEl);
+        }
+    });
+}
+
+/**
+ * Create a node element without adding to canvas (for group children)
+ */
+function createNodeElement(node) {
+    const def = node.definition;
+
+    const nodeEl = document.createElement('div');
+    nodeEl.className = 'workflow-node';
+    nodeEl.id = node.id;
+    nodeEl.style.left = node.x + 'px';
+    nodeEl.style.top = node.y + 'px';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'node-header';
+
+    const icon = document.createElement('div');
+    icon.className = `node-icon agent-color-${def.type}`;
+    icon.textContent = getAgentIcon(def.type);
+
+    const title = document.createElement('div');
+    title.className = 'node-title';
+    title.textContent = def.name;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'node-delete';
+    deleteBtn.textContent = '×';
+    deleteBtn.onclick = () => deleteNode(node.id);
+
+    header.appendChild(icon);
+    header.appendChild(title);
+    header.appendChild(deleteBtn);
+
+    // Config section
+    const configSection = document.createElement('div');
+    configSection.className = 'node-config';
+
+    Object.entries(def.config).forEach(([key, configDef]) => {
+        const configItem = createConfigInput(node, key, configDef);
+        configSection.appendChild(configItem);
+    });
+
+    // Connection ports
+    const inputPort = document.createElement('div');
+    inputPort.className = 'node-port input';
+    inputPort.dataset.nodeId = node.id;
+    inputPort.dataset.portType = 'input';
+    inputPort.addEventListener('click', (e) => handlePortClick(e, node.id, 'input'));
+
+    const outputPort = document.createElement('div');
+    outputPort.className = 'node-port output';
+    outputPort.dataset.nodeId = node.id;
+    outputPort.dataset.portType = 'output';
+    outputPort.addEventListener('click', (e) => handlePortClick(e, node.id, 'output'));
+
+    nodeEl.appendChild(header);
+    nodeEl.appendChild(configSection);
+    nodeEl.appendChild(inputPort);
+    nodeEl.appendChild(outputPort);
+
+    // Make draggable
+    makeNodeDraggable(nodeEl, node);
+
+    // Click to select
+    nodeEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectNode(node.id);
+    });
+
+    // Add to canvas temporarily
+    document.getElementById('canvas').appendChild(nodeEl);
+
+    return nodeEl;
+}
+
+/**
+ * Create a group from selected nodes (G shortcut)
+ * If nodes are selected, creates a group containing them.
+ * If no nodes selected, creates an empty group at canvas center.
+ */
+function createGroupFromSelection() {
+    const selectedNodes = nodes.filter(n => n.selected);
+    const canvas = document.getElementById('canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+
+    // Create group node
+    const groupId = generateNodeId();
+    const groupDef = agentDefinitions.group;
+
+    let groupX, groupY, groupWidth, groupHeight;
+    const padding = 40;
+
+    if (selectedNodes.length > 0) {
+        // Calculate bounding box of selected nodes
+        let minX = Infinity, minY = Infinity;
+        let maxX = -Infinity, maxY = -Infinity;
+
+        selectedNodes.forEach(n => {
+            const nodeEl = document.querySelector(`[data-node-id="${n.id}"]`);
+            const nodeWidth = nodeEl ? nodeEl.offsetWidth : 200;
+            const nodeHeight = nodeEl ? nodeEl.offsetHeight : 100;
+
+            minX = Math.min(minX, n.x);
+            minY = Math.min(minY, n.y);
+            maxX = Math.max(maxX, n.x + nodeWidth);
+            maxY = Math.max(maxY, n.y + nodeHeight);
+        });
+
+        // Add padding around the group
+        groupX = minX - padding;
+        groupY = minY - padding - 40; // Extra space for header
+        groupWidth = Math.max(groupDef.minWidth, maxX - minX + padding * 2);
+        groupHeight = Math.max(groupDef.minHeight, maxY - minY + padding * 2 + 40);
+    } else {
+        // Create empty group at canvas center
+        groupX = (canvasRect.width / 2 - groupDef.minWidth / 2) / zoomLevel - panOffsetX;
+        groupY = (canvasRect.height / 2 - groupDef.minHeight / 2) / zoomLevel - panOffsetY;
+        groupWidth = groupDef.minWidth;
+        groupHeight = groupDef.minHeight;
+    }
+
+    // Create group node object
+    const groupNode = {
+        id: groupId,
+        type: 'group',
+        agent: 'group',
+        definition: groupDef,
+        x: groupX,
+        y: groupY,
+        width: groupWidth,
+        height: groupHeight,
+        config: {
+            label: selectedNodes.length > 0 ? `Group (${selectedNodes.length} nodes)` : 'New Group',
+            description: '',
+            collapsed: false,
+            color: 'gray'
+        },
+        children: [],
+        selected: false
+    };
+
+    // Add to nodes array
+    nodes.push(groupNode);
+
+    // Add selected nodes as children
+    if (selectedNodes.length > 0) {
+        selectedNodes.forEach(child => {
+            // Convert to relative positioning
+            child.relativeX = child.x - groupX;
+            child.relativeY = child.y - groupY;
+            child.parentGroup = groupId;
+            groupNode.children.push(child.id);
+
+            // Deselect the child node
+            child.selected = false;
+            const childEl = document.querySelector(`[data-node-id="${child.id}"]`);
+            if (childEl) {
+                childEl.classList.remove('selected');
+            }
+        });
+    }
+
+    // Save undo state
+    saveUndoState('add_node', `Created group${selectedNodes.length > 0 ? ` with ${selectedNodes.length} nodes` : ''}`);
+
+    // Render the group
+    renderGroupNode(groupNode);
+
+    // Select the new group
+    selectNode(groupId);
+
+    console.log(`Created group ${groupId} with ${selectedNodes.length} children`);
 }
 
 function createConfigInput(node, key, configDef) {
@@ -1133,6 +1880,13 @@ function createConnection(fromNodeId, toNodeId) {
         to: toNodeId
     });
 
+    // Get node names for description
+    const fromNode = nodes.find(n => n.id === fromNodeId);
+    const toNode = nodes.find(n => n.id === toNodeId);
+    const fromName = fromNode?.definition?.name || 'node';
+    const toName = toNode?.definition?.name || 'node';
+
+    saveUndoState('connect', `Connected ${fromName} → ${toName}`);
     updateConnections();
     showToast('Connection created', 'success');
 }
@@ -1339,11 +2093,18 @@ function updateNodeConfig(nodeId, key, value) {
 
     node.config[key] = value;
     showToast(`Updated ${key}`, 'success');
-    saveUndoState();
+    saveUndoState('update_config', `Updated ${key} on ${node.definition?.name || 'node'}`);
 }
 
 function deleteNode(nodeId) {
     if (!confirm('Delete this node?')) return;
+
+    // Get node name before deletion
+    const node = nodes.find(n => n.id === nodeId);
+    const nodeName = node?.definition?.name || 'node';
+
+    // Save state BEFORE deletion
+    saveUndoState('delete_node', `Deleted ${nodeName}`);
 
     // Remove connections
     connections = connections.filter(c => c.from !== nodeId && c.to !== nodeId);
@@ -1363,6 +2124,9 @@ function deleteNode(nodeId) {
 }
 
 function deleteConnection(connId) {
+    // Save state BEFORE deletion
+    saveUndoState('disconnect', 'Deleted connection');
+
     connections = connections.filter(c => c.id !== connId);
     updateConnections();
     showToast('Connection deleted', 'success');
@@ -1370,6 +2134,9 @@ function deleteConnection(connId) {
 
 function clearCanvas() {
     if (!confirm('Clear all nodes and connections?')) return;
+
+    // Save state BEFORE clearing
+    saveUndoState('clear', `Cleared ${nodes.length} nodes and ${connections.length} connections`);
 
     nodes = [];
     connections = [];
@@ -1381,10 +2148,33 @@ function clearCanvas() {
     showToast('Canvas cleared', 'success');
 }
 
-function exportWorkflow() {
+// Clear canvas without confirmation (for internal use by undo/redo)
+function clearCanvasOnly() {
+    document.getElementById('canvas').innerHTML = '';
+    updateConnections();
+}
+
+function exportWorkflow(format = 'json') {
+    const workflowName = document.querySelector('.workflow-title').textContent || 'Untitled Workflow';
+
+    switch (format) {
+        case 'python':
+            exportAsPython(workflowName);
+            break;
+        case 'yaml':
+            exportAsYAML(workflowName);
+            break;
+        case 'json':
+        default:
+            exportAsJSON(workflowName);
+            break;
+    }
+}
+
+function exportAsJSON(workflowName) {
     const workflow = {
         version: '1.0',
-        name: document.querySelector('.workflow-title').textContent,
+        name: workflowName,
         nodes: nodes.map(n => ({
             id: n.id,
             agentType: n.agentType,
@@ -1404,7 +2194,412 @@ function exportWorkflow() {
     a.download = `workflow-${Date.now()}.json`;
     a.click();
 
-    showToast('Workflow exported', 'success');
+    showToast('Workflow exported as JSON', 'success');
+}
+
+/**
+ * Export workflow as executable Python code
+ */
+function exportAsPython(workflowName) {
+    const sortedNodes = topologicalSort();
+    if (!sortedNodes) {
+        showToast('Cannot export: workflow contains cycles', 'error');
+        return;
+    }
+
+    // Generate Python code
+    let code = `"""
+HoloLoom Workflow: ${workflowName}
+Generated: ${new Date().toISOString()}
+
+This script executes a HoloLoom workflow pipeline.
+"""
+
+import asyncio
+from HoloLoom import HoloLoom
+from HoloLoom.config import Config
+from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+
+
+async def run_workflow(input_query: str):
+    """
+    Execute the ${workflowName} workflow.
+
+    Args:
+        input_query: The initial query to process
+
+    Returns:
+        Final workflow result
+    """
+    config = Config.fused()
+    results = {}
+
+    async with HoloLoom(config=config) as loom:
+`;
+
+    // Generate code for each node in topological order
+    sortedNodes.forEach((node, index) => {
+        const indent = '        ';
+        const varName = `result_${node.id}`;
+        const inputSources = getNodeInputSources(node.id);
+
+        code += `\n${indent}# Node ${index + 1}: ${node.definition?.name || node.agentType}\n`;
+
+        switch (node.agentType) {
+            case 'hololoom':
+                const pattern = node.config?.pattern || 'fast';
+                const inputVar = inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query';
+                code += `${indent}${varName} = await loom.query(\n`;
+                code += `${indent}    ${inputVar},\n`;
+                code += `${indent}    pattern="${pattern}"\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'search':
+                const maxResults = node.config?.max_results || 10;
+                const threshold = node.config?.similarity_threshold || 0.7;
+                code += `${indent}${varName} = await loom.recall(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'},\n`;
+                code += `${indent}    k=${maxResults},\n`;
+                code += `${indent}    threshold=${threshold}\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'multiquery':
+                const mode = node.config?.mode || 'research';
+                const maxSub = node.config?.max_subqueries || 5;
+                code += `${indent}orchestrator = await create_agentic_orchestrator(config)\n`;
+                code += `${indent}${varName} = await orchestrator.reason(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'},\n`;
+                code += `${indent}    mode=ReasoningMode.${mode.toUpperCase()},\n`;
+                code += `${indent}    max_steps=${maxSub}\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'embedder':
+                const scales = node.config?.scales || '96,192,384';
+                code += `${indent}${varName} = await loom.embed(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'},\n`;
+                code += `${indent}    scales=[${scales}]\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'synthesizer':
+                code += `${indent}${varName} = await loom.synthesize(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'},\n`;
+                code += `${indent}    extract_entities=${node.config?.extract_entities !== false},\n`;
+                code += `${indent}    extract_motifs=${node.config?.extract_motifs !== false}\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'refiner':
+                const strategy = node.config?.strategy || 'refine';
+                code += `${indent}${varName} = await loom.refine(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'},\n`;
+                code += `${indent}    strategy="${strategy}"\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'memory_store':
+                code += `${indent}${varName} = await loom.experience(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'}\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'context_retriever':
+                code += `${indent}${varName} = await loom.recall(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'},\n`;
+                code += `${indent}    k=${node.config?.max_context || 20}\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'knowledge_fusion':
+                code += `${indent}${varName} = await loom.fuse_knowledge(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'},\n`;
+                code += `${indent}    max_hops=${node.config?.max_hops || 3}\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'thompson_sampler':
+                code += `${indent}# Thompson Sampling decision\n`;
+                code += `${indent}${varName} = loom.policy.thompson_sample(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'}\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'convergence_engine':
+                const strategy2 = node.config?.strategy || 'bayesian_blend';
+                code += `${indent}${varName} = loom.convergence.collapse(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'},\n`;
+                code += `${indent}    strategy="${strategy2}"\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'safety_guardrails':
+                code += `${indent}from HoloLoom.alignment import SafetyGuardrails\n`;
+                code += `${indent}guardrails = SafetyGuardrails()\n`;
+                code += `${indent}${varName} = await guardrails.gate_action(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'}\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'response_generator':
+                code += `${indent}${varName} = await loom.generate_response(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'}\n`;
+                code += `${indent})\n`;
+                break;
+
+            case 'format_converter':
+                const format = node.config?.output_format || 'markdown';
+                code += `${indent}${varName} = loom.format(\n`;
+                code += `${indent}    ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'},\n`;
+                code += `${indent}    format="${format}"\n`;
+                code += `${indent})\n`;
+                break;
+
+            default:
+                code += `${indent}# Custom node: ${node.agentType}\n`;
+                code += `${indent}${varName} = ${inputSources.length > 0 ? `results['${inputSources[0]}']` : 'input_query'}\n`;
+        }
+
+        code += `${indent}results['${node.id}'] = ${varName}\n`;
+    });
+
+    // Return the final result
+    const lastNode = sortedNodes[sortedNodes.length - 1];
+    code += `\n        return results['${lastNode.id}']\n\n`;
+
+    // Add main entry point
+    code += `
+if __name__ == "__main__":
+    # Example usage
+    query = "What is Thompson Sampling?"
+    result = asyncio.run(run_workflow(query))
+    print(f"Result: {result}")
+`;
+
+    // Download the file
+    const blob = new Blob([code], { type: 'text/x-python' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `workflow_${workflowName.toLowerCase().replace(/\s+/g, '_')}.py`;
+    a.click();
+
+    showToast('Workflow exported as Python', 'success');
+}
+
+/**
+ * Export workflow as YAML configuration
+ */
+function exportAsYAML(workflowName) {
+    let yaml = `# HoloLoom Workflow Configuration
+# Generated: ${new Date().toISOString()}
+
+version: "1.0"
+name: "${workflowName}"
+
+nodes:
+`;
+
+    // Export nodes
+    nodes.forEach(node => {
+        yaml += `  - id: "${node.id}"
+    type: ${node.agentType}
+    name: "${node.definition?.name || node.agentType}"
+    position:
+      x: ${node.x}
+      y: ${node.y}
+`;
+
+        // Add config if present
+        if (node.config && Object.keys(node.config).length > 0) {
+            yaml += `    config:\n`;
+            Object.entries(node.config).forEach(([key, value]) => {
+                if (typeof value === 'string') {
+                    yaml += `      ${key}: "${value}"\n`;
+                } else if (typeof value === 'boolean') {
+                    yaml += `      ${key}: ${value}\n`;
+                } else {
+                    yaml += `      ${key}: ${value}\n`;
+                }
+            });
+        }
+        yaml += '\n';
+    });
+
+    // Export connections
+    yaml += `connections:\n`;
+    connections.forEach(conn => {
+        yaml += `  - from: "${conn.from}"
+    to: "${conn.to}"
+`;
+    });
+
+    // Add execution metadata
+    yaml += `
+# Execution settings
+execution:
+  mode: sequential
+  timeout_seconds: 300
+  retry_on_failure: true
+  max_retries: 3
+`;
+
+    // Download the file
+    const blob = new Blob([yaml], { type: 'text/yaml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `workflow_${workflowName.toLowerCase().replace(/\s+/g, '_')}.yaml`;
+    a.click();
+
+    showToast('Workflow exported as YAML', 'success');
+}
+
+/**
+ * Topological sort for workflow nodes (for Python code generation)
+ */
+function topologicalSort() {
+    const sorted = [];
+    const visited = new Set();
+    const visiting = new Set();
+
+    function visit(nodeId) {
+        if (visiting.has(nodeId)) {
+            return false; // Cycle detected
+        }
+        if (visited.has(nodeId)) {
+            return true;
+        }
+
+        visiting.add(nodeId);
+
+        // Find all nodes that this node depends on (incoming connections)
+        const dependencies = connections
+            .filter(c => c.to === nodeId)
+            .map(c => c.from);
+
+        for (const depId of dependencies) {
+            if (!visit(depId)) {
+                return false;
+            }
+        }
+
+        visiting.delete(nodeId);
+        visited.add(nodeId);
+
+        const node = nodes.find(n => n.id === nodeId);
+        if (node) sorted.push(node);
+
+        return true;
+    }
+
+    // Visit all nodes
+    for (const node of nodes) {
+        if (!visit(node.id)) {
+            return null; // Cycle detected
+        }
+    }
+
+    return sorted;
+}
+
+/**
+ * Get input sources for a node (nodes connected to its inputs)
+ */
+function getNodeInputSources(nodeId) {
+    return connections
+        .filter(c => c.to === nodeId)
+        .map(c => c.from);
+}
+
+/**
+ * Show export format selector modal
+ */
+function showExportModal() {
+    const existingModal = document.getElementById('exportModal');
+    if (existingModal) {
+        existingModal.classList.add('show');
+        return;
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'exportModal';
+    modal.className = 'modal show';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Export Workflow</h3>
+                <button class="modal-close" onclick="closeExportModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <p style="margin-bottom: 15px; color: #666;">Choose export format:</p>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="export-option-btn" onclick="exportWorkflow('json'); closeExportModal();">
+                        <span style="font-size: 24px;">📄</span>
+                        <div>
+                            <strong>JSON</strong>
+                            <small>Workflow definition (import/export)</small>
+                        </div>
+                    </button>
+                    <button class="export-option-btn" onclick="exportWorkflow('python'); closeExportModal();">
+                        <span style="font-size: 24px;">🐍</span>
+                        <div>
+                            <strong>Python</strong>
+                            <small>Executable Python script</small>
+                        </div>
+                    </button>
+                    <button class="export-option-btn" onclick="exportWorkflow('yaml'); closeExportModal();">
+                        <span style="font-size: 24px;">📝</span>
+                        <div>
+                            <strong>YAML</strong>
+                            <small>Configuration file format</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add styles for export buttons
+    const style = document.createElement('style');
+    style.textContent = `
+        .export-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .export-option-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        .export-option-btn strong {
+            display: block;
+            color: #333;
+        }
+        .export-option-btn small {
+            color: #666;
+            font-size: 12px;
+        }
+    `;
+    document.head.appendChild(style);
+
+    document.body.appendChild(modal);
+}
+
+function closeExportModal() {
+    const modal = document.getElementById('exportModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
 }
 
 function importWorkflow() {
@@ -1434,7 +2629,15 @@ function importWorkflow() {
 }
 
 function loadWorkflow(workflow) {
-    clearCanvas();
+    // Save state BEFORE import
+    saveUndoState('import', `Imported workflow: ${workflow.name || 'Untitled'}`);
+
+    // Clear without confirmation (internal use)
+    nodes = [];
+    connections = [];
+    selectedNode = null;
+    clearCanvasOnly();
+    deselectAll();
 
     document.querySelector('.workflow-title').textContent = workflow.name || 'Imported Workflow';
 
@@ -1693,6 +2896,18 @@ function setupEventListeners() {
         if (e.key === '?' && !e.shiftKey) {
             e.preventDefault();
             showHotkeysModal();
+        }
+
+        // Toggle history panel (H)
+        if (e.key === 'h' || e.key === 'H') {
+            e.preventDefault();
+            toggleHistoryPanel();
+        }
+
+        // Create group from selected nodes (G)
+        if (e.key === 'g' || e.key === 'G') {
+            e.preventDefault();
+            createGroupFromSelection();
         }
     });
 }
@@ -2090,6 +3305,25 @@ let undoStack = [];
 let redoStack = [];
 const MAX_UNDO_STACK = 50;
 
+// ========== UNDO/REDO HISTORY (Wave 4.1) ==========
+let isTransactionActive = false;
+let transactionActions = [];
+
+// Action types for history display
+const ACTION_ICONS = {
+    'add_node': '➕',
+    'delete_node': '🗑️',
+    'connect': '🔗',
+    'disconnect': '✂️',
+    'update_config': '⚙️',
+    'move_node': '↔️',
+    'duplicate': '📋',
+    'paste': '📄',
+    'clear': '🧹',
+    'import': '📥',
+    'unknown': '•'
+};
+
 function duplicateNode(nodeId) {
     const node = nodes.find(n => n.id === nodeId);
     if (!node) return;
@@ -2112,7 +3346,7 @@ function duplicateNode(nodeId) {
     selectNode(duplicated.id);
 
     showToast(`Duplicated ${node.definition.name}`, 'success');
-    saveUndoState();
+    saveUndoState('duplicate', `Duplicated ${node.definition.name}`);
 }
 
 function copyNode(nodeId) {
@@ -2156,7 +3390,7 @@ function pasteNode() {
     selectNode(pasted.id);
 
     showToast(`Pasted ${pasted.definition.name}`, 'success');
-    saveUndoState();
+    saveUndoState('paste', `Pasted ${pasted.definition.name}`);
 }
 
 function selectAllNodes() {
@@ -2176,10 +3410,20 @@ function selectNode(nodeId) {
     }
 }
 
-function saveUndoState() {
+function saveUndoState(actionType = 'unknown', description = '') {
+    // If in transaction mode, queue the action
+    if (isTransactionActive) {
+        transactionActions.push({ actionType, description });
+        return;
+    }
+
     const state = {
         nodes: JSON.parse(JSON.stringify(nodes)),
-        connections: JSON.parse(JSON.stringify(connections))
+        connections: JSON.parse(JSON.stringify(connections)),
+        // Wave 4.1: Action metadata
+        action: actionType,
+        description: description || getDefaultDescription(actionType),
+        timestamp: Date.now()
     };
 
     undoStack.push(state);
@@ -2189,6 +3433,65 @@ function saveUndoState() {
 
     // Clear redo stack when new action is performed
     redoStack = [];
+
+    // Update history panel if visible
+    updateHistoryPanel();
+}
+
+// Get default description for action type
+function getDefaultDescription(actionType) {
+    const descriptions = {
+        'add_node': 'Add node',
+        'delete_node': 'Delete node',
+        'connect': 'Create connection',
+        'disconnect': 'Delete connection',
+        'update_config': 'Update config',
+        'move_node': 'Move node',
+        'duplicate': 'Duplicate node',
+        'paste': 'Paste node',
+        'clear': 'Clear canvas',
+        'import': 'Import workflow',
+        'unknown': 'Change'
+    };
+    return descriptions[actionType] || 'Change';
+}
+
+// Transaction grouping for multi-action operations
+function beginTransaction() {
+    isTransactionActive = true;
+    transactionActions = [];
+}
+
+function commitTransaction(description = 'Multiple changes') {
+    if (!isTransactionActive) return;
+
+    isTransactionActive = false;
+
+    // Only save if actions were performed
+    if (transactionActions.length > 0) {
+        const state = {
+            nodes: JSON.parse(JSON.stringify(nodes)),
+            connections: JSON.parse(JSON.stringify(connections)),
+            action: 'transaction',
+            description: description,
+            timestamp: Date.now(),
+            subActions: transactionActions
+        };
+
+        undoStack.push(state);
+        if (undoStack.length > MAX_UNDO_STACK) {
+            undoStack.shift();
+        }
+        redoStack = [];
+        updateHistoryPanel();
+    }
+
+    transactionActions = [];
+}
+
+function cancelTransaction() {
+    isTransactionActive = false;
+    transactionActions = [];
 }
 
 function undo() {
@@ -2197,10 +3500,13 @@ function undo() {
         return;
     }
 
-    // Save current state to redo stack
+    // Save current state to redo stack with metadata
     const currentState = {
         nodes: JSON.parse(JSON.stringify(nodes)),
-        connections: JSON.parse(JSON.stringify(connections))
+        connections: JSON.parse(JSON.stringify(connections)),
+        action: 'undo_restore',
+        description: 'Restored state',
+        timestamp: Date.now()
     };
     redoStack.push(currentState);
 
@@ -2212,11 +3518,12 @@ function undo() {
     connections.push(...prevState.connections);
 
     // Re-render
-    clearCanvas();
+    clearCanvasOnly();
     nodes.forEach(node => renderNode(node));
     renderConnections();
+    updateHistoryPanel();
 
-    showToast('Undo', 'success');
+    showToast(`Undo: ${prevState.description || 'Change'}`, 'success');
 }
 
 function redo() {
@@ -2225,8 +3532,18 @@ function redo() {
         return;
     }
 
-    // Save current state to undo stack
-    saveUndoState();
+    // Save current state to undo stack with metadata
+    const currentState = {
+        nodes: JSON.parse(JSON.stringify(nodes)),
+        connections: JSON.parse(JSON.stringify(connections)),
+        action: 'redo_restore',
+        description: 'Restored state',
+        timestamp: Date.now()
+    };
+    undoStack.push(currentState);
+    if (undoStack.length > MAX_UNDO_STACK) {
+        undoStack.shift();
+    }
 
     // Restore redo state
     const nextState = redoStack.pop();
@@ -2236,12 +3553,1452 @@ function redo() {
     connections.push(...nextState.connections);
 
     // Re-render
-    clearCanvas();
+    clearCanvasOnly();
     nodes.forEach(node => renderNode(node));
     renderConnections();
+    updateHistoryPanel();
 
-    showToast('Redo', 'success');
+    showToast(`Redo: ${nextState.description || 'Change'}`, 'success');
 }
+
+// ========== HISTORY PANEL (Wave 4.1) ==========
+let historyPanelVisible = false;
+
+function toggleHistoryPanel() {
+    const panel = document.getElementById('historyPanel');
+    if (!panel) return;
+
+    historyPanelVisible = !historyPanelVisible;
+    panel.classList.toggle('visible', historyPanelVisible);
+
+    if (historyPanelVisible) {
+        updateHistoryPanel();
+    }
+}
+
+function showHistoryPanel() {
+    const panel = document.getElementById('historyPanel');
+    if (!panel) return;
+
+    historyPanelVisible = true;
+    panel.classList.add('visible');
+    updateHistoryPanel();
+}
+
+function hideHistoryPanel() {
+    const panel = document.getElementById('historyPanel');
+    if (!panel) return;
+
+    historyPanelVisible = false;
+    panel.classList.remove('visible');
+}
+
+function updateHistoryPanel() {
+    const list = document.getElementById('historyList');
+    if (!list) return;
+
+    list.innerHTML = '';
+
+    // Show undo history (newest first)
+    const allStates = [...undoStack].reverse();
+
+    if (allStates.length === 0) {
+        list.innerHTML = '<div class="history-empty">No history yet</div>';
+        return;
+    }
+
+    allStates.forEach((state, reverseIndex) => {
+        const actualIndex = undoStack.length - 1 - reverseIndex;
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        if (reverseIndex === 0) item.classList.add('current');
+
+        const icon = ACTION_ICONS[state.action] || ACTION_ICONS.unknown;
+        const time = state.timestamp ? formatTimeAgo(state.timestamp) : '';
+
+        item.innerHTML = `
+            <span class="history-icon">${icon}</span>
+            <span class="history-desc">${state.description || 'Unknown action'}</span>
+            <span class="history-time">${time}</span>
+        `;
+
+        item.addEventListener('click', () => jumpToState(actualIndex));
+        item.title = `Click to restore this state (${state.action})`;
+
+        list.appendChild(item);
+    });
+
+    // Update history count badge
+    const badge = document.getElementById('historyCount');
+    if (badge) {
+        badge.textContent = undoStack.length;
+        badge.style.display = undoStack.length > 0 ? 'inline' : 'none';
+    }
+}
+
+function jumpToState(targetIndex) {
+    if (targetIndex < 0 || targetIndex >= undoStack.length) {
+        showToast('Invalid state index', 'error');
+        return;
+    }
+
+    // How many undos do we need?
+    const undosNeeded = undoStack.length - 1 - targetIndex;
+
+    if (undosNeeded === 0) {
+        showToast('Already at this state', 'info');
+        return;
+    }
+
+    // Confirm if jumping more than 5 states
+    if (undosNeeded > 5) {
+        if (!confirm(`Jump back ${undosNeeded} steps to this state?`)) {
+            return;
+        }
+    }
+
+    // Perform multiple undos
+    for (let i = 0; i < undosNeeded; i++) {
+        if (undoStack.length === 0) break;
+
+        const currentState = {
+            nodes: JSON.parse(JSON.stringify(nodes)),
+            connections: JSON.parse(JSON.stringify(connections)),
+            action: 'jump_restore',
+            description: 'Jumped to state',
+            timestamp: Date.now()
+        };
+        redoStack.push(currentState);
+
+        const prevState = undoStack.pop();
+        nodes.length = 0;
+        connections.length = 0;
+        nodes.push(...prevState.nodes);
+        connections.push(...prevState.connections);
+    }
+
+    // Re-render
+    clearCanvasOnly();
+    nodes.forEach(node => renderNode(node));
+    renderConnections();
+    updateHistoryPanel();
+
+    showToast(`Jumped back ${undosNeeded} step${undosNeeded > 1 ? 's' : ''}`, 'success');
+}
+
+function formatTimeAgo(timestamp) {
+    const now = Date.now();
+    const diff = now - timestamp;
+
+    if (diff < 1000) return 'just now';
+    if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`;
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    return `${Math.floor(diff / 86400000)}d ago`;
+}
+
+function clearHistory() {
+    if (!confirm('Clear all undo/redo history?')) return;
+
+    undoStack = [];
+    redoStack = [];
+    updateHistoryPanel();
+    showToast('History cleared', 'success');
+}
+
+// ========== PERFORMANCE DASHBOARD (Wave 4.2) ==========
+let perfDashboardVisible = false;
+let perfRefreshTimer = null;
+let perfCharts = {};
+
+// Execution metrics storage
+const executionMetrics = {
+    totalExecutions: 0,
+    successCount: 0,
+    failureCount: 0,
+    latencyHistory: [],       // [{timestamp, latency_ms, node_count}]
+    nodeTypeStats: {},        // {nodeType: {count, totalLatency, successes, failures}}
+    executionTimeline: [],    // [{execution_id, nodes: [{name, start, duration}]}]
+    lastUpdate: null
+};
+
+// Thompson Sampling priors for AI suggestions
+const thompsonPriors = {
+    // nodeType → {alpha, beta} for success rate estimation
+    hololoom: { alpha: 1, beta: 1 },
+    search: { alpha: 1, beta: 1 },
+    multiquery: { alpha: 1, beta: 1 },
+    embedder: { alpha: 1, beta: 1 },
+    synthesizer: { alpha: 1, beta: 1 },
+    refiner: { alpha: 1, beta: 1 },
+    memory_store: { alpha: 1, beta: 1 },
+    context_retriever: { alpha: 1, beta: 1 },
+    knowledge_fusion: { alpha: 1, beta: 1 },
+    thompson: { alpha: 1, beta: 1 },
+    convergence: { alpha: 1, beta: 1 },
+    safety: { alpha: 1, beta: 1 },
+    response: { alpha: 1, beta: 1 },
+    format: { alpha: 1, beta: 1 },
+    conditional: { alpha: 1, beta: 1 },
+    loop: { alpha: 1, beta: 1 },
+    parallel: { alpha: 1, beta: 1 }
+};
+
+function showPerfDashboard() {
+    const dashboard = document.getElementById('perfDashboard');
+    const overlay = document.getElementById('perfDashboardOverlay');
+    if (!dashboard || !overlay) return;
+
+    perfDashboardVisible = true;
+    dashboard.style.display = 'flex';
+    overlay.style.display = 'block';
+
+    // Initialize charts if not already done
+    initializePerfCharts();
+
+    // Update with current data
+    updatePerfDashboard();
+
+    // Start auto-refresh based on current setting
+    const interval = parseInt(document.getElementById('perfRefreshInterval')?.value || '10000');
+    setPerfRefreshInterval(interval);
+}
+
+function hidePerfDashboard() {
+    const dashboard = document.getElementById('perfDashboard');
+    const overlay = document.getElementById('perfDashboardOverlay');
+    if (!dashboard || !overlay) return;
+
+    perfDashboardVisible = false;
+    dashboard.style.display = 'none';
+    overlay.style.display = 'none';
+
+    // Stop auto-refresh
+    if (perfRefreshTimer) {
+        clearInterval(perfRefreshTimer);
+        perfRefreshTimer = null;
+    }
+}
+
+function setPerfRefreshInterval(interval) {
+    const ms = parseInt(interval);
+
+    // Clear existing timer
+    if (perfRefreshTimer) {
+        clearInterval(perfRefreshTimer);
+        perfRefreshTimer = null;
+    }
+
+    // Update live indicator
+    const liveDot = document.getElementById('perfLiveDot');
+    const liveStatus = document.getElementById('perfLiveStatus');
+
+    if (ms === 0) {
+        // Manual mode
+        if (liveDot) liveDot.style.background = '#888';
+        if (liveStatus) liveStatus.textContent = 'Manual';
+    } else {
+        // Auto-refresh mode
+        if (liveDot) liveDot.style.background = '#4CAF50';
+        if (liveStatus) liveStatus.textContent = 'Live';
+
+        perfRefreshTimer = setInterval(() => {
+            if (perfDashboardVisible) {
+                updatePerfDashboard();
+            }
+        }, ms);
+    }
+}
+
+function initializePerfCharts() {
+    // Only initialize once
+    if (Object.keys(perfCharts).length > 0) return;
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: '#888' },
+                grid: { color: 'rgba(255,255,255,0.05)' }
+            },
+            y: {
+                ticks: { color: '#888' },
+                grid: { color: 'rgba(255,255,255,0.05)' }
+            }
+        }
+    };
+
+    // 1. Latency Trends (Line Chart)
+    const latencyCtx = document.getElementById('latencyChart')?.getContext('2d');
+    if (latencyCtx) {
+        perfCharts.latency = new Chart(latencyCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Latency (ms)',
+                    data: [],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }, {
+                    label: 'P95',
+                    data: [],
+                    borderColor: '#f093fb',
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                ...chartOptions,
+                plugins: {
+                    ...chartOptions.plugins,
+                    title: { display: false }
+                }
+            }
+        });
+    }
+
+    // 2. Success Rate (Donut Chart)
+    const successCtx = document.getElementById('successChart')?.getContext('2d');
+    if (successCtx) {
+        perfCharts.success = new Chart(successCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Success', 'Failure'],
+                datasets: [{
+                    data: [1, 0],
+                    backgroundColor: ['#4CAF50', '#f44336'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#e0e0e0', font: { size: 11 } }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+
+    // 3. Node Comparison (Bar Chart)
+    const nodeCtx = document.getElementById('nodeComparisonChart')?.getContext('2d');
+    if (nodeCtx) {
+        perfCharts.nodes = new Chart(nodeCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Avg Latency (ms)',
+                    data: [],
+                    backgroundColor: '#667eea'
+                }, {
+                    label: 'Success Rate (%)',
+                    data: [],
+                    backgroundColor: '#4CAF50'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    ...chartOptions.scales,
+                    y: {
+                        ...chartOptions.scales.y,
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Thompson Priors (Beta Distribution Visualization)
+    const thompsonCtx = document.getElementById('thompsonChart')?.getContext('2d');
+    if (thompsonCtx) {
+        perfCharts.thompson = new Chart(thompsonCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Expected Success Rate',
+                    data: [],
+                    backgroundColor: [],
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.2)'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        ...chartOptions.scales.x,
+                        min: 0,
+                        max: 1,
+                        ticks: {
+                            color: '#888',
+                            callback: (v) => `${(v * 100).toFixed(0)}%`
+                        }
+                    },
+                    y: {
+                        ...chartOptions.scales.y,
+                        ticks: { color: '#e0e0e0', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 5. Execution Timeline (Horizontal Bar - Gantt style)
+    const timelineCtx = document.getElementById('timelineChart')?.getContext('2d');
+    if (timelineCtx) {
+        perfCharts.timeline = new Chart(timelineCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Duration (ms)',
+                    data: [],
+                    backgroundColor: '#667eea',
+                    barThickness: 16
+                }]
+            },
+            options: {
+                ...chartOptions,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        ...chartOptions.scales.x,
+                        stacked: true,
+                        title: { display: true, text: 'Time (ms)', color: '#888' }
+                    },
+                    y: {
+                        ...chartOptions.scales.y,
+                        stacked: true
+                    }
+                }
+            }
+        });
+    }
+
+    // 6. Bottleneck Analysis (Pie Chart)
+    const bottleneckCtx = document.getElementById('bottleneckChart')?.getContext('2d');
+    if (bottleneckCtx) {
+        perfCharts.bottleneck = new Chart(bottleneckCtx, {
+            type: 'pie',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        '#667eea', '#f093fb', '#4CAF50', '#FFC107',
+                        '#2196F3', '#9C27B0', '#FF5722', '#00BCD4'
+                    ],
+                    borderWidth: 1,
+                    borderColor: '#1a1a2e'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: '#e0e0e0', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+}
+
+function updatePerfDashboard() {
+    executionMetrics.lastUpdate = Date.now();
+
+    // Generate sample data if no real data exists
+    if (executionMetrics.latencyHistory.length === 0) {
+        generateSampleMetrics();
+    }
+
+    // Update charts
+    updateLatencyChart();
+    updateSuccessChart();
+    updateNodeComparisonChart();
+    updateThompsonChart();
+    updateTimelineChart();
+    updateBottleneckChart();
+
+    // Update stats bar
+    updateStatsBar();
+
+    // Update badges
+    updatePerfBadges();
+}
+
+function generateSampleMetrics() {
+    // Generate realistic sample data for demonstration
+    const now = Date.now();
+    const nodeTypes = ['hololoom', 'search', 'synthesizer', 'response', 'safety'];
+
+    // Generate 20 sample executions
+    for (let i = 0; i < 20; i++) {
+        const latency = 100 + Math.random() * 200 + (i % 5 === 0 ? Math.random() * 100 : 0);
+        const success = Math.random() > 0.15;
+
+        executionMetrics.latencyHistory.push({
+            timestamp: now - (20 - i) * 60000,
+            latency_ms: latency,
+            node_count: 3 + Math.floor(Math.random() * 5),
+            success: success
+        });
+
+        executionMetrics.totalExecutions++;
+        if (success) {
+            executionMetrics.successCount++;
+        } else {
+            executionMetrics.failureCount++;
+        }
+
+        // Update node stats
+        const nodeType = nodeTypes[Math.floor(Math.random() * nodeTypes.length)];
+        if (!executionMetrics.nodeTypeStats[nodeType]) {
+            executionMetrics.nodeTypeStats[nodeType] = {
+                count: 0, totalLatency: 0, successes: 0, failures: 0
+            };
+        }
+        const stats = executionMetrics.nodeTypeStats[nodeType];
+        stats.count++;
+        stats.totalLatency += latency / 3;
+        if (success) stats.successes++;
+        else stats.failures++;
+
+        // Update Thompson priors
+        if (thompsonPriors[nodeType]) {
+            if (success) {
+                thompsonPriors[nodeType].alpha += 1;
+            } else {
+                thompsonPriors[nodeType].beta += 1;
+            }
+        }
+    }
+
+    // Generate sample timeline for last execution
+    executionMetrics.executionTimeline = [{
+        execution_id: 'exec_001',
+        total_ms: 350,
+        nodes: [
+            { name: 'HoloLoom Query', start: 0, duration: 120 },
+            { name: 'Memory Search', start: 120, duration: 80 },
+            { name: 'Synthesizer', start: 200, duration: 100 },
+            { name: 'Response', start: 300, duration: 50 }
+        ]
+    }];
+}
+
+function updateLatencyChart() {
+    if (!perfCharts.latency) return;
+
+    const history = executionMetrics.latencyHistory.slice(-20);
+    const labels = history.map((h, i) => `${i + 1}`);
+    const data = history.map(h => h.latency_ms);
+
+    // Calculate P95
+    const sorted = [...data].sort((a, b) => a - b);
+    const p95Index = Math.floor(sorted.length * 0.95);
+    const p95 = sorted[p95Index] || sorted[sorted.length - 1] || 0;
+    const p95Data = new Array(data.length).fill(p95);
+
+    perfCharts.latency.data.labels = labels;
+    perfCharts.latency.data.datasets[0].data = data;
+    perfCharts.latency.data.datasets[1].data = p95Data;
+    perfCharts.latency.update('none');
+
+    // Update P95 badge
+    const badge = document.getElementById('latencyP95Badge');
+    if (badge) badge.textContent = `P95: ${p95.toFixed(0)}ms`;
+}
+
+function updateSuccessChart() {
+    if (!perfCharts.success) return;
+
+    const success = executionMetrics.successCount || 1;
+    const failure = executionMetrics.failureCount || 0;
+
+    perfCharts.success.data.datasets[0].data = [success, failure];
+    perfCharts.success.update('none');
+
+    // Update success rate badge
+    const total = success + failure;
+    const rate = total > 0 ? (success / total * 100).toFixed(1) : '100';
+    const badge = document.getElementById('successRateBadge');
+    if (badge) badge.textContent = `${rate}%`;
+}
+
+function updateNodeComparisonChart() {
+    if (!perfCharts.nodes) return;
+
+    const stats = executionMetrics.nodeTypeStats;
+    const labels = Object.keys(stats).slice(0, 8);
+    const avgLatencies = labels.map(k => stats[k].totalLatency / stats[k].count);
+    const successRates = labels.map(k => {
+        const s = stats[k];
+        return s.count > 0 ? (s.successes / s.count * 100) : 0;
+    });
+
+    perfCharts.nodes.data.labels = labels.map(l => l.substring(0, 10));
+    perfCharts.nodes.data.datasets[0].data = avgLatencies;
+    perfCharts.nodes.data.datasets[1].data = successRates;
+    perfCharts.nodes.update('none');
+}
+
+function updateThompsonChart() {
+    if (!perfCharts.thompson) return;
+
+    // Get nodes with data (alpha + beta > 2 means at least one observation)
+    const entries = Object.entries(thompsonPriors)
+        .filter(([_, v]) => v.alpha + v.beta > 2)
+        .sort((a, b) => {
+            const expA = a[1].alpha / (a[1].alpha + a[1].beta);
+            const expB = b[1].alpha / (b[1].alpha + b[1].beta);
+            return expB - expA;
+        })
+        .slice(0, 10);
+
+    const labels = entries.map(([k]) => k);
+    const expectedValues = entries.map(([_, v]) => v.alpha / (v.alpha + v.beta));
+
+    // Color gradient from red (low) to green (high)
+    const colors = expectedValues.map(v => {
+        const hue = v * 120; // 0 = red, 120 = green
+        return `hsl(${hue}, 70%, 50%)`;
+    });
+
+    perfCharts.thompson.data.labels = labels;
+    perfCharts.thompson.data.datasets[0].data = expectedValues;
+    perfCharts.thompson.data.datasets[0].backgroundColor = colors;
+    perfCharts.thompson.update('none');
+}
+
+function updateTimelineChart() {
+    if (!perfCharts.timeline || executionMetrics.executionTimeline.length === 0) return;
+
+    const lastExec = executionMetrics.executionTimeline[executionMetrics.executionTimeline.length - 1];
+    const nodes = lastExec.nodes || [];
+
+    const labels = nodes.map(n => n.name.substring(0, 15));
+    const durations = nodes.map(n => n.duration);
+
+    perfCharts.timeline.data.labels = labels;
+    perfCharts.timeline.data.datasets[0].data = durations;
+    perfCharts.timeline.update('none');
+}
+
+function updateBottleneckChart() {
+    if (!perfCharts.bottleneck) return;
+
+    const stats = executionMetrics.nodeTypeStats;
+    const entries = Object.entries(stats)
+        .map(([name, data]) => ({ name, totalTime: data.totalLatency }))
+        .sort((a, b) => b.totalTime - a.totalTime)
+        .slice(0, 8);
+
+    const labels = entries.map(e => e.name);
+    const data = entries.map(e => e.totalTime);
+
+    perfCharts.bottleneck.data.labels = labels;
+    perfCharts.bottleneck.data.datasets[0].data = data;
+    perfCharts.bottleneck.update('none');
+}
+
+function updateStatsBar() {
+    // Total Executions
+    const totalEl = document.getElementById('perfStatTotal');
+    if (totalEl) totalEl.textContent = executionMetrics.totalExecutions.toLocaleString();
+
+    // Average Latency
+    const avgLatency = executionMetrics.latencyHistory.length > 0
+        ? executionMetrics.latencyHistory.reduce((sum, h) => sum + h.latency_ms, 0) / executionMetrics.latencyHistory.length
+        : 0;
+    const avgEl = document.getElementById('perfStatAvgLatency');
+    if (avgEl) avgEl.textContent = `${avgLatency.toFixed(0)}ms`;
+
+    // Success Rate
+    const total = executionMetrics.successCount + executionMetrics.failureCount;
+    const successRate = total > 0 ? (executionMetrics.successCount / total * 100) : 100;
+    const rateEl = document.getElementById('perfStatSuccessRate');
+    if (rateEl) rateEl.textContent = `${successRate.toFixed(1)}%`;
+
+    // Top Performer (highest Thompson expected value)
+    let topNode = 'N/A';
+    let topValue = 0;
+    for (const [name, prior] of Object.entries(thompsonPriors)) {
+        if (prior.alpha + prior.beta > 2) {
+            const expected = prior.alpha / (prior.alpha + prior.beta);
+            if (expected > topValue) {
+                topValue = expected;
+                topNode = name;
+            }
+        }
+    }
+    const topEl = document.getElementById('perfStatTopNode');
+    if (topEl) topEl.textContent = topNode;
+}
+
+function updatePerfBadges() {
+    // Individual panel badges are updated in their respective update functions
+}
+
+function exportPerfData(format) {
+    const data = {
+        exportedAt: new Date().toISOString(),
+        metrics: executionMetrics,
+        thompsonPriors: thompsonPriors
+    };
+
+    if (format === 'json') {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `perf_metrics_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Exported as JSON', 'success');
+    } else if (format === 'csv') {
+        // Convert latency history to CSV
+        const headers = ['timestamp', 'latency_ms', 'node_count', 'success'];
+        const rows = executionMetrics.latencyHistory.map(h => [
+            new Date(h.timestamp).toISOString(),
+            h.latency_ms.toFixed(2),
+            h.node_count,
+            h.success ? '1' : '0'
+        ]);
+
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `perf_metrics_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Exported as CSV', 'success');
+    }
+}
+
+// Record metrics from actual workflow execution
+function recordExecutionMetrics(executionResult) {
+    const { nodes: executedNodes, duration_ms, success } = executionResult;
+
+    executionMetrics.totalExecutions++;
+    if (success) {
+        executionMetrics.successCount++;
+    } else {
+        executionMetrics.failureCount++;
+    }
+
+    executionMetrics.latencyHistory.push({
+        timestamp: Date.now(),
+        latency_ms: duration_ms,
+        node_count: executedNodes?.length || 0,
+        success: success
+    });
+
+    // Keep only last 100 entries
+    if (executionMetrics.latencyHistory.length > 100) {
+        executionMetrics.latencyHistory.shift();
+    }
+
+    // Update node-specific stats
+    if (executedNodes) {
+        for (const node of executedNodes) {
+            const nodeType = node.agentType || 'unknown';
+            if (!executionMetrics.nodeTypeStats[nodeType]) {
+                executionMetrics.nodeTypeStats[nodeType] = {
+                    count: 0, totalLatency: 0, successes: 0, failures: 0
+                };
+            }
+            const stats = executionMetrics.nodeTypeStats[nodeType];
+            stats.count++;
+            stats.totalLatency += node.duration_ms || (duration_ms / executedNodes.length);
+            if (success) stats.successes++;
+            else stats.failures++;
+
+            // Update Thompson priors
+            if (thompsonPriors[nodeType]) {
+                if (success) {
+                    thompsonPriors[nodeType].alpha += 0.5;
+                } else {
+                    thompsonPriors[nodeType].beta += 0.5;
+                }
+            }
+        }
+    }
+
+    // If dashboard is open, update it
+    if (perfDashboardVisible) {
+        updatePerfDashboard();
+    }
+}
+
+// Keyboard shortcut for Performance Dashboard
+function handlePerfDashboardShortcut(e) {
+    if ((e.key === 'p' || e.key === 'P') && !e.ctrlKey && !e.metaKey) {
+        const activeEl = document.activeElement;
+        if (activeEl.tagName !== 'INPUT' && activeEl.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            if (perfDashboardVisible) {
+                hidePerfDashboard();
+            } else {
+                showPerfDashboard();
+            }
+        }
+    }
+}
+
+// Add keyboard listener for 'P'
+document.addEventListener('keydown', handlePerfDashboardShortcut);
+
+// ========== AUTO-LAYOUT SYSTEM (Wave 4.3) ==========
+
+// Layout configuration
+const layoutConfig = {
+    direction: 'top-down',      // 'top-down', 'left-right', 'bottom-up', 'right-left', 'radial'
+    algorithm: 'hierarchical',  // 'hierarchical', 'force-directed'
+    nodeSpacingX: 250,          // Horizontal spacing between nodes
+    nodeSpacingY: 150,          // Vertical spacing between levels
+    animationDuration: 300,     // Animation duration in ms
+    centerOnCanvas: true,       // Center result on canvas
+    radialRadius: 200,          // Base radius for radial layout
+    forceIterations: 100,       // Iterations for force-directed
+    forceStrength: 0.1,         // Attraction/repulsion strength
+    forceDamping: 0.9           // Velocity damping
+};
+
+/**
+ * Sugiyama-style hierarchical layout algorithm for DAGs.
+ * Steps:
+ * 1. Find root nodes (no incoming edges)
+ * 2. Assign layers via topological sort
+ * 3. Order nodes within layers to minimize edge crossings
+ * 4. Assign final positions based on layer and order
+ */
+function calculateHierarchicalLayout() {
+    if (nodes.length === 0) return [];
+
+    // Build adjacency lists
+    const outEdges = {};  // node -> [successor nodes]
+    const inEdges = {};   // node -> [predecessor nodes]
+
+    nodes.forEach(n => {
+        outEdges[n.id] = [];
+        inEdges[n.id] = [];
+    });
+
+    connections.forEach(c => {
+        if (outEdges[c.from]) outEdges[c.from].push(c.to);
+        if (inEdges[c.to]) inEdges[c.to].push(c.from);
+    });
+
+    // Step 1: Assign layers using longest path from roots
+    const layers = {};
+    const visited = new Set();
+
+    // Find root nodes (no incoming edges)
+    const roots = nodes.filter(n => inEdges[n.id].length === 0);
+
+    // If no roots (cycle), start from first node
+    const startNodes = roots.length > 0 ? roots : [nodes[0]];
+
+    // BFS to assign layers
+    function assignLayers(startNode, startLayer) {
+        const queue = [[startNode.id, startLayer]];
+
+        while (queue.length > 0) {
+            const [nodeId, layer] = queue.shift();
+
+            // Take maximum layer if already assigned
+            if (layers[nodeId] !== undefined) {
+                layers[nodeId] = Math.max(layers[nodeId], layer);
+            } else {
+                layers[nodeId] = layer;
+            }
+
+            // Process successors
+            outEdges[nodeId].forEach(successorId => {
+                queue.push([successorId, layer + 1]);
+            });
+        }
+    }
+
+    startNodes.forEach(n => assignLayers(n, 0));
+
+    // Assign unvisited nodes to layer 0
+    nodes.forEach(n => {
+        if (layers[n.id] === undefined) {
+            layers[n.id] = 0;
+        }
+    });
+
+    // Step 2: Group nodes by layer
+    const layerGroups = {};
+    nodes.forEach(n => {
+        const layer = layers[n.id];
+        if (!layerGroups[layer]) layerGroups[layer] = [];
+        layerGroups[layer].push(n);
+    });
+
+    // Step 3: Order nodes within layers (barycenter method for crossing reduction)
+    const sortedLayers = Object.keys(layerGroups).map(Number).sort((a, b) => a - b);
+
+    sortedLayers.forEach((layer, layerIndex) => {
+        if (layerIndex === 0) return; // First layer stays as is
+
+        const currentLayer = layerGroups[layer];
+        const prevLayer = layerGroups[sortedLayers[layerIndex - 1]];
+
+        // Calculate barycenter for each node in current layer
+        currentLayer.forEach(node => {
+            const predecessors = inEdges[node.id];
+            if (predecessors.length === 0) {
+                node._barycenter = Infinity;
+                return;
+            }
+
+            let sum = 0;
+            predecessors.forEach(predId => {
+                const predIndex = prevLayer.findIndex(n => n.id === predId);
+                if (predIndex !== -1) sum += predIndex;
+            });
+            node._barycenter = sum / predecessors.length;
+        });
+
+        // Sort by barycenter
+        currentLayer.sort((a, b) => a._barycenter - b._barycenter);
+    });
+
+    // Step 4: Calculate positions
+    const positions = [];
+    const maxNodesInLayer = Math.max(...Object.values(layerGroups).map(g => g.length));
+
+    sortedLayers.forEach(layer => {
+        const nodesInLayer = layerGroups[layer];
+        const layerWidth = nodesInLayer.length * layoutConfig.nodeSpacingX;
+        const startX = -layerWidth / 2 + layoutConfig.nodeSpacingX / 2;
+
+        nodesInLayer.forEach((node, index) => {
+            let x, y;
+
+            switch (layoutConfig.direction) {
+                case 'top-down':
+                    x = startX + index * layoutConfig.nodeSpacingX;
+                    y = layer * layoutConfig.nodeSpacingY;
+                    break;
+                case 'bottom-up':
+                    x = startX + index * layoutConfig.nodeSpacingX;
+                    y = -layer * layoutConfig.nodeSpacingY;
+                    break;
+                case 'left-right':
+                    x = layer * layoutConfig.nodeSpacingX;
+                    y = startX + index * layoutConfig.nodeSpacingY;
+                    break;
+                case 'right-left':
+                    x = -layer * layoutConfig.nodeSpacingX;
+                    y = startX + index * layoutConfig.nodeSpacingY;
+                    break;
+                default:
+                    x = startX + index * layoutConfig.nodeSpacingX;
+                    y = layer * layoutConfig.nodeSpacingY;
+            }
+
+            positions.push({ nodeId: node.id, x, y });
+        });
+    });
+
+    return positions;
+}
+
+/**
+ * Force-directed layout using simple spring-embedder algorithm.
+ * Nodes repel each other, edges act as springs.
+ */
+function calculateForceDirectedLayout() {
+    if (nodes.length === 0) return [];
+    if (nodes.length === 1) {
+        return [{ nodeId: nodes[0].id, x: 0, y: 0 }];
+    }
+
+    // Initialize positions randomly if not already positioned
+    const positions = {};
+    nodes.forEach(n => {
+        positions[n.id] = {
+            x: n.x || Math.random() * 500 - 250,
+            y: n.y || Math.random() * 500 - 250,
+            vx: 0,
+            vy: 0
+        };
+    });
+
+    const repulsionStrength = 5000;
+    const attractionStrength = layoutConfig.forceStrength;
+    const damping = layoutConfig.forceDamping;
+    const iterations = layoutConfig.forceIterations;
+
+    for (let iter = 0; iter < iterations; iter++) {
+        // Calculate repulsion forces (all pairs)
+        nodes.forEach(n1 => {
+            nodes.forEach(n2 => {
+                if (n1.id === n2.id) return;
+
+                const dx = positions[n1.id].x - positions[n2.id].x;
+                const dy = positions[n1.id].y - positions[n2.id].y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+                const force = repulsionStrength / (dist * dist);
+                positions[n1.id].vx += (dx / dist) * force;
+                positions[n1.id].vy += (dy / dist) * force;
+            });
+        });
+
+        // Calculate attraction forces (connected nodes)
+        connections.forEach(c => {
+            const p1 = positions[c.from];
+            const p2 = positions[c.to];
+            if (!p1 || !p2) return;
+
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+            const force = (dist - layoutConfig.nodeSpacingX) * attractionStrength;
+            const fx = (dx / dist) * force;
+            const fy = (dy / dist) * force;
+
+            p1.vx += fx;
+            p1.vy += fy;
+            p2.vx -= fx;
+            p2.vy -= fy;
+        });
+
+        // Apply velocities and damping
+        nodes.forEach(n => {
+            const p = positions[n.id];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= damping;
+            p.vy *= damping;
+        });
+    }
+
+    return nodes.map(n => ({
+        nodeId: n.id,
+        x: positions[n.id].x,
+        y: positions[n.id].y
+    }));
+}
+
+/**
+ * Radial layout - nodes arranged in concentric circles by layer.
+ */
+function calculateRadialLayout() {
+    if (nodes.length === 0) return [];
+
+    // Use hierarchical layers
+    const hierarchicalPositions = calculateHierarchicalLayout();
+
+    // Convert to radial
+    const layers = {};
+    hierarchicalPositions.forEach(p => {
+        const node = nodes.find(n => n.id === p.nodeId);
+        if (!node) return;
+
+        // Determine layer from Y position
+        const layer = Math.round(p.y / layoutConfig.nodeSpacingY);
+        if (!layers[layer]) layers[layer] = [];
+        layers[layer].push(p);
+    });
+
+    const sortedLayers = Object.keys(layers).map(Number).sort((a, b) => a - b);
+    const positions = [];
+
+    sortedLayers.forEach((layer, layerIndex) => {
+        const nodesInLayer = layers[layer];
+        const radius = (layerIndex + 1) * layoutConfig.radialRadius;
+        const angleStep = (2 * Math.PI) / nodesInLayer.length;
+        const startAngle = -Math.PI / 2; // Start from top
+
+        nodesInLayer.forEach((p, index) => {
+            const angle = startAngle + index * angleStep;
+            positions.push({
+                nodeId: p.nodeId,
+                x: Math.cos(angle) * radius,
+                y: Math.sin(angle) * radius
+            });
+        });
+    });
+
+    return positions;
+}
+
+/**
+ * Apply calculated layout positions to nodes with animation.
+ */
+function applyLayout(positions, animate = true) {
+    if (positions.length === 0) return;
+
+    // Calculate center offset if needed
+    let offsetX = 0, offsetY = 0;
+
+    if (layoutConfig.centerOnCanvas) {
+        const canvas = document.getElementById('canvasViewport');
+        const canvasRect = canvas.getBoundingClientRect();
+
+        // Find bounding box of positions
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        positions.forEach(p => {
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x + 200);
+            maxY = Math.max(maxY, p.y + 100);
+        });
+
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        offsetX = canvasRect.width / 2 - centerX;
+        offsetY = canvasRect.height / 2 - centerY + 100; // Add padding from top
+    }
+
+    // Apply positions
+    positions.forEach(p => {
+        const node = nodes.find(n => n.id === p.nodeId);
+        if (!node) return;
+
+        const targetX = p.x + offsetX;
+        const targetY = p.y + offsetY;
+
+        const element = document.getElementById(p.nodeId);
+        if (!element) return;
+
+        if (animate && layoutConfig.animationDuration > 0) {
+            // Animate transition
+            element.style.transition = `left ${layoutConfig.animationDuration}ms ease-out, top ${layoutConfig.animationDuration}ms ease-out`;
+            element.style.left = targetX + 'px';
+            element.style.top = targetY + 'px';
+
+            // Update node data after animation
+            setTimeout(() => {
+                node.x = targetX;
+                node.y = targetY;
+                element.style.transition = '';
+                renderConnections();
+                updateMinimap();
+            }, layoutConfig.animationDuration);
+        } else {
+            node.x = targetX;
+            node.y = targetY;
+            element.style.left = targetX + 'px';
+            element.style.top = targetY + 'px';
+        }
+    });
+
+    // Render connections during animation
+    if (animate) {
+        const animationSteps = 20;
+        const stepDuration = layoutConfig.animationDuration / animationSteps;
+        for (let i = 0; i < animationSteps; i++) {
+            setTimeout(() => renderConnections(), i * stepDuration);
+        }
+    } else {
+        renderConnections();
+        updateMinimap();
+    }
+}
+
+/**
+ * Run auto-layout with current settings.
+ */
+function runAutoLayout(algorithm = null, direction = null, animate = true) {
+    if (nodes.length === 0) {
+        showToast('No nodes to layout', 'warning');
+        return;
+    }
+
+    // Save undo state
+    saveUndoState('auto_layout', `Auto-layout (${algorithm || layoutConfig.algorithm})`);
+
+    // Override settings if provided
+    if (algorithm) layoutConfig.algorithm = algorithm;
+    if (direction) layoutConfig.direction = direction;
+
+    let positions;
+
+    switch (layoutConfig.algorithm) {
+        case 'hierarchical':
+            positions = calculateHierarchicalLayout();
+            break;
+        case 'force-directed':
+            positions = calculateForceDirectedLayout();
+            break;
+        case 'radial':
+            positions = calculateRadialLayout();
+            break;
+        default:
+            positions = calculateHierarchicalLayout();
+    }
+
+    applyLayout(positions, animate);
+    showToast(`Applied ${layoutConfig.algorithm} layout (${layoutConfig.direction})`, 'success');
+}
+
+/**
+ * Show layout options panel.
+ */
+function showLayoutPanel() {
+    const panel = document.getElementById('layoutPanel');
+    const overlay = document.getElementById('layoutPanelOverlay');
+    if (panel && overlay) {
+        panel.style.display = 'block';
+        overlay.style.display = 'block';
+        updateLayoutPreview();
+    }
+}
+
+/**
+ * Hide layout options panel.
+ */
+function hideLayoutPanel() {
+    const panel = document.getElementById('layoutPanel');
+    const overlay = document.getElementById('layoutPanelOverlay');
+    if (panel) panel.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+}
+
+/**
+ * Update layout preview in the panel.
+ */
+function updateLayoutPreview() {
+    const preview = document.getElementById('layoutPreview');
+    if (!preview) return;
+
+    preview.innerHTML = '';
+
+    // Create mini preview of layout
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.setAttribute('viewBox', '-100 -100 200 200');
+
+    // Generate preview positions
+    const previewNodes = nodes.length > 0 ? nodes.slice(0, 6) : [
+        { id: 'p1' }, { id: 'p2' }, { id: 'p3' }, { id: 'p4' }, { id: 'p5' }
+    ];
+
+    let previewPositions = [];
+    const direction = layoutConfig.direction;
+
+    if (layoutConfig.algorithm === 'radial' || direction === 'radial') {
+        // Radial preview
+        const angleStep = (2 * Math.PI) / previewNodes.length;
+        previewNodes.forEach((n, i) => {
+            const angle = -Math.PI / 2 + i * angleStep;
+            const radius = 60;
+            previewPositions.push({
+                x: Math.cos(angle) * radius,
+                y: Math.sin(angle) * radius
+            });
+        });
+    } else if (layoutConfig.algorithm === 'force-directed') {
+        // Force-directed preview (rough approximation)
+        const angleStep = (2 * Math.PI) / previewNodes.length;
+        previewNodes.forEach((n, i) => {
+            const angle = i * angleStep;
+            const radius = 50 + Math.random() * 20;
+            previewPositions.push({
+                x: Math.cos(angle) * radius,
+                y: Math.sin(angle) * radius
+            });
+        });
+    } else {
+        // Hierarchical preview
+        const layers = [[0], [1, 2], [3, 4]];
+        layers.forEach((layer, layerIdx) => {
+            const y = (layerIdx - 1) * 50;
+            const xOffset = -((layer.length - 1) * 40) / 2;
+            layer.forEach((nodeIdx, i) => {
+                if (nodeIdx < previewNodes.length) {
+                    let x = xOffset + i * 40;
+                    let py = y;
+
+                    if (direction === 'left-right') {
+                        [x, py] = [py, x];
+                    } else if (direction === 'bottom-up') {
+                        py = -y;
+                    } else if (direction === 'right-left') {
+                        [x, py] = [-py, x];
+                    }
+
+                    previewPositions.push({ x, y: py });
+                }
+            });
+        });
+    }
+
+    // Draw connections (lines)
+    if (previewPositions.length > 1) {
+        for (let i = 0; i < previewPositions.length - 1; i++) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', previewPositions[i].x);
+            line.setAttribute('y1', previewPositions[i].y);
+            line.setAttribute('x2', previewPositions[i + 1].x);
+            line.setAttribute('y2', previewPositions[i + 1].y);
+            line.setAttribute('stroke', '#4a5568');
+            line.setAttribute('stroke-width', '2');
+            svg.appendChild(line);
+        }
+    }
+
+    // Draw nodes
+    previewPositions.forEach((pos, i) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', pos.x);
+        circle.setAttribute('cy', pos.y);
+        circle.setAttribute('r', '12');
+        circle.setAttribute('fill', `hsl(${i * 50 + 200}, 70%, 60%)`);
+        circle.setAttribute('stroke', '#fff');
+        circle.setAttribute('stroke-width', '2');
+        svg.appendChild(circle);
+    });
+
+    preview.appendChild(svg);
+}
+
+/**
+ * Handle layout option change.
+ */
+function onLayoutOptionChange() {
+    const algorithmSelect = document.getElementById('layoutAlgorithm');
+    const directionSelect = document.getElementById('layoutDirection');
+    const spacingXInput = document.getElementById('layoutSpacingX');
+    const spacingYInput = document.getElementById('layoutSpacingY');
+    const animateCheckbox = document.getElementById('layoutAnimate');
+
+    if (algorithmSelect) layoutConfig.algorithm = algorithmSelect.value;
+    if (directionSelect) layoutConfig.direction = directionSelect.value;
+    if (spacingXInput) layoutConfig.nodeSpacingX = parseInt(spacingXInput.value) || 250;
+    if (spacingYInput) layoutConfig.nodeSpacingY = parseInt(spacingYInput.value) || 150;
+
+    updateLayoutPreview();
+}
+
+/**
+ * Apply layout from panel.
+ */
+function applyLayoutFromPanel() {
+    const animateCheckbox = document.getElementById('layoutAnimate');
+    const animate = animateCheckbox ? animateCheckbox.checked : true;
+
+    onLayoutOptionChange();
+    runAutoLayout(null, null, animate);
+    hideLayoutPanel();
+}
+
+/**
+ * Select layout algorithm from panel.
+ * @param {HTMLElement} element - The clicked option element
+ */
+function selectLayoutAlgorithm(element) {
+    // Remove selected from all options
+    const options = document.querySelectorAll('.layout-option');
+    options.forEach(opt => opt.classList.remove('selected'));
+
+    // Add selected to clicked option
+    element.classList.add('selected');
+
+    // Update config
+    const algorithm = element.getAttribute('data-algorithm');
+    layoutConfig.algorithm = algorithm;
+
+    // Show/hide direction section based on algorithm
+    const directionSection = document.getElementById('layoutDirectionSection');
+    if (directionSection) {
+        if (algorithm === 'force-directed') {
+            directionSection.style.display = 'none';
+        } else {
+            directionSection.style.display = 'block';
+        }
+    }
+
+    // Update preview
+    updateLayoutPreview();
+}
+
+/**
+ * Select layout direction from panel.
+ * @param {HTMLElement} element - The clicked direction option element
+ */
+function selectLayoutDirection(element) {
+    // Remove selected from all direction options
+    const options = document.querySelectorAll('.layout-direction-option');
+    options.forEach(opt => opt.classList.remove('selected'));
+
+    // Add selected to clicked option
+    element.classList.add('selected');
+
+    // Update config
+    const direction = element.getAttribute('data-direction');
+    layoutConfig.direction = direction;
+
+    // Update preview
+    updateLayoutPreview();
+}
+
+/**
+ * Update layout slider value display.
+ * @param {string} type - 'spacingX' or 'spacingY'
+ * @param {string|number} value - The slider value
+ */
+function updateLayoutSlider(type, value) {
+    const numValue = parseInt(value) || 0;
+
+    if (type === 'spacingX') {
+        layoutConfig.nodeSpacingX = numValue;
+        const valueDisplay = document.getElementById('spacingXValue');
+        if (valueDisplay) valueDisplay.textContent = `${numValue}px`;
+    } else if (type === 'spacingY') {
+        layoutConfig.nodeSpacingY = numValue;
+        const valueDisplay = document.getElementById('spacingYValue');
+        if (valueDisplay) valueDisplay.textContent = `${numValue}px`;
+    }
+
+    // Update preview with new spacing
+    updateLayoutPreview();
+}
+
+// Keyboard shortcut for layout (L key)
+function handleLayoutShortcut(e) {
+    if ((e.key === 'l' || e.key === 'L') && !e.ctrlKey && !e.metaKey) {
+        const activeEl = document.activeElement;
+        if (activeEl.tagName !== 'INPUT' && activeEl.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            showLayoutPanel();
+        }
+    }
+}
+
+document.addEventListener('keydown', handleLayoutShortcut);
 
 function showHotkeysModal() {
     const modal = document.getElementById('hotkeysModal');
@@ -2612,6 +5369,301 @@ function saveAsTemplate() {
     closeModal('templatesModal');
 }
 
+// ========== AI SUGGESTIONS (Wave 3.2) ==========
+
+let suggestionOverlay = null;
+let suggestionCache = {};
+let suggestionCacheTimeout = 30000; // 30 second cache
+
+/**
+ * Show AI suggestions when hovering over a node's output port
+ */
+async function showSuggestions(nodeId, x, y) {
+    // Get current workflow nodes in execution order (topological)
+    const currentNodes = getExecutionOrder();
+    const nodeTypes = currentNodes.map(n => n.agentType);
+
+    // Find position of this node in the workflow
+    const nodeIndex = currentNodes.findIndex(n => n.id === nodeId);
+    const relevantTypes = nodeIndex >= 0 ? nodeTypes.slice(0, nodeIndex + 1) : nodeTypes;
+
+    // Check cache
+    const cacheKey = relevantTypes.join(',');
+    if (suggestionCache[cacheKey] && Date.now() - suggestionCache[cacheKey].timestamp < suggestionCacheTimeout) {
+        displaySuggestionOverlay(suggestionCache[cacheKey].data, x, y);
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8001/api/suggestions/next-nodes?current=${relevantTypes.join(',')}&k=5`);
+        const data = await response.json();
+
+        // Cache result
+        suggestionCache[cacheKey] = { data, timestamp: Date.now() };
+
+        displaySuggestionOverlay(data, x, y);
+    } catch (error) {
+        console.warn('Failed to fetch suggestions:', error);
+    }
+}
+
+/**
+ * Display the suggestion overlay
+ */
+function displaySuggestionOverlay(data, x, y) {
+    hideSuggestions();
+
+    if (!data.suggestions || data.suggestions.length === 0) {
+        return;
+    }
+
+    suggestionOverlay = document.createElement('div');
+    suggestionOverlay.className = 'suggestion-overlay';
+    suggestionOverlay.style.cssText = `
+        position: absolute;
+        left: ${x + 10}px;
+        top: ${y - 10}px;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border: 1px solid #4a4a6a;
+        border-radius: 8px;
+        padding: 12px;
+        min-width: 280px;
+        max-width: 350px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        z-index: 10000;
+        font-size: 13px;
+        animation: suggestionFadeIn 0.2s ease-out;
+    `;
+
+    let html = `
+        <div style="margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-weight: 600; color: #e94560;">AI Suggestions</span>
+            <span style="font-size: 11px; color: #888;">Thompson Sampling</span>
+        </div>
+    `;
+
+    data.suggestions.forEach((suggestion, index) => {
+        const confidenceColor = suggestion.confidence >= 0.7 ? '#4ade80' :
+                              suggestion.confidence >= 0.4 ? '#fbbf24' : '#f87171';
+        const agentInfo = agentTypes[suggestion.node_type] || { name: suggestion.node_type };
+
+        html += `
+            <div class="suggestion-item"
+                 onclick="addSuggestedNode('${suggestion.node_type}')"
+                 style="
+                    padding: 10px;
+                    margin: 6px 0;
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                    border-left: 3px solid ${confidenceColor};
+                 "
+                 onmouseover="this.style.background='rgba(233,69,96,0.15)'"
+                 onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 500; color: #fff;">${agentInfo.name || suggestion.node_type}</span>
+                    <span style="font-size: 11px; color: ${confidenceColor};">
+                        ${(suggestion.confidence * 100).toFixed(0)}% confidence
+                    </span>
+                </div>
+                <div style="font-size: 11px; color: #888; margin-top: 4px;">
+                    Used ${suggestion.frequency}x | Success: ${(suggestion.success_rate * 100).toFixed(0)}%
+                </div>
+            </div>
+        `;
+    });
+
+    // Add learn button if few patterns
+    if (data.patterns_available < 10) {
+        html += `
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #333;">
+                <div style="font-size: 11px; color: #888; margin-bottom: 6px;">
+                    ${data.patterns_available} patterns learned
+                </div>
+                <button onclick="triggerPatternLearning()" style="
+                    background: linear-gradient(135deg, #0f3460, #16213e);
+                    border: 1px solid #4a4a6a;
+                    color: #fff;
+                    padding: 6px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 11px;
+                    width: 100%;
+                ">Learn from History</button>
+            </div>
+        `;
+    }
+
+    suggestionOverlay.innerHTML = html;
+
+    // Add click outside listener
+    suggestionOverlay.addEventListener('mouseleave', () => {
+        setTimeout(() => {
+            if (suggestionOverlay && !suggestionOverlay.matches(':hover')) {
+                hideSuggestions();
+            }
+        }, 500);
+    });
+
+    document.body.appendChild(suggestionOverlay);
+}
+
+/**
+ * Hide suggestion overlay
+ */
+function hideSuggestions() {
+    if (suggestionOverlay) {
+        suggestionOverlay.remove();
+        suggestionOverlay = null;
+    }
+}
+
+/**
+ * Add a suggested node to the canvas
+ */
+function addSuggestedNode(nodeType) {
+    hideSuggestions();
+
+    // Find the last selected node or use canvas center
+    const lastNode = selectedNodes.size > 0 ?
+        nodes.find(n => selectedNodes.has(n.id)) :
+        nodes[nodes.length - 1];
+
+    let x, y;
+    if (lastNode) {
+        x = lastNode.x + 300;
+        y = lastNode.y;
+    } else {
+        x = 400;
+        y = 300;
+    }
+
+    // Create the node
+    createNode(nodeType, x, y);
+
+    // Auto-connect to last selected if exists
+    if (lastNode) {
+        connections.push({
+            id: generateId(),
+            from: lastNode.id,
+            to: nodes[nodes.length - 1].id
+        });
+        renderConnections();
+    }
+
+    showToast(`Added ${nodeType} node`, 'success');
+}
+
+/**
+ * Trigger pattern learning from history
+ */
+async function triggerPatternLearning() {
+    try {
+        const response = await fetch('http://localhost:8001/api/patterns/learn', { method: 'POST' });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            showToast(`Learned ${data.patterns_learned.pairs} pair patterns`, 'success');
+            // Clear cache
+            suggestionCache = {};
+        } else {
+            showToast('No workflow history to learn from', 'info');
+        }
+    } catch (error) {
+        showToast('Failed to trigger learning', 'error');
+    }
+}
+
+/**
+ * Get nodes in execution order (topological sort)
+ */
+function getExecutionOrder() {
+    const visited = new Set();
+    const result = [];
+
+    // Find start nodes
+    const nodesWithInputs = new Set(connections.map(c => c.to));
+    const startNodes = nodes.filter(n => !nodesWithInputs.has(n.id));
+
+    function visit(node) {
+        if (visited.has(node.id)) return;
+        visited.add(node.id);
+
+        // Visit dependencies first
+        const deps = connections.filter(c => c.to === node.id).map(c => c.from);
+        deps.forEach(depId => {
+            const depNode = nodes.find(n => n.id === depId);
+            if (depNode) visit(depNode);
+        });
+
+        result.push(node);
+    }
+
+    startNodes.forEach(visit);
+    // Visit any remaining unvisited nodes
+    nodes.forEach(n => {
+        if (!visited.has(n.id)) visit(n);
+    });
+
+    return result;
+}
+
+/**
+ * Show suggestions for a specific port
+ */
+function initializeSuggestionListeners() {
+    // Add hover listener to canvas for output ports
+    const canvas = document.getElementById('workflowCanvas');
+
+    canvas.addEventListener('mouseover', (e) => {
+        const port = e.target.closest('.output-port, .node-port.output');
+        if (port) {
+            const nodeEl = port.closest('.workflow-node');
+            if (nodeEl) {
+                const nodeId = nodeEl.id.replace('node-', '');
+                const rect = port.getBoundingClientRect();
+                showSuggestions(nodeId, rect.right, rect.top);
+            }
+        }
+    });
+
+    canvas.addEventListener('mouseout', (e) => {
+        const port = e.target.closest('.output-port, .node-port.output');
+        if (port && suggestionOverlay && !suggestionOverlay.matches(':hover')) {
+            setTimeout(() => {
+                if (suggestionOverlay && !suggestionOverlay.matches(':hover')) {
+                    hideSuggestions();
+                }
+            }, 300);
+        }
+    });
+}
+
+// Add CSS for suggestion animation
+const suggestionStyles = document.createElement('style');
+suggestionStyles.textContent = `
+    @keyframes suggestionFadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .suggestion-overlay {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .suggestion-item:active {
+        transform: scale(0.98);
+    }
+`;
+document.head.appendChild(suggestionStyles);
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSuggestionListeners);
+} else {
+    initializeSuggestionListeners();
+}
+
+
 // Export for console debugging
 window.workflowBuilder = {
     nodes,
@@ -2632,5 +5684,36 @@ window.workflowBuilder = {
     resetZoom,
     showTemplatesModal,
     loadTemplate,
-    saveAsTemplate
+    saveAsTemplate,
+    // AI Suggestions (Wave 3.2)
+    showSuggestions,
+    hideSuggestions,
+    addSuggestedNode,
+    triggerPatternLearning,
+    getExecutionOrder,
+    // Performance Dashboard (Wave 4.2)
+    showPerfDashboard,
+    hidePerfDashboard,
+    updatePerfDashboard,
+    exportPerfData,
+    recordExecutionMetrics,
+    executionMetrics,
+    thompsonPriors,
+    // Auto-Layout (Wave 4.3)
+    showLayoutPanel,
+    hideLayoutPanel,
+    runAutoLayout,
+    layoutConfig,
+    applyLayoutFromPanel,
+    calculateHierarchicalLayout,
+    calculateForceDirectedLayout,
+    calculateRadialLayout,
+    // Node Grouping (Wave 4.4)
+    createGroupFromSelection,
+    renderGroupNode,
+    toggleGroupCollapse,
+    cycleGroupColor,
+    deleteGroupNode,
+    addNodeToGroup,
+    removeNodeFromGroup
 };

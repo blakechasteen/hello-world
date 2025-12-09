@@ -1,0 +1,21 @@
+{
+  "id": "multiply-v1",
+  "name": "Multiplier",
+  "version": "1.0.0",
+  "entry_function": "run",
+  "description": "Multiplies two numbers together",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "a": {"type": "number", "description": "First number"},
+      "b": {"type": "number", "description": "Second number"}
+    },
+    "required": ["a", "b"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "result": {"type": "number", "description": "Product of a * b"}
+    }
+  }
+}

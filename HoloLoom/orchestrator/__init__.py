@@ -43,6 +43,32 @@ from .context import (
     create_weaving_context,
 )
 
+# Stage executor protocols (Phase 2)
+from .protocols import (
+    StageExecutorProtocol,
+    BaseStageExecutor,
+)
+
+# Component protocols (Phase 3)
+from .protocols import (
+    PatternSelectorProtocol,
+    ThreadSelectorProtocol,
+    FeatureExtractorProtocol,
+    ConvergenceProtocol,
+    ToolExecutorProtocol,
+    SpacetimeAssemblerProtocol,
+)
+
+# Default implementations (Phase 3)
+from .protocols import (
+    DefaultPatternSelector,
+    DefaultThreadSelector,
+    DefaultFeatureExtractor,
+    DefaultConvergence,
+    DefaultToolExecutor,
+    DefaultSpacetimeAssembler,
+)
+
 # Stage functions (Steps 0-3)
 from .stages import (
     execute_step0_meta_prompt,
@@ -80,10 +106,49 @@ from .jenny import (
     build_jenny_panel_context,
 )
 
+# Pipeline (Phase 2 - Day 10)
+from .pipeline import (
+    ExecutorPipeline,
+    create_default_pipeline,
+    create_minimal_pipeline,
+)
+
+# Stage Executor Classes (Phase 2)
+from .stages.executors import (
+    MetaPromptExecutor,
+    PatternSelectionExecutor,
+    ChronoTriggerExecutor,
+    ThreadSelectionExecutor,
+    ParallelFeatureExecutor,
+    ConvergenceExecutor,
+    ToolExecutionExecutor,
+    SpacetimeExecutor,
+)
+
 __all__ = [
     # Context
     'WeavingContext',
     'create_weaving_context',
+
+    # Protocols (Phase 2)
+    'StageExecutorProtocol',
+    'BaseStageExecutor',
+
+    # Component Protocols (Phase 3)
+    'PatternSelectorProtocol',
+    'ThreadSelectorProtocol',
+    'FeatureExtractorProtocol',
+    'ConvergenceProtocol',
+    'ToolExecutorProtocol',
+    'SpacetimeAssemblerProtocol',
+
+    # Default Implementations (Phase 3)
+    'DefaultPatternSelector',
+    'DefaultThreadSelector',
+    'DefaultFeatureExtractor',
+    'DefaultConvergence',
+    'DefaultToolExecutor',
+    'DefaultSpacetimeAssembler',
 
     # Steps 0-3
     'execute_step0_meta_prompt',
@@ -115,4 +180,19 @@ __all__ = [
     # Jenny UI
     'detect_jenny_panel_type',
     'build_jenny_panel_context',
+
+    # Pipeline (Phase 2)
+    'ExecutorPipeline',
+    'create_default_pipeline',
+    'create_minimal_pipeline',
+
+    # Stage Executor Classes (Phase 2)
+    'MetaPromptExecutor',
+    'PatternSelectionExecutor',
+    'ChronoTriggerExecutor',
+    'ThreadSelectionExecutor',
+    'ParallelFeatureExecutor',
+    'ConvergenceExecutor',
+    'ToolExecutionExecutor',
+    'SpacetimeExecutor',
 ]

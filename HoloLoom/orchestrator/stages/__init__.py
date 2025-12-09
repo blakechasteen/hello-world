@@ -52,10 +52,52 @@ from .steps_0_3 import (
     execute_step3_thread_selection,
 )
 
+from .steps_4_6 import (
+    # Component creation
+    create_resonance_shed,
+    create_warp_space,
+    select_pattern_embedder,
+
+    # Steps 4-6: Parallel execution
+    execute_steps_4_6_parallel,
+
+    # Post-parallel steps
+    execute_step5_5_warp_compute,
+    execute_step6_5_beta_wave_packing,
+)
+
+from .steps_7_9 import (
+    # Step 7: Convergence Engine (Decision Collapse)
+    execute_step7_convergence,
+
+    # Step 8: Tool Execution (Safety Gating)
+    execute_step8_tool_execution,
+
+    # Step 9: Spacetime Fabric (Result Assembly)
+    execute_step9_spacetime_fabric,
+)
+
 __all__ = [
     # Steps 0-3
     'execute_step0_meta_prompt',
     'execute_step1_pattern_selection',
     'execute_step2_chrono_trigger',
     'execute_step3_thread_selection',
+
+    # Steps 4-6: Component creation
+    'create_resonance_shed',
+    'create_warp_space',
+    'select_pattern_embedder',
+
+    # Steps 4-6: Parallel execution
+    'execute_steps_4_6_parallel',
+
+    # Post-parallel steps
+    'execute_step5_5_warp_compute',
+    'execute_step6_5_beta_wave_packing',
+
+    # Steps 7-9
+    'execute_step7_convergence',
+    'execute_step8_tool_execution',
+    'execute_step9_spacetime_fabric',
 ]

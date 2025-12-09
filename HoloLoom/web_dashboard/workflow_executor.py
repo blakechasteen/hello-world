@@ -207,6 +207,134 @@ class PerformanceProfile(BaseModel):
 # Thompson Sampling state for workflow optimization
 node_performance_stats = {}  # node_type -> {alpha, beta, latency_samples, success_count, failure_count}
 optimization_history = []  # List of optimization suggestions and their outcomes
+workflow_pattern_history = []  # List of executed workflow patterns for pattern mining
+execution_metrics = {}  # node_type -> {samples: [...], success_count, failure_count}
+
+
+def update_execution_metrics(node_type: str, latency_ms: float, success: bool, confidence: float = 0.5):
+    """
+    Update real-time execution metrics for a node type.
+
+    This data feeds into:
+    - Performance profiling endpoints
+    - Thompson Sampling optimization
+    - Pattern miner for suggestions
+    """
+    global execution_metrics, node_performance_stats
+
+    if node_type not in execution_metrics:
+        execution_metrics[node_type] = {
+            'samples': [],
+            'success_count': 0,
+            'failure_count': 0,
+            'confidence_sum': 0.0,
+            'last_updated': None
+        }
+
+    metrics = execution_metrics[node_type]
+
+    # Keep last 100 samples for rolling statistics
+    metrics['samples'].append({
+        'latency_ms': latency_ms,
+        'success': success,
+        'confidence': confidence,
+        'timestamp': datetime.now().isoformat()
+    })
+    if len(metrics['samples']) > 100:
+        metrics['samples'] = metrics['samples'][-100:]
+
+    # Update counters
+    if success:
+        metrics['success_count'] += 1
+    else:
+        metrics['failure_count'] += 1
+
+    metrics['confidence_sum'] += confidence
+    metrics['last_updated'] = datetime.now().isoformat()
+
+    # Update Thompson Sampling priors in node_performance_stats
+    if node_type not in node_performance_stats:
+        node_performance_stats[node_type] = {
+            'alpha': 1.0,  # Beta distribution prior
+            'beta': 1.0,
+            'latency_samples': [],
+            'success_count': 0,
+            'failure_count': 0
+        }
+
+    stats = node_performance_stats[node_type]
+    stats['latency_samples'].append(latency_ms)
+    if len(stats['latency_samples']) > 100:
+        stats['latency_samples'] = stats['latency_samples'][-100:]
+
+    # Thompson Sampling update: success boosts alpha, failure boosts beta
+    if success and confidence >= 0.5:
+        stats['alpha'] += confidence
+        stats['success_count'] += 1
+    else:
+        stats['beta'] += (1 - confidence)
+        stats['failure_count'] += 1
+
+
+def get_real_performance_stats(node_type: str) -> dict:
+    """Get computed performance statistics for a node type."""
+    if node_type not in execution_metrics:
+        return {
+            'avg_latency_ms': 100.0,  # Default estimate
+            'p95_latency_ms': 200.0,
+            'success_rate': 0.9,
+            'throughput': 0.0,
+            'call_count': 0,
+            'confidence_avg': 0.5
+        }
+
+    metrics = execution_metrics[node_type]
+    samples = metrics['samples']
+
+    if not samples:
+        return {
+            'avg_latency_ms': 100.0,
+            'p95_latency_ms': 200.0,
+            'success_rate': 0.9,
+            'throughput': 0.0,
+            'call_count': 0,
+            'confidence_avg': 0.5
+        }
+
+    latencies = [s['latency_ms'] for s in samples]
+    total_calls = metrics['success_count'] + metrics['failure_count']
+
+    # Calculate p95
+    sorted_latencies = sorted(latencies)
+    p95_idx = min(int(len(sorted_latencies) * 0.95), len(sorted_latencies) - 1)
+
+    return {
+        'avg_latency_ms': sum(latencies) / len(latencies),
+        'p95_latency_ms': sorted_latencies[p95_idx],
+        'success_rate': metrics['success_count'] / max(total_calls, 1),
+        'throughput': total_calls / max(1, 60),  # Approximation per minute
+        'call_count': total_calls,
+        'confidence_avg': metrics['confidence_sum'] / max(total_calls, 1)
+    }
+
+
+def record_workflow_pattern(workflow_name: str, node_sequence: List[str], success: bool, total_latency_ms: float):
+    """Record a workflow execution pattern for pattern mining."""
+    global workflow_pattern_history
+
+    pattern = {
+        'workflow_name': workflow_name,
+        'node_sequence': node_sequence,
+        'success': success,
+        'total_latency_ms': total_latency_ms,
+        'timestamp': datetime.now().isoformat()
+    }
+
+    workflow_pattern_history.append(pattern)
+
+    # Keep last 500 patterns
+    if len(workflow_pattern_history) > 500:
+        workflow_pattern_history = workflow_pattern_history[-500:]
 
 # Global state
 active_workflows: Dict[str, "WorkflowExecutor"] = {}
@@ -382,6 +510,10 @@ class WorkflowExecutor:
         Returns:
             Dict with execution results for each node
         """
+        import time
+        workflow_start_time = time.time()
+        node_sequence = []  # Track execution order for pattern mining
+
         try:
             await self.initialize()
 
@@ -413,6 +545,7 @@ class WorkflowExecutor:
                 await self.execute_node(node)
                 self.executed_nodes.add(node.id)
                 executed_count += 1
+                node_sequence.append(node.agentType)  # Track for pattern mining
 
                 # Broadcast progress
                 await self.broadcast_progress(node.id, 'completed')
@@ -423,15 +556,33 @@ class WorkflowExecutor:
 
             logger.info(f"Workflow execution complete: {executed_count} nodes executed")
 
+            # Record workflow pattern for mining
+            total_latency_ms = (time.time() - workflow_start_time) * 1000
+            record_workflow_pattern(
+                workflow_name=self.workflow.name,
+                node_sequence=node_sequence,
+                success=True,
+                total_latency_ms=total_latency_ms
+            )
+
             return {
                 'status': 'success',
                 'nodes_executed': executed_count,
                 'results': self.results,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'total_latency_ms': total_latency_ms
             }
 
         except Exception as e:
             logger.error(f"Workflow execution failed: {e}")
+            # Record failed workflow pattern
+            total_latency_ms = (time.time() - workflow_start_time) * 1000
+            record_workflow_pattern(
+                workflow_name=self.workflow.name if hasattr(self, 'workflow') else 'unknown',
+                node_sequence=node_sequence,
+                success=False,
+                total_latency_ms=total_latency_ms
+            )
             await self.broadcast_error(str(e))
             raise
 
@@ -507,7 +658,7 @@ class WorkflowExecutor:
         return [c.to for c in self.workflow.connections if c.from_node == node_id]
 
     async def execute_node(self, node: WorkflowNode):
-        """Execute a single node."""
+        """Execute a single node with performance tracking."""
         logger.info(f"Executing node: {node.id} ({node.agentType})")
 
         await self.broadcast_progress(node.id, 'running')
@@ -518,19 +669,43 @@ class WorkflowExecutor:
             if dep_id in self.results:
                 inputs[dep_id] = self.results[dep_id]
 
+        # Track execution time
+        import time
+        start_time = time.time()
+
         # Execute based on agent type
         result = await self.execute_agent(node, inputs)
 
-        # Store result
+        # Calculate latency
+        latency_ms = (time.time() - start_time) * 1000
+
+        # Determine success and confidence
+        success = 'error' not in result
+        confidence = result.get('confidence', 0.8 if success else 0.2)
+
+        # Update real-time performance metrics
+        update_execution_metrics(
+            node_type=node.agentType,
+            latency_ms=latency_ms,
+            success=success,
+            confidence=confidence
+        )
+
+        # Store result with performance data
         self.results[node.id] = {
             'node_id': node.id,
             'agent_type': node.agentType,
             'timestamp': datetime.now().isoformat(),
             'config': node.config,
-            'output': result
+            'output': result,
+            'performance': {
+                'latency_ms': latency_ms,
+                'success': success,
+                'confidence': confidence
+            }
         }
 
-        logger.info(f"Node {node.id} completed")
+        logger.info(f"Node {node.id} completed in {latency_ms:.2f}ms (success={success})")
 
     async def execute_agent(self, node: WorkflowNode, inputs: Dict) -> Any:
         """
@@ -1785,6 +1960,205 @@ async def get_optimization_history(limit: int = 10):
         'thompson_priors': optimizer.priors,
         'timestamp': datetime.now().isoformat()
     }
+
+
+# ==============================================================================
+# AI Suggestion Endpoints (Wave 3.2)
+# ==============================================================================
+
+@app.get("/api/suggestions/next-nodes")
+async def get_next_node_suggestions(current: str = "", k: int = 5):
+    """
+    Get AI-powered suggestions for the next node to add to a workflow.
+
+    Uses Thompson Sampling to recommend nodes based on historical patterns
+    of successful workflow executions.
+
+    Query parameters:
+    - current: Comma-separated list of current node types in execution order
+    - k: Number of suggestions to return (default: 5)
+
+    Example: /api/suggestions/next-nodes?current=hololoom,search&k=3
+
+    Returns suggestions with confidence scores and pattern sources.
+    """
+    from pattern_miner import suggest_next_nodes, get_pattern_miner
+
+    # Parse current nodes
+    current_nodes = [n.strip() for n in current.split(',') if n.strip()]
+
+    # Get suggestions
+    suggestions = suggest_next_nodes(current_nodes, k=k)
+
+    # Also return node performance stats for context
+    miner = get_pattern_miner()
+    rankings = miner.get_node_performance_ranking()
+
+    return {
+        'suggestions': suggestions,
+        'current_context': current_nodes,
+        'node_rankings': rankings[:10],  # Top 10 performing nodes
+        'patterns_available': len(miner.pair_patterns) + len(miner.triple_patterns),
+        'timestamp': datetime.now().isoformat()
+    }
+
+
+@app.get("/api/suggestions/patterns")
+async def get_workflow_patterns(min_frequency: int = 2, pattern_type: str = "all"):
+    """
+    Get common workflow patterns for template suggestions.
+
+    Query parameters:
+    - min_frequency: Minimum occurrences to include pattern (default: 2)
+    - pattern_type: Filter by pattern type ("pair", "triple", or "all")
+
+    Returns list of common node sequences with success rates.
+    """
+    from pattern_miner import get_common_patterns, get_pattern_miner
+
+    patterns = get_common_patterns(min_frequency=min_frequency)
+
+    # Filter by type if specified
+    if pattern_type != "all":
+        patterns = [p for p in patterns if p['type'] == pattern_type]
+
+    return {
+        'patterns': patterns,
+        'total': len(patterns),
+        'min_frequency': min_frequency,
+        'timestamp': datetime.now().isoformat()
+    }
+
+
+@app.get("/api/patterns/frequency")
+async def get_pattern_frequency():
+    """
+    Get node type frequency and success statistics.
+
+    Returns ranking of all node types by Thompson Sampling score,
+    useful for ordering the agent palette by relevance.
+    """
+    from pattern_miner import get_pattern_miner
+
+    miner = get_pattern_miner()
+    rankings = miner.get_node_performance_ranking()
+
+    # Also include overall stats
+    total_executions = sum(miner.node_frequency.values())
+    total_success = sum(miner.node_success.values())
+
+    return {
+        'rankings': rankings,
+        'total_executions': total_executions,
+        'overall_success_rate': total_success / total_executions if total_executions > 0 else 0.5,
+        'unique_patterns': {
+            'pairs': len(miner.pair_patterns),
+            'triples': len(miner.triple_patterns)
+        },
+        'timestamp': datetime.now().isoformat()
+    }
+
+
+@app.post("/api/patterns/learn")
+async def learn_from_workflow_history():
+    """
+    Trigger pattern learning from workflow execution history.
+
+    Extracts patterns from the global workflow_pattern_history
+    and updates the pattern miner's knowledge base.
+    """
+    global workflow_pattern_history
+
+    from pattern_miner import get_pattern_miner
+
+    miner = get_pattern_miner()
+
+    # Learn from history
+    if workflow_pattern_history:
+        miner.extract_patterns(workflow_pattern_history)
+        miner.save_patterns()
+
+        return {
+            'status': 'success',
+            'patterns_learned': {
+                'pairs': len(miner.pair_patterns),
+                'triples': len(miner.triple_patterns)
+            },
+            'workflows_processed': len(workflow_pattern_history),
+            'timestamp': datetime.now().isoformat()
+        }
+    else:
+        return {
+            'status': 'no_data',
+            'message': 'No workflow history to learn from',
+            'timestamp': datetime.now().isoformat()
+        }
+
+
+@app.get("/api/suggestions/performance")
+async def get_performance_suggestions():
+    """
+    Get performance-based suggestions for workflow optimization.
+
+    Returns real-time performance statistics including:
+    - Node type latencies
+    - Bottleneck detection
+    - Thompson Sampling priors
+    """
+    global execution_metrics, node_performance_stats
+
+    performance_data = []
+    for node_type in execution_metrics.keys():
+        stats = get_real_performance_stats(node_type)
+        performance_data.append({
+            'node_type': node_type,
+            **stats,
+            'is_bottleneck': stats.get('avg_latency_ms', 0) > 400,
+            'thompson_alpha': node_performance_stats.get(node_type, {}).get('alpha', 1.0),
+            'thompson_beta': node_performance_stats.get(node_type, {}).get('beta', 1.0)
+        })
+
+    # Sort by latency (bottlenecks first)
+    performance_data.sort(key=lambda x: x.get('avg_latency_ms', 0), reverse=True)
+
+    return {
+        'performance': performance_data,
+        'bottlenecks': [p for p in performance_data if p.get('is_bottleneck', False)],
+        'recommendations': _generate_performance_recommendations(performance_data),
+        'timestamp': datetime.now().isoformat()
+    }
+
+
+def _generate_performance_recommendations(performance_data: list) -> list:
+    """Generate actionable performance recommendations."""
+    recommendations = []
+
+    for node in performance_data:
+        node_type = node.get('node_type', '')
+        avg_latency = node.get('avg_latency_ms', 0)
+        success_rate = node.get('success_rate', 1.0)
+
+        # High latency recommendation
+        if avg_latency > 500:
+            recommendations.append({
+                'node_type': node_type,
+                'issue': 'high_latency',
+                'severity': 'high' if avg_latency > 1000 else 'medium',
+                'recommendation': f"Consider caching results or using a lighter alternative for {node_type}",
+                'metric': f"{avg_latency:.0f}ms avg latency"
+            })
+
+        # Low success rate recommendation
+        if success_rate < 0.7:
+            recommendations.append({
+                'node_type': node_type,
+                'issue': 'low_success_rate',
+                'severity': 'high' if success_rate < 0.5 else 'medium',
+                'recommendation': f"Review {node_type} configuration - success rate is below threshold",
+                'metric': f"{success_rate:.0%} success rate"
+            })
+
+    return recommendations
 
 
 if __name__ == "__main__":
