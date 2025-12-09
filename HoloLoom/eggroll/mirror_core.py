@@ -4,6 +4,29 @@ import os
 from typing import Optional, Tuple, Any
 from HoloLoom.awareness.llm_integration import create_llm, LLMProtocol
 
+# --- Imports & Conditional Dependencies ---
+try:
+    import torch
+    import torch.nn as nn
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from HoloLoom.eggroll.architectures import get_model
+    
+    # Try importing PEFT optionally
+    try:
+        from peft import get_peft_model, LoraConfig, TaskType
+        params_peft_available = True
+    except ImportError:
+        params_peft_available = False
+        # print("[MirrorCore] Warning: PEFT not installed. LoRA features disabled.")
+        
+except ImportError:
+    # If Torch/Transformers missing, we run in limited mode
+    torch = None
+    nn = None
+    AutoModelForCausalLM = None
+    get_model = None
+    params_peft_available = False
+
 class MirrorCoreAgent:
     """
     MirrorCore Agent (The 'Self')
@@ -14,66 +37,96 @@ class MirrorCoreAgent:
     * Applies evolutionary updates to its own weights.
     """
     
-    def __init__(self, model_id: str = "gpt2"): # Default to small model for demo
+    def __init__(self, model_id: str = "gpt2", model_type: str = "standard", **model_kwargs):
+        """
+        Args:
+            model_id: HuggingFace ID for standard models.
+            model_type: 'standard', 'trm', or 'large'.
+            **model_kwargs: Arguments for the specific architecture (e.g. recur_depth for TRM).
+        """
         self.model_id = model_id
         self.version = 0
         self.adapter_path = f"adapters/{self.model_id}/v{self.version}"
+        self.model_type = model_type
         
-        # Initialize LLM Connection (for generation)
+        # Initialize LLM Connection (for external generation if needed)
         try:
             self.llm = create_llm("ollama")
             self.has_llm = True
         except ImportError:
             self.has_llm = False
-            print("Warning: LLM integration not available.")
+            # print("Warning: LLM integration not available.")
 
-        # --- Real LoRA Integration (PEFT) ---
+        # --- Model Initialization ---
         self.use_peft = False
         self.peft_model = None
         self.tokenizer = None
+        self.custom_model = None
         
         try:
-            import torch
-            from transformers import AutoModelForCausalLM, AutoTokenizer
-            from peft import get_peft_model, LoraConfig, TaskType
-            
-            print(f"[MirrorCore] Loading base model: {model_id}...")
-            # Load small base model for demonstration of real weight updates
-            self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-            if self.tokenizer.pad_token is None:
-                self.tokenizer.pad_token = self.tokenizer.eos_token
+            # Imports are now global
+            print(f"[MirrorCore] Initializing Agent with type: {model_type}")
+
+            if torch is None:
+                 raise ImportError("PyTorch not found (Global import failed)")
+
+            if model_type == "standard":
+                if not params_peft_available:
+                     raise ImportError("PEFT is required for 'standard' model type.")
+                     
+                # Standard HF + LoRA Path (Existing Logic)
+                print(f"[MirrorCore] Loading base model: {model_id}...")
+                self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+                if self.tokenizer.pad_token is None:
+                    self.tokenizer.pad_token = self.tokenizer.eos_token
+                    
+                base_model = AutoModelForCausalLM.from_pretrained(model_id)
                 
-            base_model = AutoModelForCausalLM.from_pretrained(model_id)
-            
-            # Configure LoRA
-            peft_config = LoraConfig(
-                task_type=TaskType.CAUSAL_LM, 
-                inference_mode=False, 
-                r=16, 
-                lora_alpha=32, 
-                lora_dropout=0.1
-            )
-            
-            self.peft_model = get_peft_model(base_model, peft_config)
-            self.use_peft = True
-            print(f"[MirrorCore] PEFT LoRA initialized. Trainable params: {self.peft_model.print_trainable_parameters()}")
-            
-            # Extract dimensions from the first LoRA layer found
-            self.target_module = None
-            for name, module in self.peft_model.named_modules():
-                if "lora_A" in name:
-                    self.target_module = name
-                    self.dim = module.default.weight.shape[1] # In_features
-                    self.rank = module.default.weight.shape[0] # Rank
-                    print(f"[MirrorCore] Targeting LoRA module: {name} (Dim={self.dim}, Rank={self.rank})")
-                    break
-            
-            if not self.target_module:
-                raise ValueError("No LoRA modules found.")
+                # Configure LoRA
+                peft_config = LoraConfig(
+                    task_type=TaskType.CAUSAL_LM, 
+                    inference_mode=False, 
+                    r=16, 
+                    lora_alpha=32, 
+                    lora_dropout=0.1
+                )
                 
+                self.peft_model = get_peft_model(base_model, peft_config)
+                self.use_peft = True
+                print(f"[MirrorCore] PEFT LoRA initialized. Trainable params: {self.peft_model.print_trainable_parameters()}")
+                
+                # Extract dimensions from the first LoRA layer found
+                self.target_module = None
+                for name, module in self.peft_model.named_modules():
+                    if "lora_A" in name:
+                        self.target_module = name
+                        self.dim = module.default.weight.shape[1] # In_features
+                        self.rank = module.default.weight.shape[0] # Rank
+                        print(f"[MirrorCore] Targeting LoRA module: {name} (Dim={self.dim}, Rank={self.rank})")
+                        break
+                
+                if not self.target_module:
+                    raise ValueError("No LoRA modules found.")
+
+            elif model_type in ["trm", "large", "liquid", "spiking", "moe", "sdm"]:
+                # New Architectures
+                self.custom_model = get_model(model_type, **model_kwargs)
+                print(f"[MirrorCore] Custom architecture {model_type} loaded. Parameters: {self.custom_model.get_trainable_parameters()}")
+                
+                self.use_peft = False 
+                
+                # Placeholder params for evolution loop compatibility
+                self.dim = 256 
+                self.rank = 16 
+                self.adapter_A = np.random.randn(self.dim, self.rank) * 0.01
+                self.adapter_B = np.random.randn(self.dim, self.rank) * 0.01
+
         except Exception as e:
-            print(f"[MirrorCore] PEFT initialization failed: {e}. Falling back to simulation.")
+            print(f"[MirrorCore] Initialization failed: {e}. Falling back to simulation.")
+            import traceback
+            traceback.print_exc()
             self.use_peft = False
+            self.custom_model = None
             self.rank = 16
             self.dim = 512
             self.adapter_A = np.random.randn(self.dim, self.rank) * 0.01
@@ -132,6 +185,31 @@ class MirrorCoreAgent:
             
             self.version += 1
             print(f"[MirrorCore] Projected Update v{self.version} (Simulated)")
+
+    def train(self):
+        """Standard PyTorch train mode"""
+        if self.custom_model:
+            self.custom_model.train()
+            
+    def eval(self):
+        """Standard PyTorch eval mode"""
+        if self.custom_model:
+            self.custom_model.eval()
+
+    def compute_loss(self, input_ids, labels):
+        """Computes Causal Language Modeling loss."""
+        # Ensure model is on correct device if needed
+        # Forward pass
+        logits = self.custom_model(input_ids)
+        
+        # Shift so that tokens < n predict n
+        shift_logits = logits[..., :-1, :].contiguous()
+        shift_labels = labels[..., 1:].contiguous()
+        
+        # Flatten the tokens
+        loss_fct = nn.CrossEntropyLoss()
+        loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+        return loss
 
     async def generate(self, prompt: str, **kwargs) -> str:
         """

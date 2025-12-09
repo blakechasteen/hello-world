@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yarn | HoloLoom Lineage</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #e2e8f0;
+            --accent-color: #38bdf8;
+            --secondary-color: #64748b;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Glassmorphism UI Panels */
+        .panel {
+            position: absolute;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            /* Allow clicking through to canvas mostly */
+        }
+
+        .panel * {
+            pointer-events: auto;
+        }
+
+        #header {
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        #details {
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        p {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .stat-label {
+            color: var(--secondary-color);
+        }
+
+        .stat-value {
+            font-weight: bold;
+        }
+
+        /* D3 Elements */
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .node circle {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .node:hover circle {
+            stroke: var(--accent-color);
+            stroke-width: 3px;
+        }
+
+        .link {
+            stroke: #475569;
+            stroke-opacity: 0.6;
+            stroke-width: 1px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        /* Legend */
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+
+        .color-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container">
+        <div id="header" class="panel">
+            <h1>Yarn Lineage</h1>
+            <p>Evolutionary Graph Visualization</p>
+            <button onclick="fetchData()"
+                style="margin-top:10px; padding: 5px 10px; background: var(--accent-color); border:none; border-radius: 4px; color: #000; cursor: pointer;">Refresh
+                Data</button>
+        </div>
+
+        <div id="details" class="panel">
+            <h2>Model DNA</h2>
+            <div id="details-content">
+                <p>Select a node to view details.</p>
+            </div>
+        </div>
+
+        <div class="legend panel" style="padding: 10px;">
+            <div class="legend-item">
+                <div class="color-box" style="background:#ef4444;"></div> SNN
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background:#3b82f6;"></div> Transformer
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background:#22c55e;"></div> Liquid
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background:#a855f7;"></div> MoE
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background:#eab308;"></div> SDM
+            </div>
+        </div>
+
+        <!-- Tooltip -->
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <script>
+        // D3.js Logic
+
+        // Color Scale for Architectures
+        const colorScale = d3.scaleOrdinal()
+            .domain(["spiking", "standard", "trm", "liquid", "moe", "sdm", "large"])
+            .range(["#ef4444", "#3b82f6", "#60a5fa", "#22c55e", "#a855f7", "#eab308", "#f97316"]);
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const svg = d3.select("#container").append("svg")
+            .attr("viewBox", [0, 0, width, height]);
+
+        const g = svg.append("g");
+
+        // Zoom
+        svg.call(d3.zoom()
+            .extent([[0, 0], [width, height]])
+            .scaleExtent([0.1, 8])
+            .on("zoom", ({ transform }) => {
+                g.attr("transform", transform);
+            }));
+
+        let link = g.append("g").attr("class", "links").selectAll(".link");
+        let node = g.append("g").attr("class", "nodes").selectAll(".node");
+
+        const simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id(d => d.id).distance(50))
+            .force("charge", d3.forceManyBody().strength(-200))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collide", d3.forceCollide(20));
+
+        async function fetchData() {
+            try {
+                // In a real app, this would be an API call. For local, we read a relative JSON.
+                // If running via python http.server, this works.
+                const response = await fetch('data.json');
+                const graph = await response.json();
+                update(graph);
+            } catch (e) {
+                console.error("Failed to fetch data", e);
+                // Mock data for Visualization Design Check
+                const mockGraph = generateMockData();
+                update(mockGraph);
+            }
+        }
+
+        function update(graph) {
+            // Update links
+            link = link.data(graph.links)
+                .join("line")
+                .attr("class", "link");
+
+            // Update nodes
+            node = node.data(graph.nodes)
+                .join("g")
+                .attr("class", "node")
+                .call(drag(simulation));
+
+            // Clear previous circles
+            node.selectAll("*").remove();
+
+            // Add Circles
+            node.append("circle")
+                .attr("r", d => 5 + (d.reward || 0) * 5) // Radius based on reward
+                .attr("fill", d => colorScale(d.architecture || "standard"));
+
+            // Add Labels (if significant)
+            node.append("text")
+                .text(d => d.id.substring(0, 5))
+                .attr("x", 8)
+                .attr("y", 3)
+                .style("font-size", "10px")
+                .style("fill", "#ccc")
+                .style("pointer-events", "none");
+
+            // Interaction
+            node.on("mouseover", (event, d) => {
+                const tooltip = d3.select("#tooltip");
+                tooltip.style("opacity", 1)
+                    .html(`ID: ${d.id}<br>Arch: ${d.architecture}<br>Reward: ${d.reward?.toFixed(3)}`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+            })
+                .on("mouseout", () => {
+                    d3.select("#tooltip").style("opacity", 0);
+                })
+                .on("click", (event, d) => {
+                    showDetails(d);
+                });
+
+            simulation.nodes(graph.nodes).on("tick", ticked);
+            simulation.force("link").links(graph.links);
+            simulation.alpha(1).restart();
+        }
+
+        function ticked() {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+
+        function drag(simulation) {
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+
+            return d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended);
+        }
+
+        function showDetails(d) {
+            const panel = document.getElementById("details");
+            const content = document.getElementById("details-content");
+            panel.style.display = "block";
+
+            let metricsHtml = "";
+            if (d.metrics) {
+                for (const [key, val] of Object.entries(d.metrics)) {
+                    metricsHtml += `
+                <div class="stat-row">
+                    <span class="stat-label">${key}:</span>
+                    <span class="stat-value">${typeof val === 'number' ? val.toFixed(4) : val}</span>
+                </div>`;
+                }
+            } else {
+                metricsHtml = "<p>No detailed metrics.</p>";
+            }
+
+            content.innerHTML = `
+            <h3>${d.id}</h3>
+            <div class="stat-row">
+                <span class="stat-label">Architecture:</span>
+                <span class="stat-value" style="color:${colorScale(d.architecture)}">${d.architecture}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Reward:</span>
+                <span class="stat-value">${d.reward?.toFixed(4)}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Parent:</span>
+                <span class="stat-value">${d.parent || "None"}</span>
+            </div>
+            <div style="margin-top:15px; border-top:1px solid #334155; padding-top:10px;">
+                <strong>Metrics</strong>
+                ${metricsHtml}
+            </div>
+        `;
+        }
+
+        // Mock Data Generator for Dev Testing
+        function generateMockData() {
+            const architectures = ["spiking", "standard", "trm", "liquid", "moe", "sdm"];
+            const nodes = [];
+            const links = [];
+
+            // Root
+            nodes.push({ id: "root", architecture: "standard", reward: 0.5 });
+
+            // Gen 1
+            for (let i = 1; i <= 6; i++) {
+                const arch = architectures[i % architectures.length];
+                const id = `gen1_model_${i}`;
+                nodes.push({
+                    id: id,
+                    architecture: arch,
+                    reward: 0.4 + Math.random() * 0.4,
+                    parent: "root",
+                    metrics: {
+                        sparsity: Math.random(),
+                        energy: Math.random(),
+                        spectral_radius: 0.9 + Math.random() * 0.2
+                    }
+                });
+                links.push({ source: "root", target: id });
+            }
+
+            // Gen 2
+            for (let i = 0; i < 10; i++) {
+                const parentIdx = 1 + Math.floor(Math.random() * 6);
+                const parent = nodes[parentIdx];
+                const id = `gen2_model_${i}`;
+                nodes.push({
+                    id: id,
+                    architecture: parent.architecture,
+                    reward: parent.reward + (Math.random() - 0.3) * 0.2,
+                    parent: parent.id,
+                    metrics: {
+                        sparsity: Math.random(),
+                        energy: Math.random(),
+                        spectral_radius: 0.9 + Math.random() * 0.2
+                    }
+                });
+                links.push({ source: parent.id, target: id });
+            }
+
+            return { nodes, links };
+        }
+
+        // Init
+        fetchData();
+
+    </script>
+
+</body>
+
+</html>
