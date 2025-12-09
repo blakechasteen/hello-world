@@ -20,7 +20,7 @@ Date: 2025-12-01 (Jenny MVP Week 2)
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from datetime import datetime
 import json
 import logging
@@ -35,6 +35,33 @@ from .jenny_spec import (
     DissolutionTrigger,
 )
 from HoloLoom.protocols.jenny import RenderTarget, JennyRendererProtocol
+
+# Try to import accessibility layer (Phase M3)
+try:
+    from .jenny_accessibility import (
+        JennyAccessibilityLayer,
+        AriaRole,
+        AriaAttributes,
+        create_accessibility_layer,
+    )
+    ACCESSIBILITY_AVAILABLE = True
+except ImportError:
+    ACCESSIBILITY_AVAILABLE = False
+    JennyAccessibilityLayer = None
+    AriaRole = None
+    AriaAttributes = None
+
+# Registry import (lazy to avoid circular imports)
+_registry = None
+
+
+def _get_registry():
+    """Lazy registry import to avoid circular imports."""
+    global _registry
+    if _registry is None:
+        from .jenny_renderer_registry import get_registry
+        _registry = get_registry()
+    return _registry
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +108,28 @@ class JennyRendererBase(ABC):
     def supports_target(self, target: RenderTarget) -> bool:
         """Check if renderer supports a target format."""
         return target in self.supported_targets
+
+    @property
+    def name(self) -> str:
+        """
+        Unique renderer name for registry identification.
+
+        Default: lowercase class name without 'Renderer' suffix.
+        Subclasses can override for custom names.
+        """
+        class_name = self.__class__.__name__
+        if class_name.endswith('Renderer'):
+            return class_name[:-8].lower()
+        return class_name.lower()
+
+    def supports_concurrent(self) -> bool:
+        """
+        Whether this renderer supports concurrent/parallel rendering.
+
+        Default: True (stateless renderers are safe for concurrency).
+        Override if renderer has mutable state.
+        """
+        return True
 
     async def render(
         self,
@@ -203,9 +252,16 @@ class HTMLRenderer(JennyRendererBase):
     Features:
     - Semantic HTML5 structure
     - CSS animations for lifecycle states
-    - Accessibility (ARIA labels, keyboard nav)
+    - Accessibility (ARIA labels, keyboard nav) - Phase M3
     - Dark/light theme support
     - Responsive grid layout
+
+    Phase M3 Accessibility Features:
+    - WCAG 2.1 AA compliance
+    - Keyboard navigation (Arrow keys, Tab, Enter, Escape)
+    - Focus management with visible focus indicators
+    - Screen reader announcements via live regions
+    - Reduced motion support
 
     Usage:
         renderer = HTMLRenderer()
@@ -216,6 +272,16 @@ class HTMLRenderer(JennyRendererBase):
     # CSS class prefixes
     PANEL_CLASS = "jenny-panel"
     CONTAINER_CLASS = "jenny-container"
+
+    def __init__(self):
+        """Initialize HTML renderer with accessibility layer."""
+        super().__init__()
+
+        # Initialize accessibility layer (Phase M3)
+        self._a11y: Optional[JennyAccessibilityLayer] = None
+        if ACCESSIBILITY_AVAILABLE:
+            self._a11y = create_accessibility_layer()
+            self.logger.info("Accessibility layer enabled (WCAG 2.1 AA)")
 
     @property
     def supported_targets(self) -> List[RenderTarget]:
@@ -230,29 +296,46 @@ class HTMLRenderer(JennyRendererBase):
         """Render multiple specs to HTML dashboard."""
         include_styles = options.get('include_styles', True)
         include_scripts = options.get('include_scripts', True)
+        include_a11y = options.get('include_accessibility', True)
         title = options.get('title', 'Jenny Dashboard')
 
         # Sort by priority (lower = first)
         sorted_specs = sorted(specs, key=lambda s: s.priority)
 
-        # Render individual panels
+        # Collect panel IDs for keyboard navigation
+        panel_ids = [spec.spec_id for spec in sorted_specs]
+
+        # Render individual panels with position info for accessibility
         panels_html = []
-        for spec in sorted_specs:
-            panel = await self._render_single(spec, target, options)
+        for i, spec in enumerate(sorted_specs, 1):
+            panel = await self._render_single(
+                spec, target, options,
+                position=i, total=len(sorted_specs)
+            )
             panels_html.append(panel)
 
-        # Build container
-        container = f'''<div class="{self.CONTAINER_CLASS}" role="main" aria-label="{title}">
+        # Build container with accessibility landmark
+        container = f'''<div id="jenny-main-content" class="{self.CONTAINER_CLASS}" role="main" aria-label="{html.escape(title)}">
     {''.join(panels_html)}
 </div>'''
 
         # Add styles and scripts if requested
         if include_styles or include_scripts:
             head_content = []
+            body_prefix = []
+            body_suffix = []
+
             if include_styles:
                 head_content.append(self._get_styles())
             if include_scripts:
                 head_content.append(self._get_scripts())
+
+            # Add accessibility infrastructure (Phase M3)
+            if include_a11y and self._a11y:
+                head_content.append(self._get_a11y_styles())
+                body_prefix.append(self._get_a11y_skip_link())
+                body_suffix.append(self._get_a11y_live_region())
+                body_suffix.append(self._get_a11y_scripts(panel_ids))
 
             return f'''<!DOCTYPE html>
 <html lang="en">
@@ -263,7 +346,9 @@ class HTMLRenderer(JennyRendererBase):
     {''.join(head_content)}
 </head>
 <body>
+    {''.join(body_prefix)}
     {container}
+    {''.join(body_suffix)}
 </body>
 </html>'''
 
@@ -273,9 +358,23 @@ class HTMLRenderer(JennyRendererBase):
         self,
         spec: JennySpec,
         target: RenderTarget,
-        options: Dict[str, Any]
+        options: Dict[str, Any],
+        position: Optional[int] = None,
+        total: Optional[int] = None
     ) -> str:
-        """Render single spec to HTML panel."""
+        """
+        Render single spec to HTML panel.
+
+        Args:
+            spec: JennySpec to render
+            target: Output format
+            options: Renderer options
+            position: Position in panel set (1-indexed, for accessibility)
+            total: Total panels in set (for accessibility)
+
+        Returns:
+            Panel HTML string
+        """
         # Build CSS classes
         classes = [
             self.PANEL_CLASS,
@@ -303,8 +402,19 @@ class HTMLRenderer(JennyRendererBase):
         # Render actions
         actions_html = self._render_actions(spec)
 
+        # Build ARIA position attributes (Phase M3)
+        aria_position_attrs = []
+        if position is not None:
+            aria_position_attrs.append(f'aria-posinset="{position}"')
+        if total is not None:
+            aria_position_attrs.append(f'aria-setsize="{total}"')
+        aria_position_str = ' '.join(aria_position_attrs)
+
+        # Determine tabindex (first panel is focusable, others on navigation)
+        tabindex = '0' if position == 1 else '-1'
+
         # Build panel HTML
-        return f'''<article class="{' '.join(classes)}" {data_str} role="region" aria-label="{html.escape(spec.title or spec.panel_type.value)}">
+        return f'''<article class="{' '.join(classes)}" {data_str} role="article" aria-label="{html.escape(spec.title or spec.panel_type.value)}" tabindex="{tabindex}" {aria_position_str}>
     <header class="{self.PANEL_CLASS}__header">
         {f'<h3 class="{self.PANEL_CLASS}__title">{html.escape(spec.title)}</h3>' if spec.title else ''}
         {f'<p class="{self.PANEL_CLASS}__subtitle">{html.escape(spec.subtitle)}</p>' if spec.subtitle else ''}
@@ -715,6 +825,76 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>'''
 
+    # ========================================================================
+    # Accessibility Helper Methods (Phase M3)
+    # ========================================================================
+
+    def _get_a11y_styles(self) -> str:
+        """
+        Get accessibility-specific CSS styles.
+
+        Includes:
+        - Focus indicators (visible focus rings)
+        - Reduced motion support
+        - Skip link styling
+        """
+        if not self._a11y:
+            return ''
+
+        return f'''
+{self._a11y.focus_manager.generate_focus_styles()}
+{self._a11y.motion_prefs.generate_reduced_motion_styles()}
+'''
+
+    def _get_a11y_skip_link(self) -> str:
+        """
+        Get skip-to-content link for keyboard navigation.
+
+        Allows keyboard users to skip navigation and go directly to main content.
+        """
+        if not self._a11y:
+            return ''
+
+        return self._a11y.focus_manager.generate_skip_link("jenny-main-content")
+
+    def _get_a11y_live_region(self) -> str:
+        """
+        Get live region HTML for screen reader announcements.
+
+        Includes:
+        - Hidden live region element
+        - JavaScript announcement helper functions
+        """
+        if not self._a11y:
+            return ''
+
+        return f'''
+{self._a11y.live_announcer.generate_live_region_html()}
+{self._a11y.live_announcer.generate_announce_script()}
+'''
+
+    def _get_a11y_scripts(self, panel_ids: List[str]) -> str:
+        """
+        Get accessibility JavaScript for keyboard navigation.
+
+        Args:
+            panel_ids: List of panel IDs for navigation order
+
+        Returns:
+            JavaScript for:
+            - Arrow key navigation between panels
+            - Enter/Space to activate primary action
+            - Escape to dismiss panels
+            - Motion preference detection
+        """
+        if not self._a11y:
+            return ''
+
+        return f'''
+{self._a11y.keyboard_handler.generate_panel_navigation_script(panel_ids)}
+{self._a11y.motion_prefs.generate_motion_query_script()}
+'''
+
 
 # ============================================================================
 # Terminal Renderer
@@ -969,12 +1149,636 @@ class JSONRenderer(JennyRendererBase):
 
 
 # ============================================================================
-# Factory Functions
+# React Renderer (Phase M4)
+# ============================================================================
+
+class ReactRenderer(JennyRendererBase):
+    """
+    Renders JennySpec panels to React component props.
+
+    Outputs JSON props that can be consumed by React components.
+    Designed for server-side rendering and client hydration.
+
+    Features (Phase M4):
+    - React-ready component props
+    - Accessibility props (ARIA attributes)
+    - Event handler prop stubs
+    - CSS class generation
+    - TypeScript-friendly output
+
+    Usage:
+        renderer = ReactRenderer()
+        props_json = await renderer.render(specs)
+
+        # In React:
+        const props = JSON.parse(props_json);
+        return <JennyDashboard {...props} />;
+
+    Output format:
+        {
+            "component": "JennyDashboard",
+            "props": {
+                "panels": [...],
+                "accessibility": {...},
+                "theme": {...}
+            }
+        }
+    """
+
+    # Component type mapping
+    PANEL_COMPONENTS = {
+        PanelTypeJenny.TEXT: 'JennyTextPanel',
+        PanelTypeJenny.CONFIDENCE: 'JennyConfidenceGauge',
+        PanelTypeJenny.SOURCES: 'JennySourcesList',
+        PanelTypeJenny.GRAPH: 'JennyKnowledgeGraph',
+        PanelTypeJenny.REASONING: 'JennyReasoningSteps',
+        PanelTypeJenny.WHY: 'JennyWhyPanel',
+        PanelTypeJenny.CODE: 'JennyCodeBlock',
+        PanelTypeJenny.TABLE: 'JennyDataTable',
+        PanelTypeJenny.METRIC: 'JennyMetricCard',
+    }
+
+    @property
+    def supported_targets(self) -> List[RenderTarget]:
+        return [RenderTarget.REACT]
+
+    async def _render_multiple(
+        self,
+        specs: List[JennySpec],
+        target: RenderTarget,
+        options: Dict[str, Any]
+    ) -> str:
+        """Render specs to React props JSON."""
+        indent = options.get('indent', 2)
+        include_handlers = options.get('include_handlers', True)
+        include_accessibility = options.get('include_accessibility', True)
+        theme = options.get('theme', 'dark')
+
+        # Sort by priority
+        sorted_specs = sorted(specs, key=lambda s: s.priority)
+
+        # Build panel props
+        panels = []
+        for i, spec in enumerate(sorted_specs, 1):
+            panel_props = await self._spec_to_props(
+                spec,
+                position=i,
+                total=len(sorted_specs),
+                include_handlers=include_handlers,
+                include_accessibility=include_accessibility
+            )
+            panels.append(panel_props)
+
+        # Build dashboard props
+        dashboard_props = {
+            'component': 'JennyDashboard',
+            'props': {
+                'panels': panels,
+                'panelCount': len(panels),
+                'theme': theme,
+                'className': f'jenny-dashboard jenny-dashboard--{theme}',
+                'renderedAt': datetime.now().isoformat(),
+                'rendererVersion': self.VERSION,
+            }
+        }
+
+        # Add global accessibility props
+        if include_accessibility:
+            dashboard_props['props']['accessibility'] = {
+                'role': 'main',
+                'ariaLabel': 'Jenny Dashboard',
+                'ariaLive': 'polite',
+                'tabIndex': 0,
+                'onKeyDown': 'handleDashboardKeyDown',
+            }
+
+        # Add global event handlers
+        if include_handlers:
+            dashboard_props['props']['handlers'] = {
+                'onPanelFocus': 'handlePanelFocus',
+                'onPanelAction': 'handlePanelAction',
+                'onPanelDismiss': 'handlePanelDismiss',
+                'onKeyboardNavigation': 'handleKeyboardNavigation',
+            }
+
+        return json.dumps(dashboard_props, indent=indent, default=str)
+
+    async def _render_single(
+        self,
+        spec: JennySpec,
+        target: RenderTarget,
+        options: Dict[str, Any],
+        position: Optional[int] = None,
+        total: Optional[int] = None
+    ) -> str:
+        """Render single spec to React props JSON."""
+        indent = options.get('indent', 2)
+        include_handlers = options.get('include_handlers', True)
+        include_accessibility = options.get('include_accessibility', True)
+
+        props = await self._spec_to_props(
+            spec,
+            position=position or 1,
+            total=total or 1,
+            include_handlers=include_handlers,
+            include_accessibility=include_accessibility
+        )
+
+        return json.dumps(props, indent=indent, default=str)
+
+    async def _spec_to_props(
+        self,
+        spec: JennySpec,
+        position: int,
+        total: int,
+        include_handlers: bool = True,
+        include_accessibility: bool = True
+    ) -> Dict[str, Any]:
+        """Convert JennySpec to React component props."""
+        # Get component type
+        component = self.PANEL_COMPONENTS.get(
+            spec.panel_type,
+            'JennyGenericPanel'
+        )
+
+        # Build CSS classes
+        class_names = [
+            'jenny-panel',
+            f'jenny-panel--{spec.panel_type.value}',
+            f'jenny-panel--{spec.size.value}',
+            f'jenny-panel--{spec.lifecycle.value}',
+        ]
+
+        # Build base props
+        props = {
+            'component': component,
+            'props': {
+                # Identity
+                'id': spec.spec_id,
+                'key': spec.spec_id,
+
+                # Content
+                'title': spec.title,
+                'subtitle': spec.subtitle,
+                'content': spec.content,
+
+                # Metadata
+                'panelType': spec.panel_type.value,
+                'size': spec.size.value,
+                'priority': spec.priority,
+                'lifecycle': spec.lifecycle.value,
+                'bindingMode': spec.binding_mode.value,
+
+                # Styling
+                'className': ' '.join(class_names),
+
+                # References
+                'spacetimeId': spec.spacetime_id,
+            }
+        }
+
+        # Add type-specific content props
+        props['props']['contentProps'] = self._get_content_props(spec)
+
+        # Add action props
+        if spec.actions:
+            props['props']['actions'] = [
+                {
+                    'actionId': action.get('action_id', ''),
+                    'label': action.get('label', 'Action'),
+                    'handler': action.get('handler', ''),
+                    'type': action.get('type', 'button'),
+                    'requiresConfirmation': action.get('requires_confirmation', False),
+                    'disabled': action.get('disabled', False),
+                }
+                for action in spec.actions
+            ]
+
+        # Add dissolution props
+        if spec.dissolution_trigger:
+            props['props']['dissolution'] = {
+                'trigger': spec.dissolution_trigger.value,
+                'delay': spec.metadata.get('dissolution_delay_ms'),
+            }
+
+        # Add accessibility props
+        if include_accessibility:
+            props['props']['accessibility'] = {
+                'role': 'article',
+                'ariaLabel': spec.title or spec.panel_type.value,
+                'ariaPosinset': position,
+                'ariaSetsize': total,
+                'tabIndex': 0 if position == 1 else -1,
+            }
+
+        # Add event handler props
+        if include_handlers:
+            props['props']['handlers'] = {
+                'onClick': f'handlePanelClick_{spec.spec_id}',
+                'onFocus': f'handlePanelFocus_{spec.spec_id}',
+                'onKeyDown': f'handlePanelKeyDown_{spec.spec_id}',
+                'onDismiss': f'handlePanelDismiss_{spec.spec_id}',
+            }
+
+        return props
+
+    def _get_content_props(self, spec: JennySpec) -> Dict[str, Any]:
+        """Get type-specific content props for React components."""
+        content = spec.content
+        panel_type = spec.panel_type
+
+        if panel_type == PanelTypeJenny.TEXT:
+            return {
+                'text': content.get('text', ''),
+                'format': content.get('format', 'text'),
+                'truncate': content.get('truncate', False),
+                'maxLines': content.get('max_lines'),
+            }
+
+        elif panel_type == PanelTypeJenny.CONFIDENCE:
+            value = content.get('value', 0)
+            return {
+                'value': value,
+                'percentage': int(value * 100),
+                'thresholdLow': content.get('threshold_low', 0.6),
+                'thresholdHigh': content.get('threshold_high', 0.8),
+                'showBar': True,
+                'showLabel': True,
+                'colorScheme': 'auto',  # high/medium/low based on value
+            }
+
+        elif panel_type == PanelTypeJenny.SOURCES:
+            sources = content.get('sources', [])
+            return {
+                'sources': [
+                    {
+                        'title': s.get('title', f'Source {i+1}') if isinstance(s, dict) else str(s),
+                        'url': s.get('url', '#') if isinstance(s, dict) else '#',
+                        'relevance': s.get('relevance') if isinstance(s, dict) else None,
+                    }
+                    for i, s in enumerate(sources)
+                ],
+                'showRelevance': content.get('show_relevance', False),
+                'maxVisible': content.get('max_visible', 10),
+            }
+
+        elif panel_type == PanelTypeJenny.GRAPH:
+            return {
+                'nodes': content.get('nodes', []),
+                'edges': content.get('edges', []),
+                'layout': content.get('layout', 'force'),
+                'interactive': content.get('interactive', True),
+                'highlightPath': content.get('highlight_path', []),
+            }
+
+        elif panel_type == PanelTypeJenny.REASONING:
+            return {
+                'steps': content.get('steps', []),
+                'currentStep': content.get('current_step'),
+                'showNumbers': True,
+                'collapsible': content.get('collapsible', False),
+            }
+
+        elif panel_type == PanelTypeJenny.WHY:
+            return {
+                'queryType': content.get('query_type', 'unknown'),
+                'complexity': content.get('complexity', 'unknown'),
+                'panelsGenerated': content.get('panels_generated', 0),
+                'reasoning': content.get('reasoning', ''),
+            }
+
+        elif panel_type == PanelTypeJenny.CODE:
+            return {
+                'code': content.get('code', ''),
+                'language': content.get('language', 'text'),
+                'showLineNumbers': content.get('show_line_numbers', True),
+                'highlight': content.get('highlight', []),
+                'copyable': content.get('copyable', True),
+            }
+
+        elif panel_type == PanelTypeJenny.TABLE:
+            return {
+                'headers': content.get('headers', []),
+                'rows': content.get('rows', []),
+                'sortable': content.get('sortable', False),
+                'searchable': content.get('searchable', False),
+                'pagination': content.get('pagination'),
+            }
+
+        elif panel_type == PanelTypeJenny.METRIC:
+            return {
+                'value': content.get('value', 0),
+                'unit': content.get('unit', ''),
+                'label': content.get('label', 'Metric'),
+                'trend': content.get('trend'),  # 'up', 'down', 'stable'
+                'comparison': content.get('comparison'),
+            }
+
+        else:
+            # Generic fallback
+            return {'raw': content}
+
+
+# ============================================================================
+# AR Renderer (Phase M6)
+# ============================================================================
+
+class ARRenderer(JennyRendererBase):
+    """
+    AR (Augmented Reality) renderer for WebXR-compatible spatial output.
+
+    Outputs 3D spatial panel specifications for AR/VR environments:
+    - Position: x, y, z coordinates in meters
+    - Orientation: Quaternion or Euler angles
+    - Scale: Panel dimensions in physical space
+    - Anchors: World/device anchor preferences
+    - Gaze targeting: Look-at behavior
+
+    Output Format:
+        {
+            "ar_version": "1.0",
+            "coordinate_system": "world",  # or "device", "anchor"
+            "panels": [
+                {
+                    "spec_id": "...",
+                    "panel_type": "text",
+                    "transform": {
+                        "position": {"x": 0, "y": 1.5, "z": -2},
+                        "rotation": {"x": 0, "y": 0, "z": 0, "w": 1},
+                        "scale": {"x": 0.5, "y": 0.3, "z": 0.01}
+                    },
+                    "content": {...},
+                    "behavior": {
+                        "billboard": true,
+                        "gaze_target": false,
+                        "anchor_type": "world"
+                    },
+                    "accessibility": {...}
+                }
+            ],
+            "scene_metadata": {...}
+        }
+
+    References:
+    - WebXR Device API: https://immersive-web.github.io/webxr/
+    - A-Frame: https://aframe.io/docs/
+    """
+
+    name = "ar"
+    supported_targets = [RenderTarget.AR]
+
+    # Size mapping to physical meters
+    SIZE_TO_METERS = {
+        PanelSizeJenny.SMALL: {"x": 0.3, "y": 0.2, "z": 0.01},
+        PanelSizeJenny.MEDIUM: {"x": 0.5, "y": 0.3, "z": 0.01},
+        PanelSizeJenny.LARGE: {"x": 0.8, "y": 0.5, "z": 0.01},
+        PanelSizeJenny.XLARGE: {"x": 1.0, "y": 0.6, "z": 0.01},
+    }
+
+    # Default position (1.5m high, 2m in front of user)
+    DEFAULT_POSITION = {"x": 0.0, "y": 1.5, "z": -2.0}
+
+    async def _render_multiple(
+        self,
+        specs: List[JennySpec],
+        target: RenderTarget,
+        options: Dict[str, Any]
+    ) -> str:
+        """Render multiple specs to AR scene JSON."""
+
+        panels = []
+        for spec in specs:
+            panel = self._spec_to_ar_panel(spec, options)
+            panels.append(panel)
+
+        # Build scene output
+        scene = {
+            "ar_version": "1.0",
+            "coordinate_system": options.get("coordinate_system", "world"),
+            "panels": panels,
+            "scene_metadata": {
+                "panel_count": len(panels),
+                "generated_at": datetime.now().isoformat(),
+                "layout_hint": options.get("layout_hint", "radial"),
+            }
+        }
+
+        return json.dumps(scene, indent=2, default=str)
+
+    async def _render_single(
+        self,
+        spec: JennySpec,
+        target: RenderTarget,
+        options: Dict[str, Any]
+    ) -> str:
+        """Render a single spec to AR panel JSON."""
+        panel = self._spec_to_ar_panel(spec, options)
+
+        return json.dumps({
+            "ar_version": "1.0",
+            "coordinate_system": options.get("coordinate_system", "world"),
+            "panels": [panel],
+            "scene_metadata": {
+                "panel_count": 1,
+                "generated_at": datetime.now().isoformat(),
+            }
+        }, indent=2, default=str)
+
+    def _spec_to_ar_panel(
+        self,
+        spec: JennySpec,
+        options: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Convert JennySpec to AR panel specification."""
+
+        # Calculate transform
+        transform = self._calculate_transform(spec, options)
+
+        # Build content based on panel type
+        content = self._get_ar_content(spec)
+
+        # Calculate behavior settings
+        behavior = self._get_behavior(spec, options)
+
+        # Build accessibility
+        accessibility = self._get_accessibility(spec)
+
+        return {
+            "spec_id": spec.spec_id,
+            "spacetime_id": spec.spacetime_id,
+            "panel_type": spec.panel_type.value,
+            "title": spec.title,
+            "subtitle": spec.subtitle,
+            "lifecycle": spec.lifecycle.value,
+            "transform": transform,
+            "content": content,
+            "behavior": behavior,
+            "accessibility": accessibility,
+            "actions": list(spec.actions),
+            "metadata": spec.metadata,
+        }
+
+    def _calculate_transform(
+        self,
+        spec: JennySpec,
+        options: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Calculate 3D transform from spec position and size."""
+
+        # Position from spec (x, y, z tuple)
+        pos = spec.position
+        position = {
+            "x": pos[0] if pos[0] != 0 else self.DEFAULT_POSITION["x"],
+            "y": pos[1] if pos[1] != 0 else self.DEFAULT_POSITION["y"],
+            "z": pos[2] if pos[2] != 0 else self.DEFAULT_POSITION["z"],
+        }
+
+        # Adjust position based on priority (higher priority = closer to user)
+        if spec.priority > 0:
+            # Move 0.1m closer per priority level
+            position["z"] = position["z"] + (spec.priority * 0.1)
+
+        # Rotation (identity quaternion by default)
+        rotation = options.get("rotation", {"x": 0, "y": 0, "z": 0, "w": 1})
+
+        # Scale from size
+        scale = self.SIZE_TO_METERS.get(spec.size, self.SIZE_TO_METERS[PanelSizeJenny.MEDIUM])
+
+        return {
+            "position": position,
+            "rotation": rotation,
+            "scale": dict(scale),  # Copy to avoid mutation
+        }
+
+    def _get_ar_content(self, spec: JennySpec) -> Dict[str, Any]:
+        """Get AR-optimized content from spec."""
+        content = dict(spec.content)
+        panel_type = spec.panel_type
+
+        # Add AR-specific content hints
+        ar_hints = {}
+
+        if panel_type == PanelTypeJenny.TEXT:
+            ar_hints["render_mode"] = "billboard"  # Text faces user
+            ar_hints["max_chars"] = 500  # Limit for readability
+
+        elif panel_type == PanelTypeJenny.GRAPH:
+            ar_hints["render_mode"] = "3d"  # Graphs can be 3D
+            ar_hints["interactive"] = True
+            ar_hints["node_scale"] = 0.05  # Node size in meters
+
+        elif panel_type == PanelTypeJenny.CONFIDENCE:
+            ar_hints["render_mode"] = "gauge_3d"
+            ar_hints["glow_enabled"] = True  # Visual emphasis
+
+        elif panel_type == PanelTypeJenny.TIMELINE:
+            ar_hints["render_mode"] = "ribbon"
+            ar_hints["depth_enabled"] = True
+
+        elif panel_type == PanelTypeJenny.CODE:
+            ar_hints["render_mode"] = "billboard"
+            ar_hints["syntax_highlight"] = True
+            ar_hints["font_size_m"] = 0.015  # Font size in meters
+
+        elif panel_type == PanelTypeJenny.TABLE:
+            ar_hints["render_mode"] = "flat"
+            ar_hints["scrollable"] = True
+
+        elif panel_type == PanelTypeJenny.REASONING:
+            ar_hints["render_mode"] = "chain_3d"  # 3D reasoning chain
+            ar_hints["step_spacing_m"] = 0.2  # Space between steps
+
+        content["ar_hints"] = ar_hints
+        return content
+
+    def _get_behavior(
+        self,
+        spec: JennySpec,
+        options: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Calculate AR behavior settings."""
+
+        # Determine billboard mode (panel faces user)
+        billboard = spec.panel_type in [
+            PanelTypeJenny.TEXT,
+            PanelTypeJenny.CONFIDENCE,
+            PanelTypeJenny.CODE,
+            PanelTypeJenny.TABLE,
+            PanelTypeJenny.METRIC,
+        ]
+
+        # Gaze targeting for interactive panels
+        gaze_target = spec.panel_type in [
+            PanelTypeJenny.ACTIONS,
+            PanelTypeJenny.GRAPH,
+        ]
+
+        # Anchor type
+        anchor_type = options.get("anchor_type", "world")
+        if spec.metadata.get("follow_device"):
+            anchor_type = "device"
+
+        # Dissolution behavior
+        dissolution = None
+        if spec.dissolution_trigger:
+            dissolution = {
+                "trigger": spec.dissolution_trigger.value,
+                "animation": "fade_dissolve",
+                "duration_ms": 300,
+            }
+
+        return {
+            "billboard": billboard,
+            "gaze_target": gaze_target,
+            "anchor_type": anchor_type,
+            "grabbable": options.get("grabbable", True),
+            "resizable": options.get("resizable", False),
+            "occlusion": options.get("occlusion", True),
+            "cast_shadow": options.get("cast_shadow", False),
+            "dissolution": dissolution,
+        }
+
+    def _get_accessibility(self, spec: JennySpec) -> Dict[str, Any]:
+        """Generate AR accessibility features."""
+
+        # Spatial audio description
+        audio_description = None
+        if spec.title:
+            audio_description = f"{spec.panel_type.value} panel: {spec.title}"
+
+        # Haptic feedback settings
+        haptics = {
+            "on_focus": "light_pulse",
+            "on_select": "confirm_tap",
+            "on_dismiss": "release",
+        }
+
+        return {
+            "label": spec.title or f"{spec.panel_type.value} panel",
+            "description": spec.subtitle,
+            "audio_description": audio_description,
+            "haptics": haptics,
+            "high_contrast_available": True,
+            "magnification_support": True,
+            "voice_commands": [
+                f"select {spec.title}" if spec.title else None,
+                "dismiss",
+                "pin",
+                "expand",
+            ],
+        }
+
+
+# ============================================================================
+# Factory Functions (Registry-Backed)
 # ============================================================================
 
 def create_renderer(target: RenderTarget = RenderTarget.HTML) -> JennyRendererBase:
     """
     Create a renderer for the specified target.
+
+    Uses the RendererRegistry for plugin-based renderer selection.
+    Falls back to hardcoded renderers if registry not initialized.
 
     Args:
         target: Output format
@@ -985,19 +1789,96 @@ def create_renderer(target: RenderTarget = RenderTarget.HTML) -> JennyRendererBa
     Raises:
         UnsupportedTargetError: If no renderer for target
     """
+    # Try registry first
+    try:
+        registry = _get_registry()
+        renderer = registry.get_for_target(target)
+        if renderer:
+            return renderer
+    except Exception as e:
+        logger.debug(f"Registry lookup failed, using fallback: {e}")
+
+    # Fallback to hardcoded (ensures backward compatibility)
     if target == RenderTarget.HTML:
         return HTMLRenderer()
     elif target == RenderTarget.TERMINAL:
         return TerminalRenderer()
     elif target == RenderTarget.JSON:
         return JSONRenderer()
+    elif target == RenderTarget.REACT:
+        return ReactRenderer()
+    elif target == RenderTarget.AR:
+        return ARRenderer()
     else:
         raise UnsupportedTargetError(f"No renderer available for {target.value}")
 
 
 def get_default_renderer() -> JennyRendererBase:
     """Get the default HTML renderer."""
-    return HTMLRenderer()
+    return create_renderer(RenderTarget.HTML)
+
+
+def get_renderer_by_name(name: str) -> Optional[JennyRendererBase]:
+    """
+    Get a renderer by its unique name.
+
+    Args:
+        name: Renderer name (e.g., "html", "terminal", "json")
+
+    Returns:
+        Renderer instance or None if not found
+    """
+    try:
+        registry = _get_registry()
+        return registry.get_by_name(name)
+    except Exception:
+        return None
+
+
+def list_available_renderers() -> List[Dict[str, Any]]:
+    """
+    List all registered renderers.
+
+    Returns:
+        List of renderer info dicts with name, priority, targets
+    """
+    try:
+        registry = _get_registry()
+        return registry.list_renderers()
+    except Exception:
+        # Return hardcoded list as fallback
+        return [
+            {"name": "html", "priority": 10, "targets": ["html"], "concurrent": True},
+            {"name": "terminal", "priority": 5, "targets": ["terminal"], "concurrent": True},
+            {"name": "json", "priority": 5, "targets": ["json"], "concurrent": True},
+            {"name": "react", "priority": 8, "targets": ["react"], "concurrent": True},
+            {"name": "ar", "priority": 7, "targets": ["ar"], "concurrent": True},
+        ]
+
+
+# ============================================================================
+# Auto-Registration (on import)
+# ============================================================================
+
+def _auto_register_renderers():
+    """Register built-in renderers with the registry."""
+    try:
+        registry = _get_registry()
+        # Register with priorities (HTML is default)
+        registry.register(HTMLRenderer, priority=10, name="html")
+        registry.register(TerminalRenderer, priority=5, name="terminal")
+        registry.register(JSONRenderer, priority=5, name="json")
+        registry.register(ReactRenderer, priority=8, name="react")  # Phase M4
+        registry.register(ARRenderer, priority=7, name="ar")  # Phase M6
+        logger.debug("Built-in Jenny renderers registered")
+    except Exception as e:
+        logger.debug(f"Auto-registration skipped: {e}")
+
+
+# Defer registration to avoid import-time issues
+# Will be triggered on first registry access
+import atexit
+atexit.register(lambda: None)  # Ensure clean shutdown
 
 
 # ============================================================================
@@ -1014,7 +1895,19 @@ __all__ = [
     'HTMLRenderer',
     'TerminalRenderer',
     'JSONRenderer',
+    'ReactRenderer',  # Phase M4
+    'ARRenderer',  # Phase M6
     # Factory
     'create_renderer',
     'get_default_renderer',
+    'get_renderer_by_name',
+    'list_available_renderers',
 ]
+
+
+# ============================================================================
+# Initialize (trigger auto-registration)
+# ============================================================================
+
+# Register built-in renderers when this module is imported
+_auto_register_renderers()

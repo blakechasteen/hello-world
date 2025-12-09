@@ -97,7 +97,28 @@ except ImportError:
     Spacetime = Any  # type: ignore
     WeavingTrace = Any  # type: ignore
 
-# Try to import LLM client
+# Try to import async LLM client (Phase M2)
+try:
+    from .jenny_llm_client import (
+        AsyncLLMClientBase,
+        LLMClientConfig,
+        LLMResponse,
+        create_llm_client as create_async_llm_client,
+        create_best_available_client,
+        OllamaClient,
+        AnthropicClient,
+        OpenAIClient,
+    )
+    ASYNC_LLM_AVAILABLE = True
+except ImportError:
+    ASYNC_LLM_AVAILABLE = False
+    AsyncLLMClientBase = None
+    LLMClientConfig = None
+    LLMResponse = None
+    create_async_llm_client = None
+    create_best_available_client = None
+
+# Legacy fallback
 try:
     from HoloLoom.weaving_orchestrator_llm import create_llm_client
     LLM_CLIENT_AVAILABLE = True
@@ -475,17 +496,23 @@ class LLMJennyCompiler(JennyMRFCompiler):
     Extends JennyMRFCompiler with LLM-based panel type selection.
     Uses MRF VERIFY strategy to enhance LLM prompts.
 
+    Phase M2: Now uses production-grade async LLM clients with:
+    - Connection pooling (httpx)
+    - Exponential backoff with jitter
+    - Multi-provider support (Ollama, Anthropic, OpenAI)
+    - Graceful degradation
+
     Fallback Chain:
         1. LLM with MRF enhancement (if available)
         2. MRF compiler with Thompson learning
         3. Base heuristic detection
 
     Usage:
-        compiler = LLMJennyCompiler(llm_provider="ollama", llm_model="llama3.2:3b")
-        specs = await compiler.compile(spacetime)
+        async with LLMJennyCompiler(llm_provider="ollama") as compiler:
+            specs = await compiler.compile(spacetime)
     """
 
-    VERSION = "3.0.0-llm"
+    VERSION = "3.1.0-llm-async"
 
     def __init__(
         self,
@@ -497,6 +524,7 @@ class LLMJennyCompiler(JennyMRFCompiler):
         learning_persist_path: Optional[str] = None,
         enable_mrf_prompt_enhancement: bool = True,
         enable_semantic_axes: bool = True,
+        llm_config: Optional['LLMClientConfig'] = None,
     ):
         """
         Initialize LLM-enhanced compiler.
@@ -510,6 +538,7 @@ class LLMJennyCompiler(JennyMRFCompiler):
             learning_persist_path: Path to persist learning state
             enable_mrf_prompt_enhancement: Use MRF VERIFY to enhance prompts
             enable_semantic_axes: Use semantic calculus for intent detection
+            llm_config: Optional LLMClientConfig for advanced configuration
         """
         # Initialize base MRF compiler
         super().__init__(
@@ -530,25 +559,98 @@ class LLMJennyCompiler(JennyMRFCompiler):
         self.enable_mrf_prompt_enhancement = enable_mrf_prompt_enhancement and MRF_PROMPT_AVAILABLE
         self.enable_semantic_axes = enable_semantic_axes
 
-        # Initialize LLM client
-        self._llm = LLMClient(
-            provider=llm_provider,
-            model=llm_model,
-            timeout_ms=llm_timeout_ms,
-        )
-        self._llm_available = self._llm.available
+        # Async LLM client configuration (Phase M2)
+        self._llm_config = llm_config
+        self._async_llm: Optional[AsyncLLMClientBase] = None
+        self._llm_available = False
+        self._use_async_client = ASYNC_LLM_AVAILABLE
+
+        # Legacy sync client fallback
+        self._llm_legacy: Optional[LLMClient] = None
 
         # Track LLM usage statistics
         self._llm_calls = 0
         self._llm_successes = 0
         self._llm_fallbacks = 0
+        self._llm_retries = 0
+
+        # Initialize synchronously if async not available
+        if not self._use_async_client:
+            self._llm_legacy = LLMClient(
+                provider=llm_provider,
+                model=llm_model,
+                timeout_ms=llm_timeout_ms,
+            )
+            self._llm_available = self._llm_legacy.available
 
         logger.info(
             f"LLMJennyCompiler v{self.VERSION} initialized "
-            f"(llm={llm_provider}/{llm_model}, available={self._llm_available}, "
+            f"(llm={llm_provider}/{llm_model}, async={self._use_async_client}, "
             f"mrf_enhance={self.enable_mrf_prompt_enhancement}, "
             f"semantic_axes={self.enable_semantic_axes})"
         )
+
+    async def __aenter__(self):
+        """Async context manager entry - connects LLM client."""
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - closes LLM client."""
+        await self.close()
+
+    async def connect(self) -> bool:
+        """
+        Connect async LLM client.
+
+        Returns True if connected successfully.
+        """
+        if not self._use_async_client:
+            return self._llm_available
+
+        try:
+            # Build config if not provided
+            if self._llm_config is None and LLMClientConfig:
+                self._llm_config = LLMClientConfig(
+                    provider=self.llm_provider,
+                    model=self.llm_model,
+                    timeout_seconds=self.llm_timeout_ms / 1000.0,
+                    max_retries=2,
+                )
+
+            # Create and connect client
+            self._async_llm = await create_async_llm_client(
+                provider=self.llm_provider,
+                model=self.llm_model,
+                config=self._llm_config,
+            )
+            self._llm_available = self._async_llm.available
+
+            logger.info(
+                f"Async LLM client connected: {self.llm_provider}/{self.llm_model} "
+                f"(available={self._llm_available})"
+            )
+            return self._llm_available
+
+        except Exception as e:
+            logger.warning(f"Failed to connect async LLM client: {e}")
+            # Fall back to legacy client
+            if not self._llm_legacy:
+                self._llm_legacy = LLMClient(
+                    provider=self.llm_provider,
+                    model=self.llm_model,
+                    timeout_ms=self.llm_timeout_ms,
+                )
+                self._llm_available = self._llm_legacy.available
+            self._use_async_client = False
+            return self._llm_available
+
+    async def close(self) -> None:
+        """Close LLM client connections."""
+        if self._async_llm:
+            await self._async_llm.close()
+            self._async_llm = None
+        self._llm_available = False
 
     async def compile(
         self,
@@ -577,6 +679,10 @@ class LLMJennyCompiler(JennyMRFCompiler):
         # Analyze query
         analysis = analyze_query(spacetime)
 
+        # Auto-connect if not connected
+        if self._use_async_client and not self._async_llm:
+            await self.connect()
+
         # Try LLM-based compilation first
         if self._llm_available:
             llm_result = await self._compile_with_llm(spacetime, analysis)
@@ -587,6 +693,26 @@ class LLMJennyCompiler(JennyMRFCompiler):
         logger.debug("LLM unavailable or failed, falling back to MRF compiler")
         self._llm_fallbacks += 1
         return await super().compile(spacetime, strategy, context)
+
+    async def _generate_llm_response(self, prompt: str) -> Optional[str]:
+        """
+        Generate LLM response using async or legacy client.
+
+        Returns response string or None on failure.
+        """
+        # Try async client first (Phase M2)
+        if self._async_llm and self._async_llm.available:
+            response = await self._async_llm.generate(prompt)
+            if response:
+                self._llm_retries += response.retries
+                return response.content
+            return None
+
+        # Fall back to legacy sync client
+        if self._llm_legacy and self._llm_legacy.available:
+            return await self._llm_legacy.generate(prompt)
+
+        return None
 
     async def _compile_with_llm(
         self,
@@ -604,8 +730,8 @@ class LLMJennyCompiler(JennyMRFCompiler):
             # Build LLM prompt
             prompt = await self._build_llm_prompt(spacetime, analysis)
 
-            # Generate LLM response
-            response = await self._llm.generate(prompt)
+            # Generate LLM response (uses async or legacy client)
+            response = await self._generate_llm_response(prompt)
             if not response:
                 return None
 
@@ -729,17 +855,25 @@ class LLMJennyCompiler(JennyMRFCompiler):
         """Get LLM usage statistics."""
         success_rate = self._llm_successes / max(self._llm_calls, 1)
 
-        return {
+        stats = {
             "llm_provider": self.llm_provider,
             "llm_model": self.llm_model,
             "llm_available": self._llm_available,
+            "using_async_client": self._use_async_client,
             "total_calls": self._llm_calls,
             "successful_calls": self._llm_successes,
             "fallbacks": self._llm_fallbacks,
+            "total_retries": self._llm_retries,
             "success_rate": success_rate,
             "mrf_prompt_enhancement": self.enable_mrf_prompt_enhancement,
             "semantic_axes_enabled": self.enable_semantic_axes,
         }
+
+        # Add async client stats if available
+        if self._async_llm:
+            stats["async_client_stats"] = self._async_llm.stats
+
+        return stats
 
     def get_learning_statistics(self) -> Dict[str, Any]:
         """Get combined learning and LLM statistics."""
@@ -834,9 +968,17 @@ def create_compiler_with_fallback(
 __all__ = [
     # Classes
     'LLMJennyCompiler',
-    'LLMClient',
+    'LLMClient',  # Legacy sync client
     'LLMPanelSelection',
     'SemanticProfile',
+
+    # Async LLM client (Phase M2) - re-exported from jenny_llm_client
+    'AsyncLLMClientBase',
+    'LLMClientConfig',
+    'LLMResponse',
+    'OllamaClient',
+    'AnthropicClient',
+    'OpenAIClient',
 
     # Functions
     'create_llm_compiler',
